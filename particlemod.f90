@@ -22,6 +22,7 @@ MODULE particlemod
   CONTAINS
 
     SUBROUTINE particle_init(Npartmax,Ns)
+      INTEGER(iknd) :: Npartmax, Ns
       prt_Npartmax = Npartmax
       prt_Ns = Ns
     END SUBROUTINE particle_init
