@@ -1,6 +1,7 @@
 PROGRAM driver
 
-  USE data_mod
+  USE inputmod
+  USE timestepmod
   IMPLICIT NONE
 
   INTEGER(iknd) :: it, ipart
@@ -8,13 +9,17 @@ PROGRAM driver
   
   ! Namelist groups
   NAMELIST / scalarins / t_elapsed, Lr
-  NAMELIST / arrayins / nt, nr, ng, isvelocity
-  NAMELIST / mcins / Ns, Npartmax, alpha, seed
+  NAMELIST / arrayins / in_nt, in_nr, in_ng, isvelocity
+  NAMELIST / mcins / in_Ns, in_Npartmax, alpha, seed
   ! Reading namelist (from file "input")
   OPEN(UNIT=1,FILE="input",STATUS="OLD",FORM="FORMATTED")
   READ(UNIT=1,NML=scalarins)
   READ(UNIT=1,NML=arrayins)
   READ(UNIT=1,NML=mcins)
+
+  CALL gasgrid_init(in_nr,in_ng)
+  CALL time_init(in_nt)
+  CALL particle_init(in_Npartmax,in_Ns)
   
   ! Setting velocity option
   IF (isvelocity.EQV..TRUE.) THEN
