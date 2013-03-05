@@ -1,0 +1,14 @@
+MODULE simparamod
+
+  USE kindmod
+
+  ! Parameters
+  INTEGER(iknd) :: velno, velyes
+  INTEGER(iknd) :: nt, nr, ng, advoption, tn
+  INTEGER(iknd) :: Npartmax, Ns, seed
+  INTEGER(iknd) :: Nsurf, Nnew
+  INTEGER(iknd), DIMENSION(:), ALLOCATABLE :: numcensus, Nvol, vacantarr
+
+  LOGICAL :: done, isvelocity, puretran
+
+END MODULE simparamod
