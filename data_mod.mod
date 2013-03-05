@@ -82,7 +82,7 @@ UNKNOWN) (REAL 8 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
 UNKNOWN IMPLICIT-SAVE) (REAL 8 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
 30 'nav' 'data_mod' 'nav' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN IMPLICIT-SAVE) (REAL 8 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
-31 'ng' 'data_mod' 'ng' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN
+31 'gas_ng' 'data_mod' 'gas_ng' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN
 UNKNOWN) (INTEGER 4 0 0 INTEGER ()) 0 0 () () 0 () () () 0 0)
 32 'nidecay' 'data_mod' 'nidecay' 1 ((VARIABLE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN UNKNOWN) (REAL 8 0 0 REAL ()) 0 0 () () 0 () () ()
@@ -95,13 +95,13 @@ UNKNOWN UNKNOWN) (INTEGER 4 0 0 INTEGER ()) 0 0 () () 0 () () () 0 0)
 35 'npartmax' 'data_mod' 'npartmax' 1 ((VARIABLE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN UNKNOWN) (INTEGER 4 0 0 INTEGER ()) 0 0 () () 0 ()
 () () 0 0)
-36 'nr' 'data_mod' 'nr' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN
+36 'gas_nr' 'data_mod' 'gas_nr' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN
 UNKNOWN) (INTEGER 4 0 0 INTEGER ()) 0 0 () () 0 () () () 0 0)
 37 'ns' 'data_mod' 'ns' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN
 UNKNOWN) (INTEGER 4 0 0 INTEGER ()) 0 0 () () 0 () () () 0 0)
 38 'nsurf' 'data_mod' 'nsurf' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN UNKNOWN) (INTEGER 4 0 0 INTEGER ()) 0 0 () () 0 () () () 0 0)
-39 'nt' 'data_mod' 'nt' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN
+39 'tsp_nt' 'data_mod' 'tsp_nt' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN
 UNKNOWN) (INTEGER 4 0 0 INTEGER ()) 0 0 () () 0 () () () 0 0)
 40 'numcensus' 'data_mod' 'numcensus' 1 ((VARIABLE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN UNKNOWN ALLOCATABLE DIMENSION) (INTEGER 4 0 0
@@ -210,8 +210,8 @@ UNKNOWN UNKNOWN) (INTEGER 4 0 0 INTEGER ()) 0 0 () () 0 () () () 0 0)
 0 12 'edep' 0 13 'einit' 0 14 'einp' 0 15 'eint' 0 16 'eleft' 0 17 'emat'
 0 18 'emit' 0 19 'emitprobg' 0 20 'erad' 0 21 'eright' 0 22 'esurf' 0 23
 'etot' 0 24 'fcoef' 0 25 'iknd' 0 26 'isvelocity' 0 27 'lr' 0 28 'lspeed'
-0 29 'nav' 0 30 'ng' 0 31 'nidecay' 0 32 'nisource' 0 33 'nnew' 0 34
-'npartmax' 0 35 'nr' 0 36 'ns' 0 37 'nsurf' 0 38 'nt' 0 39 'numcensus' 0
+0 29 'nav' 0 30 'gas_ng' 0 31 'nidecay' 0 32 'nisource' 0 33 'nnew' 0 34
+'npartmax' 0 35 'gas_nr' 0 36 'ns' 0 37 'nsurf' 0 38 'tsp_nt' 0 39 'numcensus' 0
 40 'nvol' 0 41 'packet' 0 42 'particles' 0 52 'pi' 0 53 'ppick' 0 54 'ppl'
 0 55 'ppr' 0 56 'puretran' 0 57 'rarr' 0 58 'rhoarr' 0 59 'rknd' 0 60
 'seed' 0 61 'selected_int_kind' 0 62 'selected_real_kind' 0 63 'sigmal'

@@ -12,14 +12,14 @@ SUBROUTINE initials
   Eint = 0.0   !Total internal energy
   !OPEN(UNIT=8,FILE='Tinit.dat',STATUS='UNKNOWN')
   !READ(8,*) Temp
-  !DO ir = 1, nr
+  !DO ir = 1, gas_nr
   !   IF (Temp(ir)<1.e-6) THEN
   !      Temp(ir) = 1.e-6
   !   ENDIF
   !ENDDO
   nidecay = 1.73*(1.6022e-6)  !erg/s/g
 
-  DO ir = 1, nr
+  DO ir = 1, gas_nr
      rhoarr(ir) = 2.4186e8 !g/cm^3
      Temp(ir) = 1.e3 !861.73
      !bcoef(ir) = 2.0*a_coef*Temp(ir)**3
@@ -31,11 +31,11 @@ SUBROUTINE initials
      Einit = Einit + Um*4*pi*dr3arr(ir)*(velno*1.0+velyes*texp**3)/3.0
   ENDDO
   Einp = Einit
-  DO ipart = 1, Npartmax
+  DO ipart = 1, prt_Npartmax
      particles(ipart)%isvacant=.TRUE.
   ENDDO
 
-  dt = t_elapsed/nt
+  dt = t_elapsed/tsp_nt
   time = RAND(seed)   !PRNG initial
   time = 0.0
 

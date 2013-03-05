@@ -4,13 +4,13 @@ SUBROUTINE interior_source
   IMPLICIT NONE
 
   INTEGER(iknd) :: ir, ipart, ivac, ig, iig
-  INTEGER(iknd), DIMENSION(nr) :: irused
+  INTEGER(iknd), DIMENSION(gas_nr) :: irused
   REAL(rknd) :: r1, r2, r3, uul, uur, uumax, mu0, r0, Ep0
   REAL(rknd) :: denom2
   LOGICAL :: isnotvacnt
 
   ir = 1
-  irused(1:nr) = 0
+  irused(1:gas_nr) = 0
   DO ipart = Nsurf+1, Nnew
      ivac = vacantarr(ipart)
      isnotvacnt = .FALSE.
@@ -20,7 +20,7 @@ SUBROUTINE interior_source
            !Calculating Group
            denom2 = 0.0
            r1 = RAND()
-           DO ig = 1, ng
+           DO ig = 1, gas_ng
               iig = ig
               IF (r1>=denom2.AND.r1<denom2+EmitProbg(ig,ir)) EXIT
               denom2 = denom2+EmitProbg(ig,ir)

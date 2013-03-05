@@ -15,9 +15,9 @@ SUBROUTINE advance
   Eleft = 0.0
   difs = 0
   transps = 0
-  numcensus(1:nr) = 0
+  numcensus(1:gas_nr) = 0
   
-  DO ipart = 1, Npartmax
+  DO ipart = 1, prt_Npartmax
 
      IF (particles(ipart)%isvacant.EQV..FALSE.) THEN
 

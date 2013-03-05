@@ -66,7 +66,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         E = E*elabfact/(1.0-velyes*mu*r/lspeed)
         denom2 = 0.0
         r1 = RAND()
-        DO ig = 1, ng
+        DO ig = 1, gas_ng
            iig = ig
            IF ((r1>=denom2).AND.(r1<denom2+EmitProbg(ig,z))) EXIT
            denom2 = denom2+EmitProbg(ig,z)
@@ -83,7 +83,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
      !ENDIF
   ELSEIF (d == db) THEN
      IF (mu>=0.0_rknd) THEN
-        IF (z == nr) THEN
+        IF (z == gas_nr) THEN
            vacnt = .TRUE.
            done = .TRUE.
            Eright = Eright+E !*elabfact

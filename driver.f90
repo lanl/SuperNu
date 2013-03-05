@@ -38,7 +38,7 @@ PROGRAM driver
 
   CALL CPU_TIME(time_begin)
   tn = 1
-  DO it = 1, nt !to be nt
+  DO it = 1, tsp_nt !to be tsp_nt
      WRITE(*,*) 'timestep:',it
      !Calculating opacities (for IMC(transport) and DDMC(diffusion))
      CALL xsections

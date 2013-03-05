@@ -19,7 +19,7 @@ SUBROUTINE vacancies
      ENDIF
      IF (ivac == Nnew) THEN
         isfull = .TRUE.
-     ELSEIF (ipart == Npartmax) THEN
+     ELSEIF (ipart == prt_Npartmax) THEN
         WRITE(*,*) 'Maximum number of particles reached'
         isfull = .TRUE.
      ENDIF

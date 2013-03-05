@@ -13,7 +13,7 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   REAL(rknd) :: r1, r2
   REAL(rknd) :: denom, denom2
   REAL(rknd) :: ddmct, tau, tcensus, PR, PL, PA
-  REAL(rknd), DIMENSION(ng) :: PDFg
+  REAL(rknd), DIMENSION(gas_ng) :: PDFg
 
   denom = sigmaL(g,z)+sigmaR(g,z)+fcoef(z)*sigmapg(g,z)
   denom = denom+(1.0-EmitProbg(g,z))*(1.0-fcoef(z))*sigmapg(g,z)
@@ -51,13 +51,13 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            E0 = E0/(1.0-velyes*r*mu/lspeed)
         ENDIF
      ELSEIF (PL<=r1 .AND. r1<PL+PR) THEN
-        IF (z == nr) THEN
+        IF (z == gas_nr) THEN
            vacnt = .TRUE.
            done = .TRUE.
            r1 = RAND()
            r2 = RAND()
            mu = MAX(r1,r2)
-           Eright = Eright+E*(1.0+velyes*rarr(nr+1)*mu/lspeed)
+           Eright = Eright+E*(1.0+velyes*rarr(gas_nr+1)*mu/lspeed)
         ELSEIF (sigmapg(g,z+1)*drarr(z+1)*(velno*1.0+velyes*texp)>=5.0_rknd) THEN
            z = z+1
         ELSE
@@ -77,13 +77,13 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         Edep(z) = Edep(z)+E
      ELSE
         denom2 = sigmap(z)-Ppick(g)*sigmapg(g,z)
-        DO ig = 1, ng
+        DO ig = 1, gas_ng
            PDFg(ig) = EmitProbg(ig,z)*sigmap(z)/denom2 
         ENDDO
         PDFg(g)=0.0
         denom2 = 0.0
         r1 = RAND()
-        DO ig = 1, ng
+        DO ig = 1, gas_ng
            iig = ig
            IF (r1>=denom2.AND.r1<denom2+PDFg(ig)) EXIT
            denom2 = denom2+PDFg(ig)

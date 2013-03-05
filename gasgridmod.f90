@@ -9,13 +9,13 @@ MODULE gasgridmod
 
   REAL(rknd) :: Emat
 
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: rarr  !(nr+1)
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: drarr, dr3arr  !(nr)
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: Edep, Temp, sigmap, fcoef, Ur !(nr)
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: Tempb  !(nr+1)
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: rhoarr, bcoef, Emit, nisource  !(nr)
-  REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: sigmapg, sigmargleft, sigmargright, EmitProbg  !(nr,ng)
-  REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: sigmaL, PPL, sigmaR, PPR  !(nr,ng)
+  REAL(rknd), DIMENSION(:), ALLOCATABLE :: rarr  !(gas_nr+1)
+  REAL(rknd), DIMENSION(:), ALLOCATABLE :: drarr, dr3arr  !(gas_nr)
+  REAL(rknd), DIMENSION(:), ALLOCATABLE :: Edep, Temp, sigmap, fcoef, Ur !(gas_nr)
+  REAL(rknd), DIMENSION(:), ALLOCATABLE :: Tempb  !(gas_nr+1)
+  REAL(rknd), DIMENSION(:), ALLOCATABLE :: rhoarr, bcoef, Emit, nisource  !(gas_nr)
+  REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: sigmapg, sigmargleft, sigmargright, EmitProbg  !(gas_nr,gas_ng)
+  REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: sigmaL, PPL, sigmaR, PPR  !(gas_nr,gas_ng)
 
   CONTAINS
 

@@ -1,4 +1,4 @@
-MODULE constmod
+MODULE physconstmod
 
   USE kindmod
   IMPLICIT NONE
@@ -12,4 +12,4 @@ MODULE constmod
   REAL(rknd), DIMENSION(:), ALLOCATABLE :: Ppick
 
 
-END MODULE constmod
+END MODULE physconstmod

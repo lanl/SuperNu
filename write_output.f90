@@ -14,7 +14,7 @@ SUBROUTINE write_output
   WRITE(2,*) time
   WRITE(7,*) Eright/dt
 
-  DO ir = 1, nr
+  DO ir = 1, gas_nr
      WRITE(3,'(es16.8)',ADVANCE='NO') Temp(ir)
      WRITE(4,'(es16.8)',ADVANCE='NO') fcoef(ir)
   ENDDO

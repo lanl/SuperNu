@@ -10,58 +10,58 @@ SUBROUTINE xsections
   !Interpolating cell boundary temperatures
   Tempb(1)=Temp(1)
   !Tempb(1) = 1.0
-  DO ir = 2, nr
+  DO ir = 2, gas_nr
      Tempb(ir) = (Temp(ir)**4+Temp(ir-1)**4)/2.0
      Tempb(ir) = Tempb(ir)**0.25
   ENDDO
-  Tempb(nr+1)=Temp(nr)
+  Tempb(gas_nr+1)=Temp(gas_nr)
 
   !Calculating (or loading) opacities (could be done differently)
   !Picket fence (Planck):
   ! Picket-fence problem
   Ppick(1) = 1.0_rknd
   Ppick(2) = 0.0_rknd
-  DO ig = 3, ng
+  DO ig = 3, gas_ng
      Ppick(ig) = 0.0
   ENDDO
-  DO ir = 1, nr
+  DO ir = 1, gas_nr
      sigmapg(1,ir) = 0.10*rhoarr(ir) !/Temp(ir)**3
      sigmapg(2,ir) = 0.10*rhoarr(ir) !/Temp(ir)**3
-     DO ig = 3, ng
+     DO ig = 3, gas_ng
         sigmapg(ig,ir) = 1.0 !/Temp(ir)**3
      ENDDO
      sigmap(ir)=0.0
-     DO ig = 1, ng
+     DO ig = 1, gas_ng
         sigmap(ir) = sigmap(ir)+Ppick(ig)*sigmapg(ig,ir)
      ENDDO
      Um = bcoef(ir)*Temp(ir)
      beta = 4.0*Ur(ir)/Um
      fcoef(ir) = 1.0/(1.0+alpha*beta*lspeed*dt*sigmap(ir))
-     DO ig = 1, ng
+     DO ig = 1, gas_ng
         EmitProbg(ig,ir) = Ppick(ig)*sigmapg(ig,ir)/sigmap(ir)
      ENDDO
   ENDDO
   
   !Picket fence (Rosseland (same as Planck for P-fence)):
-  DO ir = 1, nr
+  DO ir = 1, gas_nr
      sigmargleft(1,ir) = 0.10*rhoarr(ir) !/Tempb(ir)**3
      sigmargleft(2,ir) = 0.10*rhoarr(ir) !/Tempb(ir)**3
-     DO ig = 3, ng
+     DO ig = 3, gas_ng
         sigmargleft(ig,ir) = 1.0 !/Tempb(ir)**3
      ENDDO
      sigmargright(1,ir) = 0.10*rhoarr(ir) !/Tempb(ir+1)**3
      sigmargright(2,ir) = 0.10*rhoarr(ir) !/Tempb(ir+1)**3
-     DO ig = 3, ng
+     DO ig = 3, gas_ng
         sigmargright(ig,ir) = 1.0 !/Tempb(ir+1)**3
      ENDDO
   ENDDO
 
   ! Calculating IMC-to-DDMC leakage probabilities/(angular polynomial)
   ! See Densmore, 2007
-  DO ir = 1, nr
+  DO ir = 1, gas_nr
      gg = (3.0*fcoef(ir))**0.5
      eps = (4.0/3.0)*gg/(1.0+0.7104*gg)
-     DO ig = 1, ng
+     DO ig = 1, gas_ng
         !Calculating for leakage from left
         !tt = sigmargleft(ig,ir)*drarr(ir)*(velno*1.0+velyes*texp)
         tt = sigmapg(ig,ir)*drarr(ir)*(velno*1.0+velyes*texp)
@@ -78,8 +78,8 @@ SUBROUTINE xsections
   ENDDO
 
   ! Calculating DDMC(-to-IMC) leakage opacities (vacuum outer bound)
-  DO ir = 1, nr
-     DO ig = 1, ng  
+  DO ir = 1, gas_nr
+     DO ig = 1, gas_ng  
         !Computing left-leakage opacities
         IF (ir==1) THEN
            !sigmaL(ig,ir)=0.5*PPL(ig,ir)/drarr(ir)
@@ -96,7 +96,7 @@ SUBROUTINE xsections
            sigmaL(ig,ir) = sigmaL(ig,ir)/tt
         ENDIF
         !Computing right-leakage opacities
-        IF (ir==nr) THEN
+        IF (ir==gas_nr) THEN
            !sigmaR(ig,ir)=0.5*PPR(ig,ir)/drarr(ir)
            sigmaR(ig,ir)=1.5*PPR(ig,ir)*rarr(ir+1)**2
            sigmaR(ig,ir)=sigmaR(ig,ir)/(dr3arr(ir)*(velno*1.0+velyes*texp))

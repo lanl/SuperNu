@@ -8,8 +8,8 @@ SUBROUTINE grids
 
   texp = 0.14
   rarr(1) = 0.0_rknd
-  DO ir = 1, nr
-     drarr(ir)=Lr/REAL(nr)
+  DO ir = 1, gas_nr
+     drarr(ir)=Lr/REAL(gas_nr)
      rarr(ir+1)=rarr(ir)+drarr(ir)
      dr3arr(ir)=rarr(ir+1)**3-rarr(ir)**3
   ENDDO
