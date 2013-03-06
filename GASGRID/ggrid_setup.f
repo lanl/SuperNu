@@ -2,7 +2,7 @@
 c     --------------------------------------
       use physconstmod
       use inputparmod
-      use ggridmod
+      use gasgridmod
       use miscmod, only:warn
       implicit none
       integer,intent(in) :: ncg_in,ntim_in

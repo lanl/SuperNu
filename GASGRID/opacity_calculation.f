@@ -8,7 +8,7 @@ c$    use omp_lib
       use bfxsmod, only:bfxs
       use bbxsmod, only:bb_xs,bb_nline
       use ionsmod
-      use ggridmod
+      use gasgridmod
       use miscmod
       use timingmod
       implicit none

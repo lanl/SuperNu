@@ -5,7 +5,7 @@ c     -----------------------
       use miscmod, only:warn
       use ionsmod
       use timestepmod
-      use ggridmod
+      use gasgridmod
       use inputparmod
       use rgridmod, only:rg_ncr
       use timingmod

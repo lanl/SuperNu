@@ -2,11 +2,8 @@
 c     ----------------------
       use mpimod, only:impi,impi0
       use ionsmod, only:ion_dealloc
-      use rgridmod, only:rgrid
       use bbxsmod
-      use ggridmod
-      use fluxmod
-      use rngenmod, only:rng_offset
+      use gasgridmod
       implicit none
 ************************************************************************
 * deallocate all that was used till the end of the program. Any

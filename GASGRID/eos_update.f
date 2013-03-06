@@ -1,6 +1,6 @@
       subroutine eos_update(do_output)
 c     --------------------------------
-      use ggridmod
+      use gasgridmod
       use ionsmod
       use timestepmod, only:tim_itim,tim_itc
       use timingmod

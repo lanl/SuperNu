@@ -12,9 +12,13 @@ MODULES = kindmod.o \
   ionsmod.o ffxsmod.o bfxsmod.o bbxsmod.o \
   inputparmod.o timestepmod.o \
   gasgridmod.o \
+  particlemod.o \
   timingmod.o
 
-LIBRARIES = GGRID/ggrid.a MISC/misc.a
+OBJFILES = grids.o initials.o xsections.o sourcenumbers.o vacancies.o interior_source.o advance.o material_update.o write_output.o globalallocations.o diffusion1.o transport1.o
+
+LIBRARIES = GASGRID/gasgrid.a MISC/misc.a
+LIBRARIES = MISC/misc.a
 
 SUBDIRS = $(dir $(LIBRARIES))
 
@@ -62,9 +66,20 @@ timestepmod.o: inputparmod.o physconstmod.o
 banner.o: version.inc
 dealloc_all.o: bbxsmod.o gasgridmod.o ionsmod.o mpimod.o
 read_bbxs_data.o: bbxsmod.o ionsmod.o physconstmod.o timingmod.o
-read_restart_file.o: inputparmod.o miscmod.o gasgridmod.o tempcorrmod.o timestepmod.o
 
-supernu.o: bfxsmod.o ffxsmod.o gasgridmod.o gstructmod.o inputparmod.o ionsmod.o mpimod.o physconstmod.o timestepmod.o timingmod.o
+#grids: gasgridmod.o timestepmod.o imputparmod.o
+#initials: gasgridmod.o particlemod.o timestepmod.o physconstmod.o inputparmod.o
+#xsections: gasgridmod.o timestepmod.o physconstmod.o inputparmod.o
+#sourcenumbers: gasgridmod.o timestepmod.o particlemod.o physconstmod.o inputparmod.o
+#vacancies:
+#interior_source:
+#advance:
+#material_update:
+#write_output:
+#globalallocations:
+
+supernu.o: bfxsmod.o ffxsmod.o gasgridmod.o inputparmod.o ionsmod.o mpimod.o physconstmod.o timestepmod.o timingmod.o \
+  $(OBJFILES)
 
 #
 #-- LIBRARIES
@@ -72,6 +87,7 @@ $(SUBDIRS):
 	$(MAKE) -C $@
 #
 #-- PROGRAMS
-supernu: $(MODULES) supernu.o banner.o \
-  read_bbxs_data.o read_restart_file.o write_restart_file.o \
+#supernu: $(MODULES) supernu.o banner.o \
+  read_bbxs_data.o \
   dealloc_all.o $(LIBRARIES)
+supernu: $(MODULES) $(OBJFILES) supernu.o banner.o $(LIBRARIES)

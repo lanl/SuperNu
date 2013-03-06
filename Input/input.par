@@ -1,10 +1,11 @@
 &scalarins
-!old t_elapsed = 4.32e6
+in_tfirst = 4
+in_tlast = 8
 in_lr = 1.4e8
 &end
 
 &arrayins
-in_nt = 100
+in_nt = 10
 in_nr = 50
 in_ng = 2
 in_isvelocity = .TRUE.

@@ -13,17 +13,11 @@ c
       subroutine bcast_permanent
 c     --------------------------
       use inputparmod, only:in_nomp
-      use rngenmod, only:rng_offset_all,rng_offset
       implicit none
 ************************************************************************
 * Broadcast the data that does not evolve over time (or temperature).
 * - stub
 ************************************************************************
-      allocate(rng_offset(0:in_nomp-1))
-      if(size(rng_offset_all,dim=1)/=in_nomp) stop
-     &  'bcast_perm_ser: rng_offset_all size wrong'
-      rng_offset = rng_offset_all
-      deallocate(rng_offset_all)
       end subroutine bcast_permanent
 c
 c

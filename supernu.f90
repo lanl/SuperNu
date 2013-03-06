@@ -52,7 +52,7 @@ PROGRAM driver
   CALL particle_init(in_npartmax,in_ns)
 !
 !-- SETUP GRIDS
-!-- setup gas grid (map gstruct to ggrid)
+!-- setup gas grid (map gstruct to gasgrid)
    CALL gasgrid_init(in_nr,in_ng)
 !! call ggrid_setup(ncg,tim_ntim)
 !-- read initial temperature structure from file

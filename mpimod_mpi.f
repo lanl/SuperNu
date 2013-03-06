@@ -16,10 +16,7 @@ c
 c     --------------------------
       use inputparmod
       use timestepmod, only:tim_ntim
-      use rgridmod
-      use rngenmod, only:rng_offset_all,rng_offset
-      use ggridmod
-      use fluxmod
+      use gasgridmod
       implicit none
 ************************************************************************
 * Broadcast the data that does not evolve over time (or temperature).
@@ -130,7 +127,7 @@ c
       subroutine bcast_mutable
 c     ------------------------
       use inputparmod
-      use ggridmod
+      use gasgridmod
       use timestepmod
       implicit none
 ************************************************************************
@@ -162,7 +159,7 @@ c
 c
       subroutine reduce_enabs
 c     -----------------------
-      use ggridmod
+      use gasgridmod
       use timestepmod
       use timingmod
       implicit none
@@ -205,59 +202,5 @@ c
 c
       end subroutine reduce_enabs
 c
-c
-c
-      subroutine reduce_fluxes
-c     ------------------------
-      use inputparmod
-      use fluxmod
-      use ggridmod
-      implicit none
-************************************************************************
-* Reduce the results from the last packet transport.
-* - flx_flux
-* - flx_iflux
-* - ggrid%enostor
-*
-* - flx_npckt
-* - flx_dxtotmax
-* - flx_nabsmax
-* - flx_nscatmax
-************************************************************************
-      integer :: i
-      real*8 :: help
-      integer :: isndmat(in_nwlf,in_ncostf,in_nphif)
-      real*8 :: sndmat(in_nwlf,in_ncostf,in_nphif)
-c
-c-- reduce fluxes
-c-- flx_flux
-      sndmat = flx_flux
-      i = in_nwlf*in_ncostf*in_nphif
-      call mpi_reduce(sndmat,flx_flux,i,MPI_REAL8,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c-- flx_iflux
-      isndmat = flx_iflux
-      i = in_nwlf*in_ncostf*in_nphif
-      call mpi_reduce(isndmat,flx_iflux,i,MPI_INTEGER,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-c-- reduce total variables
-      i = flx_npckt
-      call mpi_reduce(i,flx_npckt,1,MPI_INTEGER,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-c-- reduce real*8 max variables
-      help = flx_dxtotmax
-      call mpi_reduce(help,flx_dxtotmax,1,MPI_REAL8,MPI_MAX,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c-- reduce integer max variables
-      i = flx_nabsmax
-      call mpi_reduce(i,flx_nabsmax,1,MPI_INTEGER,MPI_MAX,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      i = flx_nscatmax
-      call mpi_reduce(i,flx_nscatmax,1,MPI_INTEGER,MPI_MAX,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      end subroutine reduce_fluxes
 c
       end module mpimod

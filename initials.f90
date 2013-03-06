@@ -39,7 +39,7 @@ SUBROUTINE initials
      prt_particles(ipart)%isvacant=.TRUE.
   ENDDO
 
-  t_elapsed = in_tlast - in_tfirst
+  t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
   tsp_dt = t_elapsed/tsp_nt
   tsp_time = RAND(in_seed)   !PRNG initial
   tsp_time = 0.0
