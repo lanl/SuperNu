@@ -1,6 +1,8 @@
 SUBROUTINE write_output
 
-  USE data_mod
+  USE timestepmod
+  USE gasgridmod
+  USE particlemod
   IMPLICIT NONE
 
   INTEGER(iknd) :: ir

@@ -1,6 +1,9 @@
 SUBROUTINE material_update
 
-  USE data_mod
+  USE gasgridmod
+  USE timestepmod
+  USE physconstmod
+  USE inputparmod
   IMPLICIT NONE
 
   INTEGER(iknd) :: ir

@@ -1,6 +1,11 @@
 SUBROUTINE interior_source
 
-  USE data_mod
+  USE gasgridmod
+  USE timestepmod
+  USE particlemod
+  USE physconstmod
+  USE inputparmod
+
   IMPLICIT NONE
 
   INTEGER(iknd) :: ir, ipart, ivac, ig, iig

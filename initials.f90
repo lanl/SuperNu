@@ -1,6 +1,11 @@
 SUBROUTINE initials
 
-  USE data_mod
+  USE gasgridmod
+  USE particlemod
+  USE timestepmod
+  USE physconstmod
+  USE inputparmod
+
   IMPLICIT NONE
 
   INTEGER(iknd) :: ir, ipart, ig

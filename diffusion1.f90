@@ -2,7 +2,11 @@
 
 SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
 
-  USE data_mod
+  USE gasgridmod
+  USE timestepmod
+  USE physconstmod
+  USE particlemod
+  USE inputparmod
   IMPLICIT NONE
   !
   INTEGER(iknd), INTENT(INOUT) :: z, g, hyparam

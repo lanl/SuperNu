@@ -1,6 +1,10 @@
 SUBROUTINE advance
 
-  USE data_mod
+  USE particlemod
+  USE timestepmod
+  USE gasgridmod
+  USE physconstmod
+  USE inputparmod
   IMPLICIT NONE
   
   INTEGER(iknd) :: ipart, difs, transps
