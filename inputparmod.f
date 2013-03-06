@@ -8,58 +8,52 @@ c     ------------------
 c-- gas grid
       INTEGER(iknd) :: in_nr  !# spatial grid in spherical geom
       INTEGER(iknd) :: in_ng  !# groups
+      LOGICAL :: in_isvelocity  !switch underlying grid between spatial+static to velocity+expanding
+      REAL(rknd) :: in_lr    !spatial length of the domain
 c
 c-- particles
       INTEGER(iknd) :: in_seed   !starting point of random number generator
       INTEGER(iknd) :: in_ns  !# source particles generated per time step
       INTEGER(iknd) :: in_npartmax  !total # particles allowed
+      LOGICAL :: in_puretran    !use IMC only instead of IMC+DDMC hybrid
+      REAL(rknd) :: in_alpha    !time centering control parameter [0,1]
 c
 c-- time step
-!old  REAL(rknd) :: t_elapsed
-      real(rknd) :: in_tfirst = 0. !first point in time evolution
-      real(rknd) :: in_tlast = 0.  !last point in time evolution
+      REAL(rknd) :: in_tfirst = 0. !first point in time evolution
+      REAL(rknd) :: in_tlast = 0.  !last point in time evolution
       INTEGER(iknd) :: in_nt = -1   !# time steps
 
-      REAL(rknd) :: in_lr       !spatial length of the domain
-      REAL(rknd) :: alpha    !time centering control parameter [0,1]
-      REAL(rknd) :: nidecay  !starting source strength for nickel decay energy
-
-      LOGICAL :: in_isvelocity  !switch underlying grid between spatial+static to velocity+expanding
-      LOGICAL :: puretran    !use IMC only instead of IMC+DDMC hybrid
-
-      ! Namelist groups
-      NAMELIST / scalarins / in_lr
-      NAMELIST / arrayins / in_nt, in_nr, in_ng, in_isvelocity
-      NAMELIST / mcins / in_ns, in_npartmax, alpha, in_seed
-      ! Reading namelist (from file "input")
-      OPEN(UNIT=1,FILE="input",STATUS="OLD",FORM="FORMATTED")
-      READ(UNIT=1,NML=scalarins)
-      READ(UNIT=1,NML=arrayins)
-      READ(UNIT=1,NML=mcins)
-
-
-c-- parallelization
-      logical :: in_grab_stdout = .false. !write stdout to file
-      integer :: in_nomp = 1       !# openmp threads
 c
-      real :: in_wlmin = 1000.     !lower wavelength boundary in output spectrum
-      real :: in_wlmax = 30000.    !upper wavelength boundary in output spectrum
+c-- parallelization
+      LOGICAL :: in_grab_stdout = .false. !write stdout to file
+      INTEGER(ikind) :: in_nomp = 1       !# openmp threads
+c
+c-- group structure
+      REAL(rknd) :: in_wlmin = 1000.     !lower wavelength boundary in output spectrum
+      REAL(rknd) :: in_wlmax = 30000.    !upper wavelength boundary in output spectrum
 c
 c-- opacity (cm^2/gram)
-      real :: in_opcapgam = .06    ![cm^2/g] extinction coefficient for gamma radiation
-      real :: in_opcap = .00       !additional gray opacity (for testing with in_nobbopac only!)
-      real :: in_epsline = 1.      !line absorption fraction (the rest is scattering)
-      logical :: in_nobbopac = .false.    !turn off bound-bound opacity
-      logical :: in_nobfopac = .false.    !turn off bound-bound opacity
-      logical :: in_noffopac = .false.    !turn off bound-bound opacity
+      REAL(rknd) :: in_opcapgam = .06    ![cm^2/g] extinction coefficient for gamma radiation
+      REAL(rknd) :: in_opcap = .00       !additional gray opacity (for testing with in_nobbopac only!)
+      REAL(rknd) :: in_epsline = 1.      !line absorption fraction (the rest is scattering)
+      LOGICAL :: in_nobbopac = .false.    !turn off bound-bound opacity
+      LOGICAL :: in_nobfopac = .false.    !turn off bound-bound opacity
+      LOGICAL :: in_noffopac = .false.    !turn off bound-bound opacity
+c
 c-- misc
-      character(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
-      character(4) :: in_pdensdump = 'off'   !off|one|each: write partial densities to file
-      character(3) :: in_tempcorrdump = 'off'!off|all: write temp correction results to file
+      CHARACTER(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
+      CHARACTER(4) :: in_pdensdump = 'off'   !off|one|each: write partial densities to file
 c
 c-- runtime parameter namelist
       namelist /inputpars/
-     & in_nr
+     & in_nr,in_ng,in_isvelocity,in_lr,
+     & in_seed,in_ns,in_npartmax,in_puretran,in_alpha,
+     & in_tfirst,in_tlast,in_nt,
+     & in_grab_stdout,in_nomp,
+     & in_wlmin,in_wlmax,
+     & in_opcapgam,in_opcap,in_epsline,in_nobbopac,in_nobfopac,
+     & in_noffopac,
+     & in_opacdump,in_pdensdump
 c
       public
       private inputpars

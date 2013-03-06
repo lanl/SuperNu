@@ -76,7 +76,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            denom2 = denom2+EmitProbg(ig,z)
         ENDDO
         g = iig
-        IF ((sigmapg(g,z)*drarr(z)*(velno*1.0+velyes*texp)>=5.0_rknd).AND.(puretran.EQV..FALSE.)) THEN
+        IF ((sigmapg(g,z)*drarr(z)*(velno*1.0+velyes*texp)>=5.0_rknd).AND.(in_puretran.EQV..FALSE.)) THEN
            hyparam = 2
            E = E*(1.0-velyes*r*mu/lspeed)
            E0 = E0*(1.0-velyes*r*mu/lspeed)
@@ -92,7 +92,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            done = .TRUE.
            Eright = Eright+E !*elabfact
         ! Checking if DDMC region right
-        ELSEIF ((sigmapg(g,z+1)*drarr(z+1)*(velno*1.0+velyes*texp)>=5.0_rknd).AND.(puretran.EQV..FALSE.)) THEN
+        ELSEIF ((sigmapg(g,z+1)*drarr(z+1)*(velno*1.0+velyes*texp)>=5.0_rknd).AND.(in_puretran.EQV..FALSE.)) THEN
            r1 = RAND()
            mu = (mu-velyes*r/lspeed)/(1.0-velyes*r*mu/lspeed)
            P = PPL(g,z+1)*(1.0+1.5*ABS(mu))
@@ -113,7 +113,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         ENDIF
      ELSE
         IF (z==1) THEN
-           IF ((sigmapg(g,z+1)*drarr(z+1)*(velno*1.0+velyes*texp)>=5.0_rknd).AND.(puretran.EQV..FALSE.)) THEN
+           IF ((sigmapg(g,z+1)*drarr(z+1)*(velno*1.0+velyes*texp)>=5.0_rknd).AND.(in_puretran.EQV..FALSE.)) THEN
               r1 = RAND()
               mu = (mu-velyes*r/lspeed)/(1.0-velyes*r*mu/lspeed)
               P = PPL(g,z+1)*(1.0+1.5*ABS(mu))
@@ -136,7 +136,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         !   done = .TRUE.
         !   Eleft = Eleft+E*elabfact
         ! Checking if DDMC region left   
-        ELSEIF ((sigmapg(g,z-1)*drarr(z-1)*(velno*1.0+velyes*texp)>=5.0_rknd).AND.(puretran.EQV..FALSE.)) THEN
+        ELSEIF ((sigmapg(g,z-1)*drarr(z-1)*(velno*1.0+velyes*texp)>=5.0_rknd).AND.(in_puretran.EQV..FALSE.)) THEN
            r1 = RAND()
            mu = (mu-velyes*r/lspeed)/(1.0-velyes*r*mu/lspeed)
            P = PPR(g,z-1)*(1.0+1.5*ABS(mu))

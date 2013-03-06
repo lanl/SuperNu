@@ -35,7 +35,7 @@ SUBROUTINE advance
         Ebirth => particles(ipart)%Ebirth
         isvacant => particles(ipart)%isvacant
 
-        IF (puretran.EQV..FALSE.) THEN
+        IF (in_puretran.EQV..FALSE.) THEN
            IF (sigmapg(gsrc,zsrc)*drarr(zsrc)*(velno*1.0+velyes*texp)<5.0_rknd) THEN
               IF (rtsrc == 2) THEN
                  r1 = RAND()

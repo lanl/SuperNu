@@ -39,7 +39,7 @@ SUBROUTINE xsections
      ENDDO
      Um = bcoef(ir)*Temp(ir)
      beta = 4.0*Ur(ir)/Um
-     fcoef(ir) = 1.0/(1.0+alpha*beta*lspeed*dt*sigmap(ir))
+     fcoef(ir) = 1.0/(1.0 + in_alpha*beta*lspeed*dt*sigmap(ir))
      DO ig = 1, gas_ng
         EmitProbg(ig,ir) = Ppick(ig)*sigmapg(ig,ir)/sigmap(ir)
      ENDDO

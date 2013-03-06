@@ -42,7 +42,7 @@ SUBROUTINE boundary_source
      particles(ivac)%rsrc = rarr(1)
      r0 = particles(ivac)%rsrc
 
-     IF ((sigmapg(ig,z0)*drarr(z0)*(velno*1.0+velyes*texp)<5.0_rknd).OR.(puretran.EQV..TRUE.)) THEN
+     IF ((sigmapg(ig,z0)*drarr(z0)*(velno*1.0+velyes*texp)<5.0_rknd).OR.(in_puretran.EQV..TRUE.)) THEN
         !transport => lab frame quantities
         particles(ivac)%Esrc = Esurfpart*(1.0+velyes*r0*mu0/lspeed)
         particles(ivac)%Ebirth = Esurfpart*(1.0+velyes*r0*mu0/lspeed)

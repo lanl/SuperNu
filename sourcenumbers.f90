@@ -19,7 +19,7 @@ SUBROUTINE sourcenumbers
 
   ! External source
   DO ir = 1, 39
-     nisource(ir) = (rhoarr(ir)/56.0)*Nav*nidecay
+     nisource(ir) = (rhoarr(ir)/56.0)*Nav*gas_nidecay
   ENDDO
   !
   DO ir = 40, gas_nr!9*gas_nr/10, gas_nr

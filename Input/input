@@ -1,5 +1,5 @@
 &scalarins
-t_elapsed = 4.32e6
+!old t_elapsed = 4.32e6
 in_lr = 1.4e8
 &end
 
@@ -13,6 +13,6 @@ in_isvelocity = .TRUE.
 &mcins
 in_ns = 100000
 in_npartmax = 10000000
-alpha = 1.0
+in_alpha = 1.0
 in_seed = 1984117
 &end

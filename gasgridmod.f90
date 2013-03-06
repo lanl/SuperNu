@@ -7,6 +7,8 @@ MODULE gasgridmod
   INTEGER(iknd) :: gas_ng = 0
   INTEGER(iknd) :: velno, velyes
 
+  REAL(rknd) :: gas_nidecay = 1.73*(1.6022e-6)  !erg/s/g  !this value is used in the first iteration
+
   REAL(rknd) :: Emat
 
   REAL(rknd), DIMENSION(:), ALLOCATABLE :: rarr  !(gas_nr+1)
@@ -16,6 +18,7 @@ MODULE gasgridmod
   REAL(rknd), DIMENSION(:), ALLOCATABLE :: rhoarr, bcoef, Emit, nisource  !(gas_nr)
   REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: sigmapg, sigmargleft, sigmargright, EmitProbg  !(gas_nr,gas_ng)
   REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: sigmaL, PPL, sigmaR, PPR  !(gas_nr,gas_ng)
+
 
   CONTAINS
 

@@ -30,11 +30,11 @@ SUBROUTINE material_update
   tauCo = 111.3_rknd*86400.0_rknd
   tauNi = 8.8_rknd*86400.0_rknd
   
-  nidecay = (1.6022e-6)*1.87*(1.0_rknd-EXP(-(time+dt)/tauNi))
-  nidecay = nidecay+(1.6022e-6)*1.87*tauCo*(1.0_rknd-EXP(-(time+dt)/tauCo))/(tauCo-tauNi)
-  nidecay = nidecay-(1.6022e-6)*1.87*(1.0_rknd-EXP(-time/tauNi))
-  nidecay = nidecay-(1.6022e-6)*1.87*tauCo*(1.0_rknd-EXP(-time/tauCo))/(tauCo-tauNi)
-  nidecay = nidecay/dt
-  !WRITE(*,*) nidecay
+  gas_nidecay = (1.6022e-6)*1.87*(1.0_rknd-EXP(-(time+dt)/tauNi))
+  gas_nidecay = gas_nidecay+(1.6022e-6)*1.87*tauCo*(1.0_rknd-EXP(-(time+dt)/tauCo))/(tauCo-tauNi)
+  gas_nidecay = gas_nidecay-(1.6022e-6)*1.87*(1.0_rknd-EXP(-time/tauNi))
+  gas_nidecay = gas_nidecay-(1.6022e-6)*1.87*tauCo*(1.0_rknd-EXP(-time/tauCo))/(tauCo-tauNi)
+  gas_nidecay = gas_nidecay/dt
+  !WRITE(*,*) gas_nidecay
 
 END SUBROUTINE material_update

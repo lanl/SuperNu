@@ -22,7 +22,7 @@ PROGRAM driver
      velno = 1
   ENDIF
   ! Setting transport option
-  puretran = .FALSE.
+  in_puretran = .FALSE.
 
   CALL globalallocations
   CALL grids
