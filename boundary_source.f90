@@ -42,7 +42,7 @@ SUBROUTINE boundary_source
      prt_particles(ivac)%rsrc = gas_rarr(1)
      r0 = prt_particles(ivac)%rsrc
 
-     IF ((gas_sigmapg(ig,z0)*gas_drarr(z0)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0_rknd).OR.(puretran.EQV..TRUE.)) THEN
+     IF ((gas_sigmapg(ig,z0)*gas_drarr(z0)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0_rknd).OR.(in_puretran.EQV..TRUE.)) THEN
         !transport => lab frame quantities
         prt_particles(ivac)%Esrc = Esurfpart*(1.0+gas_velyes*r0*mu0/pc_c)
         prt_particles(ivac)%Ebirth = Esurfpart*(1.0+gas_velyes*r0*mu0/pc_c)

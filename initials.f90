@@ -9,7 +9,7 @@ SUBROUTINE initials
   IMPLICIT NONE
 
   INTEGER(iknd) :: ir, ipart, ig
-  REAL(rknd) :: Um
+  REAL(rknd) :: Um, t_elapsed
 
   prt_erad = 0.0   !Total radiation energy
   prt_einit = 0.0  !Total initial energy
@@ -22,7 +22,6 @@ SUBROUTINE initials
   !      gas_temp(ir) = 1.e-6
   !   ENDIF
   !ENDDO
-  nidecay = 1.73*(1.6022e-6)  !erg/s/g
 
   DO ir = 1, gas_nr
      gas_rhoarr(ir) = 2.4186e8 !g/cm^3
@@ -40,8 +39,9 @@ SUBROUTINE initials
      prt_particles(ipart)%isvacant=.TRUE.
   ENDDO
 
+  t_elapsed = in_tlast - in_tfirst
   tsp_dt = t_elapsed/tsp_nt
-  tsp_time = RAND(seed)   !PRNG initial
+  tsp_time = RAND(in_seed)   !PRNG initial
   tsp_time = 0.0
 
 END SUBROUTINE initials 

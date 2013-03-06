@@ -35,7 +35,7 @@ SUBROUTINE advance
         Ebirth => prt_particles(ipart)%Ebirth
         isvacant => prt_particles(ipart)%isvacant
 
-        IF (puretran.EQV..FALSE.) THEN
+        IF (in_puretran.EQV..FALSE.) THEN
            IF (gas_sigmapg(gsrc,zsrc)*gas_drarr(zsrc)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0_rknd) THEN
               IF (rtsrc == 2) THEN
                  r1 = RAND()
@@ -53,7 +53,7 @@ SUBROUTINE advance
         ENDIF
 
         alph2 = 0.75  !>=0,<=1
-        IF ((isvelocity.EQV..TRUE.).AND.(rtsrc==1)) THEN
+        IF ((in_isvelocity.EQV..TRUE.).AND.(rtsrc==1)) THEN
            rsrc = rsrc*tsp_texp/(tsp_texp+alph2*tsp_dt)
            IF (rsrc < gas_rarr(zsrc)) THEN
               zsrc = zsrc-1
@@ -72,7 +72,7 @@ SUBROUTINE advance
            ENDIF
         ENDDO
 
-        IF ((isvelocity.EQV..TRUE.).AND.(rtsrc==1)) THEN
+        IF ((in_isvelocity.EQV..TRUE.).AND.(rtsrc==1)) THEN
            rsrc = rsrc*tsp_texp/(tsp_texp+(1.0-alph2)*tsp_dt)
            IF (rsrc < gas_rarr(zsrc)) THEN
               zsrc = zsrc-1

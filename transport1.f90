@@ -76,7 +76,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            denom2 = denom2+gas_emitprobg(ig,z)
         ENDDO
         g = iig
-        IF ((gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd).AND.(puretran.EQV..FALSE.)) THEN
+        IF ((gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd).AND.(in_puretran.EQV..FALSE.)) THEN
            hyparam = 2
            E = E*(1.0-gas_velyes*r*mu/pc_c)
            E0 = E0*(1.0-gas_velyes*r*mu/pc_c)
@@ -92,7 +92,8 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            prt_done = .TRUE.
            prt_eright = prt_eright+E !*elabfact
         ! Checking if DDMC region right
-        ELSEIF ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd).AND.(puretran.EQV..FALSE.)) THEN
+        ELSEIF ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd) &
+                 .AND.(in_puretran.EQV..FALSE.)) THEN
            r1 = RAND()
            mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
            P = gas_ppl(g,z+1)*(1.0+1.5*ABS(mu))
@@ -113,7 +114,8 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         ENDIF
      ELSE
         IF (z==1) THEN
-           IF ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd).AND.(puretran.EQV..FALSE.)) THEN
+           IF ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd) &
+                   .AND.(in_puretran.EQV..FALSE.)) THEN
               r1 = RAND()
               mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
               P = gas_ppl(g,z+1)*(1.0+1.5*ABS(mu))
@@ -136,7 +138,8 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         !   prt_done = .TRUE.
         !   prt_eleft = prt_eleft+E*elabfact
         ! Checking if DDMC region left   
-        ELSEIF ((gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd).AND.(puretran.EQV..FALSE.)) THEN
+        ELSEIF ((gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd) &
+             .AND.(in_puretran.EQV..FALSE.)) THEN
            r1 = RAND()
            mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
            P = gas_ppr(g,z-1)*(1.0+1.5*ABS(mu))

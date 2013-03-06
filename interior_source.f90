@@ -54,7 +54,7 @@ SUBROUTINE interior_source
            prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = gas_emit(ir)/REAL(prt_nvol(ir),rknd)
-           IF ((gas_sigmapg(iig,ir)*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0_rknd).OR.(puretran.EQV..TRUE.)) THEN
+           IF ((gas_sigmapg(iig,ir)*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0_rknd).OR.(in_puretran.EQV..TRUE.)) THEN
               prt_particles(ivac)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
               prt_particles(ivac)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
               prt_particles(ivac)%musrc = (mu0+gas_velyes*r0/pc_c)/(1.0+gas_velyes*r0*mu0/pc_c)
