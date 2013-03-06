@@ -1,6 +1,10 @@
 SUBROUTINE sourcenumbers
 
-  USE data_mod
+  USE gasgridmod
+  USE timestepmod
+  USE particlemod
+  USE physconstmod
+  USE inputparmod
   IMPLICIT NONE
 
   INTEGER(iknd) :: ir, nsr

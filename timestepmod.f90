@@ -9,6 +9,7 @@ MODULE timestepmod
   CONTAINS
 
     SUBROUTINE timestep_init(nt)
+      INTEGER(iknd) nt
       tsp_nt = nt
     END SUBROUTINE timestep_init
     

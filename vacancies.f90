@@ -1,6 +1,6 @@
 SUBROUTINE vacancies
 
-  USE data_mod
+  USE particlemod
   IMPLICIT NONE
 
   INTEGER(iknd) :: ipart, ivac

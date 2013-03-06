@@ -1,7 +1,9 @@
 PROGRAM driver
 
-  USE inputmod
+  USE inputparmod
   USE timestepmod
+  USE gasgridmod
+  USE particlemod
   IMPLICIT NONE
 
   INTEGER(iknd) :: it, ipart
@@ -18,7 +20,7 @@ PROGRAM driver
   READ(UNIT=1,NML=mcins)
 
   CALL gasgrid_init(in_nr,in_ng)
-  CALL time_init(in_nt)
+  CALL timestep_init(in_nt)
   CALL particle_init(in_Npartmax,in_Ns)
   
   ! Setting velocity option
@@ -38,7 +40,7 @@ PROGRAM driver
 
   CALL CPU_TIME(time_begin)
   tn = 1
-  DO it = 1, tsp_nt !to be tsp_nt
+  DO it = 1, tsp_nt 
      WRITE(*,*) 'timestep:',it
      !Calculating opacities (for IMC(transport) and DDMC(diffusion))
      CALL xsections

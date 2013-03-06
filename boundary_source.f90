@@ -1,6 +1,10 @@
 SUBROUTINE boundary_source
 
-  USE data_mod
+  USE particlemod
+  USE timestepmod
+  USE physconstmod
+  USE gasgridmod
+  USE inputparmod
   IMPLICIT NONE
 
   INTEGER(iknd) :: ipart, ivac, ig, z0

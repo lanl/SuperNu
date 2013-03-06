@@ -2,7 +2,11 @@
 
 SUBROUTINE diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
 
-  USE data_mod
+  USE gasgridmod
+  USE particlemod
+  USE timestepmod
+  USE inputparmod
+  USE physconstmod
   IMPLICIT NONE
   !
   INTEGER(iknd), INTENT(INOUT) :: z, g, hyparam

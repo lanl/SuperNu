@@ -1,5 +1,8 @@
 SUBROUTINE grids
-  USE data_mod
+
+  USE gasgridmod
+  USE timestepmod
+  USE inputparmod
   IMPLICIT NONE
 
   ! This subroutine creates the spatial grid (or velocity grid if velyes=1)

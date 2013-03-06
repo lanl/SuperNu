@@ -1,6 +1,9 @@
 SUBROUTINE globalallocations
 
-  USE data_mod
+  USE particlemod
+  USE gasgridmod
+  USE physconstmod
+
   IMPLICIT NONE
   ! Opacity in cm^-1
 

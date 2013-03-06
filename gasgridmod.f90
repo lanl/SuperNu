@@ -20,6 +20,7 @@ MODULE gasgridmod
   CONTAINS
 
   SUBROUTINE gasgrid_init(nr,ng)
+    INTEGER(iknd) :: nr, ng
     gas_nr = nr
     gas_ng = ng
   END SUBROUTINE gasgrid_init
