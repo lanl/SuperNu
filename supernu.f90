@@ -1,6 +1,6 @@
 PROGRAM driver
 
-!!use mpimod
+  use mpimod
   USE inputparmod
   USE timestepmod
   USE gasgridmod
@@ -12,22 +12,22 @@ PROGRAM driver
 !!use timingmod
 
   IMPLICIT NONE
-
-  INTEGER(iknd) :: it, ipart
-  REAL(rknd) :: time_begin, time_end
-!!logical :: lmpi0 = .false. !master rank flag
-!!real :: t0,t1  !timing
 !***********************************************************************
 ! Main routine
 !
 ! todo:
 !  - dummy (drr, 2013/mar/05)
 !***********************************************************************
+  INTEGER(iknd) :: it, ipart
+  REAL(rknd) :: time_begin, time_end
+  integer :: ierr
+  logical :: lmpi0 = .false. !master rank flag
+  real :: t0,t1  !timing
 !
 !-- mpi initialization
-!!call mpi_init(ierr) !MPI
-!!call mpi_comm_rank(MPI_COMM_WORLD,impi,ierr) !MPI
-!!call mpi_comm_size(MPI_COMM_WORLD,nmpi,ierr) !MPI
+  call mpi_init(ierr) !MPI
+  call mpi_comm_rank(MPI_COMM_WORLD,impi,ierr) !MPI
+  call mpi_comm_size(MPI_COMM_WORLD,nmpi,ierr) !MPI
 !
 !--
 !-- SETUP SIMULATION:
@@ -39,11 +39,11 @@ PROGRAM driver
 !! lmpi0 = .true. !master rank flag
 !! call time(t0)
 !-- startup message
-!! call banner
+  call banner
 !-- read runtime parameters
-!! call read_inputpars
+  call read_inputpars
 !-- parse runtime parameters
-!! call parse_inputpars(nmpi)
+  call parse_inputpars(nmpi)
 !
 !-- time step init
   CALL timestep_init(in_nt)

@@ -36,7 +36,7 @@ c
      & "=============================================================="
                                                     
 c
-      write(6,*) "Sedona clone"
+      write(6,*) "Radiation Transport Code"
       write(6,*) "by Ryan T. Wollaeger and Daniel R. van Rossum"
       write(6,*) "(2013/mar/05)"
       write(6,*)
