@@ -17,7 +17,7 @@ SUBROUTINE boundary_source
      ivac = prt_vacantarr(ipart)
      !Picket fence group sampling
      r1 = RAND()
-     IF (r1 <= Ppick(1)) THEN
+     IF (r1 <= gas_ppick(1)) THEN
         prt_particles(ivac)%gsrc = 1
      ELSE
         prt_particles(ivac)%gsrc = 2

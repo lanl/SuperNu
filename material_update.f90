@@ -16,9 +16,9 @@ SUBROUTINE material_update
      !WRITE(*,*) dtemp
      gas_temp(ir) = gas_temp(ir)+dtemp
      !gas_ur(ir)=dtemp/(tsp_dt*pc_c*gas_sigmap(ir))
-     !gas_temp(ir) = (gas_ur(ir)/a_coef)**(0.25_rknd)
-     !gas_bcoef(ir) = 2.0*a_coef*gas_temp(ir)**3
-     gas_ur(ir) = a_coef*gas_temp(ir)**4
+     !gas_temp(ir) = (gas_ur(ir)/pc_acoef)**(0.25_rknd)
+     !gas_bcoef(ir) = 2.0*pc_acoef*gas_temp(ir)**3
+     gas_ur(ir) = pc_acoef*gas_temp(ir)**4
      Um = gas_bcoef(ir)*gas_temp(ir)
      gas_emat = gas_emat + Um*4.0*pc_pi*gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**3)/3.0
      !Calculating expansion losses (if any)

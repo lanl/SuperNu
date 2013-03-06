@@ -26,7 +26,7 @@ c-- time step
 c
 c-- parallelization
       LOGICAL :: in_grab_stdout = .false. !write stdout to file
-      INTEGER(ikind) :: in_nomp = 1       !# openmp threads
+      INTEGER(iknd) :: in_nomp = 1       !# openmp threads
 c
 c-- group structure
       REAL(rknd) :: in_wlmin = 1000d0     !lower wavelength boundary in output spectrum
@@ -84,7 +84,7 @@ c
 c
       subroutine parse_inputpars(nmpi)
 c     --------------------------------
-      use miscmod, only:warn
+!!    use miscmod, only:warn
 c$    use omp_lib
       implicit none
       integer,intent(in) :: nmpi
@@ -123,27 +123,9 @@ c
       if(in_nt<1) stop 'in_nt invalid'
       if(in_tfirst<=0d0) stop 'in_tfirst invalid'
       if(in_tlast<in_tfirst) stop 'in_tlast invalid'
-      if(trim(in_enoresrv_init)=='locdep') then
-      elseif(trim(in_enoresrv_init)=='restart') then
-      elseif(trim(in_enoresrv_init)=='off') then
-       call warn('read_inputpars','decay energy before tfirst dropped!')
-      else
-       stop 'in_enoresrv_init invalid'
-      endif
-c
-      if(in_ntc<0) stop 'in_ntc invalid'
 c
       if(in_nr<=0) stop 'in_nr invalid'
-      if(in_l2packet<0) stop 'in_l2packet < 0'
-      if(in_l2packet>40) stop 'in_l2packet > 40'
 c
-      if(in_ndim<=0 .or. in_ndim>3) stop 'in_ndim invalid'
-      if(in_nwlg<=0) stop 'in_nwlg invalid'
-      if(in_niwlem<=0) stop 'in_niwlem invalid'
-c
-      if(in_nwlf<=0) stop 'in_nwlf invalid'
-      if(in_ncostf<=0) stop 'in_ncostf invalid'
-      if(in_nphif<=0) stop 'in_nphif invalid'
       if(in_wlmin<0d0) stop 'in_wlmin invalid'
       if(in_wlmax<=0d0 .or. in_wlmax<in_wlmin) stop 'in_wlmax invalid'
 c
@@ -151,21 +133,21 @@ c
       if(in_opcap<0d0) then
        stop 'in_opcap invalid'
       elseif(in_opcap>0d0) then
-       call warn('read_inputpars',
-     &   'gray opacity added! For testing uses only!')
+!!     call warn('read_inputpars',
+!!   &   'gray opacity added! For testing uses only!')
       endif
       if(in_epsline<0d0 .or. in_epsline>1d0) stop 'in_epsline invalid'
 c
-      if(in_nobbopac) call warn('read_inputpars','ff opacity disabled!')
-      if(in_nobfopac) call warn('read_inputpars','bf opacity disabled!')
-      if(in_noffopac) call warn('read_inputpars','bb opacity disabled!')
+!!    if(in_nobbopac) call warn('read_inputpars','ff opacity disabled!')
+!!    if(in_nobfopac) call warn('read_inputpars','bf opacity disabled!')
+!!    if(in_noffopac) call warn('read_inputpars','bb opacity disabled!')
 c
       if(trim(in_opacdump)=='off') then
       elseif(trim(in_opacdump)=='one') then
       elseif(trim(in_opacdump)=='each') then
       elseif(trim(in_opacdump)=='all') then
-       call warn('read_inputpars',
-     &   "in_opacdump=='all' will generate a big data file!")
+!!     call warn('read_inputpars',
+!!   &   "in_opacdump=='all' will generate a big data file!")
       else
        stop 'in_opacdump invalid'
       endif
@@ -176,32 +158,6 @@ c
       else
        stop 'in_pdensdump invalid'
       endif
-c
-      if(trim(in_tempcorrdump)=='off') then
-      elseif(trim(in_tempcorrdump)=='all') then
-      else
-       stop 'in_tempcorrdump invalid'
-      endif!}}}
-c
-c-- override namelist values
-      if(.not.in_force3dflux) then!{{{
-       if(in_ndim==1 .and. (in_ncostf/=1 .or. in_nphif/=1)) then
-        write(6,*)
-     &    'override namelist: in_ndim==1 => in_ncostf=1, in_nphif=1'
-        in_ncostf = 1
-        in_nphif = 1
-       elseif(in_ndim==2 .and. in_nphif/=1) then
-        write(6,*) 'override namelist: in_ndim==2 => in_nphif=1'
-        in_nphif = 1
-       endif
-      endif
-c
-      if(in_notimedep) then
-       call warn('read_inputpars',
-     &   'in_notimedep selected (generate packets thermally)')
-       if(trim(in_enoresrv_init)/='off') write(6,*)
-     &   "override namelist: in_notimedep => in_enoresrv='off'"
-      endif!}}}
 c
 c-- set the number of threads
 c$    if(.false.) then!{{{

@@ -17,6 +17,8 @@ MODULE gasgridmod
   REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: gas_sigmapg, gas_sigmargleft, gas_sigmargright, gas_emitprobg  !(gas_nr,gas_ng)
   REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: gas_sigmal, gas_ppl, gas_sigmar, gas_ppr  !(gas_nr,gas_ng)
 
+  REAL(rknd), DIMENSION(:), ALLOCATABLE :: gas_ppick
+
   CONTAINS
 
   SUBROUTINE gasgrid_init(nr,ng)

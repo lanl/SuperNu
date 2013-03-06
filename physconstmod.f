@@ -6,12 +6,12 @@ c     -------------------
 * physical constants and conversion factors
 ************************************************************************
 c-- old, for compatibility only
-      REAL(rknd) :: pc_pi = 4.0*ATAN(1.0) !old, for compatibility only
-      REAL(rknd) :: pc_c = 2.998e10  !old, for compatibility only
-      REAL(rknd) :: pc_navo = 6.022e23  !old, for compatibility only
+      real*8,parameter :: pc_pi = 4.0*ATAN(1.0) !old, for compatibility only
+      real*8,parameter :: pc_c = 2.998e10  !old, for compatibility only
+      real*8,parameter :: pc_navo = 6.022e23  !old, for compatibility only
 c
 c-- LOOK OUT KEV UNITS!!!
-      REAL(rknd) :: a_coef = 1.371e14  !radiation constant (erg/Kev^4/cm^3)
+      real*8,parameter :: pc_acoef = 1.371e14  !radiation constant (erg/Kev^4/cm^3)
 c
 c
 c-- physical constants
