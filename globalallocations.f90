@@ -35,6 +35,6 @@ SUBROUTINE globalallocations
 
   ALLOCATE(particles(prt_Npartmax))
 
-  ALLOCATE(Ppick(gas_ng))  !gas_ng=2 for to temp picket fence verification
+  ALLOCATE(gas_ppick(gas_ng))  !gas_ng=2 for to temp picket fence verification
 
 END SUBROUTINE globalallocations

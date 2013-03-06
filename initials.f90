@@ -26,13 +26,13 @@ SUBROUTINE initials
   DO ir = 1, gas_nr
      rhoarr(ir) = 2.4186e8 !g/cm^3
      Temp(ir) = 1.e3 !861.73
-     !bcoef(ir) = 2.0*a_coef*Temp(ir)**3
+     !bcoef(ir) = 2.0*pc_acoef*Temp(ir)**3
 
      bcoef(ir) = 0.4*(1.e12*rhoarr(ir))*580.25_rknd
 
-     Ur(ir) = a_coef*Temp(ir)**4
+     Ur(ir) = pc_acoef*Temp(ir)**4
      Um = bcoef(ir)*Temp(ir)
-     Einit = Einit + Um*4*pi*dr3arr(ir)*(velno*1.0+velyes*texp**3)/3.0
+     Einit = Einit + Um*4*pc_pi*dr3arr(ir)*(velno*1.0+velyes*texp**3)/3.0
   ENDDO
   Einp = Einit
   DO ipart = 1, prt_Npartmax

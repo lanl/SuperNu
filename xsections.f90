@@ -22,10 +22,10 @@ SUBROUTINE xsections
   !Calculating (or loading) opacities (could be done differently)
   !Picket fence (Planck):
   ! Picket-fence problem
-  Ppick(1) = 1.0_rknd
-  Ppick(2) = 0.0_rknd
+  gas_ppick(1) = 1.0_rknd
+  gas_ppick(2) = 0.0_rknd
   DO ig = 3, gas_ng
-     Ppick(ig) = 0.0
+     gas_ppick(ig) = 0.0
   ENDDO
   DO ir = 1, gas_nr
      sigmapg(1,ir) = 0.10*rhoarr(ir) !/Temp(ir)**3
@@ -35,13 +35,13 @@ SUBROUTINE xsections
      ENDDO
      sigmap(ir)=0.0
      DO ig = 1, gas_ng
-        sigmap(ir) = sigmap(ir)+Ppick(ig)*sigmapg(ig,ir)
+        sigmap(ir) = sigmap(ir)+gas_ppick(ig)*sigmapg(ig,ir)
      ENDDO
      Um = bcoef(ir)*Temp(ir)
      beta = 4.0*Ur(ir)/Um
-     fcoef(ir) = 1.0/(1.0 + in_alpha*beta*lspeed*dt*sigmap(ir))
+     fcoef(ir) = 1.0/(1.0 + in_alpha*beta*pc_c*dt*sigmap(ir))
      DO ig = 1, gas_ng
-        EmitProbg(ig,ir) = Ppick(ig)*sigmapg(ig,ir)/sigmap(ir)
+        EmitProbg(ig,ir) = gas_ppick(ig)*sigmapg(ig,ir)/sigmap(ir)
      ENDDO
   ENDDO
   

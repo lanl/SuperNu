@@ -72,6 +72,6 @@ $(SUBDIRS):
 	$(MAKE) -C $@
 #
 #-- PROGRAMS
-supernu: $(MODULES) snipper.o banner.o \
+supernu: $(MODULES) supernu.o banner.o \
   read_bbxs_data.o read_restart_file.o write_restart_file.o \
   dealloc_all.o $(LIBRARIES)

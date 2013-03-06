@@ -55,9 +55,9 @@ SUBROUTINE interior_source
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = Emit(ir)/REAL(Nvol(ir),rknd)
            IF ((sigmapg(iig,ir)*drarr(ir)*(velno*1.0+velyes*texp)<5.0_rknd).OR.(in_puretran.EQV..TRUE.)) THEN
-              particles(ivac)%Esrc = Ep0*(1.0+velyes*r0*mu0/lspeed)
-              particles(ivac)%Ebirth = Ep0*(1.0+velyes*r0*mu0/lspeed)
-              particles(ivac)%musrc = (mu0+velyes*r0/lspeed)/(1.0+velyes*r0*mu0/lspeed)
+              particles(ivac)%Esrc = Ep0*(1.0+velyes*r0*mu0/pc_c)
+              particles(ivac)%Ebirth = Ep0*(1.0+velyes*r0*mu0/pc_c)
+              particles(ivac)%musrc = (mu0+velyes*r0/pc_c)/(1.0+velyes*r0*mu0/pc_c)
               particles(ivac)%rtsrc = 1
            ELSE
               particles(ivac)%Esrc = Ep0

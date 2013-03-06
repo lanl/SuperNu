@@ -4,8 +4,9 @@
 %: %.o
 	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)
 
+#-- fixed format
 %.o: %.f
-	$(FC) $(FCFLAGS) -c $<
+	$(FC) $(FCFLAGS) $(FCFLAGS_FF) -c $<
 
 %.o: %.f90
 	$(FC) $(FCFLAGS) -c $<

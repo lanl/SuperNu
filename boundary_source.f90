@@ -17,7 +17,7 @@ SUBROUTINE boundary_source
      ivac = vacantarr(ipart)
      !Picket fence group sampling
      r1 = RAND()
-     IF (r1 <= Ppick(1)) THEN
+     IF (r1 <= gas_ppick(1)) THEN
         particles(ivac)%gsrc = 1
      ELSE
         particles(ivac)%gsrc = 2
@@ -44,9 +44,9 @@ SUBROUTINE boundary_source
 
      IF ((sigmapg(ig,z0)*drarr(z0)*(velno*1.0+velyes*texp)<5.0_rknd).OR.(in_puretran.EQV..TRUE.)) THEN
         !transport => lab frame quantities
-        particles(ivac)%Esrc = Esurfpart*(1.0+velyes*r0*mu0/lspeed)
-        particles(ivac)%Ebirth = Esurfpart*(1.0+velyes*r0*mu0/lspeed)
-        particles(ivac)%musrc = (mu0+velyes*r0/lspeed)/(1.0+velyes*r0*mu0/lspeed)
+        particles(ivac)%Esrc = Esurfpart*(1.0+velyes*r0*mu0/pc_c)
+        particles(ivac)%Ebirth = Esurfpart*(1.0+velyes*r0*mu0/pc_c)
+        particles(ivac)%musrc = (mu0+velyes*r0/pc_c)/(1.0+velyes*r0*mu0/pc_c)
         particles(ivac)%rtsrc = 1
      ELSE
         !diffusion => comoving frame quantities (with diffuse reflection accounted)

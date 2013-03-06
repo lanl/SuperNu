@@ -19,6 +19,9 @@ MODULE gasgridmod
   REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: sigmapg, sigmargleft, sigmargright, EmitProbg  !(gas_nr,gas_ng)
   REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: sigmaL, PPL, sigmaR, PPR  !(gas_nr,gas_ng)
 
+  ! Picket-fence probabilities
+  REAL(rknd), DIMENSION(:), ALLOCATABLE :: gas_ppick
+
 
   CONTAINS
 

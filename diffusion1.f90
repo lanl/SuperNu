@@ -22,7 +22,7 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   denom = sigmaL(g,z)+sigmaR(g,z)+fcoef(z)*sigmapg(g,z)
   denom = denom+(1.0-EmitProbg(g,z))*(1.0-fcoef(z))*sigmapg(g,z)
   r1 = RAND()
-  tau = ABS(LOG(r1)/(lspeed*denom))
+  tau = ABS(LOG(r1)/(pc_c*denom))
   tcensus = time+dt-t
   ddmct = MIN(tau,tcensus)
   E = E*(velno*1.0+velyes*EXP(-ddmct/texp))
@@ -50,9 +50,9 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            r1 = RAND()
            r2 = RAND()
            mu = -MAX(r1,r2)
-           mu = (mu+velyes*r/lspeed)/(1.0+velyes*r*mu/lspeed)
-           E = E/(1.0-velyes*r*mu/lspeed)
-           E0 = E0/(1.0-velyes*r*mu/lspeed)
+           mu = (mu+velyes*r/pc_c)/(1.0+velyes*r*mu/pc_c)
+           E = E/(1.0-velyes*r*mu/pc_c)
+           E0 = E0/(1.0-velyes*r*mu/pc_c)
         ENDIF
      ELSEIF (PL<=r1 .AND. r1<PL+PR) THEN
         IF (z == gas_nr) THEN
@@ -61,7 +61,7 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            r1 = RAND()
            r2 = RAND()
            mu = MAX(r1,r2)
-           Eright = Eright+E*(1.0+velyes*rarr(gas_nr+1)*mu/lspeed)
+           Eright = Eright+E*(1.0+velyes*rarr(gas_nr+1)*mu/pc_c)
         ELSEIF (sigmapg(g,z+1)*drarr(z+1)*(velno*1.0+velyes*texp)>=5.0_rknd) THEN
            z = z+1
         ELSE
@@ -71,16 +71,16 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            r1 = RAND()
            r2 = RAND()
            mu = MAX(r1,r2)
-           mu = (mu+velyes*r/lspeed)/(1.0+r*mu/lspeed)
-           E = E/(1.0-velyes*r*mu/lspeed)
-           E0 = E0/(1.0-velyes*r*mu/lspeed)
+           mu = (mu+velyes*r/pc_c)/(1.0+r*mu/pc_c)
+           E = E/(1.0-velyes*r*mu/pc_c)
+           E0 = E0/(1.0-velyes*r*mu/pc_c)
         ENDIF
      ELSEIF (PL+PR<=r1 .AND. r1<PL+PR+PA) THEN
         vacnt = .TRUE.
         done = .TRUE.
         Edep(z) = Edep(z)+E
      ELSE
-        denom2 = sigmap(z)-Ppick(g)*sigmapg(g,z)
+        denom2 = sigmap(z)-gas_ppick(g)*sigmapg(g,z)
         DO ig = 1, gas_ng
            PDFg(ig) = EmitProbg(ig,z)*sigmap(z)/denom2 
         ENDDO
@@ -101,9 +101,9 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            mu = 1.0-2.0*r1
            r1 = RAND()
            r = (r1*rarr(z+1)**3+(1.0-r1)*rarr(z)**3)**(1.0/3.0)
-           mu = (mu+velyes*r/lspeed)/(1.0+velyes*r*mu/lspeed)
-           E = E/(1.0-velyes*mu*r/lspeed)
-           E0 = E0/(1.0-velyes*mu*r/lspeed)
+           mu = (mu+velyes*r/pc_c)/(1.0+velyes*r*mu/pc_c)
+           E = E/(1.0-velyes*mu*r/pc_c)
+           E0 = E0/(1.0-velyes*mu*r/pc_c)
         ENDIF
      ENDIF
   ELSE

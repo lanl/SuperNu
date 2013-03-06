@@ -14,12 +14,12 @@ SUBROUTINE sourcenumbers
   ! Nnew = total number of new particles~=prt_Ns
   Esurf = 0.0_rknd
 
-  !Esurf = 0.25*dt*lspeed*a_coef*(4.0*pi*rarr(1)**2)*Tempb(1)**4
+  !Esurf = 0.25*dt*pc_c*pc_acoef*(pc_pi4*rarr(1)**2)*Tempb(1)**4
   Etot = Esurf
 
   ! External source
   DO ir = 1, 39
-     nisource(ir) = (rhoarr(ir)/56.0)*Nav*gas_nidecay
+     nisource(ir) = (rhoarr(ir)/56.0)*pc_navo*gas_nidecay
   ENDDO
   !
   DO ir = 40, gas_nr!9*gas_nr/10, gas_nr
@@ -33,10 +33,10 @@ SUBROUTINE sourcenumbers
   !WRITE(*,*) sigmap(1), sigmapg(1,1), sigmapg(2,1)
 
   DO ir = 1, gas_nr
-     !Emit(ir) = (1.e35)*(4.0*pi*dr3arr(ir)/3.0)
-     Emit(ir) =  dt*fcoef(ir)*sigmap(ir)*lspeed*Ur(ir)*(4.0*pi*dr3arr(ir)/3.0)
+     !Emit(ir) = (1.e35)*(pc_pi4*dr3arr(ir)/3.0)
+     Emit(ir) =  dt*fcoef(ir)*sigmap(ir)*pc_c*Ur(ir)*(pc_pi4*dr3arr(ir)/3.0)
      !Emit(ir) = Emit(ir)*(velno*1.0+velyes*texp**3)
-     sou = nisource(ir)*(4.0*pi*dr3arr(ir)/3.0)*(velno*1.0+velyes*texp**3)*dt
+     sou = nisource(ir)*(pc_pi4*dr3arr(ir)/3.0)*(velno*1.0+velyes*texp**3)*dt
      Emit(ir) = Emit(ir)+sou
      Etot = Etot+Emit(ir)
   ENDDO

@@ -19,8 +19,8 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   REAL(rknd) :: siglabfact, dcollabfact, elabfact 
   REAL(rknd) :: rold, P, denom2, told
 
-  siglabfact = 1.0_rknd - velyes*mu*r/lspeed
-  dcollabfact = velno*1.0 + velyes*texp*(1.0_rknd-mu*r/lspeed)
+  siglabfact = 1.0_rknd - velyes*mu*r/pc_c
+  dcollabfact = velno*1.0 + velyes*texp*(1.0_rknd-mu*r/pc_c)
 
   ! distance to boundary = db
   IF (z == 1) THEN
@@ -39,16 +39,16 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
      dcol = 3.0*db
   ENDIF
   ! distance to census = dcen
-  dcen = ABS(lspeed*(time+dt-t)/(velno*1.0+velyes*texp))
+  dcen = ABS(pc_c*(time+dt-t)/(velno*1.0+velyes*texp))
   ! minimum distance = d
   d = MIN(dcol,db,dcen)
 
   rold = r
   r = SQRT((1.0_rknd-mu**2)*r**2+(d+r*mu)**2)
   told = t
-  t = t + (velno*1.0+velyes*texp)*d/lspeed
+  t = t + (velno*1.0+velyes*texp)*d/pc_c
   mu = (rold*mu+d)/r
-  elabfact = 1.0_rknd - velyes*mu*r/lspeed
+  elabfact = 1.0_rknd - velyes*mu*r/pc_c
   Edep(z)=Edep(z)+E*(1.0_rknd-EXP(-fcoef(z)*sigmapg(g,z)*d))*elabfact
   E = E*EXP(-fcoef(z)*sigmapg(g,z)*d)
   IF (E/E0<0.001_rknd) THEN
@@ -66,8 +66,8 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
      !ELSE
         r1 = RAND()
         mu = 1.0-2.0*r1
-        mu = (mu+velyes*r/lspeed)/(1.0+velyes*r*mu/lspeed)
-        E = E*elabfact/(1.0-velyes*mu*r/lspeed)
+        mu = (mu+velyes*r/pc_c)/(1.0+velyes*r*mu/pc_c)
+        E = E*elabfact/(1.0-velyes*mu*r/pc_c)
         denom2 = 0.0
         r1 = RAND()
         DO ig = 1, gas_ng
@@ -78,12 +78,12 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         g = iig
         IF ((sigmapg(g,z)*drarr(z)*(velno*1.0+velyes*texp)>=5.0_rknd).AND.(in_puretran.EQV..FALSE.)) THEN
            hyparam = 2
-           E = E*(1.0-velyes*r*mu/lspeed)
-           E0 = E0*(1.0-velyes*r*mu/lspeed)
+           E = E*(1.0-velyes*r*mu/pc_c)
+           E0 = E0*(1.0-velyes*r*mu/pc_c)
         ELSE
            hyparam = 1
         ENDIF
-        !Edep(z)=Edep(z)+E*(1.0-velyes*mu*r/lspeed)/(sigmapg(g,z)*dt*lspeed)
+        !Edep(z)=Edep(z)+E*(1.0-velyes*mu*r/pc_c)/(sigmapg(g,z)*dt*pc_c)
      !ENDIF
   ELSEIF (d == db) THEN
      IF (mu>=0.0_rknd) THEN
@@ -94,7 +94,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         ! Checking if DDMC region right
         ELSEIF ((sigmapg(g,z+1)*drarr(z+1)*(velno*1.0+velyes*texp)>=5.0_rknd).AND.(in_puretran.EQV..FALSE.)) THEN
            r1 = RAND()
-           mu = (mu-velyes*r/lspeed)/(1.0-velyes*r*mu/lspeed)
+           mu = (mu-velyes*r/pc_c)/(1.0-velyes*r*mu/pc_c)
            P = PPL(g,z+1)*(1.0+1.5*ABS(mu))
            IF (r1 < P) THEN
               hyparam = 2
@@ -105,7 +105,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
               r1 = RAND()
               r2 = RAND()
               mu = -MAX(r1,r2)
-              mu = (mu+velyes*r/lspeed)/(1.0+velyes*r*mu/lspeed)
+              mu = (mu+velyes*r/pc_c)/(1.0+velyes*r*mu/pc_c)
            ENDIF
         ! End of check
         ELSE
@@ -115,7 +115,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         IF (z==1) THEN
            IF ((sigmapg(g,z+1)*drarr(z+1)*(velno*1.0+velyes*texp)>=5.0_rknd).AND.(in_puretran.EQV..FALSE.)) THEN
               r1 = RAND()
-              mu = (mu-velyes*r/lspeed)/(1.0-velyes*r*mu/lspeed)
+              mu = (mu-velyes*r/pc_c)/(1.0-velyes*r*mu/pc_c)
               P = PPL(g,z+1)*(1.0+1.5*ABS(mu))
               IF (r1 < P) THEN
                  hyparam = 2
@@ -126,7 +126,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
                  r1 = RAND()
                  r2 = RAND()
                  mu = -MAX(r1,r2)
-                 mu = (mu+velyes*r/lspeed)/(1.0+velyes*r*mu/lspeed)
+                 mu = (mu+velyes*r/pc_c)/(1.0+velyes*r*mu/pc_c)
               ENDIF
            ELSE
               z = z+1
@@ -138,7 +138,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         ! Checking if DDMC region left   
         ELSEIF ((sigmapg(g,z-1)*drarr(z-1)*(velno*1.0+velyes*texp)>=5.0_rknd).AND.(in_puretran.EQV..FALSE.)) THEN
            r1 = RAND()
-           mu = (mu-velyes*r/lspeed)/(1.0-velyes*r*mu/lspeed)
+           mu = (mu-velyes*r/pc_c)/(1.0-velyes*r*mu/pc_c)
            P = PPR(g,z-1)*(1.0+1.5*ABS(mu))
            IF (r1 < P) THEN
               hyparam = 2
@@ -149,7 +149,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
               r1 = RAND()
               r2 = RAND()
               mu = MAX(r1,r2)
-              mu = (mu+velyes*r/lspeed)/(1.0+velyes*r*mu/lspeed)
+              mu = (mu+velyes*r/pc_c)/(1.0+velyes*r*mu/pc_c)
            ENDIF
         ! End of check
         ELSE

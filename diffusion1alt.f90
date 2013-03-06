@@ -22,13 +22,13 @@ SUBROUTINE diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
   !denom = sigmaL(g,z)+sigmaR(g,z)+fcoef(z)*sigmapg(g,z)
   !denom = denom+(1.0-EmitProbg(g,z))*(1.0-fcoef(z))*sigmapg(g,z)
   r1 = RAND()
-  tauA = ABS(LOG(r1)/(lspeed*fcoef(z)*sigmapg(g,z)))
+  tauA = ABS(LOG(r1)/(pc_c*fcoef(z)*sigmapg(g,z)))
   r1 = RAND()
-  tauS = ABS(LOG(r1)/(lspeed*(1.0-EmitProbg(g,z))*(1.0-fcoef(z))*sigmapg(g,z)))
+  tauS = ABS(LOG(r1)/(pc_c*(1.0-EmitProbg(g,z))*(1.0-fcoef(z))*sigmapg(g,z)))
   r1 = RAND()
-  tauR = ABS(LOG(r1)/(lspeed*sigmaR(g,z)))
+  tauR = ABS(LOG(r1)/(pc_c*sigmaR(g,z)))
   r1 = RAND()
-  tauL = ABS(LOG(r1)/(lspeed*sigmaL(g,z)))
+  tauL = ABS(LOG(r1)/(pc_c*sigmaL(g,z)))
   tcensus = time+dt-t
 
   ddmct = MIN(tauA,tauS,tauR,tauL,tcensus)
@@ -56,9 +56,9 @@ SUBROUTINE diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
      !   r1 = RAND()
      !   r2 = RAND()
      !   mu = -MAX(r1,r2)
-     !   mu = (mu+velyes*r/lspeed)/(1.0+velyes*r*mu/lspeed)
-     !   E = E/(1.0-velyes*r*mu/lspeed)
-     !   E0 = E0/(1.0-velyes*r*mu/lspeed)
+     !   mu = (mu+velyes*r/pc_c)/(1.0+velyes*r*mu/pc_c)
+     !   E = E/(1.0-velyes*r*mu/pc_c)
+     !   E0 = E0/(1.0-velyes*r*mu/pc_c)
      ENDIF
   ELSEIF (ddmct == tauR) THEN
      IF (z == gas_nr) THEN
@@ -74,16 +74,16 @@ SUBROUTINE diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
      !   r1 = RAND()
      !   r2 = RAND()
      !   mu = MAX(r1,r2)
-     !   mu = (mu+velyes*r/lspeed)/(1.0+r*mu/lspeed)
-     !   E = E/(1.0-velyes*r*mu/lspeed)
-     !   E0 = E0/(1.0-velyes*r*mu/lspeed)
+     !   mu = (mu+velyes*r/pc_c)/(1.0+r*mu/pc_c)
+     !   E = E/(1.0-velyes*r*mu/pc_c)
+     !   E0 = E0/(1.0-velyes*r*mu/pc_c)
      ENDIF
   ELSEIF (ddmct == tauA) THEN
      vacnt = .TRUE.
      done = .TRUE.
      Edep(z) = Edep(z)+E
   ELSEIF (ddmct == tauS) THEN
-     denom2 = sigmap(z)-Ppick(g)*sigmapg(g,z)
+     denom2 = sigmap(z)-gas_ppick(g)*sigmapg(g,z)
      DO ig = 1, gas_ng
         PDFg(ig) = EmitProbg(ig,z)*sigmap(z)/denom2 
      ENDDO
@@ -104,9 +104,9 @@ SUBROUTINE diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
      !   mu = 1.0-2.0*r1
      !   r1 = RAND()
      !   r = r1*rarr(z+1)+(1.0-r1)*rarr(z) !(r1*rarr(z+1)**3+(1.0-r1)*rarr(z)**3)**(1.0/3.0)
-     !   mu = (mu+velyes*r/lspeed)/(1.0+velyes*r*mu/lspeed)
-     !   E = E/(1.0-velyes*mu*r/lspeed)
-     !   E0 = E0/(1.0-velyes*mu*r/lspeed)
+     !   mu = (mu+velyes*r/pc_c)/(1.0+velyes*r*mu/pc_c)
+     !   E = E/(1.0-velyes*mu*r/pc_c)
+     !   E0 = E0/(1.0-velyes*mu*r/pc_c)
      !ENDIF
   ELSE
      done = .TRUE.
