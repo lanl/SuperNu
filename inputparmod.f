@@ -6,21 +6,21 @@ c     ------------------
 * input parameters
 ************************************************************************
 c-- gas grid
-      INTEGER(iknd) :: in_nr  !# spatial grid in spherical geom
-      INTEGER(iknd) :: in_ng  !# groups
-      LOGICAL :: in_isvelocity  !switch underlying grid between spatial+static to velocity+expanding
-      REAL(rknd) :: in_lr    !spatial length of the domain
+      INTEGER(iknd) :: in_nr = 0 !# spatial grid in spherical geom
+      INTEGER(iknd) :: in_ng = 0 !# groups
+      LOGICAL :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
+      REAL(rknd) :: in_lr = 0d0  !spatial length of the domain
 c
 c-- particles
-      INTEGER(iknd) :: in_seed   !starting point of random number generator
-      INTEGER(iknd) :: in_ns  !# source particles generated per time step
-      INTEGER(iknd) :: in_npartmax  !total # particles allowed
-      LOGICAL :: in_puretran    !use IMC only instead of IMC+DDMC hybrid
-      REAL(rknd) :: in_alpha    !time centering control parameter [0,1]
+      INTEGER(iknd) :: in_seed = 0 !starting point of random number generator
+      INTEGER(iknd) :: in_ns = 0   !# source particles generated per time step
+      INTEGER(iknd) :: in_npartmax = 0 !total # particles allowed
+      LOGICAL :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
+      REAL(rknd) :: in_alpha = 1d0 !time centering control parameter [0,1]
 c
 c-- time step
-      REAL(rknd) :: in_tfirst = 0. !first point in time evolution
-      REAL(rknd) :: in_tlast = 0.  !last point in time evolution
+      REAL(rknd) :: in_tfirst = 0d0 !first point in time evolution
+      REAL(rknd) :: in_tlast = 0d0  !last point in time evolution
       INTEGER(iknd) :: in_nt = -1   !# time steps
 
 c
@@ -29,13 +29,13 @@ c-- parallelization
       INTEGER(ikind) :: in_nomp = 1       !# openmp threads
 c
 c-- group structure
-      REAL(rknd) :: in_wlmin = 1000.     !lower wavelength boundary in output spectrum
-      REAL(rknd) :: in_wlmax = 30000.    !upper wavelength boundary in output spectrum
+      REAL(rknd) :: in_wlmin = 1000d0     !lower wavelength boundary in output spectrum
+      REAL(rknd) :: in_wlmax = 30000d0    !upper wavelength boundary in output spectrum
 c
 c-- opacity (cm^2/gram)
-      REAL(rknd) :: in_opcapgam = .06    ![cm^2/g] extinction coefficient for gamma radiation
-      REAL(rknd) :: in_opcap = .00       !additional gray opacity (for testing with in_nobbopac only!)
-      REAL(rknd) :: in_epsline = 1.      !line absorption fraction (the rest is scattering)
+      REAL(rknd) :: in_opcapgam = .06d0    ![cm^2/g] extinction coefficient for gamma radiation
+      REAL(rknd) :: in_opcap = .0d0       !additional gray opacity (for testing with in_nobbopac only!)
+      REAL(rknd) :: in_epsline = 1d0      !line absorption fraction (the rest is scattering)
       LOGICAL :: in_nobbopac = .false.    !turn off bound-bound opacity
       LOGICAL :: in_nobfopac = .false.    !turn off bound-bound opacity
       LOGICAL :: in_noffopac = .false.    !turn off bound-bound opacity
@@ -107,14 +107,22 @@ c
 c-- check read values
       write(6,*) 'namelist read:'
       write(6,nml=inputpars)
+
+      if(in_nr<=0) stop 'invalid'
+      if(in_ng<=0) stop 'invalid'
+      if(in_lr<=0d0) stop 'invalid'
+      
+      if(in_ns<=0) stop 'in_ns invalid'
+      if(in_npartmax<=0) stop 'in_npartmax invalid'
+      if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
 c
 c-- check input parameter validity
       if(in_nomp<0) stop 'in_nomp invalid'!{{{
       if(in_nomp==0 .and. nmpi>1) stop 'no in_nomp==0 in mpi mode'
 c
-      if(in_tfirst<=0.) stop 'in_tfirst invalid'
+      if(in_nt<1) stop 'in_nt invalid'
+      if(in_tfirst<=0d0) stop 'in_tfirst invalid'
       if(in_tlast<in_tfirst) stop 'in_tlast invalid'
-      if(in_n2tim<=0) stop 'in_n2tim invalid'
       if(trim(in_enoresrv_init)=='locdep') then
       elseif(trim(in_enoresrv_init)=='restart') then
       elseif(trim(in_enoresrv_init)=='off') then
@@ -122,11 +130,6 @@ c
       else
        stop 'in_enoresrv_init invalid'
       endif
-
-c-- verify if in_tfirst and in_tlast are sampled by an integer exponent i in 2**(i/in_n2tim)
-      rhelp = log(in_tlast/in_tfirst)/log(2.)*in_n2tim
-      if(abs(rhelp - nint(rhelp))>1d-8)
-     &  stop 'in_tlast/in_tfirst do not match'
 c
       if(in_ntc<0) stop 'in_ntc invalid'
 c
@@ -141,16 +144,17 @@ c
       if(in_nwlf<=0) stop 'in_nwlf invalid'
       if(in_ncostf<=0) stop 'in_ncostf invalid'
       if(in_nphif<=0) stop 'in_nphif invalid'
-      if(in_wlmin<0.) stop 'in_wlmin invalid'
-      if(in_wlmax<=0. .or. in_wlmax<in_wlmin) stop 'in_wlmax invalid'
+      if(in_wlmin<0d0) stop 'in_wlmin invalid'
+      if(in_wlmax<=0d0 .or. in_wlmax<in_wlmin) stop 'in_wlmax invalid'
 c
-      if(in_opcap<0.) then
+      if(in_opcapgam<0d0) stop 'in_opcapgam invalid'
+      if(in_opcap<0d0) then
        stop 'in_opcap invalid'
-      elseif(in_opcap>0.) then
+      elseif(in_opcap>0d0) then
        call warn('read_inputpars',
      &   'gray opacity added! For testing uses only!')
       endif
-      if(in_epsline<0. .or. in_epsline>1.) stop 'in_epsline invalid'
+      if(in_epsline<0d0 .or. in_epsline>1d0) stop 'in_epsline invalid'
 c
       if(in_nobbopac) call warn('read_inputpars','ff opacity disabled!')
       if(in_nobfopac) call warn('read_inputpars','bf opacity disabled!')
