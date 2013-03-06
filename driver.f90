@@ -25,11 +25,11 @@ PROGRAM driver
   
   ! Setting velocity option
   IF (isvelocity.EQV..TRUE.) THEN
-     velyes = 1
-     velno = 0
+     gas_velyes = 1
+     gas_velno = 0
   ELSE
-     velyes = 0
-     velno = 1
+     gas_velyes = 0
+     gas_velno = 1
   ENDIF
   ! Setting transport option
   puretran = .FALSE.
@@ -39,31 +39,31 @@ PROGRAM driver
   CALL initials
 
   CALL CPU_TIME(time_begin)
-  tn = 1
+  tsp_tn = 1
   DO it = 1, tsp_nt 
      WRITE(*,*) 'timestep:',it
      !Calculating opacities (for IMC(transport) and DDMC(diffusion))
      CALL xsections
-     !Calculating number of source particles per cell
+     !Calculating number of source prt_particles per cell
      CALL sourcenumbers
-     !Storing vacant "particles" indexes in ordered array "vacantarr"
-     ALLOCATE(vacantarr(Nnew))
+     !Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
+     ALLOCATE(prt_vacantarr(prt_nnew))
      CALL vacancies
-     !Calculating properties of particles on domain boundary
+     !Calculating properties of prt_particles on domain boundary
      !CALL boundary_source
-     !Calculating properties of particles emitted in domain interior
+     !Calculating properties of prt_particles emitted in domain interior
      CALL interior_source
-     DEALLOCATE(vacantarr)
-     !Advancing particles to update radiation field
+     DEALLOCATE(prt_vacantarr)
+     !Advancing prt_particles to update radiation field
      CALL advance
      !Updating material state
      CALL material_update
-     !Updating elapsed time and expansion time
-     time = time+dt
-     texp = texp+dt
+     !Updating elapsed tsp_time and expansion tsp_time
+     tsp_time = tsp_time+tsp_dt
+     tsp_texp = tsp_texp+tsp_dt
      !Writing data to files
      CALL write_output
-     tn = tn+1
+     tsp_tn = tsp_tn+1
   ENDDO
   CALL CPU_TIME(time_end)
   WRITE(*,*) 'CPU TIME: ',time_end-time_begin,' seconds'

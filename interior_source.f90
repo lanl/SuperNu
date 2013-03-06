@@ -16,59 +16,59 @@ SUBROUTINE interior_source
 
   ir = 1
   irused(1:gas_nr) = 0
-  DO ipart = Nsurf+1, Nnew
-     ivac = vacantarr(ipart)
+  DO ipart = prt_nsurf+1, prt_nnew
+     ivac = prt_vacantarr(ipart)
      isnotvacnt = .FALSE.
      DO WHILE (isnotvacnt.EQV..FALSE.)
-        IF (irused(ir)<Nvol(ir)) THEN
+        IF (irused(ir)<prt_nvol(ir)) THEN
            irused(ir) = irused(ir)+1
            !Calculating Group
            denom2 = 0.0
            r1 = RAND()
            DO ig = 1, gas_ng
               iig = ig
-              IF (r1>=denom2.AND.r1<denom2+EmitProbg(ig,ir)) EXIT
-              denom2 = denom2+EmitProbg(ig,ir)
+              IF (r1>=denom2.AND.r1<denom2+gas_emitprobg(ig,ir)) EXIT
+              denom2 = denom2+gas_emitprobg(ig,ir)
            ENDDO
-           particles(ivac)%gsrc = iig
+           prt_particles(ivac)%gsrc = iig
            !Calculating radial position
            r1 = 0.0
            r2 = 1.0
-           uul = Tempb(ir)**4
-           uur = Tempb(ir+1)**4
+           uul = gas_tempb(ir)**4
+           uur = gas_tempb(ir+1)**4
            uumax = MAX(uul,uur)
            DO WHILE (r2 > r1)
               r3 = RAND()
-              r0 = (r3*rarr(ir+1)**3+(1.0-r3)*rarr(ir)**3)**(1.0/3.0)
-              r3 = (r0-rarr(ir))/drarr(ir)
+              r0 = (r3*gas_rarr(ir+1)**3+(1.0-r3)*gas_rarr(ir)**3)**(1.0/3.0)
+              r3 = (r0-gas_rarr(ir))/gas_drarr(ir)
               r1 = (r3*uur+(1.0-r3)*uul)/uumax
               r2 = RAND()
            ENDDO
-           particles(ivac)%rsrc = r0
+           prt_particles(ivac)%rsrc = r0
            
            !Calculating direction cosine (comoving)
            r1 = RAND()
            mu0 = 1.0-2.0*r1
-           !Calculating particle time
+           !Calculating particle tsp_time
            r1 = RAND()
-           particles(ivac)%tsrc = time+r1*dt
+           prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
            !Calculating particle energy, lab frame direction and propagation type
-           Ep0 = Emit(ir)/REAL(Nvol(ir),rknd)
-           IF ((sigmapg(iig,ir)*drarr(ir)*(velno*1.0+velyes*texp)<5.0_rknd).OR.(puretran.EQV..TRUE.)) THEN
-              particles(ivac)%Esrc = Ep0*(1.0+velyes*r0*mu0/lspeed)
-              particles(ivac)%Ebirth = Ep0*(1.0+velyes*r0*mu0/lspeed)
-              particles(ivac)%musrc = (mu0+velyes*r0/lspeed)/(1.0+velyes*r0*mu0/lspeed)
-              particles(ivac)%rtsrc = 1
+           Ep0 = gas_emit(ir)/REAL(prt_nvol(ir),rknd)
+           IF ((gas_sigmapg(iig,ir)*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0_rknd).OR.(puretran.EQV..TRUE.)) THEN
+              prt_particles(ivac)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/lspeed)
+              prt_particles(ivac)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/lspeed)
+              prt_particles(ivac)%musrc = (mu0+gas_velyes*r0/lspeed)/(1.0+gas_velyes*r0*mu0/lspeed)
+              prt_particles(ivac)%rtsrc = 1
            ELSE
-              particles(ivac)%Esrc = Ep0
-              particles(ivac)%Ebirth = Ep0
-              particles(ivac)%musrc = mu0
-              particles(ivac)%rtsrc = 2
+              prt_particles(ivac)%Esrc = Ep0
+              prt_particles(ivac)%Ebirth = Ep0
+              prt_particles(ivac)%musrc = mu0
+              prt_particles(ivac)%rtsrc = 2
            ENDIF
            !Setting ir = zone of particle
-           particles(ivac)%zsrc = ir
+           prt_particles(ivac)%zsrc = ir
            !Setting particle index to not vacant
-           particles(ivac)%isvacant = .FALSE.
+           prt_particles(ivac)%isvacant = .FALSE.
            
            isnotvacnt = .TRUE.
            
@@ -78,6 +78,6 @@ SUBROUTINE interior_source
      ENDDO
   ENDDO
   
-  !DEALLOCATE(vacantarr)
+  !DEALLOCATE(prt_vacantarr)
 
 END SUBROUTINE interior_source

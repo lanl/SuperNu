@@ -3,8 +3,8 @@ MODULE timestepmod
   USE kindmod
   IMPLICIT NONE
 
-  INTEGER(iknd) :: tsp_nt, tn
-  REAL(rknd) :: texp, time, dt
+  INTEGER(iknd) :: tsp_nt, tsp_tn
+  REAL(rknd) :: tsp_texp, tsp_time, tsp_dt
 
   CONTAINS
 

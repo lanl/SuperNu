@@ -9,45 +9,45 @@ SUBROUTINE sourcenumbers
 
   INTEGER(iknd) :: ir, nsr
   REAL(rknd) :: sou
-  ! Esurf for any new particles from a surface source
-  ! Nsurf = number of surface particles
-  ! Nnew = total number of new particles~=prt_Ns
-  Esurf = 0.0_rknd
+  ! prt_esurf for any new prt_particles from a surface source
+  ! prt_nsurf = number of surface prt_particles
+  ! prt_nnew = total number of new prt_particles~=prt_ns
+  prt_esurf = 0.0_rknd
 
-  !Esurf = 0.25*dt*lspeed*a_coef*(4.0*pi*rarr(1)**2)*Tempb(1)**4
-  Etot = Esurf
+  !prt_esurf = 0.25*tsp_dt*lspeed*a_coef*(4.0*pi*gas_rarr(1)**2)*gas_tempb(1)**4
+  prt_etot = prt_esurf
 
   ! External source
   DO ir = 1, 39
-     nisource(ir) = (rhoarr(ir)/56.0)*Nav*nidecay
+     gas_nisource(ir) = (gas_rhoarr(ir)/56.0)*Nav*nidecay
   ENDDO
   !
   DO ir = 40, gas_nr!9*gas_nr/10, gas_nr
-     nisource(ir) = 0.0_rknd
+     gas_nisource(ir) = 0.0_rknd
   ENDDO
   !ELSE
   !   DO ir = 1, gas_nr
-  !      nisource(ir) = 0.0_rknd
+  !      gas_nisource(ir) = 0.0_rknd
   !   ENDDO
   !ENDIF
-  !WRITE(*,*) sigmap(1), sigmapg(1,1), sigmapg(2,1)
+  !WRITE(*,*) gas_sigmap(1), gas_sigmapg(1,1), gas_sigmapg(2,1)
 
   DO ir = 1, gas_nr
-     !Emit(ir) = (1.e35)*(4.0*pi*dr3arr(ir)/3.0)
-     Emit(ir) =  dt*fcoef(ir)*sigmap(ir)*lspeed*Ur(ir)*(4.0*pi*dr3arr(ir)/3.0)
-     !Emit(ir) = Emit(ir)*(velno*1.0+velyes*texp**3)
-     sou = nisource(ir)*(4.0*pi*dr3arr(ir)/3.0)*(velno*1.0+velyes*texp**3)*dt
-     Emit(ir) = Emit(ir)+sou
-     Etot = Etot+Emit(ir)
+     !gas_emit(ir) = (1.e35)*(4.0*pi*gas_dr3arr(ir)/3.0)
+     gas_emit(ir) =  tsp_dt*gas_fcoef(ir)*gas_sigmap(ir)*lspeed*gas_ur(ir)*(4.0*pi*gas_dr3arr(ir)/3.0)
+     !gas_emit(ir) = gas_emit(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**3)
+     sou = gas_nisource(ir)*(4.0*pi*gas_dr3arr(ir)/3.0)*(gas_velno*1.0+gas_velyes*tsp_texp**3)*tsp_dt
+     gas_emit(ir) = gas_emit(ir)+sou
+     prt_etot = prt_etot+gas_emit(ir)
   ENDDO
-  !WRITE(*,*) nisource(1), nisource(2)
+  !WRITE(*,*) gas_nisource(1), gas_nisource(2)
 
-  Nsurf=NINT(Esurf*prt_Ns/Etot)+1
-  Nnew = Nsurf
+  prt_nsurf=NINT(prt_esurf*prt_ns/prt_etot)+1
+  prt_nnew = prt_nsurf
   
   DO ir = 1, gas_nr
-     Nvol(ir)=NINT(Emit(ir)*prt_Ns/Etot)+1
-     Nnew = Nnew+Nvol(ir)
+     prt_nvol(ir)=NINT(gas_emit(ir)*prt_ns/prt_etot)+1
+     prt_nnew = prt_nnew+prt_nvol(ir)
   ENDDO
   
 END SUBROUTINE sourcenumbers

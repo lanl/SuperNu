@@ -11,37 +11,37 @@ SUBROUTINE initials
   INTEGER(iknd) :: ir, ipart, ig
   REAL(rknd) :: Um
 
-  Erad = 0.0   !Total radiation energy
-  Einit = 0.0  !Total initial energy
-  Einp = 0.0   !Input Energy
-  Eint = 0.0   !Total internal energy
+  prt_erad = 0.0   !Total radiation energy
+  prt_einit = 0.0  !Total initial energy
+  prt_einp = 0.0   !Input Energy
+  prt_eint = 0.0   !Total internal energy
   !OPEN(UNIT=8,FILE='Tinit.dat',STATUS='UNKNOWN')
-  !READ(8,*) Temp
+  !READ(8,*) gas_temp
   !DO ir = 1, gas_nr
-  !   IF (Temp(ir)<1.e-6) THEN
-  !      Temp(ir) = 1.e-6
+  !   IF (gas_temp(ir)<1.e-6) THEN
+  !      gas_temp(ir) = 1.e-6
   !   ENDIF
   !ENDDO
   nidecay = 1.73*(1.6022e-6)  !erg/s/g
 
   DO ir = 1, gas_nr
-     rhoarr(ir) = 2.4186e8 !g/cm^3
-     Temp(ir) = 1.e3 !861.73
-     !bcoef(ir) = 2.0*a_coef*Temp(ir)**3
+     gas_rhoarr(ir) = 2.4186e8 !g/cm^3
+     gas_temp(ir) = 1.e3 !861.73
+     !gas_bcoef(ir) = 2.0*a_coef*gas_temp(ir)**3
 
-     bcoef(ir) = 0.4*(1.e12*rhoarr(ir))*580.25_rknd
+     gas_bcoef(ir) = 0.4*(1.e12*gas_rhoarr(ir))*580.25_rknd
 
-     Ur(ir) = a_coef*Temp(ir)**4
-     Um = bcoef(ir)*Temp(ir)
-     Einit = Einit + Um*4*pi*dr3arr(ir)*(velno*1.0+velyes*texp**3)/3.0
+     gas_ur(ir) = a_coef*gas_temp(ir)**4
+     Um = gas_bcoef(ir)*gas_temp(ir)
+     prt_einit = prt_einit + Um*4*pi*gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**3)/3.0
   ENDDO
-  Einp = Einit
-  DO ipart = 1, prt_Npartmax
-     particles(ipart)%isvacant=.TRUE.
+  prt_einp = prt_einit
+  DO ipart = 1, prt_npartmax
+     prt_particles(ipart)%isvacant=.TRUE.
   ENDDO
 
-  dt = t_elapsed/tsp_nt
-  time = RAND(seed)   !PRNG initial
-  time = 0.0
+  tsp_dt = t_elapsed/tsp_nt
+  tsp_time = RAND(seed)   !PRNG initial
+  tsp_time = 0.0
 
 END SUBROUTINE initials 

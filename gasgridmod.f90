@@ -5,17 +5,17 @@ MODULE gasgridmod
 
   INTEGER(iknd) :: gas_nr = 0
   INTEGER(iknd) :: gas_ng = 0
-  INTEGER(iknd) :: velno, velyes
+  INTEGER(iknd) :: gas_velno, gas_velyes
 
-  REAL(rknd) :: Emat
+  REAL(rknd) :: gas_emat
 
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: rarr  !(gas_nr+1)
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: drarr, dr3arr  !(gas_nr)
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: Edep, Temp, sigmap, fcoef, Ur !(gas_nr)
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: Tempb  !(gas_nr+1)
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: rhoarr, bcoef, Emit, nisource  !(gas_nr)
-  REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: sigmapg, sigmargleft, sigmargright, EmitProbg  !(gas_nr,gas_ng)
-  REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: sigmaL, PPL, sigmaR, PPR  !(gas_nr,gas_ng)
+  REAL(rknd), DIMENSION(:), ALLOCATABLE :: gas_rarr  !(gas_nr+1)
+  REAL(rknd), DIMENSION(:), ALLOCATABLE :: gas_drarr, gas_dr3arr  !(gas_nr)
+  REAL(rknd), DIMENSION(:), ALLOCATABLE :: gas_edep, gas_temp, gas_sigmap, gas_fcoef, gas_ur !(gas_nr)
+  REAL(rknd), DIMENSION(:), ALLOCATABLE :: gas_tempb  !(gas_nr+1)
+  REAL(rknd), DIMENSION(:), ALLOCATABLE :: gas_rhoarr, gas_bcoef, gas_emit, gas_nisource  !(gas_nr)
+  REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: gas_sigmapg, gas_sigmargleft, gas_sigmargright, gas_emitprobg  !(gas_nr,gas_ng)
+  REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: gas_sigmal, gas_ppl, gas_sigmar, gas_ppr  !(gas_nr,gas_ng)
 
   CONTAINS
 
