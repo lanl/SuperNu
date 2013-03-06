@@ -1,4 +1,4 @@
-PROGRAM driver
+PROGRAM supernu
 
   use mpimod
   USE inputparmod
@@ -137,4 +137,4 @@ PROGRAM driver
 !!call dealloc_all
 !!call mpi_finalize(ierr) !MPI
 
-END PROGRAM driver
+END PROGRAM supernu
