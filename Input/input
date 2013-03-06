@@ -1,18 +1,18 @@
 &scalarins
 t_elapsed = 4.32e6
-Lr = 1.4e8
+in_lr = 1.4e8
 &end
 
 &arrayins
 in_nt = 100
 in_nr = 50
 in_ng = 2
-isvelocity = .TRUE.
+in_isvelocity = .TRUE.
 &end
 
 &mcins
-in_Ns = 100000
-in_Npartmax = 10000000
+in_ns = 100000
+in_npartmax = 10000000
 alpha = 1.0
-seed = 1984117
+in_seed = 1984117
 &end

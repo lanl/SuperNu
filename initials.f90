@@ -36,7 +36,7 @@ SUBROUTINE initials
   ENDDO
 
   dt = t_elapsed/tsp_nt
-  time = RAND(seed)   !PRNG initial
+  time = RAND(in_seed)   !PRNG initial
   time = 0.0
 
 END SUBROUTINE initials 

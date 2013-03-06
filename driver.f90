@@ -7,22 +7,12 @@ PROGRAM driver
   INTEGER(iknd) :: it, ipart
   REAL(rknd) :: time_begin, time_end
   
-  ! Namelist groups
-  NAMELIST / scalarins / t_elapsed, Lr
-  NAMELIST / arrayins / in_nt, in_nr, in_ng, isvelocity
-  NAMELIST / mcins / in_Ns, in_Npartmax, alpha, seed
-  ! Reading namelist (from file "input")
-  OPEN(UNIT=1,FILE="input",STATUS="OLD",FORM="FORMATTED")
-  READ(UNIT=1,NML=scalarins)
-  READ(UNIT=1,NML=arrayins)
-  READ(UNIT=1,NML=mcins)
-
   CALL gasgrid_init(in_nr,in_ng)
   CALL time_init(in_nt)
-  CALL particle_init(in_Npartmax,in_Ns)
+  CALL particle_init(in_npartmax,in_ns)
   
   ! Setting velocity option
-  IF (isvelocity.EQV..TRUE.) THEN
+  IF (in_isvelocity.EQV..TRUE.) THEN
      velyes = 1
      velno = 0
   ELSE

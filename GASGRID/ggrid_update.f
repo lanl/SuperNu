@@ -18,7 +18,6 @@ c     -----------------------
 * - temperature and volume
 * - LTE EOS: ionization balance and electron density
 * - opacities
-* - LTE emissivity sampling helper array
 ************************************************************************
       logical :: do_output
       integer :: i,iw,j,icg,k

@@ -1,0 +1,231 @@
+      module inputparmod
+c     ------------------
+      USE kindmod
+      implicit none
+************************************************************************
+* input parameters
+************************************************************************
+c-- gas grid
+      INTEGER(iknd) :: in_nr  !# spatial grid in spherical geom
+      INTEGER(iknd) :: in_ng  !# groups
+c
+c-- particles
+      INTEGER(iknd) :: in_seed   !starting point of random number generator
+      INTEGER(iknd) :: in_ns  !# source particles generated per time step
+      INTEGER(iknd) :: in_npartmax  !total # particles allowed
+c
+c-- time step
+!old  REAL(rknd) :: t_elapsed
+      real(rknd) :: in_tfirst = 0. !first point in time evolution
+      real(rknd) :: in_tlast = 0.  !last point in time evolution
+      INTEGER(iknd) :: in_nt = -1   !# time steps
+
+      REAL(rknd) :: in_lr       !spatial length of the domain
+      REAL(rknd) :: alpha    !time centering control parameter [0,1]
+      REAL(rknd) :: nidecay  !starting source strength for nickel decay energy
+
+      LOGICAL :: in_isvelocity  !switch underlying grid between spatial+static to velocity+expanding
+      LOGICAL :: puretran    !use IMC only instead of IMC+DDMC hybrid
+
+      ! Namelist groups
+      NAMELIST / scalarins / in_lr
+      NAMELIST / arrayins / in_nt, in_nr, in_ng, in_isvelocity
+      NAMELIST / mcins / in_ns, in_npartmax, alpha, in_seed
+      ! Reading namelist (from file "input")
+      OPEN(UNIT=1,FILE="input",STATUS="OLD",FORM="FORMATTED")
+      READ(UNIT=1,NML=scalarins)
+      READ(UNIT=1,NML=arrayins)
+      READ(UNIT=1,NML=mcins)
+
+
+c-- parallelization
+      logical :: in_grab_stdout = .false. !write stdout to file
+      integer :: in_nomp = 1       !# openmp threads
+c
+      real :: in_wlmin = 1000.     !lower wavelength boundary in output spectrum
+      real :: in_wlmax = 30000.    !upper wavelength boundary in output spectrum
+c
+c-- opacity (cm^2/gram)
+      real :: in_opcapgam = .06    ![cm^2/g] extinction coefficient for gamma radiation
+      real :: in_opcap = .00       !additional gray opacity (for testing with in_nobbopac only!)
+      real :: in_epsline = 1.      !line absorption fraction (the rest is scattering)
+      logical :: in_nobbopac = .false.    !turn off bound-bound opacity
+      logical :: in_nobfopac = .false.    !turn off bound-bound opacity
+      logical :: in_noffopac = .false.    !turn off bound-bound opacity
+c-- misc
+      character(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
+      character(4) :: in_pdensdump = 'off'   !off|one|each: write partial densities to file
+      character(3) :: in_tempcorrdump = 'off'!off|all: write temp correction results to file
+c
+c-- runtime parameter namelist
+      namelist /inputpars/
+     & in_nr
+c
+      public
+      private inputpars
+      save
+c
+      contains
+c
+      subroutine read_inputpars
+c     -------------------------
+      implicit none
+************************************************************************
+* read the input parameter namelist
+************************************************************************
+      character(9),parameter :: fname='input.par'
+c
+c-- read namelist
+      open(4,file=fname,status='old',err=66)
+      read(4,nml=inputpars,end=67,err=68)
+      close(4)
+c
+      return
+66    stop 'read_inputpars: namelist input file missing: input.par'
+67    stop 'read_inputpars: namelist missing or bad in input.par'
+68    stop 'read_inputpars: ivalid parameters or values in namelist'
+      end subroutine read_inputpars
+c
+c
+c
+      subroutine parse_inputpars(nmpi)
+c     --------------------------------
+      use miscmod, only:warn
+c$    use omp_lib
+      implicit none
+      integer,intent(in) :: nmpi
+************************************************************************
+* parse the input parameter namelist
+************************************************************************
+      integer :: istat
+      real :: rhelp
+c$    integer :: i
+c
+c-- redirect stdout to file if chosen so
+      if(in_grab_stdout) then!{{{
+       write(6,*) 'write stdout to fort.6'
+       open(6,file='fort.6',action='write',status='replace',recl=2000,
+     &   iostat=istat) !write stdout to file
+       if(istat/=0) stop 'parse_inputpars: open fort.6 error'
+       call banner
+      endif!}}}
+c
+c-- check read values
+      write(6,*) 'namelist read:'
+      write(6,nml=inputpars)
+c
+c-- check input parameter validity
+      if(in_nomp<0) stop 'in_nomp invalid'!{{{
+      if(in_nomp==0 .and. nmpi>1) stop 'no in_nomp==0 in mpi mode'
+c
+      if(in_tfirst<=0.) stop 'in_tfirst invalid'
+      if(in_tlast<in_tfirst) stop 'in_tlast invalid'
+      if(in_n2tim<=0) stop 'in_n2tim invalid'
+      if(trim(in_enoresrv_init)=='locdep') then
+      elseif(trim(in_enoresrv_init)=='restart') then
+      elseif(trim(in_enoresrv_init)=='off') then
+       call warn('read_inputpars','decay energy before tfirst dropped!')
+      else
+       stop 'in_enoresrv_init invalid'
+      endif
+
+c-- verify if in_tfirst and in_tlast are sampled by an integer exponent i in 2**(i/in_n2tim)
+      rhelp = log(in_tlast/in_tfirst)/log(2.)*in_n2tim
+      if(abs(rhelp - nint(rhelp))>1d-8)
+     &  stop 'in_tlast/in_tfirst do not match'
+c
+      if(in_ntc<0) stop 'in_ntc invalid'
+c
+      if(in_nr<=0) stop 'in_nr invalid'
+      if(in_l2packet<0) stop 'in_l2packet < 0'
+      if(in_l2packet>40) stop 'in_l2packet > 40'
+c
+      if(in_ndim<=0 .or. in_ndim>3) stop 'in_ndim invalid'
+      if(in_nwlg<=0) stop 'in_nwlg invalid'
+      if(in_niwlem<=0) stop 'in_niwlem invalid'
+c
+      if(in_nwlf<=0) stop 'in_nwlf invalid'
+      if(in_ncostf<=0) stop 'in_ncostf invalid'
+      if(in_nphif<=0) stop 'in_nphif invalid'
+      if(in_wlmin<0.) stop 'in_wlmin invalid'
+      if(in_wlmax<=0. .or. in_wlmax<in_wlmin) stop 'in_wlmax invalid'
+c
+      if(in_opcap<0.) then
+       stop 'in_opcap invalid'
+      elseif(in_opcap>0.) then
+       call warn('read_inputpars',
+     &   'gray opacity added! For testing uses only!')
+      endif
+      if(in_epsline<0. .or. in_epsline>1.) stop 'in_epsline invalid'
+c
+      if(in_nobbopac) call warn('read_inputpars','ff opacity disabled!')
+      if(in_nobfopac) call warn('read_inputpars','bf opacity disabled!')
+      if(in_noffopac) call warn('read_inputpars','bb opacity disabled!')
+c
+      if(trim(in_opacdump)=='off') then
+      elseif(trim(in_opacdump)=='one') then
+      elseif(trim(in_opacdump)=='each') then
+      elseif(trim(in_opacdump)=='all') then
+       call warn('read_inputpars',
+     &   "in_opacdump=='all' will generate a big data file!")
+      else
+       stop 'in_opacdump invalid'
+      endif
+c
+      if(trim(in_pdensdump)=='off') then
+      elseif(trim(in_pdensdump)=='one') then
+      elseif(trim(in_pdensdump)=='each') then
+      else
+       stop 'in_pdensdump invalid'
+      endif
+c
+      if(trim(in_tempcorrdump)=='off') then
+      elseif(trim(in_tempcorrdump)=='all') then
+      else
+       stop 'in_tempcorrdump invalid'
+      endif!}}}
+c
+c-- override namelist values
+      if(.not.in_force3dflux) then!{{{
+       if(in_ndim==1 .and. (in_ncostf/=1 .or. in_nphif/=1)) then
+        write(6,*)
+     &    'override namelist: in_ndim==1 => in_ncostf=1, in_nphif=1'
+        in_ncostf = 1
+        in_nphif = 1
+       elseif(in_ndim==2 .and. in_nphif/=1) then
+        write(6,*) 'override namelist: in_ndim==2 => in_nphif=1'
+        in_nphif = 1
+       endif
+      endif
+c
+      if(in_notimedep) then
+       call warn('read_inputpars',
+     &   'in_notimedep selected (generate packets thermally)')
+       if(trim(in_enoresrv_init)/='off') write(6,*)
+     &   "override namelist: in_notimedep => in_enoresrv='off'"
+      endif!}}}
+c
+c-- set the number of threads
+c$    if(.false.) then!{{{
+c-- serial run
+       in_nomp = 1
+c$    else
+c-- openmp run
+c$     if(in_nomp/=0) call omp_set_num_threads(in_nomp)
+c$omp parallel shared(in_nomp) private(i)
+c$     i = omp_get_num_threads()
+c$     if(in_nomp/=0 .and. i/=in_nomp)
+c$   &   stop 'read_inputpars: in_nomp error'
+c$     in_nomp = i
+c$omp end parallel
+c$    endif
+      write(6,'(1x,a,2i5,i7)') 'nmpi,in_nomp,#threads        :',
+     &  nmpi,in_nomp,nmpi*in_nomp
+      if(in_grab_stdout) then
+       write(0,'(1x,a,2i5,i7)') 'nmpi,in_nomp,#threads        :',
+     &   nmpi,in_nomp,nmpi*in_nomp
+      endif!}}}
+c
+      end subroutine parse_inputpars
+c
+      end module inputparmod

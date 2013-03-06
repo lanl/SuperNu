@@ -49,7 +49,7 @@ SUBROUTINE advance
         ENDIF
 
         alph2 = 0.75  !>=0,<=1
-        IF ((isvelocity.EQV..TRUE.).AND.(rtsrc==1)) THEN
+        IF ((in_isvelocity.EQV..TRUE.).AND.(rtsrc==1)) THEN
            rsrc = rsrc*texp/(texp+alph2*dt)
            IF (rsrc < rarr(zsrc)) THEN
               zsrc = zsrc-1
@@ -68,7 +68,7 @@ SUBROUTINE advance
            ENDIF
         ENDDO
 
-        IF ((isvelocity.EQV..TRUE.).AND.(rtsrc==1)) THEN
+        IF ((in_isvelocity.EQV..TRUE.).AND.(rtsrc==1)) THEN
            rsrc = rsrc*texp/(texp+(1.0-alph2)*dt)
            IF (rsrc < rarr(zsrc)) THEN
               zsrc = zsrc-1
