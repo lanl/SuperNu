@@ -19,8 +19,8 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   REAL(rknd) :: siglabfact, dcollabfact, elabfact 
   REAL(rknd) :: rold, P, denom2, told
 
-  siglabfact = 1.0_rknd - gas_velyes*mu*r/lspeed
-  dcollabfact = gas_velno*1.0 + gas_velyes*tsp_texp*(1.0_rknd-mu*r/lspeed)
+  siglabfact = 1.0_rknd - gas_velyes*mu*r/pc_c
+  dcollabfact = gas_velno*1.0 + gas_velyes*tsp_texp*(1.0_rknd-mu*r/pc_c)
 
   ! distance to boundary = db
   IF (z == 1) THEN
@@ -39,16 +39,16 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
      dcol = 3.0*db
   ENDIF
   ! distance to census = dcen
-  dcen = ABS(lspeed*(tsp_time+tsp_dt-t)/(gas_velno*1.0+gas_velyes*tsp_texp))
+  dcen = ABS(pc_c*(tsp_time+tsp_dt-t)/(gas_velno*1.0+gas_velyes*tsp_texp))
   ! minimum distance = d
   d = MIN(dcol,db,dcen)
 
   rold = r
   r = SQRT((1.0_rknd-mu**2)*r**2+(d+r*mu)**2)
   told = t
-  t = t + (gas_velno*1.0+gas_velyes*tsp_texp)*d/lspeed
+  t = t + (gas_velno*1.0+gas_velyes*tsp_texp)*d/pc_c
   mu = (rold*mu+d)/r
-  elabfact = 1.0_rknd - gas_velyes*mu*r/lspeed
+  elabfact = 1.0_rknd - gas_velyes*mu*r/pc_c
   gas_edep(z)=gas_edep(z)+E*(1.0_rknd-EXP(-gas_fcoef(z)*gas_sigmapg(g,z)*d))*elabfact
   E = E*EXP(-gas_fcoef(z)*gas_sigmapg(g,z)*d)
   IF (E/E0<0.001_rknd) THEN
@@ -66,8 +66,8 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
      !ELSE
         r1 = RAND()
         mu = 1.0-2.0*r1
-        mu = (mu+gas_velyes*r/lspeed)/(1.0+gas_velyes*r*mu/lspeed)
-        E = E*elabfact/(1.0-gas_velyes*mu*r/lspeed)
+        mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
+        E = E*elabfact/(1.0-gas_velyes*mu*r/pc_c)
         denom2 = 0.0
         r1 = RAND()
         DO ig = 1, gas_ng
@@ -78,12 +78,12 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         g = iig
         IF ((gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd).AND.(puretran.EQV..FALSE.)) THEN
            hyparam = 2
-           E = E*(1.0-gas_velyes*r*mu/lspeed)
-           E0 = E0*(1.0-gas_velyes*r*mu/lspeed)
+           E = E*(1.0-gas_velyes*r*mu/pc_c)
+           E0 = E0*(1.0-gas_velyes*r*mu/pc_c)
         ELSE
            hyparam = 1
         ENDIF
-        !gas_edep(z)=gas_edep(z)+E*(1.0-gas_velyes*mu*r/lspeed)/(gas_sigmapg(g,z)*tsp_dt*lspeed)
+        !gas_edep(z)=gas_edep(z)+E*(1.0-gas_velyes*mu*r/pc_c)/(gas_sigmapg(g,z)*tsp_dt*pc_c)
      !ENDIF
   ELSEIF (d == db) THEN
      IF (mu>=0.0_rknd) THEN
@@ -94,7 +94,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         ! Checking if DDMC region right
         ELSEIF ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd).AND.(puretran.EQV..FALSE.)) THEN
            r1 = RAND()
-           mu = (mu-gas_velyes*r/lspeed)/(1.0-gas_velyes*r*mu/lspeed)
+           mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
            P = gas_ppl(g,z+1)*(1.0+1.5*ABS(mu))
            IF (r1 < P) THEN
               hyparam = 2
@@ -105,7 +105,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
               r1 = RAND()
               r2 = RAND()
               mu = -MAX(r1,r2)
-              mu = (mu+gas_velyes*r/lspeed)/(1.0+gas_velyes*r*mu/lspeed)
+              mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
            ENDIF
         ! End of check
         ELSE
@@ -115,7 +115,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         IF (z==1) THEN
            IF ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd).AND.(puretran.EQV..FALSE.)) THEN
               r1 = RAND()
-              mu = (mu-gas_velyes*r/lspeed)/(1.0-gas_velyes*r*mu/lspeed)
+              mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
               P = gas_ppl(g,z+1)*(1.0+1.5*ABS(mu))
               IF (r1 < P) THEN
                  hyparam = 2
@@ -126,7 +126,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
                  r1 = RAND()
                  r2 = RAND()
                  mu = -MAX(r1,r2)
-                 mu = (mu+gas_velyes*r/lspeed)/(1.0+gas_velyes*r*mu/lspeed)
+                 mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
               ENDIF
            ELSE
               z = z+1
@@ -138,7 +138,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         ! Checking if DDMC region left   
         ELSEIF ((gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd).AND.(puretran.EQV..FALSE.)) THEN
            r1 = RAND()
-           mu = (mu-gas_velyes*r/lspeed)/(1.0-gas_velyes*r*mu/lspeed)
+           mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
            P = gas_ppr(g,z-1)*(1.0+1.5*ABS(mu))
            IF (r1 < P) THEN
               hyparam = 2
@@ -149,7 +149,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
               r1 = RAND()
               r2 = RAND()
               mu = MAX(r1,r2)
-              mu = (mu+gas_velyes*r/lspeed)/(1.0+gas_velyes*r*mu/lspeed)
+              mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
            ENDIF
         ! End of check
         ELSE

@@ -33,7 +33,7 @@ SUBROUTINE initials
 
      gas_ur(ir) = a_coef*gas_temp(ir)**4
      Um = gas_bcoef(ir)*gas_temp(ir)
-     prt_einit = prt_einit + Um*4*pi*gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**3)/3.0
+     prt_einit = prt_einit + Um*4*pc_pi*gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**3)/3.0
   ENDDO
   prt_einp = prt_einit
   DO ipart = 1, prt_npartmax

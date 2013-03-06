@@ -22,7 +22,7 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   denom = gas_sigmal(g,z)+gas_sigmar(g,z)+gas_fcoef(z)*gas_sigmapg(g,z)
   denom = denom+(1.0-gas_emitprobg(g,z))*(1.0-gas_fcoef(z))*gas_sigmapg(g,z)
   r1 = RAND()
-  tau = ABS(LOG(r1)/(lspeed*denom))
+  tau = ABS(LOG(r1)/(pc_c*denom))
   tcensus = tsp_time+tsp_dt-t
   ddmct = MIN(tau,tcensus)
   E = E*(gas_velno*1.0+gas_velyes*EXP(-ddmct/tsp_texp))
@@ -50,9 +50,9 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            r1 = RAND()
            r2 = RAND()
            mu = -MAX(r1,r2)
-           mu = (mu+gas_velyes*r/lspeed)/(1.0+gas_velyes*r*mu/lspeed)
-           E = E/(1.0-gas_velyes*r*mu/lspeed)
-           E0 = E0/(1.0-gas_velyes*r*mu/lspeed)
+           mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
+           E = E/(1.0-gas_velyes*r*mu/pc_c)
+           E0 = E0/(1.0-gas_velyes*r*mu/pc_c)
         ENDIF
      ELSEIF (PL<=r1 .AND. r1<PL+PR) THEN
         IF (z == gas_nr) THEN
@@ -61,7 +61,7 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            r1 = RAND()
            r2 = RAND()
            mu = MAX(r1,r2)
-           prt_eright = prt_eright+E*(1.0+gas_velyes*gas_rarr(gas_nr+1)*mu/lspeed)
+           prt_eright = prt_eright+E*(1.0+gas_velyes*gas_rarr(gas_nr+1)*mu/pc_c)
         ELSEIF (gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd) THEN
            z = z+1
         ELSE
@@ -71,9 +71,9 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            r1 = RAND()
            r2 = RAND()
            mu = MAX(r1,r2)
-           mu = (mu+gas_velyes*r/lspeed)/(1.0+r*mu/lspeed)
-           E = E/(1.0-gas_velyes*r*mu/lspeed)
-           E0 = E0/(1.0-gas_velyes*r*mu/lspeed)
+           mu = (mu+gas_velyes*r/pc_c)/(1.0+r*mu/pc_c)
+           E = E/(1.0-gas_velyes*r*mu/pc_c)
+           E0 = E0/(1.0-gas_velyes*r*mu/pc_c)
         ENDIF
      ELSEIF (PL+PR<=r1 .AND. r1<PL+PR+PA) THEN
         vacnt = .TRUE.
@@ -101,9 +101,9 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            mu = 1.0-2.0*r1
            r1 = RAND()
            r = (r1*gas_rarr(z+1)**3+(1.0-r1)*gas_rarr(z)**3)**(1.0/3.0)
-           mu = (mu+gas_velyes*r/lspeed)/(1.0+gas_velyes*r*mu/lspeed)
-           E = E/(1.0-gas_velyes*mu*r/lspeed)
-           E0 = E0/(1.0-gas_velyes*mu*r/lspeed)
+           mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
+           E = E/(1.0-gas_velyes*mu*r/pc_c)
+           E0 = E0/(1.0-gas_velyes*mu*r/pc_c)
         ENDIF
      ENDIF
   ELSE

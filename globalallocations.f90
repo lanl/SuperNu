@@ -10,7 +10,7 @@ SUBROUTINE globalallocations
   ALLOCATE(prt_numcensus(gas_nr))  !# census prt_particles per cell
   ALLOCATE(gas_rarr(gas_nr+1)) !zone edge radii
   ALLOCATE(gas_drarr(gas_nr))  !radial zone length
-  ALLOCATE(gas_dr3arr(gas_nr))  !zone volume*3/(4*pi)
+  ALLOCATE(gas_dr3arr(gas_nr))  !zone volume*3/(4*pc_pi)
   ALLOCATE(gas_edep(gas_nr))  !energy absorbed by material
   ALLOCATE(gas_temp(gas_nr))  !cell-centered temperature
   ALLOCATE(gas_tempb(gas_nr+1))  !cell boundary temperature
@@ -35,6 +35,6 @@ SUBROUTINE globalallocations
 
   ALLOCATE(prt_particles(prt_npartmax))
 
-  ALLOCATE(Ppick(gas_ng))  !gas_ng=2 for to temp picket fence verification
+  ALLOCATE(gas_ppick(gas_ng))  !gas_ng=2 for to temp picket fence verification
 
 END SUBROUTINE globalallocations

@@ -44,9 +44,9 @@ SUBROUTINE boundary_source
 
      IF ((gas_sigmapg(ig,z0)*gas_drarr(z0)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0_rknd).OR.(puretran.EQV..TRUE.)) THEN
         !transport => lab frame quantities
-        prt_particles(ivac)%Esrc = Esurfpart*(1.0+gas_velyes*r0*mu0/lspeed)
-        prt_particles(ivac)%Ebirth = Esurfpart*(1.0+gas_velyes*r0*mu0/lspeed)
-        prt_particles(ivac)%musrc = (mu0+gas_velyes*r0/lspeed)/(1.0+gas_velyes*r0*mu0/lspeed)
+        prt_particles(ivac)%Esrc = Esurfpart*(1.0+gas_velyes*r0*mu0/pc_c)
+        prt_particles(ivac)%Ebirth = Esurfpart*(1.0+gas_velyes*r0*mu0/pc_c)
+        prt_particles(ivac)%musrc = (mu0+gas_velyes*r0/pc_c)/(1.0+gas_velyes*r0*mu0/pc_c)
         prt_particles(ivac)%rtsrc = 1
      ELSE
         !diffusion => comoving frame quantities (with diffuse reflection accounted)

@@ -14,12 +14,12 @@ SUBROUTINE sourcenumbers
   ! prt_nnew = total number of new prt_particles~=prt_ns
   prt_esurf = 0.0_rknd
 
-  !prt_esurf = 0.25*tsp_dt*lspeed*a_coef*(4.0*pi*gas_rarr(1)**2)*gas_tempb(1)**4
+  !prt_esurf = 0.25*tsp_dt*pc_c*a_coef*(4.0*pc_pi*gas_rarr(1)**2)*gas_tempb(1)**4
   prt_etot = prt_esurf
 
   ! External source
   DO ir = 1, 39
-     gas_nisource(ir) = (gas_rhoarr(ir)/56.0)*Nav*nidecay
+     gas_nisource(ir) = (gas_rhoarr(ir)/56.0)*pc_navo*nidecay
   ENDDO
   !
   DO ir = 40, gas_nr!9*gas_nr/10, gas_nr
@@ -33,10 +33,10 @@ SUBROUTINE sourcenumbers
   !WRITE(*,*) gas_sigmap(1), gas_sigmapg(1,1), gas_sigmapg(2,1)
 
   DO ir = 1, gas_nr
-     !gas_emit(ir) = (1.e35)*(4.0*pi*gas_dr3arr(ir)/3.0)
-     gas_emit(ir) =  tsp_dt*gas_fcoef(ir)*gas_sigmap(ir)*lspeed*gas_ur(ir)*(4.0*pi*gas_dr3arr(ir)/3.0)
+     !gas_emit(ir) = (1.e35)*(4.0*pc_pi*gas_dr3arr(ir)/3.0)
+     gas_emit(ir) =  tsp_dt*gas_fcoef(ir)*gas_sigmap(ir)*pc_c*gas_ur(ir)*(4.0*pc_pi*gas_dr3arr(ir)/3.0)
      !gas_emit(ir) = gas_emit(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**3)
-     sou = gas_nisource(ir)*(4.0*pi*gas_dr3arr(ir)/3.0)*(gas_velno*1.0+gas_velyes*tsp_texp**3)*tsp_dt
+     sou = gas_nisource(ir)*(4.0*pc_pi*gas_dr3arr(ir)/3.0)*(gas_velno*1.0+gas_velyes*tsp_texp**3)*tsp_dt
      gas_emit(ir) = gas_emit(ir)+sou
      prt_etot = prt_etot+gas_emit(ir)
   ENDDO

@@ -42,9 +42,9 @@ SUBROUTINE advance
                  rsrc = (r1*gas_rarr(zsrc+1)**3+(1.0-r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
                  r1 = RAND()
                  musrc = 1.0-2.0*r1
-                 musrc = (musrc+gas_velyes*rsrc/lspeed)/(1.0+gas_velyes*rsrc*musrc/lspeed)
-                 Esrc = Esrc/(1.0-gas_velyes*musrc*rsrc/lspeed)
-                 Ebirth = Ebirth/(1.0-gas_velyes*musrc*rsrc/lspeed)
+                 musrc = (musrc+gas_velyes*rsrc/pc_c)/(1.0+gas_velyes*rsrc*musrc/pc_c)
+                 Esrc = Esrc/(1.0-gas_velyes*musrc*rsrc/pc_c)
+                 Ebirth = Ebirth/(1.0-gas_velyes*musrc*rsrc/pc_c)
               ENDIF
               rtsrc = 1
            ELSE
