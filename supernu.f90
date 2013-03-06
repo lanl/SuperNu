@@ -39,7 +39,7 @@ PROGRAM supernu
 !! lmpi0 = .true. !master rank flag
 !! call time(t0)
 !-- startup message
-  call banner
+  !call banner
 !-- read runtime parameters
   call read_inputpars
 !-- parse runtime parameters
