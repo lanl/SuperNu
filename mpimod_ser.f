@@ -1,6 +1,6 @@
       module mpimod
 c     -------------
-      implicit none
+      IMPLICIT NONE
       integer :: MPI_COMM_WORLD=0
       integer :: MPI_MAX_PROCESSOR_NAME=13
       integer,private :: ierr=0
@@ -13,7 +13,7 @@ c
       subroutine bcast_permanent
 c     --------------------------
       use inputparmod, only:in_nomp
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * Broadcast the data that does not evolve over time (or temperature).
 * - stub
@@ -50,13 +50,13 @@ c     -------------------------
 c
 c
       subroutine mpi_init(ierr_)
-      implicit none
+      IMPLICIT NONE
       integer :: ierr_
       ierr_ = ierr
       end subroutine mpi_init
 c
       subroutine mpi_comm_rank(mpi_comm,impi_,ierr_)
-      implicit none
+      IMPLICIT NONE
       integer :: mpi_comm
       integer :: impi_,ierr_
       ierr_ = ierr
@@ -66,7 +66,7 @@ c
       end subroutine mpi_comm_rank
 c
       subroutine mpi_comm_size(mpi_comm,nmpi_,ierr_)
-      implicit none
+      IMPLICIT NONE
       integer :: mpi_comm
       integer :: nmpi_,ierr_
       ierr_ = ierr
@@ -75,7 +75,7 @@ c
       end subroutine mpi_comm_size
 c
       subroutine mpi_get_processor_name(pname,ilen_,ierr_)
-      implicit none
+      IMPLICIT NONE
       character*(MPI_MAX_PROCESSOR_NAME) :: pname
       integer :: ilen_,ierr_
       pname = 'NOT AVAILABLE'
@@ -84,14 +84,14 @@ c
       end subroutine mpi_get_processor_name
 c
       subroutine mpi_barrier(mpi_comm,ierr_)
-      implicit none
+      IMPLICIT NONE
       integer :: mpi_comm,ierr_
       ierr_ = ierr
       mpi_comm = MPI_COMM_WORLD
       end subroutine mpi_barrier
 c
       subroutine mpi_finalize(ierr_)
-      implicit none
+      IMPLICIT NONE
       integer :: ierr_
       ierr_ = ierr
       end subroutine mpi_finalize

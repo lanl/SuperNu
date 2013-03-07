@@ -9,7 +9,7 @@ c     -----------------------
       use inputparmod
       use rgridmod, only:rg_ncr
       use timingmod
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * Update the part of the gas grid that depends on time and temperature.
 * The non-changing part is computed in ggrid_setup.
@@ -19,22 +19,22 @@ c     -----------------------
 * - LTE EOS: ionization balance and electron density
 * - opacities
 ************************************************************************
-      logical :: do_output
+      LOGICAL :: do_output
       integer :: i,iw,j,icg,k
-      real*8 :: help
-      real*8 :: natom1fr(gg_ncg,-2:-1) !todo: memory storage order?
-      real*8 :: natom2fr(gg_ncg,-2:-1)
-      real*8 :: capbcum(in_nwlg)
+      REAL*8 :: help
+      REAL*8 :: natom1fr(gg_ncg,-2:-1) !todo: memory storage order?
+      REAL*8 :: natom2fr(gg_ncg,-2:-1)
+      REAL*8 :: capbcum(in_nwlg)
 c-- gamma opacity
-      real*8,parameter :: ye=.5d0 !todo: compute this value
+      REAL*8,parameter :: ye=.5d0 !todo: compute this value
 c-- thomson scattering
-      real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
+      REAL*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
 c-- distribute packets
       integer :: mpacket !# packets to generate on each mpi rank
       integer :: nlower  !# ranks with 1 packet less
-      real*8 :: enemit(gg_ncg)
-      real*8 :: chiross(gg_ncg),capplanck(gg_ncg)
+      REAL*8 :: enemit(gg_ncg)
+      REAL*8 :: chiross(gg_ncg),capplanck(gg_ncg)
 c-- timing
       real :: t0,t1
 c
@@ -263,12 +263,12 @@ c     -------------------------------
       use physconstmod
       use ggridmod
       use inputparmod
-      implicit none
-      real*8,intent(in) :: tsince
+      IMPLICIT NONE
+      REAL*8,intent(in) :: tsince
 ************************************************************************
 * update natom fractions for nuclear decay
 ************************************************************************
-      real*8 :: expni,expco,help
+      REAL*8 :: expni,expco,help
 c
       expni = exp(-tsince/pc_thl_ni56)
       expco = exp(-tsince/pc_thl_co56)

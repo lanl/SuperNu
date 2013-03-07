@@ -1,6 +1,6 @@
       module elemdatamod
 c     ------------------
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 *  important chemical element data
 ************************************************************************
@@ -8,7 +8,7 @@ c     ------------------
       integer,private :: i
 c
       type element_data
-       real*8       :: m
+       REAL*8       :: m
        character*2  :: sym
        character*13 :: nam
       end type element_data

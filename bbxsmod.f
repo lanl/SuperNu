@@ -1,6 +1,6 @@
       module bbxsmod
 c     --------------
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * read bound-bound cross sections (oscillator strengths)
 ************************************************************************
@@ -40,10 +40,10 @@ c     ------------------------------------------
 c     use physconstmod
       use miscmod, only:lcase
       use elemdatamod, only:elem_data
-      implicit none
+      IMPLICIT NONE
       integer,intent(in) :: iz,ii
       integer,intent(out) :: istat
-      logical,intent(in) :: get_data
+      LOGICAL,intent(in) :: get_data
 ************************************************************************
 * Read a single .atom file, or just poll how many lines it contains.
 ************************************************************************
@@ -106,7 +106,7 @@ c
 c
       subroutine sort_lines
 c     ---------------------
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * Sort the bound-bound transitions for wl in order to speed up the
 * the insertion into the big opacity array.
@@ -116,7 +116,7 @@ c     ---------------------
 ************************************************************************
       integer :: i,is,it
       type(bb_xs_data) :: xs_src,xs_trg
-      real*8 :: wl(bb_nline)
+      REAL*8 :: wl(bb_nline)
       integer :: indx(bb_nline)
 c
 c-- initialize arrays

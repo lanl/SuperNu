@@ -1,6 +1,6 @@
       module inputparmod
 c     ------------------
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * input parameters
 ************************************************************************
@@ -62,7 +62,7 @@ c
 c
       subroutine read_inputpars
 c     -------------------------
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * read the input parameter namelist
 ************************************************************************
@@ -85,7 +85,7 @@ c
 c     --------------------------------
 !!    use miscmod, only:warn
 c$    use omp_lib
-      implicit none
+      IMPLICIT NONE
       integer,intent(in) :: nmpi
 ************************************************************************
 * parse the input parameter namelist

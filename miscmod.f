@@ -1,6 +1,6 @@
       module miscmod
 c     --------------
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * Avoid explicit interfaces for these subroutines.
 ************************************************************************

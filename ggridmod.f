@@ -1,6 +1,6 @@
       module ggridmod
 c     ---------------
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * gas grid structure
 ************************************************************************
@@ -8,10 +8,10 @@ c     ---------------
       integer,parameter :: gg_ini56=-1, gg_ico56=-2 !positions in mass0fr and natom1fr arrays
 c
 c-- conversion factors and constants
-      real*8 :: gg_vout      !outer boundary velocity
-      real*8 :: gg_xi2beta   !converts position in rcell length units to v/c
-      real*8 :: gg_cellength !converts rcell length units to cm
-      real*8 :: gg_dxwin     !travel 'time' window
+      REAL*8 :: gg_vout      !outer boundary velocity
+      REAL*8 :: gg_xi2beta   !converts position in rcell length units to v/c
+      REAL*8 :: gg_cellength !converts rcell length units to cm
+      REAL*8 :: gg_dxwin     !travel 'time' window
 c
       integer :: gg_ncg=0    !number of gas_grid cells
 c
@@ -22,42 +22,42 @@ c
 c-- primary gas grid, available on all ranks
       type gas_grid
 c-- energy
-       real*8 :: enabs_c    !counted absorbed energy
-       real*8 :: enabs_e    !estimated absorbed energy
+       REAL*8 :: enabs_c    !counted absorbed energy
+       REAL*8 :: enabs_e    !estimated absorbed energy
 c-- energy reservoir
-       real*8 :: engdep     !energy deposited by gamma rays
+       REAL*8 :: engdep     !energy deposited by gamma rays
 c-- scattering
-       real*8 :: sig        !Thomson scattering coeff
+       REAL*8 :: sig        !Thomson scattering coeff
 c-- gamma opacity
-       real*8 :: capgam     !Thomson scattering coeff
+       REAL*8 :: capgam     !Thomson scattering coeff
       end type gas_grid
       type(gas_grid),allocatable :: ggrid(:)  !(gg_ncg)
 c
 c-- line opacity
-      real*8,allocatable :: ggrid_wl(:) !(in_nwlg) wavelength grid
-      real*8,allocatable :: ggrid2_dwl(:) !(in_nwlg) wavelength grid bin width
+      REAL*8,allocatable :: ggrid_wl(:) !(in_nwlg) wavelength grid
+      REAL*8,allocatable :: ggrid2_dwl(:) !(in_nwlg) wavelength grid bin width
       real*4,allocatable :: ggrid_cap(:,:) !(gg_ncg,in_nwlg) Line+Cont extinction coeff
 c
 c
 c-- secondary gas grid, available on master rank only
       type gas_grid2
-       real*8 :: temp       !gcell temperature
-       real*8 :: volr       !gcell volume [rout=1 units]
-       real*8 :: vol        !gcell volume [cm^3]
-       real*8 :: volcrp     !effective volume (of linked rgrid cells) [cm^3]
-       real*8 :: mass       !gcell mass
-       real*8 :: mass0fr(-2:gg_nelem) = 0d0  !initial mass fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
-       real*8 :: natom      !gcell # atoms
-       real*8 :: natom1fr(-2:gg_nelem) = 0d0 !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
-       real*8 :: natom0fr(-2:2) = 0d0     !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
-       real*8 :: nelec=1d0  !gcell # electrons per atom
+       REAL*8 :: temp       !gcell temperature
+       REAL*8 :: volr       !gcell volume [rout=1 units]
+       REAL*8 :: vol        !gcell volume [cm^3]
+       REAL*8 :: volcrp     !effective volume (of linked rgrid cells) [cm^3]
+       REAL*8 :: mass       !gcell mass
+       REAL*8 :: mass0fr(-2:gg_nelem) = 0d0  !initial mass fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
+       REAL*8 :: natom      !gcell # atoms
+       REAL*8 :: natom1fr(-2:gg_nelem) = 0d0 !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
+       REAL*8 :: natom0fr(-2:2) = 0d0     !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
+       REAL*8 :: nelec=1d0  !gcell # electrons per atom
 c-- opacity invalidity flag
-       logical :: opdirty=.true. !opacity needs recalculation
+       LOGICAL :: opdirty=.true. !opacity needs recalculation
       end type gas_grid2
       type(gas_grid2),allocatable :: ggrid2(:) !(gg_ncg)
 c
 c-- temperature structure history
-      real*8,allocatable :: ggrid2_temp(:,:) !(gg_ncg,tim_ntim)
+      REAL*8,allocatable :: ggrid2_temp(:,:) !(gg_ncg,tim_ntim)
 c
       save
 c
@@ -67,7 +67,7 @@ c
       subroutine ggrid_alloc(ncg_in,ntim_in)
 c     --------------------------------------
       use inputparmod, only:in_nwlg,in_niwlem,in_ndim
-      implicit none
+      IMPLICIT NONE
       integer,intent(in) :: ncg_in,ntim_in
 ************************************************************************
 * allocate ggrid variables

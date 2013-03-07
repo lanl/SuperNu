@@ -21,7 +21,7 @@ PROGRAM supernu
   INTEGER :: it
   REAL*8 :: time_begin, time_end
   integer :: ierr
-  logical :: lmpi0 = .false. !master rank flag
+  LOGICAL :: lmpi0 = .false. !master rank flag
   real :: t0,t1  !timing
 !
 !-- mpi initialization

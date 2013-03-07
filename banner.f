@@ -1,7 +1,7 @@
       subroutine banner
 c     -----------------
       use mpimod
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * Print banner, start date/time, and code revision.
 ************************************************************************

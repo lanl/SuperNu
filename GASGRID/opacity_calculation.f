@@ -11,31 +11,31 @@ c$    use omp_lib
       use gasgridmod
       use miscmod
       use timingmod
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * compute bound-free and bound-bound opacity.
 ************************************************************************
       integer :: icg
-      real*8 :: wlinv
+      REAL*8 :: wlinv
 c-- timing
       real :: t0,t1
 c-- helper arrays
-      real*8 :: grndlev(gg_ncg,ion_iionmax-1,gg_nelem)
-      real*8 :: hckt(gg_ncg)
-      real*8 :: hlparr(gg_ncg)
+      REAL*8 :: grndlev(gg_ncg,ion_iionmax-1,gg_nelem)
+      REAL*8 :: hckt(gg_ncg)
+      REAL*8 :: hlparr(gg_ncg)
 c-- ffxs
-      real*8,parameter :: c1 = 4d0*pc_e**6/(3d0*pc_h*pc_me*pc_c**4)*
+      REAL*8,parameter :: c1 = 4d0*pc_e**6/(3d0*pc_h*pc_me*pc_c**4)*
      &  sqrt(pc_pi2/(3*pc_me*pc_h*pc_c))
-      real*8 :: gg,u,gff,help
-      real*8 :: yend,dydx,dy !extrapolation
+      REAL*8 :: gg,u,gff,help
+      REAL*8 :: yend,dydx,dy !extrapolation
       integer :: iu,igg
-      real*8 :: cap8
+      REAL*8 :: cap8
 c-- bfxs
       integer :: iw,iz,ii,ie
-      real*8 :: en,xs,wl
+      REAL*8 :: en,xs,wl
 c-- bbxs
       integer :: i,iwl
-      real*8 :: phi,ocggrnd,expfac,wl0
+      REAL*8 :: phi,ocggrnd,expfac,wl0
       real :: cap
 c
 c-- reset
