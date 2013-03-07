@@ -66,7 +66,7 @@ c     -------------------------
 ************************************************************************
 * read the input parameter namelist
 ************************************************************************
-      character(15),parameter :: fname='Input/input.par'
+      character(15),parameter :: fname='input.par'
 c
 c-- read namelist
       open(4,file=fname,status='old',err=66)

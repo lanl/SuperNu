@@ -25,6 +25,8 @@ TESTS = Testsuite/simple
 
 DEFAULT_COMPILER = gfortran
 
+RUNDIR = $(CURDIR)/Run
+
 ########################################################################
 # TARGETS
 ########################################################################
@@ -44,12 +46,11 @@ build:
 	Systemscripts/$(DEFAULT_COMPILER).sh
 
 run: all
-	BINDIR=`pwd`
-	mkdir ../run || rm -rf ../run/*
-	cd ../run; ln -s ${CURDIR}/Data/* .
-	cd ../run; ln -s ${CURDIR}/Input/* .
-	cd ../run; ln -s ${CURDIR}/supernu .
-	cd ../run; ./supernu
+	mkdir $(RUNDIR) || rm -f $(RUNDIR)/*
+	cd $(RUNDIR); ln -s $(CURDIR)/Data/* .
+	cd $(RUNDIR); ln -s $(CURDIR)/Input/* .
+	cd $(RUNDIR); ln -s $(CURDIR)/supernu .
+	cd $(RUNDIR); ./supernu
 
 testsuite: $(TESTS)
 	#stub
