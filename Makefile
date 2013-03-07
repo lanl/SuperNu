@@ -15,7 +15,7 @@ MODULES = kindmod.o \
   particlemod.o \
   timingmod.o
 
-OBJFILES = grids.o initials.o xsections.o sourcenumbers.o vacancies.o interior_source.o advance.o material_update.o write_output.o globalallocations.o diffusion1.o transport1.o
+OBJFILES = grids.o initials.o xsections.o sourcenumbers.o vacancies.o interior_source.o advance.o material_update.o write_output.o diffusion1.o transport1.o dealloc_all.o
 
 LIBRARIES = GASGRID/gasgrid.a MISC/misc.a
 LIBRARIES = MISC/misc.a
@@ -54,32 +54,21 @@ version.inc: version.py
 #
 #-- MODULES
 bbxsmod.o: elemdatamod.o miscmod.o physconstmod.o
-gasgridmod.o: inputparmod.o
-inputparmod.o: miscmod.o
+gasgridmod.o: kindmod.o inputparmod.o
+inputparmod.o: kindmod.o miscmod.o
 ionsmod.o: miscmod.o physconstmod.o
 miscmod.o: MISC/warn.f MISC/lcase.f
 mpimod.o: gasgridmod.o inputparmod.o timestepmod.o timingmod.o
 timestepmod.o: inputparmod.o physconstmod.o
+physconstmod.o: kindmod.o
+particlemod.o: kindmod.o
 
 #
 #-- OBJ FILES
+#-- note: prerequisites don't need to include modules as these are always built first
 banner.o: version.inc
-dealloc_all.o: bbxsmod.o gasgridmod.o ionsmod.o mpimod.o
-read_bbxs_data.o: bbxsmod.o ionsmod.o physconstmod.o timingmod.o
 
-#grids: gasgridmod.o timestepmod.o imputparmod.o
-#initials: gasgridmod.o particlemod.o timestepmod.o physconstmod.o inputparmod.o
-#xsections: gasgridmod.o timestepmod.o physconstmod.o inputparmod.o
-#sourcenumbers: gasgridmod.o timestepmod.o particlemod.o physconstmod.o inputparmod.o
-#vacancies:
-#interior_source:
-#advance:
-#material_update:
-#write_output:
-#globalallocations:
-
-supernu.o: bfxsmod.o ffxsmod.o gasgridmod.o inputparmod.o ionsmod.o mpimod.o physconstmod.o timestepmod.o timingmod.o \
-  $(OBJFILES)
+supernu.o: $(OBJFILES)
 
 #
 #-- LIBRARIES

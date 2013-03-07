@@ -85,7 +85,6 @@ PROGRAM supernu
   ! Setting transport option
   in_puretran = .FALSE.
 
-  CALL globalallocations
   CALL grids
   CALL initials
 

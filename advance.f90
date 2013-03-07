@@ -19,7 +19,7 @@ SUBROUTINE advance
   prt_eleft = 0.0
   difs = 0
   transps = 0
-  prt_numcensus(1:gas_nr) = 0
+  gas_numcensus(1:gas_nr) = 0
   
   DO ipart = 1, prt_npartmax
 

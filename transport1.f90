@@ -161,7 +161,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
      ENDIF
   ELSEIF (d == dcen) THEN
      prt_done = .TRUE.
-     prt_numcensus(z) = prt_numcensus(z)+1
+     gas_numcensus(z) = gas_numcensus(z)+1
      prt_erad = prt_erad + E*elabfact
   ENDIF
 

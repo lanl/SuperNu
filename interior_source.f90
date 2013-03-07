@@ -20,7 +20,7 @@ SUBROUTINE interior_source
      ivac = prt_vacantarr(ipart)
      isnotvacnt = .FALSE.
      DO WHILE (isnotvacnt.EQV..FALSE.)
-        IF (irused(ir)<prt_nvol(ir)) THEN
+        IF (irused(ir)<gas_nvol(ir)) THEN
            irused(ir) = irused(ir)+1
            !Calculating Group
            denom2 = 0.0
@@ -53,7 +53,7 @@ SUBROUTINE interior_source
            r1 = RAND()
            prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
            !Calculating particle energy, lab frame direction and propagation type
-           Ep0 = gas_emit(ir)/REAL(prt_nvol(ir),rknd)
+           Ep0 = gas_emit(ir)/REAL(gas_nvol(ir),rknd)
            IF ((gas_sigmapg(iig,ir)*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0_rknd).OR.(in_puretran.EQV..TRUE.)) THEN
               prt_particles(ivac)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
               prt_particles(ivac)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)

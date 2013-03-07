@@ -46,8 +46,8 @@ SUBROUTINE sourcenumbers
   prt_nnew = prt_nsurf
   
   DO ir = 1, gas_nr
-     prt_nvol(ir)=NINT(gas_emit(ir)*prt_ns/prt_etot)+1
-     prt_nnew = prt_nnew+prt_nvol(ir)
+     gas_nvol(ir)=NINT(gas_emit(ir)*prt_ns/prt_etot)+1
+     prt_nnew = prt_nnew+gas_nvol(ir)
   ENDDO
   
 END SUBROUTINE sourcenumbers
