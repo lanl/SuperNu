@@ -24,8 +24,6 @@ c-- primary gas grid, available on all ranks
 c-- energy
        REAL*8 :: enabs_c    !counted absorbed energy
        REAL*8 :: enabs_e    !estimated absorbed energy
-c-- energy reservoir
-       REAL*8 :: engdep     !energy deposited by gamma rays
 c-- scattering
        REAL*8 :: sig        !Thomson scattering coeff
 c-- gamma opacity
@@ -41,11 +39,11 @@ c
 c
 c-- secondary gas grid, available on master rank only
       type gas_grid2
-       REAL*8 :: temp       !gcell temperature
+tempkev       REAL*8 :: temp       !gcell temperature
        REAL*8 :: volr       !gcell volume [rout=1 units]
-       REAL*8 :: vol        !gcell volume [cm^3]
+dr3_34pi       REAL*8 :: vol        !gcell volume [cm^3]
        REAL*8 :: volcrp     !effective volume (of linked rgrid cells) [cm^3]
-       REAL*8 :: mass       !gcell mass
+rho       REAL*8 :: mass       !gcell mass
        REAL*8 :: mass0fr(-2:gg_nelem) = 0d0  !initial mass fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
        REAL*8 :: natom      !gcell # atoms
        REAL*8 :: natom1fr(-2:gg_nelem) = 0d0 !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
@@ -53,6 +51,8 @@ c-- secondary gas grid, available on master rank only
        REAL*8 :: nelec=1d0  !gcell # electrons per atom
 c-- opacity invalidity flag
        LOGICAL :: opdirty=.true. !opacity needs recalculation
+c-- energy reservoir
+       REAL*8 :: engdep     !energy deposited by gamma rays
       end type gas_grid2
       type(gas_grid2),allocatable :: ggrid2(:) !(gg_ncg)
 c
