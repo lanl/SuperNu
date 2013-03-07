@@ -15,10 +15,9 @@ MODULES = \
   particlemod.o \
   timingmod.o
 
-OBJFILES = grids.o initials.o xsections.o sourcenumbers.o vacancies.o interior_source.o advance.o material_update.o write_output.o diffusion1.o transport1.o dealloc_all.o
+OBJFILES = sourcenumbers.o vacancies.o interior_source.o advance.o write_output.o diffusion1.o transport1.o dealloc_all.o
 
 LIBRARIES = GASGRID/gasgrid.a MISC/misc.a
-LIBRARIES = MISC/misc.a
 
 SUBDIRS = $(dir $(LIBRARIES))
 

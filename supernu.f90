@@ -46,7 +46,7 @@ PROGRAM supernu
   call parse_inputpars(nmpi)
 !
 !-- time step init
-  CALL timestep_init(in_nt)
+  CALL timestep_init(in_nt,in_alpha)
 !
 !-- particle init
   CALL particle_init(in_npartmax,in_ns)

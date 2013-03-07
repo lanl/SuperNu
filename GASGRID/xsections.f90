@@ -3,7 +3,6 @@ SUBROUTINE xsections
   USE gasgridmod
   USE timestepmod
   USE physconstmod
-  USE inputparmod
   IMPLICIT NONE
 
   INTEGER :: ir, ig
@@ -39,7 +38,7 @@ SUBROUTINE xsections
      ENDDO
      Um = gas_bcoef(ir)*gas_temp(ir)
      beta = 4.0*gas_ur(ir)/Um
-     gas_fcoef(ir) = 1.0/(1.0+in_alpha*beta*pc_c*tsp_dt*gas_sigmap(ir))
+     gas_fcoef(ir) = 1.0/(1.0+tsp_alpha*beta*pc_c*tsp_dt*gas_sigmap(ir))
      DO ig = 1, gas_ng
         gas_emitprobg(ig,ir) = gas_ppick(ig)*gas_sigmapg(ig,ir)/gas_sigmap(ir)
      ENDDO

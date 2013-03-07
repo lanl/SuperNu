@@ -3,7 +3,6 @@ SUBROUTINE material_update
   USE gasgridmod
   USE timestepmod
   USE physconstmod
-  USE inputparmod
   IMPLICIT NONE
 
   INTEGER :: ir
