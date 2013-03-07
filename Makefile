@@ -69,7 +69,7 @@ particlemod.o: kindmod.o
 #-- note: prerequisites don't need to include modules as these are always built first
 banner.o: version.inc
 
-driver.o: $(OBJFILES)
+supernu.o: $(OBJFILES)
 
 #
 #-- LIBRARIES
@@ -77,4 +77,4 @@ $(SUBDIRS):
 	$(MAKE) -C $@
 #
 #-- PROGRAMS
-supernu: $(MODULES) $(OBJFILES) driver.o banner.o $(LIBRARIES)
+supernu: $(MODULES) $(OBJFILES) supernu.o banner.o $(LIBRARIES)
