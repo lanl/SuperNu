@@ -1,6 +1,6 @@
       module inputparmod
 c     ------------------
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * input parameters
 ************************************************************************
@@ -62,11 +62,11 @@ c
 c
       subroutine read_inputpars
 c     -------------------------
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * read the input parameter namelist
 ************************************************************************
-      character(15),parameter :: fname='Input/input.par'
+      character(15),parameter :: fname='input.par'
 c
 c-- read namelist
       open(4,file=fname,status='old',err=66)
@@ -83,9 +83,9 @@ c
 c
       subroutine parse_inputpars(nmpi)
 c     --------------------------------
-!!    use miscmod, only:warn
+      use miscmod, only:warn
 c$    use omp_lib
-      implicit none
+      IMPLICIT NONE
       integer,intent(in) :: nmpi
 ************************************************************************
 * parse the input parameter namelist
@@ -131,21 +131,21 @@ c
       if(in_opcap<0d0) then
        stop 'in_opcap invalid'
       elseif(in_opcap>0d0) then
-!!     call warn('read_inputpars',
-!!   &   'gray opacity added! For testing uses only!')
+       call warn('read_inputpars',
+     &   'gray opacity added! For testing uses only!')
       endif
       if(in_epsline<0d0 .or. in_epsline>1d0) stop 'in_epsline invalid'
 c
-!!    if(in_nobbopac) call warn('read_inputpars','ff opacity disabled!')
-!!    if(in_nobfopac) call warn('read_inputpars','bf opacity disabled!')
-!!    if(in_noffopac) call warn('read_inputpars','bb opacity disabled!')
+      if(in_nobbopac) call warn('read_inputpars','ff opacity disabled!')
+      if(in_nobfopac) call warn('read_inputpars','bf opacity disabled!')
+      if(in_noffopac) call warn('read_inputpars','bb opacity disabled!')
 c
       if(trim(in_opacdump)=='off') then
       elseif(trim(in_opacdump)=='one') then
       elseif(trim(in_opacdump)=='each') then
       elseif(trim(in_opacdump)=='all') then
-!!     call warn('read_inputpars',
-!!   &   "in_opacdump=='all' will generate a big data file!")
+       call warn('read_inputpars',
+     &   "in_opacdump=='all' will generate a big data file!")
       else
        stop 'in_opacdump invalid'
       endif

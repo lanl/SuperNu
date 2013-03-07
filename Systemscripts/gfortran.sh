@@ -23,11 +23,16 @@ for a in $@; do
  fi
 done
 
+bit32_64='-m64'
+if [[ $(uname -m) =~ 'i686' ]]; then
+ bit32_64=''
+fi
+
 cat <<END >Makefile.compiler
 #==== gfortran (current version: gcc 4.5) ====
 FC = $FC
 FCFLAGS = $optimize $debug
-#FCFLAGS += -m64
+FCFLAGS += $bit32_64
 FCFLAGS += $omp
 FCFLAGS_FF = -ffixed-form
 LDFLAGS = $omp

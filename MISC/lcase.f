@@ -1,6 +1,6 @@
       function lcase(input_string) result(output_string)
 c     --------------------------------------------------
-      implicit none
+      IMPLICIT NONE
       character(*),intent(in) :: input_string
       character(len(input_string)) :: output_string
 ************************************************************************

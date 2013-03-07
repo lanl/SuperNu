@@ -1,6 +1,6 @@
       module mpimod
 c     -------------
-      implicit none
+      IMPLICIT NONE
       include 'mpif.h'
 c
       integer,parameter :: impi0 = 0 !the master rank
@@ -17,7 +17,7 @@ c     --------------------------
       use inputparmod
       use timestepmod, only:tim_ntim
       use gasgridmod
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * Broadcast the data that does not evolve over time (or temperature).
 * Also once the constants are broadcasted, all allocatable arrays are
@@ -38,7 +38,7 @@ c     --------------------------
 ************************************************************************
       integer :: i
       integer,allocatable :: isndvec(:)
-      real*8,allocatable :: sndvec(:)
+      REAL*8,allocatable :: sndvec(:)
 c
 c-- broadcast integer constants
       allocate(isndvec(12))
@@ -62,7 +62,7 @@ c-- copy back
       in_ntc = isndvec(12)
       deallocate(isndvec)
 c
-c-- broadcast real*8 constants
+c-- broadcast REAL*8 constants
       allocate(sndvec(7))
       if(impi==impi0) then
        sndvec(1:3) = (/in_wlmin,in_wlmax,in_epsline/)
@@ -129,7 +129,7 @@ c     ------------------------
       use inputparmod
       use gasgridmod
       use timestepmod
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
 * constants:
@@ -162,7 +162,7 @@ c     -----------------------
       use gasgridmod
       use timestepmod
       use timingmod
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * Reduce the results from the packet transport that are needed for the
 * temperature correction.
@@ -170,8 +170,8 @@ c     -----------------------
 * - ggrid%enabs_c
 * - t_pckt_stat !min,mean,max
 ************************************************************************
-      real*8 :: sndvec(gg_ncg),rcvvec(gg_ncg)
-      real*8 :: help
+      REAL*8 :: sndvec(gg_ncg),rcvvec(gg_ncg)
+      REAL*8 :: help
 c
       sndvec = ggrid(:)%enabs_e
       call mpi_reduce(sndvec,rcvvec,gg_ncg,MPI_REAL8,MPI_SUM,

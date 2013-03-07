@@ -4,14 +4,14 @@ c     --------------------------------------
       use inputparmod
       use gasgridmod
       use miscmod, only:warn
-      implicit none
+      IMPLICIT NONE
       integer,intent(in) :: ncg_in,ntim_in
 ************************************************************************
 * Initialize the gas grid, the part that is constant with time and
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
       integer :: i
-      real*8 :: help
+      REAL*8 :: help
 c
 c--
       write(6,*)
@@ -57,12 +57,12 @@ c     -------------------------
       use physconstmod
       use elemdatamod, only:elem_data
       use ggridmod
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * convert mass fractions to natom fractions, and mass to natom.
 ************************************************************************
       integer :: i,j
-      real*8 :: help
+      REAL*8 :: help
 c
       do i=1,gg_ncg
 c

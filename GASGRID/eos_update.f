@@ -4,16 +4,16 @@ c     --------------------------------
       use ionsmod
       use timestepmod, only:tim_itim,tim_itc
       use timingmod
-      implicit none
-      logical,intent(in) :: do_output
+      IMPLICIT NONE
+      LOGICAL,intent(in) :: do_output
 ************************************************************************
 * Solve the eos for given temperatures.
 ************************************************************************
       integer :: i,niter,iion,nion
       integer :: icg,iz,ii
       real :: t0,t1
-      real*8 :: ndens
-      real*8 :: pdens(ion_nion,gg_ncg)
+      REAL*8 :: ndens
+      REAL*8 :: pdens(ion_nion,gg_ncg)
 c
 c-- loop over all ggrid cells
       call time(t0)

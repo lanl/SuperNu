@@ -1,27 +1,27 @@
       module timingmod
 c     ----------------
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * Collection of runtime timers for different parts of the code.
 ************************************************************************
 c-- system_clock helper variables
       integer,private :: icount_prev=-1,imax
-      real*8,private :: tick
+      REAL*8,private :: tick
 c
 c-- one-time events
-      real*8 :: t_setup
-      real*8 :: t_all
+      REAL*8 :: t_setup
+      REAL*8 :: t_all
 c-- global-flow time registers:
-      real*8 :: t_gasupd(2)=0d0  !update gas grid
-      real*8 :: t_pckt(2)=0d0   !packet transport
+      REAL*8 :: t_gasupd(2)=0d0  !update gas grid
+      REAL*8 :: t_pckt(2)=0d0   !packet transport
 c-- task-based time registers:
-      real*8 :: t_eos(2)=0d0    !equation of state
-      real*8 :: t_bb(2)=0d0     !bound-bound opacity
-      real*8 :: t_bf(2)=0d0     !bound-free opacity
-      real*8 :: t_ff(2)=0d0     !bound-free opacity
+      REAL*8 :: t_eos(2)=0d0    !equation of state
+      REAL*8 :: t_bb(2)=0d0     !bound-bound opacity
+      REAL*8 :: t_bf(2)=0d0     !bound-free opacity
+      REAL*8 :: t_ff(2)=0d0     !bound-free opacity
 c
 c-- parallel statistics packet timer
-      real*8 :: t_pckt_stat(3)!min,mean,max
+      REAL*8 :: t_pckt_stat(3)!min,mean,max
 c
       save
 c
@@ -29,9 +29,9 @@ c
 c
       subroutine timereg(reg,t)
 c     -------------------------
-      implicit none
-      real*8,intent(inout) :: reg(2)
-      real,intent(in) :: t
+      IMPLICIT NONE
+      REAL*8,intent(inout) :: reg(2)
+      REAL,intent(in) :: t
 ************************************************************************
 * Put the time t in the register reg. The first position in reg stores
 * the last value of t, the second position stores the sum.
@@ -46,7 +46,7 @@ c
 c
       subroutine print_timing
 c     -----------------------
-      implicit none
+      IMPLICIT NONE
 ************************************************************************
 * Print the timing totals
 ************************************************************************
@@ -69,8 +69,8 @@ c
 c
       subroutine time(t)
 c     ------------------
-      implicit none
-      real,intent(out) :: t
+      IMPLICIT NONE
+      REAL,intent(out) :: t
 ************************************************************************
 * Determine system time in seconds since some point in history.
 * Note that the result is a single precision real, corresponding to the

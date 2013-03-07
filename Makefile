@@ -15,7 +15,7 @@ MODULES = \
   particlemod.o \
   timingmod.o
 
-OBJFILES = sourcenumbers.o vacancies.o interior_source.o advance.o write_output.o diffusion1.o transport1.o dealloc_all.o
+OBJFILES = sourcenumbers.o vacancies.o interior_source.o advance.o write_output.o diffusion1.o transport1.o read_bbxs_data.o dealloc_all.o
 
 LIBRARIES = GASGRID/gasgrid.a MISC/misc.a
 
@@ -25,11 +25,13 @@ TESTS = Testsuite/simple
 
 DEFAULT_COMPILER = gfortran
 
+RUNDIR = $(CURDIR)/Run
+
 ########################################################################
 # TARGETS
 ########################################################################
 # Utility targets (ignore corresponding file names)
-.PHONY: all put-intrepid clean cleandirs cleanall run testsuite $(SUBDIRS)
+.PHONY: all put-intrepid clean cleandirs cleanall run tar testsuite $(SUBDIRS)
 
 all: $(MODULES) $(SUBDIRS) $(PROGRAMS)
 
@@ -44,12 +46,11 @@ build:
 	Systemscripts/$(DEFAULT_COMPILER).sh
 
 run: all
-	BINDIR=`pwd`
-	mkdir ../run || rm -rf ../run/*
-	cd ../run; ln -s ${CURDIR}/Data/* .
-	cd ../run; ln -s ${CURDIR}/Input/* .
-	cd ../run; ln -s ${CURDIR}/supernu .
-	cd ../run; ./supernu
+	mkdir $(RUNDIR) || rm -f $(RUNDIR)/*
+	cd $(RUNDIR); ln -s $(CURDIR)/Data/* .
+	cd $(RUNDIR); ln -s $(CURDIR)/Input/* .
+	cd $(RUNDIR); ln -s $(CURDIR)/supernu .
+	cd $(RUNDIR); ./supernu
 
 testsuite: $(TESTS)
 	#stub
@@ -75,6 +76,7 @@ timestepmod.o: inputparmod.o physconstmod.o
 #-- OBJ FILES
 #-- note: prerequisites don't need to include modules as these are always built first
 banner.o: version.inc
+read_bbxs_data.o: miscmod.o
 
 supernu.o: $(OBJFILES)
 
