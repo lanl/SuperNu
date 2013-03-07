@@ -7,8 +7,8 @@ PROGRAM supernu
   USE particlemod
 
   use ionsmod, only:ion_read_data,ion_alloc_grndlev
-!!use bfxsmod, only:bfxs_read_data
-!!use ffxsmod, only:ffxs_read_data
+  use bfxsmod, only:bfxs_read_data
+  use ffxsmod, only:ffxs_read_data
   use timingmod
 
   IMPLICIT NONE
@@ -63,11 +63,11 @@ PROGRAM supernu
    call ion_read_data(gas_nelem)  !ion and level data
    call ion_alloc_grndlev(gas_nr)   !ground state occupation numbers
 !-- read bbxs data
-!! if(.not.in_nobbopac) call read_bbxs_data(gas_nelem)!bound-bound cross section data
+   if(.not.in_nobbopac) call read_bbxs_data(gas_nelem)!bound-bound cross section data
 !-- read bfxs data
-!! if(.not.in_nobfopac) call bfxs_read_data          !bound-free cross section data
+   if(.not.in_nobfopac) call bfxs_read_data          !bound-free cross section data
 !-- read bfxs data
-!! if(.not.in_noffopac) call ffxs_read_data          !free-free cross section data
+   if(.not.in_noffopac) call ffxs_read_data          !free-free cross section data
 !
    call time(t1)
    t_setup = t1-t0
