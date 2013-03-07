@@ -114,6 +114,7 @@ PROGRAM supernu
      tsp_texp = tsp_texp+tsp_dt
      !Writing data to files
      CALL write_output
+!    CALL write_restart
      tsp_tn = tsp_tn+1
   ENDDO
   CALL CPU_TIME(time_end)
