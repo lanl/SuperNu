@@ -92,7 +92,6 @@ c$    use omp_lib
 * parse the input parameter namelist
 ************************************************************************
       integer :: istat
-      real :: rhelp
 c$    integer :: i
 c
 c-- redirect stdout to file if chosen so

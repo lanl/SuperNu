@@ -18,7 +18,7 @@ PROGRAM supernu
 ! todo:
 !  - dummy (drr, 2013/mar/05)
 !***********************************************************************
-  INTEGER(iknd) :: it, ipart
+  INTEGER(iknd) :: it
   REAL(rknd) :: time_begin, time_end
   integer :: ierr
   logical :: lmpi0 = .false. !master rank flag

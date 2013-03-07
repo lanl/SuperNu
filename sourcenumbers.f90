@@ -7,7 +7,7 @@ SUBROUTINE sourcenumbers
   USE inputparmod
   IMPLICIT NONE
 
-  INTEGER(iknd) :: ir, nsr
+  INTEGER(iknd) :: ir
   REAL(rknd) :: sou
   ! prt_esurf for any new prt_particles from a surface source
   ! prt_nsurf = number of surface prt_particles

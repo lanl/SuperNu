@@ -3,7 +3,7 @@ c     -------------
       implicit none
       integer :: MPI_COMM_WORLD=0
       integer :: MPI_MAX_PROCESSOR_NAME=1
-      integer,private :: ierr
+      integer,private :: ierr=0
       integer :: impi=0  !mpi rank
       integer :: impi0=0 !master mpi rank
       integer :: nmpi=1  !number of mpi tasks
@@ -49,38 +49,51 @@ c     -------------------------
       end subroutine reduce_fluxes
 c
 c
-      subroutine mpi_init(ierr)
+      subroutine mpi_init(ierr_)
       implicit none
-      integer :: ierr
+      integer :: ierr_
+      ierr_ = ierr
       end subroutine mpi_init
 c
-      subroutine mpi_comm_rank(MPI_COMM_WORLD,impi,ierr)
+      subroutine mpi_comm_rank(mpi_comm,impi_,ierr_)
       implicit none
-      integer :: MPI_COMM_WORLD
-      integer :: impi,ierr
+      integer :: mpi_comm
+      integer :: impi_,ierr_
+      ierr_ = ierr
+      impi_ = impi
+      mpi_comm = MPI_COMM_WORLD
+      impi = impi
       end subroutine mpi_comm_rank
 c
-      subroutine mpi_comm_size(MPI_COMM_WORLD,nmpi,ierr)
+      subroutine mpi_comm_size(mpi_comm,nmpi_,ierr_)
       implicit none
-      integer :: MPI_COMM_WORLD
-      integer :: nmpi,ierr
+      integer :: mpi_comm
+      integer :: nmpi_,ierr_
+      ierr_ = ierr
+      nmpi_ = nmpi
+      mpi_comm = MPI_COMM_WORLD
       end subroutine mpi_comm_size
 c
-      subroutine mpi_get_processor_name(pname,ilen,ierr)
+      subroutine mpi_get_processor_name(pname,ilen_,ierr_)
       implicit none
       character*(MPI_MAX_PROCESSOR_NAME) :: pname
-      integer :: ilen,ierr
+      integer :: ilen_,ierr_
       pname = 'NOT AVAILABLE'
+      ierr_ = ierr
+      ilen_ = 1
       end subroutine mpi_get_processor_name
 c
-      subroutine mpi_barrier(MPI_COMM_WORLD,ierr)
+      subroutine mpi_barrier(mpi_comm,ierr_)
       implicit none
-      integer :: MPI_COMM_WORLD,ierr
+      integer :: mpi_comm,ierr_
+      ierr_ = ierr
+      mpi_comm = MPI_COMM_WORLD
       end subroutine mpi_barrier
 c
-      subroutine mpi_finalize(ierr)
+      subroutine mpi_finalize(ierr_)
       implicit none
-      integer :: ierr
+      integer :: ierr_
+      ierr_ = ierr
       end subroutine mpi_finalize
 c
       end module mpimod

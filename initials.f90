@@ -8,7 +8,7 @@ SUBROUTINE initials
 
   IMPLICIT NONE
 
-  INTEGER(iknd) :: ir, ipart, ig
+  INTEGER(iknd) :: ir, ipart
   REAL(rknd) :: Um, t_elapsed
 
   prt_erad = 0.0   !Total radiation energy
