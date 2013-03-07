@@ -14,7 +14,7 @@ SUBROUTINE write_output
   OPEN(UNIT=7,FILE='Lum.dat',STATUS='UNKNOWN',POSITION=pos)
   
   WRITE(2,*) tsp_time
-  WRITE(7,*) prt_eright/tsp_dt
+  WRITE(7,*) gas_eright/tsp_dt
 
   DO ir = 1, gas_nr
      WRITE(3,'(es16.8)',ADVANCE='NO') gas_temp(ir)

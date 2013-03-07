@@ -10,8 +10,8 @@ SUBROUTINE boundary_source
   INTEGER :: ipart, ivac, ig, z0
   REAL*8 :: r1, r2, P, mu0, r0, Esurfpart
 
-  Esurfpart = prt_esurf/REAL(prt_nsurf)
-  prt_einp = prt_einp+prt_esurf
+  Esurfpart = gas_esurf/REAL(prt_nsurf)
+  gas_einp = gas_einp+gas_esurf
 
   DO ipart = 1, prt_nsurf
      ivac = prt_vacantarr(ipart)

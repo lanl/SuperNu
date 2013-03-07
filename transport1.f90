@@ -97,7 +97,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         IF (z == gas_nr) THEN
            vacnt = .TRUE.
            prt_done = .TRUE.
-           prt_eright = prt_eright+E !*elabfact
+           gas_eright = gas_eright+E !*elabfact
         ! Checking if DDMC region right
         ELSEIF ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
                  .AND.(in_puretran.EQV..FALSE.)) THEN
@@ -143,7 +143,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         !IF (z==1) THEN
         !   vacnt = .TRUE.
         !   prt_done = .TRUE.
-        !   prt_eleft = prt_eleft+E*elabfact
+        !   gas_eleft = gas_eleft+E*elabfact
         ! Checking if DDMC region left   
         ELSEIF ((gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
              .AND.(in_puretran.EQV..FALSE.)) THEN
@@ -169,7 +169,7 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   ELSEIF (d == dcen) THEN
      prt_done = .TRUE.
      gas_numcensus(z) = gas_numcensus(z)+1
-     prt_erad = prt_erad + E*elabfact
+     gas_erad = gas_erad + E*elabfact
   ENDIF
 
 

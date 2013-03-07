@@ -48,7 +48,7 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            WRITE(*,*) 'Non-physical left leakage'
            !vacnt = .TRUE.
            !prt_done = .TRUE.
-           !prt_eleft = prt_eleft+E
+           !gas_eleft = gas_eleft+E
         ELSEIF (gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) THEN
            z = z-1
         ELSE
@@ -69,7 +69,7 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            r1 = RAND()
            r2 = RAND()
            mu = MAX(r1,r2)
-           prt_eright = prt_eright+E*(1.0+gas_velyes*gas_rarr(gas_nr+1)*mu/pc_c)
+           gas_eright = gas_eright+E*(1.0+gas_velyes*gas_rarr(gas_nr+1)*mu/pc_c)
         ELSEIF (gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) THEN
            z = z+1
         ELSE
@@ -117,7 +117,7 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   ELSE
      prt_done = .TRUE.
      gas_numcensus(z)=gas_numcensus(z)+1
-     prt_erad = prt_erad+E
+     gas_erad = gas_erad+E
   ENDIF
 
 END SUBROUTINE diffusion1

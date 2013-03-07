@@ -8,13 +8,11 @@ MODULE particlemod
      REAL*8 :: Esrc, Ebirth
      LOGICAL :: isvacant
   END TYPE packet
-  TYPE(packet), DIMENSION(:), POINTER :: prt_particles
+  TYPE(packet), DIMENSION(:), POINTER :: prt_particles  !(prt_npartmax)
 
   INTEGER :: prt_npartmax, prt_ns
   INTEGER :: prt_nsurf, prt_nnew
   INTEGER, DIMENSION(:), ALLOCATABLE :: prt_vacantarr
-
-  REAL*8 :: prt_eleft, prt_eright, prt_erad, prt_einit, prt_einp, prt_eint, prt_etot, prt_esurf
 
   LOGICAL :: prt_done
 

@@ -22,6 +22,8 @@ MODULE gasgridmod
   REAL*8, DIMENSION(:,:), ALLOCATABLE :: gas_sigmapg, gas_sigmargleft, gas_sigmargright, gas_emitprobg  !(gas_nr,gas_ng)
   REAL*8, DIMENSION(:,:), ALLOCATABLE :: gas_sigmal, gas_ppl, gas_sigmar, gas_ppr  !(gas_nr,gas_ng)
 
+  REAL*8 :: gas_eleft, gas_eright, gas_erad, gas_einit, gas_einp, gas_eint, gas_etot, gas_esurf
+
   ! Picket-fence probabilities
   REAL*8, DIMENSION(:), ALLOCATABLE :: gas_ppick
 

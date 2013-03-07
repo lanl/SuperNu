@@ -23,9 +23,9 @@ SUBROUTINE advance
   LOGICAL, POINTER :: isvacant 
 
   gas_edep = 0.0
-  prt_erad = 0.0
-  prt_eright = 0.0
-  prt_eleft = 0.0
+  gas_erad = 0.0
+  gas_eright = 0.0
+  gas_eleft = 0.0
   difs = 0
   transps = 0
   gas_numcensus(1:gas_nr) = 0

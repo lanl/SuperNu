@@ -14,10 +14,10 @@ SUBROUTINE initials
   INTEGER :: ir, ipart
   REAL*8 :: Um, t_elapsed
 
-  prt_erad = 0.0   !Total radiation energy
-  prt_einit = 0.0  !Total initial energy
-  prt_einp = 0.0   !Input Energy
-  prt_eint = 0.0   !Total internal energy
+  gas_erad = 0.0   !Total radiation energy
+  gas_einit = 0.0  !Total initial energy
+  gas_einp = 0.0   !Input Energy
+  gas_eint = 0.0   !Total internal energy
   !OPEN(UNIT=8,FILE='Tinit.dat',STATUS='UNKNOWN')
   !READ(8,*) gas_temp
   !DO ir = 1, gas_nr
@@ -36,9 +36,9 @@ SUBROUTINE initials
 
      gas_ur(ir) = pc_acoef*gas_temp(ir)**4
      Um = gas_bcoef(ir)*gas_temp(ir)
-     prt_einit = prt_einit + Um*4*pc_pi*gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**3)/3.0
+     gas_einit = gas_einit + Um*4*pc_pi*gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**3)/3.0
   ENDDO
-  prt_einp = prt_einit
+  gas_einp = gas_einit
   ! Setting all entries of particle array to vacant: loop
   DO ipart = 1, prt_npartmax
      prt_particles(ipart)%isvacant=.TRUE.
