@@ -48,8 +48,8 @@ run:
 # EXPLICIT RULES
 ########################################################################
 #-- AUTOMATICALLY GENERATED INC FILES
-#version.inc: version.py
-#	@python2 -B version.inc.py
+version.inc: version.py
+	@python2 -B version.inc.py
 
 #
 #-- MODULES
@@ -63,7 +63,7 @@ timestepmod.o: inputparmod.o physconstmod.o
 
 #
 #-- OBJ FILES
-#banner.o: version.inc
+banner.o: version.inc
 dealloc_all.o: bbxsmod.o gasgridmod.o ionsmod.o mpimod.o
 read_bbxs_data.o: bbxsmod.o ionsmod.o physconstmod.o timingmod.o
 
@@ -90,5 +90,4 @@ $(SUBDIRS):
 #supernu: $(MODULES) supernu.o banner.o \
   read_bbxs_data.o \
   dealloc_all.o $(LIBRARIES)
-#supernu: $(MODULES) $(OBJFILES) supernu.o banner.o $(LIBRARIES)
-supernu: $(MODULES) $(OBJFILES) supernu.o $(LIBRARIES)
+supernu: $(MODULES) $(OBJFILES) supernu.o banner.o $(LIBRARIES)

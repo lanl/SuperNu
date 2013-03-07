@@ -101,7 +101,7 @@ c-- redirect stdout to file if chosen so
        open(6,file='fort.6',action='write',status='replace',recl=2000,
      &   iostat=istat) !write stdout to file
        if(istat/=0) stop 'parse_inputpars: open fort.6 error'
-       !call banner
+       call banner
       endif!}}}
 c
 c-- check read values
