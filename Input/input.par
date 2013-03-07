@@ -1,17 +1,22 @@
 &inputpars
 
-in_tfirst = 4,
-in_tlast = 8,
-in_lr = 1.4e8,
+!-- time step
+in_tfirst = 4
+in_tlast = 6
+in_nt = 5
+in_alpha = 1d0
 
-in_nt = 9,
-in_nr = 50,
-in_ng = 2,
-in_isvelocity = .TRUE.,
+!-- gas grid settings
+in_lr = 1.4d8
+in_nr = 50
+in_isvelocity = .TRUE.
+in_ng = 2
 
-in_ns = 100000,
-in_npartmax = 10000000,
-in_alpha = 1.0,
+!-- particle numbers
+in_ns = 100000
+in_npartmax = 10000000
+
+!-- random seed
 in_seed = 1984117
 
 &end

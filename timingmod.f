@@ -31,7 +31,7 @@ c
 c     -------------------------
       IMPLICIT NONE
       REAL*8,intent(inout) :: reg(2)
-      real,intent(in) :: t
+      REAL,intent(in) :: t
 ************************************************************************
 * Put the time t in the register reg. The first position in reg stores
 * the last value of t, the second position stores the sum.
@@ -70,7 +70,7 @@ c
       subroutine time(t)
 c     ------------------
       IMPLICIT NONE
-      real,intent(out) :: t
+      REAL,intent(out) :: t
 ************************************************************************
 * Determine system time in seconds since some point in history.
 * Note that the result is a single precision real, corresponding to the
