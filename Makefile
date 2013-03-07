@@ -22,11 +22,15 @@ LIBRARIES = MISC/misc.a
 
 SUBDIRS = $(dir $(LIBRARIES))
 
+TESTS = Testsuite/simple
+
+DEFAULT_COMPILER = gfortran
+
 ########################################################################
 # TARGETS
 ########################################################################
 # Utility targets (ignore corresponding file names)
-.PHONY: all put-intrepid clean cleandirs cleanall run $(SUBDIRS)
+.PHONY: all put-intrepid clean cleandirs cleanall run testsuite $(SUBDIRS)
 
 all: $(MODULES) $(SUBDIRS) $(PROGRAMS)
 
@@ -37,13 +41,19 @@ clean: cleandirs
 cleandirs:
 	for d in $(SUBDIRS); do ($(MAKE) -C $$d clean); done
 
-run:
+build:
+	Systemscripts/$(DEFAULT_COMPILER).sh
+
+run: all
 	BINDIR=`pwd`
 	mkdir ../run || rm -rf ../run/*
 	cd ../run; ln -s ${CURDIR}/Data/* .
 	cd ../run; ln -s ${CURDIR}/Input/* .
 	cd ../run; ln -s ${CURDIR}/supernu .
 	cd ../run; supernu
+
+testsuite: $(TESTS)
+	#stub
 
 ########################################################################
 # EXPLICIT RULES

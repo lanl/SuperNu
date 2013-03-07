@@ -2,7 +2,7 @@
 c     -------------
       implicit none
       integer :: MPI_COMM_WORLD=0
-      integer :: MPI_MAX_PROCESSOR_NAME=1
+      integer :: MPI_MAX_PROCESSOR_NAME=13
       integer,private :: ierr=0
       integer :: impi=0  !mpi rank
       integer :: impi0=0 !master mpi rank

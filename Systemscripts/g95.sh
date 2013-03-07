@@ -24,7 +24,7 @@ cat <<END >Makefile.compiler
 #==== g95 (current version: 0.92 - 24/jun/2009) ====
 FC = $FC
 FCFLAGS = $optimize $debug
-FCFLAGS += -m64
+#FCFLAGS += -m64
 FCFLAGS_FF = -ffixed-form
 LDFLAGS =
 

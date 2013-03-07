@@ -6,7 +6,7 @@ PROGRAM supernu
   USE gasgridmod
   USE particlemod
 
-!!use ionsmod, only:ion_read_data,ion_alloc_grndlev
+  use ionsmod, only:ion_read_data,ion_alloc_grndlev
 !!use bfxsmod, only:bfxs_read_data
 !!use ffxsmod, only:ffxs_read_data
 !!use timingmod
@@ -54,14 +54,14 @@ PROGRAM supernu
 !-- SETUP GRIDS
 !-- setup gas grid (map gstruct to gasgrid)
    CALL gasgrid_init(in_nr,in_ng,in_lr,in_isvelocity)
-!! call ggrid_setup(ncg,tim_ntim)
+!! call ggrid_setup(gas_nr,tim_ntim)
 !-- read initial temperature structure from file
    !call read_restart_file
 !
 !-- READ DATA
 !-- read ion and level data
-!! call ion_read_data(gas_nelem)  !ion and level data
-!! call ion_alloc_grndlev(ncg)   !ground state occupation numbers
+   call ion_read_data(gas_nelem)  !ion and level data
+   call ion_alloc_grndlev(gas_nr)   !ground state occupation numbers
 !-- read bbxs data
 !! if(.not.in_nobbopac) call read_bbxs_data(gas_nelem)!bound-bound cross section data
 !-- read bfxs data
@@ -133,7 +133,7 @@ PROGRAM supernu
 !! if(in_grab_stdout)write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
 !!endif
 !-- Clean up memory. (This help to locate memory leaks)
-!!call dealloc_all
+  call dealloc_all
 !!call mpi_finalize(ierr) !MPI
 
 END PROGRAM supernu

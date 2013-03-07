@@ -9,6 +9,8 @@ MODULE gasgridmod
   LOGICAL :: gas_isvelocity
   INTEGER(iknd) :: gas_velno, gas_velyes
 
+  INTEGER(iknd) :: gas_nelem = 0
+
   REAL(rknd) :: gas_nidecay = 1.73*(1.6022e-6)  !erg/s/g  !this value is used in the first iteration
 
   REAL(rknd) :: gas_emat
