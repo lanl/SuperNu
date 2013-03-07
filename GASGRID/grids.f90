@@ -4,12 +4,17 @@ SUBROUTINE grids
   USE timestepmod
   IMPLICIT NONE
 
+!##################################################
   ! This subroutine creates the spatial grid (or velocity grid if gas_velyes=1)
+!##################################################
 
   INTEGER :: ir
 
+  !Initial expansion time (to be set to start time)
   tsp_texp = 0.14
+  !Initial inner most radius
   gas_rarr(1) = 0.0d0
+  ! Initial grid, cell length, and cell volume generation loop
   DO ir = 1, gas_nr
      gas_drarr(ir)=gas_lr/REAL(gas_nr)
      gas_rarr(ir+1)=gas_rarr(ir)+gas_drarr(ir)

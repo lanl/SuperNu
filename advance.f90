@@ -6,6 +6,15 @@ SUBROUTINE advance
   USE physconstmod
   USE inputparmod
   IMPLICIT NONE
+
+!##################################################
+  !This subroutine propagates all existing particles that are not vacant
+  !during a time step.  Particles may generally undergo a physical interaction
+  !with the gas, cross a spatial cell boundary, or be censused for continued
+  !propagation in the next time step.  Currently DDMC and IMC particle events
+  !are being handled in separate subroutines but this may be changed to reduce
+  !total subroutine calls in program.
+!##################################################
   
   INTEGER :: ipart, difs, transps
   REAL*8 :: r1, alph2
@@ -20,11 +29,12 @@ SUBROUTINE advance
   difs = 0
   transps = 0
   gas_numcensus(1:gas_nr) = 0
-  
+
+  ! Propagating all particles that are not considered vacant: loop
   DO ipart = 1, prt_npartmax
-
+     ! Checking vacancy
      IF (prt_particles(ipart)%isvacant.EQV..FALSE.) THEN
-
+        ! Assigning pointers to corresponding particle properties
         zsrc => prt_particles(ipart)%zsrc
         gsrc => prt_particles(ipart)%gsrc
         rtsrc => prt_particles(ipart)%rtsrc
@@ -35,6 +45,7 @@ SUBROUTINE advance
         Ebirth => prt_particles(ipart)%Ebirth
         isvacant => prt_particles(ipart)%isvacant
 
+        ! Checking if particle conversions are required since prior time step
         IF (in_puretran.EQV..FALSE.) THEN
            IF (gas_sigmapg(gsrc,zsrc)*gas_drarr(zsrc)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) THEN
               IF (rtsrc == 2) THEN
@@ -52,6 +63,7 @@ SUBROUTINE advance
            ENDIF
         ENDIF
 
+        ! First portion of operator split particle velocity position adjustment
         alph2 = 0.75  !>=0,<=1
         IF ((in_isvelocity.EQV..TRUE.).AND.(rtsrc==1)) THEN
            rsrc = rsrc*tsp_texp/(tsp_texp+alph2*tsp_dt)
@@ -60,6 +72,7 @@ SUBROUTINE advance
            ENDIF
         ENDIF
 
+        ! Advancing particle until census, absorption, or escape from domain
         prt_done = .FALSE.
         DO WHILE (prt_done .EQV. .FALSE.)
            !Calling either diffusion or transport depending on particle type (rtsrc)

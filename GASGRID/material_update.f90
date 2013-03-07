@@ -5,6 +5,11 @@ SUBROUTINE material_update
   USE physconstmod
   IMPLICIT NONE
 
+!##################################################
+  !This subroutine updates the material state.  At the moment
+  !it updates material temperature and the approximate amount
+  !of gamma ray energy introduced in the time step.
+!##################################################
   INTEGER :: ir
   REAL*8 :: dtemp, Um, expfact, tauNi, tauCo
 
@@ -21,7 +26,7 @@ SUBROUTINE material_update
      Um = gas_bcoef(ir)*gas_temp(ir)
      gas_emat = gas_emat + Um*4.0*pc_pi*gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**3)/3.0
      !Calculating expansion losses (if any)
-     expfact = gas_velno*1.0+gas_velyes*tsp_texp/(tsp_texp+tsp_dt) !(Lr+gas_rarr(gas_nr+1)*tsp_time)/(Lr+gas_rarr(gas_nr+1)*(tsp_time+tsp_dt))
+     expfact = gas_velno*1.0+gas_velyes*tsp_texp/(tsp_texp+tsp_dt)
      gas_rhoarr(ir) = gas_rhoarr(ir)*expfact**3
      gas_bcoef(ir) = gas_bcoef(ir)*expfact**3
      !gas_edep(ir) = gas_edep(ir)*3.0/(4.0*pc_pi*gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**3))

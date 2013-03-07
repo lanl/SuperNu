@@ -88,6 +88,7 @@ PROGRAM supernu
   CALL grids
   CALL initials
 
+  ! Beginning time step loop
   CALL CPU_TIME(time_begin)
   tsp_tn = 1
   DO it = 1, tsp_nt 

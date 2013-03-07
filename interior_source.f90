@@ -8,17 +8,25 @@ SUBROUTINE interior_source
 
   IMPLICIT NONE
 
+!##################################################
+  !This subroutine instantiates new volume (cell) particle properties.
+!##################################################
+
   INTEGER :: ir, ipart, ivac, ig, iig
   INTEGER, DIMENSION(gas_nr) :: irused
   REAL*8 :: r1, r2, r3, uul, uur, uumax, mu0, r0, Ep0
   REAL*8 :: denom2
-  LOGICAL :: isnotvacnt
+  LOGICAL :: isnotvacnt !checks for available particle space to populate in cell
 
   ir = 1
   irused(1:gas_nr) = 0
+  !Volume particle instantiation: loop
+  !Loop run over the number of new particles that aren't surface source
+  !particles.
   DO ipart = prt_nsurf+1, prt_nnew
      ivac = prt_vacantarr(ipart)
      isnotvacnt = .FALSE.
+     !If adding particle ivac in current cell ir does not exceed gas_nvol, add ivac to ir: loop
      DO WHILE (isnotvacnt.EQV..FALSE.)
         IF (irused(ir)<gas_nvol(ir)) THEN
            irused(ir) = irused(ir)+1

@@ -7,6 +7,9 @@ SUBROUTINE initials
   USE inputparmod
 
   IMPLICIT NONE
+!##################################################
+  !This routine initializes material (gas) properties and time step size.
+!##################################################
 
   INTEGER :: ir, ipart
   REAL*8 :: Um, t_elapsed
@@ -23,6 +26,7 @@ SUBROUTINE initials
   !   ENDIF
   !ENDDO
 
+  ! Initial gas temperature, density, and heat capacity generation loop
   DO ir = 1, gas_nr
      gas_rhoarr(ir) = 2.4186e8 !g/cm^3
      gas_temp(ir) = 1.e3 !861.73
@@ -35,10 +39,13 @@ SUBROUTINE initials
      prt_einit = prt_einit + Um*4*pc_pi*gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**3)/3.0
   ENDDO
   prt_einp = prt_einit
+  ! Setting all entries of particle array to vacant: loop
   DO ipart = 1, prt_npartmax
      prt_particles(ipart)%isvacant=.TRUE.
   ENDDO
 
+  ! Calculating elapsed physical time and time step size of problem (may be coded to loop if
+  ! time step is not uniform)
   t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
   tsp_dt = t_elapsed/tsp_nt
   tsp_time = RAND(in_seed)   !PRNG initial

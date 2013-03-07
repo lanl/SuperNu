@@ -2,8 +2,11 @@ MODULE timestepmod
 
   IMPLICIT NONE
 
-  INTEGER :: tsp_nt, tsp_tn
-  REAL*8 :: tsp_texp, tsp_time, tsp_dt
+  INTEGER :: tsp_nt
+  INTEGER :: tsp_tn
+  REAL*8 :: tsp_texp
+  REAL*8 :: tsp_time 
+  REAL*8 :: tsp_dt
   REAL*8 :: tsp_alpha
 
   save

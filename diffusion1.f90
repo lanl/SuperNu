@@ -8,6 +8,14 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   USE particlemod
   USE inputparmod
   IMPLICIT NONE
+
+!##################################################
+  !This subroutine passes particle parameters as input and modifies
+  !them through one DDMC diffusion event (Densmore, 2007).  If
+  !the puretran boolean is set to false, this routine couples to the
+  !analogous IMC transport routine through the advance. If puretran
+  !is set to true, this routine is not used.
+!##################################################
   !
   INTEGER, INTENT(INOUT) :: z, g, hyparam
   REAL*8, INTENT(INOUT) :: r, mu, t, E, E0

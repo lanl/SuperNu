@@ -5,11 +5,18 @@ SUBROUTINE xsections
   USE physconstmod
   IMPLICIT NONE
 
+!##################################################
+  !This subroutine computes cross sections (opacities) used in
+  !the particle advance phase of the program.  These opacities
+  !include the grey Planck, grouped Planck, grouped Rosseland,
+  !and DDMC grouped leakage opacities.
+!##################################################
+
   INTEGER :: ir, ig
   REAL*8 :: Um, beta, tt, gg, ggg, eps, bb
   ! Here: left=>toward r=0 and right=>outward
 
-  !Interpolating cell boundary temperatures
+  !Interpolating cell boundary temperatures: loop
   gas_tempb(1)=gas_temp(1)
   !gas_tempb(1) = 1.0
   DO ir = 2, gas_nr
@@ -18,7 +25,6 @@ SUBROUTINE xsections
   ENDDO
   gas_tempb(gas_nr+1)=gas_temp(gas_nr)
 
-  !Calculating (or loading) opacities (could be prt_done differently)
   !Picket fence (Planck):
   ! Picket-fence problem
   gas_ppick(1) = 1.0d0
@@ -26,6 +32,8 @@ SUBROUTINE xsections
   DO ig = 3, gas_ng
      gas_ppick(ig) = 0.0
   ENDDO
+
+  !Calculating grey Planck and gouped Planck opacities: loop
   DO ir = 1, gas_nr
      gas_sigmapg(1,ir) = 0.10*gas_rhoarr(ir) !/gas_temp(ir)**3
      gas_sigmapg(2,ir) = 0.10*gas_rhoarr(ir) !/gas_temp(ir)**3
@@ -44,7 +52,7 @@ SUBROUTINE xsections
      ENDDO
   ENDDO
   
-  !Picket fence (Rosseland (same as Planck for P-fence)):
+  !Calculating group Rosseland opacities: loop
   DO ir = 1, gas_nr
      gas_sigmargleft(1,ir) = 0.10*gas_rhoarr(ir) !/gas_tempb(ir)**3
      gas_sigmargleft(2,ir) = 0.10*gas_rhoarr(ir) !/gas_tempb(ir)**3
@@ -58,8 +66,8 @@ SUBROUTINE xsections
      ENDDO
   ENDDO
 
-  ! Calculating IMC-to-DDMC leakage probabilities/(angular polynomial)
-  ! See Densmore, 2007
+  !Calculating IMC-to-DDMC leakage albedo coefficients (Densmore, 2007): loop
+  !These quantities may not need to be stored directly (pending further analysis)
   DO ir = 1, gas_nr
      gg = (3.0*gas_fcoef(ir))**0.5
      eps = (4.0/3.0)*gg/(1.0+0.7104*gg)
@@ -79,7 +87,7 @@ SUBROUTINE xsections
      ENDDO
   ENDDO
 
-  ! Calculating DDMC(-to-IMC) leakage opacities (vacuum outer bound)
+  !Calculating DDMC(-to-IMC) leakage opacities (Densmore, 2007, 2012): loop
   DO ir = 1, gas_nr
      DO ig = 1, gas_ng  
         !Computing left-leakage opacities
