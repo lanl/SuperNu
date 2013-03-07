@@ -1,6 +1,5 @@
       module physconstmod
 c     -------------------
-      use kindmod
       implicit none
 ************************************************************************
 * physical constants and conversion factors

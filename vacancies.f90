@@ -3,7 +3,7 @@ SUBROUTINE vacancies
   USE particlemod
   IMPLICIT NONE
 
-  INTEGER(iknd) :: ipart, ivac
+  INTEGER :: ipart, ivac
   LOGICAL :: isfull
 
   isfull = .FALSE.

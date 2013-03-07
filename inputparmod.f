@@ -1,41 +1,40 @@
       module inputparmod
 c     ------------------
-      USE kindmod
       implicit none
 ************************************************************************
 * input parameters
 ************************************************************************
 c-- gas grid
-      INTEGER(iknd) :: in_nr = 0 !# spatial grid in spherical geom
-      INTEGER(iknd) :: in_ng = 0 !# groups
+      INTEGER :: in_nr = 0 !# spatial grid in spherical geom
+      INTEGER :: in_ng = 0 !# groups
       LOGICAL :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
-      REAL(rknd) :: in_lr = 0d0  !spatial length of the domain
+      REAL*8 :: in_lr = 0d0  !spatial length of the domain
 c
 c-- particles
-      INTEGER(iknd) :: in_seed = 0 !starting point of random number generator
-      INTEGER(iknd) :: in_ns = 0   !# source particles generated per time step
-      INTEGER(iknd) :: in_npartmax = 0 !total # particles allowed
+      INTEGER :: in_seed = 0 !starting point of random number generator
+      INTEGER :: in_ns = 0   !# source particles generated per time step
+      INTEGER :: in_npartmax = 0 !total # particles allowed
       LOGICAL :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
-      REAL(rknd) :: in_alpha = 1d0 !time centering control parameter [0,1]
+      REAL*8 :: in_alpha = 1d0 !time centering control parameter [0,1]
 c
 c-- time step
-      REAL(rknd) :: in_tfirst = 0d0 !first point in time evolution
-      REAL(rknd) :: in_tlast = 0d0  !last point in time evolution
-      INTEGER(iknd) :: in_nt = -1   !# time steps
+      REAL*8 :: in_tfirst = 0d0 !first point in time evolution
+      REAL*8 :: in_tlast = 0d0  !last point in time evolution
+      INTEGER :: in_nt = -1   !# time steps
 
 c
 c-- parallelization
       LOGICAL :: in_grab_stdout = .false. !write stdout to file
-      INTEGER(iknd) :: in_nomp = 1       !# openmp threads
+      INTEGER :: in_nomp = 1       !# openmp threads
 c
 c-- group structure
-      REAL(rknd) :: in_wlmin = 1000d0     !lower wavelength boundary in output spectrum
-      REAL(rknd) :: in_wlmax = 30000d0    !upper wavelength boundary in output spectrum
+      REAL*8 :: in_wlmin = 1000d0     !lower wavelength boundary in output spectrum
+      REAL*8 :: in_wlmax = 30000d0    !upper wavelength boundary in output spectrum
 c
 c-- opacity (cm^2/gram)
-      REAL(rknd) :: in_opcapgam = .06d0    ![cm^2/g] extinction coefficient for gamma radiation
-      REAL(rknd) :: in_opcap = .0d0       !additional gray opacity (for testing with in_nobbopac only!)
-      REAL(rknd) :: in_epsline = 1d0      !line absorption fraction (the rest is scattering)
+      REAL*8 :: in_opcapgam = .06d0    ![cm^2/g] extinction coefficient for gamma radiation
+      REAL*8 :: in_opcap = .0d0       !additional gray opacity (for testing with in_nobbopac only!)
+      REAL*8 :: in_epsline = 1d0      !line absorption fraction (the rest is scattering)
       LOGICAL :: in_nobbopac = .false.    !turn off bound-bound opacity
       LOGICAL :: in_nobfopac = .false.    !turn off bound-bound opacity
       LOGICAL :: in_noffopac = .false.    !turn off bound-bound opacity

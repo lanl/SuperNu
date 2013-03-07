@@ -6,7 +6,7 @@ include Makefile.inc
 ########################################################################
 PROGRAMS = supernu
 
-MODULES = kindmod.o \
+MODULES = \
   elemdatamod.o physconstmod.o mpimod.o \
   miscmod.o \
   ionsmod.o ffxsmod.o bfxsmod.o bbxsmod.o \
@@ -50,7 +50,7 @@ run: all
 	cd ../run; ln -s ${CURDIR}/Data/* .
 	cd ../run; ln -s ${CURDIR}/Input/* .
 	cd ../run; ln -s ${CURDIR}/supernu .
-	cd ../run; supernu
+	cd ../run; ./supernu
 
 testsuite: $(TESTS)
 	#stub
@@ -65,14 +65,12 @@ version.inc: version.py
 #
 #-- MODULES
 bbxsmod.o: elemdatamod.o miscmod.o physconstmod.o
-gasgridmod.o: kindmod.o inputparmod.o
-inputparmod.o: kindmod.o miscmod.o
+gasgridmod.o: inputparmod.o
+inputparmod.o: miscmod.o
 ionsmod.o: miscmod.o physconstmod.o
 miscmod.o: MISC/warn.f MISC/lcase.f
 mpimod.o: gasgridmod.o inputparmod.o timestepmod.o timingmod.o
 timestepmod.o: inputparmod.o physconstmod.o
-physconstmod.o: kindmod.o
-particlemod.o: kindmod.o
 
 #
 #-- OBJ FILES

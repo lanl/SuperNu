@@ -7,10 +7,10 @@ SUBROUTINE boundary_source
   USE inputparmod
   IMPLICIT NONE
 
-  INTEGER(iknd) :: ipart, ivac, ig, z0
-  REAL(rknd) :: r1, r2, P, mu0, r0, Esurfpart
+  INTEGER :: ipart, ivac, ig, z0
+  REAL*8 :: r1, r2, P, mu0, r0, Esurfpart
 
-  Esurfpart = prt_esurf/REAL(prt_nsurf,rknd)
+  Esurfpart = prt_esurf/REAL(prt_nsurf)
   prt_einp = prt_einp+prt_esurf
 
   DO ipart = 1, prt_nsurf
@@ -42,7 +42,7 @@ SUBROUTINE boundary_source
      prt_particles(ivac)%rsrc = gas_rarr(1)
      r0 = prt_particles(ivac)%rsrc
 
-     IF ((gas_sigmapg(ig,z0)*gas_drarr(z0)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0_rknd).OR.(in_puretran.EQV..TRUE.)) THEN
+     IF ((gas_sigmapg(ig,z0)*gas_drarr(z0)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0).OR.(in_puretran.EQV..TRUE.)) THEN
         !transport => lab frame quantities
         prt_particles(ivac)%Esrc = Esurfpart*(1.0+gas_velyes*r0*mu0/pc_c)
         prt_particles(ivac)%Ebirth = Esurfpart*(1.0+gas_velyes*r0*mu0/pc_c)

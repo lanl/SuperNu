@@ -8,8 +8,8 @@ SUBROUTINE initials
 
   IMPLICIT NONE
 
-  INTEGER(iknd) :: ir, ipart
-  REAL(rknd) :: Um, t_elapsed
+  INTEGER :: ir, ipart
+  REAL*8 :: Um, t_elapsed
 
   prt_erad = 0.0   !Total radiation energy
   prt_einit = 0.0  !Total initial energy
@@ -28,7 +28,7 @@ SUBROUTINE initials
      gas_temp(ir) = 1.e3 !861.73
      !gas_bcoef(ir) = 2.0*pc_acoef*gas_temp(ir)**3
 
-     gas_bcoef(ir) = 0.4*(1.e12*gas_rhoarr(ir))*580.25_rknd
+     gas_bcoef(ir) = 0.4*(1.e12*gas_rhoarr(ir))*580.25d0
 
      gas_ur(ir) = pc_acoef*gas_temp(ir)**4
      Um = gas_bcoef(ir)*gas_temp(ir)

@@ -9,15 +9,15 @@ SUBROUTINE diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
   USE physconstmod
   IMPLICIT NONE
   !
-  INTEGER(iknd), INTENT(INOUT) :: z, g, hyparam
-  REAL(rknd), INTENT(INOUT) :: r, mu, t, E, E0
+  INTEGER, INTENT(INOUT) :: z, g, hyparam
+  REAL*8, INTENT(INOUT) :: r, mu, t, E, E0
   LOGICAL, INTENT(INOUT) :: vacnt
   !
-  INTEGER(iknd) :: ig, iig
-  REAL(rknd) :: r1, r2
-  REAL(rknd) :: denom, denom2
-  REAL(rknd) :: ddmct, tauA, tauL, tauR, tauS, tcensus
-  REAL(rknd), DIMENSION(gas_ng) :: PDFg
+  INTEGER :: ig, iig
+  REAL*8 :: r1, r2
+  REAL*8 :: denom, denom2
+  REAL*8 :: ddmct, tauA, tauL, tauR, tauS, tcensus
+  REAL*8, DIMENSION(gas_ng) :: PDFg
 
   !denom = gas_sigmal(g,z)+gas_sigmar(g,z)+gas_fcoef(z)*gas_sigmapg(g,z)
   !denom = denom+(1.0-gas_emitprobg(g,z))*(1.0-gas_fcoef(z))*gas_sigmapg(g,z)
@@ -47,7 +47,7 @@ SUBROUTINE diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
         vacnt = .TRUE.
         prt_done = .TRUE.
         prt_eleft = prt_eleft+E
-     !ELSEIF (gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd) THEN
+     !ELSEIF (gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) THEN
      !   z = z-1
      ELSE
      !   hyparam = 1
@@ -65,7 +65,7 @@ SUBROUTINE diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
         vacnt = .TRUE.
         prt_done = .TRUE.
         prt_eright = prt_eright+E
-     !ELSEIF (gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd) THEN
+     !ELSEIF (gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) THEN
      !   z = z+1
      ELSE
      !   hyparam = 1
@@ -96,7 +96,7 @@ SUBROUTINE diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
         denom2 = denom2+PDFg(ig)
      ENDDO
      g = iig
-     !IF (gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd) THEN
+     !IF (gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) THEN
      !   hyparam = 2
      !ELSE
      !   hyparam = 1

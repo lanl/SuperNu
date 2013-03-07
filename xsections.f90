@@ -6,8 +6,8 @@ SUBROUTINE xsections
   USE inputparmod
   IMPLICIT NONE
 
-  INTEGER(iknd) :: ir, ig
-  REAL(rknd) :: Um, beta, tt, gg, ggg, eps, bb
+  INTEGER :: ir, ig
+  REAL*8 :: Um, beta, tt, gg, ggg, eps, bb
   ! Here: left=>toward r=0 and right=>outward
 
   !Interpolating cell boundary temperatures
@@ -22,8 +22,8 @@ SUBROUTINE xsections
   !Calculating (or loading) opacities (could be prt_done differently)
   !Picket fence (Planck):
   ! Picket-fence problem
-  gas_ppick(1) = 1.0_rknd
-  gas_ppick(2) = 0.0_rknd
+  gas_ppick(1) = 1.0d0
+  gas_ppick(2) = 0.0d0
   DO ig = 3, gas_ng
      gas_ppick(ig) = 0.0
   ENDDO
@@ -88,7 +88,7 @@ SUBROUTINE xsections
            !gas_sigmal(ig,ir)=0.5*gas_ppl(ig,ir)/gas_drarr(ir)
            gas_sigmal(ig,ir)=1.5*gas_ppl(ig,ir)*gas_rarr(ir)**2
            gas_sigmal(ig,ir)=gas_sigmal(ig,ir)/(gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp))
-        ELSEIF(gas_sigmapg(ig,ir-1)*gas_drarr(ir-1)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0_rknd) THEN
+        ELSEIF(gas_sigmapg(ig,ir-1)*gas_drarr(ir-1)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) THEN
            !gas_sigmal(ig,ir)=0.5*gas_ppl(ig,ir)/gas_drarr(ir)
            gas_sigmal(ig,ir)=1.5*gas_ppl(ig,ir)*gas_rarr(ir)**2
            gas_sigmal(ig,ir)=gas_sigmal(ig,ir)/(gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp))
@@ -103,7 +103,7 @@ SUBROUTINE xsections
            !gas_sigmar(ig,ir)=0.5*gas_ppr(ig,ir)/gas_drarr(ir)
            gas_sigmar(ig,ir)=1.5*gas_ppr(ig,ir)*gas_rarr(ir+1)**2
            gas_sigmar(ig,ir)=gas_sigmar(ig,ir)/(gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp))
-        ELSEIF(gas_sigmapg(ig,ir+1)*gas_drarr(ir+1)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0_rknd) THEN
+        ELSEIF(gas_sigmapg(ig,ir+1)*gas_drarr(ir+1)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) THEN
            !gas_sigmar(ig,ir)=0.5*gas_ppr(ig,ir)/gas_drarr(ir)
            gas_sigmar(ig,ir)=1.5*gas_ppr(ig,ir)*gas_rarr(ir+1)**2
            gas_sigmar(ig,ir)=gas_sigmar(ig,ir)/(gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp))

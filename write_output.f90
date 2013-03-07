@@ -5,7 +5,7 @@ SUBROUTINE write_output
   USE particlemod
   IMPLICIT NONE
 
-  INTEGER(iknd) :: ir
+  INTEGER :: ir
   CHARACTER(16), SAVE :: pos='REWIND'
 
   OPEN(UNIT=2,FILE='tsp_time.dat',STATUS='UNKNOWN',POSITION=pos)

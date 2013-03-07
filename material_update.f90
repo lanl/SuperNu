@@ -6,8 +6,8 @@ SUBROUTINE material_update
   USE inputparmod
   IMPLICIT NONE
 
-  INTEGER(iknd) :: ir
-  REAL(rknd) :: dtemp, Um, expfact, tauNi, tauCo
+  INTEGER :: ir
+  REAL*8 :: dtemp, Um, expfact, tauNi, tauCo
 
   gas_emat = 0.0
   DO ir = 1, gas_nr
@@ -16,7 +16,7 @@ SUBROUTINE material_update
      !WRITE(*,*) dtemp
      gas_temp(ir) = gas_temp(ir)+dtemp
      !gas_ur(ir)=dtemp/(tsp_dt*pc_c*gas_sigmap(ir))
-     !gas_temp(ir) = (gas_ur(ir)/pc_acoef)**(0.25_rknd)
+     !gas_temp(ir) = (gas_ur(ir)/pc_acoef)**(0.25d0)
      !gas_bcoef(ir) = 2.0*pc_acoef*gas_temp(ir)**3
      gas_ur(ir) = pc_acoef*gas_temp(ir)**4
      Um = gas_bcoef(ir)*gas_temp(ir)
@@ -27,13 +27,13 @@ SUBROUTINE material_update
      gas_bcoef(ir) = gas_bcoef(ir)*expfact**3
      !gas_edep(ir) = gas_edep(ir)*3.0/(4.0*pc_pi*gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**3))
   ENDDO
-  tauCo = 111.3_rknd*86400.0_rknd
-  tauNi = 8.8_rknd*86400.0_rknd
+  tauCo = 111.3d0*86400.0d0
+  tauNi = 8.8d0*86400.0d0
   
-  gas_nidecay = (1.6022e-6)*1.87*(1.0_rknd-EXP(-(tsp_time+tsp_dt)/tauNi))
-  gas_nidecay = gas_nidecay+(1.6022e-6)*1.87*tauCo*(1.0_rknd-EXP(-(tsp_time+tsp_dt)/tauCo))/(tauCo-tauNi)
-  gas_nidecay = gas_nidecay-(1.6022e-6)*1.87*(1.0_rknd-EXP(-tsp_time/tauNi))
-  gas_nidecay = gas_nidecay-(1.6022e-6)*1.87*tauCo*(1.0_rknd-EXP(-tsp_time/tauCo))/(tauCo-tauNi)
+  gas_nidecay = (1.6022e-6)*1.87*(1.0d0-EXP(-(tsp_time+tsp_dt)/tauNi))
+  gas_nidecay = gas_nidecay+(1.6022e-6)*1.87*tauCo*(1.0d0-EXP(-(tsp_time+tsp_dt)/tauCo))/(tauCo-tauNi)
+  gas_nidecay = gas_nidecay-(1.6022e-6)*1.87*(1.0d0-EXP(-tsp_time/tauNi))
+  gas_nidecay = gas_nidecay-(1.6022e-6)*1.87*tauCo*(1.0d0-EXP(-tsp_time/tauCo))/(tauCo-tauNi)
   gas_nidecay = gas_nidecay/tsp_dt
   !WRITE(*,*) gas_nidecay
 

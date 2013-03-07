@@ -6,10 +6,10 @@ SUBROUTINE grids
 
   ! This subroutine creates the spatial grid (or velocity grid if gas_velyes=1)
 
-  INTEGER(iknd) :: ir
+  INTEGER :: ir
 
   tsp_texp = 0.14
-  gas_rarr(1) = 0.0_rknd
+  gas_rarr(1) = 0.0d0
   DO ir = 1, gas_nr
      gas_drarr(ir)=gas_lr/REAL(gas_nr)
      gas_rarr(ir+1)=gas_rarr(ir)+gas_drarr(ir)

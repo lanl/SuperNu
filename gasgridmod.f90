@@ -1,32 +1,31 @@
 MODULE gasgridmod
 
-  USE kindmod
   IMPLICIT NONE
 
-  INTEGER(iknd) :: gas_nr = 0
-  INTEGER(iknd) :: gas_ng = 0
-  REAL(rknd) :: gas_lr = 0
+  INTEGER :: gas_nr = 0
+  INTEGER :: gas_ng = 0
+  REAL*8 :: gas_lr = 0
   LOGICAL :: gas_isvelocity
-  INTEGER(iknd) :: gas_velno, gas_velyes
+  INTEGER :: gas_velno, gas_velyes
 
-  INTEGER(iknd) :: gas_nelem = 0
+  INTEGER :: gas_nelem = 0
 
-  REAL(rknd) :: gas_nidecay = 1.73*(1.6022e-6)  !erg/s/g  !this value is used in the first iteration
+  REAL*8 :: gas_nidecay = 1.73*(1.6022e-6)  !erg/s/g  !this value is used in the first iteration
 
-  REAL(rknd) :: gas_emat
+  REAL*8 :: gas_emat
 
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: gas_rarr  !(gas_nr+1)
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: gas_drarr, gas_dr3arr  !(gas_nr)
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: gas_edep, gas_temp, gas_sigmap, gas_fcoef, gas_ur !(gas_nr)
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: gas_tempb  !(gas_nr+1)
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: gas_rhoarr, gas_bcoef, gas_emit, gas_nisource  !(gas_nr)
-  REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: gas_sigmapg, gas_sigmargleft, gas_sigmargright, gas_emitprobg  !(gas_nr,gas_ng)
-  REAL(rknd), DIMENSION(:,:), ALLOCATABLE :: gas_sigmal, gas_ppl, gas_sigmar, gas_ppr  !(gas_nr,gas_ng)
+  REAL*8, DIMENSION(:), ALLOCATABLE :: gas_rarr  !(gas_nr+1)
+  REAL*8, DIMENSION(:), ALLOCATABLE :: gas_drarr, gas_dr3arr  !(gas_nr)
+  REAL*8, DIMENSION(:), ALLOCATABLE :: gas_edep, gas_temp, gas_sigmap, gas_fcoef, gas_ur !(gas_nr)
+  REAL*8, DIMENSION(:), ALLOCATABLE :: gas_tempb  !(gas_nr+1)
+  REAL*8, DIMENSION(:), ALLOCATABLE :: gas_rhoarr, gas_bcoef, gas_emit, gas_nisource  !(gas_nr)
+  REAL*8, DIMENSION(:,:), ALLOCATABLE :: gas_sigmapg, gas_sigmargleft, gas_sigmargright, gas_emitprobg  !(gas_nr,gas_ng)
+  REAL*8, DIMENSION(:,:), ALLOCATABLE :: gas_sigmal, gas_ppl, gas_sigmar, gas_ppr  !(gas_nr,gas_ng)
 
   ! Picket-fence probabilities
-  REAL(rknd), DIMENSION(:), ALLOCATABLE :: gas_ppick
+  REAL*8, DIMENSION(:), ALLOCATABLE :: gas_ppick
 
-  INTEGER(iknd), DIMENSION(:), ALLOCATABLE :: gas_numcensus, gas_nvol !(gas_nr)
+  INTEGER, DIMENSION(:), ALLOCATABLE :: gas_numcensus, gas_nvol !(gas_nr)
 
   save
 
@@ -35,8 +34,8 @@ MODULE gasgridmod
 
   SUBROUTINE gasgrid_init(nr,ng,lr,isvelocity)
 !-------------------------------
-    INTEGER(iknd),intent(in) :: nr, ng
-    REAL(rknd),intent(in) :: lr
+    INTEGER,intent(in) :: nr, ng
+    REAL*8,intent(in) :: lr
     LOGICAL,intent(in) :: isvelocity
     gas_nr = nr
     gas_ng = ng

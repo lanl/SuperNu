@@ -1,10 +1,9 @@
 MODULE timestepmod
 
-  USE kindmod
   IMPLICIT NONE
 
-  INTEGER(iknd) :: tsp_nt, tsp_tn
-  REAL(rknd) :: tsp_texp, tsp_time, tsp_dt
+  INTEGER :: tsp_nt, tsp_tn
+  REAL*8 :: tsp_texp, tsp_time, tsp_dt
 
   save
 
@@ -12,7 +11,7 @@ MODULE timestepmod
 
   SUBROUTINE timestep_init(nt)
 !-----------------------------
-    INTEGER(iknd),intent(in) :: nt
+    INTEGER,intent(in) :: nt
     tsp_nt = nt
   END SUBROUTINE timestep_init
     

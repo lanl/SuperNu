@@ -7,12 +7,12 @@ SUBROUTINE sourcenumbers
   USE inputparmod
   IMPLICIT NONE
 
-  INTEGER(iknd) :: ir
-  REAL(rknd) :: sou
+  INTEGER :: ir
+  REAL*8 :: sou
   ! prt_esurf for any new prt_particles from a surface source
   ! prt_nsurf = number of surface prt_particles
   ! prt_nnew = total number of new prt_particles~=prt_ns
-  prt_esurf = 0.0_rknd
+  prt_esurf = 0.0d0
 
   !prt_esurf = 0.25*tsp_dt*pc_c*a_coef*(4.0*pc_pi*gas_rarr(1)**2)*gas_tempb(1)**4
   prt_etot = prt_esurf
@@ -23,11 +23,11 @@ SUBROUTINE sourcenumbers
   ENDDO
   !
   DO ir = 40, gas_nr!9*gas_nr/10, gas_nr
-     gas_nisource(ir) = 0.0_rknd
+     gas_nisource(ir) = 0.0d0
   ENDDO
   !ELSE
   !   DO ir = 1, gas_nr
-  !      gas_nisource(ir) = 0.0_rknd
+  !      gas_nisource(ir) = 0.0d0
   !   ENDDO
   !ENDIF
   !WRITE(*,*) gas_sigmap(1), gas_sigmapg(1,1), gas_sigmapg(2,1)

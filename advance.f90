@@ -7,10 +7,10 @@ SUBROUTINE advance
   USE inputparmod
   IMPLICIT NONE
   
-  INTEGER(iknd) :: ipart, difs, transps
-  REAL(rknd) :: r1, alph2
-  INTEGER(iknd), POINTER :: zsrc, rtsrc, gsrc
-  REAL(rknd), POINTER :: rsrc, musrc, tsrc, Esrc, Ebirth
+  INTEGER :: ipart, difs, transps
+  REAL*8 :: r1, alph2
+  INTEGER, POINTER :: zsrc, rtsrc, gsrc
+  REAL*8, POINTER :: rsrc, musrc, tsrc, Esrc, Ebirth
   LOGICAL, POINTER :: isvacant 
 
   gas_edep = 0.0
@@ -36,7 +36,7 @@ SUBROUTINE advance
         isvacant => prt_particles(ipart)%isvacant
 
         IF (in_puretran.EQV..FALSE.) THEN
-           IF (gas_sigmapg(gsrc,zsrc)*gas_drarr(zsrc)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0_rknd) THEN
+           IF (gas_sigmapg(gsrc,zsrc)*gas_drarr(zsrc)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) THEN
               IF (rtsrc == 2) THEN
                  r1 = RAND()
                  rsrc = (r1*gas_rarr(zsrc+1)**3+(1.0-r1)*gas_rarr(zsrc)**3)**(1.0/3.0)

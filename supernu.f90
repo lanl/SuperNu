@@ -18,8 +18,8 @@ PROGRAM supernu
 ! todo:
 !  - dummy (drr, 2013/mar/05)
 !***********************************************************************
-  INTEGER(iknd) :: it
-  REAL(rknd) :: time_begin, time_end
+  INTEGER :: it
+  REAL*8 :: time_begin, time_end
   integer :: ierr
   logical :: lmpi0 = .false. !master rank flag
   real :: t0,t1  !timing

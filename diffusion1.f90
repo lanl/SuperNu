@@ -9,15 +9,15 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   USE inputparmod
   IMPLICIT NONE
   !
-  INTEGER(iknd), INTENT(INOUT) :: z, g, hyparam
-  REAL(rknd), INTENT(INOUT) :: r, mu, t, E, E0
+  INTEGER, INTENT(INOUT) :: z, g, hyparam
+  REAL*8, INTENT(INOUT) :: r, mu, t, E, E0
   LOGICAL, INTENT(INOUT) :: vacnt
   !
-  INTEGER(iknd) :: ig, iig
-  REAL(rknd) :: r1, r2
-  REAL(rknd) :: denom, denom2
-  REAL(rknd) :: ddmct, tau, tcensus, PR, PL, PA
-  REAL(rknd), DIMENSION(gas_ng) :: PDFg
+  INTEGER :: ig, iig
+  REAL*8 :: r1, r2
+  REAL*8 :: denom, denom2
+  REAL*8 :: ddmct, tau, tcensus, PR, PL, PA
+  REAL*8, DIMENSION(gas_ng) :: PDFg
 
   denom = gas_sigmal(g,z)+gas_sigmar(g,z)+gas_fcoef(z)*gas_sigmapg(g,z)
   denom = denom+(1.0-gas_emitprobg(g,z))*(1.0-gas_fcoef(z))*gas_sigmapg(g,z)
@@ -35,13 +35,13 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
      PR = gas_sigmar(g,z)/denom
      PL = gas_sigmal(g,z)/denom
      PA = gas_fcoef(z)*gas_sigmapg(g,z)/denom
-     IF (0.0_rknd<=r1 .AND. r1<PL) THEN
+     IF (0.0d0<=r1 .AND. r1<PL) THEN
         IF (z == 1) THEN
            WRITE(*,*) 'Non-physical left leakage'
            !vacnt = .TRUE.
            !prt_done = .TRUE.
            !prt_eleft = prt_eleft+E
-        ELSEIF (gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd) THEN
+        ELSEIF (gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) THEN
            z = z-1
         ELSE
            hyparam = 1
@@ -62,7 +62,7 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            r2 = RAND()
            mu = MAX(r1,r2)
            prt_eright = prt_eright+E*(1.0+gas_velyes*gas_rarr(gas_nr+1)*mu/pc_c)
-        ELSEIF (gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd) THEN
+        ELSEIF (gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) THEN
            z = z+1
         ELSE
            hyparam = 1
@@ -93,7 +93,7 @@ SUBROUTINE diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            denom2 = denom2+PDFg(ig)
         ENDDO
         g = iig
-        IF (gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0_rknd) THEN
+        IF (gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) THEN
            hyparam = 2
         ELSE
            hyparam = 1
