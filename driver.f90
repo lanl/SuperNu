@@ -53,7 +53,7 @@ PROGRAM supernu
 !
 !-- SETUP GRIDS
 !-- setup gas grid (map gstruct to gasgrid)
-   CALL gasgrid_init(in_nr,in_ng)
+   CALL gasgrid_init(in_nr,in_ng,in_lr,in_isvelocity)
 !! call ggrid_setup(ncg,tim_ntim)
 !-- read initial temperature structure from file
    !call read_restart_file

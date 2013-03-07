@@ -70,6 +70,7 @@ c
       implicit none
       character*(MPI_MAX_PROCESSOR_NAME) :: pname
       integer :: ilen,ierr
+      pname = 'NOT AVAILABLE'
       end subroutine mpi_get_processor_name
 c
       subroutine mpi_barrier(MPI_COMM_WORLD,ierr)

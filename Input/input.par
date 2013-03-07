@@ -1,15 +1,17 @@
 &inputpars
-in_tfirst = 4
-in_tlast = 8
-in_lr = 1.4e8
 
-in_nt = 10
-in_nr = 50
-in_ng = 2
-in_isvelocity = .TRUE.
+in_tfirst = 4,
+in_tlast = 8,
+in_lr = 1.4e8,
 
-in_ns = 100000
-in_npartmax = 10000000
-in_alpha = 1.0
+in_nt = 9,
+in_nr = 50,
+in_ng = 2,
+in_isvelocity = .TRUE.,
+
+in_ns = 100000,
+in_npartmax = 10000000,
+in_alpha = 1.0,
 in_seed = 1984117
+
 &end

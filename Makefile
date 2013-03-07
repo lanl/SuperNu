@@ -43,6 +43,7 @@ run:
 	cd ../run; ln -s ${CURDIR}/Data/* .
 	cd ../run; ln -s ${CURDIR}/Input/* .
 	cd ../run; ln -s ${CURDIR}/supernu .
+	cd ../run; supernu
 
 ########################################################################
 # EXPLICIT RULES
@@ -68,7 +69,7 @@ particlemod.o: kindmod.o
 #-- note: prerequisites don't need to include modules as these are always built first
 banner.o: version.inc
 
-supernu.o: $(OBJFILES)
+driver.o: $(OBJFILES)
 
 #
 #-- LIBRARIES
@@ -76,7 +77,4 @@ $(SUBDIRS):
 	$(MAKE) -C $@
 #
 #-- PROGRAMS
-#supernu: $(MODULES) supernu.o banner.o \
-  read_bbxs_data.o \
-  dealloc_all.o $(LIBRARIES)
-supernu: $(MODULES) $(OBJFILES) supernu.o banner.o $(LIBRARIES)
+supernu: $(MODULES) $(OBJFILES) driver.o banner.o $(LIBRARIES)

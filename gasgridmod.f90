@@ -5,6 +5,8 @@ MODULE gasgridmod
 
   INTEGER(iknd) :: gas_nr = 0
   INTEGER(iknd) :: gas_ng = 0
+  REAL(rknd) :: gas_lr = 0
+  LOGICAL :: gas_isvelocity
   INTEGER(iknd) :: gas_velno, gas_velyes
 
   REAL(rknd) :: gas_nidecay = 1.73*(1.6022e-6)  !erg/s/g  !this value is used in the first iteration
@@ -29,11 +31,15 @@ MODULE gasgridmod
   CONTAINS
 
 
-  SUBROUTINE gasgrid_init(nr,ng)
+  SUBROUTINE gasgrid_init(nr,ng,lr,isvelocity)
 !-------------------------------
     INTEGER(iknd),intent(in) :: nr, ng
+    REAL(rknd),intent(in) :: lr
+    LOGICAL,intent(in) :: isvelocity
     gas_nr = nr
     gas_ng = ng
+    gas_lr = lr
+    gas_isvelocity = isvelocity
 
     ALLOCATE(gas_numcensus(gas_nr))  !# census prt_particles per cell
     ALLOCATE(gas_nvol(gas_nr))   !Number source prt_particles in each cell (per tsp_time step)
