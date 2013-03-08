@@ -2,7 +2,7 @@
 
 !-- time step
 in_tfirst = 4
-in_tlast = 6
+in_tlast = 6.5
 in_nt = 5
 in_alpha = 1d0
 
