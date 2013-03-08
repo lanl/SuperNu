@@ -18,7 +18,7 @@ SUBROUTINE grids
   DO ir = 1, gas_nr
      gas_drarr(ir)=gas_lr/REAL(gas_nr)
      gas_rarr(ir+1)=gas_rarr(ir)+gas_drarr(ir)
-     gas_dr3arr(ir)=gas_rarr(ir+1)**3-gas_rarr(ir)**3
+     gas_vals2(ir)%dr3_34pi=gas_rarr(ir+1)**3-gas_rarr(ir)**3
   ENDDO
 
   ! r/tsp_texp = velocity grid (calculated with initial spatial grid and 
@@ -27,7 +27,9 @@ SUBROUTINE grids
   IF (gas_isvelocity.EQV..TRUE.) THEN
      gas_rarr = gas_rarr/tsp_texp
      gas_drarr = gas_drarr/tsp_texp
-     gas_dr3arr = gas_dr3arr/tsp_texp**3
+     DO ir = 1, gas_nr
+        gas_vals2(ir)%dr3_34pi=gas_vals2(ir)%dr3_34pi/tsp_texp**3
+     ENDDO
   ENDIF
 
 

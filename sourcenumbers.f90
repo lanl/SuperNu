@@ -25,22 +25,22 @@ SUBROUTINE sourcenumbers
 
   ! Volume external radiation source loops (gamma ray energy)
   DO ir = 1, 39
-     gas_nisource(ir) = (gas_rhoarr(ir)/56.0)*pc_navo*gas_nidecay
+     gas_vals2(ir)%nisource = (gas_vals2(ir)%rho/56.0)*pc_navo*gas_nidecay
   ENDDO
   !
   DO ir = 40, gas_nr!9*gas_nr/10, gas_nr
-     gas_nisource(ir) = 0.0d0
+     gas_vals2(ir)%nisource = 0.0d0
   ENDDO
   
 
   ! Calculating fictitious emission energy per cell: loop
   DO ir = 1, gas_nr
-     !gas_emit(ir) = (1.e35)*(4.0*pc_pi*gas_dr3arr(ir)/3.0)
-     gas_emit(ir) =  tsp_dt*gas_fcoef(ir)*gas_sigmap(ir)*pc_c*gas_ur(ir)*(4.0*pc_pi*gas_dr3arr(ir)/3.0)
-     !gas_emit(ir) = gas_emit(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**3)
-     sou = gas_nisource(ir)*(4.0*pc_pi*gas_dr3arr(ir)/3.0)*(gas_velno*1.0+gas_velyes*tsp_texp**3)*tsp_dt
-     gas_emit(ir) = gas_emit(ir)+sou
-     gas_etot = gas_etot+gas_emit(ir)
+     !gas_vals2(ir)%emit = (1.e35)*(4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)
+     gas_vals2(ir)%emit =  tsp_dt*gas_fcoef(ir)*gas_sigmap(ir)*pc_c*gas_vals2(ir)%ur*(4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)
+     !gas_vals2(ir)%emit = gas_vals2(ir)%emit*(gas_velno*1.0+gas_velyes*tsp_texp**3)
+     sou = gas_vals2(ir)%nisource*(4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)*(gas_velno*1.0+gas_velyes*tsp_texp**3)*tsp_dt
+     gas_vals2(ir)%emit = gas_vals2(ir)%emit+sou
+     gas_etot = gas_etot+gas_vals2(ir)%emit
   ENDDO
   !WRITE(*,*) gas_nisource(1), gas_nisource(2)
 
@@ -48,10 +48,10 @@ SUBROUTINE sourcenumbers
   prt_nsurf=NINT(gas_esurf*prt_ns/gas_etot)+1
   prt_nnew = prt_nsurf
   
-  ! Calculating number of particles per cell (gas_nvol): loop 
+  ! Calculating number of particles per cell (gas_vals2%nvol): loop 
   DO ir = 1, gas_nr
-     gas_nvol(ir)=NINT(gas_emit(ir)*prt_ns/gas_etot)+1
-     prt_nnew = prt_nnew+gas_nvol(ir)
+     gas_vals2(ir)%nvol=NINT(gas_vals2(ir)%emit*prt_ns/gas_etot)+1
+     prt_nnew = prt_nnew+gas_vals2(ir)%nvol
   ENDDO
   
 END SUBROUTINE sourcenumbers

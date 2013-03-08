@@ -17,13 +17,13 @@ SUBROUTINE xsections
   ! Here: left=>toward r=0 and right=>outward
 
   !Interpolating cell boundary temperatures: loop
-  gas_tempb(1)=gas_temp(1)
+  gas_tempb(1)=gas_vals2(1)%tempkev
   !gas_tempb(1) = 1.0
   DO ir = 2, gas_nr
-     gas_tempb(ir) = (gas_temp(ir)**4+gas_temp(ir-1)**4)/2.0
+     gas_tempb(ir) = (gas_vals2(ir)%tempkev**4+gas_vals2(ir-1)%tempkev**4)/2.0
      gas_tempb(ir) = gas_tempb(ir)**0.25
   ENDDO
-  gas_tempb(gas_nr+1)=gas_temp(gas_nr)
+  gas_tempb(gas_nr+1)=gas_vals2(gas_nr)%tempkev
 
   !Picket fence (Planck):
   ! Picket-fence problem
@@ -35,17 +35,17 @@ SUBROUTINE xsections
 
   !Calculating grey Planck and gouped Planck opacities: loop
   DO ir = 1, gas_nr
-     gas_sigmapg(1,ir) = 0.10*gas_rhoarr(ir) !/gas_temp(ir)**3
-     gas_sigmapg(2,ir) = 0.10*gas_rhoarr(ir) !/gas_temp(ir)**3
+     gas_sigmapg(1,ir) = 0.10*gas_vals2(ir)%rho !/gas_vals2(ir)%tempkev**3
+     gas_sigmapg(2,ir) = 0.10*gas_vals2(ir)%rho !/gas_vals2(ir)%tempkev**3
      DO ig = 3, gas_ng
-        gas_sigmapg(ig,ir) = 1.0 !/gas_temp(ir)**3
+        gas_sigmapg(ig,ir) = 1.0 !/gas_vals2(ir)%tempkev**3
      ENDDO
      gas_sigmap(ir)=0.0
      DO ig = 1, gas_ng
         gas_sigmap(ir) = gas_sigmap(ir)+gas_ppick(ig)*gas_sigmapg(ig,ir)
      ENDDO
-     Um = gas_bcoef(ir)*gas_temp(ir)
-     beta = 4.0*gas_ur(ir)/Um
+     Um = gas_vals2(ir)%bcoef*gas_vals2(ir)%tempkev
+     beta = 4.0*gas_vals2(ir)%ur/Um
      gas_fcoef(ir) = 1.0/(1.0+tsp_alpha*beta*pc_c*tsp_dt*gas_sigmap(ir))
      DO ig = 1, gas_ng
         gas_emitprobg(ig,ir) = gas_ppick(ig)*gas_sigmapg(ig,ir)/gas_sigmap(ir)
@@ -54,13 +54,13 @@ SUBROUTINE xsections
   
   !Calculating group Rosseland opacities: loop
   DO ir = 1, gas_nr
-     gas_sigmargleft(1,ir) = 0.10*gas_rhoarr(ir) !/gas_tempb(ir)**3
-     gas_sigmargleft(2,ir) = 0.10*gas_rhoarr(ir) !/gas_tempb(ir)**3
+     gas_sigmargleft(1,ir) = 0.10*gas_vals2(ir)%rho !/gas_tempb(ir)**3
+     gas_sigmargleft(2,ir) = 0.10*gas_vals2(ir)%rho !/gas_tempb(ir)**3
      DO ig = 3, gas_ng
         gas_sigmargleft(ig,ir) = 1.0 !/gas_tempb(ir)**3
      ENDDO
-     gas_sigmargright(1,ir) = 0.10*gas_rhoarr(ir) !/gas_tempb(ir+1)**3
-     gas_sigmargright(2,ir) = 0.10*gas_rhoarr(ir) !/gas_tempb(ir+1)**3
+     gas_sigmargright(1,ir) = 0.10*gas_vals2(ir)%rho !/gas_tempb(ir+1)**3
+     gas_sigmargright(2,ir) = 0.10*gas_vals2(ir)%rho !/gas_tempb(ir+1)**3
      DO ig = 3, gas_ng
         gas_sigmargright(ig,ir) = 1.0 !/gas_tempb(ir+1)**3
      ENDDO
@@ -94,30 +94,30 @@ SUBROUTINE xsections
         IF (ir==1) THEN
            !gas_sigmal(ig,ir)=0.5*gas_ppl(ig,ir)/gas_drarr(ir)
            gas_sigmal(ig,ir)=1.5*gas_ppl(ig,ir)*gas_rarr(ir)**2
-           gas_sigmal(ig,ir)=gas_sigmal(ig,ir)/(gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp))
+           gas_sigmal(ig,ir)=gas_sigmal(ig,ir)/(gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp))
         ELSEIF(gas_sigmapg(ig,ir-1)*gas_drarr(ir-1)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) THEN
            !gas_sigmal(ig,ir)=0.5*gas_ppl(ig,ir)/gas_drarr(ir)
            gas_sigmal(ig,ir)=1.5*gas_ppl(ig,ir)*gas_rarr(ir)**2
-           gas_sigmal(ig,ir)=gas_sigmal(ig,ir)/(gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp))
+           gas_sigmal(ig,ir)=gas_sigmal(ig,ir)/(gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp))
         ELSE
            tt = gas_sigmargleft(ig,ir)*gas_drarr(ir)+gas_sigmargright(ig,ir-1)*gas_drarr(ir-1)
            !gas_sigmal(ig,ir) = 2.0/(3.0*gas_drarr(ir)) 
-           gas_sigmal(ig,ir) = (2.0*gas_rarr(ir)**2)/(gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**2))
+           gas_sigmal(ig,ir) = (2.0*gas_rarr(ir)**2)/(gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp**2))
            gas_sigmal(ig,ir) = gas_sigmal(ig,ir)/tt
         ENDIF
         !Computing right-leakage opacities
         IF (ir==gas_nr) THEN
            !gas_sigmar(ig,ir)=0.5*gas_ppr(ig,ir)/gas_drarr(ir)
            gas_sigmar(ig,ir)=1.5*gas_ppr(ig,ir)*gas_rarr(ir+1)**2
-           gas_sigmar(ig,ir)=gas_sigmar(ig,ir)/(gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp))
+           gas_sigmar(ig,ir)=gas_sigmar(ig,ir)/(gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp))
         ELSEIF(gas_sigmapg(ig,ir+1)*gas_drarr(ir+1)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) THEN
            !gas_sigmar(ig,ir)=0.5*gas_ppr(ig,ir)/gas_drarr(ir)
            gas_sigmar(ig,ir)=1.5*gas_ppr(ig,ir)*gas_rarr(ir+1)**2
-           gas_sigmar(ig,ir)=gas_sigmar(ig,ir)/(gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp))
+           gas_sigmar(ig,ir)=gas_sigmar(ig,ir)/(gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp))
         ELSE
            tt = gas_sigmargright(ig,ir)*gas_drarr(ir)+gas_sigmargleft(ig,ir+1)*gas_drarr(ir+1)
            !gas_sigmar(ig,ir) = 2.0/(3.0*gas_drarr(ir))
-           gas_sigmar(ig,ir) = (2.0*gas_rarr(ir+1)**2)/(gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**2))
+           gas_sigmar(ig,ir) = (2.0*gas_rarr(ir+1)**2)/(gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp**2))
            gas_sigmar(ig,ir) = gas_sigmar(ig,ir)/tt
         ENDIF
      ENDDO

@@ -23,8 +23,8 @@ MODULE gasgridmod
 
   TYPE gas_secondary
     SEQUENCE
-    INTEGER :: nvol, nr
-    REAL*8 :: dr3_34pi, tempkev
+    INTEGER :: nvol
+    REAL*8 :: dr3_34pi, tempkev, emit
     REAL*8 :: ur, rho, bcoef, nisource
   END TYPE gas_secondary
   TYPE(gas_secondary),POINTER :: gas_vals2(:)
@@ -74,16 +74,16 @@ MODULE gasgridmod
     ALLOCATE(gas_sigmargleft(gas_ng,gas_nr))  !left cell edge group Rosseland opacities
     ALLOCATE(gas_sigmargright(gas_ng,gas_nr)) !right ||   ||    ||     ||        ||
 
-************************************************************************
-gas_vals2()%dr3_34pi  ALLOCATE(gas_dr3arr(gas_nr))  !zone volume*3/(4*pc_pi)
-gas_vals2()%nvol     ALLOCATE(gas_nvol(gas_nr))   !Number source prt_particles in each cell (per tsp_time step)
-gas_vals2()%tempkev   ALLOCATE(gas_temp(gas_nr))  !cell-centered temperature
-gas_vals2()%ur       ALLOCATE(gas_ur(gas_nr))  !equilibrium radiation energy density
-gas_vals2()%rho       ALLOCATE(gas_rhoarr(gas_nr)) !density
-gas_vals2()%bcoef    ALLOCATE(gas_bcoef(gas_nr))  !heat capacity (erg/keV/cm^3)
-gas_vals2()%nr       ALLOCATE(gas_emit(gas_nr))   !Emission energy divided amongst new source prt_particles
-gas_vals2()%nisource  ALLOCATE(gas_nisource(gas_nr))  ! Nickel gamma source
-************************************************************************
+!************************************************************************
+!gas_vals2()%dr3_34pi  ALLOCATE(gas_dr3arr(gas_nr))  !zone volume*3/(4*pc_pi)
+!gas_vals2()%nvol     ALLOCATE(gas_nvol(gas_nr))   !Number source prt_particles in each cell (per tsp_time step)
+!gas_vals2()%tempkev   ALLOCATE(gas_temp(gas_nr))  !cell-centered temperature
+!gas_vals2()%ur       ALLOCATE(gas_ur(gas_nr))  !equilibrium radiation energy density
+!gas_vals2()%rho       ALLOCATE(gas_rhoarr(gas_nr)) !density
+!gas_vals2()%bcoef    ALLOCATE(gas_bcoef(gas_nr))  !heat capacity (erg/keV/cm^3)
+!gas_vals2()%emit       ALLOCATE(gas_emit(gas_nr))   !Emission energy divided amongst new source prt_particles
+!gas_vals2()%nisource  ALLOCATE(gas_nisource(gas_nr))  ! Nickel gamma source
+!************************************************************************
 
 
   END SUBROUTINE gasgrid_init

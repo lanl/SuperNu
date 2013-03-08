@@ -17,7 +17,7 @@ SUBROUTINE write_output
   WRITE(7,*) gas_eright/tsp_dt
 
   DO ir = 1, gas_nr
-     WRITE(3,'(es16.8)',ADVANCE='NO') gas_temp(ir)
+     WRITE(3,'(es16.8)',ADVANCE='NO') gas_vals2(ir)%tempkev
      WRITE(4,'(es16.8)',ADVANCE='NO') gas_fcoef(ir)
   ENDDO
 

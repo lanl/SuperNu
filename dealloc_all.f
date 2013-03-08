@@ -19,12 +19,12 @@ c-- bbxsmod
 !      deallocate(ggrid,ggrid_wl,ggrid_cap,ggrid_icapbb)
 !      if(impi==impi0) deallocate(ggrid2,ggrid2_temp,ggrid2_dwl)
 c-- gasgridmod
-      deallocate(gas_numcensus,gas_nvol,gas_rarr,gas_drarr,gas_dr3arr)
-      deallocate(gas_edep,gas_temp,gas_tempb,gas_ur,gas_rhoarr)
-      deallocate(gas_nisource,gas_sigmapg,gas_sigmargleft)
+      deallocate(gas_numcensus,gas_rarr,gas_drarr)
+      deallocate(gas_edep,gas_tempb,gas_vals2)
+      deallocate(gas_sigmapg,gas_sigmargleft)
       deallocate(gas_sigmargright,gas_emitprobg,gas_sigmal,gas_sigmar)
       deallocate(gas_ppl,gas_ppr,gas_ppick)
-      deallocate(gas_bcoef,gas_sigmap,gas_fcoef,gas_emit)
+      deallocate(gas_sigmap,gas_fcoef)
 c-- particlemod
       deallocate(prt_particles)
 c

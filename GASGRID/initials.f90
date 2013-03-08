@@ -21,22 +21,22 @@ SUBROUTINE initials
   !OPEN(UNIT=8,FILE='Tinit.dat',STATUS='UNKNOWN')
   !READ(8,*) gas_temp
   !DO ir = 1, gas_nr
-  !   IF (gas_temp(ir)<1.e-6) THEN
-  !      gas_temp(ir) = 1.e-6
+  !   IF (gas_vals2(ir)%tempkev<1.e-6) THEN
+  !      gas_vals2(ir)%tempkev = 1.e-6
   !   ENDIF
   !ENDDO
 
   ! Initial gas temperature, density, and heat capacity generation loop
   DO ir = 1, gas_nr
-     gas_rhoarr(ir) = 2.4186e8 !g/cm^3
-     gas_temp(ir) = 1.e3 !861.73
-     !gas_bcoef(ir) = 2.0*pc_acoef*gas_temp(ir)**3
+     gas_vals2(ir)%rho = 2.4186e8 !g/cm^3
+     gas_vals2(ir)%tempkev = 1.e3 !861.73
+     !gas_vals2(ir)%bcoef = 2.0*pc_acoef*gas_vals2(ir)%tempkev**3
 
-     gas_bcoef(ir) = 0.4*(1.e12*gas_rhoarr(ir))*580.25d0
+     gas_vals2(ir)%bcoef = 0.4*(1.e12*gas_vals2(ir)%rho)*580.25d0
 
-     gas_ur(ir) = pc_acoef*gas_temp(ir)**4
-     Um = gas_bcoef(ir)*gas_temp(ir)
-     gas_einit = gas_einit + Um*4*pc_pi*gas_dr3arr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp**3)/3.0
+     gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%tempkev**4
+     Um = gas_vals2(ir)%bcoef*gas_vals2(ir)%tempkev
+     gas_einit = gas_einit + Um*4*pc_pi*gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp**3)/3.0
   ENDDO
   gas_einp = gas_einit
   ! Setting all entries of particle array to vacant: loop
