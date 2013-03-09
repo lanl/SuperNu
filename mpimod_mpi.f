@@ -25,13 +25,13 @@ c     --------------------------
 *
 * data:
 * - rgrid
-* - ggrid_wl
+* - gas_wl
 * constants:
 * - in_ncostf,in_nphif,in_nwlf,in_wlmin,in_wlmax
 * - in_nwlg,in_epsline,in_niwlem
-* - in_nr,rg_ncr,gg_ncg,gg_npacket
+* - in_nr,rg_ncr,gas_ncg,gas_npacket
 * - in_nomp,tim_ntim,in_ntc
-* - gg_xi2beta,gg_dxwin
+* - gas_xi2beta,gas_dxwin
 * - flx_wlhelp,flx_wlminlg
 *
 * Also scatter the rng_offset_all to the mpi ranks.
@@ -43,7 +43,7 @@ c
 c-- broadcast integer constants
       allocate(isndvec(12))
       if(impi==impi0) isndvec = (/in_ncostf,in_nphif,in_nwlf,in_nwlg,
-     &  in_niwlem,in_nr,rg_ncr,gg_ncg,gg_npacket,in_nomp,tim_ntim,
+     &  in_niwlem,in_nr,rg_ncr,gas_ncg,gas_npacket,in_nomp,tim_ntim,
      &  in_ntc/)
       call mpi_bcast(isndvec,12,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -55,8 +55,8 @@ c-- copy back
       in_niwlem = isndvec(5)
       in_nr = isndvec(6)
       rg_ncr = isndvec(7)
-      gg_ncg = isndvec(8)
-      gg_npacket = isndvec(9)
+      gas_ncg = isndvec(8)
+      gas_npacket = isndvec(9)
       in_nomp = isndvec(10)
       tim_ntim = isndvec(11)
       in_ntc = isndvec(12)
@@ -66,7 +66,7 @@ c-- broadcast REAL*8 constants
       allocate(sndvec(7))
       if(impi==impi0) then
        sndvec(1:3) = (/in_wlmin,in_wlmax,in_epsline/)
-       sndvec(4:7) = (/gg_xi2beta,gg_dxwin,flx_wlhelp,flx_wlminlg/)
+       sndvec(4:7) = (/gas_xi2beta,gas_dxwin,flx_wlhelp,flx_wlminlg/)
       endif
       call mpi_bcast(sndvec,7,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -74,8 +74,8 @@ c-- copy back
       in_wlmin = sndvec(1)
       in_wlmax = sndvec(2)
       in_epsline = sndvec(3)
-      gg_xi2beta = sndvec(4)
-      gg_dxwin = sndvec(5)
+      gas_xi2beta = sndvec(4)
+      gas_dxwin = sndvec(5)
       flx_wlhelp = sndvec(6)
       flx_wlminlg = sndvec(7)
       deallocate(sndvec)
@@ -85,17 +85,16 @@ c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0) then
        allocate(rgrid(rg_ncr))
-       allocate(ggrid(gg_ncg))
-       allocate(ggrid_wl(in_nwlg))
-       allocate(ggrid_cap(gg_ncg,in_nwlg))
-       allocate(ggrid_icapbb(0:in_niwlem,gg_ncg))
+       allocate(gas_vals(gas_ncg))
+       allocate(gas_wl(in_nwlg))
+       allocate(gas_cap(gas_ncg,in_nwlg))
        allocate(flx_flux(in_nwlf,in_ncostf,in_nphif))
        allocate(flx_iflux(in_nwlf,in_ncostf,in_nphif))
       endif
       allocate(rng_offset(0:in_nomp-1))
 c
 c-- broadcast data
-      call mpi_bcast(ggrid_wl,in_nwlg,MPI_REAL8,
+      call mpi_bcast(gas_wl,in_nwlg,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c WARNING, sizeof may not work on hetrogeneous clusters!!!
@@ -135,22 +134,17 @@ c     ------------------------
 * constants:
 * - tim_itc
 * data:
-* - ggrid
-* - ggrid_cap
-* - ggrid_icapbb
+* - gas_vals
+* - gas_cap
 ************************************************************************
       call mpi_bcast(tim_itc,1,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      call mpi_bcast(ggrid_cap,in_nwlg*gg_ncg,MPI_REAL,
+      call mpi_bcast(gas_cap,in_nwlg*gas_ncg,MPI_REAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c WARNING, this may not work on heterogeneous clusters!!!
-      call mpi_bcast(ggrid_icapbb,sizeof(ggrid_icapbb),MPI_BYTE,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-c WARNING, this may not work on heterogeneous clusters!!!
-      call mpi_bcast(ggrid,sizeof(ggrid),MPI_BYTE,
+      call mpi_bcast(gas_vals,sizeof(gas_vals),MPI_BYTE,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
       end subroutine bcast_mutable
@@ -166,28 +160,28 @@ c     -----------------------
 ************************************************************************
 * Reduce the results from the packet transport that are needed for the
 * temperature correction.
-* - ggrid%enabs_e
-* - ggrid%enabs_c
+* - gas_vals%enabs_e
+* - gas_vals%enabs_c
 * - t_pckt_stat !min,mean,max
 ************************************************************************
-      REAL*8 :: sndvec(gg_ncg),rcvvec(gg_ncg)
+      REAL*8 :: sndvec(gas_ncg),rcvvec(gas_ncg)
       REAL*8 :: help
 c
-      sndvec = ggrid(:)%enabs_e
-      call mpi_reduce(sndvec,rcvvec,gg_ncg,MPI_REAL8,MPI_SUM,
+      sndvec = gas_vals(:)%enabs_e
+      call mpi_reduce(sndvec,rcvvec,gas_ncg,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      ggrid(:)%enabs_e = rcvvec
+      gas_vals(:)%enabs_e = rcvvec
 c
-      sndvec = ggrid(:)%enabs_c
-      call mpi_reduce(sndvec,rcvvec,gg_ncg,MPI_REAL8,MPI_SUM,
+      sndvec = gas_vals(:)%enabs_c
+      call mpi_reduce(sndvec,rcvvec,gas_ncg,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      ggrid(:)%enabs_c = rcvvec
+      gas_vals(:)%enabs_c = rcvvec
 c
       if(tim_itc>0) then
-       sndvec = ggrid%enocoll
-       call mpi_reduce(sndvec,rcvvec,gg_ncg,MPI_REAL8,MPI_SUM,
+       sndvec = gas_vals%enocoll
+       call mpi_reduce(sndvec,rcvvec,gas_ncg,MPI_REAL8,MPI_SUM,
      &   impi0,MPI_COMM_WORLD,ierr)
-       ggrid%enocoll = rcvvec
+       gas_vals%enocoll = rcvvec
       endif
 c
       help = t_pckt_stat(1)

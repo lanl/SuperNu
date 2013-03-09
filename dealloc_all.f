@@ -15,9 +15,9 @@ c-- ionsmod
       if(impi==impi0) call ion_dealloc
 c-- bbxsmod
       if(allocated(bb_xs)) deallocate(bb_xs) !only impi==impi0, but only if nobbopac==f
-!c-- ggridmod
-!      deallocate(ggrid,ggrid_wl,ggrid_cap,ggrid_icapbb)
-!      if(impi==impi0) deallocate(ggrid2,ggrid2_temp,ggrid2_dwl)
+!c-- gasgridmod
+!      deallocate(gas_vals,gas_wl,gas_cap)
+!      if(impi==impi0) deallocate(gas_vals2,gas_temphist,gas_dwl)
 c-- gasgridmod
       deallocate(gas_numcensus,gas_rarr,gas_drarr)
       deallocate(gas_edep,gas_tempb,gas_vals2)

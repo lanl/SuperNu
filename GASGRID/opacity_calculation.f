@@ -20,9 +20,9 @@ c$    use omp_lib
 c-- timing
       real :: t0,t1
 c-- helper arrays
-      REAL*8 :: grndlev(gg_ncg,ion_iionmax-1,gg_nelem)
-      REAL*8 :: hckt(gg_ncg)
-      REAL*8 :: hlparr(gg_ncg)
+      REAL*8 :: grndlev(gas_ncg,ion_iionmax-1,gas_nelem)
+      REAL*8 :: hckt(gas_ncg)
+      REAL*8 :: hlparr(gas_ncg)
 c-- ffxs
       REAL*8,parameter :: c1 = 4d0*pc_e**6/(3d0*pc_h*pc_me*pc_c**4)*
      &  sqrt(pc_pi2/(3*pc_me*pc_h*pc_c))
@@ -39,18 +39,18 @@ c-- bbxs
       real :: cap
 c
 c-- reset
-      ggrid_cap = 0.
+      gas_cap = 0.
 c
 c-- ion_grndlev helper array
-      hckt = pc_h*pc_c/(pc_kb*ggrid2%temp)
+      hckt = pc_h*pc_c/(pc_kb*gas_vals2%temp)
 c
 c
 c-- bound-bound
       if(.not. in_nobbopac) then
        call time(t0)!{{{
 
-       do iz=1,gg_nelem
-        forall(icg=1:gg_ncg,ii=1:min(iz,ion_el(iz)%ni - 1))
+       do iz=1,gas_nelem
+        forall(icg=1:gas_ncg,ii=1:min(iz,ion_el(iz)%ni - 1))
      &    grndlev(icg,ii,iz) = ion_grndlev(iz,icg)%oc(ii)/
      &    ion_grndlev(iz,icg)%g(ii)
        enddo !iz
@@ -59,7 +59,7 @@ c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(iz,ii,wl0,wlinv,iwl,phi,cap,expfac,ocggrnd)
 c$omp& firstprivate(grndlev,hckt)
-c$omp& shared(ggrid_cap)
+c$omp& shared(gas_cap)
        do i=1,bb_nline
         iz = bb_xs(i)%iz
         ii = bb_xs(i)%ii
@@ -74,8 +74,8 @@ c-- profile function
         phi = (in_nwlg-1d0)*flx_wlhelp*(wl0*pc_ang)/pc_c !line profile
 !       write(*,*) 'phi',phi
 c-- evaluate cap
-        do icg=1,gg_ncg
-         if(.not.ggrid2(icg)%opdirty) cycle !opacities are still valid
+        do icg=1,gas_ncg
+         if(.not.gas_vals2(icg)%opdirty) cycle !opacities are still valid
          ocggrnd = grndlev(icg,ii,iz)
 c-- oc high enough to be significant?
 *        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
@@ -83,14 +83,14 @@ c-- oc high enough to be significant?
          expfac = 1d0 - exp(-hckt(icg)*wlinv)
          cap = sngl(phi*bb_xs(i)%gxs*ocggrnd*
      &     exp(-bb_xs(i)%chilw*hckt(icg))*expfac)
-!        if(cap==0.) write(6,*) 'cap0',ggrid_cap(icg,iwl),phi,
+!        if(cap==0.) write(6,*) 'cap0',gas_cap(icg,iwl),phi,
 !    &     bb_xs(i)%gxs,ocggrnd,exp(-bb_xs(i)%chilw*hckt(icg)),expfac
          if(cap==0.) cycle
-         ggrid_cap(icg,iwl) = ggrid_cap(icg,iwl) + cap
+         gas_cap(icg,iwl) = gas_cap(icg,iwl) + cap
         enddo !icg
 c-- vectorized alternative is slower
-cslow   where(ggrid2(:)%opdirty .and. grndlev(:,ii,iz)>1d-30)
-cslow    ggrid_cap(:,iwl) = ggrid_cap(:,iwl) +
+cslow   where(gas_vals2(:)%opdirty .and. grndlev(:,ii,iz)>1d-30)
+cslow    gas_cap(:,iwl) = gas_cap(:,iwl) +
 cslow&     sngl(phi*bb_xs(i)%gxs*grndlev(:,ii,iz)*
 cslow&     exp(-bb_xs(i)%chilw*hckt(:))*(1d0 - exp(-wlinv*hckt(:))))
 cslow   endwhere
@@ -106,8 +106,8 @@ c-- bound-free
       if(.not. in_nobfopac) then
        call time(t0)!{{{
 c
-       do iz=1,gg_nelem
-        forall(icg=1:gg_ncg,ii=1:min(iz,ion_el(iz)%ni - 1))
+       do iz=1,gas_nelem
+        forall(icg=1:gas_ncg,ii=1:min(iz,ion_el(iz)%ni - 1))
      &    grndlev(icg,ii,iz) = ion_grndlev(iz,icg)%oc(ii)
        enddo !iz
 c
@@ -115,23 +115,23 @@ c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(wl,en,ie,xs)
 c$omp& firstprivate(grndlev)
-c$omp& shared(ggrid_cap)
+c$omp& shared(gas_cap)
        do iw=1,in_nwlg
-        wl = ggrid_wl(iw)
+        wl = gas_wl(iw)
         en = pc_h*pc_c/(pc_ev*pc_ang*wl) !photon energy in eV
-        do iz=1,gg_nelem
+        do iz=1,gas_nelem
          do ii=1,min(iz,ion_el(iz)%ni - 1) !last stage is bare nucleus
           ie = iz - ii + 1
           xs = bfxs(iz,ie,en)
           if(xs==0d0) cycle
-          forall(icg=1:gg_ncg)
-*         forall(icg=1:gg_ncg,ggrid2(icg)%opdirty)
-     &      ggrid_cap(icg,iw) = ggrid_cap(icg,iw) +
+          forall(icg=1:gas_ncg)
+*         forall(icg=1:gas_ncg,gas_vals2(icg)%opdirty)
+     &      gas_cap(icg,iw) = gas_cap(icg,iw) +
      &      sngl(xs*pc_mbarn*grndlev(icg,ii,iz))
          enddo !ie
         enddo !iz
 !       write(*,*) 'wl done:',iw !DEBUG
-!       write(*,*) ggrid_cap(:,iw) !DEBUG
+!       write(*,*) gas_cap(:,iw) !DEBUG
        enddo !iw
 c$omp end parallel do
 c
@@ -145,17 +145,17 @@ c-- free-free
        call time(t0)!{{{
 c
 c-- simple variant: nearest data grid point
-       hlparr = (ggrid2%natom/ggrid2%vol)**2*ggrid2%nelec
+       hlparr = (gas_vals2%natom/gas_vals2%vol)**2*gas_vals2%nelec
 c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy)
 c$omp& firstprivate(hckt,hlparr)
-c$omp& shared(ggrid_cap)
+c$omp& shared(gas_cap)
        do iw=1,in_nwlg
-        wl = pc_ang*ggrid_wl(iw)
+        wl = pc_ang*gas_wl(iw)
         wlinv = 1d0/wl
 c-- gcell loop
-        do icg=1,gg_ncg
+        do icg=1,gas_ncg
          u = hckt(icg)*wlinv
          iu = nint(10d0*(log10(u) + 4d0)) + 1
 c
@@ -163,7 +163,7 @@ c
          if(iu<1 .or. iu>ff_nu) stop 'opacity_calc: ff: iu wrong'
 c-- element loop
          cap8 = 0d0
-         do iz=1,gg_nelem
+         do iz=1,gas_nelem
           gg = iz**2*pc_rydberg*hckt(icg)
           igg = nint(5d0*(log10(gg) + 4d0)) + 1
 c-- gff is approximately constant in the low igg data-limit, do trivial extrapolation:
@@ -184,9 +184,9 @@ c-- asymptotic value
            endif
           endif
 c-- cross section
-          cap8 = cap8 + help*gff*iz**2*ggrid2(icg)%natom1fr(iz)
+          cap8 = cap8 + help*gff*iz**2*gas_vals2(icg)%natom1fr(iz)
          enddo !iz
-         ggrid_cap(icg,iw) = ggrid_cap(icg,iw) + sngl(cap8)
+         gas_cap(icg,iw) = gas_cap(icg,iw) + sngl(cap8)
         enddo !icg
        enddo !iw
 c$omp end parallel do
@@ -195,10 +195,10 @@ c
        call timereg(t_ff, t1-t0)!}}}
       endif !in_noffopac
 c
-      if(any(ggrid_cap==0.))
-     & call warn('opacity_calc','some ggrid_cap==0')
+      if(any(gas_cap==0.))
+     & call warn('opacity_calc','some gas_cap==0')
 c
 c-- convert to opacity per rcell
-      ggrid_cap = ggrid_cap*gg_cellength !gg_cellength converts cm^-1 to 1/rcell
+      gas_cap = gas_cap*gas_cellength !gas_cellength converts cm^-1 to 1/rcell
 c
       end subroutine opacity_calculation

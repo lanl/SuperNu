@@ -111,7 +111,7 @@ c     ---------------------
 * Sort the bound-bound transitions for wl in order to speed up the
 * the insertion into the big opacity array.
 *
-* So far, this doesn't seem to speed-up filling the gg_cap array
+* So far, this doesn't seem to speed-up filling the gas_cap array
 * significantly.
 ************************************************************************
       integer :: i,is,it

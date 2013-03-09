@@ -2,7 +2,7 @@
 c     --------------
       IMPLICIT NONE
 c
-      integer,private :: nelem=0 !private copy (public in ggridmod) value is obtained in read_ion_data
+      integer,private :: nelem=0 !private copy (public in gasgridmod) value is obtained in read_ion_data
       integer :: ion_iionmax !max number of ions an element has
       integer :: ion_nion    !total number of ions of all elements
 c
@@ -30,7 +30,7 @@ c-- ocupation number and g value of all ion's ground states
        REAL*8,allocatable :: oc(:)
        REAL*8,allocatable :: g(:)
       end type ocground
-      type(ocground),allocatable :: ion_grndlev(:,:) !(nelem,gg_ncg)
+      type(ocground),allocatable :: ion_grndlev(:,:) !(nelem,gas_ncg)
 c
 *     private leveldata,elemconf,ocground
 c
@@ -46,7 +46,7 @@ c     ---------------------------------
       integer,intent(in) :: ncg
 ************************************************************************
 * ion_grndlev stores the occupation number density and g value of the ground
-* states for all ions in all ggrid cells.
+* states for all ions in all gas_vals cells.
 ************************************************************************
       integer :: icg,iz,ni
 c

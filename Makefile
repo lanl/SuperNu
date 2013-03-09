@@ -76,7 +76,6 @@ timestepmod.o: inputparmod.o physconstmod.o
 #-- OBJ FILES
 #-- note: prerequisites don't need to include modules as these are always built first
 banner.o: version.inc
-read_bbxs_data.o: miscmod.o
 
 supernu.o: $(OBJFILES)
 

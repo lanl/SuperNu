@@ -1,4 +1,4 @@
-      subroutine ggrid_update
+      subroutine gasgrid_update
 c     -----------------------
       use mpimod, only:nmpi
       use physconstmod
@@ -12,7 +12,7 @@ c     -----------------------
       IMPLICIT NONE
 ************************************************************************
 * Update the part of the gas grid that depends on time and temperature.
-* The non-changing part is computed in ggrid_setup.
+* The non-changing part is computed in gasgrid_setup.
 * The work done here is:
 * - nuclear decay (energy release and chemical composition update)
 * - temperature and volume
@@ -22,8 +22,8 @@ c     -----------------------
       LOGICAL :: do_output
       integer :: i,iw,j,icg,k
       REAL*8 :: help
-      REAL*8 :: natom1fr(gg_ncg,-2:-1) !todo: memory storage order?
-      REAL*8 :: natom2fr(gg_ncg,-2:-1)
+      REAL*8 :: natom1fr(gas_ncg,-2:-1) !todo: memory storage order?
+      REAL*8 :: natom2fr(gas_ncg,-2:-1)
       REAL*8 :: capbcum(in_nwlg)
 c-- gamma opacity
       REAL*8,parameter :: ye=.5d0 !todo: compute this value
@@ -33,8 +33,8 @@ c-- thomson scattering
 c-- distribute packets
       integer :: mpacket !# packets to generate on each mpi rank
       integer :: nlower  !# ranks with 1 packet less
-      REAL*8 :: enemit(gg_ncg)
-      REAL*8 :: chiross(gg_ncg),capplanck(gg_ncg)
+      REAL*8 :: enemit(gas_ncg)
+      REAL*8 :: chiross(gas_ncg),capplanck(gas_ncg)
 c-- timing
       real :: t0,t1
 c
@@ -54,9 +54,9 @@ c
 c
 c-- constants
 c============
-!bug  gg_cellength  = gg_vout*tim_cen/in_nr !found 04/apr/2011
-      gg_cellength  = gg_vout*tim_cen/(in_nr + .5d0) !converts rcell length units to cm [cm/cell_unit]
-c     rcellvol = pc_pi4/3.*(gg_vout*tim_cen)**3/rg_ncr
+!bug  gas_cellength  = gas_vout*tim_cen/in_nr !found 04/apr/2011
+      gas_cellength  = gas_vout*tim_cen/(in_nr + .5d0) !converts rcell length units to cm [cm/cell_unit]
+c     rcellvol = pc_pi4/3.*(gas_vout*tim_cen)**3/rg_ncr
 c
 c
 c
@@ -65,39 +65,39 @@ c================
 c-- Get ni56 and co56 abundances on begin and end of the time step.!{{{
 c-- The difference between these two has decayed.
       call update_natomfr(tim_bot)
-      forall(i=-2:-1) natom1fr(:,i) = ggrid2(:)%natom1fr(i)
+      forall(i=-2:-1) natom1fr(:,i) = gas_vals2(:)%natom1fr(i)
       call update_natomfr(tim_top)
-      forall(i=-2:-1) natom2fr(:,i) = ggrid2(:)%natom1fr(i)
+      forall(i=-2:-1) natom2fr(:,i) = gas_vals2(:)%natom1fr(i)
 c
 c-- update the abundances for the center time
       call update_natomfr(tim_cen)
 c
-c-- fill ggrid structure
+c-- fill gas_vals structure
 c-- energy deposition (initialize local, replace with transport result later, in compute_local_engdep)
       if(tim_itc==0) then !gamma transport
-c      ggrid(:)%engdep = dtim*(ggrid2(i)%natom1fr(gg_ini56)*pc_qhl_ni56/thl_ni56 + !rate
-c    &   ggrid2(:)%natom1fr(gg_ico56)*pc_qhl_co56/thl_co56)*ggrid2(i)%natom
-       ggrid(:)%engdep = ggrid2(:)%natom*(
-     &   (natom1fr(:,gg_ini56) - natom2fr(:,gg_ini56)) *
+c      gas_vals(:)%engdep = dtim*(gas_vals2(i)%natom1fr(gas_ini56)*pc_qhl_ni56/thl_ni56 + !rate
+c    &   gas_vals2(:)%natom1fr(gas_ico56)*pc_qhl_co56/thl_co56)*gas_vals2(i)%natom
+       gas_vals(:)%engdep = gas_vals2(:)%natom*(
+     &   (natom1fr(:,gas_ini56) - natom2fr(:,gas_ini56)) *
      &    (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
-     &   (natom1fr(:,gg_ico56) - natom2fr(:,gg_ico56))*pc_qhl_co56)
+     &   (natom1fr(:,gas_ico56) - natom2fr(:,gas_ico56))*pc_qhl_co56)
       endif !tim_itc !}}}
 c
 c
 c
 c-- update temperature and volume
 c================================
-      if(any(ggrid2_temp(:,tim_itim)<=0d0)) then!{{{
-       if(tim_itc>1) stop 'ggrid_update: temp==0 invalid'
-       if(tim_itim==1) stop 'ggrid_update: temp==0 bad initialization'
+      if(any(gas_temphist(:,tim_itim)<=0d0)) then!{{{
+       if(tim_itc>1) stop 'gasgrid_update: temp==0 invalid'
+       if(tim_itim==1) stop 'gasgrid_update: temp==0 bad initialization'
 c-- copy results from previous time-step
-       ggrid2_temp(:,tim_itim) = ggrid2_temp(:,tim_itim-1)
+       gas_temphist(:,tim_itim) = gas_temphist(:,tim_itim-1)
       endif
 c
-      ggrid2%temp = ggrid2_temp(:,tim_itim)
-      ggrid2%vol = ggrid2%volr*(gg_vout*tim_cen)**3 !volume in cm^3
-      ggrid2%volcrp = pc_pi4/3d0*(gg_vout*tim_cen)**3 !effective volume in cm^3
-     &  *ggrid%ncrp/rg_ncr!}}}
+      gas_vals2%temp = gas_temphist(:,tim_itim)
+      gas_vals2%vol = gas_vals2%volr*(gas_vout*tim_cen)**3 !volume in cm^3
+      gas_vals2%volcrp = pc_pi4/3d0*(gas_vout*tim_cen)**3 !effective volume in cm^3
+     &  *gas_vals%ncrp/rg_ncr!}}}
 c
 c
 c
@@ -118,14 +118,14 @@ c========================
       calc_opac: if(tim_itc==0) then
 c!{{{
 c-- gamma opacity
-       ggrid(:)%capgam = in_opcapgam*ye*
-     &   ggrid2(:)%mass/ggrid2(:)%volcrp*gg_cellength !gg_cellength converts cm^-1 to 1/rcell
+       gas_vals(:)%capgam = in_opcapgam*ye*
+     &   gas_vals2(:)%mass/gas_vals2(:)%volcrp*gas_cellength !gas_cellength converts cm^-1 to 1/rcell
 c!}}}
       else calc_opac !tim_itc
 c!{{{
 c-- thomson scattering
-       ggrid(:)%sig = cthomson*ggrid2(:)%nelec*
-     &   ggrid2(:)%natom/ggrid2(:)%volcrp*gg_cellength 
+       gas_vals(:)%sig = cthomson*gas_vals2(:)%nelec*
+     &   gas_vals2(:)%natom/gas_vals2(:)%volcrp*gas_cellength 
 c
 c-- 
        call opacity_calculation
@@ -139,9 +139,9 @@ c-- open file descriptor
         if(tim_itim==1) then
          open(4,file='opacdump',action='write',status='replace')
 c-- write wl-grid
-         write(4,'(a,3i8)') '#',in_nwlg,gg_ncg
+         write(4,'(a,3i8)') '#',in_nwlg,gas_ncg
          write(4,'(a,3i8,1p,2e12.4)') '#',tim_itim,tim_itc,0, 0., 0.
-         write(4,'(1p,10e12.4)') ggrid_wl
+         write(4,'(1p,10e12.4)') gas_wl
         elseif(trim(in_opacdump)=='each') then
          open(4,file='opacdump',action='write',status='replace')
         elseif(trim(in_opacdump)=='all') then
@@ -153,14 +153,14 @@ c
 c-- write opacity grid
        inquire(4,opened=do_output)
        if(do_output) then
-        do icg=1,gg_ncg
+        do icg=1,gas_ncg
 c-- convert from opacity in redona's rcell units to opacity per gram
-*        help = ggrid2(icg)%volcrp/(ggrid2(icg)%mass*gg_cellength)
+*        help = gas_vals2(icg)%volcrp/(gas_vals2(icg)%mass*gas_cellength)
 c-- convert from opacity in redona's rcell units to opacity per cm
-         help = 1d0/gg_cellength
+         help = 1d0/gas_cellength
          write(4,'(a,3i8,1p,2e12.4)') '#',tim_itim,tim_itc,icg,
-     &     ggrid2(icg)%temp,ggrid(icg)%sig*help
-         write(4,'(1p,10e12.4)') (ggrid_cap(icg,j)*help,j=1,in_nwlg)
+     &     gas_vals2(icg)%temp,gas_vals(icg)%sig*help
+         write(4,'(1p,10e12.4)') (gas_cap(icg,j)*help,j=1,in_nwlg)
         enddo
 c-- close file
         close(4)!}}}
@@ -168,32 +168,32 @@ c-- close file
 c
 c-- add some gray opacity, for testing
        if(in_opcap>0.) then
-        forall(i=1:in_nwlg) ggrid_cap(:,i) = ggrid_cap(:,i) + in_opcap*
-     &    ggrid2(:)%mass/ggrid2(:)%volcrp*gg_cellength !convert from opacity in redona's rcell units to opacity per gram
+        forall(i=1:in_nwlg) gas_cap(:,i) = gas_cap(:,i) + in_opcap*
+     &    gas_vals2(:)%mass/gas_vals2(:)%volcrp*gas_cellength !convert from opacity in redona's rcell units to opacity per gram
        endif
 c
 c
 c-- Rosseland opacity
 c-- normalization integral first
-       forall(icg=1:gg_ncg)
-     &  chiross(icg) = sum(dplanckdtemp(ggrid_wl,ggrid2(icg)%temp)*
-     &    ggrid2_dwl)
-       forall(icg=1:gg_ncg)
-     &  capplanck(icg) = sum(planck(ggrid_wl,ggrid2(icg)%temp)*
-     &    ggrid2_dwl)
+       forall(icg=1:gas_ncg)
+     &  chiross(icg) = sum(dplanckdtemp(gas_wl,gas_vals2(icg)%temp)*
+     &    gas_dwl)
+       forall(icg=1:gas_ncg)
+     &  capplanck(icg) = sum(planck(gas_wl,gas_vals2(icg)%temp)*
+     &    gas_dwl)
 c-- check against analytic solution
-c      write(7,'(1p,10e12.4)') (chiross(icg),icg=1,gg_ncg)
-c      write(7,'(1p,10e12.4)') (4/pi*sb*ggrid2(icg)%temp**3,icg=1,gg_ncg)
-c      write(7,'(1p,10e12.4)') (capplanck(icg),icg=1,gg_ncg)
-c      write(7,'(1p,10e12.4)') (sb/pi*ggrid2(icg)%temp**4,icg=1,gg_ncg)
+c      write(7,'(1p,10e12.4)') (chiross(icg),icg=1,gas_ncg)
+c      write(7,'(1p,10e12.4)') (4/pi*sb*gas_vals2(icg)%temp**3,icg=1,gas_ncg)
+c      write(7,'(1p,10e12.4)') (capplanck(icg),icg=1,gas_ncg)
+c      write(7,'(1p,10e12.4)') (sb/pi*gas_vals2(icg)%temp**4,icg=1,gas_ncg)
 c-- now the opacity weighting integral
-       forall(icg=1:gg_ncg)
+       forall(icg=1:gas_ncg)
      &  chiross(icg) = chiross(icg) /
-     &    sum(dplanckdtemp(ggrid_wl,ggrid2(icg)%temp)*ggrid2_dwl/
-     &    (ggrid_cap(icg,:) + ggrid(icg)%sig))
-       forall(icg=1:gg_ncg)
-     &  capplanck(icg) = sum(planck(ggrid_wl,ggrid2(icg)%temp)*
-     &    ggrid_cap(icg,:)*ggrid2_dwl) / capplanck(icg)
+     &    sum(dplanckdtemp(gas_wl,gas_vals2(icg)%temp)*gas_dwl/
+     &    (gas_cap(icg,:) + gas_vals(icg)%sig))
+       forall(icg=1:gas_ncg)
+     &  capplanck(icg) = sum(planck(gas_wl,gas_vals2(icg)%temp)*
+     &    gas_cap(icg,:)*gas_dwl) / capplanck(icg)
 c-- Rosseland output
        write(7,*) 'mean opacities:'
        write(7,'(a8,7a12)') 'icg',
@@ -202,11 +202,11 @@ c-- Rosseland output
        write(7,'(a8,7a12)') 'units:',
      &   '     [1]','    [cu]',' [cm^-1]',' [cu]','[cm^-1]',
      &   '[cu]','[cm^-1]'
-       do icg=1,gg_ncg
+       do icg=1,gas_ncg
         write(7,'(i8,1p,7e12.4)') icg,
-     &    sum(chiross(icg:)),1d0/chiross(icg),chiross(icg)/gg_cellength,
-     &    capplanck(icg),capplanck(icg)/gg_cellength,
-     &    ggrid(icg)%sig,ggrid(icg)%sig/gg_cellength
+     &    sum(chiross(icg:)),1d0/chiross(icg),chiross(icg)/gas_cellength,
+     &    capplanck(icg),capplanck(icg)/gas_cellength,
+     &    gas_vals(icg)%sig,gas_vals(icg)%sig/gas_cellength
        enddo
 c
 c-- timing output
@@ -225,43 +225,43 @@ c
 c-- energy depots
       if(tim_itc==1) then
        write(6,'(1x,a,1p,e12.4)') 'energy deposition (Lagr)  :',
-     &   sum(ggrid%engdep)
+     &   sum(gas_vals%engdep)
       endif !tim_itc
 c-- totals
       write(7,*)
       write(7,'(1x,a,1p,e12.4)') 'energy deposition (Lagr)  :',
-     &  sum(ggrid%engdep)
+     &  sum(gas_vals%engdep)
 c-- arrays
 *     write(7,'(a6,5a12)')'icg','engdep/vol','enostor/vol','rho',
       write(7,'(a6,5a12)')'icg','engdep/dt','rho',
      &  'nelec','volcrp/vol'
-      do i=1,gg_ncg,10
+      do i=1,gas_ncg,10
        write(7,'(i6,1p,5e12.4)') (j,
-     &  ggrid(j)%engdep/tim_dt,
-     &  ggrid2(j)%mass/ggrid2(j)%vol,
-     &  ggrid2(j)%nelec,ggrid2(j)%volcrp/ggrid2(j)%vol,
-     &  j=i,min(i+9,gg_ncg))
+     &  gas_vals(j)%engdep/tim_dt,
+     &  gas_vals2(j)%mass/gas_vals2(j)%vol,
+     &  gas_vals2(j)%nelec,gas_vals2(j)%volcrp/gas_vals2(j)%vol,
+     &  j=i,min(i+9,gas_ncg))
       enddo
 !c
 !c-- scattering coefficients
 !      if(tim_itc>0) then
 !       write(7,*)
 !       write(7,*) 'sig'
-!       write(7,'(1p,10e12.4)') ggrid%sig
+!       write(7,'(1p,10e12.4)') gas_vals%sig
 !      endif!}}}
 c
 c
       call time(t1)
       call timereg(t_ggupd,t1-t0)
 c
-      end subroutine ggrid_update
+      end subroutine gasgrid_update
 c
 c
 c
       subroutine update_natomfr(tsince)
 c     -------------------------------
       use physconstmod
-      use ggridmod
+      use gasgridmod
       use inputparmod
       IMPLICIT NONE
       REAL*8,intent(in) :: tsince
@@ -277,25 +277,25 @@ c-- update Fe
       help = 1d0 + (pc_thl_co56*expco - pc_thl_ni56*expni)/
      &  (pc_thl_ni56 - pc_thl_co56)
       if(help.lt.0) stop 'update_natomfr: Ni->Fe < 0'
-      ggrid2(:)%natom1fr(26) = ggrid2(:)%natom0fr(gg_ini56)*help + !initial Ni56
-     &  ggrid2(:)%natom0fr(gg_ico56)*(1d0-expco) +                 !initial Co56
-     &  ggrid2(:)%natom0fr(0)                                      !initial Fe (stable)
+      gas_vals2(:)%natom1fr(26) = gas_vals2(:)%natom0fr(gas_ini56)*help + !initial Ni56
+     &  gas_vals2(:)%natom0fr(gas_ico56)*(1d0-expco) +                 !initial Co56
+     &  gas_vals2(:)%natom0fr(0)                                      !initial Fe (stable)
 c
 c-- update Co56 and Co
       help = pc_thl_co56*(expni - expco)/(pc_thl_ni56 - pc_thl_co56)
       if(help.lt.0) stop 'update_natomfr: Ni->Co < 0'
 c-- Co56
-      ggrid2(:)%natom1fr(gg_ico56) = ggrid2(:)%natom0fr(gg_ini56)*help +!initial Ni56
-     &  ggrid2(:)%natom0fr(gg_ico56)*expco                              !initial Co56
+      gas_vals2(:)%natom1fr(gas_ico56) = gas_vals2(:)%natom0fr(gas_ini56)*help +!initial Ni56
+     &  gas_vals2(:)%natom0fr(gas_ico56)*expco                              !initial Co56
 c-- Co
-      ggrid2(:)%natom1fr(27) = ggrid2(:)%natom1fr(gg_ico56) + !unstable
-     &  ggrid2(:)%natom0fr(1)                              !initial Co (stable)
+      gas_vals2(:)%natom1fr(27) = gas_vals2(:)%natom1fr(gas_ico56) + !unstable
+     &  gas_vals2(:)%natom0fr(1)                              !initial Co (stable)
 c
 c-- update Ni56 and Ni
 c-- Ni56
-      ggrid2(:)%natom1fr(gg_ini56) = ggrid2(:)%natom0fr(gg_ini56)*expni !initial Ni56
+      gas_vals2(:)%natom1fr(gas_ini56) = gas_vals2(:)%natom0fr(gas_ini56)*expni !initial Ni56
 c-- Ni
-      ggrid2(:)%natom1fr(28) = ggrid2(:)%natom1fr(gg_ini56) + !unstable
-     &  ggrid2(:)%natom0fr(2)                              !initial Ni (stable)
+      gas_vals2(:)%natom1fr(28) = gas_vals2(:)%natom1fr(gas_ini56) + !unstable
+     &  gas_vals2(:)%natom0fr(2)                              !initial Ni (stable)
 c
       end subroutine update_natomfr
