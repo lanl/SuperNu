@@ -22,9 +22,9 @@ c     -----------------------
       LOGICAL :: do_output
       integer :: i,iw,j,icg,k
       REAL*8 :: help
-      REAL*8 :: natom1fr(gas_ncg,-2:-1) !todo: memory storage order?
-      REAL*8 :: natom2fr(gas_ncg,-2:-1)
-      REAL*8 :: capbcum(in_nwlg)
+      REAL*8 :: natom1fr(gas_nr,-2:-1) !todo: memory storage order?
+      REAL*8 :: natom2fr(gas_nr,-2:-1)
+      REAL*8 :: capbcum(gas_ng)
 c-- gamma opacity
       REAL*8,parameter :: ye=.5d0 !todo: compute this value
 c-- thomson scattering
@@ -33,8 +33,8 @@ c-- thomson scattering
 c-- distribute packets
       integer :: mpacket !# packets to generate on each mpi rank
       integer :: nlower  !# ranks with 1 packet less
-      REAL*8 :: enemit(gas_ncg)
-      REAL*8 :: chiross(gas_ncg),capplanck(gas_ncg)
+      REAL*8 :: enemit(gas_nr)
+      REAL*8 :: chiross(gas_nr),capplanck(gas_nr)
 c-- timing
       real :: t0,t1
 c
@@ -87,14 +87,14 @@ c
 c
 c-- update temperature and volume
 c================================
-      if(any(gas_temphist(:,tim_itim)<=0d0)) then!{{{
+      if(any(gas_temphist(:,tsp_tn)<=0d0)) then!{{{
        if(tim_itc>1) stop 'gasgrid_update: temp==0 invalid'
-       if(tim_itim==1) stop 'gasgrid_update: temp==0 bad initialization'
+       if(tsp_tn==1) stop 'gasgrid_update: temp==0 bad initialization'
 c-- copy results from previous time-step
-       gas_temphist(:,tim_itim) = gas_temphist(:,tim_itim-1)
+       gas_temphist(:,tsp_tn) = gas_temphist(:,tsp_tn-1)
       endif
 c
-      gas_vals2%temp = gas_temphist(:,tim_itim)
+      gas_vals2%temp = gas_temphist(:,tsp_tn)
       gas_vals2%vol = gas_vals2%volr*(gas_vout*tim_cen)**3 !volume in cm^3
       gas_vals2%volcrp = pc_pi4/3d0*(gas_vout*tim_cen)**3 !effective volume in cm^3
      &  *gas_vals%ncrp/rg_ncr!}}}
@@ -105,7 +105,7 @@ c-- solve LTE EOS
 c================
       do_output = tim_itc>=in_ntc .and. !{{{
      &  (in_pdensdump=='each' .or.
-     &  (in_pdensdump=='one' .and. tim_itim==1))
+     &  (in_pdensdump=='one' .and. tsp_tn==1))
 c
       call eos_update(do_output)
       if(tim_itc==1) write(6,'(1x,a27,2(f8.2,"s"))')
@@ -136,11 +136,11 @@ c--------------------------------------------------------------
 c-- do nothing
        elseif(tim_itc>=in_ntc) then
 c-- open file descriptor
-        if(tim_itim==1) then
+        if(tsp_tn==1) then
          open(4,file='opacdump',action='write',status='replace')
 c-- write wl-grid
-         write(4,'(a,3i8)') '#',in_nwlg,gas_ncg
-         write(4,'(a,3i8,1p,2e12.4)') '#',tim_itim,tim_itc,0, 0., 0.
+         write(4,'(a,3i8)') '#',gas_ng,gas_nr
+         write(4,'(a,3i8,1p,2e12.4)') '#',tsp_tn,tim_itc,0, 0., 0.
          write(4,'(1p,10e12.4)') gas_wl
         elseif(trim(in_opacdump)=='each') then
          open(4,file='opacdump',action='write',status='replace')
@@ -153,14 +153,14 @@ c
 c-- write opacity grid
        inquire(4,opened=do_output)
        if(do_output) then
-        do icg=1,gas_ncg
+        do icg=1,gas_nr
 c-- convert from opacity in redona's rcell units to opacity per gram
 *        help = gas_vals2(icg)%volcrp/(gas_vals2(icg)%mass*gas_cellength)
 c-- convert from opacity in redona's rcell units to opacity per cm
          help = 1d0/gas_cellength
-         write(4,'(a,3i8,1p,2e12.4)') '#',tim_itim,tim_itc,icg,
+         write(4,'(a,3i8,1p,2e12.4)') '#',tsp_tn,tim_itc,icg,
      &     gas_vals2(icg)%temp,gas_vals(icg)%sig*help
-         write(4,'(1p,10e12.4)') (gas_cap(icg,j)*help,j=1,in_nwlg)
+         write(4,'(1p,10e12.4)') (gas_cap(icg,j)*help,j=1,gas_ng)
         enddo
 c-- close file
         close(4)!}}}
@@ -168,30 +168,30 @@ c-- close file
 c
 c-- add some gray opacity, for testing
        if(in_opcap>0.) then
-        forall(i=1:in_nwlg) gas_cap(:,i) = gas_cap(:,i) + in_opcap*
+        forall(i=1:gas_ng) gas_cap(:,i) = gas_cap(:,i) + in_opcap*
      &    gas_vals2(:)%mass/gas_vals2(:)%volcrp*gas_cellength !convert from opacity in redona's rcell units to opacity per gram
        endif
 c
 c
 c-- Rosseland opacity
 c-- normalization integral first
-       forall(icg=1:gas_ncg)
+       forall(icg=1:gas_nr)
      &  chiross(icg) = sum(dplanckdtemp(gas_wl,gas_vals2(icg)%temp)*
      &    gas_dwl)
-       forall(icg=1:gas_ncg)
+       forall(icg=1:gas_nr)
      &  capplanck(icg) = sum(planck(gas_wl,gas_vals2(icg)%temp)*
      &    gas_dwl)
 c-- check against analytic solution
-c      write(7,'(1p,10e12.4)') (chiross(icg),icg=1,gas_ncg)
-c      write(7,'(1p,10e12.4)') (4/pi*sb*gas_vals2(icg)%temp**3,icg=1,gas_ncg)
-c      write(7,'(1p,10e12.4)') (capplanck(icg),icg=1,gas_ncg)
-c      write(7,'(1p,10e12.4)') (sb/pi*gas_vals2(icg)%temp**4,icg=1,gas_ncg)
+c      write(7,'(1p,10e12.4)') (chiross(icg),icg=1,gas_nr)
+c      write(7,'(1p,10e12.4)') (4/pi*sb*gas_vals2(icg)%temp**3,icg=1,gas_nr)
+c      write(7,'(1p,10e12.4)') (capplanck(icg),icg=1,gas_nr)
+c      write(7,'(1p,10e12.4)') (sb/pi*gas_vals2(icg)%temp**4,icg=1,gas_nr)
 c-- now the opacity weighting integral
-       forall(icg=1:gas_ncg)
+       forall(icg=1:gas_nr)
      &  chiross(icg) = chiross(icg) /
      &    sum(dplanckdtemp(gas_wl,gas_vals2(icg)%temp)*gas_dwl/
      &    (gas_cap(icg,:) + gas_vals(icg)%sig))
-       forall(icg=1:gas_ncg)
+       forall(icg=1:gas_nr)
      &  capplanck(icg) = sum(planck(gas_wl,gas_vals2(icg)%temp)*
      &    gas_cap(icg,:)*gas_dwl) / capplanck(icg)
 c-- Rosseland output
@@ -202,7 +202,7 @@ c-- Rosseland output
        write(7,'(a8,7a12)') 'units:',
      &   '     [1]','    [cu]',' [cm^-1]',' [cu]','[cm^-1]',
      &   '[cu]','[cm^-1]'
-       do icg=1,gas_ncg
+       do icg=1,gas_nr
         write(7,'(i8,1p,7e12.4)') icg,
      &    sum(chiross(icg:)),1d0/chiross(icg),chiross(icg)/gas_cellength,
      &    capplanck(icg),capplanck(icg)/gas_cellength,
@@ -210,7 +210,7 @@ c-- Rosseland output
        enddo
 c
 c-- timing output
-       if(tim_itc==1 .and. tim_itim==1)
+       if(tim_itc==1 .and. tsp_tn==1)
      &   write(6,'(1x,a27,3(f8.2,"s"))') 'opacity timing: bb|bf|ff  :',
      &   t_bb(1),t_bf(1),t_ff(1) !}}}
 c
@@ -235,12 +235,12 @@ c-- arrays
 *     write(7,'(a6,5a12)')'icg','engdep/vol','enostor/vol','rho',
       write(7,'(a6,5a12)')'icg','engdep/dt','rho',
      &  'nelec','volcrp/vol'
-      do i=1,gas_ncg,10
+      do i=1,gas_nr,10
        write(7,'(i6,1p,5e12.4)') (j,
      &  gas_vals(j)%engdep/tim_dt,
      &  gas_vals2(j)%mass/gas_vals2(j)%vol,
      &  gas_vals2(j)%nelec,gas_vals2(j)%volcrp/gas_vals2(j)%vol,
-     &  j=i,min(i+9,gas_ncg))
+     &  j=i,min(i+9,gas_nr))
       enddo
 !c
 !c-- scattering coefficients

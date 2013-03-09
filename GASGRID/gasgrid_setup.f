@@ -1,11 +1,10 @@
-      subroutine gasgrid_setup(ncg_in,ntim_in)
+      subroutine gasgrid_setup
 c     --------------------------------------
       use physconstmod
       use inputparmod
       use gasgridmod
       use miscmod, only:warn
       IMPLICIT NONE
-      integer,intent(in) :: ncg_in,ntim_in
 ************************************************************************
 * Initialize the gas grid, the part that is constant with time and
 * temperature. The part that changes is done in gas_grid_update.
@@ -18,12 +17,8 @@ c--
       write(6,*) 'setup gas grid:'     
       write(6,*) '==========================='
 c
-c-- allocate gas_vals
-      call gasgrid_alloc(ncg_in,ntim_in)
-c
 c-- init temp structure
-      gas_temphist(:,1) = 1d4  !initial guess, may be overwritten by read_temp_str
-      gas_temphist(:,2:) = 0d0 !either overwritten by read_temp_str or copy from previous time step
+      gas_vals2%temp = 1d4  !initial guess, may be overwritten by read_temp_str
 c
 c-- convert mass fractions to # atoms
       call massfr2natomfr
@@ -31,16 +26,16 @@ c-- convert mass fractions to # atoms
 !c-- output
 !      write(6,*) 'mass fractions'
 !      write(6,'(1p,33i12)') (i,i=-2,30)
-!      write(6,'(1p,33e12.4)') (gas_vals2(i)%mass0fr,i=1,gas_ncg)
+!      write(6,'(1p,33e12.4)') (gas_vals2(i)%mass0fr,i=1,gas_nr)
 !      write(6,*) 'number fractions'
 !      write(6,'(1p,33i12)') (i,i=-2,30)
-!      write(6,'(1p,33e12.4)') (gas_vals2(i)%natom1fr,i=1,gas_ncg)
+!      write(6,'(1p,33e12.4)') (gas_vals2(i)%natom1fr,i=1,gas_nr)
 c
 c-- gas wavelength grid
-      forall(i=1:in_nwlg) gas_wl(i) =
-     &  in_wlmin*(in_wlmax/dble(in_wlmin))**((i-1d0)/(in_nwlg-1d0))
+      forall(i=1:gas_ng) gas_wl(i) =
+     &  in_wlmin*(in_wlmax/dble(in_wlmin))**((i-1d0)/(gas_ng-1d0))
       gas_dwl = pc_ang*gas_wl*log(in_wlmax/dble(in_wlmin)) /
-     &  (in_nwlg-1d0) !wl grid bin width
+     &  (gas_ng-1d0) !wl grid bin width
 c-- sanity test
       help = sum(gas_dwl)/pc_ang
       if(abs(help/(in_wlmax-in_wlmin) - 1d0) .gt. 1d-3) then
@@ -64,7 +59,7 @@ c     -------------------------
       integer :: i,j
       REAL*8 :: help
 c
-      do i=1,gas_ncg
+      do i=1,gas_nr
 c
 c-- renormalize (the container fraction (unused elements) is taken out)
        gas_vals2(i)%mass0fr(:) = gas_vals2(i)%mass0fr(:)/
@@ -86,9 +81,11 @@ c-- convert to natoms
 c-- special care for ni56 and co56
        help = elem_data(26)%m*pc_amu
 !      help = elem_data(28)%m*pc_amu !phoenix compatible
-       gas_vals2(i)%natom1fr(gas_ini56) = gas_vals2(i)%natom1fr(gas_ini56)/help
+       gas_vals2(i)%natom1fr(gas_ini56) =
+     &   gas_vals2(i)%natom1fr(gas_ini56)/help
 !      help = elem_data(27)%m*pc_amu !phoenix compatible
-       gas_vals2(i)%natom1fr(gas_ico56) = gas_vals2(i)%natom1fr(gas_ico56)/help
+       gas_vals2(i)%natom1fr(gas_ico56) =
+     &   gas_vals2(i)%natom1fr(gas_ico56)/help
 c-- store initial fe/co/ni
        gas_vals2(i)%natom0fr(-2:-1) = gas_vals2(i)%natom1fr(-2:-1) !unstable
        gas_vals2(i)%natom0fr(0:2) = gas_vals2(i)%natom1fr(26:28) !stable

@@ -1,14 +1,25 @@
 MODULE gasgridmod
 
   IMPLICIT NONE
+!***********************************************************************
+! gas grid structure
+!***********************************************************************
+  integer,parameter :: gas_nelem=30
+  integer,parameter :: gas_ini56=-1, gas_ico56=-2 !positions in mass0fr and natom1fr arrays
 
-  INTEGER :: gas_nr = 0
-  INTEGER :: gas_ng = 0
+  integer :: gas_nr = 0
+  integer :: gas_ng = 0
+
+  REAL*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
+  REAL*8,allocatable :: gas_dwl(:) !(gas_ng) wavelength grid bin width
+  REAL*8,allocatable :: gas_cap(:,:) !(gas_nr,gas_ng) Line+Cont extinction coeff
+!
+!-- temperature structure history
+  REAL*8,allocatable :: gas_temphist(:,:) !(gas_nr,tim_nt)
+
   REAL*8 :: gas_lr = 0
   LOGICAL :: gas_isvelocity
   INTEGER :: gas_velno, gas_velyes
-
-  INTEGER :: gas_nelem = 0
 
   REAL*8 :: gas_nidecay = 1.73*(1.6022e-6)  !erg/s/g  !this value is used in the first iteration
 
@@ -26,6 +37,20 @@ MODULE gasgridmod
     INTEGER :: nvol
     REAL*8 :: dr3_34pi, tempkev, emit
     REAL*8 :: ur, rho, bcoef, nisource
+       REAL*8 :: temp       !gcell temperature
+       REAL*8 :: volr       !gcell volume [rout=1 units]
+       REAL*8 :: vol        !gcell volume [cm^3]
+       REAL*8 :: volcrp     !effective volume (of linked rgrid cells) [cm^3]
+       REAL*8 :: mass       !gcell mass
+       REAL*8 :: mass0fr(-2:gas_nelem) = 0d0  !initial mass fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
+       REAL*8 :: natom      !gcell # atoms
+       REAL*8 :: natom1fr(-2:gas_nelem) = 0d0 !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
+       REAL*8 :: natom0fr(-2:2) = 0d0     !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
+       REAL*8 :: nelec=1d0  !gcell # electrons per atom
+!-- opacity invalidity flag
+       LOGICAL :: opdirty=.true. !opacity needs recalculation
+!-- energy reservoir
+       REAL*8 :: engdep     !energy deposited by gamma rays
   END TYPE gas_secondary
   TYPE(gas_secondary),POINTER :: gas_vals2(:)
 
@@ -41,9 +66,9 @@ MODULE gasgridmod
   CONTAINS
 
 
-  SUBROUTINE gasgrid_init(nr,ng,lr,isvelocity)
+  SUBROUTINE gasgrid_init(nr,ng,nt,lr,isvelocity)
 !-------------------------------
-    INTEGER,intent(in) :: nr, ng
+    INTEGER,intent(in) :: nr,ng,nt
     REAL*8,intent(in) :: lr
     LOGICAL,intent(in) :: isvelocity
     gas_nr = nr
@@ -66,8 +91,14 @@ MODULE gasgridmod
     ALLOCATE(gas_ppr(gas_ng,gas_nr))  !can potentially be removed
     ALLOCATE(gas_ppick(gas_ng))  !gas_ng=2 for to temp picket fence verification
 
+    allocate(gas_wl(gas_ng)) !wavelength grid
+    allocate(gas_cap(gas_nr,gas_ng)) !Line+Cont extinction coeff
+
 !-- secondary
     allocate(gas_vals2(gas_nr))
+
+    allocate(gas_temphist(gas_nr,nt))
+    allocate(gas_dwl(gas_ng)) !wavelength grid bin width
 
     ALLOCATE(gas_tempb(gas_nr+1))  !cell boundary temperature
 

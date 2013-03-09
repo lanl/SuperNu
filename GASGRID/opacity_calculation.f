@@ -2,7 +2,6 @@
 c     ------------------------------
 c$    use omp_lib
       use physconstmod
-      use fluxmod
       use inputparmod
       use ffxsmod
       use bfxsmod, only:bfxs
@@ -20,9 +19,9 @@ c$    use omp_lib
 c-- timing
       real :: t0,t1
 c-- helper arrays
-      REAL*8 :: grndlev(gas_ncg,ion_iionmax-1,gas_nelem)
-      REAL*8 :: hckt(gas_ncg)
-      REAL*8 :: hlparr(gas_ncg)
+      REAL*8 :: grndlev(gas_nr,ion_iionmax-1,gas_nelem)
+      REAL*8 :: hckt(gas_nr)
+      REAL*8 :: hlparr(gas_nr)
 c-- ffxs
       REAL*8,parameter :: c1 = 4d0*pc_e**6/(3d0*pc_h*pc_me*pc_c**4)*
      &  sqrt(pc_pi2/(3*pc_me*pc_h*pc_c))
@@ -36,7 +35,13 @@ c-- bfxs
 c-- bbxs
       integer :: i,iwl
       REAL*8 :: phi,ocggrnd,expfac,wl0
-      real :: cap
+      REAL*8 :: cap
+c-- constants
+      REAL*8 :: wlhelp,wlminlg
+c
+c-- constants
+      wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
+      wlminlg = log(dble(in_wlmin))
 c
 c-- reset
       gas_cap = 0.
@@ -50,7 +55,7 @@ c-- bound-bound
        call time(t0)!{{{
 
        do iz=1,gas_nelem
-        forall(icg=1:gas_ncg,ii=1:min(iz,ion_el(iz)%ni - 1))
+        forall(icg=1:gas_nr,ii=1:min(iz,ion_el(iz)%ni - 1))
      &    grndlev(icg,ii,iz) = ion_grndlev(iz,icg)%oc(ii)/
      &    ion_grndlev(iz,icg)%g(ii)
        enddo !iz
@@ -66,15 +71,15 @@ c$omp& shared(gas_cap)
         wl0 = bb_xs(i)%wl0 !in ang
         wlinv = 1d0/(wl0*pc_ang)
 c-- iwl pointer
-        iwl = int((flx_wlhelp*(in_nwlg - 1d0))*(log(dble(wl0)) - !sensitive to multiplication order!
-     &    flx_wlminlg)) + 1
+        iwl = int((wlhelp*(gas_ng - 1d0))*(log(dble(wl0)) - !sensitive to multiplication order!
+     &    wlminlg)) + 1
         if(iwl<1) cycle
-        if(iwl>in_nwlg) cycle
+        if(iwl>gas_ng) cycle
 c-- profile function
-        phi = (in_nwlg-1d0)*flx_wlhelp*(wl0*pc_ang)/pc_c !line profile
+        phi = (gas_ng-1d0)*wlhelp*(wl0*pc_ang)/pc_c !line profile
 !       write(*,*) 'phi',phi
 c-- evaluate cap
-        do icg=1,gas_ncg
+        do icg=1,gas_nr
          if(.not.gas_vals2(icg)%opdirty) cycle !opacities are still valid
          ocggrnd = grndlev(icg,ii,iz)
 c-- oc high enough to be significant?
@@ -107,7 +112,7 @@ c-- bound-free
        call time(t0)!{{{
 c
        do iz=1,gas_nelem
-        forall(icg=1:gas_ncg,ii=1:min(iz,ion_el(iz)%ni - 1))
+        forall(icg=1:gas_nr,ii=1:min(iz,ion_el(iz)%ni - 1))
      &    grndlev(icg,ii,iz) = ion_grndlev(iz,icg)%oc(ii)
        enddo !iz
 c
@@ -116,7 +121,7 @@ c$omp& schedule(static)
 c$omp& private(wl,en,ie,xs)
 c$omp& firstprivate(grndlev)
 c$omp& shared(gas_cap)
-       do iw=1,in_nwlg
+       do iw=1,gas_ng
         wl = gas_wl(iw)
         en = pc_h*pc_c/(pc_ev*pc_ang*wl) !photon energy in eV
         do iz=1,gas_nelem
@@ -124,8 +129,8 @@ c$omp& shared(gas_cap)
           ie = iz - ii + 1
           xs = bfxs(iz,ie,en)
           if(xs==0d0) cycle
-          forall(icg=1:gas_ncg)
-*         forall(icg=1:gas_ncg,gas_vals2(icg)%opdirty)
+          forall(icg=1:gas_nr)
+*         forall(icg=1:gas_nr,gas_vals2(icg)%opdirty)
      &      gas_cap(icg,iw) = gas_cap(icg,iw) +
      &      sngl(xs*pc_mbarn*grndlev(icg,ii,iz))
          enddo !ie
@@ -151,11 +156,11 @@ c$omp& schedule(static)
 c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy)
 c$omp& firstprivate(hckt,hlparr)
 c$omp& shared(gas_cap)
-       do iw=1,in_nwlg
+       do iw=1,gas_ng
         wl = pc_ang*gas_wl(iw)
         wlinv = 1d0/wl
 c-- gcell loop
-        do icg=1,gas_ncg
+        do icg=1,gas_nr
          u = hckt(icg)*wlinv
          iu = nint(10d0*(log10(u) + 4d0)) + 1
 c
@@ -197,8 +202,5 @@ c
 c
       if(any(gas_cap==0.))
      & call warn('opacity_calc','some gas_cap==0')
-c
-c-- convert to opacity per rcell
-      gas_cap = gas_cap*gas_cellength !gas_cellength converts cm^-1 to 1/rcell
 c
       end subroutine opacity_calculation

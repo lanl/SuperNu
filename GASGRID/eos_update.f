@@ -2,7 +2,7 @@
 c     --------------------------------
       use gasgridmod
       use ionsmod
-      use timestepmod, only:tim_itim,tim_itc
+      use timestepmod, only:tsp_tn
       use timingmod
       IMPLICIT NONE
       LOGICAL,intent(in) :: do_output
@@ -13,11 +13,11 @@ c     --------------------------------
       integer :: icg,iz,ii
       real :: t0,t1
       REAL*8 :: ndens
-      REAL*8 :: pdens(ion_nion,gas_ncg)
+      REAL*8 :: pdens(ion_nion,gas_nr)
 c
 c-- loop over all gas_vals cells
       call time(t0)
-      do icg=1,gas_ncg
+      do icg=1,gas_nr
        ndens = gas_vals2(icg)%natom/gas_vals2(icg)%vol !atom number density
        call ion_solve_eos(gas_vals2(icg)%natom1fr(1:),
      &   gas_vals2(icg)%temp,ndens,gas_vals2(icg)%nelec,niter)
@@ -58,10 +58,10 @@ c
 c-- print partial densities
       if(do_output) then
        write(8,*)!{{{
-       write(8,*) 'partial densities:',tim_itim,tim_itc
+       write(8,*) 'partial densities:',tsp_tn
 c-- electron density
        write(8,'(2a12)') 'nelec','elec_dens' ![atom^-1],[cm^-3]
-       do icg=1,gas_ncg
+       do icg=1,gas_nr
         write(8,'(1p,2e12.4)') gas_vals2(icg)%nelec,
      &    gas_vals2(icg)%nelec*gas_vals2(icg)%natom/gas_vals2(icg)%vol
        enddo
@@ -70,7 +70,7 @@ c-- partial densities
        write(8,*)
        do iz=1,gas_nelem
         write(8,'(40i12)') (iz*100+i,i=1,ion_grndlev(iz,1)%ni)
-        do icg=1,gas_ncg
+        do icg=1,gas_nr
          write(8,'(1p,40e12.4)') (pdens(nion+i,icg),
      &     i=1,ion_grndlev(iz,1)%ni)
         enddo !icg

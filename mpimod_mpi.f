@@ -15,7 +15,7 @@ c
       subroutine bcast_permanent
 c     --------------------------
       use inputparmod
-      use timestepmod, only:tim_ntim
+      use timestepmod, only:tsp_nt
       use gasgridmod
       IMPLICIT NONE
 ************************************************************************
@@ -28,9 +28,9 @@ c     --------------------------
 * - gas_wl
 * constants:
 * - in_ncostf,in_nphif,in_nwlf,in_wlmin,in_wlmax
-* - in_nwlg,in_epsline,in_niwlem
-* - in_nr,rg_ncr,gas_ncg,gas_npacket
-* - in_nomp,tim_ntim,in_ntc
+* - gas_ng,in_epsline,in_niwlem
+* - in_nr,rg_ncr,gas_nr,gas_npacket
+* - in_nomp,tsp_nt,in_ntc
 * - gas_xi2beta,gas_dxwin
 * - flx_wlhelp,flx_wlminlg
 *
@@ -42,8 +42,8 @@ c     --------------------------
 c
 c-- broadcast integer constants
       allocate(isndvec(12))
-      if(impi==impi0) isndvec = (/in_ncostf,in_nphif,in_nwlf,in_nwlg,
-     &  in_niwlem,in_nr,rg_ncr,gas_ncg,gas_npacket,in_nomp,tim_ntim,
+      if(impi==impi0) isndvec = (/in_ncostf,in_nphif,in_nwlf,gas_ng,
+     &  in_niwlem,in_nr,rg_ncr,gas_nr,gas_npacket,in_nomp,tsp_nt,
      &  in_ntc/)
       call mpi_bcast(isndvec,12,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -51,14 +51,14 @@ c-- copy back
       in_ncostf = isndvec(1)
       in_nphif = isndvec(2)
       in_nwlf = isndvec(3)
-      in_nwlg = isndvec(4)
+      gas_ng = isndvec(4)
       in_niwlem = isndvec(5)
       in_nr = isndvec(6)
       rg_ncr = isndvec(7)
-      gas_ncg = isndvec(8)
+      gas_nr = isndvec(8)
       gas_npacket = isndvec(9)
       in_nomp = isndvec(10)
-      tim_ntim = isndvec(11)
+      tsp_nt = isndvec(11)
       in_ntc = isndvec(12)
       deallocate(isndvec)
 c
@@ -85,16 +85,16 @@ c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0) then
        allocate(rgrid(rg_ncr))
-       allocate(gas_vals(gas_ncg))
-       allocate(gas_wl(in_nwlg))
-       allocate(gas_cap(gas_ncg,in_nwlg))
+       allocate(gas_vals(gas_nr))
+       allocate(gas_wl(gas_ng))
+       allocate(gas_cap(gas_nr,gas_ng))
        allocate(flx_flux(in_nwlf,in_ncostf,in_nphif))
        allocate(flx_iflux(in_nwlf,in_ncostf,in_nphif))
       endif
       allocate(rng_offset(0:in_nomp-1))
 c
 c-- broadcast data
-      call mpi_bcast(gas_wl,in_nwlg,MPI_REAL8,
+      call mpi_bcast(gas_wl,gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c WARNING, sizeof may not work on hetrogeneous clusters!!!
@@ -140,7 +140,7 @@ c     ------------------------
       call mpi_bcast(tim_itc,1,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      call mpi_bcast(gas_cap,in_nwlg*gas_ncg,MPI_REAL,
+      call mpi_bcast(gas_cap,gas_ng*gas_nr,MPI_REAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c WARNING, this may not work on heterogeneous clusters!!!
@@ -164,22 +164,22 @@ c     -----------------------
 * - gas_vals%enabs_c
 * - t_pckt_stat !min,mean,max
 ************************************************************************
-      REAL*8 :: sndvec(gas_ncg),rcvvec(gas_ncg)
+      REAL*8 :: sndvec(gas_nr),rcvvec(gas_nr)
       REAL*8 :: help
 c
       sndvec = gas_vals(:)%enabs_e
-      call mpi_reduce(sndvec,rcvvec,gas_ncg,MPI_REAL8,MPI_SUM,
+      call mpi_reduce(sndvec,rcvvec,gas_nr,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
       gas_vals(:)%enabs_e = rcvvec
 c
       sndvec = gas_vals(:)%enabs_c
-      call mpi_reduce(sndvec,rcvvec,gas_ncg,MPI_REAL8,MPI_SUM,
+      call mpi_reduce(sndvec,rcvvec,gas_nr,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
       gas_vals(:)%enabs_c = rcvvec
 c
       if(tim_itc>0) then
        sndvec = gas_vals%enocoll
-       call mpi_reduce(sndvec,rcvvec,gas_ncg,MPI_REAL8,MPI_SUM,
+       call mpi_reduce(sndvec,rcvvec,gas_nr,MPI_REAL8,MPI_SUM,
      &   impi0,MPI_COMM_WORLD,ierr)
        gas_vals%enocoll = rcvvec
       endif

@@ -106,9 +106,9 @@ c-- check read values
       write(6,*) 'namelist read:'
       write(6,nml=inputpars)
 
-      if(in_nr<=0) stop 'invalid'
-      if(in_ng<=0) stop 'invalid'
-      if(in_lr<=0d0) stop 'invalid'
+      if(in_nr<=0) stop 'in_nr invalid'
+      if(in_ng<=0) stop 'in_ng invalid'
+      if(in_lr<=0d0) stop 'in_lr invalid'
       
       if(in_ns<=0) stop 'in_ns invalid'
       if(in_npartmax<=0) stop 'in_npartmax invalid'

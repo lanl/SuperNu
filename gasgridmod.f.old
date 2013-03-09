@@ -13,7 +13,7 @@ c-- conversion factors and constants
       REAL*8 :: gas_cellength !converts rcell length units to cm
       REAL*8 :: gas_dxwin     !travel 'time' window
 c
-      integer :: gas_ncg=0    !number of gas_grid cells
+      integer :: gas_nr=0    !number of gas_grid cells
 c
       integer :: gas_npacket  !total # packets to be generated
       integer :: gas_mpacket  !# packets to be generated on the current mpi rank
@@ -29,12 +29,12 @@ c-- scattering
 c-- gamma opacity
        REAL*8 :: capgam     !Thomson scattering coeff
       end type gas_primary
-      type(gas_primary),allocatable :: gas_vals(:)  !(gas_ncg)
+      type(gas_primary),allocatable :: gas_vals(:)  !(gas_nr)
 c
 c-- line opacity
-      REAL*8,allocatable :: gas_wl(:) !(in_nwlg) wavelength grid
-      REAL*8,allocatable :: gas_dwl(:) !(in_nwlg) wavelength grid bin width
-      real*4,allocatable :: gas_cap(:,:) !(gas_ncg,in_nwlg) Line+Cont extinction coeff
+      REAL*8,allocatable :: gas_wl(:) !(in_ng) wavelength grid
+      REAL*8,allocatable :: gas_dwl(:) !(in_ng) wavelength grid bin width
+      real*4,allocatable :: gas_cap(:,:) !(gas_nr,in_ng) Line+Cont extinction coeff
 c
 c
 c-- secondary gas grid, available on master rank only
@@ -54,10 +54,10 @@ c-- opacity invalidity flag
 c-- energy reservoir
        REAL*8 :: engdep     !energy deposited by gamma rays
       end type gas_secondary
-      type(gas_secondary),allocatable :: gas_vals2(:) !(gas_ncg)
+      type(gas_secondary),allocatable :: gas_vals2(:) !(gas_nr)
 c
 c-- temperature structure history
-      REAL*8,allocatable :: gas_temphist(:,:) !(gas_ncg,tim_ntim)
+      REAL*8,allocatable :: gas_temphist(:,:) !(gas_nr,tsp_nt)
 c
       save
 c
@@ -66,7 +66,7 @@ c
 c
       subroutine gasgrid_alloc(ncg_in,ntim_in)
 c     --------------------------------------
-      use inputparmod, only:in_nwlg,in_niwlem,in_ndim
+      use inputparmod, only:in_ng,in_niwlem,in_ndim
       IMPLICIT NONE
       integer,intent(in) :: ncg_in,ntim_in
 ************************************************************************
@@ -76,12 +76,12 @@ c     --------------------------------------
       character(28) :: labl
 c
 c--
-      gas_ncg = ncg_in
-      write(6,*) '# cells in gas_vals          :',gas_ncg
+      gas_nr = ncg_in
+      write(6,*) '# cells in gas_vals          :',gas_nr
 c
 c-- gcell size
       allocate(gas_vals(1))
-      icgbyte = sizeof(gas_vals) + 4*in_nwlg + 8*3 !gas_vals + gas_cap + enostor+enabs_e+enabs_c
+      icgbyte = sizeof(gas_vals) + 4*in_ng + 8*3 !gas_vals + gas_cap + enostor+enabs_e+enabs_c
       deallocate(gas_vals)
 c
 c-- print used memory size
@@ -91,15 +91,15 @@ c-- print used memory size
        labl = 'allocate 2D cylindr gas_vals :'
       endif
       write(6,'(1x,a,i10,"kB",i7,"MB")') labl,
-     &   nint((icgbyte*gas_ncg)/1024.),nint((icgbyte*gas_ncg)/1024.**2)
+     &   nint((icgbyte*gas_nr)/1024.),nint((icgbyte*gas_nr)/1024.**2)
 c
 c-- allocate
-      allocate(gas_vals(gas_ncg))       !primary gas grid
-      allocate(gas_cap(gas_ncg,in_nwlg))
-      allocate(gas_wl(in_nwlg))
-      allocate(gas_vals2(gas_ncg))      !secondary gas grid
-      allocate(gas_dwl(in_nwlg)) !wavelength grid bin width
-      allocate(gas_temphist(gas_ncg,ntim_in))
+      allocate(gas_vals(gas_nr))       !primary gas grid
+      allocate(gas_cap(gas_nr,in_ng))
+      allocate(gas_wl(in_ng))
+      allocate(gas_vals2(gas_nr))      !secondary gas grid
+      allocate(gas_dwl(in_ng)) !wavelength grid bin width
+      allocate(gas_temphist(gas_nr,ntim_in))
       end subroutine gasgrid_alloc
 c
       end module gasgridmod

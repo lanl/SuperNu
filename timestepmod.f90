@@ -2,8 +2,8 @@ MODULE timestepmod
 
   IMPLICIT NONE
 
-  INTEGER :: tsp_nt
-  INTEGER :: tsp_tn
+  INTEGER :: tsp_nt  !total # of time steps
+  INTEGER :: tsp_tn  !current time step number
   REAL*8 :: tsp_texp
   REAL*8 :: tsp_time 
   REAL*8 :: tsp_dt

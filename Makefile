@@ -71,7 +71,6 @@ endif
 #
 #-- MODULES
 bbxsmod.o: elemdatamod.o miscmod.o physconstmod.o
-gasgridmod.o: inputparmod.o
 inputparmod.o: miscmod.o
 ionsmod.o: miscmod.o physconstmod.o
 miscmod.o: MISC/warn.f MISC/lcase.f
