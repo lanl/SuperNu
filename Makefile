@@ -15,16 +15,20 @@ MODULES = \
   particlemod.o \
   timingmod.o
 
-OBJFILES = sourcenumbers.o vacancies.o interior_source.o advance.o write_output.o diffusion1.o transport1.o read_bbxs_data.o dealloc_all.o
+OBJFILES = sourcenumbers.o vacancies.o interior_source.o advance.o \
+ write_output.o diffusion1.o transport1.o \
+ read_bbxs_data.o dealloc_all.o
 
 LIBRARIES = GASGRID/gasgrid.a MISC/misc.a
-
 SUBDIRS = $(dir $(LIBRARIES))
 
-TESTS = Testsuite/simple
+TESTS = Testsuite/simple1 Testsuit/simple2
 
-DEFAULT_COMPILER = gfortran
+VERSIONPY = $(wildcard version.py)
 
+########################################################################
+#-- CONSTANTS
+########################################################################
 RUNDIR = $(CURDIR)/Run
 
 ########################################################################
@@ -42,9 +46,6 @@ clean: cleandirs
 cleandirs:
 	for d in $(SUBDIRS); do ($(MAKE) -C $$d clean); done
 
-build:
-	Systemscripts/$(DEFAULT_COMPILER).sh
-
 run: all
 	mkdir $(RUNDIR) || rm -f $(RUNDIR)/*
 	cd $(RUNDIR); ln -s $(CURDIR)/Data/* .
@@ -59,8 +60,13 @@ testsuite: $(TESTS)
 # EXPLICIT RULES
 ########################################################################
 #-- AUTOMATICALLY GENERATED INC FILES
-version.inc: version.py
+ifeq ($(VERSIONPY), version.py)
+  version.inc: $(VERSIONPY)
 	@python2 -B version.inc.py
+else
+  version.inc: version_dummy.inc
+	@cp -vu version_dummy.inc version.inc
+endif
 
 #
 #-- MODULES
