@@ -17,6 +17,7 @@ MODULE timestepmod
 
   SUBROUTINE timestep_init(nt, alpha, tfirst, dt)
 !------------------------------------------------
+    use physconstmod
     INTEGER,intent(in) :: nt
     REAL*8,intent(in) :: alpha, tfirst, dt
 !***********************************************************************
@@ -28,7 +29,7 @@ MODULE timestepmod
 
 !-- beginning of first time step
     tsp_time = 0d0
-    tsp_texp = tfirst
+    tsp_texp = tfirst*pc_day
     tsp_tcenter = tsp_texp + .5d0*tsp_dt
   END SUBROUTINE timestep_init
 

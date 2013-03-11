@@ -90,7 +90,7 @@ PROGRAM supernu
   ! Beginning time step loop
   CALL CPU_TIME(time_begin)
   DO tsp_tn = 1, tsp_nt 
-    WRITE(*,*) 'timestep:',tsp_tn
+    WRITE(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn, tsp_texp/pc_day
     !Calculating opacities (for IMC(transport) and DDMC(diffusion))
     !call gasgrid_update
     CALL xsections
