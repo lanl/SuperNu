@@ -4,28 +4,24 @@ c     -------------------
 ************************************************************************
 * physical constants and conversion factors
 ************************************************************************
-c-- old, for compatibility only
-      REAL*8,parameter :: pc_pi = 4.0*ATAN(1.0) !old, for compatibility only
-      REAL*8,parameter :: pc_c = 2.998e10  !old, for compatibility only
-      REAL*8,parameter :: pc_navo = 6.022e23  !old, for compatibility only
 c
 c-- LOOK OUT KEV UNITS!!!
       REAL*8,parameter :: pc_acoef = 1.371e14  !radiation constant (erg/Kev^4/cm^3)
 c
 c
 c-- physical constants
-!new  REAL*8,parameter :: pc_pi = 3.1415926535897932385d0
+      REAL*8,parameter :: pc_pi = 3.1415926535897932385d0
       REAL*8,parameter :: pc_pi2 = 2d0*pc_pi
       REAL*8,parameter :: pc_pi4 = 4d0*pc_pi
 c
-!new  REAL*8,parameter :: pc_c = 2.997924562d10 !cm/s
+      REAL*8,parameter :: pc_c = 2.997924562d10 !cm/s
       REAL*8,parameter :: pc_gc = 6.6742d-8
       REAL*8,parameter :: pc_rg = 8.314472d7
       REAL*8,parameter :: pc_kb = 1.3806505d-16 !erg/K
       REAL*8,parameter :: pc_me = 9.1093826d-28 !g
       REAL*8,parameter :: pc_mh = 1.67333d-24 !g
       REAL*8,parameter :: pc_amu = 1.66053886d-24 !g
-!new  REAL*8,parameter :: pc_navo = 1d0/pc_amu  ! Avogadro's number
+      REAL*8,parameter :: pc_navo = 1d0/pc_amu  ! Avogadro's number
       REAL*8,parameter :: pc_h = 6.6260693d-27 !erg*s
       REAL*8,parameter :: pc_e = 4.80325d-10
       REAL*8,parameter :: pc_abohr = 0.5291772108d-8 !cm
