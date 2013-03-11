@@ -31,9 +31,6 @@ PROGRAM supernu
   call mpi_comm_size(MPI_COMM_WORLD,nmpi,ierr) !MPI
 
 !
-!-- init random number generator
-  help = RAND(in_seed)
-!
 !--
 !-- SETUP SIMULATION:
 !====================
@@ -49,6 +46,9 @@ PROGRAM supernu
    call read_inputpars
 !-- parse runtime parameters
    call parse_inputpars(nmpi)
+!
+!-- init random number generator
+   help = RAND(in_seed)
 !
 !-- time step init
 !-- constant time step, may be coded to loop if time step is not uniform
