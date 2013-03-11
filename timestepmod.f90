@@ -29,7 +29,8 @@ MODULE timestepmod
 
 !-- beginning of first time step
     tsp_time = 0d0
-    tsp_texp = tfirst*pc_day
+    !tsp_texp = tfirst*pc_day
+    tsp_texp = 0.14
     tsp_tcenter = tsp_texp + .5d0*tsp_dt
   END SUBROUTINE timestep_init
 
