@@ -5,6 +5,7 @@ PROGRAM supernu
   USE timestepmod
   USE gasgridmod
   USE particlemod
+  USE physconstmod
 
   use ionsmod, only:ion_read_data,ion_alloc_grndlev
   use bfxsmod, only:bfxs_read_data
@@ -18,8 +19,8 @@ PROGRAM supernu
 ! todo:
 !  - dummy (drr, 2013/mar/05)
 !***********************************************************************
-  INTEGER :: it
-  REAL*8 :: time_begin, time_end
+  REAL*8 :: time_begin, time_end, help, dt
+  REAL*8 :: t_elapsed
   integer :: ierr
   LOGICAL :: lmpi0 = .false. !master rank flag
   REAL :: t0,t1  !timing
@@ -28,6 +29,10 @@ PROGRAM supernu
   call mpi_init(ierr) !MPI
   call mpi_comm_rank(MPI_COMM_WORLD,impi,ierr) !MPI
   call mpi_comm_size(MPI_COMM_WORLD,nmpi,ierr) !MPI
+
+!
+!-- init random number generator
+  help = RAND(in_seed)
 !
 !--
 !-- SETUP SIMULATION:
@@ -46,22 +51,30 @@ PROGRAM supernu
    call parse_inputpars(nmpi)
 !
 !-- time step init
-   CALL timestep_init(in_nt,in_alpha)
+!-- constant time step, may be coded to loop if time step is not uniform
+   t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
+   dt = t_elapsed/in_nt
+   CALL timestep_init(in_nt,in_alpha,in_tfirst,dt)
 !
 !-- particle init
    CALL particle_init(in_npartmax,in_ns)
 !
 !-- SETUP GRIDS
-!-- setup gas grid (map gstruct to gasgrid)
    CALL gasgrid_init(in_nr,in_ng,in_nt,in_lr,in_isvelocity)
    call gasgrid_setup
 !-- read initial temperature structure from file
    !call read_restart_file
+!-- hard coded temperature structure
+   !DO ir = 1, gas_nr
+   !  IF (gas_vals2(ir)%tempkev<1.e-6) THEN
+   !    gas_vals2(ir)%tempkev = 1.e-6
+   !  ENDIF
+   !ENDDO
 !
 !-- READ DATA
 !-- read ion and level data
    call ion_read_data(gas_nelem)  !ion and level data
-   call ion_alloc_grndlev(gas_nr)   !ground state occupation numbers
+   call ion_alloc_grndlev(gas_nr)  !ground state occupation numbers
 !-- read bbxs data
    if(.not.in_nobbopac) call read_bbxs_data(gas_nelem)!bound-bound cross section data
 !-- read bfxs data
@@ -72,50 +85,34 @@ PROGRAM supernu
    call time(t1)
    t_setup = t1-t0
   endif !impi
-  
-  
-  ! Setting velocity option
-  IF (in_isvelocity.EQV..TRUE.) THEN
-     gas_velyes = 1
-     gas_velno = 0
-  ELSE
-     gas_velyes = 0
-     gas_velno = 1
-  ENDIF
-  ! Setting transport option
-  in_puretran = .FALSE.
 
-  CALL grids
-  CALL initials
 
   ! Beginning time step loop
   CALL CPU_TIME(time_begin)
-  tsp_tn = 1
-  DO it = 1, tsp_nt 
-     WRITE(*,*) 'timestep:',it
-     !Calculating opacities (for IMC(transport) and DDMC(diffusion))
-     CALL xsections
-     !Calculating number of source prt_particles per cell
-     CALL sourcenumbers
-     !Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
-     ALLOCATE(prt_vacantarr(prt_nnew))
-     CALL vacancies
-     !Calculating properties of prt_particles on domain boundary
-     !CALL boundary_source
-     !Calculating properties of prt_particles emitted in domain interior
-     CALL interior_source
-     DEALLOCATE(prt_vacantarr)
-     !Advancing prt_particles to update radiation field
-     CALL advance
-     !Updating material state
-     CALL material_update
-     !Updating elapsed tsp_time and expansion tsp_time
-     tsp_time = tsp_time+tsp_dt
-     tsp_texp = tsp_texp+tsp_dt
-     !Writing data to files
-     CALL write_output
-!    CALL write_restart
-     tsp_tn = tsp_tn+1
+  DO tsp_tn = 1, tsp_nt 
+    WRITE(*,*) 'timestep:',tsp_tn
+    !Calculating opacities (for IMC(transport) and DDMC(diffusion))
+    !call gasgrid_update
+    CALL xsections
+    !Calculating number of source prt_particles per cell
+    CALL sourcenumbers
+    !Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
+    ALLOCATE(prt_vacantarr(prt_nnew))
+    CALL vacancies
+    !Calculating properties of prt_particles on domain boundary
+    !CALL boundary_source
+    !Calculating properties of prt_particles emitted in domain interior
+    CALL interior_source
+    DEALLOCATE(prt_vacantarr)
+    !Advancing prt_particles to update radiation field
+    CALL advance
+    !Updating material state
+    CALL material_update
+    !Updating elapsed tsp_time and expansion tsp_time
+    call timestep_update(dt)
+    !Writing data to files
+    CALL write_output
+!   CALL write_restart
   ENDDO
   CALL CPU_TIME(time_end)
   WRITE(*,*) 'CPU TIME: ',time_end-time_begin,' seconds'

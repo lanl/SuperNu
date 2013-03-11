@@ -10,9 +10,14 @@ MODULE gasgridmod
   integer :: gas_nr = 0
   integer :: gas_ng = 0
 
+  REAL*8 :: gas_vout = 1d9 !outer boundary velocity                   
+
+
   REAL*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
   REAL*8,allocatable :: gas_dwl(:) !(gas_ng) wavelength grid bin width
   REAL*8,allocatable :: gas_cap(:,:) !(gas_nr,gas_ng) Line+Cont extinction coeff
+  REAL*8,allocatable :: gas_sig(:) !(gas_nr) scattering coefficient
+  REAL*8,allocatable :: gas_capgam(:) !(gas_nr) Gamma ray gray opacity
 !
 !-- temperature structure history
   REAL*8,allocatable :: gas_temphist(:,:) !(gas_nr,tim_nt)
@@ -75,6 +80,16 @@ MODULE gasgridmod
     gas_ng = ng
     gas_lr = lr
     gas_isvelocity = isvelocity
+
+
+    ! Setting velocity option
+    IF (isvelocity.EQV..TRUE.) THEN
+       gas_velyes = 1
+       gas_velno = 0
+    ELSE
+       gas_velyes = 0
+       gas_velno = 1
+    ENDIF
 
 !-- primary
     ALLOCATE(gas_numcensus(gas_nr))  !# census prt_particles per cell

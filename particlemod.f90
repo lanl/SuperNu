@@ -23,11 +23,22 @@ MODULE particlemod
   SUBROUTINE particle_init(npartmax,ns)
 !--------------------------------------
     INTEGER,intent(in) :: npartmax, ns
+!***********************************************************************
+! init particle module
+!***********************************************************************
+    integer :: ipart
+!
+!-- adopt input values in module internal storage
     prt_npartmax = npartmax
     prt_ns = ns
 !
 !-- allocate permanent storage (dealloc in dealloc_all.f)
     ALLOCATE(prt_particles(prt_npartmax))
+
+!-- Setting all entries of particle array to vacant: loop
+    DO ipart = 1, prt_npartmax
+       prt_particles(ipart)%isvacant=.TRUE.
+    ENDDO
   END SUBROUTINE particle_init
 
 END MODULE particlemod
