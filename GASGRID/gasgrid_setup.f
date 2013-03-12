@@ -73,6 +73,9 @@ c-- gas temperature, density, and heat capacity
       enddo
       gas_einp = gas_einit
 c
+c-- set the mass from the density
+      gas_vals2%mass = gas_vals2%rho*gas_vals2%vol
+c
 c-- convert mass fractions to # atoms
       call massfr2natomfr
 !c

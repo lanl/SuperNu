@@ -22,9 +22,13 @@ OBJFILES = sourcenumbers.o vacancies.o interior_source.o advance.o \
 LIBRARIES = GASGRID/gasgrid.a MISC/misc.a
 SUBDIRS = $(dir $(LIBRARIES))
 
-TESTS = Testsuite/simple1 Testsuit/simple2
-
 VERSIONPY = $(wildcard version.py)
+
+#-- Testsuite
+TESTS := first/test.sh second/test.sh
+#-- Prefix Testsuite directory name
+TESTDIR := Testsuite/
+TESTS := $(addprefix $(TESTDIR),$(TESTS))
 
 ########################################################################
 #-- CONSTANTS
@@ -35,26 +39,30 @@ RUNDIR = $(CURDIR)/Run
 # TARGETS
 ########################################################################
 # Utility targets (ignore corresponding file names)
-.PHONY: all put-intrepid clean cleandirs cleanall run tar testsuite $(SUBDIRS)
+.PHONY: all put-intrepid clean check run tar $(SUBDIRS) prepare_run $(TESTS)
 
 all: $(MODULES) $(SUBDIRS) $(PROGRAMS)
+	@echo "MAKE SUCCESSFUL: $(shell date)"
+	@echo
 
-clean: cleandirs
+clean:
+	for d in $(SUBDIRS); do ($(MAKE) -C $$d clean); done
 	rm -f *.o *.a *.mod *.MOD version.inc
 	rm -f $(PROGRAMS)
 
-cleandirs:
-	for d in $(SUBDIRS); do ($(MAKE) -C $$d clean); done
+prepare_run:
+	mkdir $(RUNDIR) 2>/dev/null || rm -f $(RUNDIR)/*
+	cd $(RUNDIR) && ln -s $(CURDIR)/Data/* .
+	cd $(RUNDIR) && ln -s $(CURDIR)/Input/* .
+	cd $(RUNDIR) && ln -s $(CURDIR)/supernu .
 
-run: all
-	mkdir $(RUNDIR) || rm -f $(RUNDIR)/*
-	cd $(RUNDIR); ln -s $(CURDIR)/Data/* .
-	cd $(RUNDIR); ln -s $(CURDIR)/Input/* .
-	cd $(RUNDIR); ln -s $(CURDIR)/supernu .
-	cd $(RUNDIR); ./supernu
+run: all prepare_run
+	cd $(RUNDIR) && ./supernu
 
-testsuite: $(TESTS)
-	#stub
+check: all $(TESTS)
+	@echo "TESTSUITE SUCCESSFUL: $(shell date)"
+	@echo
+
 
 ########################################################################
 # EXPLICIT RULES
@@ -88,6 +96,12 @@ supernu.o: $(OBJFILES)
 #-- LIBRARIES
 $(SUBDIRS):
 	$(MAKE) -C $@
+#
+#-- TESTSUITE
+$(TESTS):
+	$(MAKE) prepare_run
+	$(SHELL) $@
+	@echo
 #
 #-- PROGRAMS
 supernu: $(MODULES) $(OBJFILES) supernu.o banner.o $(LIBRARIES)

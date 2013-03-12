@@ -8,23 +8,25 @@ SUBROUTINE write_output
   INTEGER :: ir
   CHARACTER(16), SAVE :: pos='REWIND'
 
-  OPEN(UNIT=2,FILE='tsp_time.dat',STATUS='UNKNOWN',POSITION=pos)
-  OPEN(UNIT=3,FILE='temp.dat',STATUS='UNKNOWN',POSITION=pos)
-  OPEN(UNIT=4,FILE='gas_fcoef.dat',STATUS='UNKNOWN',POSITION=pos)
-  OPEN(UNIT=7,FILE='Lum.dat',STATUS='UNKNOWN',POSITION=pos)
-  
-  WRITE(2,*) tsp_time
-  WRITE(7,*) gas_eright/tsp_dt
-
-  DO ir = 1, gas_nr
-     WRITE(3,'(es16.8)',ADVANCE='NO') gas_vals2(ir)%tempkev
-     WRITE(4,'(es16.8)',ADVANCE='NO') gas_fcoef(ir)
-  ENDDO
-
-  CLOSE(2)
-  CLOSE(3)
+  OPEN(UNIT=4,FILE='output.tsp_time',STATUS='UNKNOWN',POSITION=pos)
+  WRITE(4,*) tsp_time
   CLOSE(4)
-  CLOSE(7)
+
+  OPEN(UNIT=4,FILE='output.Lum',STATUS='UNKNOWN',POSITION=pos)
+  WRITE(4,*) gas_eright/tsp_dt
+  CLOSE(4)
+
+  OPEN(UNIT=4,FILE='output.temp',STATUS='UNKNOWN',POSITION=pos)
+  DO ir = 1, gas_nr
+    WRITE(4,'(es16.8)',ADVANCE='NO') gas_vals2(ir)%tempkev
+  ENDDO
+  CLOSE(4)
+
+  OPEN(UNIT=4,FILE='output.gas_fcoef',STATUS='UNKNOWN',POSITION=pos)
+  DO ir = 1, gas_nr
+    WRITE(4,'(es16.8)',ADVANCE='NO') gas_fcoef(ir)
+  ENDDO
+  CLOSE(4)
 
   pos='APPEND'
 

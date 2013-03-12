@@ -78,9 +78,9 @@ PROGRAM supernu
 !-- read bbxs data
    if(.not.in_nobbopac) call read_bbxs_data(gas_nelem)!bound-bound cross section data
 !-- read bfxs data
-   if(.not.in_nobfopac) call bfxs_read_data          !bound-free cross section data
+   if(.not.in_nobfopac) call bfxs_read_data           !bound-free cross section data
 !-- read bfxs data
-   if(.not.in_noffopac) call ffxs_read_data          !free-free cross section data
+   if(.not.in_noffopac) call ffxs_read_data           !free-free cross section data
 !
    call time(t1)
    t_setup = t1-t0
@@ -90,7 +90,7 @@ PROGRAM supernu
   ! Beginning time step loop
   CALL CPU_TIME(time_begin)
   DO tsp_tn = 1, tsp_nt 
-    WRITE(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn, tsp_texp/pc_day
+    WRITE(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
     !Calculating opacities (for IMC(transport) and DDMC(diffusion))
     !call gasgrid_update
     CALL xsections

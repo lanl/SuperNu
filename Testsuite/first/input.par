@@ -1,5 +1,7 @@
 &inputpars
 
+in_grab_stdout = t
+
 !-- time step
 in_tfirst = 4
 in_tlast = 6
