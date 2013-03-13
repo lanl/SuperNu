@@ -1,5 +1,8 @@
 &inputpars
 
+!-- misc
+in_grab_stdout = f
+
 !-- time step
 in_tfirst = 4
 in_tlast = 6
@@ -18,5 +21,10 @@ in_npartmax = 10000000
 
 !-- random seed
 in_seed = 1984117
+
+!-- opacity switches
+in_nobbopac = t
+in_nobfopac = t
+in_noffopac = t
 
 &end

@@ -25,10 +25,13 @@ SUBDIRS = $(dir $(LIBRARIES))
 VERSIONPY = $(wildcard version.py)
 
 #-- Testsuite
+########################################################################
 TESTS := first/test.sh second/test.sh
+
 #-- Prefix Testsuite directory name
 TESTDIR := Testsuite/
 TESTS := $(addprefix $(TESTDIR),$(TESTS))
+
 
 ########################################################################
 #-- CONSTANTS

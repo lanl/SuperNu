@@ -59,8 +59,8 @@ c
 c-- initialize material (gas) properties
 c-- gas temperature, density, and heat capacity
       do ir=1,gas_nr
-       gas_vals2(ir)%rho = 2.4186e8 !g/cm^3
-       gas_vals2(ir)%tempkev = 1.e-3 !861.73
+       gas_vals2(ir)%rho = in_constrho
+       gas_vals2(ir)%tempkev = in_consttempkev
        gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb  !initial guess, may be overwritten by read_temp_str
        !gas_vals2(ir)%bcoef = 2.0*pc_acoef*gas_vals2(ir)%tempkev**3
 

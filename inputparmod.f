@@ -9,6 +9,10 @@ c-- gas grid
       INTEGER :: in_ng = 0 !# groups
       LOGICAL :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
       REAL*8 :: in_lr = 0d0  !spatial length of the domain
+c-- flat-structure parameters
+      REAL*8 :: in_constrho = 2.4186d8  !g/cm^3
+      REAL*8 :: in_consttempkev = 1d-3  !861.73
+      LOGICAL :: in_pureni56 = .false.  !pure nickel56 atmosphere
 c
 c-- particles
       INTEGER :: in_seed = 0 !starting point of random number generator
@@ -32,8 +36,8 @@ c-- group structure
       REAL*8 :: in_wlmax = 30000d0    !upper wavelength boundary in output spectrum
 c
 c-- opacity (cm^2/gram)
-      REAL*8 :: in_opcapgam = .06d0    ![cm^2/g] extinction coefficient for gamma radiation
-      REAL*8 :: in_opcap = .0d0       !additional gray opacity (for testing with in_nobbopac only!)
+      REAL*8 :: in_opcapgam = .06d0   ![cm^2/g] extinction coefficient for gamma radiation
+      REAL*8 :: in_opcap = 0d0        !additional gray opacity (for testing with in_nobbopac only!)
       REAL*8 :: in_epsline = 1d0      !line absorption fraction (the rest is scattering)
       LOGICAL :: in_nobbopac = .false.    !turn off bound-bound opacity
       LOGICAL :: in_nobfopac = .false.    !turn off bound-bound opacity
@@ -46,6 +50,7 @@ c
 c-- runtime parameter namelist
       namelist /inputpars/
      & in_nr,in_ng,in_isvelocity,in_lr,
+     & in_constrho,in_consttempkev,in_pureni56,
      & in_seed,in_ns,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,
      & in_grab_stdout,in_nomp,
@@ -113,6 +118,9 @@ c-- check read values
       if(in_ns<=0) stop 'in_ns invalid'
       if(in_npartmax<=0) stop 'in_npartmax invalid'
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
+
+      if(in_constrho<=0d0) error stop 'in_constrho <= 0'
+      if(in_consttempkev<=0d0) error stop 'in_consttempkev <= 0'
 c
 c-- check input parameter validity
       if(in_nomp<0) stop 'in_nomp invalid'!{{{
@@ -176,7 +184,7 @@ c$    endif
       if(in_grab_stdout) then
        write(0,'(1x,a,2i5,i7)') 'nmpi,in_nomp,#threads        :',
      &   nmpi,in_nomp,nmpi*in_nomp
-      endif!}}}
+      endif!}}}!}}}
 c
       end subroutine parse_inputpars
 c
