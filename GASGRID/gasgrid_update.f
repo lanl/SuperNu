@@ -100,7 +100,7 @@ c================================
       gas_vals2%volcrp = gas_vals2%vol !effective volume in cm^3
 c
 c-- density
-      gas_vals2%rho = gas_vals2%mass*gas_vals2%vol
+      gas_vals2%rho = gas_vals2%mass/gas_vals2%vol
       !gas_vals2%bcoef = 2.0*pc_acoef*gas_vals2%tempkev**3
       gas_vals2%bcoef = 0.4*(1.e12*gas_vals2%rho)*580.25d0
 c
