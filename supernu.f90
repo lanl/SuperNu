@@ -92,7 +92,7 @@ PROGRAM supernu
   DO tsp_tn = 1, tsp_nt 
     WRITE(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
     !Calculating opacities (for IMC(transport) and DDMC(diffusion))
-    !call gasgrid_update
+    call gasgrid_update
     CALL xsections
     !Calculating number of source prt_particles per cell
     CALL sourcenumbers
@@ -107,7 +107,7 @@ PROGRAM supernu
     !Advancing prt_particles to update radiation field
     CALL advance
     !Updating material state
-    CALL material_update
+    CALL temperature_update
     !Updating elapsed tsp_time and expansion tsp_time
     call timestep_update(dt)
     !Writing data to files

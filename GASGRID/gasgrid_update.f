@@ -36,6 +36,10 @@ c-- distribute packets
       REAL*8 :: chiross(gas_nr),capplanck(gas_nr)
 c-- timing
       real :: t0,t1
+c-- Ryan's nuclear decay
+      real*8,parameter :: tauni = 8.8d0*86400.0d0
+      real*8,parameter :: tauco = 111.3d0*86400.0d0
+      real*8 :: expfact
 c
 c-- begin
 c
@@ -62,23 +66,49 @@ c-- The difference between these two has decayed.
       forall(i=-2:-1) natom2fr(:,i) = gas_vals2(:)%natom1fr(i)
 c
 c-- update the abundances for the center time
-      call update_natomfr(tsp_tcenter)
+      !call update_natomfr(tsp_tcenter)
+      call update_natomfr(tsp_texp)
 c
 c-- energy deposition
-!     gas_vals2(:)%nisource = gas_vals2(:)%natom*(
-!    &  (natom1fr(:,gas_ini56) - natom2fr(:,gas_ini56)) *
-!    &   (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
-!    &  (natom1fr(:,gas_ico56) - natom2fr(:,gas_ico56))*pc_qhl_co56)
+      gas_vals2(:)%nisource = gas_vals2(:)%natom*(
+     &  (natom1fr(:,gas_ini56) - natom2fr(:,gas_ini56)) *
+     &   (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
+     &  (natom1fr(:,gas_ico56) - natom2fr(:,gas_ico56))*pc_qhl_co56)
 !}}}
+
+      gas_nidecay = (1.6022e-6)*1.87*
+     &  (1.0d0-EXP(-(tsp_time+tsp_dt)/tauni))
+      gas_nidecay = gas_nidecay+(1.6022e-6)*1.87*tauco*
+     &  (1.0d0-EXP(-(tsp_time+tsp_dt)/tauco))/(tauco-tauni)
+      gas_nidecay = gas_nidecay-(1.6022e-6)*1.87*
+     &  (1.0d0-EXP(-tsp_time/tauni))
+      gas_nidecay = gas_nidecay-(1.6022e-6)*1.87*tauco*
+     &  (1.0d0-EXP(-tsp_time/tauco))/(tauco-tauni)
+      gas_nidecay = gas_nidecay/tsp_dt
+!     WRITE(6,*) 'gas_nidecay',gas_nidecay,gas_nidecay*tsp_dt,
+!    &  sum(gas_vals2%nisource)
 c
+c--
+      if(tsp_tn == 1) gas_nidecay = 1.73*(1.6022e-6)  !erg/s/g  !this value is used in the first iteration
 c
 c
 c-- update temperature and volume
 c================================
       gas_temphist(:,tsp_tn) = gas_vals2%temp
-      gas_vals2%vol = gas_vals2%volr*(gas_velout*tsp_tcenter)**3 !volume in cm^3
+      !gas_vals2%vol = gas_vals2%volr*(gas_velout*tsp_tcenter)**3 !volume in cm^3
+      gas_vals2%vol = gas_vals2%volr*(gas_velout*tsp_texp)**3 !volume in cm^3
       gas_vals2%volcrp = gas_vals2%vol !effective volume in cm^3
 c
+c-- density
+      gas_vals2%rho = gas_vals2%mass*gas_vals2%vol
+      !gas_vals2%bcoef = 2.0*pc_acoef*gas_vals2%tempkev**3
+      gas_vals2%bcoef = 0.4*(1.e12*gas_vals2%rho)*580.25d0
+c
+c--
+      gas_erad = 0.0   !Total radiation energy
+      gas_eint = 0.0   !Total internal energy
+c
+      return !DEBUG
 c
 c
 c-- solve LTE EOS

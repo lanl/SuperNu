@@ -121,9 +121,9 @@ c-- check read values
       if(in_npartmax<=0) stop 'in_npartmax invalid'
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
 
-      if(in_totmass<=0d0) error stop 'in_totmass <= 0'
-      if(in_velout<=0d0) error stop 'in_velout <= 0'
-      if(in_consttempkev<=0d0) error stop 'in_consttempkev <= 0'
+      if(in_totmass<=0d0) stop 'in_totmass <= 0'
+      if(in_velout<=0d0) stop 'in_velout <= 0'
+      if(in_consttempkev<=0d0) stop 'in_consttempkev <= 0'
 c
 c-- check input parameter validity
       if(in_nomp<0) stop 'in_nomp invalid'!{{{

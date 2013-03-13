@@ -11,7 +11,7 @@ c     --------------------------------------
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
       integer :: i,ir
-      REAL*8 :: um,help
+      REAL*8 :: help
 
 c
 c--
@@ -31,9 +31,8 @@ c--
        gas_drarr(ir) = gas_lr/REAL(gas_nr)
        gas_rarr(ir+1) = gas_rarr(ir)+gas_drarr(ir)
        gas_vals2(ir)%dr3_34pi = gas_rarr(ir+1)**3-gas_rarr(ir)**3
-       gas_vals2(ir)%volr = pc_pi4/3d0*gas_vals2(ir)%dr3_34pi/gas_lr**3!volume in outer radius units
-       gas_vals2(ir)%vol = gas_vals2(ir)%volr*
-     &   (gas_velout*tsp_tcenter)**3 !volume in cm^3
+       gas_vals2(ir)%vol = pc_pi4/3d0*gas_vals2(ir)%dr3_34pi!volume in outer radius units
+       gas_vals2(ir)%volr = gas_vals2(ir)%vol/gas_lr**3
       ENDDO
     
 c-- r/tsp_texp = velocity grid (calculated with initial spatial grid and 
@@ -47,35 +46,19 @@ c-- initial expansion tsp_time)
       ENDIF
 c
 c
-c
 c--
       write(6,*)
       write(6,*) 'setup gas grid:'     
       write(6,*) '==========================='
 c
-c--
-      gas_erad = 0.0   !Total radiation energy
-      gas_einit = 0.0  !Total initial energy
-      gas_einp = 0.0   !Input Energy
-      gas_eint = 0.0   !Total internal energy
-c
 c-- initialize material (gas) properties
 c-- gas temperature, density, and heat capacity
       do ir=1,gas_nr
        gas_vals2(ir)%mass = in_totmass/gas_nr
-       gas_vals2(ir)%rho = gas_vals2(ir)%mass*gas_vals2(ir)%vol
        gas_vals2(ir)%tempkev = in_consttempkev
        gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb  !initial guess, may be overwritten by read_temp_str
-       !gas_vals2(ir)%bcoef = 2.0*pc_acoef*gas_vals2(ir)%tempkev**3
-
-       gas_vals2(ir)%bcoef = 0.4*(1.e12*gas_vals2(ir)%rho)*580.25d0
-
        gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%tempkev**4
-       um = gas_vals2(ir)%bcoef*gas_vals2(ir)%tempkev
-       gas_einit = gas_einit + um*4*pc_pi*gas_vals2(ir)%dr3_34pi *
-     &   (gas_velno*1.0+gas_velyes*tsp_texp**3)/3.0
       enddo
-      gas_einp = gas_einit
 c
 c-- set flat composition if selected
       if(in_solidni56) then

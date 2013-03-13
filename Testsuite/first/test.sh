@@ -9,6 +9,7 @@ binary='./supernu'
 #-- path constants
 curdir=$(pwd)
 rundir=$curdir/Run
+echo $0
 testdir=$(cd $(dirname $0); pwd)
 
 #-- put files belonging to this test into place

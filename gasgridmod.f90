@@ -59,7 +59,7 @@ MODULE gasgridmod
   END TYPE gas_secondary
   TYPE(gas_secondary),POINTER :: gas_vals2(:)
 
-  REAL*8 :: gas_eleft, gas_eright, gas_erad, gas_einit, gas_einp, gas_eint, gas_etot, gas_esurf
+  REAL*8 :: gas_eleft, gas_eright, gas_erad, gas_eint, gas_etot, gas_esurf
 
   ! Picket-fence probabilities
   REAL*8, DIMENSION(:), ALLOCATABLE :: gas_ppick

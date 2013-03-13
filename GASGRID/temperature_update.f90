@@ -1,4 +1,4 @@
-SUBROUTINE material_update
+SUBROUTINE temperature_update
 
   USE gasgridmod
   USE timestepmod
@@ -11,35 +11,21 @@ SUBROUTINE material_update
   !of gamma ray energy introduced in the time step.
 !##################################################
   INTEGER :: ir
-  REAL*8 :: dtemp, um, expfact, tauni, tauco
+  REAL*8 :: dtemp
+  real*8,parameter :: tauni = 8.8d0*86400.0d0
+  real*8,parameter :: tauco = 111.3d0*86400.0d0
 
-  gas_emat = 0.0
   DO ir = 1, gas_nr
      dtemp = gas_edep(ir)*3.0/(4.0*pc_pi*gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp**3))
      dtemp = (dtemp-tsp_dt*gas_fcoef(ir)*gas_sigmap(ir)*pc_c*gas_vals2(ir)%ur)/gas_vals2(ir)%bcoef
      !WRITE(*,*) dtemp
      gas_vals2(ir)%tempkev = gas_vals2(ir)%tempkev+dtemp
+     gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb  !initial guess, may be overwritten by read_temp_str
      !gas_vals2(ir)%ur=dtemp/(tsp_dt*pc_c*gas_sigmap(ir))
      !gas_vals2(ir)%tempkev = (gas_vals2(ir)%ur/pc_acoef)**(0.25d0)
      !gas_vals2(ir)%bcoef = 2.0*pc_acoef*gas_vals2(ir)%tempkev**3
      gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%tempkev**4
-     um = gas_vals2(ir)%bcoef*gas_vals2(ir)%tempkev
-     gas_emat = gas_emat + um*4.0*pc_pi*gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp**3)/3.0
-     !Calculating expansion losses (if any)
-     expfact = gas_velno*1.0+gas_velyes*tsp_texp/(tsp_texp+tsp_dt)
-     gas_vals2(ir)%rho = gas_vals2(ir)%rho*expfact**3
-     gas_vals2(ir)%bcoef = gas_vals2(ir)%bcoef*expfact**3
      !gas_edep(ir) = gas_edep(ir)*3.0/(4.0*pc_pi*gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp**3))
   ENDDO
 
-  tauco = 111.3d0*86400.0d0
-  tauni = 8.8d0*86400.0d0
-  
-  gas_nidecay = (1.6022e-6)*1.87*(1.0d0-EXP(-(tsp_time+tsp_dt)/tauni))
-  gas_nidecay = gas_nidecay+(1.6022e-6)*1.87*tauco*(1.0d0-EXP(-(tsp_time+tsp_dt)/tauco))/(tauco-tauni)
-  gas_nidecay = gas_nidecay-(1.6022e-6)*1.87*(1.0d0-EXP(-tsp_time/tauni))
-  gas_nidecay = gas_nidecay-(1.6022e-6)*1.87*tauco*(1.0d0-EXP(-tsp_time/tauco))/(tauco-tauni)
-  gas_nidecay = gas_nidecay/tsp_dt
-  !WRITE(*,*) gas_nidecay
-
-END SUBROUTINE material_update
+END SUBROUTINE temperature_update
