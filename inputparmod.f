@@ -1,5 +1,6 @@
       module inputparmod
 c     ------------------
+      use physconstmod
       IMPLICIT NONE
 ************************************************************************
 * input parameters
@@ -10,9 +11,10 @@ c-- gas grid
       LOGICAL :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
       REAL*8 :: in_lr = 0d0  !spatial length of the domain
 c-- flat-structure parameters
-      REAL*8 :: in_constrho = 2.4186d8  !g/cm^3
+      REAL*8 :: in_totmass = 0d0  !g
+      REAL*8 :: in_velout = 0d0  !cm/s
       REAL*8 :: in_consttempkev = 1d-3  !861.73
-      LOGICAL :: in_pureni56 = .false.  !pure nickel56 atmosphere
+      LOGICAL :: in_solidni56 = .false.  !pure nickel56 atmosphere
 c
 c-- particles
       INTEGER :: in_seed = 0 !starting point of random number generator
@@ -50,7 +52,7 @@ c
 c-- runtime parameter namelist
       namelist /inputpars/
      & in_nr,in_ng,in_isvelocity,in_lr,
-     & in_constrho,in_consttempkev,in_pureni56,
+     & in_totmass,in_velout,in_consttempkev,in_solidni56,
      & in_seed,in_ns,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,
      & in_grab_stdout,in_nomp,
@@ -119,7 +121,8 @@ c-- check read values
       if(in_npartmax<=0) stop 'in_npartmax invalid'
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
 
-      if(in_constrho<=0d0) error stop 'in_constrho <= 0'
+      if(in_totmass<=0d0) error stop 'in_totmass <= 0'
+      if(in_velout<=0d0) error stop 'in_velout <= 0'
       if(in_consttempkev<=0d0) error stop 'in_consttempkev <= 0'
 c
 c-- check input parameter validity

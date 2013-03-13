@@ -82,7 +82,7 @@ endif
 #
 #-- MODULES
 bbxsmod.o: elemdatamod.o miscmod.o physconstmod.o
-inputparmod.o: miscmod.o
+inputparmod.o: physconstmod.o miscmod.o
 ionsmod.o: miscmod.o physconstmod.o
 miscmod.o: MISC/warn.f MISC/lcase.f
 mpimod.o: gasgridmod.o inputparmod.o timestepmod.o timingmod.o

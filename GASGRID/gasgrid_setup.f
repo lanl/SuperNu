@@ -31,6 +31,9 @@ c--
        gas_drarr(ir) = gas_lr/REAL(gas_nr)
        gas_rarr(ir+1) = gas_rarr(ir)+gas_drarr(ir)
        gas_vals2(ir)%dr3_34pi = gas_rarr(ir+1)**3-gas_rarr(ir)**3
+       gas_vals2(ir)%volr = pc_pi4/3d0*gas_vals2(ir)%dr3_34pi/gas_lr**3!volume in outer radius units
+       gas_vals2(ir)%vol = gas_vals2(ir)%volr*
+     &   (gas_velout*tsp_tcenter)**3 !volume in cm^3
       ENDDO
     
 c-- r/tsp_texp = velocity grid (calculated with initial spatial grid and 
@@ -59,7 +62,8 @@ c
 c-- initialize material (gas) properties
 c-- gas temperature, density, and heat capacity
       do ir=1,gas_nr
-       gas_vals2(ir)%rho = in_constrho
+       gas_vals2(ir)%mass = in_totmass/gas_nr
+       gas_vals2(ir)%rho = gas_vals2(ir)%mass*gas_vals2(ir)%vol
        gas_vals2(ir)%tempkev = in_consttempkev
        gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb  !initial guess, may be overwritten by read_temp_str
        !gas_vals2(ir)%bcoef = 2.0*pc_acoef*gas_vals2(ir)%tempkev**3
@@ -73,8 +77,11 @@ c-- gas temperature, density, and heat capacity
       enddo
       gas_einp = gas_einit
 c
-c-- set the mass from the density
-      gas_vals2%mass = gas_vals2%rho*gas_vals2%vol
+c-- set flat composition if selected
+      if(in_solidni56) then
+       gas_vals2%mass0fr(28) = 1d0 !stable+unstable Ni
+       gas_vals2%mass0fr(-1) = 1d0 !unstable Ni
+      endif
 c
 c-- convert mass fractions to # atoms
       call massfr2natomfr

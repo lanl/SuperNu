@@ -10,7 +10,7 @@ MODULE gasgridmod
   integer :: gas_nr = 0
   integer :: gas_ng = 0
 
-  REAL*8 :: gas_vout = 1d9 !outer boundary velocity                   
+  REAL*8 :: gas_velout = 0d0 !outer boundary velocity                   
 
 
   REAL*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
@@ -71,14 +71,15 @@ MODULE gasgridmod
   CONTAINS
 
 
-  SUBROUTINE gasgrid_init(nr,ng,nt,lr,isvelocity)
-!-------------------------------
+  SUBROUTINE gasgrid_init(nr,ng,nt,lr,velout,isvelocity)
+!-------------------------------------------------------
     INTEGER,intent(in) :: nr,ng,nt
-    REAL*8,intent(in) :: lr
+    REAL*8,intent(in) :: lr,velout
     LOGICAL,intent(in) :: isvelocity
     gas_nr = nr
     gas_ng = ng
     gas_lr = lr
+    gas_velout = velout
     gas_isvelocity = isvelocity
 
 

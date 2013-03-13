@@ -69,15 +69,15 @@ c-- energy deposition
 !    &  (natom1fr(:,gas_ini56) - natom2fr(:,gas_ini56)) *
 !    &   (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
 !    &  (natom1fr(:,gas_ico56) - natom2fr(:,gas_ico56))*pc_qhl_co56)
+!}}}
 c
 c
 c
 c-- update temperature and volume
 c================================
       gas_temphist(:,tsp_tn) = gas_vals2%temp
-      gas_vals2%vol = gas_vals2%volr*(gas_vout*tsp_tcenter)**3 !volume in cm^3
+      gas_vals2%vol = gas_vals2%volr*(gas_velout*tsp_tcenter)**3 !volume in cm^3
       gas_vals2%volcrp = gas_vals2%vol !effective volume in cm^3
-!}}}
 c
 c
 c

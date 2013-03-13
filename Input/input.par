@@ -9,6 +9,11 @@ in_tlast = 6
 in_nt = 4
 in_alpha = 1d0
 
+!-- flat structure
+in_consttempkev = 1d-3
+in_totmass = 1e33
+in_velout = 1d9
+
 !-- gas grid settings
 in_lr = 1.4d8
 in_nr = 50
