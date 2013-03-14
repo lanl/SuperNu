@@ -70,32 +70,19 @@ c-- update the abundances for the center time
       call update_natomfr(tsp_texp)
 c
 c-- energy deposition
-      gas_vals2(:)%nisource = gas_vals2(:)%natom*(
+      gas_vals2(:)%nisource =  !per average atom (mix of stable and unstable)
      &  (natom1fr(:,gas_ini56) - natom2fr(:,gas_ini56)) *
      &   (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
-     &  (natom1fr(:,gas_ico56) - natom2fr(:,gas_ico56))*pc_qhl_co56)
+     &  (natom1fr(:,gas_ico56) - natom2fr(:,gas_ico56))*pc_qhl_co56
+c-- total, units=ergs
+      gas_vals2(:)%nisource = gas_vals2(:)%nisource * gas_vals2(:)%natom
 !}}}
-
-      gas_nidecay = (1.6022e-6)*1.87*
-     &  (1.0d0-exp(-(tsp_time+tsp_dt)/tauni))
-      gas_nidecay = gas_nidecay+(1.6022e-6)*1.87*tauco*
-     &  (1.0d0-exp(-(tsp_time+tsp_dt)/tauco))/(tauco-tauni)
-      gas_nidecay = gas_nidecay-(1.6022e-6)*1.87*
-     &  (1.0d0-exp(-tsp_time/tauni))
-      gas_nidecay = gas_nidecay-(1.6022e-6)*1.87*tauco*
-     &  (1.0d0-exp(-tsp_time/tauco))/(tauco-tauni)
-      gas_nidecay = gas_nidecay/tsp_dt
-!     write(6,*) 'gas_nidecay',gas_nidecay,gas_nidecay*tsp_dt,
-!    &  sum(gas_vals2%nisource)
-c
-c--
-      if(tsp_tn == 1) gas_nidecay = 1.73*(1.6022e-6)  !erg/s/g  !this value is used in the first iteration
 c
 c
-c-- update temperature and volume
-c================================
-      gas_temphist(:,tsp_tn) = gas_vals2%temp
-      !gas_vals2%vol = gas_vals2%volr*(gas_velout*tsp_tcenter)**3 !volume in cm^3
+c
+c-- update volume and density
+c============================
+      !gas_vals2%vol = gas_vals2%volr*(gas_velout*tsp_tcenter)**3 !volume in cm^3!{{{
       gas_vals2%vol = gas_vals2%volr*(gas_velout*tsp_texp)**3 !volume in cm^3
       gas_vals2%volcrp = gas_vals2%vol !effective volume in cm^3
 c
@@ -104,7 +91,13 @@ c-- density
       !gas_vals2%bcoef = 2.0*pc_acoef*gas_vals2%tempkev**3
       gas_vals2%bcoef = 0.4*(1.e12*gas_vals2%rho)*580.25d0
 c
-c--
+c-- keep track of temperature evolution
+      gas_temphist(:,tsp_tn) = gas_vals2%temp!}}}
+c
+c
+c
+c-- reset counters
+c=================
       gas_erad = 0.0   !Total radiation energy
       gas_eint = 0.0   !Total internal energy
 c
@@ -238,11 +231,11 @@ c-- totals
       write(7,'(1x,a,1p,e12.4)') 'energy deposition (Lagr)  :',
      &  sum(gas_vals2(:)%nisource)
 c-- arrays
-*     write(7,'(a6,5a12)')'ir','edep/vol','enostor/vol','rho',
-      write(7,'(a6,5a12)')'ir','edep/dt','rho',
+*     write(7,'(a6,4a12)')'ir','edep/vol','enostor/vol','rho',
+      write(7,'(a6,4a12)')'ir','edep/dt','rho',
      &  'nelec','volcrp/vol'
       do i=1,gas_nr,10
-       write(7,'(i6,1p,5e12.4)') (j,
+       write(7,'(i6,1p,4e12.4)') (j,
      &  gas_vals2(j)%nisource/tsp_dt,
      &  gas_vals2(j)%mass/gas_vals2(j)%vol,
      &  gas_vals2(j)%nelec,gas_vals2(j)%volcrp/gas_vals2(j)%vol,

@@ -36,7 +36,7 @@ c--
     
 c-- r/tsp_texp = velocity grid (calculated with initial spatial grid and 
 c-- initial expansion tsp_time)
-      if (gas_isvelocity.eqv..true.) then
+      if(gas_isvelocity) then
        gas_rarr = gas_rarr/tsp_texp
        gas_drarr = gas_drarr/tsp_texp
        do ir=1,gas_nr
@@ -61,8 +61,11 @@ c-- gas temperature, density, and heat capacity
 c
 c-- set flat composition if selected
       if(in_solidni56) then
-       gas_vals2%mass0fr(28) = 1d0 !stable+unstable Ni
-       gas_vals2%mass0fr(-1) = 1d0 !unstable Ni
+       gas_vals2%mass0fr(28) = 1d0 !stable+unstable Ni abundance
+       gas_vals2(:39)%mass0fr(-1) = 1d0 !Ni56 core
+      else
+c-- no alternative implemented yet
+       stop 'gg_setup: in_solidni56==.false. no mass fractions defined'
       endif
 c
 c-- convert mass fractions to # atoms
@@ -105,6 +108,12 @@ c     -------------------------
       real*8 :: help
 c
       do i=1,gas_nr
+c
+c-- sanity test
+       if(all(gas_vals2(i)%mass0fr(1:)==0d0)) stop 'massfr2natomfr: '//
+     &   'all mass fractions zero'
+       if(any(gas_vals2(i)%mass0fr(1:)<0d0)) stop 'massfr2natomfr: '//
+     &   'negative mass fractions'
 c
 c-- renormalize (the container fraction (unused elements) is taken out)
        gas_vals2(i)%mass0fr(:) = gas_vals2(i)%mass0fr(:)/

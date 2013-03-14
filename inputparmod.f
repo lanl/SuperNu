@@ -10,9 +10,9 @@ c-- gas grid
       integer :: in_ng = 0 !# groups
       logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
       real*8 :: in_lr = 0d0  !spatial length of the domain
-c-- flat-structure parameters
-      real*8 :: in_totmass = 0d0  !g
       real*8 :: in_velout = 0d0  !cm/s
+      real*8 :: in_totmass = 0d0  !g
+c-- flat-structure parameters
       real*8 :: in_consttempkev = 0d0  !keV
       logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
 c

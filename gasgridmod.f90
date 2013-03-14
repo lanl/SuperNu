@@ -26,8 +26,6 @@ module gasgridmod
   logical :: gas_isvelocity
   integer :: gas_velno, gas_velyes
 
-  real*8 :: gas_nidecay = 1.73*(1.6022e-6)  !erg/s/g  !this value is used in the first iteration
-
   real*8 :: gas_emat
 
   real*8, dimension(:), allocatable :: gas_rarr  !(gas_nr+1)
