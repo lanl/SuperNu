@@ -2,18 +2,15 @@
 
 #-- test name
 testname='first test'
-
 #-- executable
 binary='./supernu'
 
 #-- path constants
-curdir=$(pwd)
-rundir=$curdir/Run
-echo $0
 testdir=$(cd $(dirname $0); pwd)
+rundir=$1
 
 #-- put files belonging to this test into place
-cd $rundir
+cd $rundir || exit 1
 ln -sf $testdir/* .
 
 #-- run test

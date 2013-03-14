@@ -4,9 +4,9 @@ include Makefile.inc
 ########################################################################
 # MACROS
 ########################################################################
-PROGRAMS = supernu
+PROGRAMS := supernu
 
-MODULES = \
+MODULES := \
   elemdatamod.o physconstmod.o mpimod.o \
   miscmod.o \
   ionsmod.o ffxsmod.o bfxsmod.o bbxsmod.o \
@@ -15,28 +15,23 @@ MODULES = \
   particlemod.o \
   timingmod.o
 
-OBJFILES = sourcenumbers.o vacancies.o interior_source.o advance.o \
+OBJFILES := sourcenumbers.o vacancies.o interior_source.o advance.o \
  write_output.o diffusion1.o transport1.o \
  read_bbxs_data.o restart_file.o dealloc_all.o
 
-LIBRARIES = GASGRID/gasgrid.a MISC/misc.a
-SUBDIRS = $(dir $(LIBRARIES))
+LIBRARIES := GASGRID/gasgrid.a MISC/misc.a
+SUBDIRS := $(dir $(LIBRARIES))
 
-VERSIONPY = $(wildcard version.py)
+VERSIONPY := $(wildcard version.py)
 
 #-- Testsuite
-########################################################################
+#############
 TESTS := first/test.sh second/test.sh
 
 #-- Prefix Testsuite directory name
 TESTDIR := Testsuite/
 TESTS := $(addprefix $(TESTDIR),$(TESTS))
 
-
-########################################################################
-#-- CONSTANTS
-########################################################################
-RUNDIR = $(CURDIR)/Run
 
 ########################################################################
 # TARGETS
@@ -59,6 +54,7 @@ prepare_run:
 	cd $(RUNDIR) && ln -s $(CURDIR)/Input/* .
 	cd $(RUNDIR) && ln -s $(CURDIR)/supernu .
 
+run: RUNDIR := $(CURDIR)/Run
 run: all prepare_run
 	cd $(RUNDIR) && ./supernu
 
@@ -101,9 +97,10 @@ $(SUBDIRS):
 	$(MAKE) -C $@
 #
 #-- TESTSUITE
+$(TESTS): export RUNDIR = $(CURDIR)/$(patsubst %/,%,$(dir $@))_Run/
 $(TESTS):
 	$(MAKE) prepare_run
-	$(SHELL) $@
+	$(SHELL) $@ $(RUNDIR)
 	@echo
 #
 #-- PROGRAMS

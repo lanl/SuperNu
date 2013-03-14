@@ -13,7 +13,7 @@ c-- gas grid
 c-- flat-structure parameters
       REAL*8 :: in_totmass = 0d0  !g
       REAL*8 :: in_velout = 0d0  !cm/s
-      REAL*8 :: in_consttempkev = 1d-3  !861.73
+      REAL*8 :: in_consttempkev = 0d0  !keV
       LOGICAL :: in_solidni56 = .false.  !pure nickel56 atmosphere
 c
 c-- particles
