@@ -44,6 +44,7 @@ program supernu
    call banner
 !-- read runtime parameters
    call read_inputpars
+   in_velout = in_lr/(in_tstart*pc_day) !quick fix for making lr and velout compatible
 !-- parse runtime parameters
    call parse_inputpars(nmpi)
 !
