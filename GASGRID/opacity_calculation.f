@@ -10,34 +10,34 @@ c$    use omp_lib
       use gasgridmod
       use miscmod
       use timingmod
-      IMPLICIT NONE
+      implicit none
 ************************************************************************
 * compute bound-free and bound-bound opacity.
 ************************************************************************
       integer :: icg
-      REAL*8 :: wlinv
+      real*8 :: wlinv
 c-- timing
       real :: t0,t1
 c-- helper arrays
-      REAL*8 :: grndlev(gas_nr,ion_iionmax-1,gas_nelem)
-      REAL*8 :: hckt(gas_nr)
-      REAL*8 :: hlparr(gas_nr)
+      real*8 :: grndlev(gas_nr,ion_iionmax-1,gas_nelem)
+      real*8 :: hckt(gas_nr)
+      real*8 :: hlparr(gas_nr)
 c-- ffxs
-      REAL*8,parameter :: c1 = 4d0*pc_e**6/(3d0*pc_h*pc_me*pc_c**4)*
+      real*8,parameter :: c1 = 4d0*pc_e**6/(3d0*pc_h*pc_me*pc_c**4)*
      &  sqrt(pc_pi2/(3*pc_me*pc_h*pc_c))
-      REAL*8 :: gg,u,gff,help
-      REAL*8 :: yend,dydx,dy !extrapolation
+      real*8 :: gg,u,gff,help
+      real*8 :: yend,dydx,dy !extrapolation
       integer :: iu,igg
-      REAL*8 :: cap8
+      real*8 :: cap8
 c-- bfxs
       integer :: iw,iz,ii,ie
-      REAL*8 :: en,xs,wl
+      real*8 :: en,xs,wl
 c-- bbxs
       integer :: i,iwl
-      REAL*8 :: phi,ocggrnd,expfac,wl0
-      REAL*8 :: cap
+      real*8 :: phi,ocggrnd,expfac,wl0
+      real*8 :: cap
 c-- constants
-      REAL*8 :: wlhelp,wlminlg
+      real*8 :: wlhelp,wlminlg
 c
 c-- constants
       wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))

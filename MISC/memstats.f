@@ -1,7 +1,7 @@
       subroutine memstats(impi)
 c     -------------------------
       use miscmod
-      IMPLICIT NONE
+      implicit none
       integer,intent(in) :: impi
 !     integer,intent(out) :: rss,vss
 ************************************************************************
@@ -47,8 +47,8 @@ c
 c
       character(30) :: words(24)
 *     character(30),allocatable :: words(:)
-      LOGICAL :: exists
-      LOGICAL :: skipwarn=.false.
+      logical :: exists
+      logical :: skipwarn=.false.
 c
 c-- read stat file
       inquire(file='/proc/self/stat',exist=exists)

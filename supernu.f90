@@ -1,29 +1,29 @@
-PROGRAM supernu
+program supernu
 
   use mpimod
-  USE inputparmod
-  USE timestepmod
-  USE gasgridmod
-  USE particlemod
-  USE physconstmod
+  use inputparmod
+  use timestepmod
+  use gasgridmod
+  use particlemod
+  use physconstmod
 
   use ionsmod, only:ion_read_data,ion_alloc_grndlev
   use bfxsmod, only:bfxs_read_data
   use ffxsmod, only:ffxs_read_data
   use timingmod
 
-  IMPLICIT NONE
+  implicit none
 !***********************************************************************
 ! Main routine
 !
 ! todo:
 !  - dummy (drr, 2013/mar/05)
 !***********************************************************************
-  REAL*8 :: time_begin, time_end, help, dt
-  REAL*8 :: t_elapsed
+  real*8 :: time_begin, time_end, help, dt
+  real*8 :: t_elapsed
   integer :: ierr
-  LOGICAL :: lmpi0 = .false. !master rank flag
-  REAL :: t0,t1  !timing
+  logical :: lmpi0 = .false. !master rank flag
+  real :: t0,t1  !timing
 !
 !-- mpi initialization
   call mpi_init(ierr) !MPI
@@ -48,28 +48,28 @@ PROGRAM supernu
    call parse_inputpars(nmpi)
 !
 !-- init random number generator
-   help = RAND(in_seed)
+   help = rand(in_seed)
 !
 !-- time step init
 !-- constant time step, may be coded to loop if time step is not uniform
    t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
    dt = t_elapsed/in_nt
-   CALL timestep_init(in_nt,in_alpha,in_tfirst,dt)
+   call timestep_init(in_nt,in_alpha,in_tfirst,dt)
 !
 !-- particle init
-   CALL particle_init(in_npartmax,in_ns)
+   call particle_init(in_npartmax,in_ns)
 !
 !-- SETUP GRIDS
-   CALL gasgrid_init(in_nr,in_ng,in_nt,in_lr,in_velout,in_isvelocity)
+   call gasgrid_init(in_nr,in_ng,in_nt,in_lr,in_velout,in_isvelocity)
    call gasgrid_setup
 !-- read initial temperature structure from file
    !call read_restart_file
 !-- hard coded temperature structure
-   !DO ir = 1, gas_nr
-   !  IF (gas_vals2(ir)%tempkev<1.e-6) THEN
+   !do ir = 1, gas_nr
+   !  if (gas_vals2(ir)%tempkev<1.e-6) then
    !    gas_vals2(ir)%tempkev = 1.e-6
-   !  ENDIF
-   !ENDDO
+   !  endif
+   !enddo
 !
 !-- READ DATA
 !-- read ion and level data
@@ -88,34 +88,34 @@ PROGRAM supernu
 
 
   ! Beginning time step loop
-  CALL CPU_TIME(time_begin)
-  DO tsp_tn = 1, tsp_nt 
-    WRITE(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
+  call CPU_TIME(time_begin)
+  do tsp_tn = 1, tsp_nt 
+    write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
     !Calculating opacities (for IMC(transport) and DDMC(diffusion))
     call gasgrid_update
-    CALL xsections
+    call xsections
     !Calculating number of source prt_particles per cell
-    CALL sourcenumbers
+    call sourcenumbers
     !Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
-    ALLOCATE(prt_vacantarr(prt_nnew))
-    CALL vacancies
+    allocate(prt_vacantarr(prt_nnew))
+    call vacancies
     !Calculating properties of prt_particles on domain boundary
-    !CALL boundary_source
+    !call boundary_source
     !Calculating properties of prt_particles emitted in domain interior
-    CALL interior_source
-    DEALLOCATE(prt_vacantarr)
+    call interior_source
+    deallocate(prt_vacantarr)
     !Advancing prt_particles to update radiation field
-    CALL advance
+    call advance
     !Updating material state
-    CALL temperature_update
+    call temperature_update
     !Updating elapsed tsp_time and expansion tsp_time
     call timestep_update(dt)
     !Writing data to files
-    CALL write_output
-!   CALL write_restart
-  ENDDO
-  CALL CPU_TIME(time_end)
-  WRITE(*,*) 'CPU TIME: ',time_end-time_begin,' seconds'
+    call write_output
+!   call write_restart
+  enddo
+  call CPU_TIME(time_end)
+  write(*,*) 'CPU TIME: ',time_end-time_begin,' seconds'
 !
 !
 !--
@@ -135,4 +135,4 @@ PROGRAM supernu
   call dealloc_all
   call mpi_finalize(ierr) !MPI
 
-END PROGRAM supernu
+end program supernu

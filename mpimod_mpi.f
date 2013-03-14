@@ -1,6 +1,6 @@
       module mpimod
 c     -------------
-      IMPLICIT NONE
+      implicit none
       include 'mpif.h'
 c
       integer,parameter :: impi0 = 0 !the master rank
@@ -17,7 +17,7 @@ c     --------------------------
       use inputparmod
       use timestepmod, only:tsp_nt
       use gasgridmod
-      IMPLICIT NONE
+      implicit none
 ************************************************************************
 * Broadcast the data that does not evolve over time (or temperature).
 * Also once the constants are broadcasted, all allocatable arrays are
@@ -38,7 +38,7 @@ c     --------------------------
 ************************************************************************
       integer :: i
       integer,allocatable :: isndvec(:)
-      REAL*8,allocatable :: sndvec(:)
+      real*8,allocatable :: sndvec(:)
 c
 c-- broadcast integer constants
       allocate(isndvec(12))
@@ -62,7 +62,7 @@ c-- copy back
       in_ntc = isndvec(12)
       deallocate(isndvec)
 c
-c-- broadcast REAL*8 constants
+c-- broadcast real*8 constants
       allocate(sndvec(7))
       if(impi==impi0) then
        sndvec(1:3) = (/in_wlmin,in_wlmax,in_epsline/)
@@ -128,7 +128,7 @@ c     ------------------------
       use inputparmod
       use gasgridmod
       use timestepmod
-      IMPLICIT NONE
+      implicit none
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
 * constants:
@@ -156,7 +156,7 @@ c     -----------------------
       use gasgridmod
       use timestepmod
       use timingmod
-      IMPLICIT NONE
+      implicit none
 ************************************************************************
 * Reduce the results from the packet transport that are needed for the
 * temperature correction.
@@ -164,8 +164,8 @@ c     -----------------------
 * - gas_vals%enabs_c
 * - t_pckt_stat !min,mean,max
 ************************************************************************
-      REAL*8 :: sndvec(gas_nr),rcvvec(gas_nr)
-      REAL*8 :: help
+      real*8 :: sndvec(gas_nr),rcvvec(gas_nr)
+      real*8 :: help
 c
       sndvec = gas_vals(:)%enabs_e
       call mpi_reduce(sndvec,rcvvec,gas_nr,MPI_REAL8,MPI_SUM,

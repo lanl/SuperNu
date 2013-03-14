@@ -1,15 +1,15 @@
       subroutine sorti(n,arrin,indx)
 c     ------------------------------
-      IMPLICIT NONE
+      implicit none
       integer,intent(in):: n
-      REAL*8,intent(in):: arrin(n)
+      real*8,intent(in):: arrin(n)
       integer,intent(inout):: indx(n)
 ************************************************************************
 * index-based sorting routine taken from the routine 'indexx' by
 * press etal: 1986, 'numerical recipes', cambridge university press
 ************************************************************************
       integer :: i,j,l,ir,indxt
-      REAL*8 :: q
+      real*8 :: q
       if(n.lt.1) return
       if(n.eq.1) then
        indx(1) = 1

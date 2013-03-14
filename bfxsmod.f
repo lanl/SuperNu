@@ -1,6 +1,6 @@
       module bfxsmod
 c     --------------
-      IMPLICIT NONE
+      implicit none
 c
       integer,private :: i
       integer,private :: ll(7),ninn(30),ntot(30)
@@ -25,7 +25,7 @@ c
 c
       subroutine bfxs_read_data
 c------------------------------
-      IMPLICIT NONE
+      implicit none
 ************************************************************************
 * Read Verner 1995 (ph1) and 1996 (ph2) data.
 ************************************************************************
@@ -65,10 +65,10 @@ c
 c
       pure function bfxs(nz,ne,e) result(xs)
 c     ---------------------------
-      IMPLICIT NONE
+      implicit none
       integer,intent(in) :: nz,ne
-      REAL*8,intent(in) :: e
-      REAL*8 :: xs
+      real*8,intent(in) :: e
+      real*8 :: xs
 ****************************************************************************
 * Version 2. March 25, 1996.
 * Written by D. A. Verner, verner@pa.uky.edu
@@ -94,7 +94,7 @@ c     ---------------------------
 * the subroutine returns xs=0.
 ****************************************************************************
       integer :: nout,nint,is
-      REAL*8 :: p1,x,y,z,q,a,b,einn
+      real*8 :: p1,x,y,z,q,a,b,einn
 c
       xs = 0d0
 c
@@ -157,7 +157,7 @@ c
 c
 !      subroutine write_verner
 !c     -----------------------
-!      IMPLICIT NONE
+!      implicit none
 !************************************************************************
 !* Write the Verner 1995 and Verner 1996 data to file.
 !* The include inflates the executable.

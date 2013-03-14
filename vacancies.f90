@@ -1,34 +1,34 @@
-SUBROUTINE vacancies
+subroutine vacancies
 
-  USE particlemod
-  IMPLICIT NONE
+  use particlemod
+  implicit none
 
 !##################################################
   !This subroutine creates an array of vacant index locations
   !in the particle array each time step.
 !##################################################
 
-  INTEGER :: ipart, ivac
-  LOGICAL :: isfull
+  integer :: ipart, ivac
+  logical :: isfull
 
   !Initializing index counters and full array checking boolean
-  isfull = .FALSE.
+  isfull = .false.
   ipart = 0
   ivac = 0
 
   !Filling prt_vacantarr with particle index of vacant particles: loop
-  DO WHILE (isfull.EQV..FALSE.)
+  do while (isfull.eqv..false.)
      ipart = ipart+1
-     IF (prt_particles(ipart)%isvacant.EQV..TRUE.) THEN
+     if (prt_particles(ipart)%isvacant.eqv..true.) then
         ivac = ivac+1
         prt_vacantarr(ivac) = ipart
-     ENDIF
-     IF (ivac == prt_nnew) THEN
-        isfull = .TRUE.
-     ELSEIF (ipart == prt_npartmax) THEN
-        WRITE(*,*) 'Maximum number of prt_particles reached'
-        isfull = .TRUE.
-     ENDIF
-  ENDDO
+     endif
+     if (ivac == prt_nnew) then
+        isfull = .true.
+     elseif (ipart == prt_npartmax) then
+        write(*,*) 'Maximum number of prt_particles reached'
+        isfull = .true.
+     endif
+  enddo
   
-END SUBROUTINE vacancies
+end subroutine vacancies

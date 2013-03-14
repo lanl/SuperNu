@@ -5,14 +5,13 @@ c     --------------------------------------
       use timestepmod
       use gasgridmod
       use miscmod, only:warn
-      IMPLICIT NONE
+      implicit none
 ************************************************************************
 * Initialize the gas grid, the part that is constant with time and
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
       integer :: i,ir
-      REAL*8 :: help
-
+      real*8 :: help
 c
 c--
       write(6,*)
@@ -27,23 +26,23 @@ c--
       !Initial inner most radius
       gas_rarr(1) = 0.0d0
       ! Initial grid, cell length, and cell volume generation loop
-      DO ir=1,gas_nr
-       gas_drarr(ir) = gas_lr/REAL(gas_nr)
+      do ir=1,gas_nr
+       gas_drarr(ir) = gas_lr/real(gas_nr)
        gas_rarr(ir+1) = gas_rarr(ir)+gas_drarr(ir)
        gas_vals2(ir)%dr3_34pi = gas_rarr(ir+1)**3-gas_rarr(ir)**3
        gas_vals2(ir)%vol = pc_pi4/3d0*gas_vals2(ir)%dr3_34pi!volume in outer radius units
        gas_vals2(ir)%volr = gas_vals2(ir)%vol/gas_lr**3
-      ENDDO
+      enddo
     
 c-- r/tsp_texp = velocity grid (calculated with initial spatial grid and 
 c-- initial expansion tsp_time)
-      IF (gas_isvelocity.EQV..TRUE.) THEN
+      if (gas_isvelocity.eqv..true.) then
        gas_rarr = gas_rarr/tsp_texp
        gas_drarr = gas_drarr/tsp_texp
-       DO ir=1,gas_nr
+       do ir=1,gas_nr
         gas_vals2(ir)%dr3_34pi = gas_vals2(ir)%dr3_34pi/tsp_texp**3
-       ENDDO
-      ENDIF
+       enddo
+      endif
 c
 c
 c--
@@ -98,12 +97,12 @@ c     -------------------------
       use physconstmod
       use elemdatamod, only:elem_data
       use gasgridmod
-      IMPLICIT NONE
+      implicit none
 ************************************************************************
 * convert mass fractions to natom fractions, and mass to natom.
 ************************************************************************
       integer :: i,j
-      REAL*8 :: help
+      real*8 :: help
 c
       do i=1,gas_nr
 c

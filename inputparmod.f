@@ -1,55 +1,55 @@
       module inputparmod
 c     ------------------
       use physconstmod
-      IMPLICIT NONE
+      implicit none
 ************************************************************************
 * input parameters
 ************************************************************************
 c-- gas grid
-      INTEGER :: in_nr = 0 !# spatial grid in spherical geom
-      INTEGER :: in_ng = 0 !# groups
-      LOGICAL :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
-      REAL*8 :: in_lr = 0d0  !spatial length of the domain
+      integer :: in_nr = 0 !# spatial grid in spherical geom
+      integer :: in_ng = 0 !# groups
+      logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
+      real*8 :: in_lr = 0d0  !spatial length of the domain
 c-- flat-structure parameters
-      REAL*8 :: in_totmass = 0d0  !g
-      REAL*8 :: in_velout = 0d0  !cm/s
-      REAL*8 :: in_consttempkev = 0d0  !keV
-      LOGICAL :: in_solidni56 = .false.  !pure nickel56 atmosphere
+      real*8 :: in_totmass = 0d0  !g
+      real*8 :: in_velout = 0d0  !cm/s
+      real*8 :: in_consttempkev = 0d0  !keV
+      logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
 c
 c-- random number generator
-      INTEGER :: in_seed = 1984117 !starting point of random number generator
+      integer :: in_seed = 1984117 !starting point of random number generator
 c
 c-- particles
-      INTEGER :: in_ns = 0   !# source particles generated per time step
-      INTEGER :: in_npartmax = 0 !total # particles allowed
-      LOGICAL :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
-      REAL*8 :: in_alpha = 1d0 !time centering control parameter [0,1]
+      integer :: in_ns = 0   !# source particles generated per time step
+      integer :: in_npartmax = 0 !total # particles allowed
+      logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
+      real*8 :: in_alpha = 1d0 !time centering control parameter [0,1]
 c
 c-- time step
-      REAL*8 :: in_tfirst = 0d0 !first point in time evolution
-      REAL*8 :: in_tlast = 0d0  !last point in time evolution
-      INTEGER :: in_nt = -1   !# time steps
+      real*8 :: in_tfirst = 0d0 !first point in time evolution
+      real*8 :: in_tlast = 0d0  !last point in time evolution
+      integer :: in_nt = -1   !# time steps
 
 c
 c-- parallelization
-      LOGICAL :: in_grab_stdout = .false. !write stdout to file
-      INTEGER :: in_nomp = 1       !# openmp threads
+      logical :: in_grab_stdout = .false. !write stdout to file
+      integer :: in_nomp = 1       !# openmp threads
 c
 c-- group structure
-      REAL*8 :: in_wlmin = 1000d0     !lower wavelength boundary in output spectrum
-      REAL*8 :: in_wlmax = 30000d0    !upper wavelength boundary in output spectrum
+      real*8 :: in_wlmin = 1000d0     !lower wavelength boundary in output spectrum
+      real*8 :: in_wlmax = 30000d0    !upper wavelength boundary in output spectrum
 c
 c-- opacity (cm^2/gram)
-      REAL*8 :: in_opcapgam = .06d0   ![cm^2/g] extinction coefficient for gamma radiation
-      REAL*8 :: in_opcap = 0d0        !additional gray opacity (for testing with in_nobbopac only!)
-      REAL*8 :: in_epsline = 1d0      !line absorption fraction (the rest is scattering)
-      LOGICAL :: in_nobbopac = .false.    !turn off bound-bound opacity
-      LOGICAL :: in_nobfopac = .false.    !turn off bound-bound opacity
-      LOGICAL :: in_noffopac = .false.    !turn off bound-bound opacity
+      real*8 :: in_opcapgam = .06d0   ![cm^2/g] extinction coefficient for gamma radiation
+      real*8 :: in_opcap = 0d0        !additional gray opacity (for testing with in_nobbopac only!)
+      real*8 :: in_epsline = 1d0      !line absorption fraction (the rest is scattering)
+      logical :: in_nobbopac = .false.    !turn off bound-bound opacity
+      logical :: in_nobfopac = .false.    !turn off bound-bound opacity
+      logical :: in_noffopac = .false.    !turn off bound-bound opacity
 c
 c-- misc
-      CHARACTER(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
-      CHARACTER(4) :: in_pdensdump = 'off'   !off|one|each: write partial densities to file
+      character(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
+      character(4) :: in_pdensdump = 'off'   !off|one|each: write partial densities to file
 c
 c-- runtime parameter namelist
       namelist /inputpars/
@@ -71,7 +71,7 @@ c
 c
       subroutine read_inputpars
 c     -------------------------
-      IMPLICIT NONE
+      implicit none
 ************************************************************************
 * read the input parameter namelist
 ************************************************************************
@@ -94,7 +94,7 @@ c
 c     --------------------------------
       use miscmod, only:warn
 c$    use omp_lib
-      IMPLICIT NONE
+      implicit none
       integer,intent(in) :: nmpi
 ************************************************************************
 * parse the input parameter namelist

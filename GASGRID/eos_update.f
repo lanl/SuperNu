@@ -4,16 +4,16 @@ c     --------------------------------
       use ionsmod
       use timestepmod, only:tsp_tn
       use timingmod
-      IMPLICIT NONE
-      LOGICAL,intent(in) :: do_output
+      implicit none
+      logical,intent(in) :: do_output
 ************************************************************************
 * Solve the eos for given temperatures.
 ************************************************************************
       integer :: i,niter,iion,nion
       integer :: icg,iz,ii
       real :: t0,t1
-      REAL*8 :: ndens
-      REAL*8 :: pdens(ion_nion,gas_nr)
+      real*8 :: ndens
+      real*8 :: pdens(ion_nion,gas_nr)
 c
 c-- loop over all gas_vals cells
       call time(t0)

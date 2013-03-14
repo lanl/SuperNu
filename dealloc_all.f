@@ -5,7 +5,7 @@ c     ----------------------
       use bbxsmod
       use gasgridmod
       use particlemod
-      IMPLICIT NONE
+      implicit none
 ************************************************************************
 * deallocate all that was used till the end of the program. Any
 * allocatable arrays remaining allocated after this had to be dealt

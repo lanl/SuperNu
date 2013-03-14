@@ -8,7 +8,7 @@ c     -----------------------
       use gasgridmod
       use inputparmod
       use timingmod
-      IMPLICIT NONE
+      implicit none
 ************************************************************************
 * Update the part of the gas grid that depends on time and temperature.
 * The non-changing part is computed in gasgrid_setup.
@@ -18,22 +18,22 @@ c     -----------------------
 * - LTE EOS: ionization balance and electron density
 * - opacities
 ************************************************************************
-      LOGICAL :: do_output
+      logical :: do_output
       integer :: i,iw,j,ir,k
-      REAL*8 :: help
-      REAL*8 :: natom1fr(gas_nr,-2:-1) !todo: memory storage order?
-      REAL*8 :: natom2fr(gas_nr,-2:-1)
-      REAL*8 :: capbcum(gas_ng)
+      real*8 :: help
+      real*8 :: natom1fr(gas_nr,-2:-1) !todo: memory storage order?
+      real*8 :: natom2fr(gas_nr,-2:-1)
+      real*8 :: capbcum(gas_ng)
 c-- gamma opacity
-      REAL*8,parameter :: ye=.5d0 !todo: compute this value
+      real*8,parameter :: ye=.5d0 !todo: compute this value
 c-- thomson scattering
-      REAL*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
+      real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
 c-- distribute packets
       integer :: mpacket !# packets to generate on each mpi rank
       integer :: nlower  !# ranks with 1 packet less
-      REAL*8 :: enemit(gas_nr)
-      REAL*8 :: chiross(gas_nr),capplanck(gas_nr)
+      real*8 :: enemit(gas_nr)
+      real*8 :: chiross(gas_nr),capplanck(gas_nr)
 c-- timing
       real :: t0,t1
 c-- Ryan's nuclear decay
@@ -77,15 +77,15 @@ c-- energy deposition
 !}}}
 
       gas_nidecay = (1.6022e-6)*1.87*
-     &  (1.0d0-EXP(-(tsp_time+tsp_dt)/tauni))
+     &  (1.0d0-exp(-(tsp_time+tsp_dt)/tauni))
       gas_nidecay = gas_nidecay+(1.6022e-6)*1.87*tauco*
-     &  (1.0d0-EXP(-(tsp_time+tsp_dt)/tauco))/(tauco-tauni)
+     &  (1.0d0-exp(-(tsp_time+tsp_dt)/tauco))/(tauco-tauni)
       gas_nidecay = gas_nidecay-(1.6022e-6)*1.87*
-     &  (1.0d0-EXP(-tsp_time/tauni))
+     &  (1.0d0-exp(-tsp_time/tauni))
       gas_nidecay = gas_nidecay-(1.6022e-6)*1.87*tauco*
-     &  (1.0d0-EXP(-tsp_time/tauco))/(tauco-tauni)
+     &  (1.0d0-exp(-tsp_time/tauco))/(tauco-tauni)
       gas_nidecay = gas_nidecay/tsp_dt
-!     WRITE(6,*) 'gas_nidecay',gas_nidecay,gas_nidecay*tsp_dt,
+!     write(6,*) 'gas_nidecay',gas_nidecay,gas_nidecay*tsp_dt,
 !    &  sum(gas_vals2%nisource)
 c
 c--
@@ -269,12 +269,12 @@ c     -------------------------------
       use physconstmod
       use gasgridmod
       use inputparmod
-      IMPLICIT NONE
-      REAL*8,intent(in) :: tsince
+      implicit none
+      real*8,intent(in) :: tsince
 ************************************************************************
 * update natom fractions for nuclear decay
 ************************************************************************
-      REAL*8 :: expni,expco,help
+      real*8 :: expni,expco,help
 c
       expni = exp(-tsince/pc_thl_ni56)
       expco = exp(-tsince/pc_thl_co56)

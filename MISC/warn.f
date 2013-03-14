@@ -1,6 +1,6 @@
       subroutine warn(source,mesg,sunt)
 c     ---------------------------------
-      IMPLICIT NONE
+      implicit none
       character(*),intent(in) :: source
       character(*),intent(in) :: mesg
       character(*),intent(in),optional :: sunt

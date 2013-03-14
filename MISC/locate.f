@@ -1,7 +1,7 @@
       function locate(xarray,n,x)
 c     -------------------------------
       integer,intent(in) :: n
-      REAL*8,intent(in) :: xarray(n),x
+      real*8,intent(in) :: xarray(n),x
 ****************************************************************
 * search in an ordered table.
 * from numerical recipes

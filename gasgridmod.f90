@@ -1,6 +1,6 @@
-MODULE gasgridmod
+module gasgridmod
 
-  IMPLICIT NONE
+  implicit none
 !***********************************************************************
 ! gas grid structure
 !***********************************************************************
@@ -10,72 +10,72 @@ MODULE gasgridmod
   integer :: gas_nr = 0
   integer :: gas_ng = 0
 
-  REAL*8 :: gas_velout = 0d0 !outer boundary velocity                   
+  real*8 :: gas_velout = 0d0 !outer boundary velocity                   
 
 
-  REAL*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
-  REAL*8,allocatable :: gas_dwl(:) !(gas_ng) wavelength grid bin width
-  REAL*8,allocatable :: gas_cap(:,:) !(gas_nr,gas_ng) Line+Cont extinction coeff
-  REAL*8,allocatable :: gas_sig(:) !(gas_nr) scattering coefficient
-  REAL*8,allocatable :: gas_capgam(:) !(gas_nr) Gamma ray gray opacity
+  real*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
+  real*8,allocatable :: gas_dwl(:) !(gas_ng) wavelength grid bin width
+  real*8,allocatable :: gas_cap(:,:) !(gas_nr,gas_ng) Line+Cont extinction coeff
+  real*8,allocatable :: gas_sig(:) !(gas_nr) scattering coefficient
+  real*8,allocatable :: gas_capgam(:) !(gas_nr) Gamma ray gray opacity
 !
 !-- temperature structure history
-  REAL*8,allocatable :: gas_temphist(:,:) !(gas_nr,tim_nt)
+  real*8,allocatable :: gas_temphist(:,:) !(gas_nr,tim_nt)
 
-  REAL*8 :: gas_lr = 0
-  LOGICAL :: gas_isvelocity
-  INTEGER :: gas_velno, gas_velyes
+  real*8 :: gas_lr = 0
+  logical :: gas_isvelocity
+  integer :: gas_velno, gas_velyes
 
-  REAL*8 :: gas_nidecay = 1.73*(1.6022e-6)  !erg/s/g  !this value is used in the first iteration
+  real*8 :: gas_nidecay = 1.73*(1.6022e-6)  !erg/s/g  !this value is used in the first iteration
 
-  REAL*8 :: gas_emat
+  real*8 :: gas_emat
 
-  REAL*8, DIMENSION(:), ALLOCATABLE :: gas_rarr  !(gas_nr+1)
-  REAL*8, DIMENSION(:), ALLOCATABLE :: gas_drarr !(gas_nr)
-  REAL*8, DIMENSION(:), ALLOCATABLE :: gas_edep, gas_sigmap, gas_fcoef !(gas_nr)
-  REAL*8, DIMENSION(:), ALLOCATABLE :: gas_tempb  !(gas_nr+1)
-  REAL*8, DIMENSION(:,:), ALLOCATABLE :: gas_sigmapg, gas_sigmargleft, gas_sigmargright, gas_emitprobg  !(gas_nr,gas_ng)
-  REAL*8, DIMENSION(:,:), ALLOCATABLE :: gas_sigmal, gas_ppl, gas_sigmar, gas_ppr  !(gas_nr,gas_ng)
+  real*8, dimension(:), allocatable :: gas_rarr  !(gas_nr+1)
+  real*8, dimension(:), allocatable :: gas_drarr !(gas_nr)
+  real*8, dimension(:), allocatable :: gas_edep, gas_sigmap, gas_fcoef !(gas_nr)
+  real*8, dimension(:), allocatable :: gas_tempb  !(gas_nr+1)
+  real*8, dimension(:,:), allocatable :: gas_sigmapg, gas_sigmargleft, gas_sigmargright, gas_emitprobg  !(gas_nr,gas_ng)
+  real*8, dimension(:,:), allocatable :: gas_sigmal, gas_ppl, gas_sigmar, gas_ppr  !(gas_nr,gas_ng)
 
-  TYPE gas_secondary
-    SEQUENCE
-    INTEGER :: nvol
-    REAL*8 :: dr3_34pi, tempkev, emit
-    REAL*8 :: ur, rho, bcoef, nisource
-       REAL*8 :: temp       !gcell temperature
-       REAL*8 :: volr       !gcell volume [rout=1 units]
-       REAL*8 :: vol        !gcell volume [cm^3]
-       REAL*8 :: volcrp     !effective volume (of linked rgrid cells) [cm^3]
-       REAL*8 :: mass       !gcell mass
-       REAL*8 :: mass0fr(-2:gas_nelem) = 0d0  !initial mass fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
-       REAL*8 :: natom      !gcell # atoms
-       REAL*8 :: natom1fr(-2:gas_nelem) = 0d0 !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
-       REAL*8 :: natom0fr(-2:2) = 0d0     !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
-       REAL*8 :: nelec=1d0  !gcell # electrons per atom
+  type gas_secondary
+    sequence
+    integer :: nvol
+    real*8 :: dr3_34pi, tempkev, emit
+    real*8 :: ur, rho, bcoef, nisource
+       real*8 :: temp       !gcell temperature
+       real*8 :: volr       !gcell volume [rout=1 units]
+       real*8 :: vol        !gcell volume [cm^3]
+       real*8 :: volcrp     !effective volume (of linked rgrid cells) [cm^3]
+       real*8 :: mass       !gcell mass
+       real*8 :: mass0fr(-2:gas_nelem) = 0d0  !initial mass fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
+       real*8 :: natom      !gcell # atoms
+       real*8 :: natom1fr(-2:gas_nelem) = 0d0 !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
+       real*8 :: natom0fr(-2:2) = 0d0     !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
+       real*8 :: nelec=1d0  !gcell # electrons per atom
 !-- opacity invalidity flag
-       LOGICAL :: opdirty=.true. !opacity needs recalculation
+       logical :: opdirty=.true. !opacity needs recalculation
 !-- energy reservoir
-       REAL*8 :: engdep     !energy deposited by gamma rays
-  END TYPE gas_secondary
-  TYPE(gas_secondary),POINTER :: gas_vals2(:)
+       real*8 :: engdep     !energy deposited by gamma rays
+  end type gas_secondary
+  type(gas_secondary),pointer :: gas_vals2(:)
 
-  REAL*8 :: gas_eleft, gas_eright, gas_erad, gas_eint, gas_etot, gas_esurf
+  real*8 :: gas_eleft, gas_eright, gas_erad, gas_eint, gas_etot, gas_esurf
 
   ! Picket-fence probabilities
-  REAL*8, DIMENSION(:), ALLOCATABLE :: gas_ppick
+  real*8, dimension(:), allocatable :: gas_ppick
 
-  INTEGER, DIMENSION(:), ALLOCATABLE :: gas_numcensus !(gas_nr)
+  integer, dimension(:), allocatable :: gas_numcensus !(gas_nr)
 
   save
 
-  CONTAINS
+  contains
 
 
-  SUBROUTINE gasgrid_init(nr,ng,nt,lr,velout,isvelocity)
+  subroutine gasgrid_init(nr,ng,nt,lr,velout,isvelocity)
 !-------------------------------------------------------
-    INTEGER,intent(in) :: nr,ng,nt
-    REAL*8,intent(in) :: lr,velout
-    LOGICAL,intent(in) :: isvelocity
+    integer,intent(in) :: nr,ng,nt
+    real*8,intent(in) :: lr,velout
+    logical,intent(in) :: isvelocity
     gas_nr = nr
     gas_ng = ng
     gas_lr = lr
@@ -84,28 +84,28 @@ MODULE gasgridmod
 
 
     ! Setting velocity option
-    IF (isvelocity.EQV..TRUE.) THEN
+    if (isvelocity.eqv..true.) then
        gas_velyes = 1
        gas_velno = 0
-    ELSE
+    else
        gas_velyes = 0
        gas_velno = 1
-    ENDIF
+    endif
 
 !-- primary
-    ALLOCATE(gas_numcensus(gas_nr))  !# census prt_particles per cell
-    ALLOCATE(gas_rarr(gas_nr+1)) !zone edge radii
-    ALLOCATE(gas_drarr(gas_nr))  !radial zone length
-    ALLOCATE(gas_edep(gas_nr))  !energy absorbed by material
-    ALLOCATE(gas_sigmap(gas_nr)) !Planck opacity (gray)
-    ALLOCATE(gas_fcoef(gas_nr))  !Fleck factor
-    ALLOCATE(gas_sigmapg(gas_ng,gas_nr))  !group Planck opacities
-    ALLOCATE(gas_emitprobg(gas_ng,gas_nr))  !Probability of emission in a given zone and group
-    ALLOCATE(gas_sigmal(gas_ng,gas_nr))
-    ALLOCATE(gas_sigmar(gas_ng,gas_nr))
-    ALLOCATE(gas_ppl(gas_ng,gas_nr))  !can potentially be removed
-    ALLOCATE(gas_ppr(gas_ng,gas_nr))  !can potentially be removed
-    ALLOCATE(gas_ppick(gas_ng))  !gas_ng=2 for to temp picket fence verification
+    allocate(gas_numcensus(gas_nr))  !# census prt_particles per cell
+    allocate(gas_rarr(gas_nr+1)) !zone edge radii
+    allocate(gas_drarr(gas_nr))  !radial zone length
+    allocate(gas_edep(gas_nr))  !energy absorbed by material
+    allocate(gas_sigmap(gas_nr)) !Planck opacity (gray)
+    allocate(gas_fcoef(gas_nr))  !Fleck factor
+    allocate(gas_sigmapg(gas_ng,gas_nr))  !group Planck opacities
+    allocate(gas_emitprobg(gas_ng,gas_nr))  !Probability of emission in a given zone and group
+    allocate(gas_sigmal(gas_ng,gas_nr))
+    allocate(gas_sigmar(gas_ng,gas_nr))
+    allocate(gas_ppl(gas_ng,gas_nr))  !can potentially be removed
+    allocate(gas_ppr(gas_ng,gas_nr))  !can potentially be removed
+    allocate(gas_ppick(gas_ng))  !gas_ng=2 for to temp picket fence verification
 
     allocate(gas_wl(gas_ng)) !wavelength grid
     allocate(gas_cap(gas_nr,gas_ng)) !Line+Cont extinction coeff
@@ -116,11 +116,11 @@ MODULE gasgridmod
     allocate(gas_temphist(gas_nr,nt))
     allocate(gas_dwl(gas_ng)) !wavelength grid bin width
 
-    ALLOCATE(gas_tempb(gas_nr+1))  !cell boundary temperature
+    allocate(gas_tempb(gas_nr+1))  !cell boundary temperature
 
-    ALLOCATE(gas_sigmargleft(gas_ng,gas_nr))  !left cell edge group Rosseland opacities
-    ALLOCATE(gas_sigmargright(gas_ng,gas_nr)) !right ||   ||    ||     ||        ||
+    allocate(gas_sigmargleft(gas_ng,gas_nr))  !left cell edge group Rosseland opacities
+    allocate(gas_sigmargright(gas_ng,gas_nr)) !right ||   ||    ||     ||        ||
 
-  END SUBROUTINE gasgrid_init
+  end subroutine gasgrid_init
 
-END MODULE gasgridmod
+end module gasgridmod

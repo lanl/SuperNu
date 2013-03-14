@@ -1,25 +1,25 @@
-MODULE timestepmod
+module timestepmod
 
-  IMPLICIT NONE
+  implicit none
 
-  INTEGER :: tsp_nt = 0  !total # of time steps
-  INTEGER :: tsp_tn  !current time step number
-  REAL*8 :: tsp_texp
-  REAL*8 :: tsp_tcenter
-  REAL*8 :: tsp_time
-  REAL*8 :: tsp_dt
-  REAL*8 :: tsp_alpha = 0d0
+  integer :: tsp_nt = 0  !total # of time steps
+  integer :: tsp_tn  !current time step number
+  real*8 :: tsp_texp
+  real*8 :: tsp_tcenter
+  real*8 :: tsp_time
+  real*8 :: tsp_dt
+  real*8 :: tsp_alpha = 0d0
 
   save
 
-  CONTAINS
+  contains
 
 
-  SUBROUTINE timestep_init(nt, alpha, tfirst, dt)
+  subroutine timestep_init(nt, alpha, tfirst, dt)
 !------------------------------------------------
     use physconstmod
-    INTEGER,intent(in) :: nt
-    REAL*8,intent(in) :: alpha, tfirst, dt
+    integer,intent(in) :: nt
+    real*8,intent(in) :: alpha, tfirst, dt
 !***********************************************************************
 ! set the timestep constants
 !***********************************************************************
@@ -31,12 +31,12 @@ MODULE timestepmod
     tsp_time = 0d0
     tsp_texp = tfirst*pc_day
     tsp_tcenter = tsp_texp + .5d0*tsp_dt
-  END SUBROUTINE timestep_init
+  end subroutine timestep_init
 
 
   subroutine timestep_update(dt)
     implicit none
-    REAL*8,intent(in) :: dt
+    real*8,intent(in) :: dt
 !***********************************************************************
 ! update the timestep variables
 !***********************************************************************
@@ -46,4 +46,4 @@ MODULE timestepmod
     tsp_tcenter = tsp_texp + .5*tsp_dt
   end subroutine timestep_update
     
-END MODULE timestepmod
+end module timestepmod

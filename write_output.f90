@@ -1,33 +1,33 @@
-SUBROUTINE write_output
+subroutine write_output
 
-  USE timestepmod
-  USE gasgridmod
-  USE particlemod
-  IMPLICIT NONE
+  use timestepmod
+  use gasgridmod
+  use particlemod
+  implicit none
 
-  INTEGER :: ir
-  CHARACTER(16), SAVE :: pos='REWIND'
+  integer :: ir
+  character(16), save :: pos='rewind'
 
-  OPEN(UNIT=4,FILE='output.tsp_time',STATUS='UNKNOWN',POSITION=pos)
-  WRITE(4,*) tsp_time
-  CLOSE(4)
+  open(unit=4,file='output.tsp_time',status='unknown',position=pos)
+  write(4,*) tsp_time
+  close(4)
 
-  OPEN(UNIT=4,FILE='output.Lum',STATUS='UNKNOWN',POSITION=pos)
-  WRITE(4,*) gas_eright/tsp_dt
-  CLOSE(4)
+  open(unit=4,file='output.Lum',status='unknown',position=pos)
+  write(4,*) gas_eright/tsp_dt
+  close(4)
 
-  OPEN(UNIT=4,FILE='output.temp',STATUS='UNKNOWN',POSITION=pos)
-  DO ir = 1, gas_nr
-    WRITE(4,'(es16.8)',ADVANCE='NO') gas_vals2(ir)%tempkev
-  ENDDO
-  CLOSE(4)
+  open(unit=4,file='output.temp',status='unknown',position=pos)
+  do ir = 1, gas_nr
+    write(4,'(es16.8)',advance='no') gas_vals2(ir)%tempkev
+  enddo
+  close(4)
 
-  OPEN(UNIT=4,FILE='output.gas_fcoef',STATUS='UNKNOWN',POSITION=pos)
-  DO ir = 1, gas_nr
-    WRITE(4,'(es16.8)',ADVANCE='NO') gas_fcoef(ir)
-  ENDDO
-  CLOSE(4)
+  open(unit=4,file='output.gas_fcoef',status='unknown',position=pos)
+  do ir = 1, gas_nr
+    write(4,'(es16.8)',advance='no') gas_fcoef(ir)
+  enddo
+  close(4)
 
-  pos='APPEND'
+  pos='append'
 
-END SUBROUTINE write_output
+end subroutine write_output

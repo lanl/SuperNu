@@ -1,25 +1,25 @@
       module ionsmod
 c     --------------
-      IMPLICIT NONE
+      implicit none
 c
       integer,private :: nelem=0 !private copy (public in gasgridmod) value is obtained in read_ion_data
       integer :: ion_iionmax !max number of ions an element has
       integer :: ion_nion    !total number of ions of all elements
 c
       type leveldata
-       REAL*8 :: e     !ionization energy [erg]
-       REAL*8 :: q     !partition function (sum)
-       REAL*8 :: n     !number density
+       real*8 :: e     !ionization energy [erg]
+       real*8 :: q     !partition function (sum)
+       real*8 :: n     !number density
 c
        integer :: nlev !number of levels
-       REAL*8,allocatable :: elev(:) !exp(en) excitation energy [erg]
-       REAL*8,allocatable :: glev(:) !degeneration count
+       real*8,allocatable :: elev(:) !exp(en) excitation energy [erg]
+       real*8,allocatable :: glev(:) !degeneration count
       end type leveldata
 c
 c-- element configuration
       type elemconf
        integer :: ni   !number of ions
-       REAL*8 :: ne    !number of electrons (relative to normalized total number of atoms (of this element))
+       real*8 :: ne    !number of electrons (relative to normalized total number of atoms (of this element))
        type(leveldata),allocatable :: i(:)
       end type elemconf
       type(elemconf),allocatable :: ion_el(:) !(nelem)
@@ -27,8 +27,8 @@ c
 c-- ocupation number and g value of all ion's ground states
       type ocground
        integer :: ni   !number of ions
-       REAL*8,allocatable :: oc(:)
-       REAL*8,allocatable :: g(:)
+       real*8,allocatable :: oc(:)
+       real*8,allocatable :: g(:)
       end type ocground
       type(ocground),allocatable :: ion_grndlev(:,:) !(nelem,gas_nr)
 c
@@ -42,7 +42,7 @@ c
 c
       subroutine ion_alloc_grndlev(ncg)
 c     ---------------------------------
-      IMPLICIT NONE
+      implicit none
       integer,intent(in) :: ncg
 ************************************************************************
 * ion_grndlev stores the occupation number density and g value of the ground
@@ -65,7 +65,7 @@ c
 c
       subroutine ion_dealloc
 c     ----------------------
-      IMPLICIT NONE
+      implicit none
 ************************************************************************
 * deallocate the complex ion_el datastructure, and ion_grndlev
 ************************************************************************
@@ -99,10 +99,10 @@ c
 c     --------------------------------------------------------
       use physconstmod
       use miscmod, only:warn
-      IMPLICIT NONE
-      REAL*8,intent(in) :: natomfr(nelem)
-      REAL*8,intent(in) :: temp,ndens
-      REAL*8,intent(inout) :: nelec
+      implicit none
+      real*8,intent(in) :: natomfr(nelem)
+      real*8,intent(in) :: temp,ndens
+      real*8,intent(inout) :: nelec
       integer,intent(out) :: iconv
 ************************************************************************
 * solve LTE equation of state. Solve the Saha equation for all elements
@@ -118,17 +118,17 @@ c     --------------------------------------------------------
 *          where sum(natomfr)==1
 ************************************************************************
       integer,parameter :: nconv=40 !max number of convergence iterations
-      REAL*8,parameter :: acc=1d-8 !accuracy requirment for convergence
+      real*8,parameter :: acc=1d-8 !accuracy requirment for convergence
       integer :: i,ii,iz,iprev
-      REAL*8 :: kti,sahac,sahac2 !constants
-      REAL*8 :: help
+      real*8 :: kti,sahac,sahac2 !constants
+      real*8 :: help
 c
       type nelec_conv !save two values for linear inter/extra-polation
-       REAL*8 :: nel(2) !nelec
-       REAL*8 :: err(2) !error
+       real*8 :: nel(2) !nelec
+       real*8 :: err(2) !error
       end type nelec_conv
       type(nelec_conv) :: nec
-      REAL*8 :: nelec_new,err,dxdy,ynew
+      real*8 :: nelec_new,err,dxdy,ynew
 c
 c-- constant
       kti = 1d0/(pc_kb*temp)
@@ -233,14 +233,14 @@ c
 c
       subroutine saha_nelec(nelec)
 c     -----------------------------------
-      IMPLICIT NONE
-      REAL*8,intent(out) :: nelec
+      implicit none
+      real*8,intent(out) :: nelec
 ************************************************************************
 * solve saha equations, updating the ionization balance, for a given
 * nelec and temperature (both within sahac2) and return a new nelec.
 ************************************************************************
       integer :: ii,iz,nion
-      REAL*8 :: nsum
+      real*8 :: nsum
 c
       do iz=1,nelem
        nion = ion_el(iz)%ni
@@ -291,7 +291,7 @@ c
       subroutine ion_read_data(nelem_in)
 c     ----------------------------------
       use physconstmod
-      IMPLICIT NONE
+      implicit none
       integer,intent(in) :: nelem_in
 ************************************************************************
 * read ionization and level data from 'iondata.dat'. It is temporarily
@@ -301,16 +301,16 @@ c     ----------------------------------
 * exitation/ionization potentials are converted from [cm^-1] to [erg].
 ************************************************************************
       character(8),parameter :: fname='data.ion'
-      REAL*8,parameter :: thres = 800d0 !compress levels with chi closer than this value
+      real*8,parameter :: thres = 800d0 !compress levels with chi closer than this value
       integer :: i,j,iz,ii,icod,nlevel,ilast
       integer :: ilc,nlc   !number of compressed levels
       integer :: istat
-      REAL*8 :: chisum,gsum,help
+      real*8 :: chisum,gsum,help
       character(80) :: line
 c
 c-- raw level data
       type raw_level_data
-       REAL*8 :: chi
+       real*8 :: chi
        character(12) :: label
        integer :: ilevel
        integer :: g

@@ -1,6 +1,6 @@
       module ffxsmod
 c     --------------
-      IMPLICIT NONE
+      implicit none
 ************************************************************************
 * free-free cross sections based on the free-free gaunt factor
 * calculations of Sutherland, 1998, MNRAS, 300, 321.
@@ -15,7 +15,7 @@ c     --------------
 ************************************************************************
       integer,parameter :: ff_nu=81, ff_ngg=41
 c
-      REAL*8 :: ff_gff(ff_nu,ff_ngg)
+      real*8 :: ff_gff(ff_nu,ff_ngg)
 c
       save
 c
@@ -25,14 +25,14 @@ c
 c
       subroutine ffxs_read_data
 c     -------------------------
-      IMPLICIT NONE
+      implicit none
 ************************************************************************
 * Read sutherland data
 ************************************************************************
       character(18),parameter :: fname='data.ff_sutherland'
       integer :: istat
 c
-      REAL*8 :: gff_raw(3,ff_nu,ff_ngg)
+      real*8 :: gff_raw(3,ff_nu,ff_ngg)
 c
 c-- read
       open(4,file=fname,action='read',status='old',

@@ -1,13 +1,13 @@
 !Pure transport routine
 
-SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
+subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
 
-  USE gasgridmod
-  USE timestepmod
-  USE physconstmod
-  USE particlemod
-  USE inputparmod
-  IMPLICIT NONE
+  use gasgridmod
+  use timestepmod
+  use physconstmod
+  use particlemod
+  use inputparmod
+  implicit none
 
 !##################################################
   !This subroutine passes particle parameters as input and modifies
@@ -16,161 +16,161 @@ SUBROUTINE transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   !analogous DDMC diffusion routine through the advance.
 !##################################################
   !
-  INTEGER, INTENT(INOUT) :: z, g, hyparam
-  REAL*8, INTENT(INOUT) :: r, mu, t, E, E0
-  LOGICAL, INTENT(INOUT) :: vacnt
+  integer, intent(inout) :: z, g, hyparam
+  real*8, intent(inout) :: r, mu, t, E, E0
+  logical, intent(inout) :: vacnt
   !
-  INTEGER :: ig, iig
-  REAL*8 :: r1, r2
-  REAL*8 :: db, dcol, dcen, d
-  REAL*8 :: siglabfact, dcollabfact, elabfact 
-  REAL*8 :: rold, P, denom2, told
+  integer :: ig, iig
+  real*8 :: r1, r2
+  real*8 :: db, dcol, dcen, d
+  real*8 :: siglabfact, dcollabfact, elabfact 
+  real*8 :: rold, P, denom2, told
 
   siglabfact = 1.0d0 - gas_velyes*mu*r/pc_c
   dcollabfact = gas_velno*1.0 + gas_velyes*tsp_texp*(1.0d0-mu*r/pc_c)
 
   ! distance to boundary = db
-  IF (z == 1) THEN
-     db = ABS(SQRT(gas_rarr(z+1)**2-(1.0-mu**2)*r**2)-mu*r)
-  ELSEIF (mu < -SQRT(1.0d0-(gas_rarr(z)/r)**2)) THEN
-     db = ABS(SQRT(gas_rarr(z)**2-(1.0d0-mu**2)*r**2)+mu*r)
-  ELSE
-     db = ABS(SQRT(gas_rarr(z+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
-  ENDIF
+  if (z == 1) then
+     db = abs(sqrt(gas_rarr(z+1)**2-(1.0-mu**2)*r**2)-mu*r)
+  elseif (mu < -sqrt(1.0d0-(gas_rarr(z)/r)**2)) then
+     db = abs(sqrt(gas_rarr(z)**2-(1.0d0-mu**2)*r**2)+mu*r)
+  else
+     db = abs(sqrt(gas_rarr(z+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
+  endif
 
   ! distance to collision = dcol
-  IF((1.0d0-gas_fcoef(z))*gas_sigmapg(g,z)>0.0d0) THEN
-     r1 = RAND()
-     dcol = ABS(LOG(r1)/((1.0d0-gas_fcoef(z))*gas_sigmapg(g,z)*dcollabfact))
-  ELSE
+  if((1.0d0-gas_fcoef(z))*gas_sigmapg(g,z)>0.0d0) then
+     r1 = rand()
+     dcol = abs(log(r1)/((1.0d0-gas_fcoef(z))*gas_sigmapg(g,z)*dcollabfact))
+  else
      dcol = 3.0*db
-  ENDIF
+  endif
   ! distance to census = dcen
-  dcen = ABS(pc_c*(tsp_time+tsp_dt-t)/(gas_velno*1.0+gas_velyes*tsp_texp))
+  dcen = abs(pc_c*(tsp_time+tsp_dt-t)/(gas_velno*1.0+gas_velyes*tsp_texp))
   ! minimum distance = d
-  d = MIN(dcol,db,dcen)
+  d = min(dcol,db,dcen)
 
   rold = r
-  r = SQRT((1.0d0-mu**2)*r**2+(d+r*mu)**2)
+  r = sqrt((1.0d0-mu**2)*r**2+(d+r*mu)**2)
   told = t
   t = t + (gas_velno*1.0+gas_velyes*tsp_texp)*d/pc_c
   mu = (rold*mu+d)/r
   elabfact = 1.0d0 - gas_velyes*mu*r/pc_c
-  gas_edep(z)=gas_edep(z)+E*(1.0d0-EXP(-gas_fcoef(z)*gas_sigmapg(g,z)*d))*elabfact
-  E = E*EXP(-gas_fcoef(z)*gas_sigmapg(g,z)*d)
-  IF (E/E0<0.001d0) THEN
-     vacnt = .TRUE.
-     prt_done = .TRUE.
+  gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z)*gas_sigmapg(g,z)*d))*elabfact
+  E = E*exp(-gas_fcoef(z)*gas_sigmapg(g,z)*d)
+  if (E/E0<0.001d0) then
+     vacnt = .true.
+     prt_done = .true.
      gas_edep(z) = gas_edep(z) + E*elabfact
-  ENDIF
+  endif
   
-  IF (d == dcol) THEN
-     !r1 = RAND()
-     !IF (r1 < gas_fcoef(z)) THEN
-     !   vacnt = .TRUE.
-     !   prt_done = .TRUE.
+  if (d == dcol) then
+     !r1 = rand()
+     !if (r1 < gas_fcoef(z)) then
+     !   vacnt = .true.
+     !   prt_done = .true.
      !   gas_edep(z) = gas_edep(z) + E*elabfact
-     !ELSE
-        r1 = RAND()
+     !else
+        r1 = rand()
         mu = 1.0-2.0*r1
         mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
         E = E*elabfact/(1.0-gas_velyes*mu*r/pc_c)
         denom2 = 0.0
-        r1 = RAND()
-        DO ig = 1, gas_ng
+        r1 = rand()
+        do ig = 1, gas_ng
            iig = ig
-           IF ((r1>=denom2).AND.(r1<denom2+gas_emitprobg(ig,z))) EXIT
+           if ((r1>=denom2).and.(r1<denom2+gas_emitprobg(ig,z))) exit
            denom2 = denom2+gas_emitprobg(ig,z)
-        ENDDO
+        enddo
         g = iig
-        IF ((gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0).AND.(in_puretran.EQV..FALSE.)) THEN
+        if ((gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0).and.(in_puretran.eqv..false.)) then
            hyparam = 2
            E = E*(1.0-gas_velyes*r*mu/pc_c)
            E0 = E0*(1.0-gas_velyes*r*mu/pc_c)
-        ELSE
+        else
            hyparam = 1
-        ENDIF
+        endif
         !gas_edep(z)=gas_edep(z)+E*(1.0-gas_velyes*mu*r/pc_c)/(gas_sigmapg(g,z)*tsp_dt*pc_c)
-     !ENDIF
-  ELSEIF (d == db) THEN
-     IF (mu>=0.0d0) THEN
-        IF (z == gas_nr) THEN
-           vacnt = .TRUE.
-           prt_done = .TRUE.
+     !endif
+  elseif (d == db) then
+     if (mu>=0.0d0) then
+        if (z == gas_nr) then
+           vacnt = .true.
+           prt_done = .true.
            gas_eright = gas_eright+E !*elabfact
         ! Checking if DDMC region right
-        ELSEIF ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
-                 .AND.(in_puretran.EQV..FALSE.)) THEN
-           r1 = RAND()
+        elseif ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
+                 .and.(in_puretran.eqv..false.)) then
+           r1 = rand()
            mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
-           P = gas_ppl(g,z+1)*(1.0+1.5*ABS(mu))
-           IF (r1 < P) THEN
+           P = gas_ppl(g,z+1)*(1.0+1.5*abs(mu))
+           if (r1 < P) then
               hyparam = 2
               E = E*elabfact
               E0 = E0*elabfact
               z = z+1
-           ELSE
-              r1 = RAND()
-              r2 = RAND()
-              mu = -MAX(r1,r2)
+           else
+              r1 = rand()
+              r2 = rand()
+              mu = -max(r1,r2)
               mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
-           ENDIF
+           endif
         ! End of check
-        ELSE
+        else
            z = z+1   
-        ENDIF
-     ELSE
-        IF (z==1) THEN
-           IF ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
-                   .AND.(in_puretran.EQV..FALSE.)) THEN
-              r1 = RAND()
+        endif
+     else
+        if (z==1) then
+           if ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
+                   .and.(in_puretran.eqv..false.)) then
+              r1 = rand()
               mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
-              P = gas_ppl(g,z+1)*(1.0+1.5*ABS(mu))
-              IF (r1 < P) THEN
+              P = gas_ppl(g,z+1)*(1.0+1.5*abs(mu))
+              if (r1 < P) then
                  hyparam = 2
                  E = E*elabfact
                  E0 = E0*elabfact
                  z = z+1
-              ELSE
-                 r1 = RAND()
-                 r2 = RAND()
-                 mu = -MAX(r1,r2)
+              else
+                 r1 = rand()
+                 r2 = rand()
+                 mu = -max(r1,r2)
                  mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
-              ENDIF
-           ELSE
+              endif
+           else
               z = z+1
-           ENDIF
-        !IF (z==1) THEN
-        !   vacnt = .TRUE.
-        !   prt_done = .TRUE.
+           endif
+        !if (z==1) then
+        !   vacnt = .true.
+        !   prt_done = .true.
         !   gas_eleft = gas_eleft+E*elabfact
         ! Checking if DDMC region left   
-        ELSEIF ((gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
-             .AND.(in_puretran.EQV..FALSE.)) THEN
-           r1 = RAND()
+        elseif ((gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
+             .and.(in_puretran.eqv..false.)) then
+           r1 = rand()
            mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
-           P = gas_ppr(g,z-1)*(1.0+1.5*ABS(mu))
-           IF (r1 < P) THEN
+           P = gas_ppr(g,z-1)*(1.0+1.5*abs(mu))
+           if (r1 < P) then
               hyparam = 2
               E = E*elabfact
               E0 = E0*elabfact
               z = z-1
-           ELSE
-              r1 = RAND()
-              r2 = RAND()
-              mu = MAX(r1,r2)
+           else
+              r1 = rand()
+              r2 = rand()
+              mu = max(r1,r2)
               mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
-           ENDIF
+           endif
         ! End of check
-        ELSE
+        else
            z = z-1
-        ENDIF
-     ENDIF
-  ELSEIF (d == dcen) THEN
-     prt_done = .TRUE.
+        endif
+     endif
+  elseif (d == dcen) then
+     prt_done = .true.
      gas_numcensus(z) = gas_numcensus(z)+1
      gas_erad = gas_erad + E*elabfact
-  ENDIF
+  endif
 
 
-END SUBROUTINE transport1
+end subroutine transport1

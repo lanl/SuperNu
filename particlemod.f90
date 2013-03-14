@@ -1,28 +1,28 @@
-MODULE particlemod
+module particlemod
 
-  IMPLICIT NONE
+  implicit none
 
   TYPE packet
-     INTEGER :: zsrc, gsrc, rtsrc
-     REAL*8 :: rsrc, musrc, tsrc
-     REAL*8 :: Esrc, Ebirth
-     LOGICAL :: isvacant
-  END TYPE packet
-  TYPE(packet), DIMENSION(:), POINTER :: prt_particles  !(prt_npartmax)
+     integer :: zsrc, gsrc, rtsrc
+     real*8 :: rsrc, musrc, tsrc
+     real*8 :: Esrc, Ebirth
+     logical :: isvacant
+  end TYPE packet
+  TYPE(packet), dimension(:), pointer :: prt_particles  !(prt_npartmax)
 
-  INTEGER :: prt_npartmax, prt_ns
-  INTEGER :: prt_nsurf, prt_nnew
-  INTEGER, DIMENSION(:), ALLOCATABLE :: prt_vacantarr
+  integer :: prt_npartmax, prt_ns
+  integer :: prt_nsurf, prt_nnew
+  integer, dimension(:), allocatable :: prt_vacantarr
 
-  LOGICAL :: prt_done
+  logical :: prt_done
 
   save
 
-  CONTAINS
+  contains
 
-  SUBROUTINE particle_init(npartmax,ns)
+  subroutine particle_init(npartmax,ns)
 !--------------------------------------
-    INTEGER,intent(in) :: npartmax, ns
+    integer,intent(in) :: npartmax, ns
 !***********************************************************************
 ! init particle module
 !***********************************************************************
@@ -33,12 +33,12 @@ MODULE particlemod
     prt_ns = ns
 !
 !-- allocate permanent storage (dealloc in dealloc_all.f)
-    ALLOCATE(prt_particles(prt_npartmax))
+    allocate(prt_particles(prt_npartmax))
 
 !-- Setting all entries of particle array to vacant: loop
-    DO ipart = 1, prt_npartmax
-       prt_particles(ipart)%isvacant=.TRUE.
-    ENDDO
-  END SUBROUTINE particle_init
+    do ipart = 1, prt_npartmax
+       prt_particles(ipart)%isvacant=.true.
+    enddo
+  end subroutine particle_init
 
-END MODULE particlemod
+end module particlemod
