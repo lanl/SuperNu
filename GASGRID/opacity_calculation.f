@@ -77,7 +77,7 @@ c-- iwl pointer
         if(iwl>gas_ng) cycle
 c-- profile function
         phi = (gas_ng-1d0)*wlhelp*(wl0*pc_ang)/pc_c !line profile
-!       write(*,*) 'phi',phi
+!       write(6,*) 'phi',phi
 c-- evaluate cap
         do icg=1,gas_nr
          if(.not.gas_vals2(icg)%opdirty) cycle !opacities are still valid
@@ -135,8 +135,8 @@ c$omp& shared(gas_cap)
      &      sngl(xs*pc_mbarn*grndlev(icg,ii,iz))
          enddo !ie
         enddo !iz
-!       write(*,*) 'wl done:',iw !DEBUG
-!       write(*,*) gas_cap(:,iw) !DEBUG
+!       write(6,*) 'wl done:',iw !DEBUG
+!       write(6,*) gas_cap(:,iw) !DEBUG
        enddo !iw
 c$omp end parallel do
 c

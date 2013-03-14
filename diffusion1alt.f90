@@ -35,7 +35,7 @@ subroutine diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
   E = E*(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
   E0 = E0*(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
   t = t+ddmct
-  !write(*,*) ddmct, tau, tcensus
+  !write(6,*) ddmct, tau, tcensus
   !if (ddmct == tau) then
      !r1 = rand()
      !PR = gas_sigmar(g,z)/denom
@@ -43,7 +43,7 @@ subroutine diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
      !PA = gas_fcoef(z)*gas_sigmapg(g,z)/denom
   if (ddmct == tauL) then
      if (z == 1) then
-        !write(*,*) 'Non-physical left leakage'
+        !write(6,*) 'Non-physical left leakage'
         vacnt = .true.
         prt_done = .true.
         gas_eleft = gas_eleft+E

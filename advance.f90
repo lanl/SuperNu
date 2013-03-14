@@ -94,5 +94,5 @@ subroutine advance
    
      endif
   enddo
-  !write(*,*) transps, difs
+  !write(6,*) transps, difs
 end subroutine advance

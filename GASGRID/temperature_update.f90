@@ -18,7 +18,7 @@ subroutine temperature_update
   do ir = 1, gas_nr
      dtemp = gas_edep(ir)*3.0/(4.0*pc_pi*gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp**3))
      dtemp = (dtemp-tsp_dt*gas_fcoef(ir)*gas_sigmap(ir)*pc_c*gas_vals2(ir)%ur)/gas_vals2(ir)%bcoef
-     !write(*,*) dtemp
+     !write(6,*) dtemp
      gas_vals2(ir)%tempkev = gas_vals2(ir)%tempkev+dtemp
      gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb  !initial guess, may be overwritten by read_temp_str
      !gas_vals2(ir)%ur=dtemp/(tsp_dt*pc_c*gas_sigmap(ir))

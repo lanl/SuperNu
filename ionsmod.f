@@ -170,7 +170,7 @@ c--
 c-- solve saha equations for each element
        call saha_nelec(nelec_new)
        err = nelec/nelec_new - 1d0
-!      write(*,*) iconv,nelec,nelec_new,err,iprev !useful debug output
+!      write(6,*) iconv,nelec,nelec_new,err,iprev !useful debug output
 c
 c-- check for convergence
        if(abs(err) < acc) then

@@ -117,7 +117,7 @@ c
      &  rng_offset,i,MPI_BYTE,
      &  impi0,MPI_COMM_WORLD,ierr)
       deallocate(rng_offset_all)
-!     write(*,'(5i13)') (impi*in_nomp+i,rng_offset(i),i=0,in_nomp-1)
+!     write(6,'(5i13)') (impi*in_nomp+i,rng_offset(i),i=0,in_nomp-1)
 c
       end subroutine bcast_permanent
 c

@@ -26,7 +26,7 @@ subroutine vacancies
      if (ivac == prt_nnew) then
         isfull = .true.
      elseif (ipart == prt_npartmax) then
-        write(*,*) 'Maximum number of prt_particles reached'
+        write(6,*) 'Maximum number of prt_particles reached'
         isfull = .true.
      endif
   enddo

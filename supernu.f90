@@ -115,7 +115,7 @@ program supernu
 !   call write_restart
   enddo
   call CPU_TIME(time_end)
-  write(*,*) 'CPU TIME: ',time_end-time_begin,' seconds'
+  write(6,*) 'CPU TIME: ',time_end-time_begin,' seconds'
 !
 !
 !--
