@@ -16,8 +16,10 @@ c-- flat-structure parameters
       REAL*8 :: in_consttempkev = 0d0  !keV
       LOGICAL :: in_solidni56 = .false.  !pure nickel56 atmosphere
 c
+c-- random number generator
+      INTEGER :: in_seed = 1984117 !starting point of random number generator
+c
 c-- particles
-      INTEGER :: in_seed = 0 !starting point of random number generator
       INTEGER :: in_ns = 0   !# source particles generated per time step
       INTEGER :: in_npartmax = 0 !total # particles allowed
       LOGICAL :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid

@@ -24,9 +24,6 @@ in_ng = 2
 in_ns = 100000
 in_npartmax = 10000000
 
-!-- random seed
-in_seed = 1984117
-
 !-- opacity switches
 in_nobbopac = t
 in_nobfopac = t
