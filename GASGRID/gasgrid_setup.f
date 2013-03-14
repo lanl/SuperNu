@@ -22,27 +22,25 @@ c--
        write(6,*) 'setup spatial grid:'     
        write(6,*) '==========================='
       endif
-
-      !Initial inner most radius
-      gas_rarr(1) = 0.0d0
-      ! Initial grid, cell length, and cell volume generation loop
+c
+c-- grid with unit radius: to be scaled by gas_lr for static, or gas_velout for velocity grid
+      gas_rarr(1) = 0.0d0  !Initial inner most radius
       do ir=1,gas_nr
-       gas_drarr(ir) = gas_lr/real(gas_nr)
+       gas_drarr(ir) = 1d0/real(gas_nr)
        gas_rarr(ir+1) = gas_rarr(ir)+gas_drarr(ir)
        gas_vals2(ir)%dr3_34pi = gas_rarr(ir+1)**3-gas_rarr(ir)**3
-       gas_vals2(ir)%vol = pc_pi4/3d0*gas_vals2(ir)%dr3_34pi!volume in outer radius units
-       gas_vals2(ir)%volr = gas_vals2(ir)%vol/gas_lr**3
+       gas_vals2(ir)%volr = pc_pi4/3d0*gas_vals2(ir)%dr3_34pi!volume in outer radius units
       enddo
-    
-c-- r/tsp_texp = velocity grid (calculated with initial spatial grid and 
-c-- initial expansion tsp_time)
+c
+c-- finish grid depending on whether static or expanding
       if(gas_isvelocity) then
-       gas_rarr = gas_rarr/tsp_texp
-       gas_drarr = gas_drarr/tsp_texp
-       do ir=1,gas_nr
-        gas_vals2(ir)%dr3_34pi = gas_vals2(ir)%dr3_34pi/tsp_texp**3
-       enddo
+       help = gas_velout
+      else
+       help = gas_lr
       endif
+      gas_rarr = gas_rarr*help
+      gas_drarr = gas_drarr*help
+      gas_vals2%dr3_34pi = gas_vals2%dr3_34pi*help**3
 c
 c
 c--

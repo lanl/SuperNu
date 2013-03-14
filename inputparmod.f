@@ -5,6 +5,8 @@ c     ------------------
 ************************************************************************
 * input parameters
 ************************************************************************
+c-- write stdout to file
+      logical :: in_grab_stdout = .false. !write stdout to file
 c-- gas grid
       integer :: in_nr = 0 !# spatial grid in spherical geom
       integer :: in_ng = 0 !# groups
@@ -29,10 +31,8 @@ c-- time step
       real*8 :: in_tfirst = 0d0 !first point in time evolution
       real*8 :: in_tlast = 0d0  !last point in time evolution
       integer :: in_nt = -1   !# time steps
-
 c
 c-- parallelization
-      logical :: in_grab_stdout = .false. !write stdout to file
       integer :: in_nomp = 1       !# openmp threads
 c
 c-- group structure
@@ -117,14 +117,20 @@ c-- check read values
 
       if(in_nr<=0) stop 'in_nr invalid'
       if(in_ng<=0) stop 'in_ng invalid'
-      if(in_lr<=0d0) stop 'in_lr invalid'
+c
+      if(in_isvelocity) then
+       if(in_lr>0d0) stop 'vel grid: use in_velout, not in_lr'
+       if(in_velout<=0d0) stop 'vel grid: use in_velout, not in_lr'
+      else
+       if(in_lr<=0d0) stop 'static grid: use in_lr, not in_velout'
+       if(in_velout>0d0) stop 'static grid: use in_lr, not in_velout'
+      endif
       
       if(in_ns<=0) stop 'in_ns invalid'
       if(in_npartmax<=0) stop 'in_npartmax invalid'
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
 
       if(in_totmass<=0d0) stop 'in_totmass <= 0'
-      if(in_velout<=0d0) stop 'in_velout <= 0'
       if(in_consttempkev<=0d0) stop 'in_consttempkev <= 0'
 c
 c-- check input parameter validity

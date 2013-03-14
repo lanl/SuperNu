@@ -212,7 +212,6 @@ c-- timing output
        if(tsp_tn==1 .and. tsp_tn==1)
      &   write(6,'(1x,a27,3(f8.2,"s"))') 'opacity timing: bb|bf|ff  :',
      &   t_bb(1),t_bf(1),t_ff(1) !}}}
-c
       endif calc_opac !tsp_tn
 c
 c

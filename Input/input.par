@@ -4,25 +4,26 @@
 in_grab_stdout = f
 
 !-- time step
-in_tfirst = 4
-in_tlast = 6
+in_tfirst = 2
+in_tlast = 4
 in_nt = 4
 in_alpha = 1d0
 
 !-- flat structure
 in_consttempkev = 1d-3
-in_totmass = 1e33
-in_velout = 405.0925925925926
 in_solidni56 = t
 
 !-- gas grid settings
-in_lr = 1.4d8
 in_nr = 50
 in_isvelocity = t
+in_velout = 1d9
+in_totmass = 1d33
+
+!-- group settings
 in_ng = 2
 
 !-- particle numbers
-in_ns = 100000
+in_ns = 10000
 in_npartmax = 10000000
 
 !-- opacity switches
