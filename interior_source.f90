@@ -53,7 +53,7 @@ subroutine interior_source
               r2 = rand()
            enddo
            prt_particles(ivac)%rsrc = r0
-           
+
            !Calculating direction cosine (comoving)
            r1 = rand()
            mu0 = 1.0-2.0*r1
@@ -77,15 +77,15 @@ subroutine interior_source
            prt_particles(ivac)%zsrc = ir
            !Setting particle index to not vacant
            prt_particles(ivac)%isvacant = .false.
-           
+
            isnotvacnt = .true.
-           
+
         else
            ir = ir + 1
         endif
      enddo
   enddo
-  
+
   !deallocate(prt_vacantarr)
 
 end subroutine interior_source

@@ -11,7 +11,7 @@ c     ----------------------------
       end subroutine read_restart_file
 c
 c
-c      
+c
       subroutine write_restart_file
 c     -----------------------------
       use gasgridmod

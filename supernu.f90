@@ -44,7 +44,7 @@ program supernu
    call banner
 !-- read runtime parameters
    call read_inputpars
-!-- parse runtime parameters
+!-- parse and verify runtime parameters
    call parse_inputpars(nmpi)
 !
 !-- init random number generator
@@ -63,14 +63,14 @@ program supernu
    call gasgrid_init(in_nr,in_ng,in_nt,in_lr,in_velout,in_isvelocity)
    call gasgrid_setup
 !-- read initial temperature structure from file
-   !call read_restart_file
+!   call read_restart_file
 !-- hard coded temperature structure
-   !do ir = 1, gas_nr
-   !  if (gas_vals2(ir)%tempkev<1.e-6) then
-   !    gas_vals2(ir)%tempkev = 1.e-6
-   !  endif
-   !enddo
-!
+!   do ir = 1, gas_nr
+!     if (gas_vals2(ir)%tempkev<1.e-6) then
+!       gas_vals2(ir)%tempkev = 1.e-6
+!     endif
+!   enddo
+
 !-- READ DATA
 !-- read ion and level data
    call ion_read_data(gas_nelem)  !ion and level data
@@ -88,8 +88,7 @@ program supernu
 
 
   ! Beginning time step loop
-  call CPU_TIME(time_begin)
-  do tsp_tn = 1, tsp_nt 
+  do tsp_tn = 1, tsp_nt
     write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
     !Calculating opacities (for IMC(transport) and DDMC(diffusion))
     call gasgrid_update
@@ -106,16 +105,13 @@ program supernu
     deallocate(prt_vacantarr)
     !Advancing prt_particles to update radiation field
     call advance
-    !Updating material state
+
     call temperature_update
-    !Updating elapsed tsp_time and expansion tsp_time
-    call timestep_update(dt)
-    !Writing data to files
+    call timestep_update(dt) !Updating elapsed tsp_time and expansion tsp_time
+
     call write_output
 !   call write_restart
   enddo
-  call CPU_TIME(time_end)
-  write(6,*) 'CPU TIME: ',time_end-time_begin,' seconds'
 !
 !
 !--

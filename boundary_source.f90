@@ -23,7 +23,7 @@ subroutine boundary_source
         prt_particles(ivac)%gsrc = 2
      endif
      ig = prt_particles(ivac)%gsrc
-     
+
      r1 = rand()
      r2 = rand()
      prt_particles(ivac)%musrc = 1.0*max(r1,r2)
@@ -54,7 +54,7 @@ subroutine boundary_source
         prt_particles(ivac)%Ebirth = P*Esurfpart
         prt_particles(ivac)%rtsrc = 2
      endif
-     
+
      prt_particles(ivac)%isvacant = .false.
 
   enddo

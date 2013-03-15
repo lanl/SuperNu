@@ -73,7 +73,7 @@ c     ---------------------------
 * Version 2. March 25, 1996.
 * Written by D. A. Verner, verner@pa.uky.edu
 * Inner-shell ionization energies of some low-ionized species are slightly
-* improved to fit smoothly the experimental inner-shell ionization energies 
+* improved to fit smoothly the experimental inner-shell ionization energies
 * of neutral atoms.
 ****************************************************************************
 * This subroutine calculates partial photoionization cross sections
@@ -83,13 +83,13 @@ c     ---------------------------
 *    Verner, Ferland, Korista, Yakovlev, 1996, ApJ, in press.
 * Inner shells of all elements, and outer shells of the non-OP elements:
 *    Verner and Yakovlev, 1995, A&AS, 109, 125
-* Input parameters:  nz - atomic number from 1 to 30 (integer) 
+* Input parameters:  nz - atomic number from 1 to 30 (integer)
 *                    ne - number of electrons from 1 to iz (integer)
 *                    !is - shell number (integer)
-*                    e - photon energy, eV 
+*                    e - photon energy, eV
 * Output parameter:  xs - photoionization cross section, Mb
 * Shell numbers:
-* 1 - 1s, 2 - 2s, 3 - 2p, 4 - 3s, 5 - 3p, 6 - 3d, 7 - 4s. 
+* 1 - 1s, 2 - 2s, 3 - 2p, 4 - 3s, 5 - 3p, 6 - 3d, 7 - 4s.
 * If a species in the ground state has no electrons on the given shell,
 * the subroutine returns xs=0.
 ****************************************************************************
@@ -132,7 +132,7 @@ c
       do is=1,nout
        if(e<ph1(1,is,nz,ne)) cycle
        if(is<nout .and. is>nint .and. e<einn) cycle
-c-- 
+c--
        if(is<=nint .or. e>=einn) then
         p1 = -ph1(5,is,nz,ne)
         y = e/ph1(2,is,nz,ne)

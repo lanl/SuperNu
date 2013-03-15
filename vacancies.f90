@@ -30,5 +30,5 @@ subroutine vacancies
         isfull = .true.
      endif
   enddo
-  
+
 end subroutine vacancies

@@ -45,5 +45,5 @@ module timestepmod
     tsp_texp = tsp_texp+tsp_dt
     tsp_tcenter = tsp_texp + .5*tsp_dt
   end subroutine timestep_update
-    
+
 end module timestepmod

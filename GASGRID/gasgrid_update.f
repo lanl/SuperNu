@@ -19,27 +19,18 @@ c     -----------------------
 * - opacities
 ************************************************************************
       logical :: do_output
-      integer :: i,iw,j,ir,k
-      real*8 :: help
+      integer :: i,j,ir
       real*8 :: natom1fr(gas_nr,-2:-1) !todo: memory storage order?
       real*8 :: natom2fr(gas_nr,-2:-1)
-      real*8 :: capbcum(gas_ng)
 c-- gamma opacity
       real*8,parameter :: ye=.5d0 !todo: compute this value
 c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
 c-- distribute packets
-      integer :: mpacket !# packets to generate on each mpi rank
-      integer :: nlower  !# ranks with 1 packet less
-      real*8 :: enemit(gas_nr)
       real*8 :: chiross(gas_nr),capplanck(gas_nr)
 c-- timing
       real :: t0,t1
-c-- Ryan's nuclear decay
-      real*8,parameter :: tauni = 8.8d0*86400.0d0
-      real*8,parameter :: tauco = 111.3d0*86400.0d0
-      real*8 :: expfact
 c
 c-- begin
 c
@@ -101,7 +92,7 @@ c=================
       gas_erad = 0.0   !Total radiation energy
       gas_eint = 0.0   !Total internal energy
 c
-      return !DEBUG
+!     return !DEBUG
 c
 c
 c-- solve LTE EOS
@@ -129,7 +120,7 @@ c-- thomson scattering
        gas_sig = cthomson*gas_vals2(:)%nelec*
      &   gas_vals2(:)%natom/gas_vals2(:)%volcrp
 c
-c-- 
+c--
        call opacity_calculation
 c
 c-- write out opacities (additional gray opacity not included!)

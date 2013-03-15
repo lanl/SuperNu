@@ -90,7 +90,7 @@ subroutine diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
      else
         denom2 = gas_sigmap(z)-gas_ppick(g)*gas_sigmapg(g,z)
         do ig = 1, gas_ng
-           PDFg(ig) = gas_emitprobg(ig,z)*gas_sigmap(z)/denom2 
+           PDFg(ig) = gas_emitprobg(ig,z)*gas_sigmap(z)/denom2
         enddo
         PDFg(g)=0.0
         denom2 = 0.0

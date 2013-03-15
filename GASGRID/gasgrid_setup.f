@@ -16,10 +16,10 @@ c
 c--
       write(6,*)
       if(gas_isvelocity) then
-       write(6,*) 'setup velocity grid:'     
+       write(6,*) 'setup velocity grid:'
        write(6,*) '==========================='
       else
-       write(6,*) 'setup spatial grid:'     
+       write(6,*) 'setup spatial grid:'
        write(6,*) '==========================='
       endif
 c
@@ -45,7 +45,7 @@ c
 c
 c--
       write(6,*)
-      write(6,*) 'setup gas grid:'     
+      write(6,*) 'setup gas grid:'
       write(6,*) '==========================='
 c
 c-- initialize material (gas) properties
@@ -128,7 +128,7 @@ c
 c-- convert to natoms
        do j=1,gas_nelem
         gas_vals2(i)%natom1fr(j) = gas_vals2(i)%natom1fr(j)/
-     &    (elem_data(j)%m*pc_amu) 
+     &    (elem_data(j)%m*pc_amu)
        enddo !j
 c-- special care for ni56 and co56
        help = elem_data(26)%m*pc_amu

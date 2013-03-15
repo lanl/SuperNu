@@ -51,7 +51,7 @@ subroutine xsections
         gas_emitprobg(ig,ir) = gas_ppick(ig)*gas_sigmapg(ig,ir)/gas_sigmap(ir)
      enddo
   enddo
-  
+
   !Calculating group Rosseland opacities: loop
   do ir = 1, gas_nr
      gas_sigmargleft(1,ir) = 0.10*gas_vals2(ir)%rho !/gas_tempb(ir)**3
@@ -89,7 +89,7 @@ subroutine xsections
 
   !Calculating DDMC(-to-IMC) leakage opacities (Densmore, 2007, 2012): loop
   do ir = 1, gas_nr
-     do ig = 1, gas_ng  
+     do ig = 1, gas_ng
         !Computing left-leakage opacities
         if (ir==1) then
            !gas_sigmal(ig,ir)=0.5*gas_ppl(ig,ir)/gas_drarr(ir)
@@ -101,7 +101,7 @@ subroutine xsections
            gas_sigmal(ig,ir)=gas_sigmal(ig,ir)/(gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp))
         else
            tt = gas_sigmargleft(ig,ir)*gas_drarr(ir)+gas_sigmargright(ig,ir-1)*gas_drarr(ir-1)
-           !gas_sigmal(ig,ir) = 2.0/(3.0*gas_drarr(ir)) 
+           !gas_sigmal(ig,ir) = 2.0/(3.0*gas_drarr(ir))
            gas_sigmal(ig,ir) = (2.0*gas_rarr(ir)**2)/(gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp**2))
            gas_sigmal(ig,ir) = gas_sigmal(ig,ir)/tt
         endif
@@ -122,5 +122,5 @@ subroutine xsections
         endif
      enddo
   enddo
-  
+
 end subroutine xsections

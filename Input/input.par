@@ -28,7 +28,7 @@ in_npartmax = 10000000
 
 !-- opacity switches
 in_nobbopac = t
-in_nobfopac = t
-in_noffopac = t
+in_nobfopac = f
+in_noffopac = f
 
 &end
