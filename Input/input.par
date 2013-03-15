@@ -21,6 +21,10 @@ in_l0 = 1d0
 in_lr = 0.25d0
 in_totmass = 1d33
 in_templ0 = 1d0
+!-- power law opacity values
+in_sigcoef = 1000d0
+in_sigtpwr = -3d0
+in_sigrpwr = 0d0
 
 !-- group settings
 in_ng = 2

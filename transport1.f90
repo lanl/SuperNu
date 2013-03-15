@@ -30,12 +30,20 @@ subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   dcollabfact = gas_velno*1.0 + gas_velyes*tsp_texp*(1.0d0-mu*r/pc_c)
 
   ! distance to boundary = db
-  if (z == 1) then
-     db = abs(sqrt(gas_rarr(z+1)**2-(1.0-mu**2)*r**2)-mu*r)
-  elseif (mu < -sqrt(1.0d0-(gas_rarr(z)/r)**2)) then
-     db = abs(sqrt(gas_rarr(z)**2-(1.0d0-mu**2)*r**2)+mu*r)
+  if(gas_isshell) then
+     if (mu < -sqrt(1.0d0-(gas_rarr(z)/r)**2)) then
+        db = abs(sqrt(gas_rarr(z)**2-(1.0d0-mu**2)*r**2)+mu*r)
+     else
+        db = abs(sqrt(gas_rarr(z+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
+     endif
   else
-     db = abs(sqrt(gas_rarr(z+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
+     if (z == 1) then
+        db = abs(sqrt(gas_rarr(z+1)**2-(1.0-mu**2)*r**2)-mu*r)
+     elseif (mu < -sqrt(1.0d0-(gas_rarr(z)/r)**2)) then
+        db = abs(sqrt(gas_rarr(z)**2-(1.0d0-mu**2)*r**2)+mu*r)
+     else
+        db = abs(sqrt(gas_rarr(z+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
+     endif
   endif
 
   ! distance to collision = dcol
@@ -121,30 +129,31 @@ subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         endif
      else
         if (z==1) then
-           if ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
-                   .and.(in_puretran.eqv..false.)) then
-              r1 = rand()
-              mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
-              P = gas_ppl(g,z+1)*(1.0+1.5*abs(mu))
-              if (r1 < P) then
-                 hyparam = 2
-                 E = E*elabfact
-                 E0 = E0*elabfact
-                 z = z+1
-              else
-                 r1 = rand()
-                 r2 = rand()
-                 mu = -max(r1,r2)
-                 mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
-              endif
+           if(gas_isshell) then
+              vacnt = .true.
+              prt_done = .true.
+              gas_eleft = gas_eleft+E*elabfact
            else
-              z = z+1
+              if ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
+                   .and.(in_puretran.eqv..false.)) then
+                 r1 = rand()
+                 mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
+                 P = gas_ppl(g,z+1)*(1.0+1.5*abs(mu))
+                 if (r1 < P) then
+                    hyparam = 2
+                    E = E*elabfact
+                    E0 = E0*elabfact
+                    z = z+1
+                 else
+                    r1 = rand()
+                    r2 = rand()
+                    mu = -max(r1,r2)
+                    mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
+                 endif
+              else
+                 z = z+1
+              endif
            endif
-        !if (z==1) then
-        !   vacnt = .true.
-        !   prt_done = .true.
-        !   gas_eleft = gas_eleft+E*elabfact
-        ! Checking if DDMC region left
         elseif ((gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()

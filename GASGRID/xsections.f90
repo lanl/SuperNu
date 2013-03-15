@@ -39,10 +39,10 @@ subroutine xsections
 
   !Calculating grey Planck and gouped Planck opacities: loop
   do ir = 1, gas_nr
-     gas_sigmapg(1,ir) = 0.10*gas_vals2(ir)%rho !/gas_vals2(ir)%tempkev**3
-     gas_sigmapg(2,ir) = 0.10*gas_vals2(ir)%rho !/gas_vals2(ir)%tempkev**3
+     gas_sigmapg(1,ir) = gas_sigcoef*gas_vals2(ir)%tempkev**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
+     gas_sigmapg(2,ir) = gas_sigcoef*gas_vals2(ir)%tempkev**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
      do ig = 3, gas_ng
-        gas_sigmapg(ig,ir) = 1.0 !/gas_vals2(ir)%tempkev**3
+        gas_sigmapg(ig,ir) = 1.0
      enddo
      gas_sigmap(ir)=0.0
      do ig = 1, gas_ng
@@ -58,15 +58,15 @@ subroutine xsections
 
   !Calculating group Rosseland opacities: loop
   do ir = 1, gas_nr
-     gas_sigmargleft(1,ir) = 0.10*gas_vals2(ir)%rho !/gas_tempb(ir)**3
-     gas_sigmargleft(2,ir) = 0.10*gas_vals2(ir)%rho !/gas_tempb(ir)**3
+     gas_sigmargleft(1,ir) = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
+     gas_sigmargleft(2,ir) = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
      do ig = 3, gas_ng
-        gas_sigmargleft(ig,ir) = 1.0 !/gas_tempb(ir)**3
+        gas_sigmargleft(ig,ir) = 1.0
      enddo
-     gas_sigmargright(1,ir) = 0.10*gas_vals2(ir)%rho !/gas_tempb(ir+1)**3
-     gas_sigmargright(2,ir) = 0.10*gas_vals2(ir)%rho !/gas_tempb(ir+1)**3
+     gas_sigmargright(1,ir) = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
+     gas_sigmargright(2,ir) = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
      do ig = 3, gas_ng
-        gas_sigmargright(ig,ir) = 1.0 !/gas_tempb(ir+1)**3
+        gas_sigmargright(ig,ir) = 1.0
      enddo
   enddo
 
