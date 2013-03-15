@@ -11,7 +11,6 @@ subroutine boundary_source
   real*8 :: r1, r2, P, mu0, r0, Esurfpart
 
   Esurfpart = gas_esurf/real(prt_nsurf)
-  gas_einp = gas_einp+gas_esurf
 
   do ipart = 1, prt_nsurf
      ivac = prt_vacantarr(ipart)

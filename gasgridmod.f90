@@ -75,7 +75,7 @@ module gasgridmod
   subroutine gasgrid_init(nr,ng,nt,l0,lr,velout,isshell,isvelocity,templ0)
 !-------------------------------------------------------
     integer,intent(in) :: nr,ng,nt
-    real*8,intent(in) :: lr,velout,l0
+    real*8,intent(in) :: lr,velout,l0,templ0
     logical,intent(in) :: isvelocity,isshell
     gas_nr = nr
     gas_ng = ng
