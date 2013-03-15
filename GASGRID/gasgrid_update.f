@@ -20,6 +20,7 @@ c     -----------------------
 ************************************************************************
       logical :: do_output
       integer :: i,j,ir
+      real*8 :: help
       real*8 :: natom1fr(gas_nr,-2:-1) !todo: memory storage order?
       real*8 :: natom2fr(gas_nr,-2:-1)
 c-- gamma opacity
@@ -73,8 +74,13 @@ c
 c
 c-- update volume and density
 c============================
+      if(gas_isvelocity) then
+       help = gas_velout*tsp_texp
+      else
+       help = gas_lr
+      endif
       !gas_vals2%vol = gas_vals2%volr*(gas_velout*tsp_tcenter)**3 !volume in cm^3!{{{
-      gas_vals2%vol = gas_vals2%volr*(gas_velout*tsp_texp)**3 !volume in cm^3
+      gas_vals2%vol = gas_vals2%volr*help**3 !volume in cm^3
       gas_vals2%volcrp = gas_vals2%vol !effective volume in cm^3
 c
 c-- density
