@@ -165,7 +165,11 @@ c-- gcell loop
          iu = nint(10d0*(log10(u) + 4d0)) + 1
 c
          help = c1*sqrt(hckt(icg))*(1d0 - exp(-u))*wl**3*hlparr(icg)
-         if(iu<1 .or. iu>ff_nu) stop 'opacity_calc: ff: iu wrong'
+         if(iu<1 .or. iu>ff_nu) then
+          call warn('opacity_calc','ff: iu out of data limit')
+          iu = min(iu,ff_nu)
+          iu = max(iu,1)
+         endif
 c-- element loop
          cap8 = 0d0
          do iz=1,gas_nelem

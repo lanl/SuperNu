@@ -12,7 +12,7 @@ c-- local variables
      &  'abcdefghijklmnopqrstuvwxyz'
       character(*),parameter :: upper_case =
      &  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-c      
+c
       output_string = input_string
       do i=1,len(output_string)
        n = index(upper_case,output_string(i:i))

@@ -23,7 +23,7 @@ subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   integer :: ig, iig
   real*8 :: r1, r2
   real*8 :: db, dcol, dcen, d
-  real*8 :: siglabfact, dcollabfact, elabfact 
+  real*8 :: siglabfact, dcollabfact, elabfact
   real*8 :: rold, P, denom2, told
 
   siglabfact = 1.0d0 - gas_velyes*mu*r/pc_c
@@ -63,7 +63,7 @@ subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
      prt_done = .true.
      gas_edep(z) = gas_edep(z) + E*elabfact
   endif
-  
+
   if (d == dcol) then
      !r1 = rand()
      !if (r1 < gas_fcoef(z)) then
@@ -117,7 +117,7 @@ subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            endif
         ! End of check
         else
-           z = z+1   
+           z = z+1
         endif
      else
         if (z==1) then
@@ -144,7 +144,7 @@ subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         !   vacnt = .true.
         !   prt_done = .true.
         !   gas_eleft = gas_eleft+E*elabfact
-        ! Checking if DDMC region left   
+        ! Checking if DDMC region left
         elseif ((gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()

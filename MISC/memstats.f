@@ -11,7 +11,7 @@ c     -------------------------
 c
 c-- /proc/self/stat file data
       type statdata
-       integer :: pid        !%d !The process ID. 
+       integer :: pid        !%d !The process ID.
        character(commwidth) :: comm !%s !The filename of the executable, in parentheses. This is visible whether or not the executable is swapped out.
        character :: state    !%c !One character from the string "RSDZTW" where R is running, S is sleeping in an interruptible wait, D is waiting in uninterruptible disk sleep, Z is zombie, T is traced or stopped (on a signal), and W is paging.
        integer :: ppid       !%d !The PID of the parent.
@@ -30,11 +30,11 @@ c-- /proc/self/stat file data
        integer :: cstime   !%ld !The number of jiffies that this process's waited-for children have been scheduled in kernel mode.
        integer :: priority !%ld !The standard nice value, plus fifteen. The value is never negative in the kernel.
        integer :: nice     !%ld !The nice value ranges from 19 (nicest) to -19 (not nice to others).
-       integer :: nul      !%ld !This value is hard coded to 0 as a placeholder for a removed field. 
+       integer :: nul      !%ld !This value is hard coded to 0 as a placeholder for a removed field.
        integer :: itrealvalue !%ld !The time in jiffies before the next SIGALRM is sent to the process due to an interval timer.
        integer :: starttime!%lu !The time in jiffies the process started after system boot.
        integer :: vsize    !%lu !Virtual memory size in bytes.
-       integer :: rss      !%ld !Resident Set Size: number of pages the process has in real memory, minus 3 for administrative purposes. This is just the pages which count towards text, data, or stack space. This does not include pages which have not been demand-loaded in, or which are swapped out. 
+       integer :: rss      !%ld !Resident Set Size: number of pages the process has in real memory, minus 3 for administrative purposes. This is just the pages which count towards text, data, or stack space. This does not include pages which have not been demand-loaded in, or which are swapped out.
       end type statdata
       type(statdata) :: stat
 c

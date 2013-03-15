@@ -7,10 +7,10 @@ c     --------------
 *
 * Cloned from the Chianti atomic database.
 *
-* Note that Sutherland's Eq.(15) has units of erg/cm^3/s. Comparing 
-* with Rybicki & Lightman's Eq.5.14(a) (in their book 'Radiative 
-* Processes in Astrophysics'), suggests that Sutherland's units 
-* should be erg/cm^3/s/sr/Hz. We are assuming the latter to be 
+* Note that Sutherland's Eq.(15) has units of erg/cm^3/s. Comparing
+* with Rybicki & Lightman's Eq.5.14(a) (in their book 'Radiative
+* Processes in Astrophysics'), suggests that Sutherland's units
+* should be erg/cm^3/s/sr/Hz. We are assuming the latter to be
 * correct in this routine.
 ************************************************************************
       integer,parameter :: ff_nu=81, ff_ngg=41

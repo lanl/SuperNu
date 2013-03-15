@@ -14,11 +14,10 @@ subroutine sourcenumbers
 !##################################################
 
   integer :: ir
-  real*8 :: sou
   ! gas_esurf for any new prt_particles from a surface source
   ! prt_nsurf = number of surface prt_particles
   ! prt_nnew = total number of new prt_particles~=prt_ns
-  gas_esurf = 0.0d0
+  gas_esurf = 0d0
 
   !gas_esurf = 0.25*tsp_dt*pc_c*a_coef*(4.0*pc_pi*gas_rarr(1)**2)*gas_tempb(1)**4
   gas_etot = gas_esurf
@@ -35,11 +34,11 @@ subroutine sourcenumbers
   ! Calculating number of domain inner boundary particles (if any)
   prt_nsurf=nint(gas_esurf*prt_ns/gas_etot)+1
   prt_nnew = prt_nsurf
-  
-  ! Calculating number of particles per cell (gas_vals2%nvol): loop 
+
+  ! Calculating number of particles per cell (gas_vals2%nvol): loop
   do ir = 1, gas_nr
      gas_vals2(ir)%nvol=nint(gas_vals2(ir)%emit*prt_ns/gas_etot)+1
      prt_nnew = prt_nnew + gas_vals2(ir)%nvol
   enddo
-  
+
 end subroutine sourcenumbers

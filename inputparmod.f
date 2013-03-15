@@ -102,7 +102,7 @@ c$    use omp_lib
       integer :: istat
 c$    integer :: i
 c
-c-- redirect stdout to file if chosen so
+c-- redirect stdout to file if selected
       if(in_grab_stdout) then!{{{
        write(6,*) 'write stdout to fort.6'
        open(6,file='fort.6',action='write',status='replace',recl=2000,
@@ -111,10 +111,14 @@ c-- redirect stdout to file if chosen so
        call banner
       endif!}}}
 c
-c-- check read values
+c-- dump namelist to stdout
       write(6,*) 'namelist read:'
       write(6,nml=inputpars)
-
+c
+c-- check input parameter validity
+      if(in_nomp<0) stop 'in_nomp invalid'!{{{
+      if(in_nomp==0 .and. nmpi>1) stop 'no in_nomp==0 in mpi mode'
+c
       if(in_nr<=0) stop 'in_nr invalid'
       if(in_ng<=0) stop 'in_ng invalid'
 c
@@ -125,17 +129,13 @@ c
        if(in_lr<=0d0) stop 'static grid: use in_lr, not in_velout'
        if(in_velout>0d0) stop 'static grid: use in_lr, not in_velout'
       endif
-      
+c
       if(in_ns<=0) stop 'in_ns invalid'
       if(in_npartmax<=0) stop 'in_npartmax invalid'
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
-
+c
       if(in_totmass<=0d0) stop 'in_totmass <= 0'
       if(in_consttempkev<=0d0) stop 'in_consttempkev <= 0'
-c
-c-- check input parameter validity
-      if(in_nomp<0) stop 'in_nomp invalid'!{{{
-      if(in_nomp==0 .and. nmpi>1) stop 'no in_nomp==0 in mpi mode'
 c
       if(in_nt<1) stop 'in_nt invalid'
       if(in_tfirst<=0d0) stop 'in_tfirst invalid'
@@ -155,9 +155,9 @@ c
       endif
       if(in_epsline<0d0 .or. in_epsline>1d0) stop 'in_epsline invalid'
 c
-      if(in_nobbopac) call warn('read_inputpars','ff opacity disabled!')
+      if(in_nobbopac) call warn('read_inputpars','bb opacity disabled!')
       if(in_nobfopac) call warn('read_inputpars','bf opacity disabled!')
-      if(in_noffopac) call warn('read_inputpars','bb opacity disabled!')
+      if(in_noffopac) call warn('read_inputpars','ff opacity disabled!')
 c
       if(trim(in_opacdump)=='off') then
       elseif(trim(in_opacdump)=='one') then

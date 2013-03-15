@@ -85,8 +85,8 @@ c
        call system_clock(icount)
       endif
 c
-      t = icount*tick
-      if(icount<icount_prev) t = t + tick*imax
+      t = real(icount*tick)
+      if(icount<icount_prev) t = t + real(tick*imax)
       icount_prev = icount
 c
       end subroutine time
