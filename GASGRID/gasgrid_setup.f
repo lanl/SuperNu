@@ -23,7 +23,7 @@ c--
        write(6,*) '==========================='
       endif
 c
-c-- grid with unit radius: to be scaled by gas_lr for static, or gas_velout for velocity grid
+c-- grid with unit radius: scaled up below by gas_lr for static, or gas_velout for velocity grid
       gas_rarr(1) = 0.0d0  !Initial inner most radius
       do ir=1,gas_nr
        gas_drarr(ir) = 1d0/real(gas_nr)
@@ -32,7 +32,7 @@ c-- grid with unit radius: to be scaled by gas_lr for static, or gas_velout for 
        gas_vals2(ir)%volr = pc_pi4/3d0*gas_vals2(ir)%dr3_34pi!volume in outer radius units
       enddo
 c
-c-- finish grid depending on whether static or expanding
+c-- set grid size to velout or lr depending on expanding or static
       if(gas_isvelocity) then
        help = gas_velout
       else

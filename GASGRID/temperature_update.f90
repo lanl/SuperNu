@@ -16,7 +16,8 @@ subroutine temperature_update
   real*8,parameter :: tauco = 111.3d0*86400.0d0
 
   do ir = 1, gas_nr
-     dtemp = gas_edep(ir)*3.0/(4.0*pc_pi*gas_vals2(ir)%dr3_34pi*(gas_velno*1.0 + gas_velyes*tsp_texp**3))
+!old dtemp = gas_edep(ir)*3.0/(4.0*pc_pi*gas_vals2(ir)%dr3_34pi*(gas_velno*1.0 + gas_velyes*tsp_texp**3))
+     dtemp = gas_edep(ir)/gas_vals2(ir)%vol !new
      dtemp = (dtemp - tsp_dt*gas_fcoef(ir)*gas_sigmap(ir)*pc_c*gas_vals2(ir)%ur)/gas_vals2(ir)%bcoef
      !write(6,*) dtemp
      gas_vals2(ir)%tempkev = gas_vals2(ir)%tempkev + dtemp
@@ -25,7 +26,7 @@ subroutine temperature_update
      !gas_vals2(ir)%tempkev = (gas_vals2(ir)%ur/pc_acoef)**(0.25d0)
      !gas_vals2(ir)%bcoef = 2.0*pc_acoef*gas_vals2(ir)%tempkev**3
      gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%tempkev**4
-     !gas_edep(ir) = gas_edep(ir)*3.0/(4.0*pc_pi*gas_vals2(ir)%dr3_34pi*(gas_velno*1.0 + gas_velyes*tsp_texp**3))
+     !gas_edep(ir) = gas_edep(ir)/gas_vals2(ir)%vol
   enddo
 
 end subroutine temperature_update
