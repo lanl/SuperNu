@@ -17,6 +17,9 @@ c-- gas grid
       real*8 :: in_velout = 0d0  !cm/s
       real*8 :: in_totmass = 0d0  !g
       real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
+      real*8 :: in_sigcoef = 0d0 !power law opacity coefficient
+      real*8 :: in_sigtpwr = 0d0 !power law opacity temperature exponent
+      real*8 :: in_sigrpwr = 0d0 !power law opacity density exponent
 c-- flat-structure parameters
       real*8 :: in_consttempkev = 0d0  !keV
       logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
