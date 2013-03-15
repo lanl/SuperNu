@@ -24,7 +24,12 @@ c--
       endif
 c
 c-- grid with unit radius: to be scaled by gas_lr for static, or gas_velout for velocity grid
-      gas_rarr(1) = 0.0d0  !Initial inner most radius
+      if(gas_isshell) then
+         gas_rarr(1) = gas_l0
+      else
+         gas_rarr(1) = 0.0d0    !Initial inner most radius
+      endif
+         
       do ir=1,gas_nr
        gas_drarr(ir) = 1d0/real(gas_nr)
        gas_rarr(ir+1) = gas_rarr(ir)+gas_drarr(ir)

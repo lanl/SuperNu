@@ -19,7 +19,7 @@ subroutine sourcenumbers
   ! prt_nnew = total number of new prt_particles~=prt_ns
   gas_esurf = 0d0
 
-  !gas_esurf = 0.25*tsp_dt*pc_c*a_coef*(4.0*pc_pi*gas_rarr(1)**2)*gas_tempb(1)**4
+  gas_esurf = 0.25*tsp_dt*pc_c*a_coef*(4.0*pc_pi*gas_rarr(1)**2)*gas_tempb(1)**4
   gas_etot = gas_esurf
 
   ! Calculating fictitious emission energy per cell: loop

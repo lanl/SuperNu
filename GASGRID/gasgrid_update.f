@@ -92,7 +92,7 @@ c=================
       gas_erad = 0.0   !Total radiation energy
       gas_eint = 0.0   !Total internal energy
 c
-!     return !DEBUG
+      return !DEBUG
 c
 c
 c-- solve LTE EOS

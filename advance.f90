@@ -71,7 +71,12 @@ subroutine advance
         if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
            rsrc = rsrc*tsp_texp/(tsp_texp + alph2*tsp_dt)
            if (rsrc < gas_rarr(zsrc)) then
-              zsrc = zsrc - 1
+              if(gas_isshell.and.zsrc==1) then
+                 prt_done = .true.
+                 isvacant = .true.
+              else
+                 zsrc = zsrc - 1
+              endif
            endif
         endif
 
@@ -91,7 +96,12 @@ subroutine advance
         if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
            rsrc = rsrc*tsp_texp/(tsp_texp + (1.0 - alph2)*tsp_dt)
            if (rsrc < gas_rarr(zsrc)) then
-              zsrc = zsrc - 1
+              if(gas_isshell.and.zsrc==1) then
+                 prt_done = .true.
+                 isvacant = .true.
+              else
+                 zsrc = zsrc - 1
+              endif
            endif
         endif
 

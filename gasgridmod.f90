@@ -23,8 +23,11 @@ module gasgridmod
   real*8,allocatable :: gas_temphist(:,:) !(gas_nr,tim_nt)
 
   real*8 :: gas_lr = 0
+  real*8 :: gas_l0 = 0  !innermost static radius
   logical :: gas_isvelocity
+  logical :: gas_isshell  !domain is shell, innermost radius not zero
   integer :: gas_velno, gas_velyes
+  real*8 :: gas_templ0=0 !surface temperature at innermost radius
 
   real*8 :: gas_emat
 
@@ -69,16 +72,19 @@ module gasgridmod
   contains
 
 
-  subroutine gasgrid_init(nr,ng,nt,lr,velout,isvelocity)
+  subroutine gasgrid_init(nr,ng,nt,l0,lr,velout,isshell,isvelocity,templ0)
 !-------------------------------------------------------
     integer,intent(in) :: nr,ng,nt
-    real*8,intent(in) :: lr,velout
-    logical,intent(in) :: isvelocity
+    real*8,intent(in) :: lr,velout,l0
+    logical,intent(in) :: isvelocity,isshell
     gas_nr = nr
     gas_ng = ng
     gas_lr = lr
     gas_velout = velout
     gas_isvelocity = isvelocity
+    gas_isshell = isshell
+    gas_l0 = l0
+    gas_templ0 = templ0
 
 
     ! Setting velocity option

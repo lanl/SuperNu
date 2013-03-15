@@ -11,9 +11,12 @@ c-- gas grid
       integer :: in_nr = 0 !# spatial grid in spherical geom
       integer :: in_ng = 0 !# groups
       logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
+      logical :: in_isshell = .false.
+      real*8 :: in_l0 = 0d0  !innermost radius of the domain
       real*8 :: in_lr = 0d0  !spatial length of the domain
       real*8 :: in_velout = 0d0  !cm/s
       real*8 :: in_totmass = 0d0  !g
+      real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
 c-- flat-structure parameters
       real*8 :: in_consttempkev = 0d0  !keV
       logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
@@ -127,6 +130,7 @@ c
        if(in_velout<=0d0) stop 'vel grid: use in_velout, not in_lr'
       else
        if(in_lr<=0d0) stop 'static grid: use in_lr, not in_velout'
+       if(in_l0<0d0) stop 'static grid: in_l0 invalid'
        if(in_velout>0d0) stop 'static grid: use in_lr, not in_velout'
       endif
 c

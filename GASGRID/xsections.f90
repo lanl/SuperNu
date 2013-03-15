@@ -17,7 +17,11 @@ subroutine xsections
   ! Here: left=>toward r=0 and right=>outward
 
   !Interpolating cell boundary temperatures: loop
-  gas_tempb(1)=gas_vals2(1)%tempkev
+  if(gas_isshell) then
+     gas_tempb(1)=gas_templ0
+  else
+     gas_tempb(1)=gas_vals2(1)%tempkev
+  endif
   !gas_tempb(1) = 1.0
   do ir = 2, gas_nr
      gas_tempb(ir) = (gas_vals2(ir)%tempkev**4+gas_vals2(ir-1)%tempkev**4)/2.0

@@ -60,7 +60,7 @@ program supernu
    call particle_init(in_npartmax,in_ns)
 !
 !-- SETUP GRIDS
-   call gasgrid_init(in_nr,in_ng,in_nt,in_lr,in_velout,in_isvelocity)
+   call gasgrid_init(in_nr,in_ng,in_nt,in_l0,in_lr,in_velout,in_isshell,in_isvelocity,in_templ0)
    call gasgrid_setup
 !-- read initial temperature structure from file
 !   call read_restart_file
@@ -99,7 +99,7 @@ program supernu
     allocate(prt_vacantarr(prt_nnew))
     call vacancies
     !Calculating properties of prt_particles on domain boundary
-    !call boundary_source
+    call boundary_source
     !Calculating properties of prt_particles emitted in domain interior
     call interior_source
     deallocate(prt_vacantarr)
