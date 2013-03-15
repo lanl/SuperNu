@@ -24,8 +24,10 @@ subroutine sourcenumbers
 
   ! Calculating fictitious emission energy per cell: loop
   do ir = 1, gas_nr
-     !gas_vals2(ir)%emit = (1.e35)*(4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)
-     gas_vals2(ir)%emit =  tsp_dt*gas_fcoef(ir)*gas_sigmap(ir)*pc_c*gas_vals2(ir)%ur*(4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)
+     !gas_vals2(ir)%emit = (1.e35)*(4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0) !old
+     gas_vals2(ir)%emit =  tsp_dt*gas_fcoef(ir)*gas_sigmap(ir)*pc_c*gas_vals2(ir)%ur*(4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0) !old
+!new !gas_vals2(ir)%emit = (1.e35)*gas_vals2(ir)%volr
+!new gas_vals2(ir)%emit = tsp_dt*gas_fcoef(ir)*gas_sigmap(ir)*pc_c*gas_vals2(ir)%ur*gas_vals2(ir)%volr
      !gas_vals2(ir)%emit = gas_vals2(ir)%emit*(gas_velno*1.0+gas_velyes*tsp_texp**3)
      gas_vals2(ir)%emit = gas_vals2(ir)%emit + gas_vals2(ir)%nisource
      gas_etot = gas_etot + gas_vals2(ir)%emit
