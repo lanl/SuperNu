@@ -28,6 +28,9 @@ module gasgridmod
   logical :: gas_isshell  !domain is shell, innermost radius not zero
   integer :: gas_velno, gas_velyes
   real*8 :: gas_templ0=0 !surface temperature at innermost radius
+  real*8 :: gas_sigcoef=0  !analytic opacity power law coefficient
+  real*8 :: gas_sigtpwr=0  !analytic opacity power law temperature exponent
+  real*8 :: gas_sigrpwr=0  !analytic opacity power law density exponent
 
   real*8 :: gas_emat
 
@@ -72,7 +75,7 @@ module gasgridmod
   contains
 
 
-  subroutine gasgrid_init(nr,ng,nt,l0,lr,velout,isshell,isvelocity,templ0)
+  subroutine gasgrid_init(nr,ng,nt,l0,lr,velout,isshell,isvelocity,templ0,sigcoef,sigtpwr,sigrpwr)
 !-------------------------------------------------------
     integer,intent(in) :: nr,ng,nt
     real*8,intent(in) :: lr,velout,l0
@@ -85,7 +88,9 @@ module gasgridmod
     gas_isshell = isshell
     gas_l0 = l0
     gas_templ0 = templ0
-
+    gas_sigcoef = sigcoef
+    gas_sigtpwr = sigtpwr
+    gas_sigrpwr = sigrpwr
 
     ! Setting velocity option
     if (isvelocity.eqv..true.) then

@@ -45,10 +45,13 @@ subroutine diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
      PA = gas_fcoef(z)*gas_sigmapg(g,z)/denom
      if (0.0d0<=r1 .and. r1<PL) then
         if (z == 1) then
-           write(6,*) 'Non-physical left leakage'
-           !vacnt = .true.
-           !prt_done = .true.
-           !gas_eleft = gas_eleft+E
+           if(gas_isshell) then
+              vacnt = .true.
+              prt_done = .true.
+              gas_eleft = gas_eleft+E
+           else
+              write(6,*) 'Non-physical left leakage'
+           endif
         elseif (gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
            z = z-1
         else
