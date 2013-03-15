@@ -61,6 +61,7 @@ c-- runtime parameter namelist
       namelist /inputpars/
      & in_nr,in_ng,in_isvelocity,in_isshell,in_lr,in_l0,
      & in_totmass,in_templ0,in_velout,in_consttempkev,in_solidni56,
+     & in_sigcoef,in_sigtpwr,in_sigrpwr,
      & in_seed,in_ns,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,
      & in_grab_stdout,in_nomp,
