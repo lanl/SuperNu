@@ -15,8 +15,8 @@ in_solidni56 = t
 
 !-- gas grid settings
 in_nr = 50
-in_isvelocity = t
-in_velout = 1d9
+in_isvelocity = f
+in_lr = 3d14
 in_totmass = 1d33
 
 !-- group settings
