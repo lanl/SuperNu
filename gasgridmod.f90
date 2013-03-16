@@ -121,6 +121,8 @@ module gasgridmod
 
 !-- secondary
     allocate(gas_vals2(gas_nr))
+    allocate(gas_sig(gas_nr))
+    allocate(gas_capgam(gas_nr))
 
     allocate(gas_temphist(gas_nr,nt))
     allocate(gas_dwl(gas_ng)) !wavelength grid bin width

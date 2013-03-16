@@ -16,16 +16,19 @@ c-- ionsmod
 c-- bbxsmod
       if(allocated(bb_xs)) deallocate(bb_xs) !only impi==impi0, but only if nobbopac==f
 !c-- gasgridmod
-!      deallocate(gas_vals,gas_wl,gas_cap)
-!      if(impi==impi0) deallocate(gas_vals2,gas_temphist,gas_dwl)
+      deallocate(gas_wl,gas_cap)
+*     if(impi==impi0) deallocate(gas_vals2,gas_temphist,gas_dwl)
+      deallocate(gas_vals2,gas_temphist,gas_dwl)
 c-- gasgridmod
       deallocate(gas_numcensus,gas_rarr,gas_drarr)
-      deallocate(gas_edep,gas_tempb,gas_vals2)
+      deallocate(gas_edep,gas_tempb)
       deallocate(gas_sigmapg,gas_sigmargleft)
       deallocate(gas_sigmargright,gas_emitprobg,gas_sigmal,gas_sigmar)
       deallocate(gas_ppl,gas_ppr,gas_ppick)
       deallocate(gas_sigmap,gas_fcoef)
+      deallocate(gas_sig)
+      deallocate(gas_capgam)
 c-- particlemod
       deallocate(prt_particles)
-c
+
       end subroutine dealloc_all

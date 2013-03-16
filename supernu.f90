@@ -19,7 +19,7 @@ program supernu
 ! todo:
 !  - dummy (drr, 2013/mar/05)
 !***********************************************************************
-  real*8 :: time_begin, time_end, help, dt
+  real*8 :: help, dt
   real*8 :: t_elapsed
   integer :: ierr
   logical :: lmpi0 = .false. !master rank flag
