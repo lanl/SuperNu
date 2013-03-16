@@ -36,6 +36,10 @@ subroutine xsections
   do ig = 3, gas_ng
      gas_ppick(ig) = 0.0
   enddo
+  !Calculating power law heat capacity
+  do ir = 1, gas_nr
+     gas_vals2(ir)%bcoef=gas_cvcoef*gas_vals2(ir)%tempkev**gas_cvtpwr*gas_vals2(ir)%rho**gas_cvrpwr
+  enddo
 
   !Calculating grey Planck and gouped Planck opacities: loop
   do ir = 1, gas_nr

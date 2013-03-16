@@ -4,9 +4,9 @@
 in_grab_stdout = f
 
 !-- time step
-in_tfirst = 2
-in_tlast = 4
-in_nt = 4
+in_tfirst = 1d-14
+in_tlast = 2.1574d-14
+in_nt = 100
 in_alpha = 1d0
 
 !-- flat structure
