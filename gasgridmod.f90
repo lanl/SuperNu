@@ -26,11 +26,15 @@ module gasgridmod
   real*8 :: gas_l0 = 0  !innermost static radius
   logical :: gas_isvelocity
   logical :: gas_isshell  !domain is shell, innermost radius not zero
+  logical :: gas_novolsrc !no external volume source (e.g. radioactivity)
   integer :: gas_velno, gas_velyes
   real*8 :: gas_templ0=0 !surface temperature at innermost radius
   real*8 :: gas_sigcoef=0  !analytic opacity power law coefficient
   real*8 :: gas_sigtpwr=0  !analytic opacity power law temperature exponent
   real*8 :: gas_sigrpwr=0  !analytic opacity power law density exponent
+  real*8 :: gas_cvcoef=0  !analytic heat capacity power law coefficient
+  real*8 :: gas_cvtpwr=0  !analytic heat capacity power law temperature exponent
+  real*8 :: gas_cvrpwr=0  !analytic heat capacity power law density exponent
 
   real*8 :: gas_emat
 
@@ -75,22 +79,28 @@ module gasgridmod
   contains
 
 
-  subroutine gasgrid_init(nr,ng,nt,l0,lr,velout,isshell,isvelocity,templ0,sigcoef,sigtpwr,sigrpwr)
+  subroutine gasgrid_init(nr,ng,nt,l0,lr,velout,isshell,isvelocity,novolsrc,templ0, & 
+       sigcoef,sigtpwr,sigrpwr,cvcoef,cvtpwr,cvrpwr)
 !-------------------------------------------------------
     integer,intent(in) :: nr,ng,nt
     real*8,intent(in) :: lr,velout,l0,templ0,sigcoef,sigtpwr,sigrpwr
-    logical,intent(in) :: isvelocity,isshell
+    real*8,intent(in) :: cvcoef,cvtpwr,cvrpwr
+    logical,intent(in) :: isvelocity,isshell,novolsrc
     gas_nr = nr
     gas_ng = ng
     gas_lr = lr
     gas_velout = velout
     gas_isvelocity = isvelocity
     gas_isshell = isshell
+    gas_novolsrc = novolsrc
     gas_l0 = l0
     gas_templ0 = templ0
     gas_sigcoef = sigcoef
     gas_sigtpwr = sigtpwr
     gas_sigrpwr = sigrpwr
+    gas_cvcoef = cvcoef
+    gas_cvtpwr = cvtpwr
+    gas_cvrpwr = cvrpwr
 
     ! Setting velocity option
     if (isvelocity.eqv..true.) then

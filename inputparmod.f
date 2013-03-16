@@ -11,7 +11,8 @@ c-- gas grid
       integer :: in_nr = 0 !# spatial grid in spherical geom
       integer :: in_ng = 0 !# groups
       logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
-      logical :: in_isshell = .false.
+      logical :: in_isshell = .false.  !switch to change domain topology from solid sphere to shell
+      logical :: in_novolsrc = .true.  !switch to turn off any volume source (could be useful for debugs)
       real*8 :: in_l0 = 0d0  !innermost radius of the domain
       real*8 :: in_lr = 0d0  !spatial length of the domain
       real*8 :: in_velout = 0d0  !cm/s
@@ -20,6 +21,10 @@ c-- gas grid
       real*8 :: in_sigcoef = 0d0 !power law opacity coefficient
       real*8 :: in_sigtpwr = 0d0 !power law opacity temperature exponent
       real*8 :: in_sigrpwr = 0d0 !power law opacity density exponent
+      real*8 :: in_cvcoef = 1d0 !power law heat capacity coefficient
+      real*8 :: in_cvtpwr = 0d0 !power law heat capacity temperature exponent
+      real*8 :: in_cvrpwr = 0d0 !power law heat capacity density exponent
+
 c-- flat-structure parameters
       real*8 :: in_consttempkev = 0d0  !keV
       logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
@@ -59,9 +64,10 @@ c-- misc
 c
 c-- runtime parameter namelist
       namelist /inputpars/
-     & in_nr,in_ng,in_isvelocity,in_isshell,in_lr,in_l0,
+     & in_nr,in_ng,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
      & in_totmass,in_templ0,in_velout,in_consttempkev,in_solidni56,
      & in_sigcoef,in_sigtpwr,in_sigrpwr,
+     & in_cvcoef,in_cvtpwr,in_cvrpwr,
      & in_seed,in_ns,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,
      & in_grab_stdout,in_nomp,

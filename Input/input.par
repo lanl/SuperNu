@@ -17,6 +17,7 @@ in_solidni56 = t
 in_nr = 50
 in_isvelocity = f
 in_isshell = t
+in_novolsrc = t
 in_l0 = 1d0
 in_lr = 0.25d0
 in_totmass = 1d33
@@ -25,6 +26,10 @@ in_templ0 = 1d0
 in_sigcoef = 1000d0
 in_sigtpwr = -3d0
 in_sigrpwr = 0d0
+!-- power law heat capacity values
+in_cvcoef = 1d15
+in_cvtpwr = 0d0
+in_cvrpwr = 0d0
 
 !-- group settings
 in_ng = 2

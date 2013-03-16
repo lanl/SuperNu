@@ -86,7 +86,10 @@ c
 c-- density
       gas_vals2%rho = gas_vals2%mass/gas_vals2%vol
       !gas_vals2%bcoef = 2.0*pc_acoef*gas_vals2%tempkev**3
-      gas_vals2%bcoef = 0.4*(1.e12*gas_vals2%rho)*580.25d0
+      !gas_vals2%bcoef = 0.4*(1.e12*gas_vals2%rho)*580.25d0 !not needed with power law input
+      do ir = 1, gas_nr
+         gas_vals2(ir)%bcoef=gas_cvcoef*gas_vals2(ir)%tempkev**gas_cvtpwr*gas_vals2(ir)%rho**gas_cvrpwr
+      enddo
 c
 c-- keep track of temperature evolution
       gas_temphist(:,tsp_tn) = gas_vals2%temp!}}}
