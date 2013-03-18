@@ -1,7 +1,7 @@
 &inputpars
 
 !-- misc
-in_grab_stdout = t
+in_grab_stdout = f
 
 !-- time step
 in_tfirst = 2
@@ -16,8 +16,18 @@ in_solidni56 = t
 !-- gas grid settings
 in_nr = 50
 in_isvelocity = t
+in_isshell = f
+in_novolsrc = f
 in_velout = 1d9
 in_totmass = 1d33
+!-- power law opacity values
+in_sigcoef = 0.1d0
+in_sigtpwr = 0d0
+in_sigrpwr = 1d0
+!-- power law heat capacity values
+in_cvcoef = 2.321d14
+in_cvtpwr = 0d0
+in_cvrpwr = 1d0
 
 !-- group settings
 in_ng = 2
@@ -28,7 +38,7 @@ in_npartmax = 10000000
 
 !-- opacity switches
 in_nobbopac = t
-in_nobfopac = f
-in_noffopac = f
+in_nobfopac = t
+in_noffopac = t
 
 &end
