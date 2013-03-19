@@ -17,7 +17,7 @@ MODULES := \
 
 OBJFILES := sourcenumbers.o vacancies.o boundary_source.o interior_source.o advance.o \
  write_output.o diffusion1.o transport1.o \
- read_bbxs_data.o restart_file.o dealloc_all.o
+ read_bbxs_data.o restart_file.o dealloc_all.o specint.o
 
 LIBRARIES := GASGRID/gasgrid.a MISC/misc.a
 SUBDIRS := $(dir $(LIBRARIES))

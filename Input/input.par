@@ -32,7 +32,9 @@ in_cvtpwr = 0d0
 in_cvrpwr = 0d0
 
 !-- group settings
-in_ng = 2
+in_wlmin = 1000d0 
+in_wlmax = 30000d0
+in_ng = 10
 
 !-- particle numbers
 in_ns = 10000
