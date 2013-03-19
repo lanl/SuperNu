@@ -26,9 +26,9 @@ clean:
 ########################################################################
 # EXPLICIT RULES
 ########################################################################
-eos_update.o: ionsmod.mod gasgridmod.mod timestepmod.mod timingmod.mod
-gasgrid_setup.o: elemdatamod.mod gasgridmod.mod timestepmod.mod inputparmod.mod miscmod.mod physconstmod.mod
+eos_update.o: gasgridmod.mod ionsmod.mod timestepmod.mod timingmod.mod
+gasgrid_setup.o: elemdatamod.mod gasgridmod.mod inputparmod.mod miscmod.mod physconstmod.mod timestepmod.mod
 gasgrid_update.o: gasgridmod.mod inputparmod.mod ionsmod.mod miscmod.mod mpimod.mod physconstmod.mod timestepmod.mod timingmod.mod
 opacity_calculation.o: bbxsmod.mod bfxsmod.mod ffxsmod.mod gasgridmod.mod inputparmod.mod ionsmod.mod miscmod.mod physconstmod.mod timingmod.mod
-xsections.o: physconstmod.mod gasgridmod.mod timestepmod.mod
-temperature_update.o: physconstmod.mod gasgridmod.mod timestepmod.mod
+temperature_update.o: gasgridmod.mod physconstmod.mod timestepmod.mod
+xsections.o: gasgridmod.mod physconstmod.mod timestepmod.mod

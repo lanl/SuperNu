@@ -18,13 +18,6 @@ c-- gas grid
       real*8 :: in_velout = 0d0  !cm/s
       real*8 :: in_totmass = 0d0  !g
       real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
-      real*8 :: in_sigcoef = 0d0 !power law opacity coefficient
-      real*8 :: in_sigtpwr = 0d0 !power law opacity temperature exponent
-      real*8 :: in_sigrpwr = 0d0 !power law opacity density exponent
-      real*8 :: in_cvcoef = 1d0 !power law heat capacity coefficient
-      real*8 :: in_cvtpwr = 0d0 !power law heat capacity temperature exponent
-      real*8 :: in_cvrpwr = 0d0 !power law heat capacity density exponent
-
 c-- flat-structure parameters
       real*8 :: in_consttempkev = 0d0  !keV
       logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
@@ -57,6 +50,13 @@ c-- opacity (cm^2/gram)
       logical :: in_nobbopac = .false.    !turn off bound-bound opacity
       logical :: in_nobfopac = .false.    !turn off bound-bound opacity
       logical :: in_noffopac = .false.    !turn off bound-bound opacity
+c-- analytic opacities
+      real*8 :: in_sigcoef = 0d0 !power law opacity coefficient
+      real*8 :: in_sigtpwr = 0d0 !power law opacity temperature exponent
+      real*8 :: in_sigrpwr = 0d0 !power law opacity density exponent
+      real*8 :: in_cvcoef = 1d0 !power law heat capacity coefficient
+      real*8 :: in_cvtpwr = 0d0 !power law heat capacity temperature exponent
+      real*8 :: in_cvrpwr = 0d0 !power law heat capacity density exponent
 c
 c-- misc
       character(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
@@ -66,14 +66,14 @@ c-- runtime parameter namelist
       namelist /inputpars/
      & in_nr,in_ng,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
      & in_totmass,in_templ0,in_velout,in_consttempkev,in_solidni56,
-     & in_sigcoef,in_sigtpwr,in_sigrpwr,
-     & in_cvcoef,in_cvtpwr,in_cvrpwr,
      & in_seed,in_ns,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,
      & in_grab_stdout,in_nomp,
      & in_wlmin,in_wlmax,
      & in_opcapgam,in_opcap,in_epsline,in_nobbopac,in_nobfopac,
      & in_noffopac,
+     & in_sigcoef,in_sigtpwr,in_sigrpwr,
+     & in_cvcoef,in_cvtpwr,in_cvrpwr,
      & in_opacdump,in_pdensdump
 c
       public

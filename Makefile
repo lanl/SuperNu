@@ -77,18 +77,30 @@ endif
 
 #
 #-- MODULES
-bbxsmod.o: elemdatamod.o miscmod.o physconstmod.o
-inputparmod.o: physconstmod.o miscmod.o
+bbxsmod.o: physconstmod.o elemdatamod.o miscmod.o
+inputparmod.o: miscmod.o physconstmod.o
 ionsmod.o: miscmod.o physconstmod.o
 miscmod.o: MISC/warn.f MISC/lcase.f
 mpimod.o: gasgridmod.o inputparmod.o timestepmod.o timingmod.o
-timestepmod.o: inputparmod.o physconstmod.o
-
+timestepmod.o: physconstmod.o
 #
 #-- OBJ FILES
 #-- note: prerequisites don't need to include modules as these are always built first
-banner.o: version.inc
+advance.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o timingmod.o
+boundary_source.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
+dealloc_all.o: bbxsmod.o gasgridmod.o ionsmod.o mpimod.o particlemod.o
+diffusion1alt.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
+diffusion1.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
+interior_source.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
+read_bbxs_data.o: bbxsmod.o ionsmod.o miscmod.o physconstmod.o timingmod.o
+restart_file.o: gasgridmod.o
+sourcenumbers.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
+supernu.o: bfxsmod.o ffxsmod.o gasgridmod.o inputparmod.o ionsmod.o mpimod.o particlemod.o physconstmod.o timestepmod.o timingmod.o
+transport1.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
+vacancies.o: particlemod.o
+write_output.o: gasgridmod.o particlemod.o timestepmod.o
 
+banner.o: version.inc mpimod.o
 supernu.o: $(OBJFILES)
 
 #
