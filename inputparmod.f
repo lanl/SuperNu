@@ -10,9 +10,11 @@ c-- write stdout to file
 c-- gas grid
       integer :: in_nr = 0 !# spatial grid in spherical geom
       integer :: in_ng = 0 !# groups
+      integer :: in_wldex = 1 !# if in_iswlread = t, selects group grid from formatted group grid file
       logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
       logical :: in_isshell = .false.  !switch to change domain topology from solid sphere to shell
       logical :: in_novolsrc = .true.  !switch to turn off any volume source (could be useful for debugs)
+      logical :: in_iswlread = .false. !switch to read input wavelength grid
       real*8 :: in_l0 = 0d0  !innermost radius of the domain
       real*8 :: in_lr = 0d0  !spatial length of the domain
       real*8 :: in_velout = 0d0  !cm/s
