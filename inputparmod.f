@@ -76,7 +76,8 @@ c-- runtime parameter namelist
      & in_wlmin,in_wlmax,
      & in_opcapgam,in_opcap,in_epsline,in_nobbopac,in_nobfopac,
      & in_noffopac,
-     & in_opacdump,in_pdensdump
+     & in_opacdump,in_pdensdump,
+     & in_wldex,in_iswlread 
 c
       public
       private inputpars

@@ -83,15 +83,44 @@ c-- convert mass fractions to # atoms
 !      write(6,'(1p,33e12.4)') (gas_vals2(i)%natom1fr,i=1,gas_nr)
 c
 c-- gas wavelength grid
-      forall(i=1:gas_ng) gas_wl(i) =
-     &  in_wlmin*(in_wlmax/dble(in_wlmin))**((i-1d0)/(gas_ng-1d0))
-      gas_dwl = pc_ang*gas_wl*log(in_wlmax/dble(in_wlmin)) /
-     &  (gas_ng-1d0) !wl grid bin width
+      real*8, allocatable :: wlstore(:) 
+      integer :: ng,ngm,nrm,irr
+      if(in_iswlread) then
+           open(4,file='Input/input.wlgrid',status='old')
+           do ir = 1, 3
+              read(4,*)
+           enddo
+           read(4,*) nrm, ngm
+           write(6,*) 'maximume cell number, group number: ',nrm, ngm
+           do ir = 1,jgrid-1
+              read(4,*)
+           enddo
+           read(4,*) irr, ng
+           allocate(wl(ng+1))
+           allocate(wlstore(ng+3))
+           rewind(4)
+           do ir = 1, jgrid+3
+              read(4,*)
+           enddo
+           read(4,*) wlstore(:)
+           close(4)
+           wl = wlstore(3:)
+           deallocate(wlstore)
+           write(6,*) wlgrid
+           !Resetting gas_ng to value of particular group entry from file
+           write(6,*) 'wavelength grid in [cm]'
+           gas_ng = ng
+      else
+         forall(i=1:gas_ng) gas_wl(i) =
+     &        in_wlmin*(in_wlmax/dble(in_wlmin))**((i-1d0)/(gas_ng-1d0))
+         gas_dwl = pc_ang*gas_wl*log(in_wlmax/dble(in_wlmin)) /
+     &        (gas_ng-1d0)      !wl grid bin width
 c-- sanity test
-      help = sum(gas_dwl)/pc_ang
-      if(abs(help/(in_wlmax-in_wlmin) - 1d0) .gt. 1d-3) then
-       call warn('gasgrid_setup','ggrid_dwl not accurate')
-       write(6,*) help,in_wlmax-in_wlmin
+         help = sum(gas_dwl)/pc_ang
+         if(abs(help/(in_wlmax-in_wlmin) - 1d0) .gt. 1d-3) then
+            call warn('gasgrid_setup','ggrid_dwl not accurate')
+            write(6,*) help,in_wlmax-in_wlmin
+         endif
       endif
 c
       end subroutine gasgrid_setup

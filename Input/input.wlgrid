@@ -1,0 +1,14 @@
+#wavelength bin boundaries. units: [cm]
+#ncell ngroupmax
+#icell ngroup wlbound
+10 5
+1 1 1e-5 32e-5
+2 1 1e-5 32e-5
+3 1 1e-5 32e-5
+4 1 1e-5 32e-5
+5 1 1e-5 32e-5
+6 5 1e-5 2e-5 4e-5 8e-5 16e-5 32e-5
+7 5 1e-5 2e-5 4e-5 8e-5 16e-5 32e-5
+8 5 1e-5 2e-5 4e-5 8e-5 16e-5 32e-5
+9 5 1e-5 2e-5 4e-5 8e-5 16e-5 32e-5
+10 5 1e-5 2e-5 4e-5 8e-5 16e-5 32e-5
