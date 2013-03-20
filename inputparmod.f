@@ -63,7 +63,8 @@ c
 c-- misc
       character(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
       character(4) :: in_pdensdump = 'off'   !off|one|each: write partial densities to file
-c
+      character(4) :: in_grptype = 'grey'    !grey|mono|pick|line: group opacity structure type
+c     
 c-- runtime parameter namelist
       namelist /inputpars/
      & in_nr,in_ng,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
@@ -77,7 +78,7 @@ c-- runtime parameter namelist
      & in_opcapgam,in_opcap,in_epsline,in_nobbopac,in_nobfopac,
      & in_noffopac,
      & in_opacdump,in_pdensdump,
-     & in_wldex,in_iswlread 
+     & in_wldex,in_iswlread, in_grptype
 c
       public
       private inputpars

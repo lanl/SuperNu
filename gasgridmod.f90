@@ -36,6 +36,10 @@ module gasgridmod
   real*8 :: gas_cvtpwr=0  !analytic heat capacity power law temperature exponent
   real*8 :: gas_cvrpwr=0  !analytic heat capacity power law density exponent
 
+  character(4) :: gas_grptype = 'grey' !analytic opacity dependence on group.
+  !is used with power law to create group opacities each timestep (see 
+  !inputparmod for possible values).
+
   real*8 :: gas_emat
 
   real*8, dimension(:), allocatable :: gas_rarr  !(gas_nr+1)
@@ -80,12 +84,13 @@ module gasgridmod
 
 
   subroutine gasgrid_init(nr,ng,nt,l0,lr,velout,isshell,isvelocity,novolsrc,templ0, & 
-       sigcoef,sigtpwr,sigrpwr,cvcoef,cvtpwr,cvrpwr)
+       sigcoef,sigtpwr,sigrpwr,cvcoef,cvtpwr,cvrpwr,grptype)
 !-------------------------------------------------------
     integer,intent(in) :: nr,ng,nt
     real*8,intent(in) :: lr,velout,l0,templ0,sigcoef,sigtpwr,sigrpwr
     real*8,intent(in) :: cvcoef,cvtpwr,cvrpwr
     logical,intent(in) :: isvelocity,isshell,novolsrc
+    character(4),intent(in) :: grptype
     gas_nr = nr
     gas_ng = ng
     gas_lr = lr
@@ -101,6 +106,7 @@ module gasgridmod
     gas_cvcoef = cvcoef
     gas_cvtpwr = cvtpwr
     gas_cvrpwr = cvrpwr
+    gas_grptype = grptype
 
     ! Setting velocity option
     if (isvelocity.eqv..true.) then
@@ -126,7 +132,9 @@ module gasgridmod
     allocate(gas_ppr(gas_ng,gas_nr))  !can potentially be removed
     allocate(gas_ppick(gas_ng))  !gas_ng=2 for to temp picket fence verification
 
-    allocate(gas_wl(gas_ng)) !wavelength grid
+!-Ryan W: gas_wl being allocated in gasgrid_setup now--
+    !allocate(gas_wl(gas_ng)) !wavelength grid
+!------------------------------------------------------
     allocate(gas_cap(gas_nr,gas_ng)) !Line+Cont extinction coeff
 
 !-- secondary

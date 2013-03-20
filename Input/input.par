@@ -30,6 +30,8 @@ in_sigrpwr = 0d0
 in_cvcoef = 1d15
 in_cvtpwr = 0d0
 in_cvrpwr = 0d0
+!-- group opacity structure type
+in_grptype = 'grey'
 
 !-- group settings
 in_wldex = 1
