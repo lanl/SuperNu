@@ -38,6 +38,8 @@ subroutine xsections
   !Ryan W.:(moved from supernu.f90 in rev 105)
   call analytic_opacity
 
+  gas_ppick(1) = 1d0
+  gas_ppick(2) = 0d0
   !Calculating grey Planck and gouped Planck opacities: loop
   do ir = 1, gas_nr
      gas_sigmapg(1,ir) = gas_sigcoef*gas_vals2(ir)%tempkev**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr

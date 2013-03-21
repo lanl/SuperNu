@@ -27,6 +27,7 @@ module gasgridmod
   logical :: gas_isvelocity
   logical :: gas_isshell  !domain is shell, innermost radius not zero
   logical :: gas_novolsrc !no external volume source (e.g. radioactivity)
+  logical :: gas_isanalgrp  !switch to use analytic_opacity
   integer :: gas_velno, gas_velyes
   real*8 :: gas_templ0=0 !surface temperature at innermost radius
   real*8 :: gas_sigcoef=0  !analytic opacity power law coefficient
@@ -39,6 +40,8 @@ module gasgridmod
   character(4) :: gas_grptype = 'grey' !analytic opacity dependence on group.
   !is used with power law to create group opacities each timestep (see 
   !inputparmod for possible values).
+  character(4) :: gas_suol = 'tsta' !if gas_grptype='pick', sets picket
+  !magnitudes with values from cases in literature (Su&Olson 1999).
 
   real*8 :: gas_emat
 
@@ -97,6 +100,7 @@ module gasgridmod
     gas_isvelocity = in_isvelocity
     gas_isshell = in_isshell
     gas_novolsrc = in_novolsrc
+    gas_isanalgrp = in_isanalgrp
     gas_l0 = in_l0
     gas_templ0 = in_templ0
     gas_sigcoef = in_sigcoef
@@ -106,6 +110,7 @@ module gasgridmod
     gas_cvtpwr = in_cvtpwr
     gas_cvrpwr = in_cvrpwr
     gas_grptype = in_grptype
+    gas_suol = in_suol
 
     ! Setting velocity option
     if (in_isvelocity.eqv..true.) then

@@ -42,9 +42,11 @@ c-- parallelization
       integer :: in_nomp = 1       !# openmp threads
 c
 c-- group structure
+      logical :: in_isanalgrp = .true. !switch to use analytic_opacity routine (instead of physical opacities)
       logical :: in_iswlread = .false. !switch to read input wavelength grid
       integer :: in_wldex = 1 !# if in_iswlread = t, selects group grid from formatted group grid file
       character(4) :: in_grptype = 'grey'    !grey|mono|pick|line: group opacity structure type
+      character(4) :: in_suol = 'tsta'    !tsta|tstb|tstc: Su&Olson picket fence (pick) test cases 
       real*8 :: in_wlmin = 1000d0     !lower wavelength boundary in output spectrum
       real*8 :: in_wlmax = 30000d0    !upper wavelength boundary in output spectrum
 c
@@ -80,7 +82,7 @@ c-- runtime parameter namelist
      & in_opacdump,in_pdensdump,
      & in_sigcoef,in_sigtpwr,in_sigrpwr,
      & in_cvcoef,in_cvtpwr,in_cvrpwr,
-     & in_wldex,in_iswlread, in_grptype
+     & in_wldex,in_iswlread, in_isanalgrp,in_grptype,in_suol
 c
       public
       private inputpars

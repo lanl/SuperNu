@@ -118,7 +118,7 @@ subroutine analytic_opacity
      ! Highly structured line test: group opacities alternate 10^7 in magnitude
      ! sigmaP = A*T^B*rho^C
      ! sigmaP_g = sigmaP*func_P(g), sigmaR_g=sigmaP
-     do ir = 1, nr
+     do ir = 1, gas_nr
         gas_sigmap(ir) = gas_sigcoef*gas_vals2(ir)%tempkev**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
         sigll = gas_sigmap(ir)*(gas_tempb(ir)/gas_vals2(ir)%tempkev)**gas_sigtpwr
         sigrr = gas_sigmap(ir)*(gas_tempb(ir+1)/gas_vals2(ir)%tempkev)**gas_sigtpwr
