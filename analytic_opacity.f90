@@ -14,8 +14,9 @@ subroutine analytic_opacity
 
   integer :: ir, ig
   real*8 :: x1, x2  !unitless energy group bounds
+  real*8 :: specint !debye type function integrator
 
-  if(gas_grptype='grey') then
+  if(gas_grptype=='grey') then
      ! sigmaP = A*T^B*rho^C (A,B,C set in input.par)
      ! sigmaP_g, sigmaR_g = sigmaP for all g 
      do ir = 1, gas_nr
@@ -26,7 +27,7 @@ subroutine analytic_opacity
            gas_sigmargright(ig,ir) = gas_sigmap(ir)
         enddo
      enddo
-  elseif(gas_grptype='mono') then
+  elseif(gas_grptype=='mono') then
      ! sigmaP = A*T^B*rho^C*f(T)
      ! sigmaP_g = sigmaP*func_P(T,g), sigmaR_g=sigmaP*func_R(T,g)
      ! func_P(T,g) and func_R(T,g) are functions proportional to integral_g(1/nu^3)
@@ -37,16 +38,17 @@ subroutine analytic_opacity
            x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
            gas_sigmapg(ig,ir) = gas_sigmap(ir)*log((1.0-exp(-x2))/(1.0-exp(-x1)))/specint(x1,x2,3)
         enddo
-        x1 = (pc_h*pc_c/(pc_ev*gas_wl(ng+1)))/(1d3*gas_vals2(ir)%tempkev)
+        x1 = (pc_h*pc_c/(pc_ev*gas_wl(gas_ng+1)))/(1d3*gas_vals2(ir)%tempkev)
         x2 = (pc_h*pc_c/(pc_ev*gas_wl(1)))/(1d3*gas_vals2(ir)%tempkev)
         gas_sigmap(ir) = gas_sigmap(ir)*log((1.0-exp(-x2))/(1.0-exp(-x1)))/specint(x1,x2,3)
      enddo
-  elseif(gas_grptype='pick') then
+  elseif(gas_grptype=='pick') then
   
-  elseif(gas_grptype='line') then
+  elseif(gas_grptype=='line') then
 
   else
 
   endif
+  
 
 end subroutine analytic_opacity
