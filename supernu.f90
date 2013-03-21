@@ -93,8 +93,6 @@ program supernu
     write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
     !
     call gasgrid_update
-    !Calculating simple physical group/grey opacities: Planck and Rosseland
-    call analytic_opacity
     !Calculating Fleck factor, leakage opacities
     call xsections
     !Calculating number of source prt_particles per cell

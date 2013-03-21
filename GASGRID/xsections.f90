@@ -16,7 +16,7 @@ subroutine xsections
   real*8 :: Um, beta, tt, gg, ggg, eps, bb
   ! Here: left=>toward r=0 and right=>outward
 
-  !Interpolating cell boundary temperatures: loop
+  !Interpolating cell boundary temperatures (in keV currently): loop
   if(gas_isshell) then
      gas_tempb(1)=gas_templ0
   else
@@ -29,17 +29,14 @@ subroutine xsections
   enddo
   gas_tempb(gas_nr+1)=gas_vals2(gas_nr)%tempkev
 
-  !Picket fence (Planck):
-  ! Picket-fence problem
-  gas_ppick(1) = 1.0d0
-  gas_ppick(2) = 0.0d0
-  do ig = 3, gas_ng
-     gas_ppick(ig) = 0.0
-  enddo
   !Calculating power law heat capacity
   do ir = 1, gas_nr
      gas_vals2(ir)%bcoef=gas_cvcoef*gas_vals2(ir)%tempkev**gas_cvtpwr*gas_vals2(ir)%rho**gas_cvrpwr
   enddo
+
+  !Calculating simple physical group/grey opacities: Planck and Rosseland 
+  !Ryan W.:(moved from supernu.f90 in rev 105)
+  call analytic_opacity
 
   !Calculating grey Planck and gouped Planck opacities: loop
   do ir = 1, gas_nr
