@@ -61,7 +61,8 @@ program supernu
 !
 !-- SETUP GRIDS
    call gasgrid_init(in_nr,in_ng,in_nt,in_l0,in_lr,in_velout,in_isshell,in_isvelocity, &
-        in_novolsrc,in_templ0,in_sigcoef,in_sigtpwr,in_sigrpwr,in_cvcoef,in_cvtpwr,in_cvrpwr)
+        in_novolsrc,in_templ0,in_sigcoef,in_sigtpwr,in_sigrpwr,in_cvcoef,in_cvtpwr, &
+        in_cvrpwr,in_grptype)
    call gasgrid_setup
 !-- read initial temperature structure from file
 !   call read_restart_file
@@ -91,8 +92,11 @@ program supernu
   ! Beginning time step loop
   do tsp_tn = 1, tsp_nt
     write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
-    !Calculating opacities (for IMC(transport) and DDMC(diffusion))
+    !
     call gasgrid_update
+    !Calculating simple physical group/grey opacities: Planck and Rosseland
+    call analytic_opacity
+    !Calculating Fleck factor, leakage opacities
     call xsections
     !Calculating number of source prt_particles per cell
     call sourcenumbers

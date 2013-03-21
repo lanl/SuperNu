@@ -10,9 +10,11 @@ c-- write stdout to file
 c-- gas grid
       integer :: in_nr = 0 !# spatial grid in spherical geom
       integer :: in_ng = 0 !# groups
+      integer :: in_wldex = 1 !# if in_iswlread = t, selects group grid from formatted group grid file
       logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
       logical :: in_isshell = .false.  !switch to change domain topology from solid sphere to shell
       logical :: in_novolsrc = .true.  !switch to turn off any volume source (could be useful for debugs)
+      logical :: in_iswlread = .false. !switch to read input wavelength grid
       real*8 :: in_l0 = 0d0  !innermost radius of the domain
       real*8 :: in_lr = 0d0  !spatial length of the domain
       real*8 :: in_velout = 0d0  !cm/s
@@ -61,7 +63,8 @@ c
 c-- misc
       character(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
       character(4) :: in_pdensdump = 'off'   !off|one|each: write partial densities to file
-c
+      character(4) :: in_grptype = 'grey'    !grey|mono|pick|line: group opacity structure type
+c     
 c-- runtime parameter namelist
       namelist /inputpars/
      & in_nr,in_ng,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
@@ -72,9 +75,10 @@ c-- runtime parameter namelist
      & in_wlmin,in_wlmax,
      & in_opcapgam,in_opcap,in_epsline,in_nobbopac,in_nobfopac,
      & in_noffopac,
+     & in_opacdump,in_pdensdump,
      & in_sigcoef,in_sigtpwr,in_sigrpwr,
      & in_cvcoef,in_cvtpwr,in_cvrpwr,
-     & in_opacdump,in_pdensdump
+     & in_wldex,in_iswlread, in_grptype
 c
       public
       private inputpars
