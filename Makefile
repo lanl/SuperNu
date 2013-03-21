@@ -16,7 +16,7 @@ MODULES := \
   timingmod.o
 
 OBJFILES := sourcenumbers.o vacancies.o boundary_source.o interior_source.o advance.o \
- write_output.o diffusion1.o transport1.o \
+ write_output.o diffusion1.o transport1.o read_wlgrid.o wlgrid_setup.o \
  read_bbxs_data.o restart_file.o dealloc_all.o specint.o
 
 LIBRARIES := GASGRID/gasgrid.a MISC/misc.a
@@ -83,6 +83,7 @@ ionsmod.o: miscmod.o physconstmod.o
 miscmod.o: MISC/warn.f MISC/lcase.f
 mpimod.o: gasgridmod.o inputparmod.o timestepmod.o timingmod.o
 timestepmod.o: physconstmod.o
+gasgridmod.o: inputparmod.o
 #
 #-- OBJ FILES
 #-- note: prerequisites don't need to include modules as these are always built first
@@ -94,6 +95,7 @@ diffusion1.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmo
 interior_source.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
 read_bbxs_data.o: bbxsmod.o ionsmod.o miscmod.o physconstmod.o timingmod.o
 restart_file.o: gasgridmod.o
+wlgrid_setup.o: gasgridmod.o physconstmod.o miscmod.o
 sourcenumbers.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
 supernu.o: bfxsmod.o ffxsmod.o gasgridmod.o inputparmod.o ionsmod.o mpimod.o particlemod.o physconstmod.o timestepmod.o timingmod.o
 transport1.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o

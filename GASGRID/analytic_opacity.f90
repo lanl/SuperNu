@@ -47,7 +47,7 @@ subroutine analytic_opacity
   elseif(gas_grptype=='line') then
 
   else
-
+    stop 'analytic_opacity: gas_grptype invalid'
   endif
   
 

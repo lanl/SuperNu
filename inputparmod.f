@@ -10,11 +10,8 @@ c-- write stdout to file
 c-- gas grid
       integer :: in_nr = 0 !# spatial grid in spherical geom
       integer :: in_ng = 0 !# groups
-      integer :: in_wldex = 1 !# if in_iswlread = t, selects group grid from formatted group grid file
       logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
       logical :: in_isshell = .false.  !switch to change domain topology from solid sphere to shell
-      logical :: in_novolsrc = .true.  !switch to turn off any volume source (could be useful for debugs)
-      logical :: in_iswlread = .false. !switch to read input wavelength grid
       real*8 :: in_l0 = 0d0  !innermost radius of the domain
       real*8 :: in_lr = 0d0  !spatial length of the domain
       real*8 :: in_velout = 0d0  !cm/s
@@ -23,6 +20,9 @@ c-- gas grid
 c-- flat-structure parameters
       real*8 :: in_consttempkev = 0d0  !keV
       logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
+c
+c-- energy source
+      logical :: in_novolsrc = .true.  !switch to turn off any volume source (could be useful for debugs)
 c
 c-- random number generator
       integer :: in_seed = 1984117 !starting point of random number generator
@@ -42,6 +42,9 @@ c-- parallelization
       integer :: in_nomp = 1       !# openmp threads
 c
 c-- group structure
+      logical :: in_iswlread = .false. !switch to read input wavelength grid
+      integer :: in_wldex = 1 !# if in_iswlread = t, selects group grid from formatted group grid file
+      character(4) :: in_grptype = 'grey'    !grey|mono|pick|line: group opacity structure type
       real*8 :: in_wlmin = 1000d0     !lower wavelength boundary in output spectrum
       real*8 :: in_wlmax = 30000d0    !upper wavelength boundary in output spectrum
 c
@@ -63,7 +66,6 @@ c
 c-- misc
       character(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
       character(4) :: in_pdensdump = 'off'   !off|one|each: write partial densities to file
-      character(4) :: in_grptype = 'grey'    !grey|mono|pick|line: group opacity structure type
 c     
 c-- runtime parameter namelist
       namelist /inputpars/
@@ -160,6 +162,15 @@ c
       if(in_tlast<in_tfirst) stop 'in_tlast invalid'
 c
       if(in_nr<=0) stop 'in_nr invalid'
+c
+      select case(in_grptype)
+      case('grey')
+      case('mono')
+      case('pick')
+      case('line')
+      case default
+       stop 'in_grptype unknown'
+      end select
 c
       if(in_wlmin<0d0) stop 'in_wlmin invalid'
       if(in_wlmax<=0d0 .or. in_wlmax<in_wlmin) stop 'in_wlmax invalid'

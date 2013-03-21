@@ -60,10 +60,9 @@ program supernu
    call particle_init(in_npartmax,in_ns)
 !
 !-- SETUP GRIDS
-   call gasgrid_init(in_nr,in_ng,in_nt,in_l0,in_lr,in_velout,in_isshell,in_isvelocity, &
-        in_novolsrc,in_templ0,in_sigcoef,in_sigtpwr,in_sigrpwr,in_cvcoef,in_cvtpwr, &
-        in_cvrpwr,in_grptype)
+   call gasgrid_init(in_nt)
    call gasgrid_setup
+   call wlgrid_setup
 !-- read initial temperature structure from file
 !   call read_restart_file
 !-- hard coded temperature structure

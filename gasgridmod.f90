@@ -83,33 +83,32 @@ module gasgridmod
   contains
 
 
-  subroutine gasgrid_init(nr,ng,nt,l0,lr,velout,isshell,isvelocity,novolsrc,templ0, & 
-       sigcoef,sigtpwr,sigrpwr,cvcoef,cvtpwr,cvrpwr,grptype)
+  subroutine gasgrid_init(nt)
 !-------------------------------------------------------
-    integer,intent(in) :: nr,ng,nt
-    real*8,intent(in) :: lr,velout,l0,templ0,sigcoef,sigtpwr,sigrpwr
-    real*8,intent(in) :: cvcoef,cvtpwr,cvrpwr
-    logical,intent(in) :: isvelocity,isshell,novolsrc
-    character(4),intent(in) :: grptype
-    gas_nr = nr
-    gas_ng = ng
-    gas_lr = lr
-    gas_velout = velout
-    gas_isvelocity = isvelocity
-    gas_isshell = isshell
-    gas_novolsrc = novolsrc
-    gas_l0 = l0
-    gas_templ0 = templ0
-    gas_sigcoef = sigcoef
-    gas_sigtpwr = sigtpwr
-    gas_sigrpwr = sigrpwr
-    gas_cvcoef = cvcoef
-    gas_cvtpwr = cvtpwr
-    gas_cvrpwr = cvrpwr
-    gas_grptype = grptype
+    use inputparmod
+    implicit none
+!
+    integer,intent(in) :: nt
+!
+    gas_nr = in_nr
+    gas_ng = in_ng
+    gas_lr = in_lr
+    gas_velout = in_velout
+    gas_isvelocity = in_isvelocity
+    gas_isshell = in_isshell
+    gas_novolsrc = in_novolsrc
+    gas_l0 = in_l0
+    gas_templ0 = in_templ0
+    gas_sigcoef = in_sigcoef
+    gas_sigtpwr = in_sigtpwr
+    gas_sigrpwr = in_sigrpwr
+    gas_cvcoef = in_cvcoef
+    gas_cvtpwr = in_cvtpwr
+    gas_cvrpwr = in_cvrpwr
+    gas_grptype = in_grptype
 
     ! Setting velocity option
-    if (isvelocity.eqv..true.) then
+    if (in_isvelocity.eqv..true.) then
        gas_velyes = 1
        gas_velno = 0
     else
