@@ -13,6 +13,7 @@ subroutine analytic_opacity
 !#####################################
 
   integer :: ir, ig
+  real*8 :: fgren, fgrren, fglren !renormalization factors
   real*8 :: sigll, sigrr    !dummy variables
   real*8 :: x1, x2  !unitless energy group bounds
   real*8 :: specint !debye type function integrator
@@ -122,17 +123,47 @@ subroutine analytic_opacity
         gas_sigmap(ir) = gas_sigcoef*gas_vals2(ir)%tempkev**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
         sigll = gas_sigmap(ir)*(gas_tempb(ir)/gas_vals2(ir)%tempkev)**gas_sigtpwr
         sigrr = gas_sigmap(ir)*(gas_tempb(ir+1)/gas_vals2(ir)%tempkev)**gas_sigtpwr
-        !set even group magnitudes (high)
+        !
+        fgren = 0d0
+        fglren= 0d0
+        fgrren= 0d0
+        do ig = 1, gas_ng, 2
+           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_vals2(ir)%tempkev)
+           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
+           fgren = fgren+1d-3*15d0*specint(x1,x2,3)/pc_pi**4
+           !
+           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(ir))
+           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir))
+           fglren = fglren+1d-3*15d0*specint(x1,x2,3)/pc_pi**4
+           !
+           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(ir+1))
+           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir+1))
+           fgrren = fgrren+1d-3*15d0*specint(x1,x2,3)/pc_pi**4
+        enddo
         do ig = 2, gas_ng, 2
-           gas_sigmapg(ig,ir) = gas_sigmap(ir)*1d-3
-           gas_sigmargleft(ig,ir) = sigll*1d-3
-           gas_sigmargright(ig,ir) = sigrr*1d-3
+           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_vals2(ir)%tempkev)
+           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
+           fgren = fgren+1d4*15d0*specint(x1,x2,3)/pc_pi**4
+           !
+           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(ir))
+           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir))
+           fglren = fglren+1d4*15d0*specint(x1,x2,3)/pc_pi**4
+           !
+           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(ir+1))
+           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir+1))
+           fgrren = fgrren+1d4*15d0*specint(x1,x2,3)/pc_pi**4
         enddo
         !set odd group magnitudes (low)
         do ig = 1, gas_ng, 2
-           gas_sigmapg(ig,ir) = gas_sigmap(ir)*1d4
-           gas_sigmargleft(ig,ir) = sigll*1d4
-           gas_sigmargright(ig,ir) = sigrr*1d4
+           gas_sigmapg(ig,ir) = gas_sigmap(ir)*1d-3/fgren
+           gas_sigmargleft(ig,ir) = sigll*1d-3/fglren
+           gas_sigmargright(ig,ir) = sigrr*1d-3/fgrren
+        enddo
+        !set even group magnitudes (high)
+        do ig = 2, gas_ng, 2
+           gas_sigmapg(ig,ir) = gas_sigmap(ir)*1d4/fgren
+           gas_sigmargleft(ig,ir) = sigll*1d4/fglren
+           gas_sigmargright(ig,ir) = sigrr*1d4/fgrren
         enddo
      enddo
   else

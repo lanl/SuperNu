@@ -2,6 +2,7 @@
 
 !-- misc
 in_grab_stdout = f
+in_puretran = t
 
 !-- time step
 in_tfirst = 1d-14
@@ -33,14 +34,14 @@ in_cvrpwr = 0d0
 
 !-- group opacity structure type
 in_isanalgrp = t
-in_grptype = 'pick'
+in_grptype = 'line'
 
 !-- picket fence case
 in_suol = 'tsta'
 in_suolpick1 = 1d0
 
 !-- group settings
-in_wldex = 1
+in_wldex = 6
 in_iswlread = t
 in_ng = 10
 
