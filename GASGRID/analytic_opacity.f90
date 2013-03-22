@@ -66,8 +66,6 @@ subroutine analytic_opacity
      ! sigmaP = sigmaR = constant = A (gas_sigcoef set in input.par)
      ! Su&Olson picket-fence distributions (tests: A,B,C (Su and Olson 1999))
      ! Input wavelength grid not used
-     gas_ppick(1) = 0.5d0
-     gas_ppick(2) = 0.5d0
      do ir = 1, gas_nr
         gas_sigmap(ir) = gas_sigcoef*gas_vals2(ir)%tempkev**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
      enddo
@@ -75,10 +73,10 @@ subroutine analytic_opacity
         do ir = 1, gas_nr
            gas_sigmapg(1,ir) = gas_sigmap(ir) 
            gas_sigmapg(2,ir) = gas_sigmap(ir)
-           gas_sigmargleft(1,ir) = gas_sigmapg(1,ir)
-           gas_sigmargleft(2,ir) = gas_sigmapg(2,ir)
-           gas_sigmargright(1,ir) = gas_sigmapg(1,ir)
-           gas_sigmargright(2,ir) = gas_sigmapg(2,ir)
+           gas_sigmargleft(1,ir) = gas_sigmapg(1,ir)*(gas_tempb(ir)/gas_vals2(ir)%tempkev)**gas_sigtpwr
+           gas_sigmargleft(2,ir) = gas_sigmapg(2,ir)*(gas_tempb(ir)/gas_vals2(ir)%tempkev)**gas_sigtpwr
+           gas_sigmargright(1,ir) = gas_sigmapg(1,ir)*(gas_tempb(ir+1)/gas_vals2(ir)%tempkev)**gas_sigtpwr
+           gas_sigmargright(2,ir) = gas_sigmapg(2,ir)*(gas_tempb(ir+1)/gas_vals2(ir)%tempkev)**gas_sigtpwr
            do ig = 3, gas_ng
               gas_sigmapg(ig,ir) = 0d0
               gas_sigmargleft(ig,ir) = 0d0
@@ -89,10 +87,10 @@ subroutine analytic_opacity
         do ir = 1, gas_nr
            gas_sigmapg(1,ir) = 2d0*gas_sigmap(ir)/11d0
            gas_sigmapg(2,ir) = 20d0*gas_sigmap(ir)/11d0
-           gas_sigmargleft(1,ir) = gas_sigmapg(1,ir)
-           gas_sigmargleft(2,ir) = gas_sigmapg(2,ir)
-           gas_sigmargright(1,ir) = gas_sigmapg(1,ir)
-           gas_sigmargright(2,ir) = gas_sigmapg(2,ir)
+           gas_sigmargleft(1,ir) = gas_sigmapg(1,ir)*(gas_tempb(ir)/gas_vals2(ir)%tempkev)**gas_sigtpwr
+           gas_sigmargleft(2,ir) = gas_sigmapg(2,ir)*(gas_tempb(ir)/gas_vals2(ir)%tempkev)**gas_sigtpwr
+           gas_sigmargright(1,ir) = gas_sigmapg(1,ir)*(gas_tempb(ir+1)/gas_vals2(ir)%tempkev)**gas_sigtpwr
+           gas_sigmargright(2,ir) = gas_sigmapg(2,ir)*(gas_tempb(ir+1)/gas_vals2(ir)%tempkev)**gas_sigtpwr
            do ig = 3, gas_ng
               gas_sigmapg(ig,ir) = 0d0
               gas_sigmargleft(ig,ir) = 0d0
@@ -103,10 +101,10 @@ subroutine analytic_opacity
         do ir = 1, gas_nr
            gas_sigmapg(1,ir) = 2d0*gas_sigmap(ir)/101d0
            gas_sigmapg(2,ir) = 200d0*gas_sigmap(ir)/101d0
-           gas_sigmargleft(1,ir) = gas_sigmapg(1,ir)
-           gas_sigmargleft(2,ir) = gas_sigmapg(2,ir)
-           gas_sigmargright(1,ir) = gas_sigmapg(1,ir)
-           gas_sigmargright(2,ir) = gas_sigmapg(2,ir)
+           gas_sigmargleft(1,ir) = gas_sigmapg(1,ir)*(gas_tempb(ir)/gas_vals2(ir)%tempkev)**gas_sigtpwr
+           gas_sigmargleft(2,ir) = gas_sigmapg(2,ir)*(gas_tempb(ir)/gas_vals2(ir)%tempkev)**gas_sigtpwr
+           gas_sigmargright(1,ir) = gas_sigmapg(1,ir)*(gas_tempb(ir+1)/gas_vals2(ir)%tempkev)**gas_sigtpwr
+           gas_sigmargright(2,ir) = gas_sigmapg(2,ir)*(gas_tempb(ir+1)/gas_vals2(ir)%tempkev)**gas_sigtpwr
            do ig = 3, gas_ng
               gas_sigmapg(ig,ir) = 0d0
               gas_sigmargleft(ig,ir) = 0d0

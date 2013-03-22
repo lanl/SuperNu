@@ -14,6 +14,8 @@ subroutine xsections
 
   integer :: ir, ig
   real*8 :: Um, beta, tt, gg, ggg, eps, bb
+  real*8 :: x1, x2
+  real*8 :: specint
   ! Here: left=>toward r=0 and right=>outward
 
   !Interpolating cell boundary temperatures (in keV currently): loop
@@ -38,40 +40,32 @@ subroutine xsections
   !Ryan W.:(moved from supernu.f90 in rev 105)
   call analytic_opacity
 
-  !gas_ppick(1) = 1d0
-  !gas_ppick(2) = 0d0
-  !Calculating grey Planck and gouped Planck opacities: loop
+  !Calculating Fleck factor: 
   do ir = 1, gas_nr
-     !gas_sigmapg(1,ir) = gas_sigcoef*gas_vals2(ir)%tempkev**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-     !gas_sigmapg(2,ir) = gas_sigcoef*gas_vals2(ir)%tempkev**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-     !do ig = 3, gas_ng
-     !   gas_sigmapg(ig,ir) = 1.0
-     !enddo
-     !gas_sigmap(ir)=0.0
-     !do ig = 1, gas_ng
-     !   gas_sigmap(ir) = gas_sigmap(ir)+gas_ppick(ig)*gas_sigmapg(ig,ir)
-     !enddo
      Um = gas_vals2(ir)%bcoef*gas_vals2(ir)%tempkev
      beta = 4.0*gas_vals2(ir)%ur/Um
      gas_fcoef(ir) = 1.0/(1.0+tsp_alpha*beta*pc_c*tsp_dt*gas_sigmap(ir))
-     do ig = 1, gas_ng
-        gas_emitprobg(ig,ir) = gas_ppick(ig)*gas_sigmapg(ig,ir)/gas_sigmap(ir)
-     enddo
   enddo
-  
-  !Calculating group Rosseland opacities: loop
-  !do ir = 1, gas_nr
-  !   gas_sigmargleft(1,ir) = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-  !   gas_sigmargleft(2,ir) = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-  !   do ig = 3, gas_ng
-  !      gas_sigmargleft(ig,ir) = 1.0
-  !   enddo
-  !   gas_sigmargright(1,ir) = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-  !   gas_sigmargright(2,ir) = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-  !   do ig = 3, gas_ng
-  !      gas_sigmargright(ig,ir) = 1.0
-  !   enddo
-  !enddo
+
+  !Calculating grouped volume emission probabilities:
+  if(gas_isanalgrp.and.gas_grptype=='pick') then
+     do ir = 1, gas_nr
+        gas_emitprobg(1,ir) = gas_ppick(1)*gas_sigmapg(1,ir)/gas_sigmap(ir)
+        gas_emitprobg(2,ir) = gas_ppick(2)*gas_sigmapg(2,ir)/gas_sigmap(ir)
+        do ig = 3, gas_ng
+           gas_emitprobg(ig,ir) = 0d0
+        enddo
+     enddo
+  else
+     do ir = 1, gas_nr
+        do ig = 1, gas_ng
+           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_vals2(ir)%tempkev)
+           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
+           gas_emitprobg(ig,ir) = 15d0*specint(x1,x2,3)*gas_sigmapg(ig,ir)/ &
+                (gas_sigmap(ir)*pc_pi**4)
+        enddo
+     enddo
+  endif
 
   !Calculating IMC-to-DDMC leakage albedo coefficients (Densmore, 2007): loop
   !These quantities may not need to be stored directly (pending further analysis)

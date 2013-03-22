@@ -77,7 +77,7 @@ module gasgridmod
   real*8 :: gas_eleft, gas_eright, gas_erad, gas_eint, gas_etot, gas_esurf
 
   ! Picket-fence probabilities
-  real*8, dimension(:), allocatable :: gas_ppick
+  real*8 :: gas_ppick(2)
 
   integer, dimension(:), allocatable :: gas_numcensus !(gas_nr)
 
@@ -111,6 +111,8 @@ module gasgridmod
     gas_cvrpwr = in_cvrpwr
     gas_grptype = in_grptype
     gas_suol = in_suol
+    gas_ppick(1) = in_suolpick1
+    gas_ppick(2) = 1d0-in_suolpick1
 
     ! Setting velocity option
     if (in_isvelocity.eqv..true.) then
@@ -134,7 +136,7 @@ module gasgridmod
     allocate(gas_sigmar(gas_ng,gas_nr))
     allocate(gas_ppl(gas_ng,gas_nr))  !can potentially be removed
     allocate(gas_ppr(gas_ng,gas_nr))  !can potentially be removed
-    allocate(gas_ppick(gas_ng))  !gas_ng=2 for to temp picket fence verification
+    !allocate(gas_ppick(gas_ng))  !gas_ng=2 for to temp picket fence verification
 
 !-Ryan W: gas_wl being allocated in gasgrid_setup now--
     !allocate(gas_wl(gas_ng)) !wavelength grid

@@ -63,6 +63,11 @@ program supernu
    call gasgrid_init(in_nt)
    call gasgrid_setup
    call wlgrid_setup
+  !if picket fence opacity test, then reset number of groups 
+  !(pickets are wavelength independent):
+   if(in_isanalgrp.and.in_grptype=='pick') then 
+      gas_ng = 2
+   endif
 !-- read initial temperature structure from file
 !   call read_restart_file
 !-- hard coded temperature structure
@@ -87,7 +92,6 @@ program supernu
    t_setup = t1-t0
   endif !impi
 
-  gas_ng = 2
   ! Beginning time step loop
   do tsp_tn = 1, tsp_nt
     write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day

@@ -29,6 +29,7 @@ subroutine boundary_source
         emitsurfprobg(ig) = 15d0*specint(x1,x2,3)/pc_pi**4 
      enddo
   endif
+  !Instantiating surface particles:
   do ipart = 1, prt_nsurf
      ivac = prt_vacantarr(ipart)
      !Picket fence group sampling
