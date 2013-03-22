@@ -31,17 +31,17 @@ subroutine interior_source
         if (irused(ir)<gas_vals2(ir)%nvol) then
            irused(ir) = irused(ir)+1
            !Calculating Group
-           denom2 = 0.0
+           denom2 = 0d0
            r1 = rand()
            do ig = 1, gas_ng
               iig = ig
-              if (r1>=denom2.and.r1<denom2+gas_emitprobg(ig,ir)) EXIT
+              if (r1>=denom2.and.r1<denom2+gas_emitprobg(ig,ir)) exit
               denom2 = denom2+gas_emitprobg(ig,ir)
            enddo
            prt_particles(ivac)%gsrc = iig
            !Calculating radial position
-           r1 = 0.0
-           r2 = 1.0
+           r1 = 0d0
+           r2 = 1d0
            uul = gas_tempb(ir)**4
            uur = gas_tempb(ir+1)**4
            uumax = max(uul,uur)
@@ -56,7 +56,7 @@ subroutine interior_source
 
            !Calculating direction cosine (comoving)
            r1 = rand()
-           mu0 = 1.0-2.0*r1
+           mu0 = 1d0-2d0*r1
            !Calculating particle tsp_time
            r1 = rand()
            prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt

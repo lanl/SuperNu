@@ -32,7 +32,7 @@ in_cvtpwr = 0d0
 in_cvrpwr = 0d0
 !-- group opacity structure type
 in_isanalgrp = t
-in_grptype = 'grey'
+in_grptype = 'pick'
 !-- picket fence case
 in_suol = 'tsta'
 

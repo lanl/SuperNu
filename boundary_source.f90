@@ -7,21 +7,39 @@ subroutine boundary_source
   use inputparmod
   implicit none
 
-  integer :: ipart, ivac, ig, z0
+  integer :: ipart, ivac, ig, iig, z0
   real*8 :: r1, r2, P, mu0, r0, Esurfpart
+  real*8 :: denom2, x1, x2, specint
+  real*8, dimension(gas_ng) :: emitsurfprobg  !surface emission probabilities 
+  !, Ryan W.: size will=# of groups in first cell
 
   Esurfpart = gas_esurf/real(prt_nsurf)
 
+  !Calculating grouped thermal emission probabilities
+  if(gas_isanalgrp.and.gas_grptype=='pick') then
+     emitsurfprobg(1) = gas_ppick(1)
+     emitsurfprobg(2) = gas_ppick(2)
+     do ig = 3, gas_ng
+        emitsurfprobg(3) = 0d0
+     enddo
+  else
+     do ig = 1, gas_ng
+        x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(1))
+        x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(1))
+        emitsurfprobg(ig) = 15d0*specint(x1,x2,3)/pc_pi**4 
+     enddo
+  endif
   do ipart = 1, prt_nsurf
      ivac = prt_vacantarr(ipart)
      !Picket fence group sampling
+     denom2 = 0d0
      r1 = rand()
-     if (r1 <= gas_ppick(1)) then
-        prt_particles(ivac)%gsrc = 1
-     else
-        prt_particles(ivac)%gsrc = 2
-     endif
-     ig = prt_particles(ivac)%gsrc
+     do ig = 1, gas_ng
+        iig = ig
+        if(r1>=denom2.and.r1<denom2+emitsurfprobg(ig)) exit
+        denom2 = denom2+emitsurfprobg(ig)
+     enddo
+     prt_particles(ivac)%gsrc = iig
 
      r1 = rand()
      r2 = rand()
@@ -30,7 +48,7 @@ subroutine boundary_source
         prt_particles(ivac)%musrc = 0.0000001
      endif
      mu0 = prt_particles(ivac)%musrc
-     P = gas_ppl(ig,1)*(1.0+1.5*prt_particles(ivac)%musrc)
+     P = gas_ppl(iig,1)*(1.0+1.5*prt_particles(ivac)%musrc)
 
      r1 = rand()
      prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
@@ -41,7 +59,7 @@ subroutine boundary_source
      prt_particles(ivac)%rsrc = gas_rarr(1)
      r0 = prt_particles(ivac)%rsrc
 
-     if ((gas_sigmapg(ig,z0)*gas_drarr(z0)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0).OR.(in_puretran.eqv..true.)) then
+     if ((gas_sigmapg(iig,z0)*gas_drarr(z0)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0).OR.(in_puretran.eqv..true.)) then
         !transport => lab frame quantities
         prt_particles(ivac)%Esrc = Esurfpart*(1.0+gas_velyes*r0*mu0/pc_c)
         prt_particles(ivac)%Ebirth = Esurfpart*(1.0+gas_velyes*r0*mu0/pc_c)
