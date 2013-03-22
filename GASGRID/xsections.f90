@@ -38,19 +38,19 @@ subroutine xsections
   !Ryan W.:(moved from supernu.f90 in rev 105)
   call analytic_opacity
 
-  gas_ppick(1) = 1d0
-  gas_ppick(2) = 0d0
+  !gas_ppick(1) = 1d0
+  !gas_ppick(2) = 0d0
   !Calculating grey Planck and gouped Planck opacities: loop
   do ir = 1, gas_nr
-     gas_sigmapg(1,ir) = gas_sigcoef*gas_vals2(ir)%tempkev**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-     gas_sigmapg(2,ir) = gas_sigcoef*gas_vals2(ir)%tempkev**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-     do ig = 3, gas_ng
-        gas_sigmapg(ig,ir) = 1.0
-     enddo
-     gas_sigmap(ir)=0.0
-     do ig = 1, gas_ng
-        gas_sigmap(ir) = gas_sigmap(ir)+gas_ppick(ig)*gas_sigmapg(ig,ir)
-     enddo
+     !gas_sigmapg(1,ir) = gas_sigcoef*gas_vals2(ir)%tempkev**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
+     !gas_sigmapg(2,ir) = gas_sigcoef*gas_vals2(ir)%tempkev**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
+     !do ig = 3, gas_ng
+     !   gas_sigmapg(ig,ir) = 1.0
+     !enddo
+     !gas_sigmap(ir)=0.0
+     !do ig = 1, gas_ng
+     !   gas_sigmap(ir) = gas_sigmap(ir)+gas_ppick(ig)*gas_sigmapg(ig,ir)
+     !enddo
      Um = gas_vals2(ir)%bcoef*gas_vals2(ir)%tempkev
      beta = 4.0*gas_vals2(ir)%ur/Um
      gas_fcoef(ir) = 1.0/(1.0+tsp_alpha*beta*pc_c*tsp_dt*gas_sigmap(ir))
@@ -58,20 +58,20 @@ subroutine xsections
         gas_emitprobg(ig,ir) = gas_ppick(ig)*gas_sigmapg(ig,ir)/gas_sigmap(ir)
      enddo
   enddo
-
+  
   !Calculating group Rosseland opacities: loop
-  do ir = 1, gas_nr
-     gas_sigmargleft(1,ir) = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-     gas_sigmargleft(2,ir) = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-     do ig = 3, gas_ng
-        gas_sigmargleft(ig,ir) = 1.0
-     enddo
-     gas_sigmargright(1,ir) = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-     gas_sigmargright(2,ir) = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-     do ig = 3, gas_ng
-        gas_sigmargright(ig,ir) = 1.0
-     enddo
-  enddo
+  !do ir = 1, gas_nr
+  !   gas_sigmargleft(1,ir) = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
+  !   gas_sigmargleft(2,ir) = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
+  !   do ig = 3, gas_ng
+  !      gas_sigmargleft(ig,ir) = 1.0
+  !   enddo
+  !   gas_sigmargright(1,ir) = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
+  !   gas_sigmargright(2,ir) = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
+  !   do ig = 3, gas_ng
+  !      gas_sigmargright(ig,ir) = 1.0
+  !   enddo
+  !enddo
 
   !Calculating IMC-to-DDMC leakage albedo coefficients (Densmore, 2007): loop
   !These quantities may not need to be stored directly (pending further analysis)

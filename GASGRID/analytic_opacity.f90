@@ -68,7 +68,9 @@ subroutine analytic_opacity
      ! Input wavelength grid not used
      gas_ppick(1) = 0.5d0
      gas_ppick(2) = 0.5d0
-     gas_sigmap(ir) = gas_sigcoef
+     do ir = 1, gas_nr
+        gas_sigmap(ir) = gas_sigcoef*gas_vals2(ir)%tempkev**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
+     enddo
      if(gas_suol=='tsta') then    !Case: A
         do ir = 1, gas_nr
            gas_sigmapg(1,ir) = gas_sigmap(ir) 
