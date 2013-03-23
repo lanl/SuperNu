@@ -20,12 +20,12 @@ in_isvelocity = f
 in_isshell = t
 in_novolsrc = t
 in_l0 = 1d0
-in_lr = 0.25d0
+in_lr = 5d0
 in_totmass = 1d33
 in_templ0 = 1d0
 !-- power law opacity values
-in_sigcoef = 1000d0
-in_sigtpwr = -3d0
+in_sigcoef = 10d0
+in_sigtpwr = -0.5d0
 in_sigrpwr = 0d0
 !-- power law heat capacity values
 in_cvcoef = 1d15
@@ -34,14 +34,14 @@ in_cvrpwr = 0d0
 
 !-- group opacity structure type
 in_isanalgrp = t
-in_grptype = 'line'
+in_grptype = 'mono'
 
 !-- picket fence case
 in_suol = 'tsta'
 in_suolpick1 = 1d0
 
 !-- group settings
-in_wldex = 6
+in_wldex = 14
 in_iswlread = t
 in_ng = 10
 

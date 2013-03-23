@@ -91,7 +91,7 @@ program supernu
    call time(t1)
    t_setup = t1-t0
   endif !impi
-
+  
   ! Beginning time step loop
   do tsp_tn = 1, tsp_nt
     write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
