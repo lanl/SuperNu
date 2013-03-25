@@ -96,7 +96,10 @@ program supernu
   do tsp_tn = 1, tsp_nt
     write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
     !
-    call gasgrid_update
+    !Ryan W.: gasgrid_update temporarily deprecated due to seg fault
+    !call gasgrid_update
+    !Ryan W.: gasgrid_upold is an update file for testing
+    call gasgrid_upold
     !Calculating Fleck factor, leakage opacities
     call xsections
     !Calculating number of source prt_particles per cell
@@ -133,8 +136,11 @@ program supernu
    write(6,*) 'SuperNu finished'
    if(in_grab_stdout)write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
   endif
+  write(6,*) 'here 1'
 !-- Clean up memory. (This help to locate memory leaks)
   call dealloc_all
+  write(6,*) 'here 2'
   call mpi_finalize(ierr) !MPI
+  write(6,*) 'here 3'
 
 end program supernu

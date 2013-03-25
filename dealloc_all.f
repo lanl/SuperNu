@@ -12,6 +12,7 @@ c     ----------------------
 * with earlier.  This helps to catch memory leaks! (drr)
 ************************************************************************
 c-- ionsmod
+      !write(*,*) 'here 1.5 ...'
       if(impi==impi0) call ion_dealloc
 c-- bbxsmod
       if(allocated(bb_xs)) deallocate(bb_xs) !only impi==impi0, but only if nobbopac==f

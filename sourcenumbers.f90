@@ -34,6 +34,7 @@ subroutine sourcenumbers
      endif
      gas_etot = gas_etot + gas_vals2(ir)%emit
   enddo
+  !write(6,*) gas_esurf, gas_etot
 
   ! Calculating number of domain inner boundary particles (if any)
   prt_nsurf=nint(gas_esurf*prt_ns/gas_etot)+1

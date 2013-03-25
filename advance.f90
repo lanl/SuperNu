@@ -48,6 +48,7 @@ subroutine advance
         ebirth => prt_particles(ipart)%ebirth
         isvacant => prt_particles(ipart)%isvacant
 
+        !write(*,*) gsrc, esrc
         ! Checking if particle conversions are required since prior time step
         if (in_puretran.eqv..false.) then
            if (gas_sigmapg(gsrc,zsrc)*gas_drarr(zsrc)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then

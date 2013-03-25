@@ -29,6 +29,8 @@ subroutine boundary_source
         emitsurfprobg(ig) = 15d0*specint(x1,x2,3)/pc_pi**4 
      enddo
   endif
+  
+  !write(6,*) prt_nsurf
   !Instantiating surface particles:
   do ipart = 1, prt_nsurf
      ivac = prt_vacantarr(ipart)
@@ -40,6 +42,9 @@ subroutine boundary_source
         if(r1>=denom2.and.r1<denom2+emitsurfprobg(ig)) exit
         denom2 = denom2+emitsurfprobg(ig)
      enddo
+     !if(ipart==1.or.ipart==prt_nsurf) then
+     !   write(6,*) iig
+     !endif
      prt_particles(ivac)%gsrc = iig
 
      r1 = rand()

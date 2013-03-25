@@ -66,6 +66,8 @@ subroutine xsections
         enddo
      enddo
   endif
+  !write(*,*) 'pg: ',gas_sigmapg(:,1)
+  !write(*,*) 'p: ',gas_sigmap(1)
 
   !Calculating IMC-to-DDMC leakage albedo coefficients (Densmore, 2007): loop
   !These quantities may not need to be stored directly (pending further analysis)

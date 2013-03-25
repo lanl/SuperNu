@@ -43,25 +43,31 @@ subroutine analytic_opacity
         sigrr = gas_sigmap(ir)*(gas_tempb(ir+1)/gas_vals2(ir)%tempkev)**gas_sigtpwr
         do ig = 1, gas_ng
            !
-           !group Planck opacities:
-           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_vals2(ir)%tempkev)
-           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
-           gas_sigmapg(ig,ir) = gas_sigmap(ir)*log((1.0-exp(-x2))/(1.0-exp(-x1)))/specint(x1,x2,3)
+           !group (Planck) opacities:
+           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3)
+           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3)
+           gas_sigmapg(ig,ir) = 0.5d0*gas_sigmap(ir)*(x1+x2)/(x1*x2)**2
            !
-           !group left Rosseland opacities:
-           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(ir))
-           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir))
-           gas_sigmargleft(ig,ir) = sigll*specint(x1,x2,3)/(specint(x1,x2,6)*gas_tempb(ir)**3)
+           !group left (Rosseland) opacities:
+           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3)
+           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3)
+           gas_sigmargleft(ig,ir) = 0.5d0*sigll*(x1+x2)/(x1*x2)**2
            !
-           !group right Rosseland opacities:
-           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(ir+1))
-           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir+1))
-           gas_sigmargright(ig,ir) = sigrr*specint(x1,x2,3)/(specint(x1,x2,6)*gas_tempb(ir+1)**3)
+           !group right (Rosseland) opacities:
+           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3)
+           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3)
+           gas_sigmargright(ig,ir) = 0.5d0*sigrr*(x1+x2)/(x1*x2)**2
            !
         enddo
-        x1 = (pc_h*pc_c/(pc_ev*gas_wl(gas_ng+1)))/(1d3*gas_vals2(ir)%tempkev)
-        x2 = (pc_h*pc_c/(pc_ev*gas_wl(1)))/(1d3*gas_vals2(ir)%tempkev)
-        gas_sigmap(ir) = gas_sigmap(ir)*log((1.0-exp(-x2))/(1.0-exp(-x1)))/specint(x1,x2,3)
+        x1 = (pc_h*pc_c/(pc_ev*gas_wl(gas_ng+1)))/(1d3)
+        x2 = (pc_h*pc_c/(pc_ev*gas_wl(1)))/(1d3)
+        !gas_sigmap(ir) = 0.5d0*gas_sigmap(ir)*gas_vals2(ir)%tempkev**(-3)*(x1+x2)/(x1*x2)**2
+        gas_sigmap(ir)=0d0
+        do ig = 1, gas_ng
+           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_vals2(ir)%tempkev)
+           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
+           gas_sigmap(ir)=gas_sigmap(ir)+15d0*gas_sigmapg(ig,ir)*specint(x1,x2,3)/pc_pi**4
+        enddo
      enddo
   elseif(gas_grptype=='pick') then
      ! sigmaP = sigmaR = constant = A (gas_sigcoef set in input.par)

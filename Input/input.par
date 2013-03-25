@@ -19,7 +19,7 @@ in_nr = 50
 in_isvelocity = f
 in_isshell = t
 in_novolsrc = t
-in_l0 = 1d0
+in_l0 = 100d0
 in_lr = 5d0
 in_totmass = 1d33
 in_templ0 = 1d0
@@ -41,12 +41,12 @@ in_suol = 'tsta'
 in_suolpick1 = 1d0
 
 !-- group settings
-in_wldex = 14
+in_wldex = 13
 in_iswlread = t
-in_ng = 10
+in_ng = 30
 
 !-- particle numbers
-in_ns = 10000
+in_ns = 100000
 in_npartmax = 10000000
 
 !-- opacity switches
