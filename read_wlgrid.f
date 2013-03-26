@@ -57,7 +57,7 @@ c
 c
       write(6,*) gas_wl
       write(6,*) 'wavelength grid in [cm]'
-      !Resetting gas_ng to value of particular group entry from file
-      gas_ng = ng
+      !Resetting in_ng to value of particular group entry from file
+      in_ng = ng
 c
       end subroutine read_wlgrid

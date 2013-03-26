@@ -60,14 +60,13 @@ program supernu
    call particle_init(in_npartmax,in_ns)
 !
 !-- SETUP GRIDS
+   call wlgrid_setup
+   if(in_isanalgrp.and.in_grptype=='pick') then
+      gas_ng=2
+   endif
    call gasgrid_init(in_nt)
    call gasgrid_setup
-   call wlgrid_setup
-  !if picket fence opacity test, then reset number of groups 
-  !(pickets are wavelength independent):
-   if(in_isanalgrp.and.in_grptype=='pick') then 
-      gas_ng = 2
-   endif
+
 !-- read initial temperature structure from file
 !   call read_restart_file
 !-- hard coded temperature structure

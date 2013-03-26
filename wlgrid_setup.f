@@ -18,12 +18,12 @@ c-- read wavelength grid from file
        call read_wlgrid
       else
 !--Ryan W: allocation moved here from gasgridmod--
-       allocate(gas_wl(gas_ng))
+       allocate(gas_wl(in_ng))
 !----- --------------------------------------------
-       forall(i=1:gas_ng) gas_wl(i) =
-     &   in_wlmin*(in_wlmax/dble(in_wlmin))**((i-1d0)/(gas_ng-1d0))
+       forall(i=1:in_ng) gas_wl(i) =
+     &   in_wlmin*(in_wlmax/dble(in_wlmin))**((i-1d0)/(in_ng-1d0))
        gas_dwl = pc_ang*gas_wl*log(in_wlmax/dble(in_wlmin)) /
-     &   (gas_ng-1d0)      !wl grid bin width
+     &   (in_ng-1d0)      !wl grid bin width
 c-- sa nity test
        help = sum(gas_dwl)/pc_ang
        if(abs(help/(in_wlmax-in_wlmin) - 1d0) .gt. 1d-3) then
