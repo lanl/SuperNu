@@ -2,7 +2,7 @@
 
 !-- misc
 in_grab_stdout = f
-in_puretran = t
+in_puretran = f
 
 !-- time step
 in_tfirst = 1d-14
@@ -24,7 +24,7 @@ in_lr = 5d0
 in_totmass = 1d33
 in_templ0 = 1d0
 !-- power law opacity values
-in_sigcoef = 10d0
+in_sigcoef = 1000d0
 in_sigtpwr = -0.5d0
 in_sigrpwr = 0d0
 !-- power law heat capacity values
