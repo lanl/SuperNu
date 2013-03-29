@@ -42,6 +42,9 @@ module gasgridmod
   !inputparmod for possible values).
   character(4) :: gas_suol = 'tsta' !if gas_grptype='pick', sets picket
   !magnitudes with values from cases in literature (Su&Olson 1999).
+  
+  real*8 :: gas_ldisp !if gas_grptype='line',
+  !ratio of strong line group opacity strength to weak group
 
   real*8 :: gas_emat
 
@@ -113,6 +116,7 @@ module gasgridmod
     gas_suol = in_suol
     gas_ppick(1) = in_suolpick1
     gas_ppick(2) = 1d0-in_suolpick1
+    gas_ldisp = in_ldisp
 
     ! Setting velocity option
     if (in_isvelocity.eqv..true.) then

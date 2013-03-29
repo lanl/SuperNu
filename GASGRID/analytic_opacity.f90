@@ -136,40 +136,40 @@ subroutine analytic_opacity
         do ig = 1, gas_ng, 2
            x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_vals2(ir)%tempkev)
            x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
-           fgren = fgren+1d-3*15d0*specint(x1,x2,3)/pc_pi**4
+           fgren = fgren+15d0*specint(x1,x2,3)/pc_pi**4
            !
            x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(ir))
            x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir))
-           fglren = fglren+1d-3*15d0*specint(x1,x2,3)/pc_pi**4
+           fglren = fglren+15d0*specint(x1,x2,3)/pc_pi**4
            !
            x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(ir+1))
            x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir+1))
-           fgrren = fgrren+1d-3*15d0*specint(x1,x2,3)/pc_pi**4
+           fgrren = fgrren+15d0*specint(x1,x2,3)/pc_pi**4
         enddo
         do ig = 2, gas_ng, 2
            x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_vals2(ir)%tempkev)
            x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
-           fgren = fgren+1d4*15d0*specint(x1,x2,3)/pc_pi**4
+           fgren = fgren+gas_ldisp*15d0*specint(x1,x2,3)/pc_pi**4
            !
            x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(ir))
            x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir))
-           fglren = fglren+1d4*15d0*specint(x1,x2,3)/pc_pi**4
+           fglren = fglren+gas_ldisp*15d0*specint(x1,x2,3)/pc_pi**4
            !
            x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(ir+1))
            x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir+1))
-           fgrren = fgrren+1d4*15d0*specint(x1,x2,3)/pc_pi**4
+           fgrren = fgrren+gas_ldisp*15d0*specint(x1,x2,3)/pc_pi**4
         enddo
         !set odd group magnitudes (low)
         do ig = 1, gas_ng, 2
-           gas_sigmapg(ig,ir) = gas_sigmap(ir)*1d-3/fgren
-           gas_sigmargleft(ig,ir) = sigll*1d-3/fglren
-           gas_sigmargright(ig,ir) = sigrr*1d-3/fgrren
+           gas_sigmapg(ig,ir) = gas_sigmap(ir)/fgren
+           gas_sigmargleft(ig,ir) = sigll/fglren
+           gas_sigmargright(ig,ir) = sigrr/fgrren
         enddo
         !set even group magnitudes (high)
         do ig = 2, gas_ng, 2
-           gas_sigmapg(ig,ir) = gas_sigmap(ir)*1d4/fgren
-           gas_sigmargleft(ig,ir) = sigll*1d4/fglren
-           gas_sigmargright(ig,ir) = sigrr*1d4/fgrren
+           gas_sigmapg(ig,ir) = gas_sigmap(ir)*gas_ldisp/fgren
+           gas_sigmargleft(ig,ir) = sigll*gas_ldisp/fglren
+           gas_sigmargright(ig,ir) = sigrr*gas_ldisp/fgrren
         enddo
      enddo
   else

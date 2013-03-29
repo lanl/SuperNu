@@ -34,16 +34,19 @@ in_cvrpwr = 0d0
 
 !-- group opacity structure type
 in_isanalgrp = t
-in_grptype = 'mono'
+in_grptype = 'line'
 
 !-- picket fence case
 in_suol = 'tsta'
 in_suolpick1 = 1d0
 
+!-- line case (disparity)
+in_ldisp = 1d2 
+
 !-- group settings
-in_wldex = 13
+in_wldex = 16
 in_iswlread = t
-in_ng = 10
+in_ng = 5
 
 !-- particle numbers
 in_ns = 100000

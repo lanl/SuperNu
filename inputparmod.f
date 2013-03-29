@@ -46,9 +46,12 @@ c-- group structure
       logical :: in_iswlread = .false. !switch to read input wavelength grid
       integer :: in_wldex = 1 !# if in_iswlread = t, selects group grid from formatted group grid file
       character(4) :: in_grptype = 'grey'    !grey|mono|pick|line: group opacity structure type
+c-- picket fence specific group structure
       character(4) :: in_suol = 'tsta'    !tsta|tstb|tstc: Su&Olson picket fence (pick) test cases 
       real*8 :: in_suolpick1 = 1d0  !in [0,1]: probability of being at first picket
-
+c-- line specific group structure
+      real*8 :: in_ldisp = 1d0  !order of magnitude difference between analytic group line opacity strengths
+c
       real*8 :: in_wlmin = 1000d0     !lower wavelength boundary in output spectrum
       real*8 :: in_wlmax = 30000d0    !upper wavelength boundary in output spectrum
 c
@@ -85,7 +88,7 @@ c-- runtime parameter namelist
      & in_sigcoef,in_sigtpwr,in_sigrpwr,
      & in_cvcoef,in_cvtpwr,in_cvrpwr,
      & in_wldex,in_iswlread, in_isanalgrp,in_grptype,in_suol,
-     & in_suolpick1
+     & in_suolpick1, in_ldisp
 c
       public
       private inputpars
