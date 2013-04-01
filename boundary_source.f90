@@ -49,13 +49,13 @@ subroutine boundary_source
 
      r1 = rand()
      r2 = rand()
-     prt_particles(ivac)%musrc = 1.0*max(r1,r2)
+     prt_particles(ivac)%musrc = 1d0*max(r1,r2)
      if (abs(prt_particles(ivac)%musrc)<0.0000001) then
         prt_particles(ivac)%musrc = 0.0000001
      endif
      mu0 = prt_particles(ivac)%musrc
      P = gas_ppl(iig,1)*(1.0+1.5*prt_particles(ivac)%musrc)
-
+     !write(*,*) P, prt_particles(ivac)%musrc, iig
      r1 = rand()
      prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
 
@@ -65,7 +65,8 @@ subroutine boundary_source
      prt_particles(ivac)%rsrc = gas_rarr(1)
      r0 = prt_particles(ivac)%rsrc
 
-     if ((gas_sigmapg(iig,z0)*gas_drarr(z0)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0).OR.(in_puretran.eqv..true.)) then
+     if ((gas_sigmapg(iig,z0)*gas_drarr(z0)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) &
+          .OR.(in_puretran.eqv..true.).OR.P>1d0.OR.P<0d0) then
         !transport => lab frame quantities
         prt_particles(ivac)%Esrc = Esurfpart*(1.0+gas_velyes*r0*mu0/pc_c)
         prt_particles(ivac)%Ebirth = Esurfpart*(1.0+gas_velyes*r0*mu0/pc_c)

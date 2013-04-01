@@ -20,13 +20,15 @@ in_isvelocity = f
 in_isshell = t
 in_novolsrc = t
 in_l0 = 100d0
-in_lr = 5d0
+in_lr = 1d0
 in_totmass = 1d33
 in_templ0 = 1d0
+
 !-- power law opacity values
-in_sigcoef = 10d0
+in_sigcoef = 100d0
 in_sigtpwr = -0.5d0
 in_sigrpwr = 0d0
+
 !-- power law heat capacity values
 in_cvcoef = 1d15
 in_cvtpwr = 0d0
@@ -41,7 +43,7 @@ in_suol = 'tsta'
 in_suolpick1 = 1d0
 
 !-- line case (disparity)
-in_ldisp = 1d2 
+in_ldisp = 1d4 
 
 !-- group settings
 in_wldex = 16

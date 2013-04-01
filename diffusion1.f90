@@ -23,7 +23,7 @@ subroutine diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   !
   integer :: ig, iig
   real*8 :: r1, r2
-  real*8 :: denom, denom2
+  real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus, PR, PL, PA
   real*8, dimension(gas_ng) :: PDFg
 
@@ -91,19 +91,24 @@ subroutine diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
         prt_done = .true.
         gas_edep(z) = gas_edep(z)+E
      else
-        denom2 = gas_sigmap(z)-gas_ppick(g)*gas_sigmapg(g,z)
+        !
+        denom2 = 0d0
         do ig = 1, gas_ng
-           PDFg(ig) = gas_emitprobg(ig,z)*gas_sigmap(z)/denom2
+           if(ig.ne.g) then
+              denom2 = denom2+gas_emitprobg(ig,z)
+           endif
         enddo
-        PDFg(g)=0.0
-        denom2 = 0.0
+        denom3 = 0d0
         r1 = rand()
         do ig = 1, gas_ng
-           iig = ig
-           if (r1>=denom2.and.r1<denom2+PDFg(ig)) EXIT
-           denom2 = denom2+PDFg(ig)
+           if(ig.ne.g) then
+              iig = ig
+              if((r1>=denom3).and.(r1<denom3+gas_emitprobg(ig,z)/denom2)) exit
+              denom3 = denom3+gas_emitprobg(ig,z)/denom2
+           endif
         enddo
         g = iig
+        !
         if (gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
            hyparam = 2
         else
