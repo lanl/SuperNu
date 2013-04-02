@@ -39,7 +39,7 @@ subroutine sourcenumbers
 !new !gas_vals2(ir)%emit = (1.e35)*gas_vals2(ir)%volr
 !new gas_vals2(ir)%emit = tsp_dt*gas_fcoef(ir)*gas_sigmap(ir)*pc_c*gas_vals2(ir)%ur*gas_vals2(ir)%volr
      !gas_vals2(ir)%emit = gas_vals2(ir)%emit*(gas_velno*1.0+gas_velyes*tsp_texp**3)
-     if(.not.gas_novolsrc) then
+     if(.not.gas_novolsrc.and..not.gas_isanalsrc) then
         gas_vals2(ir)%emit = gas_vals2(ir)%emit + gas_vals2(ir)%nisource
      endif
      gas_etot = gas_etot + gas_vals2(ir)%emit

@@ -28,6 +28,7 @@ module gasgridmod
   logical :: gas_isshell  !domain is shell, innermost radius not zero
   logical :: gas_novolsrc !no external volume source (e.g. radioactivity)
   logical :: gas_isanalgrp  !switch to use analytic_opacity
+  logical :: gas_isanalsrc  !switch to use analytic_source
   integer :: gas_velno, gas_velyes
   real*8 :: gas_templ0=0 !surface temperature at innermost radius
   real*8 :: gas_sigcoef=0  !analytic opacity power law coefficient
@@ -43,6 +44,9 @@ module gasgridmod
   character(4) :: gas_suol = 'tsta' !if gas_grptype='pick', sets picket
   !magnitudes with values from cases in literature (Su&Olson 1999).
   
+  character(4) :: gas_srctype = 'heav' !analytic external source dependence
+  !on space (and group if gas_srctype='manu')
+
   real*8 :: gas_ldisp !if gas_grptype='line',
   !ratio of strong line group opacity strength to weak group
 
@@ -119,6 +123,8 @@ module gasgridmod
     gas_ppick(1) = in_suolpick1
     gas_ppick(2) = 1d0-in_suolpick1
     gas_ldisp = in_ldisp
+    gas_srctype = in_srctype
+    gas_isanalsrc = in_isanalsrc
 
     ! Setting velocity option
     if (in_isvelocity.eqv..true.) then

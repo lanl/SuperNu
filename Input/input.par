@@ -15,6 +15,10 @@ in_istempflat = t
 in_consttempkev = 1d-3
 in_solidni56 = t
 
+!-- external source type
+in_isanalsrc = f
+in_srctype = 'heav'
+
 !-- gas grid settings
 in_nr = 50
 in_isvelocity = f

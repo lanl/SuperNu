@@ -21,6 +21,10 @@ c-- flat-structure parameters
       logical :: in_istempflat = .true. !if false, reads temperature from input.restart
       real*8 :: in_consttempkev = 0d0  !keV
       logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
+
+c-- external source structure
+      logical :: in_isanalsrc = .false. !switch to use analytic_source routine (instead of physical source)
+      character(4) :: in_srctype='heav'   !heav|strt|manu: external source structure type
 c
 c-- energy source
       logical :: in_novolsrc = .true.  !switch to turn off any volume source (could be useful for debugs)
@@ -90,7 +94,8 @@ c-- runtime parameter namelist
      & in_sigcoef,in_sigtpwr,in_sigrpwr,
      & in_cvcoef,in_cvtpwr,in_cvrpwr,
      & in_wldex,in_iswlread, in_isanalgrp,in_grptype,in_suol,
-     & in_suolpick1, in_ldisp
+     & in_suolpick1, in_ldisp,
+     & in_isanalsrc, in_srctype
 c
       public
       private inputpars

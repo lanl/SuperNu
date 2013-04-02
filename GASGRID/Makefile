@@ -8,7 +8,7 @@ LIBRARY = gasgrid.a
 
 FILES = analytic_opacity.o eos_update.o opacity_calculation.o \
   gasgrid_setup.o gasgrid_update.o gasgrid_upold.o\
-  xsections.o temperature_update.o
+  xsections.o temperature_update.o analytic_source.o
 
 ########################################################################
 # TARGETS
@@ -27,6 +27,7 @@ clean:
 # EXPLICIT RULES
 ########################################################################
 analytic_opacity.o: gasgridmod.mod physconstmod.mod
+analytic_source.o: gasgridmod.mod physconstmod.mod
 eos_update.o: gasgridmod.mod ionsmod.mod timestepmod.mod timingmod.mod
 gasgrid_setup.o: elemdatamod.mod gasgridmod.mod inputparmod.mod miscmod.mod physconstmod.mod timestepmod.mod
 gasgrid_update.o: gasgridmod.mod inputparmod.mod ionsmod.mod miscmod.mod mpimod.mod physconstmod.mod timestepmod.mod timingmod.mod
