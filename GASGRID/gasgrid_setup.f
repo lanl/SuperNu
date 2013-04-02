@@ -56,18 +56,29 @@ c--
       write(6,*) '==========================='
 c
 c-- initialize material (gas) properties
-c-- gas temperature, density, and heat capacity
+c-- gas temperature, density
+      if(in_istempflat) then
+         do ir=1,gas_nr
+            gas_vals2(ir)%tempkev = in_consttempkev
+         enddo
+      else
+         call read_restart_file
+         do ir=1,gas_nr
+            if(gas_vals2(ir)%tempkev<1d-6) then
+               gas_vals2(ir)%tempkev=1d-6
+            endif
+         enddo
+      endif
       do ir=1,gas_nr
-       gas_vals2(ir)%mass = in_totmass/gas_nr
-       gas_vals2(ir)%tempkev = in_consttempkev
-       gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb  !initial guess, may be overwritten by read_temp_str
-       gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%tempkev**4
+         gas_vals2(ir)%mass = in_totmass/gas_nr
+         gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb !initial guess, may be overwritten by read_temp_str
+         gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%tempkev**4
       enddo
 c
 c-- set flat composition if selected
       if(in_solidni56) then
        gas_vals2%mass0fr(28) = 1d0 !stable+unstable Ni abundance
-       gas_vals2(:39)%mass0fr(-1) = 1d0 !Ni56 core
+       gas_vals2(1:nint(4d0*gas_nr/5d0))%mass0fr(-1) = 1d0 !Ni56 core
       else
 c-- no alternative implemented yet
        stop 'gg_setup: in_solidni56==.false. no mass fractions defined'

@@ -18,6 +18,7 @@ c-- gas grid
       real*8 :: in_totmass = 0d0  !g
       real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
 c-- flat-structure parameters
+      logical :: in_istempflat = .true. !if false, reads temperature from input.restart
       real*8 :: in_consttempkev = 0d0  !keV
       logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
 c
@@ -77,7 +78,8 @@ c
 c-- runtime parameter namelist
       namelist /inputpars/
      & in_nr,in_ng,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
-     & in_totmass,in_templ0,in_velout,in_consttempkev,in_solidni56,
+     & in_totmass,in_templ0,in_velout,
+     & in_consttempkev,in_solidni56, in_istempflat,
      & in_seed,in_ns,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,
      & in_grab_stdout,in_nomp,

@@ -11,6 +11,7 @@ in_nt = 100
 in_alpha = 1d0
 
 !-- flat structure
+in_istempflat = t
 in_consttempkev = 1d-3
 in_solidni56 = t
 
@@ -20,7 +21,7 @@ in_isvelocity = f
 in_isshell = t
 in_novolsrc = t
 in_l0 = 100d0
-in_lr = 1d0
+in_lr = 5d0
 in_totmass = 1d33
 in_templ0 = 1d0
 
@@ -36,7 +37,7 @@ in_cvrpwr = 0d0
 
 !-- group opacity structure type
 in_isanalgrp = t
-in_grptype = 'line'
+in_grptype = 'mono'
 
 !-- picket fence case
 in_suol = 'tsta'

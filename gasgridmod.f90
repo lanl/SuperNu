@@ -52,12 +52,14 @@ module gasgridmod
   real*8, dimension(:), allocatable :: gas_drarr !(gas_nr)
   real*8, dimension(:), allocatable :: gas_edep, gas_sigmap, gas_fcoef !(gas_nr)
   real*8, dimension(:), allocatable :: gas_tempb  !(gas_nr+1)
-  real*8, dimension(:,:), allocatable :: gas_sigmapg, gas_sigmargleft, gas_sigmargright, gas_emitprobg  !(gas_nr,gas_ng)
-  real*8, dimension(:,:), allocatable :: gas_sigmal, gas_ppl, gas_sigmar, gas_ppr  !(gas_nr,gas_ng)
+  real*8, dimension(:,:), allocatable :: gas_sigmapg, gas_sigmargleft, gas_sigmargright, gas_emitprobg  !(gas_ng,gas_nr)
+  real*8, dimension(:,:), allocatable :: gas_sigmal, gas_ppl, gas_sigmar, gas_ppr  !(gas_ng,gas_nr)
+  !Ryan W.: External sources (currently used for analytic_source):
+  real*8, dimension(:,:), allocatable :: gas_exsource !(gas_ng,gas_nr)
 
   type gas_secondary
     sequence
-    integer :: nvol
+    integer :: nvol, nvolex
     real*8 :: dr3_34pi, tempkev, emit
     real*8 :: ur, rho, bcoef, nisource
        real*8 :: temp       !gcell temperature
@@ -159,6 +161,8 @@ module gasgridmod
 
     allocate(gas_sigmargleft(gas_ng,gas_nr))  !left cell edge group Rosseland opacities
     allocate(gas_sigmargright(gas_ng,gas_nr)) !right ||   ||    ||     ||        ||
+
+    allocate(gas_exsource(gas_ng,gas_nr))
 
   end subroutine gasgrid_init
 

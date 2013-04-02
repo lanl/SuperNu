@@ -11,7 +11,7 @@ module particlemod
   TYPE(packet), dimension(:), pointer :: prt_particles  !(prt_npartmax)
 
   integer :: prt_npartmax, prt_ns
-  integer :: prt_nsurf, prt_nnew
+  integer :: prt_nsurf, prt_nexsrc, prt_nnew
   integer, dimension(:), allocatable :: prt_vacantarr
 
   logical :: prt_done
