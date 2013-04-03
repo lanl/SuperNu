@@ -44,11 +44,14 @@ module gasgridmod
   character(4) :: gas_suol = 'tsta' !if gas_grptype='pick', sets picket
   !magnitudes with values from cases in literature (Su&Olson 1999).
   
-  character(4) :: gas_srctype = 'heav' !analytic external source dependence
-  !on space (and group if gas_srctype='manu')
-
   real*8 :: gas_ldisp !if gas_grptype='line',
   !ratio of strong line group opacity strength to weak group
+
+  character(4) :: gas_srctype = 'heav' !analytic external source dependence
+  !on space (and group if gas_srctype='manu')
+  integer :: gas_nheav = 0 !outer cell bound of external heaviside ('heav') source
+  real*8 :: gas_theav = 0d0 !duration of heaviside source
+  real*8 :: gas_srcmax = 0d0 !peak strength (ergs/cm^3/s) of external source
 
   real*8 :: gas_emat
 
@@ -106,25 +109,37 @@ module gasgridmod
     gas_ng = in_ng
     gas_lr = in_lr
     gas_velout = in_velout
+    !
     gas_isvelocity = in_isvelocity
     gas_isshell = in_isshell
     gas_novolsrc = in_novolsrc
     gas_isanalgrp = in_isanalgrp
+    !inner edge radius (if in_isshell):
     gas_l0 = in_l0
+    !inner edge temp:
     gas_templ0 = in_templ0
+    !power law grey opacity input:
     gas_sigcoef = in_sigcoef
     gas_sigtpwr = in_sigtpwr
     gas_sigrpwr = in_sigrpwr
+    !power law heat capacity input:
     gas_cvcoef = in_cvcoef
     gas_cvtpwr = in_cvtpwr
     gas_cvrpwr = in_cvrpwr
+    !group type:
     gas_grptype = in_grptype
+    !picket fence input:
     gas_suol = in_suol
     gas_ppick(1) = in_suolpick1
     gas_ppick(2) = 1d0-in_suolpick1
+    !group line disparity:
     gas_ldisp = in_ldisp
+    !external analytic source input:
     gas_srctype = in_srctype
     gas_isanalsrc = in_isanalsrc
+    gas_theav = in_theav
+    gas_nheav = in_nheav
+    gas_srcmax = in_srcmax
 
     ! Setting velocity option
     if (in_isvelocity.eqv..true.) then

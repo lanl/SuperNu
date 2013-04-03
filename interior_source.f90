@@ -12,7 +12,7 @@ subroutine interior_source
   !This subroutine instantiates new volume (cell) particle properties.
 !##################################################
 
-  integer :: ir, ipart, ivac, ig, iig
+  integer :: ir,iir, ipart, ivac, ig, iig
   integer, dimension(gas_nr) :: irused
   real*8 :: r1, r2, r3, uul, uur, uumax, mu0, r0, Ep0
   real*8 :: denom2
@@ -25,10 +25,11 @@ subroutine interior_source
   !Volume particle instantiation: loop
   !Loop run over the number of new particles that aren't surface source
   !particles.
-  do ir = 1, gas_nr
+  do iir = 1, gas_nr
      do ig = 1, gas_ng
-        exsumg(ir)=exsumg(ir)+gas_exsource(ig,ir)
+        exsumg(iir)=exsumg(iir)+gas_exsource(ig,iir)
      enddo
+     !write(*,*) exsumg(ir)
   enddo
   do ipart = prt_nsurf+1, prt_nsurf+prt_nexsrc
      ivac = prt_vacantarr(ipart)
@@ -58,7 +59,8 @@ subroutine interior_source
            r1 = rand()
            prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
            !Calculating particle energy, lab frame direction and propagation type
-           Ep0 = gas_vals2(ir)%emit/real(gas_vals2(ir)%nvol)
+           Ep0 = exsumg(ir)*tsp_dt* &
+             (4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)/real(gas_vals2(ir)%nvolex)
            if ((gas_sigmapg(iig,ir)*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0).OR.(in_puretran.eqv..true.)) then
               prt_particles(ivac)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
               prt_particles(ivac)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)

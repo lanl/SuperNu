@@ -25,6 +25,9 @@ c-- flat-structure parameters
 c-- external source structure
       logical :: in_isanalsrc = .false. !switch to use analytic_source routine (instead of physical source)
       character(4) :: in_srctype='heav'   !heav|strt|manu: external source structure type
+      integer :: in_nheav = 0   !outer cell bound if heaviside ('heav') source
+      real*8 :: in_theav = 0d0 !duration of heaviside source
+      real*8 :: in_srcmax = 0d0 !peak source strength (ergs/cm^3/s)
 c
 c-- energy source
       logical :: in_novolsrc = .true.  !switch to turn off any volume source (could be useful for debugs)
@@ -56,6 +59,7 @@ c-- picket fence specific group structure
       real*8 :: in_suolpick1 = 1d0  !in [0,1]: probability of being at first picket
 c-- line specific group structure
       real*8 :: in_ldisp = 1d0  !order of magnitude difference between analytic group line opacity strengths
+c
 c
       real*8 :: in_wlmin = 1000d0     !lower wavelength boundary in output spectrum
       real*8 :: in_wlmax = 30000d0    !upper wavelength boundary in output spectrum
@@ -95,7 +99,7 @@ c-- runtime parameter namelist
      & in_cvcoef,in_cvtpwr,in_cvrpwr,
      & in_wldex,in_iswlread, in_isanalgrp,in_grptype,in_suol,
      & in_suolpick1, in_ldisp,
-     & in_isanalsrc, in_srctype
+     & in_isanalsrc, in_srctype, in_theav, in_nheav, in_srcmax
 c
       public
       private inputpars

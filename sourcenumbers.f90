@@ -72,5 +72,6 @@ subroutine sourcenumbers
      prt_nexsrc = prt_nexsrc + gas_vals2(ir)%nvolex
      prt_nnew = prt_nnew + gas_vals2(ir)%nvolex
   enddo
+  !write(*,*) gas_vals2(1)%nvolex
 
 end subroutine sourcenumbers
