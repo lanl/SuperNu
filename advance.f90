@@ -17,10 +17,10 @@ subroutine advance
   !total subroutine calls in program.
 !##################################################
 
-  integer :: ipart, difs, transps
+  integer :: ipart, difs, transps, g
   real*8 :: r1, alph2
-  integer, pointer :: zsrc, rtsrc, gsrc
-  real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth
+  integer, pointer :: zsrc, rtsrc !, gsrc
+  real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
   logical, pointer :: isvacant
   real :: t0,t1  !timing
 
@@ -39,7 +39,11 @@ subroutine advance
      if (prt_particles(ipart)%isvacant.eqv..false.) then
         ! Assigning pointers to corresponding particle properties
         zsrc => prt_particles(ipart)%zsrc
-        gsrc => prt_particles(ipart)%gsrc
+        !
+        !Ryan W.: Replacing particle group with particle wavelength (rev. 120)
+        wlsrc => prt_particles(ipart)%wlsrc
+        !gsrc => prt_particles(ipart)%gsrc
+        !
         rtsrc => prt_particles(ipart)%rtsrc
         rsrc => prt_particles(ipart)%rsrc
         musrc => prt_particles(ipart)%musrc
@@ -48,10 +52,21 @@ subroutine advance
         ebirth => prt_particles(ipart)%ebirth
         isvacant => prt_particles(ipart)%isvacant
 
-        !write(*,*) gsrc, esrc
+        ! Looking up group
+        if(rtsrc==1) then
+           g = minloc(abs(gas_wl-wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)),1)
+           if(wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
+              g = g-1
+           endif
+        else
+           g = minloc(abs(gas_wl-wlsrc),1)
+           if(wlsrc-gas_wl(g)<0d0) then
+              g = g-1
+           endif
+        endif
         ! Checking if particle conversions are required since prior time step
         if (in_puretran.eqv..false.) then
-           if (gas_sigmapg(gsrc,zsrc)*gas_drarr(zsrc)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
+           if (gas_sigmapg(g,zsrc)*gas_drarr(zsrc)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
               if (rtsrc == 2) then
                  r1 = rand()
                  rsrc = (r1*gas_rarr(zsrc + 1)**3 + (1.0 - r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
@@ -60,6 +75,7 @@ subroutine advance
                  musrc = (musrc + gas_velyes*rsrc/pc_c)/(1.0 + gas_velyes*rsrc*musrc/pc_c)
                  esrc = esrc/(1.0 - gas_velyes*musrc*rsrc/pc_c)
                  ebirth = ebirth/(1.0 - gas_velyes*musrc*rsrc/pc_c)
+                 wlsrc = wlsrc*(1.0-gas_velyes*musrc*rsrc/pc_c)
               endif
               rtsrc = 1
            else
@@ -87,10 +103,10 @@ subroutine advance
            !Calling either diffusion or transport depending on particle type (rtsrc)
            if (rtsrc == 1) then
               transps = transps + 1
-              call transport1(zsrc,gsrc,rsrc,musrc,tsrc,esrc,ebirth,rtsrc,isvacant)
+              call transport1(zsrc,wlsrc,rsrc,musrc,tsrc,esrc,ebirth,rtsrc,isvacant)
            else
               difs = difs + 1
-              call diffusion1(zsrc,gsrc,rsrc,musrc,tsrc,esrc,ebirth,rtsrc,isvacant)
+              call diffusion1(zsrc,wlsrc,rsrc,musrc,tsrc,esrc,ebirth,rtsrc,isvacant)
            endif
         enddo
 

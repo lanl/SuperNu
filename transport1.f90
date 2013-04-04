@@ -1,6 +1,6 @@
 !Pure transport routine
 
-subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
+subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 
   use gasgridmod
   use timestepmod
@@ -16,11 +16,11 @@ subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   !analogous DDMC diffusion routine through the advance.
 !##################################################
   !
-  integer, intent(inout) :: z, g, hyparam
-  real*8, intent(inout) :: r, mu, t, E, E0
+  integer, intent(inout) :: z, hyparam !,g
+  real*8, intent(inout) :: r, mu, t, E, E0, wl
   logical, intent(inout) :: vacnt
   !
-  integer :: ig, iig
+  integer :: ig, iig, g
   real*8 :: r1, r2
   real*8 :: db, dcol, dcen, d
   real*8 :: siglabfact, dcollabfact, elabfact
@@ -46,6 +46,13 @@ subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
      endif
   endif
 
+  ! Calculating current group (rev. 120)
+  g = minloc(abs(gas_wl-wl/(1.0d0-gas_velyes*r*mu/pc_c)),1)
+  !write(*,*) 'g 1: ',g
+  if(wl/(1.0d0-gas_velyes*r*mu/pc_c)-gas_wl(g)<0d0) then
+     g = g-1
+  endif
+  !write(*,*) 'g 2: ',g, wl/(1.0d0-gas_velyes*r*mu/pc_c)
   ! distance to collision = dcol
   if((1.0d0-gas_fcoef(z))*gas_sigmapg(g,z)>0.0d0) then
      r1 = rand()
@@ -71,14 +78,13 @@ subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
      prt_done = .true.
      gas_edep(z) = gas_edep(z) + E*elabfact
   endif
-
-  if (d == dcol) then
-     !r1 = rand()
-     !if (r1 < gas_fcoef(z)) then
-     !   vacnt = .true.
-     !   prt_done = .true.
-     !   gas_edep(z) = gas_edep(z) + E*elabfact
-     !else
+  ! Recalculating current group (rev. 120)
+  g = minloc(abs(gas_wl-wl/(1.0d0-gas_velyes*r*mu/pc_c)),1)
+  if(wl/(1.0d0-gas_velyes*r*mu/pc_c)-gas_wl(g)<0d0) then
+     g = g-1
+  endif
+  !
+  if (d == dcol) then  !fictitious scattering with implicit capture
         r1 = rand()
         mu = 1.0-2.0*r1
         mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
@@ -91,15 +97,19 @@ subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            denom2 = denom2+gas_emitprobg(ig,z)
         enddo
         g = iig
+        ! uniformly sampling comoving wavelength in group
+        r1 = rand()
+        wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
+        ! converting comoving wavelength to lab frame wavelength
+        wl = wl*(1.0-gas_velyes*r*mu/pc_c)
         if ((gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0).and.(in_puretran.eqv..false.)) then
            hyparam = 2
            E = E*(1.0-gas_velyes*r*mu/pc_c)
            E0 = E0*(1.0-gas_velyes*r*mu/pc_c)
+           wl = wl/(1.0-gas_velyes*r*mu/pc_c)
         else
            hyparam = 1
         endif
-        !gas_edep(z)=gas_edep(z)+E*(1.0-gas_velyes*mu*r/pc_c)/(gas_sigmapg(g,z)*tsp_dt*pc_c)
-     !endif
   elseif (d == db) then
      if (mu>=0.0d0) then
         if (z == gas_nr) then
@@ -116,6 +126,7 @@ subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
               hyparam = 2
               E = E*elabfact
               E0 = E0*elabfact
+              wl = wl/(1.0-gas_velyes*r*mu/pc_c)
               z = z+1
            else
               r1 = rand()
@@ -143,6 +154,7 @@ subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
                     hyparam = 2
                     E = E*elabfact
                     E0 = E0*elabfact
+                    wl = wl/(1.0-gas_velyes*r*mu/pc_c)
                     z = z+1
                  else
                     r1 = rand()
@@ -163,6 +175,7 @@ subroutine transport1(z,g,r,mu,t,E,E0,hyparam,vacnt)
               hyparam = 2
               E = E*elabfact
               E0 = E0*elabfact
+              wl = wl/(1.0-gas_velyes*r*mu/pc_c)
               z = z-1
            else
               r1 = rand()

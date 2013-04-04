@@ -2,10 +2,11 @@ module particlemod
 
   implicit none
 
+  !Ryan W.: Changing group attribute to continuous wavelength (rev. 120)
   TYPE packet
-     integer :: zsrc, gsrc, rtsrc
+     integer :: zsrc, rtsrc !,gsrc
      real*8 :: rsrc, musrc, tsrc
-     real*8 :: Esrc, Ebirth
+     real*8 :: Esrc, Ebirth, wlsrc
      logical :: isvacant
   end TYPE packet
   TYPE(packet), dimension(:), pointer :: prt_particles  !(prt_npartmax)

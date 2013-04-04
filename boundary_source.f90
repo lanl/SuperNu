@@ -8,7 +8,7 @@ subroutine boundary_source
   implicit none
 
   integer :: ipart, ivac, ig, iig, z0
-  real*8 :: r1, r2, P, mu0, r0, Esurfpart
+  real*8 :: r1, r2, P, mu0, r0, Esurfpart, wl0
   real*8 :: denom2, x1, x2, specint
   real*8, dimension(gas_ng) :: emitsurfprobg  !surface emission probabilities 
   !, Ryan W.: size will=# of groups in first cell
@@ -34,7 +34,7 @@ subroutine boundary_source
   !Instantiating surface particles:
   do ipart = 1, prt_nsurf
      ivac = prt_vacantarr(ipart)
-     !Picket fence group sampling
+     !sampling group
      denom2 = 0d0
      r1 = rand()
      do ig = 1, gas_ng
@@ -42,10 +42,11 @@ subroutine boundary_source
         if(r1>=denom2.and.r1<denom2+emitsurfprobg(ig)) exit
         denom2 = denom2+emitsurfprobg(ig)
      enddo
-     !if(ipart==1.or.ipart==prt_nsurf) then
-     !   write(6,*) iig
-     !endif
-     prt_particles(ivac)%gsrc = iig
+     !particle group removed (rev 120)
+     !prt_particles(ivac)%gsrc = iig
+     !Calculating comoving particle wavelength uniformly in group
+     r1 = rand()
+     wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
 
      r1 = rand()
      r2 = rand()
@@ -70,12 +71,18 @@ subroutine boundary_source
         !transport => lab frame quantities
         prt_particles(ivac)%Esrc = Esurfpart*(1.0+gas_velyes*r0*mu0/pc_c)
         prt_particles(ivac)%Ebirth = Esurfpart*(1.0+gas_velyes*r0*mu0/pc_c)
+        !(rev 120)
+        prt_particles(ivac)%wlsrc = wl0/(1.0+gas_velyes*r0*mu0/pc_c)
+        !
         prt_particles(ivac)%musrc = (mu0+gas_velyes*r0/pc_c)/(1.0+gas_velyes*r0*mu0/pc_c)
         prt_particles(ivac)%rtsrc = 1
      else
         !diffusion => comoving frame quantities (with diffuse reflection accounted)
         prt_particles(ivac)%Esrc = P*Esurfpart
         prt_particles(ivac)%Ebirth = P*Esurfpart
+        !(rev 120)
+        prt_particles(ivac)%wlsrc = wl0
+        !
         prt_particles(ivac)%rtsrc = 2
      endif
 

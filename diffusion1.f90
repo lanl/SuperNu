@@ -1,6 +1,6 @@
 !Pure diffusion routine
 
-subroutine diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
+subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 
   use gasgridmod
   use timestepmod
@@ -17,16 +17,22 @@ subroutine diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   !is set to true, this routine is not used.
 !##################################################
   !
-  integer, intent(inout) :: z, g, hyparam
-  real*8, intent(inout) :: r, mu, t, E, E0
+  integer, intent(inout) :: z, hyparam !,g
+  real*8, intent(inout) :: r, mu, t, E, E0, wl
   logical, intent(inout) :: vacnt
   !
-  integer :: ig, iig
+  integer :: ig, iig, g
   real*8 :: r1, r2
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus, PR, PL, PA
   real*8, dimension(gas_ng) :: PDFg
 
+  ! Calculating current group (rev. 120)
+  g = minloc(abs(gas_wl-wl),1)
+  if(wl-gas_wl(g)<0d0) then
+     g = g-1
+  endif
+  !
   denom = gas_sigmal(g,z)+gas_sigmar(g,z)+gas_fcoef(z)*gas_sigmapg(g,z)
   denom = denom+(1.0-gas_emitprobg(g,z))*(1.0-gas_fcoef(z))*gas_sigmapg(g,z)
   r1 = rand()
@@ -35,9 +41,19 @@ subroutine diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
   ddmct = min(tau,tcensus)
   E = E*(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
   E0 = E0*(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
+  ! Recalculating comoving wavelength (rev. 120)
+  wl = wl/(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
+  ! Recalculating current group (rev. 120)
+  g = minloc(abs(gas_wl-wl),1)
+  if(wl-gas_wl(g)<0d0) then
+     g = g-1
+  endif
   t = t+ddmct
-  !write(6,*) ddmct, tau, tcensus
-  !gas_edep(z) = gas_edep(z)+E
+
+  !Recalculating histogram sum (rev. 120)
+  denom = gas_sigmal(g,z)+gas_sigmar(g,z)+gas_fcoef(z)*gas_sigmapg(g,z)
+  denom = denom+(1.0-gas_emitprobg(g,z))*(1.0-gas_fcoef(z))*gas_sigmapg(g,z)  
+
   if (ddmct == tau) then
      r1 = rand()
      PR = gas_sigmar(g,z)/denom
@@ -64,6 +80,7 @@ subroutine diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
            E = E/(1.0-gas_velyes*r*mu/pc_c)
            E0 = E0/(1.0-gas_velyes*r*mu/pc_c)
+           wl = wl*(1.0-gas_velyes*r*mu/pc_c)
         endif
      elseif (PL<=r1 .and. r1<PL+PR) then
         if (z == gas_nr) then
@@ -85,6 +102,7 @@ subroutine diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            mu = (mu+gas_velyes*r/pc_c)/(1.0+r*mu/pc_c)
            E = E/(1.0-gas_velyes*r*mu/pc_c)
            E0 = E0/(1.0-gas_velyes*r*mu/pc_c)
+           wl = wl*(1.0-gas_velyes*r*mu/pc_c)
         endif
      elseif (PL+PR<=r1 .and. r1<PL+PR+PA) then
         vacnt = .true.
@@ -108,6 +126,9 @@ subroutine diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            endif
         enddo
         g = iig
+        ! uniformly sampling comoving wavelength in group
+        r1 = rand()
+        wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
         !
         if (gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
            hyparam = 2
@@ -120,6 +141,7 @@ subroutine diffusion1(z,g,r,mu,t,E,E0,hyparam,vacnt)
            mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
            E = E/(1.0-gas_velyes*mu*r/pc_c)
            E0 = E0/(1.0-gas_velyes*mu*r/pc_c)
+           wl = wl*(1.0-gas_velyes*r*mu/pc_c)
         endif
      endif
   else

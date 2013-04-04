@@ -6,8 +6,8 @@ in_puretran = f
 
 !-- time step
 in_tfirst = 1d-14
-in_tlast = 2.1574d-14
-in_nt = 100
+in_tlast = 4.314d-14
+in_nt = 200
 in_alpha = 1d0
 
 !-- flat structure
@@ -20,7 +20,7 @@ in_isanalsrc = t
 in_srctype = 'heav'
 in_srcmax = 4d24
 !-- heaviside case
-in_theav = 1.5d-14
+in_theav = 0.5d-14
 in_nheav = 39
 
 !-- gas grid settings
@@ -34,8 +34,8 @@ in_totmass = 1d33
 in_templ0 = 1d-3
 
 !-- power law opacity values
-in_sigcoef = 100d0
-in_sigtpwr = -0.5d0
+in_sigcoef = 10d0
+in_sigtpwr = 0d0
 in_sigrpwr = 0d0
 
 !-- power law heat capacity values
@@ -45,7 +45,7 @@ in_cvrpwr = 0d0
 
 !-- group opacity structure type
 in_isanalgrp = t
-in_grptype = 'mono'
+in_grptype = 'grey'
 
 !-- picket fence case
 in_suol = 'tsta'
