@@ -2,12 +2,12 @@
 
 !-- misc
 in_grab_stdout = f
-in_puretran = f
+in_puretran = t
 
 !-- time step
-in_tfirst = 1d-14
-in_tlast = 4.314d-14
-in_nt = 200
+in_tfirst = 5.787d-8
+in_tlast = 28.241d-8
+in_nt = 1000
 in_alpha = 1d0
 
 !-- flat structure
@@ -18,18 +18,19 @@ in_solidni56 = t
 !-- external source type
 in_isanalsrc = t
 in_srctype = 'heav'
-in_srcmax = 4d24
+in_srcmax = 6.433d32
 !-- heaviside case
-in_theav = 0.5d-14
-in_nheav = 39
+in_theav = 1.3d-10
+in_nheav = 20
 
 !-- gas grid settings
-in_nr = 50
-in_isvelocity = f
+in_nr = 20
+in_isvelocity = t
+in_velout = 2.45d8
 in_isshell = t
 in_novolsrc = t
-in_l0 = 100d0
-in_lr = 5d0
+in_l0 = 2.25d5
+!!!!!!!!!!!!!!!!!!!!!in_lr = 10d5
 in_totmass = 1d33
 in_templ0 = 1d-3
 
@@ -39,7 +40,7 @@ in_cvtpwr = 0d0
 in_cvrpwr = 0d0
 
 !-- power law scattering opacity values
-in_sigcoefs = 10d0
+in_sigcoefs = 5d-3
 in_sigtpwrs = 0d0
 in_sigrpwrs = 0d0
 
@@ -60,12 +61,12 @@ in_suolpick1 = 1d0
 in_ldisp = 1d4 
 
 !-- group settings
-in_wldex = 17
+in_wldex = 12
 in_iswlread = t
 in_ng = 5
 
 !-- particle numbers
-in_ns = 200000
+in_ns = 40000
 in_npartmax = 10000000
 
 !-- opacity switches

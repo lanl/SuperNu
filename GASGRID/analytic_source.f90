@@ -3,6 +3,7 @@ subroutine analytic_source
   use gasgridmod
   use physconstmod
   use timestepmod
+  use particlemod
   implicit none
 
   integer :: ir, ig
@@ -32,6 +33,11 @@ subroutine analytic_source
               gas_exsource(ig,ir)=0d0
            enddo
         enddo
+        !Ryan W.: Temporary fix (?) for over generation,
+        !resetting prt_ns
+        if(gas_sigcoef==0d0) then
+           prt_ns = 1
+        endif
      endif
      !
   elseif(gas_srctype=='strt') then
