@@ -10,6 +10,8 @@ subroutine analytic_opacity
   !The power law coefficients are used in any structure
   !selection to either fully or partially determine
   !opacity dependence on temperature and density.
+  !
+  !Since revision 121, calculates grey scattering opacity, gas_sig
 !#####################################
 
   integer :: ir, ig
@@ -18,6 +20,14 @@ subroutine analytic_opacity
   real*8 :: x1, x2  !unitless energy group bounds
   real*8 :: specint !debye type function integrator
 
+  !Calculating grey scattering opacity
+  do ir = 1, gas_nr
+     gas_sig(ir) = gas_sigcoefs*gas_vals2(ir)%tempkev**gas_sigtpwrs*gas_vals2(ir)%rho**gas_sigrpwrs
+     gas_sigbl(ir) = gas_sigcoefs*gas_tempb(ir)**gas_sigtpwrs*gas_vals2(ir)%rho**gas_sigrpwrs
+     gas_sigbr(ir) = gas_sigcoefs*gas_tempb(ir+1)**gas_sigtpwrs*gas_vals2(ir)%rho**gas_sigrpwrs
+  enddo
+       
+  !Calculating grouped Planck and Rosseland opacities
   if(gas_grptype=='grey') then
      ! sigmaP = A*T^B*rho^C (A,B,C set in input.par)
      ! sigmaP_g, sigmaR_g = sigmaP for all g 

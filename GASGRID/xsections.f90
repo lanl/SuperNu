@@ -74,14 +74,17 @@ subroutine xsections
      eps = (4.0/3.0)*gg/(1.0+0.7104*gg)
      do ig = 1, gas_ng
         !Calculating for leakage from left
-        !tt = gas_sigmargleft(ig,ir)*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
-        tt = gas_sigmapg(ig,ir)*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
+        !total optical depth      ||   ||
+        tt = (gas_sigmargleft(ig,ir)+gas_sigbl(ir)) &
+             *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
+        !
         ggg = (gg*tt)**2
         bb = (3.0/4.0)*gas_fcoef(ir)*tt**2+(ggg+(ggg**2)/4.0)**0.5
         gas_ppl(ig,ir) = 0.5*eps*bb/(bb-(3.0/4.0)*eps*tt)
         !Calculating for leakage from right
-        !tt = gas_sigmargright(ig,ir)*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
-        tt = gas_sigmapg(ig,ir)*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
+        !total optical depth      ||   ||
+        tt = (gas_sigmargright(ig,ir)+gas_sigbr(ir)) &
+             *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
         ggg = (gg*tt)**2
         bb = (3.0/4.0)*gas_fcoef(ir)*tt**2+(ggg+(ggg**2)/4.0)**0.5
         gas_ppr(ig,ir) = 0.5*eps*bb/(bb-(3.0/4.0)*eps*tt)
@@ -93,32 +96,47 @@ subroutine xsections
      do ig = 1, gas_ng
         !Computing left-leakage opacities
         if (ir==1) then
-           !gas_sigmal(ig,ir)=0.5*gas_ppl(ig,ir)/gas_drarr(ir)
+        !
            gas_sigmal(ig,ir)=1.5*gas_ppl(ig,ir)*gas_rarr(ir)**2
-           gas_sigmal(ig,ir)=gas_sigmal(ig,ir)/(gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp))
-        elseif(gas_sigmapg(ig,ir-1)*gas_drarr(ir-1)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
-           !gas_sigmal(ig,ir)=0.5*gas_ppl(ig,ir)/gas_drarr(ir)
+           gas_sigmal(ig,ir)=gas_sigmal(ig,ir)/(gas_vals2(ir)%dr3_34pi &
+                *(gas_velno*1.0+gas_velyes*tsp_texp))
+        !   
+        elseif((gas_sig(ir-1)+gas_sigmapg(ig,ir-1))*gas_drarr(ir-1) &
+             *(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
+        !   
            gas_sigmal(ig,ir)=1.5*gas_ppl(ig,ir)*gas_rarr(ir)**2
-           gas_sigmal(ig,ir)=gas_sigmal(ig,ir)/(gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp))
+           gas_sigmal(ig,ir)=gas_sigmal(ig,ir)/(gas_vals2(ir)%dr3_34pi &
+                *(gas_velno*1.0+gas_velyes*tsp_texp))
+        !   
         else
-           tt = gas_sigmargleft(ig,ir)*gas_drarr(ir)+gas_sigmargright(ig,ir-1)*gas_drarr(ir-1)
-           !gas_sigmal(ig,ir) = 2.0/(3.0*gas_drarr(ir))
-           gas_sigmal(ig,ir) = (2.0*gas_rarr(ir)**2)/(gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp**2))
+        !
+           tt = (gas_sigbl(ir)+gas_sigmargleft(ig,ir))*gas_drarr(ir)+ &
+                (gas_sigbr(ir-1)+gas_sigmargright(ig,ir-1))*gas_drarr(ir-1)
+        !   
+           gas_sigmal(ig,ir)=(2.0*gas_rarr(ir)**2)/(gas_vals2(ir)%dr3_34pi &
+                *(gas_velno*1.0+gas_velyes*tsp_texp**2))
            gas_sigmal(ig,ir) = gas_sigmal(ig,ir)/tt
         endif
         !Computing right-leakage opacities
         if (ir==gas_nr) then
-           !gas_sigmar(ig,ir)=0.5*gas_ppr(ig,ir)/gas_drarr(ir)
+        !
            gas_sigmar(ig,ir)=1.5*gas_ppr(ig,ir)*gas_rarr(ir+1)**2
-           gas_sigmar(ig,ir)=gas_sigmar(ig,ir)/(gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp))
-        elseif(gas_sigmapg(ig,ir+1)*gas_drarr(ir+1)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
-           !gas_sigmar(ig,ir)=0.5*gas_ppr(ig,ir)/gas_drarr(ir)
+           gas_sigmar(ig,ir)=gas_sigmar(ig,ir)/(gas_vals2(ir)%dr3_34pi &
+                *(gas_velno*1.0+gas_velyes*tsp_texp))
+        !   
+        elseif((gas_sig(ir+1)+gas_sigmapg(ig,ir+1))*gas_drarr(ir+1) &
+             *(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
+        !   
            gas_sigmar(ig,ir)=1.5*gas_ppr(ig,ir)*gas_rarr(ir+1)**2
-           gas_sigmar(ig,ir)=gas_sigmar(ig,ir)/(gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp))
+           gas_sigmar(ig,ir)=gas_sigmar(ig,ir)/(gas_vals2(ir)%dr3_34pi &
+                *(gas_velno*1.0+gas_velyes*tsp_texp))
+        !   
         else
-           tt = gas_sigmargright(ig,ir)*gas_drarr(ir)+gas_sigmargleft(ig,ir+1)*gas_drarr(ir+1)
-           !gas_sigmar(ig,ir) = 2.0/(3.0*gas_drarr(ir))
-           gas_sigmar(ig,ir) = (2.0*gas_rarr(ir+1)**2)/(gas_vals2(ir)%dr3_34pi*(gas_velno*1.0+gas_velyes*tsp_texp**2))
+        !
+           tt = (gas_sigbr(ir)+gas_sigmargright(ig,ir))*gas_drarr(ir)+ &
+                (gas_sigbl(ir+1)+gas_sigmargleft(ig,ir+1))*gas_drarr(ir+1)
+           gas_sigmar(ig,ir) = (2.0*gas_rarr(ir+1)**2)/(gas_vals2(ir)%dr3_34pi &
+                *(gas_velno*1.0+gas_velyes*tsp_texp**2))
            gas_sigmar(ig,ir) = gas_sigmar(ig,ir)/tt
         endif
      enddo

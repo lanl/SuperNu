@@ -70,10 +70,16 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            endif
         elseif (gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
            z = z-1
+           !(rev 121): calculating radiation energy tally per group
+           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !-------------------------------------------------------
         else
            hyparam = 1
            r = gas_rarr(z)
            z = z-1
+           !(rev 121): calculating radiation energy tally per group
+           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !-------------------------------------------------------
            r1 = rand()
            r2 = rand()
            mu = -max(r1,r2)
@@ -92,10 +98,16 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            gas_eright = gas_eright+E*(1.0+gas_velyes*gas_rarr(gas_nr+1)*mu/pc_c)
         elseif (gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
            z = z+1
+           !(rev 121): calculating radiation energy tally per group
+           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !-------------------------------------------------------
         else
            hyparam = 1
            r = gas_rarr(z+1)
            z = z+1
+           !(rev 121): calculating radiation energy tally per group
+           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !-------------------------------------------------------
            r1 = rand()
            r2 = rand()
            mu = max(r1,r2)
@@ -126,6 +138,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            endif
         enddo
         g = iig
+        !(rev 121): calculating radiation energy tally per group
+        gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+        !-------------------------------------------------------
         ! uniformly sampling comoving wavelength in group
         r1 = rand()
         wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)

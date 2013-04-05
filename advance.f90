@@ -28,6 +28,9 @@ subroutine advance
   gas_erad = 0.0
   gas_eright = 0.0
   gas_eleft = 0.0
+!--(rev. 121)
+  gas_eraddensg =0d0
+!--
   difs = 0
   transps = 0
   gas_numcensus(1:gas_nr) = 0
@@ -66,10 +69,11 @@ subroutine advance
         endif
         ! Checking if particle conversions are required since prior time step
         if (in_puretran.eqv..false.) then
-           if (gas_sigmapg(g,zsrc)*gas_drarr(zsrc)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
+           if ((gas_sig(zsrc)+gas_sigmapg(g,zsrc))*gas_drarr(zsrc) &
+                *(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
               if (rtsrc == 2) then
                  r1 = rand()
-                 rsrc = (r1*gas_rarr(zsrc + 1)**3 + (1.0 - r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
+                 rsrc = (r1*gas_rarr(zsrc+1)**3 + (1.0-r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
                  r1 = rand()
                  musrc = 1.0 - 2.0*r1
                  musrc = (musrc + gas_velyes*rsrc/pc_c)/(1.0 + gas_velyes*rsrc*musrc/pc_c)
@@ -81,6 +85,17 @@ subroutine advance
            else
               rtsrc = 2
            endif
+        endif
+        ! tallying sourced energy density
+        if (rtsrc==2) then
+           !(rev 121): calculating radiation energy tally per group
+           gas_eraddensg(g,zsrc)=gas_eraddensg(g,zsrc)+esrc
+           !-------------------------------------------------------
+        else
+           !(rev 121): calculating radiation energy tally per group
+           gas_eraddensg(g,zsrc)=gas_eraddensg(g,zsrc)+esrc* &
+                (1.0-gas_velyes*musrc*rsrc/pc_c)
+           !-------------------------------------------------------
         endif
 
         ! First portion of operator split particle velocity position adjustment
@@ -121,7 +136,7 @@ subroutine advance
               endif
            endif
         endif
-
+        
      endif
   enddo
   call time(t1)

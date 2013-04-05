@@ -17,6 +17,10 @@ module gasgridmod
   real*8,allocatable :: gas_dwl(:) !(gas_ng) wavelength grid bin width
   real*8,allocatable :: gas_cap(:,:) !(gas_nr,gas_ng) Line+Cont extinction coeff
   real*8,allocatable :: gas_sig(:) !(gas_nr) scattering coefficient
+!-(rev. 121): edge scattering coefficient (a secondary quantity)
+  real*8,allocatable :: gas_sigbl(:) !(gas_nr), left
+  real*8,allocatable :: gas_sigbr(:) !(gas_nr), right
+!---------------------------------------------------------------
   real*8,allocatable :: gas_capgam(:) !(gas_nr) Gamma ray gray opacity
 !
 !-- temperature structure history
@@ -31,9 +35,14 @@ module gasgridmod
   logical :: gas_isanalsrc  !switch to use analytic_source
   integer :: gas_velno, gas_velyes
   real*8 :: gas_templ0=0 !surface temperature at innermost radius
-  real*8 :: gas_sigcoef=0  !analytic opacity power law coefficient
-  real*8 :: gas_sigtpwr=0  !analytic opacity power law temperature exponent
-  real*8 :: gas_sigrpwr=0  !analytic opacity power law density exponent
+!-(rev. 121)
+  real*8 :: gas_sigcoefs=0  !analytic scattering opacity power law coefficient
+  real*8 :: gas_sigtpwrs=0  !analytic scattering opacity power law temperature exponent
+  real*8 :: gas_sigrpwrs=0  !analytic scattering opacity power law density exponent
+!-
+  real*8 :: gas_sigcoef=0  !analytic absorption opacity power law coefficient
+  real*8 :: gas_sigtpwr=0  !analytic absorption opacity power law temperature exponent
+  real*8 :: gas_sigrpwr=0  !analytic absorption opacity power law density exponent
   real*8 :: gas_cvcoef=0  !analytic heat capacity power law coefficient
   real*8 :: gas_cvtpwr=0  !analytic heat capacity power law temperature exponent
   real*8 :: gas_cvrpwr=0  !analytic heat capacity power law density exponent
@@ -61,13 +70,16 @@ module gasgridmod
   real*8, dimension(:), allocatable :: gas_tempb  !(gas_nr+1)
   real*8, dimension(:,:), allocatable :: gas_sigmapg, gas_sigmargleft, gas_sigmargright, gas_emitprobg  !(gas_ng,gas_nr)
   real*8, dimension(:,:), allocatable :: gas_sigmal, gas_ppl, gas_sigmar, gas_ppr  !(gas_ng,gas_nr)
+  
+  real*8, dimension(:,:), allocatable :: gas_eraddensg !(gas_ng,gas_nr)
+
   !Ryan W.: External sources (currently used for analytic_source):
   real*8, dimension(:,:), allocatable :: gas_exsource !(gas_ng,gas_nr)
 
   type gas_secondary
     sequence
     integer :: nvol, nvolex
-    real*8 :: dr3_34pi, tempkev, emit
+    real*8 :: dr3_34pi, tempkev, emit, eraddens
     real*8 :: ur, rho, bcoef, nisource
        real*8 :: temp       !gcell temperature
        real*8 :: volr       !gcell volume [rout=1 units]
@@ -118,14 +130,18 @@ module gasgridmod
     gas_l0 = in_l0
     !inner edge temp:
     gas_templ0 = in_templ0
-    !power law grey opacity input:
-    gas_sigcoef = in_sigcoef
-    gas_sigtpwr = in_sigtpwr
-    gas_sigrpwr = in_sigrpwr
     !power law heat capacity input:
     gas_cvcoef = in_cvcoef
     gas_cvtpwr = in_cvtpwr
     gas_cvrpwr = in_cvrpwr
+    !power law scattering opacity input:
+    gas_sigcoefs = in_sigcoefs
+    gas_sigtpwrs = in_sigtpwrs
+    gas_sigrpwrs = in_sigrpwrs
+    !power law absorption opacity input:
+    gas_sigcoef = in_sigcoef
+    gas_sigtpwr = in_sigtpwr
+    gas_sigrpwr = in_sigrpwr
     !group type:
     gas_grptype = in_grptype
     !picket fence input:
@@ -156,6 +172,9 @@ module gasgridmod
     allocate(gas_drarr(gas_nr))  !radial zone length
     allocate(gas_edep(gas_nr))  !energy absorbed by material
     allocate(gas_sigmap(gas_nr)) !Planck opacity (gray)
+!- Ryan W.: using power law to calculate gas_sig (similar to Planck opacity)
+    allocate(gas_sig(gas_nr))    !grey scattering opacity
+!----------------------------------------------------------------
     allocate(gas_fcoef(gas_nr))  !Fleck factor
     allocate(gas_sigmapg(gas_ng,gas_nr))  !group Planck opacities
     allocate(gas_emitprobg(gas_ng,gas_nr))  !Probability of emission in a given zone and group
@@ -163,8 +182,7 @@ module gasgridmod
     allocate(gas_sigmar(gas_ng,gas_nr))
     allocate(gas_ppl(gas_ng,gas_nr))  !can potentially be removed
     allocate(gas_ppr(gas_ng,gas_nr))  !can potentially be removed
-    !allocate(gas_ppick(gas_ng))  !gas_ng=2 for to temp picket fence verification
-
+    allocate(gas_eraddensg(gas_ng,gas_nr))  !radiation energy density in tsp_dt per group
 !-Ryan W: gas_wl being allocated in gasgrid_setup now--
     !allocate(gas_wl(gas_ng)) !wavelength grid
 !------------------------------------------------------
@@ -172,9 +190,12 @@ module gasgridmod
 
 !-- secondary
     allocate(gas_vals2(gas_nr))
-    allocate(gas_sig(gas_nr))
+    !allocate(gas_sig(gas_nr))
     allocate(gas_capgam(gas_nr))
-
+!--Ryan W: added edge scattering opacities for leakage coefficients (rev. 121)
+    allocate(gas_sigbl(gas_nr))
+    allocate(gas_sigbr(gas_nr))
+!------------------------------------
     allocate(gas_temphist(gas_nr,nt))
     allocate(gas_dwl(gas_ng)) !wavelength grid bin width
 

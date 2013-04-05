@@ -33,17 +33,22 @@ in_lr = 5d0
 in_totmass = 1d33
 in_templ0 = 1d-3
 
-!-- power law opacity values
-in_sigcoef = 10d0
-in_sigtpwr = 0d0
-in_sigrpwr = 0d0
-
 !-- power law heat capacity values
 in_cvcoef = 1d15
 in_cvtpwr = 0d0
 in_cvrpwr = 0d0
 
-!-- group opacity structure type
+!-- power law scattering opacity values
+in_sigcoefs = 10d0
+in_sigtpwrs = 0d0
+in_sigrpwrs = 0d0
+
+!-- power law absorption opacity values
+in_sigcoef = 0d0
+in_sigtpwr = 0d0
+in_sigrpwr = 0d0
+
+!-- group absorption opacity structure type
 in_isanalgrp = t
 in_grptype = 'grey'
 

@@ -26,9 +26,11 @@ c-- gasgridmod
       deallocate(gas_sigmapg,gas_sigmargleft)
       deallocate(gas_sigmargright,gas_emitprobg,gas_sigmal,gas_sigmar)
       deallocate(gas_ppl,gas_ppr)
+      deallocate(gas_eraddensg)
       deallocate(gas_sigmap,gas_fcoef)
-      deallocate(gas_sig)
+      deallocate(gas_sig,gas_sigbl,gas_sigbr)
       deallocate(gas_capgam)
+      deallocate(gas_exsource)
 c-- particlemod
       deallocate(prt_particles)
 

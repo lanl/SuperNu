@@ -72,9 +72,15 @@ c-- opacity (cm^2/gram)
       logical :: in_nobfopac = .false.    !turn off bound-bound opacity
       logical :: in_noffopac = .false.    !turn off bound-bound opacity
 c-- analytic opacities
-      real*8 :: in_sigcoef = 0d0 !power law opacity coefficient
-      real*8 :: in_sigtpwr = 0d0 !power law opacity temperature exponent
-      real*8 :: in_sigrpwr = 0d0 !power law opacity density exponent
+c-- scattering terms:
+      real*8 :: in_sigcoefs = 0d0 !power law absorption opacity coefficient
+      real*8 :: in_sigtpwrs = 0d0 !power law absorption opacity temperature exponent
+      real*8 :: in_sigrpwrs = 0d0 !power law absorption opacity density exponent
+c-- absorption terms:
+      real*8 :: in_sigcoef = 0d0 !power law absorption opacity coefficient
+      real*8 :: in_sigtpwr = 0d0 !power law absorption opacity temperature exponent
+      real*8 :: in_sigrpwr = 0d0 !power law absorption opacity density exponent
+c-- analytic heat capacity terms
       real*8 :: in_cvcoef = 1d0 !power law heat capacity coefficient
       real*8 :: in_cvtpwr = 0d0 !power law heat capacity temperature exponent
       real*8 :: in_cvrpwr = 0d0 !power law heat capacity density exponent
@@ -95,6 +101,7 @@ c-- runtime parameter namelist
      & in_opcapgam,in_opcap,in_epsline,in_nobbopac,in_nobfopac,
      & in_noffopac,
      & in_opacdump,in_pdensdump,
+     & in_sigcoefs,in_sigtpwrs,in_sigrpwrs,
      & in_sigcoef,in_sigtpwr,in_sigrpwr,
      & in_cvcoef,in_cvtpwr,in_cvrpwr,
      & in_wldex,in_iswlread, in_isanalgrp,in_grptype,in_suol,
