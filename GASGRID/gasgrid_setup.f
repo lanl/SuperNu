@@ -27,7 +27,11 @@ c--
 c
 c-- grid with unit radius: scaled up below by gas_lr for static, or gas_velout for velocity grid
       if(gas_isshell) then
-         gas_rarr(1) = gas_l0
+         if(gas_isvelocity) then
+            gas_rarr(1) = gas_v0/(gas_velout-gas_v0)
+         else
+            gas_rarr(1) = gas_l0/gas_lr
+         endif
       else
          gas_rarr(1) = 0.0d0    !Initial inner most radius
       endif
@@ -41,7 +45,7 @@ c-- grid with unit radius: scaled up below by gas_lr for static, or gas_velout f
 c
 c-- set grid size to velout or lr depending on expanding or static
       if(gas_isvelocity) then
-       help = gas_velout
+       help = gas_velout-gas_v0
       else
        help = gas_lr
       endif

@@ -12,9 +12,10 @@ c-- gas grid
       integer :: in_ng = 0 !# groups
       logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
       logical :: in_isshell = .false.  !switch to change domain topology from solid sphere to shell
-      real*8 :: in_l0 = 0d0  !innermost radius of the domain
+      real*8 :: in_l0 = 0d0  !innermost radius of the domain, used if in_isshell
       real*8 :: in_lr = 0d0  !spatial length of the domain
-      real*8 :: in_velout = 0d0  !cm/s
+      real*8 :: in_velout = 0d0  !cm/s, velocity of outer bound
+      real*8 :: in_v0 !velocity of inner bound (analogous to in_l0), used if in_isshell
       real*8 :: in_totmass = 0d0  !g
       real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
 c-- flat-structure parameters
@@ -92,7 +93,7 @@ c
 c-- runtime parameter namelist
       namelist /inputpars/
      & in_nr,in_ng,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
-     & in_totmass,in_templ0,in_velout,
+     & in_totmass,in_templ0,in_velout,in_v0,
      & in_consttempkev,in_solidni56, in_istempflat,
      & in_seed,in_ns,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,

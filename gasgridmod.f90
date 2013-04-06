@@ -11,7 +11,7 @@ module gasgridmod
   integer :: gas_ng = 0
 
   real*8 :: gas_velout = 0d0 !outer boundary velocity
-
+  real*8 :: gas_v0 = 0d0 !inner boundary velocity (if in_isshell)
 
   real*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
   real*8,allocatable :: gas_dwl(:) !(gas_ng) wavelength grid bin width
@@ -121,6 +121,7 @@ module gasgridmod
     gas_ng = in_ng
     gas_lr = in_lr
     gas_velout = in_velout
+    gas_v0 = in_v0
     !
     gas_isvelocity = in_isvelocity
     gas_isshell = in_isshell

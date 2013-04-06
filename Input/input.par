@@ -2,7 +2,7 @@
 
 !-- misc
 in_grab_stdout = f
-in_puretran = t
+in_puretran = f
 
 !-- time step
 in_tfirst = 5.787d-8
@@ -26,10 +26,11 @@ in_nheav = 20
 !-- gas grid settings
 in_nr = 20
 in_isvelocity = t
+in_v0 = 0.45d8
 in_velout = 2.45d8
 in_isshell = t
 in_novolsrc = t
-in_l0 = 2.25d5
+!!!!!!!!!!!!!!!!!!!!!in_l0 = 2.25d5
 !!!!!!!!!!!!!!!!!!!!!in_lr = 10d5
 in_totmass = 1d33
 in_templ0 = 1d-3
