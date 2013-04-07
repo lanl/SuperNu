@@ -49,7 +49,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      g = g-1
   endif
   t = t+ddmct
-
+  !tallying energy density
+  gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+  !
   !Recalculating histogram sum (rev. 120)
   denom = gas_sigmal(g,z)+gas_sigmar(g,z)+gas_fcoef(z)*gas_sigmapg(g,z)
   denom = denom+(1.0-gas_emitprobg(g,z))*(1.0-gas_fcoef(z))*gas_sigmapg(g,z)  
@@ -71,14 +73,14 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         elseif (gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
            z = z-1
            !(rev 121): calculating radiation energy tally per group
-           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            !-------------------------------------------------------
         else
            hyparam = 1
            r = gas_rarr(z)
            z = z-1
            !(rev 121): calculating radiation energy tally per group
-           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            !-------------------------------------------------------
            r1 = rand()
            r2 = rand()
@@ -99,14 +101,14 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         elseif (gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
            z = z+1
            !(rev 121): calculating radiation energy tally per group
-           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            !-------------------------------------------------------
         else
            hyparam = 1
            r = gas_rarr(z+1)
            z = z+1
            !(rev 121): calculating radiation energy tally per group
-           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            !-------------------------------------------------------
            r1 = rand()
            r2 = rand()
@@ -139,7 +141,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         enddo
         g = iig
         !(rev 121): calculating radiation energy tally per group
-        gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+        !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
         !-------------------------------------------------------
         ! uniformly sampling comoving wavelength in group
         r1 = rand()

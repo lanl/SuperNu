@@ -78,7 +78,10 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   t = t + (gas_velno*1.0+gas_velyes*tsp_texp)*d/pc_c
   mu = (rold*mu+d)/r
   elabfact = 1.0d0 - gas_velyes*mu*r/pc_c
-  gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z)*gas_sigmapg(g,z)*d))*elabfact
+  !calculating energy deposition
+  gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z) &
+       *gas_sigmapg(g,z)*d))*elabfact
+  !
   E = E*exp(-gas_fcoef(z)*gas_sigmapg(g,z)*d)
   if (E/E0<0.001d0) then
      vacnt = .true.
@@ -92,6 +95,8 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   endif
   !
   !
+  gas_eraddensg(g,z) = gas_eraddensg(g,z)+E* &
+       elabfact*d*dcollabfact/(pc_c*tsp_dt)  
   !
   if (d == dthm) then  !physical scattering (Thomson-type)
      !
@@ -100,6 +105,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
      E = E*elabfact/(1.0-gas_velyes*mu*r/pc_c)
      wl=wl*(1.0-gas_velyes*r*mu/pc_c)/elabfact
+     !
+     !gas_eraddensg(g,z) = gas_eraddensg(g,z)+E* &
+     !     (1.0-gas_velyes*mu*r/pc_c)/(pc_c*gas_sig(z)*tsp_dt)
      !
   elseif (d == dcol) then  !fictitious scattering with implicit capture
      r1 = rand()
@@ -115,7 +123,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      enddo
      g = iig
      !(rev 121): calculating radiation energy tally per group
-     gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*elabfact
+     !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*elabfact
      !-------------------------------------------------------
      ! uniformly sampling comoving wavelength in group
      r1 = rand()
@@ -148,24 +156,15 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
               E0 = E0*elabfact
               wl = wl/(1.0-gas_velyes*r*mu/pc_c)
               z = z+1
-              !(rev 121): calculating radiation energy tally per group
-              gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
-              !-------------------------------------------------------
            else
               r1 = rand()
               r2 = rand()
               mu = -max(r1,r2)
               mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
-              !(rev 121): calculating radiation energy tally per group
-              gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*elabfact
-              !-------------------------------------------------------
            endif
         ! End of check
         else
            z = z+1
-           !(rev 121): calculating radiation energy tally per group
-           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*elabfact
-           !-------------------------------------------------------
         endif
      else
         if (z==1) then
