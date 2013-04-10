@@ -49,8 +49,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      g = g-1
   endif
   t = t+ddmct
-  !tallying energy density
-  !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
   !
   !Recalculating histogram sum (rev. 120)
   denom = gas_sigmal(g,z)+gas_sigmar(g,z)+gas_fcoef(z)*gas_sigmapg(g,z)
@@ -140,10 +138,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            endif
         enddo
         g = iig
-        !(rev 121): calculating radiation energy tally per group
-        !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
-        !-------------------------------------------------------
-        ! uniformly sampling comoving wavelength in group
         r1 = rand()
         wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
         !
