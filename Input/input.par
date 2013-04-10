@@ -2,7 +2,7 @@
 
 !-- misc
 in_grab_stdout = f
-in_puretran = t
+in_puretran = f
 
 !-- time step
 in_tfirst = 1d-14
