@@ -118,27 +118,13 @@ subroutine advance
         do while (prt_done .eqv. .false.)
            !Calling either diffusion or transport depending on particle type (rtsrc)
            if (rtsrc == 1) then
-              if(wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c).le.gas_wl(1).or. &
-                   wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c).ge.gas_wl(gas_ng+1)) &
-                   then
-                 ! transport particle no longer in phase space domain
-                 prt_done=.true.
-                 isvacant=.true.
-              else
                  transps = transps + 1
                  call transport1(zsrc,wlsrc,rsrc,musrc,tsrc, &
                       esrc,ebirth,rtsrc,isvacant)
-              endif
            else
-              if(wlsrc.le.gas_wl(1).or.wlsrc.ge.gas_wl(gas_ng+1)) then
-                 ! diffusion particle no longer in phase space domain
-                 prt_done=.true.
-                 isvacant=.true.
-              else
                  difs = difs + 1
                  call diffusion1(zsrc,wlsrc,rsrc,musrc,tsrc, &
                       esrc,ebirth,rtsrc,isvacant)
-              endif
            endif
         enddo
 

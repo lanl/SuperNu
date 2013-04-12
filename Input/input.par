@@ -67,7 +67,7 @@ in_iswlread = t
 in_ng = 5
 
 !-- particle numbers
-in_ns = 10000
+in_ns = 100000
 in_npartmax = 10000000
 
 !-- opacity switches
