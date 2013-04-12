@@ -11,7 +11,7 @@ c     --------------------------------------
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
       integer :: i,ir
-      real*8 :: help
+      real*8 :: help, rrcenter, uudd
       real*8, allocatable :: wlstore(:) 
       integer :: ng,ngm,nrm,irr
 c
@@ -73,6 +73,17 @@ c-- gas temperature, density
             endif
          enddo
       endif
+c-- Ryan W.: temporary override of initial temperature
+c-- to Gaussian for manufacture tests
+      if(in_isanalsrc.and.in_srctype=='manu') then
+        uudd = 2.5d8
+        do ir=1,gas_nr
+          rrcenter=(gas_rarr(ir+1)+gas_rarr(ir))/2d0
+          gas_vals2(ir)%tempkev = in_templ0*exp(-0.5*(rrcenter/uudd)**2)
+        enddo
+      endif
+c--
+c
       do ir=1,gas_nr
          gas_vals2(ir)%mass = in_totmass/gas_nr
          gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb !initial guess, may be overwritten by read_temp_str

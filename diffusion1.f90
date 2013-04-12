@@ -45,9 +45,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   wl = wl/(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
   ! Recalculating current group (rev. 120)
   g = minloc(abs(gas_wl-wl),1)
-  if(wl-gas_wl(g)<0d0) then
-     g = g-1
-  endif
+  !if(wl-gas_wl(g)<0d0) then
+  !   g = g-1
+  !endif
   t = t+ddmct
   !
   !Recalculating histogram sum (rev. 120)
@@ -66,19 +66,19 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
               prt_done = .true.
               gas_eleft = gas_eleft+E
            else
-              write(6,*) 'Non-physical left leakage'
+              write(6,*) 'Non-physical left leakage', g, gas_wl(g+1), wl
            endif
         elseif (gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
            z = z-1
            !(rev 121): calculating radiation energy tally per group
-           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            !-------------------------------------------------------
         else
            hyparam = 1
            r = gas_rarr(z)
            z = z-1
            !(rev 121): calculating radiation energy tally per group
-           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            !-------------------------------------------------------
            r1 = rand()
            r2 = rand()
@@ -99,14 +99,14 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         elseif (gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
            z = z+1
            !(rev 121): calculating radiation energy tally per group
-           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            !-------------------------------------------------------
         else
            hyparam = 1
            r = gas_rarr(z+1)
            z = z+1
            !(rev 121): calculating radiation energy tally per group
-           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            !-------------------------------------------------------
            r1 = rand()
            r2 = rand()
@@ -120,6 +120,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         vacnt = .true.
         prt_done = .true.
         gas_edep(z) = gas_edep(z)+E
+        !
+        !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E !/(pc_c*tsp_dt*gas_fcoef(z)*gas_sigmapg(g,z))
+        !
      else
         !
         denom2 = 0d0

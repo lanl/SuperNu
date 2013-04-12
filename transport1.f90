@@ -49,9 +49,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   ! Calculating current group (rev. 120)
   g = minloc(abs(gas_wl-wl/(1.0d0-gas_velyes*r*mu/pc_c)),1)
   !write(*,*) 'g 1: ',g
-  if(wl/(1.0d0-gas_velyes*r*mu/pc_c)-gas_wl(g)<0d0) then
-     g = g-1
-  endif
+  !if(wl/(1.0d0-gas_velyes*r*mu/pc_c)-gas_wl(g)<0d0) then
+  !   g = g-1
+  !endif
   ! distance to fictitious collision = dcol
   if((1.0d0-gas_fcoef(z))*gas_sigmapg(g,z)>0.0d0) then
      r1 = rand()
@@ -90,9 +90,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   endif
   ! Recalculating current group (rev. 120)
   g = minloc(abs(gas_wl-wl/(1.0d0-gas_velyes*r*mu/pc_c)),1)
-  if(wl/(1.0d0-gas_velyes*r*mu/pc_c)-gas_wl(g)<0d0) then
-     g = g-1
-  endif
+  !if(wl/(1.0d0-gas_velyes*r*mu/pc_c)-gas_wl(g)<0d0) then
+  !   g = g-1
+  !endif
   !
   !
   gas_eraddensg(g,z) = gas_eraddensg(g,z)+E* &

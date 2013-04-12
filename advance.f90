@@ -58,15 +58,16 @@ subroutine advance
         ! Looking up group
         if(rtsrc==1) then
            g = minloc(abs(gas_wl-wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)),1)
-           if(wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
-              g = g-1
-           endif
+           !if(wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
+           !   g = g-1
+           !endif
         else
            g = minloc(abs(gas_wl-wlsrc),1)
-           if(wlsrc-gas_wl(g)<0d0) then
-              g = g-1
-           endif
+           !if(wlsrc-gas_wl(g)<0d0) then
+           !   g = g-1
+           !endif
         endif
+        
         ! Checking if particle conversions are required since prior time step
         if (in_puretran.eqv..false.) then
            if ((gas_sig(zsrc)+gas_sigmapg(g,zsrc))*gas_drarr(zsrc) &
@@ -87,16 +88,16 @@ subroutine advance
            endif
         endif
         ! tallying sourced energy density
-        if (rtsrc==2) then
+        !if (rtsrc==2) then
            !(rev 121): calculating radiation energy tally per group
-           gas_eraddensg(g,zsrc)=gas_eraddensg(g,zsrc)+esrc
+           !gas_eraddensg(g,zsrc)=gas_eraddensg(g,zsrc)+esrc
            !-------------------------------------------------------
-        else
+        !else
            !(rev 121): calculating radiation energy tally per group
-           gas_eraddensg(g,zsrc)=gas_eraddensg(g,zsrc)+esrc* &
-                (1.0-gas_velyes*musrc*rsrc/pc_c)
+           !gas_eraddensg(g,zsrc)=gas_eraddensg(g,zsrc)+esrc* &
+           !     (1.0-gas_velyes*musrc*rsrc/pc_c)
            !-------------------------------------------------------
-        endif
+        !endif
 
         ! First portion of operator split particle velocity position adjustment
         alph2 = 0.75  !>=0,<=1
@@ -141,5 +142,5 @@ subroutine advance
   enddo
   call time(t1)
   call timereg(t_pckt, t1-t0)  !register timing
-  !write(6,*) transps, difs
+  write(6,*) transps, difs
 end subroutine advance

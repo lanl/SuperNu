@@ -44,9 +44,9 @@ subroutine analytic_source
         enddo
         !Ryan W.: Temporary fix (?) for over generation,
         !resetting prt_ns
-        if(gas_sigcoef==0d0) then
-           prt_ns = 1
-        endif
+        !if(gas_sigcoef==0d0) then
+        !   prt_ns = 1
+        !endif
      endif
      !
   elseif(gas_srctype=='strt') then
@@ -103,7 +103,10 @@ subroutine analytic_source
                    -gas_sigmapg(ig,ir)*rrcenter*(pc_c-4d0*rrcenter/3d0)* &
                    eradmanu(ig,ir)/pc_c
               !
-              write(*,*) 'thin: ',gas_exsource(ig,ir)
+              !write(*,*) 'thin: ',gas_exsource(ig,ir)
+              !if(gas_exsource(ig,ir)<0d0) then
+              !   gas_exsource(ig,ir)=0d0
+              !endif
               !
            enddo
            !
@@ -121,16 +124,19 @@ subroutine analytic_source
               !
               gas_exsource(ig,ir) = eradmanu(ig,ir)* &
                    (4d0*((rrcenter*tsp_texp)**2*uudd/ &
-                   (uudd*tsp_texp)**3-in_velout/(uudd*tsp_texp) &
+                   (uudd*tsp_texp)**3-1d0/tsp_texp &
                    +pc_c*(3d0*(uudd*tsp_texp)**2- &
-                   2.0*(rrcenter*tsp_texp)**2) &
+                   4.0*(rrcenter*tsp_texp)**2) &
                    /(3d0*gas_sigmapg(ig,ir)*(uudd*tsp_texp)**4)) &
                    -pc_c*bspeced*gas_sigmapg(ig,ir)*(x2-x1)/(x4-x3) &
                    +pc_c*gas_sigmapg(ig,ir) &
                    +4.0*gas_sigmapg(ig,ir)*rrcenter*(rrcenter &
                    -pc_c*rrcenter/(gas_sigmapg(ig,ir)*tsp_texp*uudd**2)))
               !
-              write(*,*) 'thick: ',gas_exsource(ig,ir)
+              !write(*,*) 'thick: ',gas_exsource(ig,ir)
+              !if(gas_exsource(ig,ir)<0d0) then
+              !   gas_exsource(ig,ir)=0d0
+              !endif
               !
            enddo
            !
@@ -141,5 +147,10 @@ subroutine analytic_source
   else
      stop 'analytic_source: gas_srctype invalid'
   endif
+  !write(*,*) gas_exsource(1,1), gas_exsource(2,1), gas_exsource(3,1)
+  !write(*,*) gas_vals2(1)%tempkev, gas_vals2(2)%tempkev
+  !write(*,*) gas_exsource(1,:)
+  !write(*,*)
+  !write(*,*) gas_exsource(2,:)
 
 end subroutine analytic_source
