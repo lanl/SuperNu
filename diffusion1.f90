@@ -35,6 +35,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   !
   denom = gas_sigmal(g,z)+gas_sigmar(g,z)+gas_fcoef(z)*gas_sigmapg(g,z)
   denom = denom+(1.0-gas_emitprobg(g,z))*(1.0-gas_fcoef(z))*gas_sigmapg(g,z)
+  !write(*,*) gas_emitprobg(g,z),g
   r1 = rand()
   tau = abs(log(r1)/(pc_c*denom))
   tcensus = tsp_time+tsp_dt-t
@@ -45,20 +46,21 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   wl = wl/(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
   ! Recalculating current group (rev. 120)
   g = minloc(abs(gas_wl-wl),1)
-  !if(wl-gas_wl(g)<0d0) then
-  !   g = g-1
-  !endif
+  if(wl-gas_wl(g)<0d0) then
+     g = g-1
+  endif
   t = t+ddmct
   !
   !Recalculating histogram sum (rev. 120)
   denom = gas_sigmal(g,z)+gas_sigmar(g,z)+gas_fcoef(z)*gas_sigmapg(g,z)
-  denom = denom+(1.0-gas_emitprobg(g,z))*(1.0-gas_fcoef(z))*gas_sigmapg(g,z)  
-
+  denom = denom+(1.0-gas_emitprobg(g,z))*(1.0-gas_fcoef(z))*gas_sigmapg(g,z)
+  !write(*,*) g, wl, t
   if (ddmct == tau) then
      r1 = rand()
      PR = gas_sigmar(g,z)/denom
      PL = gas_sigmal(g,z)/denom
      PA = gas_fcoef(z)*gas_sigmapg(g,z)/denom
+     !write(*,*) PR,PL,PA
      if (0.0d0<=r1 .and. r1<PL) then
         if (z == 1) then
            if(gas_isshell) then
@@ -125,6 +127,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         !
      else
         !
+        !write(*,*) 'scattering'
         denom2 = 0d0
         do ig = 1, gas_ng
            if(ig.ne.g) then

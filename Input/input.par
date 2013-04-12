@@ -20,15 +20,15 @@ in_velout = 1d9
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_l0 = 100d7
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_lr = 5d7
 in_totmass = 1d33
-in_templ0 = 861.7d0
+in_templ0 = 1d0
 
 !-- flat structure
 in_istempflat = t
-in_consttempkev = 861.7d0
+in_consttempkev = 1d0
 in_solidni56 = t
 
 !-- external source type
-in_isanalsrc = f
+in_isanalsrc = t
 in_srctype = 'heav'
 in_srcmax = 4d24
 !-- heaviside case
@@ -52,7 +52,7 @@ in_sigrpwr = 1d0
 
 !-- group absorption opacity structure type
 in_isanalgrp = t
-in_grptype = 'pick'
+in_grptype = 'grey'
 
 !-- picket fence case
 in_suol = 'tsta'

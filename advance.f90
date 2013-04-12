@@ -58,14 +58,14 @@ subroutine advance
         ! Looking up group
         if(rtsrc==1) then
            g = minloc(abs(gas_wl-wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)),1)
-           !if(wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
-           !   g = g-1
-           !endif
+           if(wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
+              g = g-1
+           endif
         else
            g = minloc(abs(gas_wl-wlsrc),1)
-           !if(wlsrc-gas_wl(g)<0d0) then
-           !   g = g-1
-           !endif
+           if(wlsrc-gas_wl(g)<0d0) then
+              g = g-1
+           endif
         endif
         
         ! Checking if particle conversions are required since prior time step
@@ -112,7 +112,7 @@ subroutine advance
               endif
            endif
         endif
-
+        
         ! Advancing particle until census, absorption, or escape from domain
         prt_done = .false.
         do while (prt_done .eqv. .false.)
