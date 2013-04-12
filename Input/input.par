@@ -28,7 +28,7 @@ in_consttempkev = 1d0
 in_solidni56 = t
 
 !-- external source type
-in_isanalsrc = t
+in_isanalsrc = f
 in_srctype = 'heav'
 in_srcmax = 4d24
 !-- heaviside case

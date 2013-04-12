@@ -113,7 +113,7 @@ program supernu
     deallocate(prt_vacantarr)
     !Advancing prt_particles to update radiation field
     call advance
-    write(*,*) 'here'
+    
     call temperature_update
     call timestep_update(dt) !Updating elapsed tsp_time and expansion tsp_time
 

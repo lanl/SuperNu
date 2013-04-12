@@ -34,7 +34,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   endif
   !
   denom = gas_sigmal(g,z)+gas_sigmar(g,z)+gas_fcoef(z)*gas_sigmapg(g,z)
-  denom = denom+(1.0-gas_emitprobg(g,z))*(1.0-gas_fcoef(z))*gas_sigmapg(g,z)
   !write(*,*) gas_emitprobg(g,z),g
   r1 = rand()
   tau = abs(log(r1)/(pc_c*denom))
@@ -53,14 +52,17 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   !
   !Recalculating histogram sum (rev. 120)
   denom = gas_sigmal(g,z)+gas_sigmar(g,z)+gas_fcoef(z)*gas_sigmapg(g,z)
-  denom = denom+(1.0-gas_emitprobg(g,z))*(1.0-gas_fcoef(z))*gas_sigmapg(g,z)
   !write(*,*) g, wl, t
-  if (ddmct == tau) then
+  if(g>gas_ng.or.g<1) then
+     !particle out of wlgrid energy bound
+     prt_done = .true.
+     vacnt = .true.
+  elseif (ddmct == tau) then
      r1 = rand()
      PR = gas_sigmar(g,z)/denom
      PL = gas_sigmal(g,z)/denom
      PA = gas_fcoef(z)*gas_sigmapg(g,z)/denom
-     !write(*,*) PR,PL,PA
+     !write(*,*) PR,PL,PA,1d0-PR-PL-PA
      if (0.0d0<=r1 .and. r1<PL) then
         if (z == 1) then
            if(gas_isshell) then
@@ -73,14 +75,14 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         elseif (gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
            z = z-1
            !(rev 121): calculating radiation energy tally per group
-           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            !-------------------------------------------------------
         else
            hyparam = 1
            r = gas_rarr(z)
            z = z-1
            !(rev 121): calculating radiation energy tally per group
-           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            !-------------------------------------------------------
            r1 = rand()
            r2 = rand()
@@ -101,14 +103,14 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         elseif (gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
            z = z+1
            !(rev 121): calculating radiation energy tally per group
-           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            !-------------------------------------------------------
         else
            hyparam = 1
            r = gas_rarr(z+1)
            z = z+1
            !(rev 121): calculating radiation energy tally per group
-           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            !-------------------------------------------------------
            r1 = rand()
            r2 = rand()
@@ -125,7 +127,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         !
         !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E !/(pc_c*tsp_dt*gas_fcoef(z)*gas_sigmapg(g,z))
         !
-     else
+     elseif(gas_ng.ne.1) then
         !
         !write(*,*) 'scattering'
         denom2 = 0d0
@@ -160,6 +162,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            E0 = E0/(1.0-gas_velyes*mu*r/pc_c)
            wl = wl*(1.0-gas_velyes*r*mu/pc_c)
         endif
+     else
+        stop 'diffusion1: invalid histogram sample'
      endif
   else
      prt_done = .true.

@@ -98,7 +98,11 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   gas_eraddensg(g,z) = gas_eraddensg(g,z)+E* &
        elabfact*d*dcollabfact/(pc_c*tsp_dt)  
   !
-  if (d == dthm) then  !physical scattering (Thomson-type)
+  if(g>gas_ng.or.g<1) then
+     !particle out of wlgrid energy bound
+     prt_done = .true.
+     vacnt = .true.
+  elseif (d == dthm) then  !physical scattering (Thomson-type)
      !
      r1 = rand()
      mu = 1.0-2.0*r1

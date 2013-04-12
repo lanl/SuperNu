@@ -88,16 +88,16 @@ subroutine advance
            endif
         endif
         ! tallying sourced energy density
-        !if (rtsrc==2) then
+        if (rtsrc==2) then
            !(rev 121): calculating radiation energy tally per group
-           !gas_eraddensg(g,zsrc)=gas_eraddensg(g,zsrc)+esrc
+           gas_eraddensg(g,zsrc)=gas_eraddensg(g,zsrc)+esrc
            !-------------------------------------------------------
         !else
            !(rev 121): calculating radiation energy tally per group
            !gas_eraddensg(g,zsrc)=gas_eraddensg(g,zsrc)+esrc* &
            !     (1.0-gas_velyes*musrc*rsrc/pc_c)
            !-------------------------------------------------------
-        !endif
+        endif
 
         ! First portion of operator split particle velocity position adjustment
         alph2 = 0.75  !>=0,<=1
@@ -118,11 +118,27 @@ subroutine advance
         do while (prt_done .eqv. .false.)
            !Calling either diffusion or transport depending on particle type (rtsrc)
            if (rtsrc == 1) then
-              transps = transps + 1
-              call transport1(zsrc,wlsrc,rsrc,musrc,tsrc,esrc,ebirth,rtsrc,isvacant)
+              if(wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c).le.gas_wl(1).or. &
+                   wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c).ge.gas_wl(gas_ng+1)) &
+                   then
+                 ! transport particle no longer in phase space domain
+                 prt_done=.true.
+                 isvacant=.true.
+              else
+                 transps = transps + 1
+                 call transport1(zsrc,wlsrc,rsrc,musrc,tsrc, &
+                      esrc,ebirth,rtsrc,isvacant)
+              endif
            else
-              difs = difs + 1
-              call diffusion1(zsrc,wlsrc,rsrc,musrc,tsrc,esrc,ebirth,rtsrc,isvacant)
+              if(wlsrc.le.gas_wl(1).or.wlsrc.ge.gas_wl(gas_ng+1)) then
+                 ! diffusion particle no longer in phase space domain
+                 prt_done=.true.
+                 isvacant=.true.
+              else
+                 difs = difs + 1
+                 call diffusion1(zsrc,wlsrc,rsrc,musrc,tsrc, &
+                      esrc,ebirth,rtsrc,isvacant)
+              endif
            endif
         enddo
 
