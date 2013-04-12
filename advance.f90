@@ -67,6 +67,7 @@ subroutine advance
               g = g-1
            endif
         endif
+        !write(*,*) g
         
         ! Checking if particle conversions are required since prior time step
         if (in_puretran.eqv..false.) then
@@ -87,22 +88,11 @@ subroutine advance
               rtsrc = 2
            endif
         endif
-        ! tallying sourced energy density
-        if (rtsrc==2) then
-           !(rev 121): calculating radiation energy tally per group
-           gas_eraddensg(g,zsrc)=gas_eraddensg(g,zsrc)+esrc
-           !-------------------------------------------------------
-        !else
-           !(rev 121): calculating radiation energy tally per group
-           !gas_eraddensg(g,zsrc)=gas_eraddensg(g,zsrc)+esrc* &
-           !     (1.0-gas_velyes*musrc*rsrc/pc_c)
-           !-------------------------------------------------------
-        endif
 
         ! First portion of operator split particle velocity position adjustment
-        alph2 = 0.75  !>=0,<=1
+        alph2 = 0d0  !>=0,<=1
         if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
-           rsrc = rsrc*tsp_texp/(tsp_texp + alph2*tsp_dt)
+           rsrc = rsrc*tsp_texp/(tsp_texp+alph2*(tsrc-tsp_time))
            if (rsrc < gas_rarr(zsrc)) then
               if(gas_isshell.and.zsrc==1) then
                  prt_done = .true.
@@ -129,7 +119,7 @@ subroutine advance
         enddo
 
         if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
-           rsrc = rsrc*tsp_texp/(tsp_texp + (1.0 - alph2)*tsp_dt)
+           rsrc = rsrc*tsp_texp/(tsp_texp+(1.0-alph2)*(tsrc-tsp_time))
            if (rsrc < gas_rarr(zsrc)) then
               if(gas_isshell.and.zsrc==1) then
                  prt_done = .true.
