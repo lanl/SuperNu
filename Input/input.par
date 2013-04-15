@@ -5,9 +5,9 @@ in_grab_stdout = f
 in_puretran = f
 
 !-- time step
-in_tfirst = 1.6204d-6
-in_tlast = 50d0
-in_nt = 100
+in_tfirst = 2d0
+in_tlast = 5d0
+in_nt = 64
 in_alpha = 1d0
 
 !-- gas grid settings
@@ -76,3 +76,4 @@ in_nobfopac = t
 in_noffopac = t
 
 &end
+

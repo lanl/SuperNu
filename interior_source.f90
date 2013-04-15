@@ -68,7 +68,8 @@ subroutine interior_source
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = exsumg(ir)*tsp_dt* &
              (4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)/real(gas_vals2(ir)%nvolex)
-           if ((gas_sigmapg(iig,ir)*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0).OR.(in_puretran.eqv..true.)) then
+           if (((gas_sig(ir)+gas_sigmapg(iig,ir))*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) &
+                .or.(in_puretran.eqv..true.)) then
               prt_particles(ivac)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
               prt_particles(ivac)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
               !(rev 120)
@@ -91,7 +92,9 @@ subroutine interior_source
            prt_particles(ivac)%isvacant = .false.
 
            isnotvacnt = .true.
-
+           
+           !source tally
+           !gas_eraddensg(iig,ir)=gas_eraddensg(iig,ir)+Ep0
         else
            ir = ir+1
         endif
@@ -170,6 +173,8 @@ subroutine interior_source
 
            isnotvacnt = .true.
 
+           !source tally
+           !gas_eraddensg(iig,ir)=gas_eraddensg(iig,ir)+Ep0
         else
            ir = ir + 1
         endif

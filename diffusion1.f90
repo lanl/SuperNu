@@ -33,6 +33,21 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      g = g-1
   endif
   !
+  if(g>gas_ng.or.g<1) then
+     !particle out of wlgrid bound
+     if(g>gas_ng) then
+        g=gas_ng
+        wl=gas_wl(gas_ng+1)
+     elseif(g<1) then
+        g=1
+        wl=gas_wl(1)
+     else
+        write(*,*) 'domain leak!!'
+        prt_done = .true.
+        vacnt = .true.
+     endif
+  endif
+  !
   denom = gas_sigmal(g,z)+gas_sigmar(g,z)+gas_fcoef(z)*gas_sigmapg(g,z)
   denom = denom+(1d0-gas_emitprobg(g,z))*(1d0-gas_fcoef(z))*gas_sigmapg(g,z)
   !write(*,*) gas_emitprobg(g,z),g
@@ -49,23 +64,38 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   if(wl-gas_wl(g)<0d0) then
      g = g-1
   endif
+  !
+  if(g>gas_ng.or.g<1) then
+     !particle out of wlgrid bound
+     if(g>gas_ng) then
+        g=gas_ng
+        wl=gas_wl(gas_ng+1)
+     elseif(g<1) then
+        g=1
+        wl=gas_wl(1)
+     else
+        write(*,*) 'domain leak!!'
+        prt_done = .true.
+        vacnt = .true.
+     endif
+  endif
+  !
   t = t+ddmct
+  !
+  !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
   !
   !Recalculating histogram sum (rev. 120)
   denom = gas_sigmal(g,z)+gas_sigmar(g,z)+gas_fcoef(z)*gas_sigmapg(g,z)
   denom = denom+(1d0-gas_emitprobg(g,z))*(1d0-gas_fcoef(z))*gas_sigmapg(g,z)
-  !write(*,*) g, wl, t
-  if(g>gas_ng.or.g<1) then
-     !particle out of wlgrid energy bound
-     prt_done = .true.
-     vacnt = .true.
-  elseif (ddmct == tau) then
+  
+  if (ddmct == tau) then
      r1 = rand()
      PR = gas_sigmar(g,z)/denom
      PL = gas_sigmal(g,z)/denom
      PA = gas_fcoef(z)*gas_sigmapg(g,z)/denom
      !tallying radiation energy density
-     gas_eraddensg(g,z)=gas_eraddensg(g,z)+E/(tsp_dt*pc_c*denom)
+     !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E/(tsp_dt*pc_c*denom)
+     gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*ddmct/tsp_dt
      !
      if (0.0d0<=r1 .and. r1<PL) then
         if (z == 1) then
@@ -76,8 +106,10 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            else
               write(6,*) 'Non-physical left leakage', g, gas_wl(g+1), wl
            endif
-        elseif (gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
+        elseif ((gas_sig(z-1)+gas_sigmapg(g,z-1))*gas_drarr(z-1) &
+             *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
            z = z-1
+           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
         else
            hyparam = 1
            r = gas_rarr(z)
@@ -98,8 +130,10 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            r2 = rand()
            mu = max(r1,r2)
            gas_eright = gas_eright+E*(1.0+gas_velyes*gas_rarr(gas_nr+1)*mu/pc_c)
-        elseif (gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
+        elseif ((gas_sig(z+1)+gas_sigmapg(g,z+1))*gas_drarr(z+1) &
+             *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
            z = z+1
+           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
         else
            hyparam = 1
            r = gas_rarr(z+1)
@@ -117,6 +151,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         prt_done = .true.
         gas_edep(z) = gas_edep(z)+E
      else
+        !write(*,*) 'scatter'
         denom2 = 0d0
         do ig = 1, gas_ng
            if(ig.ne.g) then
@@ -136,7 +171,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         r1 = rand()
         wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
         !
-        if (gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
+        if ((gas_sig(z)+gas_sigmapg(g,z))*gas_drarr(z) &
+             *(gas_velno*1d0+gas_velyes*tsp_texp)>=5.0d0) then
            hyparam = 2
         else
            hyparam = 1
@@ -153,6 +189,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      !   stop 'diffusion1: invalid histogram sample'
      endif
   else
+     gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*ddmct/tsp_dt
      prt_done = .true.
      gas_numcensus(z)=gas_numcensus(z)+1
      gas_erad = gas_erad+E

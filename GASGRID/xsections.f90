@@ -30,6 +30,15 @@ subroutine xsections
      gas_tempb(ir) = gas_tempb(ir)**0.25
   enddo
   gas_tempb(gas_nr+1)=gas_vals2(gas_nr)%tempkev
+  !Interpolating cell boundary densities (in g/cm^3): loop
+  gas_rhob(1)=gas_vals2(1)%rho
+  do ir = 2, gas_nr
+     !gas_rhob(ir)=(gas_vals2(ir)%rho*gas_vals2(ir)%vol+ &
+     !     gas_vals2(ir-1)%rho*gas_vals2(ir-1)%vol)/ &
+     !     (gas_vals2(ir)%vol+gas_vals2(ir-1)%vol)
+     gas_rhob(ir)=(gas_vals2(ir)%rho*gas_vals2(ir-1)%rho)**0.5d0
+  enddo
+  gas_rhob(gas_nr+1) = gas_vals2(gas_nr)%rho
 
   !Calculating power law heat capacity
   do ir = 1, gas_nr
@@ -76,24 +85,33 @@ subroutine xsections
   !Calculating IMC-to-DDMC leakage albedo coefficients (Densmore, 2007): loop
   !These quantities may not need to be stored directly (pending further analysis)
   do ir = 1, gas_nr
-     gg = (3.0*gas_fcoef(ir))**0.5
-     eps = (4.0/3.0)*gg/(1.0+0.7104*gg)
-     do ig = 1, gas_ng
+     !gg = (3.0*gas_fcoef(ir))**0.5
+     !eps = (4.0/3.0)*gg/(1.0+0.7104*gg)
+     !do ig = 1, gas_ng
         !Calculating for leakage from left
         !total optical depth      ||   ||
-        tt = (gas_sigmargleft(ig,ir)+gas_sigbl(ir)) &
-             *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
+     !   tt = (gas_sigmargleft(ig,ir)+gas_sigbl(ir)) &
+     !        *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
         !
-        ggg = (gg*tt)**2
-        bb = (3.0/4.0)*gas_fcoef(ir)*tt**2+(ggg+(ggg**2)/4.0)**0.5
-        gas_ppl(ig,ir) = 0.5*eps*bb/(bb-(3.0/4.0)*eps*tt)
+     !   ggg = (gg*tt)**2
+     !   bb = (3.0/4.0)*gas_fcoef(ir)*tt**2+(ggg+(ggg**2)/4.0)**0.5
+     !   gas_ppl(ig,ir) = 0.5*eps*bb/(bb-(3.0/4.0)*eps*tt)
         !Calculating for leakage from right
         !total optical depth      ||   ||
-        tt = (gas_sigmargright(ig,ir)+gas_sigbr(ir)) &
+     !   tt = (gas_sigmargright(ig,ir)+gas_sigbr(ir)) &
+     !        *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
+     !   ggg = (gg*tt)**2
+     !   bb = (3.0/4.0)*gas_fcoef(ir)*tt**2+(ggg+(ggg**2)/4.0)**0.5
+     !   gas_ppr(ig,ir) = 0.5*eps*bb/(bb-(3.0/4.0)*eps*tt)
+     !enddo
+     do ig = 1, gas_ng
+        tt = (gas_sigmargleft(ig,ir)+gas_sigbl(ir)) &
              *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
-        ggg = (gg*tt)**2
-        bb = (3.0/4.0)*gas_fcoef(ir)*tt**2+(ggg+(ggg**2)/4.0)**0.5
-        gas_ppr(ig,ir) = 0.5*eps*bb/(bb-(3.0/4.0)*eps*tt)
+        gas_ppl(ig,ir) = 4.0d0/(3d0*tt+6d0*0.7104d0)
+        !
+        tt = (gas_sigmargright(ig,ir)+gas_sigbl(ir)) &
+             *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
+        gas_ppr(ig,ir) = 4.0d0/(3d0*tt+6d0*0.7104d0)
      enddo
   enddo
 

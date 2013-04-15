@@ -52,6 +52,20 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   if(wl/(1.0d0-gas_velyes*r*mu/pc_c)-gas_wl(g)<0d0) then
      g = g-1
   endif
+  if(g>gas_ng.or.g<1) then
+     !particle out of wlgrid energy bound
+     if(g>gas_ng) then
+        g=gas_ng
+        wl=gas_wl(gas_ng+1)*(1.0d0-gas_velyes*r*mu/pc_c)
+     elseif(g<1) then
+        g=1
+        wl=gas_wl(1)*(1.0d0-gas_velyes*r*mu/pc_c)
+     else
+        write(*,*) 'domain leak!!'
+        prt_done = .true.
+        vacnt = .true.
+     endif
+  endif
   ! distance to fictitious collision = dcol
   if((1.0d0-gas_fcoef(z))*gas_sigmapg(g,z)>0.0d0) then
      r1 = rand()
@@ -93,16 +107,27 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   if(wl/(1.0d0-gas_velyes*r*mu/pc_c)-gas_wl(g)<0d0) then
      g = g-1
   endif
+  if(g>gas_ng.or.g<1) then
+     !particle out of wlgrid energy bound
+     if(g>gas_ng) then
+        g=gas_ng
+        wl=gas_wl(gas_ng+1)*(1.0d0-gas_velyes*r*mu/pc_c)
+     elseif(g<1) then
+        g=1
+        wl=gas_wl(1)*(1.0d0-gas_velyes*r*mu/pc_c)
+     else
+        write(*,*) 'domain leak!!'
+        prt_done = .true.
+        vacnt = .true.
+     endif
+  endif
   !
   !
   gas_eraddensg(g,z) = gas_eraddensg(g,z)+E* &
        elabfact*d*dcollabfact/(pc_c*tsp_dt)  
   !
-  if(g>gas_ng.or.g<1) then
-     !particle out of wlgrid energy bound
-     prt_done = .true.
-     vacnt = .true.
-  elseif (d == dthm) then  !physical scattering (Thomson-type)
+
+  if (d == dthm) then  !physical scattering (Thomson-type)
      !
      r1 = rand()
      mu = 1.0-2.0*r1
@@ -134,7 +159,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
      ! converting comoving wavelength to lab frame wavelength
      wl = wl*(1.0-gas_velyes*r*mu/pc_c)
-     if ((gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0).and.(in_puretran.eqv..false.)) then
+     if (((gas_sig(z)+gas_sigmapg(g,z))*gas_drarr(z)* &
+          (gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
+          .and.(in_puretran.eqv..false.)) then
         hyparam = 2
         E = E*(1.0-gas_velyes*r*mu/pc_c)
         E0 = E0*(1.0-gas_velyes*r*mu/pc_c)
@@ -149,10 +176,11 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            prt_done = .true.
            gas_eright = gas_eright+E !*elabfact
         ! Checking if DDMC region right
-        elseif ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
+        elseif (((gas_sig(z+1)+gas_sigmapg(g,z+1))*gas_drarr(z+1) &
+             *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
                  .and.(in_puretran.eqv..false.)) then
            r1 = rand()
-           mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
+           !mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
            P = gas_ppl(g,z+1)*(1.0+1.5*abs(mu))
            if (r1 < P) then
               hyparam = 2
@@ -177,7 +205,8 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
               prt_done = .true.
               gas_eleft = gas_eleft+E*elabfact
            else
-              if ((gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
+              if (((gas_sig(z+1)+gas_sigmapg(g,z+1))*gas_drarr(z+1) &
+                   *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
                    .and.(in_puretran.eqv..false.)) then
                  r1 = rand()
                  mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
@@ -198,10 +227,11 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
                  z = z+1
               endif
            endif
-        elseif ((gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
+        elseif (((gas_sig(z-1)+gas_sigmapg(g,z-1))*gas_drarr(z-1) &
+             *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()
-           mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
+           !mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
            P = gas_ppr(g,z-1)*(1.0+1.5*abs(mu))
            if (r1 < P) then
               hyparam = 2

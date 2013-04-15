@@ -29,7 +29,7 @@ subroutine advance
   gas_eright = 0.0
   gas_eleft = 0.0
 !--(rev. 121)
-  gas_eraddensg =0d0
+  !gas_eraddensg =0d0
 !--
   difs = 0
   transps = 0
@@ -67,7 +67,6 @@ subroutine advance
               g = g-1
            endif
         endif
-        !write(*,*) g
         
         ! Checking if particle conversions are required since prior time step
         if (in_puretran.eqv..false.) then
@@ -88,51 +87,68 @@ subroutine advance
               rtsrc = 2
            endif
         endif
-
+        
         ! First portion of operator split particle velocity position adjustment
-        alph2 = 0d0  !>=0,<=1
+        alph2 = 0.5d0  !>=0,<=1
         if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
-           rsrc = rsrc*tsp_texp/(tsp_texp+alph2*(tsrc-tsp_time))
+           rsrc = rsrc*tsp_texp/(tsp_texp+alph2*tsp_dt)
+           !
            if (rsrc < gas_rarr(zsrc)) then
+              !
               if(gas_isshell.and.zsrc==1) then
                  prt_done = .true.
                  isvacant = .true.
-              else
+              elseif((gas_sig(zsrc-1)+gas_sigmapg(g,zsrc-1))*gas_drarr(zsrc-1) &
+                   *(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
                  zsrc = zsrc - 1
+              else
+                 rsrc = gas_rarr(zsrc)
               endif
+              !
            endif
+           !
         endif
         
         ! Advancing particle until census, absorption, or escape from domain
         prt_done = .false.
         do while (prt_done .eqv. .false.)
            !Calling either diffusion or transport depending on particle type (rtsrc)
-           if (rtsrc == 1) then
-                 transps = transps + 1
-                 call transport1(zsrc,wlsrc,rsrc,musrc,tsrc, &
-                      esrc,ebirth,rtsrc,isvacant)
+           if (rtsrc == 1.or.in_puretran) then
+              transps = transps + 1
+              call transport1(zsrc,wlsrc,rsrc,musrc,tsrc, &
+                   esrc,ebirth,rtsrc,isvacant)
            else
-                 difs = difs + 1
-                 call diffusion1(zsrc,wlsrc,rsrc,musrc,tsrc, &
-                      esrc,ebirth,rtsrc,isvacant)
+              difs = difs + 1
+              call diffusion1(zsrc,wlsrc,rsrc,musrc,tsrc, &
+                   esrc,ebirth,rtsrc,isvacant)
            endif
         enddo
-
+        
         if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
-           rsrc = rsrc*tsp_texp/(tsp_texp+(1.0-alph2)*(tsrc-tsp_time))
+           rsrc = rsrc*tsp_texp/(tsp_texp+(1.0-alph2)*tsp_dt)
+           !
            if (rsrc < gas_rarr(zsrc)) then
+              !
               if(gas_isshell.and.zsrc==1) then
                  prt_done = .true.
                  isvacant = .true.
-              else
+              elseif((gas_sig(zsrc-1)+gas_sigmapg(g,zsrc-1))*gas_drarr(zsrc-1) &
+                   *(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
                  zsrc = zsrc - 1
+              else
+                 rsrc = gas_rarr(zsrc)
               endif
+              !
            endif
+           !
         endif
-        
+     
      endif
+  
   enddo
+
   call time(t1)
   call timereg(t_pckt, t1-t0)  !register timing
   write(6,*) transps, difs
+  
 end subroutine advance

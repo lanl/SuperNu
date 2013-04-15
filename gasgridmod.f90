@@ -67,7 +67,8 @@ module gasgridmod
   real*8, dimension(:), allocatable :: gas_rarr  !(gas_nr+1)
   real*8, dimension(:), allocatable :: gas_drarr !(gas_nr)
   real*8, dimension(:), allocatable :: gas_edep, gas_sigmap, gas_fcoef !(gas_nr)
-  real*8, dimension(:), allocatable :: gas_tempb  !(gas_nr+1)
+  real*8, dimension(:), allocatable :: gas_tempb  !(gas_nr+1), interpolated temperatures (keV)
+  real*8, dimension(:), allocatable :: gas_rhob !(gas_nr+1), interpolated densities
   real*8, dimension(:,:), allocatable :: gas_sigmapg, gas_sigmargleft, gas_sigmargright, gas_emitprobg  !(gas_ng,gas_nr)
   real*8, dimension(:,:), allocatable :: gas_sigmal, gas_ppl, gas_sigmar, gas_ppr  !(gas_ng,gas_nr)
   
@@ -201,7 +202,8 @@ module gasgridmod
     allocate(gas_dwl(gas_ng)) !wavelength grid bin width
 
     allocate(gas_tempb(gas_nr+1))  !cell boundary temperature
-
+    allocate(gas_rhob(gas_nr+1))   !cell boundary density
+    
     allocate(gas_sigmargleft(gas_ng,gas_nr))  !left cell edge group Rosseland opacities
     allocate(gas_sigmargright(gas_ng,gas_nr)) !right ||   ||    ||     ||        ||
 
