@@ -17,7 +17,7 @@ subroutine advance
   !total subroutine calls in program.
 !##################################################
 
-  integer :: ipart, difs, transps, g
+  integer :: ipart, difs, transps, g, zholder, zfdiff, ir
   real*8 :: r1, alph2
   integer, pointer :: zsrc, rtsrc !, gsrc
   real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
@@ -95,14 +95,30 @@ subroutine advance
            !
            if (rsrc < gas_rarr(zsrc)) then
               !
+              zholder = minloc(abs(gas_rarr-rsrc),1)
+              if(rsrc<gas_rarr(zholder)) then
+                 zholder = zholder-1
+              endif
               if(gas_isshell.and.zsrc==1) then
                  prt_done = .true.
                  isvacant = .true.
-              elseif((gas_sig(zsrc-1)+gas_sigmapg(g,zsrc-1))*gas_drarr(zsrc-1) &
-                   *(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
-                 zsrc = zsrc - 1
+              elseif(.not.in_puretran) then
+                 zfdiff = 0
+                 do ir = zsrc-1, zholder, -1
+                    if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
+                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
+                       zfdiff = ir
+                       exit
+                    endif
+                 enddo
+                 if(zfdiff==0) then
+                    zsrc = zholder
+                 else
+                    zsrc=zfdiff+1
+                    rsrc=gas_rarr(zsrc)
+                 endif
               else
-                 rsrc = gas_rarr(zsrc)
+                 zsrc = zholder
               endif
               !
            endif
@@ -125,18 +141,40 @@ subroutine advance
         enddo
         
         if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
+           !retrieving group
+           g = minloc(abs(gas_wl-wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)),1)
+           if(wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
+              g = g-1
+           endif
+           !
            rsrc = rsrc*tsp_texp/(tsp_texp+(1.0-alph2)*tsp_dt)
            !
            if (rsrc < gas_rarr(zsrc)) then
               !
+              zholder = minloc(abs(gas_rarr-rsrc),1)
+              if(rsrc<gas_rarr(zholder)) then
+                 zholder = zholder-1
+              endif
               if(gas_isshell.and.zsrc==1) then
                  prt_done = .true.
                  isvacant = .true.
-              elseif((gas_sig(zsrc-1)+gas_sigmapg(g,zsrc-1))*gas_drarr(zsrc-1) &
-                   *(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
-                 zsrc = zsrc - 1
+              elseif(.not.in_puretran) then
+                 zfdiff = 0
+                 do ir = zsrc-1, zholder, -1
+                    if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
+                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
+                       zfdiff = ir
+                       exit
+                    endif
+                 enddo
+                 if(zfdiff==0) then
+                    zsrc = zholder
+                 else
+                    zsrc=zfdiff+1
+                    rsrc=gas_rarr(zsrc)
+                 endif
               else
-                 rsrc = gas_rarr(zsrc)
+                 zsrc = zholder
               endif
               !
            endif

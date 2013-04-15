@@ -5,9 +5,9 @@ in_grab_stdout = f
 in_puretran = f
 
 !-- time step
-in_tfirst = 2d0
-in_tlast = 5d0
-in_nt = 64
+in_tfirst = 0.667d0
+in_tlast = 3.667d0
+in_nt = 32
 in_alpha = 1d0
 
 !-- gas grid settings
@@ -16,7 +16,7 @@ in_isvelocity = t
 in_isshell = f
 in_novolsrc = t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_v0 = 0d0
-in_velout = 1d9
+in_velout = 3d9
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_l0 = 100d7
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_lr = 5d7
 in_totmass = 1d33

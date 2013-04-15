@@ -24,7 +24,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   real*8 :: r1, r2
   real*8 :: db, dcol, dcen, dthm, d
   real*8 :: siglabfact, dcollabfact, elabfact
-  real*8 :: rold, P, denom2, told
+  real*8 :: rold, P, denom2, told, zholder
 
   siglabfact = 1.0d0 - gas_velyes*mu*r/pc_c
   dcollabfact = gas_velno*1.0 + gas_velyes*tsp_texp*(1.0d0-mu*r/pc_c)

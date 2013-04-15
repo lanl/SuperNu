@@ -85,6 +85,10 @@ subroutine xsections
   !Calculating IMC-to-DDMC leakage albedo coefficients (Densmore, 2007): loop
   !These quantities may not need to be stored directly (pending further analysis)
   do ir = 1, gas_nr
+!-----------------------------------------------------------------
+     !Ryan W.: emissivity albedo condition deprecated until curvature
+     !conditions are added.
+!-----------------------------------------------------------------
      !gg = (3.0*gas_fcoef(ir))**0.5
      !eps = (4.0/3.0)*gg/(1.0+0.7104*gg)
      !do ig = 1, gas_ng
