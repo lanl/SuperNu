@@ -48,7 +48,7 @@ subroutine xsections
   !Calculating simple physical group/grey opacities: Planck and Rosseland 
   !Ryan W.:(moved from supernu.f90 in rev 105)
   call analytic_opacity
-
+  
   !Calculating Fleck factor: 
   do ir = 1, gas_nr
      Um = gas_vals2(ir)%bcoef*gas_vals2(ir)%tempkev

@@ -30,6 +30,9 @@ function specint(t1,t2,n)
      dd = (t2**n)/(exp(t2)-1.0)
      ss = ss+dx*dd/3.0
   endif
+  !x = (t2+t1)/2d0
+  !dd = (x**n)/(exp(x)-1d0)
+  !ss = (t2-t1)*dd
 
   specint = ss
 

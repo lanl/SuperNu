@@ -2,6 +2,7 @@ subroutine analytic_opacity
 
   use gasgridmod
   use physconstmod
+  use timestepmod
   implicit none
 
 !#####################################
@@ -140,7 +141,7 @@ subroutine analytic_opacity
         stop 'analytic_opacity: gas_suol invalid'
      endif
   elseif(gas_grptype=='line') then
-     ! Highly structured line test: group opacities alternate 10^7 in magnitude
+     ! Highly structured line test: group opacities alternate in magnitude
      ! sigmaP = A*T^B*rho^C
      ! sigmaP_g = sigmaP*func_P(g), sigmaR_g=sigmaP
      do ir = 1, gas_nr
@@ -179,6 +180,13 @@ subroutine analytic_opacity
            x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir+1))
            fgrren = fgrren+gas_ldisp*15d0*specint(x1,x2,3)/pc_pi**4
         enddo
+        !if(tsp_tn==15.or.tsp_tn==16.or.tsp_tn==17.or.tsp_tn==18) then
+        !   write(*,*) fgren, fglren, fgrren
+        !endif
+        !-------------------------------------------------
+        !fgren=1d0
+        
+        !-------------------------------------------------
         !set odd group magnitudes (low)
         do ig = 1, gas_ng, 2
            gas_sigmapg(ig,ir) = gas_sigmap(ir)/fgren

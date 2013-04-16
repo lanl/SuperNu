@@ -24,6 +24,8 @@ subroutine advance
   logical, pointer :: isvacant
   real :: t0,t1  !timing
 
+  logical :: isshift=.true.
+
   gas_edep = 0.0
   gas_erad = 0.0
   gas_eright = 0.0
@@ -34,6 +36,15 @@ subroutine advance
   difs = 0
   transps = 0
   gas_numcensus(1:gas_nr) = 0
+  alph2 = 0.5d0  !>=0,<=1
+
+  !do ir = 1, gas_nr
+  !   write(*,*) (gas_sig(ir)+gas_sigmapg(1,ir))*tsp_texp*gas_drarr(ir), &
+  !        (gas_sig(ir)+gas_sigmapg(2,ir))*tsp_texp*gas_drarr(ir)
+  !   write(*,*)
+  !   write(*,*) gas_sig(ir), gas_sigmapg(1,ir), gas_sigmapg(2,ir)
+  !   write(*,*) '-------------------------------'
+  !enddo
 
   call time(t0)
   ! Propagating all particles that are not considered vacant: loop
@@ -89,7 +100,11 @@ subroutine advance
         endif
         
         ! First portion of operator split particle velocity position adjustment
-        alph2 = 0.5d0  !>=0,<=1
+        
+        !if(tsp_tn==18) then
+        !   write(*,*) ipart, zsrc, g
+        !endif
+        if(isshift) then
         if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
            rsrc = rsrc*tsp_texp/(tsp_texp+alph2*tsp_dt)
            !
@@ -103,7 +118,7 @@ subroutine advance
                  prt_done = .true.
                  isvacant = .true.
               elseif(.not.in_puretran) then
-                 zfdiff = 0
+                 zfdiff = -1
                  do ir = zsrc-1, zholder, -1
                     if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
                          *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
@@ -111,7 +126,7 @@ subroutine advance
                        exit
                     endif
                  enddo
-                 if(zfdiff==0) then
+                 if(zfdiff==-1) then
                     zsrc = zholder
                  else
                     zsrc=zfdiff+1
@@ -123,6 +138,7 @@ subroutine advance
               !
            endif
            !
+        endif
         endif
         
         ! Advancing particle until census, absorption, or escape from domain
@@ -140,6 +156,8 @@ subroutine advance
            endif
         enddo
         
+
+        if(isshift) then
         if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
            !retrieving group
            g = minloc(abs(gas_wl-wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)),1)
@@ -159,7 +177,7 @@ subroutine advance
                  prt_done = .true.
                  isvacant = .true.
               elseif(.not.in_puretran) then
-                 zfdiff = 0
+                 zfdiff = -1
                  do ir = zsrc-1, zholder, -1
                     if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
                          *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
@@ -167,7 +185,7 @@ subroutine advance
                        exit
                     endif
                  enddo
-                 if(zfdiff==0) then
+                 if(zfdiff==-1) then
                     zsrc = zholder
                  else
                     zsrc=zfdiff+1
@@ -175,12 +193,18 @@ subroutine advance
                  endif
               else
                  zsrc = zholder
+                 if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
+                      *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
+                    rtsrc=2
+                    esrc = esrc*(1.0-gas_velyes*musrc*rsrc/pc_c)
+                    wlsrc = wlsrc/(1.0-gas_velyes*musrc*rsrc/pc_c)
+                 endif
               endif
               !
            endif
            !
         endif
-     
+        endif
      endif
   
   enddo

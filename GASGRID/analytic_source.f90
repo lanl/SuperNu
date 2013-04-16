@@ -44,9 +44,9 @@ subroutine analytic_source
         enddo
         !Ryan W.: Temporary fix (?) for over generation,
         !resetting prt_ns
-        if(gas_sigcoef==0d0) then
-           prt_ns = 1
-        endif
+        !if(gas_sigcoef==0d0) then
+        !   prt_ns = 1
+        !endif
      endif
      !
   elseif(gas_srctype=='strt') then
@@ -104,9 +104,9 @@ subroutine analytic_source
                    eradmanu(ig,ir)/pc_c
               !
               !write(*,*) 'thin: ',gas_exsource(ig,ir)
-              !if(gas_exsource(ig,ir)<0d0) then
-              !   gas_exsource(ig,ir)=0d0
-              !endif
+              if(gas_exsource(ig,ir)<0d0) then
+                 gas_exsource(ig,ir)=0d0
+              endif
               !
            enddo
            !
@@ -134,9 +134,9 @@ subroutine analytic_source
                    -pc_c*rrcenter/(gas_sigmapg(ig,ir)*tsp_texp*uudd**2)))
               !
               !write(*,*) 'thick: ',gas_exsource(ig,ir)
-              !if(gas_exsource(ig,ir)<0d0) then
-              !   gas_exsource(ig,ir)=0d0
-              !endif
+              if(gas_exsource(ig,ir)<0d0) then
+                 gas_exsource(ig,ir)=0d0
+              endif
               !
            enddo
            !

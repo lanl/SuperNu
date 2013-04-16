@@ -93,14 +93,14 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   mu = (rold*mu+d)/r
   elabfact = 1.0d0 - gas_velyes*mu*r/pc_c
   !calculating energy deposition
-  gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z) &
-       *gas_sigmapg(g,z)*d))*elabfact
+  !gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z) &
+  !     *gas_sigmapg(g,z)*d))*elabfact
   !
   E = E*exp(-gas_fcoef(z)*gas_sigmapg(g,z)*d)
   if (E/E0<0.001d0) then
      vacnt = .true.
      prt_done = .true.
-     gas_edep(z) = gas_edep(z) + E*elabfact
+     !gas_edep(z) = gas_edep(z) + E*elabfact
   endif
   ! Recalculating current group (rev. 120)
   g = minloc(abs(gas_wl-wl/(1.0d0-gas_velyes*r*mu/pc_c)),1)
