@@ -2,7 +2,7 @@
 
 !-- misc
 in_grab_stdout = f
-in_puretran = t
+in_puretran = f
 
 !-- time step
 in_tfirst = 2d0
@@ -59,7 +59,8 @@ in_suol = 'tsta'
 in_suolpick1 = 1d0
 
 !-- line case (disparity)
-in_ldisp = 1d4 
+in_ldisp1 = 1d-4
+in_ldisp2 = 1d0 
 
 !-- group settings
 in_wldex = 17

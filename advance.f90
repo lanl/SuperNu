@@ -39,11 +39,12 @@ subroutine advance
   alph2 = 0.5d0  !>=0,<=1
 
   !do ir = 1, gas_nr
-  !   write(*,*) (gas_sig(ir)+gas_sigmapg(1,ir))*tsp_texp*gas_drarr(ir), &
-  !        (gas_sig(ir)+gas_sigmapg(2,ir))*tsp_texp*gas_drarr(ir)
-  !   write(*,*)
-  !   write(*,*) gas_sig(ir), gas_sigmapg(1,ir), gas_sigmapg(2,ir)
-  !   write(*,*) '-------------------------------'
+     !write(*,*) (gas_sig(ir)+gas_sigmapg(1,ir))*tsp_texp*gas_drarr(ir), &
+     !     (gas_sig(ir)+gas_sigmapg(2,ir))*tsp_texp*gas_drarr(ir), &
+     !     'Planck: ',(gas_sig(ir)+gas_sigmap(ir))*tsp_texp*gas_drarr(ir)
+     !write(*,*)
+     !write(*,*) gas_sig(ir), gas_sigmapg(1,ir), gas_sigmapg(2,ir)
+     !write(*,*) '-------------------------------'
   !enddo
 
   call time(t0)

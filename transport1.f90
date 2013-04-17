@@ -180,7 +180,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
              *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
                  .and.(in_puretran.eqv..false.)) then
            r1 = rand()
-           !mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
+           mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
            P = gas_ppl(g,z+1)*(1.0+1.5*abs(mu))
            if (r1 < P) then
               hyparam = 2
@@ -231,7 +231,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
              *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()
-           !mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
+           mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
            P = gas_ppr(g,z-1)*(1.0+1.5*abs(mu))
            if (r1 < P) then
               hyparam = 2

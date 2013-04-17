@@ -13,7 +13,7 @@ subroutine xsections
 !##################################################
 
   integer :: ir, ig
-  real*8 :: Um, beta, tt, gg, ggg, eps, bb
+  real*8 :: Um, beta, tt, gg, ggg, eps, bb, sigtot
   real*8 :: x1, x2
   real*8 :: specint
   ! Here: left=>toward r=0 and right=>outward
@@ -88,12 +88,14 @@ subroutine xsections
 !-----------------------------------------------------------------
      !Ryan W.: emissivity albedo condition deprecated until curvature
      !conditions are added.
-!-----------------------------------------------------------------
-     !gg = (3.0*gas_fcoef(ir))**0.5
-     !eps = (4.0/3.0)*gg/(1.0+0.7104*gg)
+!----------------------------------------------------------------- 
      !do ig = 1, gas_ng
         !Calculating for leakage from left
         !total optical depth      ||   ||
+     !   sigtot = gas_sigbl(ir)+gas_sigmargleft(ig,ir)
+     !   gg = (3.0*(1d0-gas_sigmargleft(ig,ir)/sigtot))**0.5
+     !   eps = (4.0/3.0)*gg/(1.0+0.7104*gg)
+        !
      !   tt = (gas_sigmargleft(ig,ir)+gas_sigbl(ir)) &
      !        *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
         !
@@ -102,6 +104,10 @@ subroutine xsections
      !   gas_ppl(ig,ir) = 0.5*eps*bb/(bb-(3.0/4.0)*eps*tt)
         !Calculating for leakage from right
         !total optical depth      ||   ||
+     !   sigtot = gas_sigbr(ir)+gas_sigmargright(ig,ir)
+     !   gg = (3.0*(1d0-gas_sigmargright(ig,ir)/sigtot))**0.5
+     !   eps = (4.0/3.0)*gg/(1.0+0.7104*gg)
+        !
      !   tt = (gas_sigmargright(ig,ir)+gas_sigbr(ir)) &
      !        *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
      !   ggg = (gg*tt)**2

@@ -53,7 +53,8 @@ module gasgridmod
   character(4) :: gas_suol = 'tsta' !if gas_grptype='pick', sets picket
   !magnitudes with values from cases in literature (Su&Olson 1999).
   
-  real*8 :: gas_ldisp !if gas_grptype='line',
+  real*8 :: gas_ldisp1 !if gas_grptype='line',
+  real*8 :: gas_ldisp2 !if gas_grptype-'line'
   !ratio of strong line group opacity strength to weak group
 
   character(4) :: gas_srctype = 'heav' !analytic external source dependence
@@ -150,8 +151,9 @@ module gasgridmod
     gas_suol = in_suol
     gas_ppick(1) = in_suolpick1
     gas_ppick(2) = 1d0-in_suolpick1
-    !group line disparity:
-    gas_ldisp = in_ldisp
+    !group line disparities (strengths):
+    gas_ldisp1 = in_ldisp1
+    gas_ldisp2 = in_ldisp2
     !external analytic source input:
     gas_srctype = in_srctype
     gas_isanalsrc = in_isanalsrc

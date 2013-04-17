@@ -2,7 +2,7 @@ subroutine analytic_opacity
 
   use gasgridmod
   use physconstmod
-  use timestepmod
+  !use timestepmod
   implicit none
 
 !#####################################
@@ -151,54 +151,28 @@ subroutine analytic_opacity
         sigll = gas_sigmap(ir)*(gas_tempb(ir)/gas_vals2(ir)%tempkev)**gas_sigtpwr
         sigrr = gas_sigmap(ir)*(gas_tempb(ir+1)/gas_vals2(ir)%tempkev)**gas_sigtpwr
         !
-        fgren = 0d0
-        fglren= 0d0
-        fgrren= 0d0
-        do ig = 1, gas_ng, 2
-           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_vals2(ir)%tempkev)
-           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
-           fgren = fgren+15d0*specint(x1,x2,3)/pc_pi**4
-           !
-           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(ir))
-           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir))
-           fglren = fglren+15d0*specint(x1,x2,3)/pc_pi**4
-           !
-           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(ir+1))
-           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir+1))
-           fgrren = fgrren+15d0*specint(x1,x2,3)/pc_pi**4
-        enddo
-        do ig = 2, gas_ng, 2
-           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_vals2(ir)%tempkev)
-           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
-           fgren = fgren+gas_ldisp*15d0*specint(x1,x2,3)/pc_pi**4
-           !
-           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(ir))
-           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir))
-           fglren = fglren+gas_ldisp*15d0*specint(x1,x2,3)/pc_pi**4
-           !
-           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(ir+1))
-           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(ir+1))
-           fgrren = fgrren+gas_ldisp*15d0*specint(x1,x2,3)/pc_pi**4
-        enddo
-        !if(tsp_tn==15.or.tsp_tn==16.or.tsp_tn==17.or.tsp_tn==18) then
-        !   write(*,*) fgren, fglren, fgrren
-        !endif
-        !-------------------------------------------------
-        !fgren=1d0
-        
-        !-------------------------------------------------
         !set odd group magnitudes (low)
         do ig = 1, gas_ng, 2
-           gas_sigmapg(ig,ir) = gas_sigmap(ir)/fgren
-           gas_sigmargleft(ig,ir) = sigll/fglren
-           gas_sigmargright(ig,ir) = sigrr/fgrren
+           gas_sigmapg(ig,ir) = gas_sigmap(ir)*gas_ldisp1
+           gas_sigmargleft(ig,ir) = sigll*gas_ldisp1
+           gas_sigmargright(ig,ir) = sigrr*gas_ldisp1
         enddo
         !set even group magnitudes (high)
         do ig = 2, gas_ng, 2
-           gas_sigmapg(ig,ir) = gas_sigmap(ir)*gas_ldisp/fgren
-           gas_sigmargleft(ig,ir) = sigll*gas_ldisp/fglren
-           gas_sigmargright(ig,ir) = sigrr*gas_ldisp/fgrren
+           gas_sigmapg(ig,ir) = gas_sigmap(ir)*gas_ldisp2
+           gas_sigmargleft(ig,ir) = sigll*gas_ldisp2
+           gas_sigmargright(ig,ir) = sigrr*gas_ldisp2
         enddo
+        !
+        !calculate Planck, Rosseland opacities
+        gas_sigmap(ir)=0d0
+        do ig = 1, gas_ng
+           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_vals2(ir)%tempkev)
+           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
+           gas_sigmap(ir)=gas_sigmap(ir)+15d0*gas_sigmapg(ig,ir)* &
+                specint(x1,x2,3)/pc_pi**4
+        enddo
+        !
      enddo
   else
     stop 'analytic_opacity: gas_grptype invalid'

@@ -59,7 +59,8 @@ c-- picket fence specific group structure
       character(4) :: in_suol = 'tsta'    !tsta|tstb|tstc: Su&Olson picket fence (pick) test cases 
       real*8 :: in_suolpick1 = 1d0  !in [0,1]: probability of being at first picket
 c-- line specific group structure
-      real*8 :: in_ldisp = 1d0  !order of magnitude difference between analytic group line opacity strengths
+      real*8 :: in_ldisp1 = 1d0  !loosely speaking, the analytic odd group line strength
+      real*8 :: in_ldisp2 = 1d0  !loosely speaking, the analytic even group line strength
 c
 c
       real*8 :: in_wlmin = 1000d0     !lower wavelength boundary in output spectrum
@@ -106,7 +107,7 @@ c-- runtime parameter namelist
      & in_sigcoef,in_sigtpwr,in_sigrpwr,
      & in_cvcoef,in_cvtpwr,in_cvrpwr,
      & in_wldex,in_iswlread, in_isanalgrp,in_grptype,in_suol,
-     & in_suolpick1, in_ldisp,
+     & in_suolpick1, in_ldisp1, in_ldisp2,
      & in_isanalsrc, in_srctype, in_theav, in_nheav, in_srcmax
 c
       public
