@@ -95,7 +95,9 @@ subroutine interior_source
            isnotvacnt = .true.
            
            !source tally
-           !gas_eraddensg(iig,ir)=gas_eraddensg(iig,ir)+Ep0
+           !if(prt_particles(ivac)%rtsrc==2) then
+           !   gas_eraddensg(iig,ir)=gas_eraddensg(iig,ir)+Ep0
+           !endif
         else
            ir = ir+1
         endif
@@ -175,7 +177,10 @@ subroutine interior_source
            isnotvacnt = .true.
 
            !source tally
-           !gas_eraddensg(iig,ir)=gas_eraddensg(iig,ir)+Ep0
+           !if(prt_particles(ivac)%rtsrc==2) then
+           !   gas_eraddensg(iig,ir)=gas_eraddensg(iig,ir)+Ep0
+           !endif
+
         else
            ir = ir + 1
         endif

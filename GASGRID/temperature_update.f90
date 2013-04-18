@@ -18,13 +18,13 @@ subroutine temperature_update
   !calculating radiation energy density
   do ir = 1, gas_nr
      gas_vals2(ir)%eraddens = 0d0
-     gas_edep(ir) = 0d0
+     !gas_edep(ir) = 0d0
      do ig = 1, gas_ng
         gas_eraddensg(ig,ir)=gas_eraddensg(ig,ir)/gas_vals2(ir)%vol
         gas_vals2(ir)%eraddens = gas_vals2(ir)%eraddens+ &
              gas_eraddensg(ig,ir)
-        gas_edep(ir) = gas_edep(ir)+pc_c*tsp_dt*gas_fcoef(ir)* &
-             gas_sigmapg(ig,ir)*gas_eraddensg(ig,ir)
+        !gas_edep(ir) = gas_edep(ir)+pc_c*tsp_dt*gas_fcoef(ir)* &
+        !     gas_sigmapg(ig,ir)*gas_eraddensg(ig,ir)
      enddo
   enddo
 

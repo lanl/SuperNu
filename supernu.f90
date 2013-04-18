@@ -57,7 +57,7 @@ program supernu
    call timestep_init(in_nt,in_alpha,in_tfirst,dt)
 !
 !-- particle init
-   call particle_init(in_npartmax,in_ns)
+   call particle_init(in_npartmax,in_ns,in_isimcanlog)
 !
 !-- SETUP GRIDS
    call wlgrid_setup

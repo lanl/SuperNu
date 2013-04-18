@@ -38,15 +38,6 @@ subroutine advance
   gas_numcensus(1:gas_nr) = 0
   alph2 = 0.5d0  !>=0,<=1
 
-  !do ir = 1, gas_nr
-     !write(*,*) (gas_sig(ir)+gas_sigmapg(1,ir))*tsp_texp*gas_drarr(ir), &
-     !     (gas_sig(ir)+gas_sigmapg(2,ir))*tsp_texp*gas_drarr(ir), &
-     !     'Planck: ',(gas_sig(ir)+gas_sigmap(ir))*tsp_texp*gas_drarr(ir)
-     !write(*,*)
-     !write(*,*) gas_sig(ir), gas_sigmapg(1,ir), gas_sigmapg(2,ir)
-     !write(*,*) '-------------------------------'
-  !enddo
-
   call time(t0)
   ! Propagating all particles that are not considered vacant: loop
   do ipart = 1, prt_npartmax
@@ -85,7 +76,7 @@ subroutine advance
            if ((gas_sig(zsrc)+gas_sigmapg(g,zsrc))*gas_drarr(zsrc) &
                 *(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
               if (rtsrc == 2) then
-                 r1 = rand()
+                 r1 =  rand()
                  rsrc = (r1*gas_rarr(zsrc+1)**3 + (1.0-r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
                  r1 = rand()
                  musrc = 1.0 - 2.0*r1
@@ -99,12 +90,55 @@ subroutine advance
               rtsrc = 2
            endif
         endif
-        
-        ! First portion of operator split particle velocity position adjustment
-        
-        !if(tsp_tn==18) then
-        !   write(*,*) ipart, zsrc, g
+        ! Looking up group
+        if(rtsrc==1) then
+           g = minloc(abs(gas_wl-wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)),1)
+           if(wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
+              g = g-1
+           endif
+           if(g>gas_ng.or.g<1) then
+              !particle out of wlgrid energy bound
+              if(g>gas_ng) then
+                 g=gas_ng
+                 wlsrc=gas_wl(gas_ng+1)*(1.0d0-gas_velyes*rsrc*musrc/pc_c)
+              elseif(g<1) then
+                 g=1
+                 wlsrc=gas_wl(1)*(1.0d0-gas_velyes*rsrc*musrc/pc_c)
+              else
+                 write(*,*) 'domain leak!!'
+                 prt_done = .true.
+                 isvacant = .true.
+              endif
+           endif
+           !
+        else
+           g = minloc(abs(gas_wl-wlsrc),1)
+           if(wlsrc-gas_wl(g)<0d0) then
+              g = g-1
+           endif
+           !
+           if(g>gas_ng.or.g<1) then
+              !particle out of wlgrid bound
+              if(g>gas_ng) then
+                 g=gas_ng
+                 wlsrc=gas_wl(gas_ng+1)
+              elseif(g<1) then
+                 g=1
+                 wlsrc=gas_wl(1)
+              else
+                 write(*,*) 'domain leak!!'
+                 prt_done = .true.
+                 isvacant = .true.
+              endif
+           endif
+           !
+        endif
+        !if(tsp_tn==22) then
+        !   write(*,*) rtsrc, wlsrc, g
+        !   write(*,*) '--',gas_wl(g),gas_wl(g+1)
         !endif
+
+        ! First portion of operator split particle velocity position adjustment
         if(isshift) then
         if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
            rsrc = rsrc*tsp_texp/(tsp_texp+alph2*tsp_dt)
@@ -141,7 +175,7 @@ subroutine advance
            !
         endif
         endif
-        
+!-----------------------------------------------------------------------        
         ! Advancing particle until census, absorption, or escape from domain
         prt_done = .false.
         do while (prt_done .eqv. .false.)
@@ -156,15 +190,55 @@ subroutine advance
                    esrc,ebirth,rtsrc,isvacant)
            endif
         enddo
-        
+!----------------------------------------------------------------------- 
 
-        if(isshift) then
-        if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
-           !retrieving group
+        ! Looking up group
+        if(rtsrc==1) then
            g = minloc(abs(gas_wl-wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)),1)
            if(wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
               g = g-1
            endif
+           if(g>gas_ng.or.g<1) then
+              !particle out of wlgrid energy bound
+              if(g>gas_ng) then
+                 g=gas_ng
+                 wlsrc=gas_wl(gas_ng+1)*(1.0d0-gas_velyes*rsrc*musrc/pc_c)
+              elseif(g<1) then
+                 g=1
+                 wlsrc=gas_wl(1)*(1.0d0-gas_velyes*rsrc*musrc/pc_c)
+              else
+                 write(*,*) 'domain leak!!'
+                 prt_done = .true.
+                 isvacant = .true.
+              endif
+           endif
+           !
+        else
+           g = minloc(abs(gas_wl-wlsrc),1)
+           if(wlsrc-gas_wl(g)<0d0) then
+              g = g-1
+           endif
+           !
+           if(g>gas_ng.or.g<1) then
+              !particle out of wlgrid bound
+              if(g>gas_ng) then
+                 g=gas_ng
+                 wlsrc=gas_wl(gas_ng+1)
+              elseif(g<1) then
+                 g=1
+                 wlsrc=gas_wl(1)
+              else
+                 write(*,*) 'domain leak!!'
+                 prt_done = .true.
+                 isvacant = .true.
+              endif
+           endif
+           !
+        endif
+
+        if(isshift) then
+        if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
+           
            !
            rsrc = rsrc*tsp_texp/(tsp_texp+(1.0-alph2)*tsp_dt)
            !
@@ -194,12 +268,6 @@ subroutine advance
                  endif
               else
                  zsrc = zholder
-                 if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
-                      *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
-                    rtsrc=2
-                    esrc = esrc*(1.0-gas_velyes*musrc*rsrc/pc_c)
-                    wlsrc = wlsrc/(1.0-gas_velyes*musrc*rsrc/pc_c)
-                 endif
               endif
               !
            endif
@@ -213,5 +281,6 @@ subroutine advance
   call time(t1)
   call timereg(t_pckt, t1-t0)  !register timing
   write(6,*) transps, difs
-  
+  !write(6,*) eleft, eright
+
 end subroutine advance

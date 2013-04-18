@@ -67,12 +67,23 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      endif
   endif
   ! distance to fictitious collision = dcol
-  if((1.0d0-gas_fcoef(z))*gas_sigmapg(g,z)>0.0d0) then
-     r1 = rand()
-     dcol = abs(log(r1)/((1.0d0-gas_fcoef(z))*gas_sigmapg(g,z)*dcollabfact))
+  !
+  if(prt_isimcanlog) then
+     if(gas_sigmapg(g,z)>0d0) then
+        r1 = rand()
+        dcol = abs(log(r1)/(gas_sigmapg(g,z)*dcollabfact))
+     else
+        dcol = 3.0*db
+     endif
   else
-     dcol = 3.0*db
+     if((1.0d0-gas_fcoef(z))*gas_sigmapg(g,z)>0.0d0) then
+        r1 = rand()
+        dcol = abs(log(r1)/((1.0d0-gas_fcoef(z))*gas_sigmapg(g,z)*dcollabfact))
+     else
+        dcol = 3.0*db
+     endif
   endif
+  !
   ! distance to physical collision = dthm
   if(gas_sig(z)>0.0d0) then
      r1 = rand()
@@ -93,15 +104,18 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   mu = (rold*mu+d)/r
   elabfact = 1.0d0 - gas_velyes*mu*r/pc_c
   !calculating energy deposition
-  !gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z) &
-  !     *gas_sigmapg(g,z)*d))*elabfact
-  !
-  E = E*exp(-gas_fcoef(z)*gas_sigmapg(g,z)*d)
-  if (E/E0<0.001d0) then
-     vacnt = .true.
-     prt_done = .true.
-     !gas_edep(z) = gas_edep(z) + E*elabfact
+  if(.not.prt_isimcanlog) then
+     gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z) &
+          *gas_sigmapg(g,z)*d))*elabfact
+     !
+     E = E*exp(-gas_fcoef(z)*gas_sigmapg(g,z)*d)
+     if (E/E0<0.001d0) then
+        vacnt = .true.
+        prt_done = .true.
+        gas_edep(z) = gas_edep(z) + E*elabfact
+     endif
   endif
+
   ! Recalculating current group (rev. 120)
   g = minloc(abs(gas_wl-wl/(1.0d0-gas_velyes*r*mu/pc_c)),1)
   if(wl/(1.0d0-gas_velyes*r*mu/pc_c)-gas_wl(g)<0d0) then
@@ -139,42 +153,51 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      !     (1.0-gas_velyes*mu*r/pc_c)/(pc_c*gas_sig(z)*tsp_dt)
      !
   elseif (d == dcol) then  !fictitious scattering with implicit capture
+     !
      r1 = rand()
-     mu = 1.0-2.0*r1
-     mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
-     E = E*elabfact/(1.0-gas_velyes*mu*r/pc_c)
-     denom2 = 0.0
-     r1 = rand()
-     do ig = 1, gas_ng
-        iig = ig
-        if ((r1>=denom2).and.(r1<denom2+gas_emitprobg(ig,z))) exit
-        denom2 = denom2+gas_emitprobg(ig,z)
-     enddo
-     g = iig
-     !(rev 121): calculating radiation energy tally per group
-     !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*elabfact
-     !-------------------------------------------------------
-     ! uniformly sampling comoving wavelength in group
-     r1 = rand()
-     wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
-     ! converting comoving wavelength to lab frame wavelength
-     wl = wl*(1.0-gas_velyes*r*mu/pc_c)
-     if (((gas_sig(z)+gas_sigmapg(g,z))*gas_drarr(z)* &
-          (gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
-          .and.(in_puretran.eqv..false.)) then
-        hyparam = 2
-        E = E*(1.0-gas_velyes*r*mu/pc_c)
-        E0 = E0*(1.0-gas_velyes*r*mu/pc_c)
-        wl = wl/(1.0-gas_velyes*r*mu/pc_c)
+     if(r1<=gas_fcoef(z).and.prt_isimcanlog) then
+        vacnt=.true.
+        prt_done=.true.
+        gas_edep(z) = gas_edep(z) + E*elabfact
      else
-        hyparam = 1
+        r1 = rand()
+        mu = 1.0-2.0*r1
+        mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
+        E = E*elabfact/(1.0-gas_velyes*mu*r/pc_c)
+        denom2 = 0.0
+        r1 = rand()
+        do ig = 1, gas_ng
+           iig = ig
+           if ((r1>=denom2).and.(r1<denom2+gas_emitprobg(ig,z))) exit
+           denom2 = denom2+gas_emitprobg(ig,z)
+        enddo
+        g = iig
+        !(rev 121): calculating radiation energy tally per group
+        !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*elabfact
+        !-------------------------------------------------------
+        ! uniformly sampling comoving wavelength in group
+        r1 = rand()
+        wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
+        ! converting comoving wavelength to lab frame wavelength
+        wl = wl*(1.0-gas_velyes*r*mu/pc_c)
+        if (((gas_sig(z)+gas_sigmapg(g,z))*gas_drarr(z)* &
+             (gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
+             .and.(in_puretran.eqv..false.)) then
+           hyparam = 2
+           E = E*(1.0-gas_velyes*r*mu/pc_c)
+           E0 = E0*(1.0-gas_velyes*r*mu/pc_c)
+           wl = wl/(1.0-gas_velyes*r*mu/pc_c)
+        else
+           hyparam = 1
+        endif
      endif
+     !
   elseif (d == db) then   !------boundary crossing ----
      if (mu>=0.0d0) then
         if (z == gas_nr) then
            vacnt = .true.
            prt_done = .true.
-           gas_eright = gas_eright+E !*elabfact
+           gas_eright = gas_eright+E*elabfact
         ! Checking if DDMC region right
         elseif (((gas_sig(z+1)+gas_sigmapg(g,z+1))*gas_drarr(z+1) &
              *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &

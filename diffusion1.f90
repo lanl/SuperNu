@@ -55,6 +55,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   tau = abs(log(r1)/(pc_c*denom))
   tcensus = tsp_time+tsp_dt-t
   ddmct = min(tau,tcensus)
+
+
   E = E*(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
   E0 = E0*(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
   ! Recalculating comoving wavelength (rev. 120)
@@ -94,7 +96,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      PL = gas_sigmal(g,z)/denom
      PA = gas_fcoef(z)*gas_sigmapg(g,z)/denom
      !tallying radiation energy density
-     !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E/(tsp_dt*pc_c*denom)
      gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*ddmct/tsp_dt
      !
      !
@@ -109,6 +110,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            endif
         elseif ((gas_sig(z-1)+gas_sigmapg(g,z-1))*gas_drarr(z-1) &
              *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
+           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            z = z-1
            !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
         else
@@ -134,6 +136,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            gas_eright = gas_eright+E*(1.0+gas_velyes*gas_rarr(gas_nr+1)*mu/pc_c)
         elseif ((gas_sig(z+1)+gas_sigmapg(g,z+1))*gas_drarr(z+1) &
              *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
+           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            z = z+1
            !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
         else
@@ -152,13 +155,16 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      elseif (PL+PR<=r1 .and. r1<PL+PR+PA) then
         vacnt = .true.
         prt_done = .true.
-        !gas_edep(z) = gas_edep(z)+E
-        !if(tsp_tn==17) then
-        !   write(*,*) PL,PR,PA, r1
-        !   write(*,*) 'here: ', E, hyparam
-        !endif        
+        gas_edep(z) = gas_edep(z)+E
+        !write(*,*) 'here'
+        !E = E*(1d0-PA)
+        !gas_edep(z) = gas_edep(z)+PA*E
+        !if(E/E0<0.001d0) then
+        !   vacnt = .true.
+        !   prt_done = .true.
+        !   gas_edep(z)=gas_edep(z)+E
+        !endif
      else
-        !write(*,*) 'scatter'
         denom2 = 0d0
         do ig = 1, gas_ng
            if(ig.ne.g) then

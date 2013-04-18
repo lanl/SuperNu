@@ -40,6 +40,7 @@ c-- particles
       integer :: in_ns = 0   !# source particles generated per time step
       integer :: in_npartmax = 0 !total # particles allowed
       logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
+      logical :: in_isimcanlog = .false. !use analog IMC tally if true
       real*8 :: in_alpha = 1d0 !time centering control parameter [0,1]
 c
 c-- time step
@@ -108,7 +109,8 @@ c-- runtime parameter namelist
      & in_cvcoef,in_cvtpwr,in_cvrpwr,
      & in_wldex,in_iswlread, in_isanalgrp,in_grptype,in_suol,
      & in_suolpick1, in_ldisp1, in_ldisp2,
-     & in_isanalsrc, in_srctype, in_theav, in_nheav, in_srcmax
+     & in_isanalsrc, in_srctype, in_theav, in_nheav, in_srcmax,
+     & in_isimcanlog
 c
       public
       private inputpars

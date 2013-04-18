@@ -119,12 +119,12 @@ subroutine xsections
              *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
         gas_ppl(ig,ir) = 4.0d0/(3d0*tt+6d0*0.7104d0)
         !
-        tt = (gas_sigmargright(ig,ir)+gas_sigbl(ir)) &
+        tt = (gas_sigmargright(ig,ir)+gas_sigbr(ir)) &
              *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
         gas_ppr(ig,ir) = 4.0d0/(3d0*tt+6d0*0.7104d0)
      enddo
   enddo
-
+  
   !Calculating DDMC(-to-IMC) leakage opacities (Densmore, 2007, 2012): loop
   do ir = 1, gas_nr
      do ig = 1, gas_ng

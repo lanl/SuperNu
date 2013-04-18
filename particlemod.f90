@@ -16,14 +16,17 @@ module particlemod
   integer, dimension(:), allocatable :: prt_vacantarr
 
   logical :: prt_done
+  logical :: prt_isimcanlog !sets flux tally and energy deposition ...
+  !to analog in IMC
 
   save
 
   contains
 
-  subroutine particle_init(npartmax,ns)
+  subroutine particle_init(npartmax,ns,isimcanlog)
 !--------------------------------------
     integer,intent(in) :: npartmax, ns
+    logical,intent(in) :: isimcanlog
 !***********************************************************************
 ! init particle module
 !***********************************************************************
@@ -32,6 +35,7 @@ module particlemod
 !-- adopt input values in module internal storage
     prt_npartmax = npartmax
     prt_ns = ns
+    prt_isimcanlog = isimcanlog
 !
 !-- allocate permanent storage (dealloc in dealloc_all.f)
     allocate(prt_particles(prt_npartmax))
