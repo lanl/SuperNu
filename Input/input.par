@@ -11,7 +11,7 @@ in_nt = 32
 in_alpha = 1d0
 
 !-- gas grid settings
-in_nr = 100
+in_nr = 50
 in_isvelocity = t
 in_isshell = f
 in_novolsrc = t
@@ -33,7 +33,7 @@ in_srctype = 'heav'
 in_srcmax = 4d24
 !-- heaviside case
 in_theav = 3d0
-in_nheav = 80
+in_nheav = 40
 
 !-- power law heat capacity values
 in_cvcoef = 2.32d14

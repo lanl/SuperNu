@@ -96,10 +96,12 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      PL = gas_sigmal(g,z)/denom
      PA = gas_fcoef(z)*gas_sigmapg(g,z)/denom
      !tallying radiation energy density
-     gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*ddmct/tsp_dt
+     !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*ddmct/tsp_dt
+     !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E/(denom*pc_c*tsp_dt)
      !
      !
      if (0.0d0<=r1 .and. r1<PL) then
+        !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E/(gas_sigmal(g,z)*pc_c*tsp_dt)
         if (z == 1) then
            if(gas_isshell) then
               vacnt = .true.
@@ -110,7 +112,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            endif
         elseif ((gas_sig(z-1)+gas_sigmapg(g,z-1))*gas_drarr(z-1) &
              *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
-           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           
            z = z-1
            !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
         else
@@ -127,6 +129,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            wl = wl*(1.0-gas_velyes*r*mu/pc_c)
         endif
      elseif (PL<=r1 .and. r1<PL+PR) then
+        !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E/(gas_sigmar(g,z)*pc_c*tsp_dt)
         if (z == gas_nr) then
            vacnt = .true.
            prt_done = .true.
@@ -153,6 +156,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            wl = wl*(1.0-gas_velyes*r*mu/pc_c)
         endif
      elseif (PL+PR<=r1 .and. r1<PL+PR+PA) then
+        gas_eraddensg(g,z)=gas_eraddensg(g,z)+ &
+             E/((gas_fcoef(z)+(1d0-gas_emitprobg(g,z))*(1d0-gas_fcoef(z))) &
+             *gas_sigmapg(g,z)*pc_c*tsp_dt)
         vacnt = .true.
         prt_done = .true.
         gas_edep(z) = gas_edep(z)+E
@@ -165,6 +171,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         !   gas_edep(z)=gas_edep(z)+E
         !endif
      else
+        gas_eraddensg(g,z)=gas_eraddensg(g,z)+ &
+             E/((gas_fcoef(z)+(1d0-gas_emitprobg(g,z))*(1d0-gas_fcoef(z))) &
+             *gas_sigmapg(g,z)*pc_c*tsp_dt)
         denom2 = 0d0
         do ig = 1, gas_ng
            if(ig.ne.g) then
@@ -202,7 +211,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      !   stop 'diffusion1: invalid histogram sample'
      endif
   else
-     gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*ddmct/tsp_dt
+     !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*ddmct/tsp_dt
      prt_done = .true.
      gas_numcensus(z)=gas_numcensus(z)+1
      gas_erad = gas_erad+E

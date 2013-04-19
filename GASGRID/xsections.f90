@@ -14,7 +14,7 @@ subroutine xsections
 
   integer :: ir, ig
   real*8 :: Um, beta, tt, gg, ggg, eps, bb, sigtot
-  real*8 :: x1, x2
+  real*8 :: x1, x2, rrcenter
   real*8 :: specint
   ! Here: left=>toward r=0 and right=>outward
 
@@ -115,12 +115,15 @@ subroutine xsections
      !   gas_ppr(ig,ir) = 0.5*eps*bb/(bb-(3.0/4.0)*eps*tt)
      !enddo
      do ig = 1, gas_ng
+        rrcenter=0.5*(gas_rarr(ir)+gas_rarr(ir+1))
         tt = (gas_sigmargleft(ig,ir)+gas_sigbl(ir)) &
-             *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
+             *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp) !&
+             !*gas_rarr(ir)**2/(rrcenter**2-gas_rarr(ir)**2)
         gas_ppl(ig,ir) = 4.0d0/(3d0*tt+6d0*0.7104d0)
         !
         tt = (gas_sigmargright(ig,ir)+gas_sigbr(ir)) &
-             *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
+             *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp) !&
+             !*gas_rarr(ir+1)**2/(gas_rarr(ir+1)**2-rrcenter**2)
         gas_ppr(ig,ir) = 4.0d0/(3d0*tt+6d0*0.7104d0)
      enddo
   enddo
