@@ -106,9 +106,11 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   !calculating energy deposition
   if(.not.prt_isimcanlog) then
      gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z) &
-          *gas_sigmapg(g,z)*d))*elabfact
+          *gas_sigmapg(g,z)*d*(gas_velno*1.d0+ &
+          gas_velyes*tsp_texp)))*elabfact
      !
-     E = E*exp(-gas_fcoef(z)*gas_sigmapg(g,z)*d)
+     E = E*exp(-gas_fcoef(z)*gas_sigmapg(g,z)*d*(gas_velno*1.d0 &
+          +gas_velyes*tsp_texp))
      if (E/E0<0.001d0) then
         vacnt = .true.
         prt_done = .true.

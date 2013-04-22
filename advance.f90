@@ -70,7 +70,7 @@ subroutine advance
               g = g-1
            endif
         endif
-        
+                        
         ! Checking if particle conversions are required since prior time step
         if (in_puretran.eqv..false.) then
            if ((gas_sig(zsrc)+gas_sigmapg(g,zsrc))*gas_drarr(zsrc) &

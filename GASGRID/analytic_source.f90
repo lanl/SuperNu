@@ -13,10 +13,10 @@ subroutine analytic_source
   !
   real*8 :: uudd = 2.5d8  !velocity gauss width
   real*8 :: tmpgauss(gas_nr)  !manufactured gaussian temperature
-  real*8 :: eradmanu(gas_ng,gas_nr) !manufactured rad. en. density
+  real*8 :: eradthin(gas_nr) !manufactured rad. en. density
   
   real*8 :: aa11=1.371d14
-  real*8 :: aa22=1.371d11
+  real*8 :: aa22=1.371d2
   real*8 :: rrcenter, aa00, bspeced, xx3, xx4
 
   x1 = 1d0/gas_wl(gas_ng+1)
@@ -78,65 +78,58 @@ subroutine analytic_source
            tmpgauss(ir)=in_templ0*exp(-0.5d0*(rrcenter/uudd)**2)* &
                 in_tfirst*pc_day/tsp_texp
            !
+           eradthin(ir)=((aa11*(in_velout-rrcenter)+ &
+                aa22*rrcenter)/in_velout)* &
+                (in_tfirst*pc_day/tsp_texp)**4
            !Thin lines
            do ig = 1, gas_ng, 2
               x3 = 1d0/gas_wl(ig+1)
               x4 = 1d0/gas_wl(ig)
-              !calculating false thin group rad. energy density
-              eradmanu(ig,ir)=((aa11*(in_velout-rrcenter)+ &
-                   aa22*rrcenter)/in_velout)* &
-                   (in_tfirst*pc_day/tsp_texp)**4 &
-                   *(x4-x3)/(x2-x1)
-              !
               !calculating manufactured source
               xx3 = x3*pc_h*pc_c/(1d3*pc_ev*tmpgauss(ir))
               xx4 = x4*pc_h*pc_c/(1d3*pc_ev*tmpgauss(ir))
-              aa00=in_tfirst*pc_day*in_velout
+              
               bspeced = 15d0*specint(xx3,xx4,3)/pc_pi**4
               !
-              gas_exsource(ig,ir) = &
-                   (aa00*aa11/(pc_day*in_tfirst*in_velout)**5 - &
-                   5.0*eradmanu(ig,ir)/(tsp_texp*in_velout))*in_velout &
-                   +2.0*pc_c*eradmanu(ig,ir)/rrcenter + &
-                   pc_c*(aa22-aa11)*aa00/(tsp_texp*in_velout)**5 - &
-                   pc_c*bspeced*gas_sigmapg(ig,ir)*pc_acoef*tmpgauss(ir)**4 &
-                   -gas_sigmapg(ig,ir)*rrcenter*(pc_c-4d0*rrcenter/3d0)* &
-                   eradmanu(ig,ir)/pc_c
+              gas_exsource(ig,ir) = 0d0
+              gas_exsource(ig,ir) = gas_exsource(ig,ir)+&
+                   (in_tfirst*pc_day/tsp_texp)**4*aa11/tsp_texp-&
+                   5*eradthin(ir)/tsp_texp+3d0*eradthin(ir)/tsp_texp+&
+                   (in_tfirst*pc_day/tsp_texp)**4*(rrcenter/in_velout)*&
+                   (aa22-aa11)/tsp_texp+(in_tfirst*pc_day/tsp_texp)**4*&
+                   (pc_c/in_velout)*(2d0*in_velout*aa11/rrcenter+3d0*&
+                   (aa22-aa11))+pc_c*gas_sigmapg(ig,ir)*eradthin(ir)
               !
-              !write(*,*) 'thin: ',gas_exsource(ig,ir)
-              if(gas_exsource(ig,ir)<0d0) then
-                 gas_exsource(ig,ir)=0d0
-              endif
+              gas_exsource(ig,ir)=gas_exsource(ig,ir)*(x4-x3)/(x2-x1)-&
+                   pc_c*gas_sigmapg(ig,ir)*pc_acoef*tmpgauss(ir)**4*&
+                   bspeced
               !
            enddo
            !
            !Thick lines
            do ig = 2, gas_ng, 2
-              x3 = 1d0/gas_wl(ig+1)
-              x4 = 1d0/gas_wl(ig)
+              gas_exsource(ig,ir) = 0d0
+              !x3 = 1d0/gas_wl(ig+1)
+              !x4 = 1d0/gas_wl(ig)
               !calculating false thick group rad. energy density
-              eradmanu(ig,ir)=pc_acoef*tmpgauss(ir)**4*(x4-x3)/(x2-x1)
+              !eradmanu(ig,ir)=pc_acoef*tmpgauss(ir)**4*(x4-x3)/(x2-x1)
               !
               !calculating manufactured source
-              xx3 = x3*pc_h*pc_c/(1d3*pc_ev*tmpgauss(ir))
-              xx4 = x4*pc_h*pc_c/(1d3*pc_ev*tmpgauss(ir))
-              bspeced = 15d0*specint(xx3,xx4,3)/pc_pi**4
+              !xx3 = x3*pc_h*pc_c/(1d3*pc_ev*tmpgauss(ir))
+              !xx4 = x4*pc_h*pc_c/(1d3*pc_ev*tmpgauss(ir))
+              !bspeced = 15d0*specint(xx3,xx4,3)/pc_pi**4
               !
-              gas_exsource(ig,ir) = eradmanu(ig,ir)* &
-                   (4d0*((rrcenter*tsp_texp)**2*uudd/ &
-                   (uudd*tsp_texp)**3-1d0/tsp_texp &
-                   +pc_c*(3d0*(uudd*tsp_texp)**2- &
-                   4.0*(rrcenter*tsp_texp)**2) &
-                   /(3d0*gas_sigmapg(ig,ir)*(uudd*tsp_texp)**4)) &
-                   -pc_c*bspeced*gas_sigmapg(ig,ir)*(x2-x1)/(x4-x3) &
-                   +pc_c*gas_sigmapg(ig,ir) &
-                   +4.0*gas_sigmapg(ig,ir)*rrcenter*(rrcenter &
-                   -pc_c*rrcenter/(gas_sigmapg(ig,ir)*tsp_texp*uudd**2)))
+              !gas_exsource(ig,ir) = eradmanu(ig,ir)* &
+              !     (4d0*((rrcenter*tsp_texp)**2*uudd/ &
+              !     (uudd*tsp_texp)**3-1d0/tsp_texp &
+              !     +pc_c*(3d0*(uudd*tsp_texp)**2- &
+              !     4.0*(rrcenter*tsp_texp)**2) &
+              !     /(3d0*gas_sigmapg(ig,ir)*(uudd*tsp_texp)**4)) &
+              !     -pc_c*bspeced*gas_sigmapg(ig,ir)*(x2-x1)/(x4-x3) &
+              !     +pc_c*gas_sigmapg(ig,ir) &
+              !     +4.0*gas_sigmapg(ig,ir)*rrcenter*(rrcenter &
+              !     -pc_c*rrcenter/(gas_sigmapg(ig,ir)*tsp_texp*uudd**2)))
               !
-              !write(*,*) 'thick: ',gas_exsource(ig,ir)
-              if(gas_exsource(ig,ir)<0d0) then
-                 gas_exsource(ig,ir)=0d0
-              endif
               !
            enddo
            !
