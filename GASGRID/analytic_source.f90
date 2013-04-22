@@ -16,7 +16,7 @@ subroutine analytic_source
   real*8 :: eradthin(gas_nr) !manufactured rad. en. density
   
   real*8 :: aa11=1.371d14
-  real*8 :: aa22=1.371d2
+  real*8 :: aa22= 1.371d2!1.371d0
   real*8 :: rrcenter, aa00, bspeced, xx3, xx4
 
   x1 = 1d0/gas_wl(gas_ng+1)
@@ -64,9 +64,9 @@ subroutine analytic_source
   elseif(gas_srctype=='manu') then
      !
      !Manufactured Source (for gas_grptype='line')
-     if(gas_grptype.ne.'line') then
-        stop 'analytic_source: gas_grptype=line for gas_srctype=manu'
-     endif
+     !if(gas_grptype.ne.'line') then
+     !   stop 'analytic_source: gas_grptype=line for gas_srctype=manu'
+     !endif
      !
 
      if(gas_isvelocity) then
@@ -134,6 +134,7 @@ subroutine analytic_source
            enddo
            !
         enddo
+        !write(*,*) eradthin(1), eradthin(5), eradthin(gas_nr), gas_nr
      else
         stop 'analytic_source: no static manufactured source'
      endif
@@ -145,5 +146,6 @@ subroutine analytic_source
   !write(*,*) gas_exsource(1,:)
   !write(*,*)
   !write(*,*) gas_exsource(2,:)
+  write(*,*) gas_sigmap(gas_nr), gas_sigmapg(1,gas_nr)
 
 end subroutine analytic_source

@@ -91,6 +91,9 @@ program supernu
    t_setup = t1-t0
   endif !impi
   
+  !calculating analytic initial particle distribution (if any)
+  call initialnumbers
+    
   ! Beginning time step loop
   do tsp_tn = 1, tsp_nt
     write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
@@ -112,7 +115,9 @@ program supernu
     call interior_source
     deallocate(prt_vacantarr)
     !Advancing prt_particles to update radiation field
-    call advance
+    !if(.not.tsp_tn==1) then
+       call advance
+    !endif
     
     call temperature_update
     call timestep_update(dt) !Updating elapsed tsp_time and expansion tsp_time

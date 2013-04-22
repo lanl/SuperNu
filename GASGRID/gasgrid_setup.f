@@ -11,7 +11,7 @@ c     --------------------------------------
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
       integer :: i,ir
-      real*8 :: help, rrcenter, uudd
+      real*8 :: help, rrcenter, uudd, masv
       real*8, allocatable :: wlstore(:) 
       integer :: ng,ngm,nrm,irr
 c
@@ -85,7 +85,13 @@ c-- to Gaussian for manufacture tests
 c--
 c
       do ir=1,gas_nr
-         gas_vals2(ir)%mass = in_totmass/gas_nr
+         if(in_isanalsrc.and.in_srctype=='manu') then
+            masv = in_totmass*gas_vals2(ir)%dr3_34pi            
+            masv = masv/(gas_rarr(gas_nr+1)**3-gas_rarr(1)**3)
+            gas_vals2(ir)%mass = masv
+         else
+            gas_vals2(ir)%mass = in_totmass/gas_nr
+         endif
          gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb !initial guess, may be overwritten by read_temp_str
          gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%tempkev**4
       enddo

@@ -5,6 +5,7 @@ subroutine gasgrid_upold
   use timestepmod
   use physconstmod
   use timingmod
+  use inputparmod
   implicit none
   
 !################################################
@@ -12,6 +13,7 @@ subroutine gasgrid_upold
 !################################################
   integer :: ir
   real*8 :: help
+
 !-- timing
   real :: t0,t1
 !

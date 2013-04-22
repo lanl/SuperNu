@@ -70,6 +70,15 @@ subroutine advance
               g = g-1
            endif
         endif
+
+        !deposition estimator
+        !if(rtsrc==1) then
+        !   gas_edep(zsrc)=gas_edep(zsrc)+gas_fcoef(zsrc)*gas_sigmapg(g,zsrc) &
+        !        *pc_c*tsp_dt*esrc*(1d0-gas_velyes*musrc*rsrc/pc_c)
+        !else
+        !   gas_edep(zsrc)=gas_edep(zsrc)+gas_fcoef(zsrc)*gas_sigmapg(g,zsrc) &
+        !        *pc_c*tsp_dt*esrc
+        !endif
                         
         ! Checking if particle conversions are required since prior time step
         if (in_puretran.eqv..false.) then
