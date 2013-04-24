@@ -26,9 +26,10 @@ subroutine initialnumbers
   real*8 :: x1,x2,x3,x4
   real*8 :: aa11 = 1.371e14
   real*8 :: aa22 = 1.371e2
+  real*8 :: uudd = 2.5d8
   logical :: isnotvacnt
   !
-  nvolinittot = 1000*gas_nr
+  nvolinittot = 5000*gas_nr
   nvolinitapp = 0
   etotinit = 0d0
   !
@@ -52,6 +53,8 @@ subroutine initialnumbers
         do ig = 2, gas_ng, 2
            x3 = 1d0/gas_wl(ig+1)
            x4 = 1d0/gas_wl(ig)
+           gas_vals2(ir)%eraddens=gas_vals2(ir)%eraddens+&
+                ((x4-x3)/(x2-x1))*pc_acoef*gas_vals2(ir)%tempkev**4
         enddo
         etotinit = etotinit + gas_vals2(ir)%eraddens*gas_vals2(ir)%dr3_34pi*pc_pi4*&
              (gas_velno*1.0+gas_velyes*tsp_texp**3)/3d0
@@ -90,10 +93,12 @@ subroutine initialnumbers
            r0 = prt_particles(ipart)%rsrc
            !calculating direction cosine (comoving)
            if(mod(iig,2)==0) then
-              mu0=1d0
-           else
               r1 = rand()
               mu0 = 1d0-2d0*r1
+           else
+              mu0=1d0
+              !r1 = rand()
+              !mu0 = 1d0-2d0*r1
            endif
            !calculating particle time
            prt_particles(ipart)%tsrc = tsp_time
@@ -101,26 +106,16 @@ subroutine initialnumbers
            Ep0 = gas_vals2(iir)%eraddens*gas_vals2(iir)%dr3_34pi*pc_pi4* &
                 (gas_velno*1.0+gas_velyes*tsp_texp**3)/(3d0*real(nvolinit(iir)))
            !write(*,*) Ep0, gas_vals2(iir)%eraddens, nvolinit(iir), gas_vals2(iir)%dr3_34pi
-           if (((gas_sig(iir)+gas_sigmapg(iig,iir))*gas_drarr(iir)*&
-                (gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) &
-                .or.(in_puretran.eqv..true.)) then
-              prt_particles(ipart)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
-              prt_particles(ipart)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
-              !(rev 120)
-              prt_particles(ipart)%wlsrc = wl0/(1.0+gas_velyes*r0*mu0/pc_c)
-              !
-              prt_particles(ipart)%musrc = (mu0+gas_velyes*r0/pc_c)/&
-                   (1.0+gas_velyes*r0*mu0/pc_c)
-              prt_particles(ipart)%rtsrc = 1
-           else
-              prt_particles(ipart)%Esrc = Ep0
-              prt_particles(ipart)%Ebirth = Ep0
-              !(rev 120)
-              prt_particles(ipart)%wlsrc = wl0
-              !
-              prt_particles(ipart)%musrc = mu0
-              prt_particles(ipart)%rtsrc = 2
-           endif
+           
+           prt_particles(ipart)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
+           prt_particles(ipart)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
+           
+           prt_particles(ipart)%wlsrc = wl0/(1.0+gas_velyes*r0*mu0/pc_c)
+           !
+           prt_particles(ipart)%musrc = (mu0+gas_velyes*r0/pc_c)/&
+                (1.0+gas_velyes*r0*mu0/pc_c)
+           prt_particles(ipart)%rtsrc = 1
+           
            !Setting ir = zone of particle
            prt_particles(ipart)%zsrc = iir
            !Setting particle index to not vacant
@@ -132,5 +127,7 @@ subroutine initialnumbers
         endif
      enddo
   enddo
+  !
+  gas_vals2(:)%eraddens=0d0
 
 end subroutine initialnumbers

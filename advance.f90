@@ -64,11 +64,43 @@ subroutine advance
            if(wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
               g = g-1
            endif
+           !
+           if(g>gas_ng.or.g<1) then
+              !particle out of wlgrid energy bound
+              if(g>gas_ng) then
+                 g=gas_ng
+                 wlsrc=gas_wl(gas_ng+1)*(1.0d0-gas_velyes*rsrc*musrc/pc_c)
+              elseif(g<1) then
+                 g=1
+                 wlsrc=gas_wl(1)*(1.0d0-gas_velyes*rsrc*musrc/pc_c)
+              else
+                 write(*,*) 'domain leak!!'
+                 prt_done = .true.
+                 isvacant = .true.
+              endif
+           endif
+           !
         else
            g = minloc(abs(gas_wl-wlsrc),1)
            if(wlsrc-gas_wl(g)<0d0) then
               g = g-1
            endif
+           !
+           if(g>gas_ng.or.g<1) then
+              !particle out of wlgrid bound
+              if(g>gas_ng) then
+                 g=gas_ng
+                 wlsrc=gas_wl(gas_ng+1)
+              elseif(g<1) then
+                 g=1
+                 wlsrc=gas_wl(1)
+              else
+                 write(*,*) 'domain leak!!'
+                 prt_done = .true.
+                 isvacant = .true.
+              endif
+           endif
+           !
         endif
 
         !deposition estimator
@@ -79,11 +111,12 @@ subroutine advance
         !   gas_edep(zsrc)=gas_edep(zsrc)+gas_fcoef(zsrc)*gas_sigmapg(g,zsrc) &
         !        *pc_c*tsp_dt*esrc
         !endif
-                        
+        
         ! Checking if particle conversions are required since prior time step
         if (in_puretran.eqv..false.) then
            if ((gas_sig(zsrc)+gas_sigmapg(g,zsrc))*gas_drarr(zsrc) &
                 *(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
+              !write(*,*) 'here', g, wlsrc, esrc
               if (rtsrc == 2) then
                  r1 =  rand()
                  rsrc = (r1*gas_rarr(zsrc+1)**3 + (1.0-r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
@@ -142,10 +175,6 @@ subroutine advance
            endif
            !
         endif
-        !if(tsp_tn==22) then
-        !   write(*,*) rtsrc, wlsrc, g
-        !   write(*,*) '--',gas_wl(g),gas_wl(g+1)
-        !endif
 
         ! First portion of operator split particle velocity position adjustment
         if(isshift) then
@@ -184,6 +213,10 @@ subroutine advance
            !
         endif
         endif
+
+        !if(rtsrc==1) then
+        !   write(*,*) g,zsrc,wlsrc,rsrc
+        !endif
 !-----------------------------------------------------------------------        
         ! Advancing particle until census, absorption, or escape from domain
         prt_done = .false.

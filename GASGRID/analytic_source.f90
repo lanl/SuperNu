@@ -104,31 +104,30 @@ subroutine analytic_source
                    pc_c*gas_sigmapg(ig,ir)*pc_acoef*tmpgauss(ir)**4*&
                    bspeced
               !
+              !gas_exsource(ig,ir)=0d0
            enddo
            !
            !Thick lines
            do ig = 2, gas_ng, 2
               gas_exsource(ig,ir) = 0d0
-              !x3 = 1d0/gas_wl(ig+1)
-              !x4 = 1d0/gas_wl(ig)
+              x3 = 1d0/gas_wl(ig+1)
+              x4 = 1d0/gas_wl(ig)
               !calculating false thick group rad. energy density
               !eradmanu(ig,ir)=pc_acoef*tmpgauss(ir)**4*(x4-x3)/(x2-x1)
               !
               !calculating manufactured source
-              !xx3 = x3*pc_h*pc_c/(1d3*pc_ev*tmpgauss(ir))
-              !xx4 = x4*pc_h*pc_c/(1d3*pc_ev*tmpgauss(ir))
-              !bspeced = 15d0*specint(xx3,xx4,3)/pc_pi**4
+              xx3 = x3*pc_h*pc_c/(1d3*pc_ev*tmpgauss(ir))
+              xx4 = x4*pc_h*pc_c/(1d3*pc_ev*tmpgauss(ir))
+              bspeced = 15d0*specint(xx3,xx4,3)/pc_pi**4
               !
-              !gas_exsource(ig,ir) = eradmanu(ig,ir)* &
-              !     (4d0*((rrcenter*tsp_texp)**2*uudd/ &
-              !     (uudd*tsp_texp)**3-1d0/tsp_texp &
-              !     +pc_c*(3d0*(uudd*tsp_texp)**2- &
-              !     4.0*(rrcenter*tsp_texp)**2) &
-              !     /(3d0*gas_sigmapg(ig,ir)*(uudd*tsp_texp)**4)) &
-              !     -pc_c*bspeced*gas_sigmapg(ig,ir)*(x2-x1)/(x4-x3) &
-              !     +pc_c*gas_sigmapg(ig,ir) &
-              !     +4.0*gas_sigmapg(ig,ir)*rrcenter*(rrcenter &
-              !     -pc_c*rrcenter/(gas_sigmapg(ig,ir)*tsp_texp*uudd**2)))
+              gas_exsource(ig,ir) = pc_acoef*tmpgauss(ir)**4* &
+                   (((4.0d0*(rrcenter/uudd)**2/tsp_texp-1d0/tsp_texp)+&
+                   (1d0/tsp_texp+4d0*pc_c/&
+                   (3d0*gas_sigmapg(ig,ir)*(uudd*tsp_texp)**2))*&
+                   (3d0-4d0*(rrcenter/uudd)**2)+pc_c*gas_sigmapg(ig,ir))*&
+                   (x4-x3)/(x2-x1)-pc_c*gas_sigmapg(ig,ir)*bspeced)
+              !
+              !gas_exsource(ig,ir)=0d0
               !
               !
            enddo
@@ -146,6 +145,6 @@ subroutine analytic_source
   !write(*,*) gas_exsource(1,:)
   !write(*,*)
   !write(*,*) gas_exsource(2,:)
-  write(*,*) gas_sigmap(gas_nr), gas_sigmapg(1,gas_nr)
+  !write(*,*) gas_sigmap(gas_nr), gas_sigmapg(1,gas_nr)
 
 end subroutine analytic_source

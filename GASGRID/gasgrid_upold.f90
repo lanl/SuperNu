@@ -60,6 +60,7 @@ subroutine gasgrid_upold
       gas_eint = 0.0   !Total internal energy
 
       gas_eraddensg =0d0 !radiation density field
+      gas_vals2%eraddens =0d0
 
       call time(t1)
       call timereg(t_gasupd,t1-t0)

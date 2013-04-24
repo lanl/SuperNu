@@ -81,7 +81,7 @@ subroutine xsections
         enddo
      endif
   endif
-
+  write(*,*) gas_fcoef(1), gas_fcoef(2)
   !Calculating IMC-to-DDMC leakage albedo coefficients (Densmore, 2007): loop
   !These quantities may not need to be stored directly (pending further analysis)
   do ir = 1, gas_nr

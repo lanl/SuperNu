@@ -26,7 +26,11 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus, PR, PL, PA
   real*8, dimension(gas_ng) :: PDFg
-
+  real*8 :: deleff=0.38
+  real*8 :: alpeff
+  !
+  alpeff= 0d0 !gas_fcoef(z)**(deleff/(1-deleff))
+  !
   ! Calculating current group (rev. 120)
   g = minloc(abs(gas_wl-wl),1)
   if(wl-gas_wl(g)<0d0) then
@@ -49,7 +53,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   endif
   !
   denom = gas_sigmal(g,z)+gas_sigmar(g,z) !+gas_fcoef(z)*gas_sigmapg(g,z)
-  denom = denom+(1d0-gas_emitprobg(g,z))*(1d0-gas_fcoef(z))*gas_sigmapg(g,z)
+  denom = denom+(1d0-alpeff)*(1d0-gas_emitprobg(g,z))*&
+       (1d0-gas_fcoef(z))*gas_sigmapg(g,z)
   if(prt_isddmcanlog) then
      denom = denom+gas_fcoef(z)*gas_sigmapg(g,z)
   endif
@@ -103,7 +108,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   !
   !Recalculating histogram sum (rev. 120)
   denom = gas_sigmal(g,z)+gas_sigmar(g,z) !+gas_fcoef(z)*gas_sigmapg(g,z)
-  denom = denom+(1d0-gas_emitprobg(g,z))*(1d0-gas_fcoef(z))*gas_sigmapg(g,z)
+  denom = denom+(1d0-alpeff)*(1d0-gas_emitprobg(g,z))*&
+       (1d0-gas_fcoef(z))*gas_sigmapg(g,z)
   if(prt_isddmcanlog) then
      denom=denom+gas_fcoef(z)*gas_sigmapg(g,z)
   endif
@@ -192,6 +198,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         !   gas_edep(z)=gas_edep(z)+E
         !endif
      else
+        !write(*,*) 'scatter'
         !gas_eraddensg(g,z)=gas_eraddensg(g,z)+ &
         !     E/((gas_fcoef(z)+(1d0-gas_emitprobg(g,z))*(1d0-gas_fcoef(z))) &
         !     *gas_sigmapg(g,z)*pc_c*tsp_dt)
@@ -210,6 +217,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
               denom3 = denom3+gas_emitprobg(ig,z)/denom2
            endif
         enddo
+        !write(*,*) 'Scatter: ',g,'to ',iig
         g = iig
         r1 = rand()
         wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)

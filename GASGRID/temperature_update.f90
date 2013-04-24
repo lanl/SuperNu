@@ -38,7 +38,13 @@ subroutine temperature_update
      !if(tsp_tn==17) then
         !write(6,*) dtemp, gas_edep(ir),gas_vals2(ir)%vol, gas_vals2(ir)%bcoef
      !endif
-     gas_vals2(ir)%tempkev = gas_vals2(ir)%tempkev + dtemp
+     if(gas_isanalsrc.and.gas_srctype=='manu') then
+        !this may cause drift
+        gas_vals2(ir)%tempkev=gas_vals2(ir)%tempkev*tsp_texp/(tsp_texp+tsp_dt)
+     else
+        gas_vals2(ir)%tempkev = gas_vals2(ir)%tempkev + dtemp
+     endif
+
      gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb  !initial guess, may be overwritten by read_temp_str
      !gas_vals2(ir)%ur=dtemp/(tsp_dt*pc_c*gas_sigmap(ir))
      !gas_vals2(ir)%tempkev = (gas_vals2(ir)%ur/pc_acoef)**(0.25d0)

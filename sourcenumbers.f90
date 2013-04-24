@@ -48,7 +48,7 @@ subroutine sourcenumbers
   ! Adding external energy to gas_etot
   do ir = 1, gas_nr
      do ig = 1, gas_ng
-        gas_etot = gas_etot+tsp_dt*gas_exsource(ig,ir)* &
+        gas_etot = gas_etot+tsp_dt*abs(gas_exsource(ig,ir))* &
              (4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)
      enddo
   enddo
@@ -65,7 +65,7 @@ subroutine sourcenumbers
      !external source volume numbers
      exsumg = 0d0
      do ig=1,gas_ng
-        exsumg=exsumg+tsp_dt*gas_exsource(ig,ir)* &
+        exsumg=exsumg+tsp_dt*abs(gas_exsource(ig,ir))* &
              (4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)
      enddo
      gas_vals2(ir)%nvolex=nint(exsumg*prt_ns/gas_etot)

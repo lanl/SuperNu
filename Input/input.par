@@ -2,16 +2,16 @@
 
 !-- misc
 in_grab_stdout = f
-in_puretran = f
+in_puretran = t
 
 !-- time step
-in_tfirst = 2d0
-in_tlast = 3d0
-in_nt = 10
-in_alpha = 1d0
+in_tfirst = 10d0
+in_tlast = 13d0
+in_nt = 30
+in_alpha = 1d-10
 
 !-- gas grid settings
-in_nr = 50
+in_nr = 25
 in_isvelocity = t
 in_isshell = f
 in_novolsrc = t
@@ -46,13 +46,13 @@ in_sigtpwrs = 0d0
 in_sigrpwrs = 0d0
 
 !-- power law absorption opacity values
-in_sigcoef = 0.1d0
+in_sigcoef = 10d0
 in_sigtpwr = 0d0
 in_sigrpwr = 1d0
 
 !-- group absorption opacity structure type
 in_isanalgrp = t
-in_grptype = 'grey'
+in_grptype = 'line'
 
 !-- picket fence case
 in_suol = 'tsta'
@@ -60,20 +60,20 @@ in_suolpick1 = 1d0
 
 !-- line case (disparity)
 in_ldisp1 = 1d0
-in_ldisp2 = 1d0 
+in_ldisp2 = 1d3 
 
 !-- group settings
-in_wldex = 18
+in_wldex = 14
 in_iswlread = t
 in_ng = 5
 
 !-- particle numbers
-in_ns = 100000
+in_ns = 10000
 in_npartmax = 10000000
 
 !-- imc tally method
-in_isimcanlog = f
-in_isddmcanlog = f
+in_isimcanlog = t
+in_isddmcanlog = t
 
 !-- opacity switches
 in_nobbopac = t

@@ -80,6 +80,9 @@ c-- to Gaussian for manufacture tests
         do ir=1,gas_nr
           rrcenter=(gas_rarr(ir+1)+gas_rarr(ir))/2d0
           gas_vals2(ir)%tempkev = in_templ0*exp(-0.5*(rrcenter/uudd)**2)
+          if(gas_vals2(ir)%tempkev<1d-3) then
+             gas_vals2(ir)%tempkev=1d-3
+          endif
         enddo
       endif
 c--

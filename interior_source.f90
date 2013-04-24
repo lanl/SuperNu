@@ -15,7 +15,7 @@ subroutine interior_source
   integer :: ir,iir, ipart, ivac, ig, iig
   integer, dimension(gas_nr) :: irused
   real*8 :: r1, r2, r3, uul, uur, uumax, mu0, r0, Ep0, wl0
-  real*8 :: denom2
+  real*8 :: denom2,x1,x2,x3,x4
   real*8, dimension(gas_nr) :: exsumg
   logical :: isnotvacnt !checks for available particle space to populate in cell
 
@@ -31,6 +31,10 @@ subroutine interior_source
      enddo
      !write(*,*) exsumg(ir)
   enddo
+  !write(*,*) gas_exsource(1,1),gas_exsource(1,12),gas_exsource(1,25)
+
+  x1=1d0/gas_wl(gas_ng+1)
+  x2=1d0/gas_wl(1)
   do ipart = prt_nsurf+1, prt_nsurf+prt_nexsrc
      ivac = prt_vacantarr(ipart)
      isnotvacnt = .false.
@@ -42,10 +46,11 @@ subroutine interior_source
            denom2 = 0d0
            r1 = rand()
            do ig = 1, gas_ng
+              x3=1d0/gas_wl(ig+1)
+              x4=1d0/gas_wl(ig)
               iig = ig
-              if(r1>=denom2.and.r1<denom2+gas_exsource(ig,ir)/ &
-                   exsumg(ir)) exit
-              denom2 = denom2+gas_exsource(ig,ir)/exsumg(ir)
+              if(r1>=denom2.and.r1<denom2+(x4-x3)/(x2-x1)) exit
+              denom2 = denom2+(x4-x3)/(x2-x1)
            enddo
            !Ryan W.: particle group removed (rev. 120)
            !prt_particles(ivac)%gsrc = iig
@@ -60,8 +65,11 @@ subroutine interior_source
                 (1.0-r3)*gas_rarr(ir)**3)**(1.0/3.0)
            r0 = prt_particles(ivac)%rsrc
            !Calculating direction cosine (comoving)
-           if(gas_isanalsrc.and.gas_srctype=='manu'.and.mod(iig,2)==0) then
+           if(gas_isanalsrc.and.gas_srctype=='manu'.and.&
+                .not.mod(iig,2)==0) then
               mu0=1d0
+              !r1 = rand()
+              !mu0 = 1d0-2d0*r1
            else
               r1 = rand()
               mu0 = 1d0-2d0*r1
@@ -111,6 +119,8 @@ subroutine interior_source
   !Thermal volume particle instantiation: loop
   ir = 1
   irused(1:gas_nr) = 0
+  !write(*,*) prt_nsurf,prt_nexsrc+1,prt_nnew
+
   do ipart = prt_nsurf+prt_nexsrc+1, prt_nnew
      ivac = prt_vacantarr(ipart)
      isnotvacnt = .false.
@@ -121,11 +131,13 @@ subroutine interior_source
            !Calculating Group
            denom2 = 0d0
            r1 = rand()
+           
            do ig = 1, gas_ng
               iig = ig
               if (r1>=denom2.and.r1<denom2+gas_emitprobg(ig,ir)) exit
               denom2 = denom2+gas_emitprobg(ig,ir)
            enddo
+           !write(*,*) 'here',ivac
            !Ryan W.: particle group removed (rev. 120)
            !prt_particles(ivac)%gsrc = iig
            !Calculating wavelength uniformly from group
@@ -156,7 +168,9 @@ subroutine interior_source
            prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = gas_vals2(ir)%emit/real(gas_vals2(ir)%nvol)
-           if ((gas_sigmapg(iig,ir)*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0).OR.(in_puretran.eqv..true.)) then
+           if (((gas_sigmapg(iig,ir)+gas_sig(ir))*gas_drarr(ir)* &
+                (gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) &
+                .OR.(in_puretran.eqv..true.)) then
               prt_particles(ivac)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
               prt_particles(ivac)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
               !(rev 120)

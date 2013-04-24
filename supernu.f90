@@ -114,10 +114,8 @@ program supernu
     !Calculating properties of prt_particles emitted in domain interior
     call interior_source
     deallocate(prt_vacantarr)
-    !Advancing prt_particles to update radiation field
-    !if(.not.tsp_tn==1) then
-       call advance
-    !endif
+    !Advancing prt_particles to update radiation field    
+    call advance    
     
     call temperature_update
     call timestep_update(dt) !Updating elapsed tsp_time and expansion tsp_time
