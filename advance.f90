@@ -190,7 +190,7 @@ subroutine advance
               if(gas_isshell.and.zsrc==1) then
                  prt_done = .true.
                  isvacant = .true.
-              elseif(.not.in_puretran) then
+              else !if(.not.in_puretran) then
                  zfdiff = -1
                  do ir = zsrc-1, zholder, -1
                     if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
@@ -205,8 +205,8 @@ subroutine advance
                     zsrc=zfdiff+1
                     rsrc=gas_rarr(zsrc)
                  endif
-              else
-                 zsrc = zholder
+              !else
+              !   zsrc = zholder
               endif
               !
            endif
@@ -293,7 +293,7 @@ subroutine advance
               if(gas_isshell.and.zsrc==1) then
                  prt_done = .true.
                  isvacant = .true.
-              elseif(.not.in_puretran) then
+              else !if(.not.in_puretran) then
                  zfdiff = -1
                  do ir = zsrc-1, zholder, -1
                     if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
@@ -308,8 +308,8 @@ subroutine advance
                     zsrc=zfdiff+1
                     rsrc=gas_rarr(zsrc)
                  endif
-              else
-                 zsrc = zholder
+              !else
+              !   zsrc = zholder
               endif
               !
            endif

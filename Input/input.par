@@ -5,31 +5,31 @@ in_grab_stdout = f
 in_puretran = t
 
 !-- time step
-in_tfirst = 10d0
-in_tlast = 13d0
-in_nt = 30
-in_alpha = 1d-10
+in_tfirst = 2d0
+in_tlast = 5d0
+in_nt = 32
+in_alpha = 1d0
 
 !-- gas grid settings
-in_nr = 25
+in_nr = 50
 in_isvelocity = t
 in_isshell = f
 in_novolsrc = t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_v0 = 2d8
 in_velout = 1d9
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!in_l0 = 100d0
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!in_lr = 5d0
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!in_l0 = 100d7
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!in_lr = 5d7
 in_totmass = 1d33
 in_templ0 = 1d0
 
 !-- flat structure
 in_istempflat = t
-in_consttempkev = 1d-3
+in_consttempkev = 1d0
 in_solidni56 = t
 
 !-- external source type
 in_isanalsrc = t
-in_srctype = 'manu'
+in_srctype = 'heav'
 in_srcmax = 4d24
 !-- heaviside case
 in_theav = 3d0
@@ -46,7 +46,7 @@ in_sigtpwrs = 0d0
 in_sigrpwrs = 0d0
 
 !-- power law absorption opacity values
-in_sigcoef = 10d0
+in_sigcoef = 0.13d0
 in_sigtpwr = 0d0
 in_sigrpwr = 1d0
 
@@ -60,20 +60,20 @@ in_suolpick1 = 1d0
 
 !-- line case (disparity)
 in_ldisp1 = 1d0
-in_ldisp2 = 1d3 
+in_ldisp2 = 1d-4 
 
 !-- group settings
-in_wldex = 14
+in_wldex = 17
 in_iswlread = t
 in_ng = 5
 
 !-- particle numbers
-in_ns = 10000
+in_ns = 100000
 in_npartmax = 10000000
 
 !-- imc tally method
-in_isimcanlog = t
-in_isddmcanlog = t
+in_isimcanlog = f
+in_isddmcanlog = f
 
 !-- opacity switches
 in_nobbopac = t

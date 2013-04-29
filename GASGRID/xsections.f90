@@ -14,8 +14,10 @@ subroutine xsections
 
   integer :: ir, ig
   real*8 :: Um, beta, tt, gg, ggg, eps, bb, sigtot
-  real*8 :: x1, x2, rrcenter
+  real*8 :: x1, x2, curvleft, curvright
   real*8 :: specint
+
+  logical :: missive = .false.
   ! Here: left=>toward r=0 and right=>outward
 
   !Interpolating cell boundary temperatures (in keV currently): loop
@@ -81,53 +83,91 @@ subroutine xsections
         enddo
      endif
   endif
-  write(*,*) gas_fcoef(1), gas_fcoef(2)
+  
   !Calculating IMC-to-DDMC leakage albedo coefficients (Densmore, 2007): loop
   !These quantities may not need to be stored directly (pending further analysis)
-  do ir = 1, gas_nr
-!-----------------------------------------------------------------
-     !Ryan W.: emissivity albedo condition deprecated until curvature
-     !conditions are added.
-!----------------------------------------------------------------- 
-     !do ig = 1, gas_ng
-        !Calculating for leakage from left
-        !total optical depth      ||   ||
-     !   sigtot = gas_sigbl(ir)+gas_sigmargleft(ig,ir)
-     !   gg = (3.0*(1d0-gas_sigmargleft(ig,ir)/sigtot))**0.5
-     !   eps = (4.0/3.0)*gg/(1.0+0.7104*gg)
-        !
-     !   tt = (gas_sigmargleft(ig,ir)+gas_sigbl(ir)) &
-     !        *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
-        !
-     !   ggg = (gg*tt)**2
-     !   bb = (3.0/4.0)*gas_fcoef(ir)*tt**2+(ggg+(ggg**2)/4.0)**0.5
-     !   gas_ppl(ig,ir) = 0.5*eps*bb/(bb-(3.0/4.0)*eps*tt)
-        !Calculating for leakage from right
-        !total optical depth      ||   ||
-     !   sigtot = gas_sigbr(ir)+gas_sigmargright(ig,ir)
-     !   gg = (3.0*(1d0-gas_sigmargright(ig,ir)/sigtot))**0.5
-     !   eps = (4.0/3.0)*gg/(1.0+0.7104*gg)
-        !
-     !   tt = (gas_sigmargright(ig,ir)+gas_sigbr(ir)) &
-     !        *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
-     !   ggg = (gg*tt)**2
-     !   bb = (3.0/4.0)*gas_fcoef(ir)*tt**2+(ggg+(ggg**2)/4.0)**0.5
-     !   gas_ppr(ig,ir) = 0.5*eps*bb/(bb-(3.0/4.0)*eps*tt)
-     !enddo
-     do ig = 1, gas_ng
-        rrcenter=0.5*(gas_rarr(ir)+gas_rarr(ir+1))
-        tt = (gas_sigmargleft(ig,ir)+gas_sigbl(ir)) &
-             *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp) !&
-             !*gas_rarr(ir)**2/(rrcenter**2-gas_rarr(ir)**2)
-        gas_ppl(ig,ir) = 4.0d0/(3d0*tt+6d0*0.7104d0)
-        !
-        tt = (gas_sigmargright(ig,ir)+gas_sigbr(ir)) &
-             *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp) !&
-             !*gas_rarr(ir+1)**2/(gas_rarr(ir+1)**2-rrcenter**2)
-        gas_ppr(ig,ir) = 4.0d0/(3d0*tt+6d0*0.7104d0)
+  if(missive) then
+     do ir = 1, gas_nr
+        !calculating left cell curvature
+        curvleft = gas_rarr(ir)**2/ &
+             (gas_rarr(ir+1)**2+gas_rarr(ir)*gas_rarr(ir+1)+gas_rarr(ir)**2)
+        !calculating right cell curvature
+        curvright = gas_rarr(ir+1)**2/ &
+             (gas_rarr(ir+1)**2+gas_rarr(ir)*gas_rarr(ir+1)+gas_rarr(ir)**2)
+        !write(*,*) curvleft, curvright
+        do ig = 1, gas_ng
+           !calculating left albedo
+           sigtot=gas_sigmargleft(ig,ir)+gas_sigbl(ir)
+           gg = sqrt(3d0*gas_fcoef(ir)*gas_sigmargleft(ig,ir)/sigtot)
+           !calculating left optical depth
+           tt = sigtot*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
+           !calculating left discretization eigenvalue
+           ggg=0.5d0*(curvleft+curvright)/curvright+(gg*tt)**2/(6d0*curvright) &
+                -sqrt((0.5d0*(curvright-curvleft)/curvright)**2 &
+                +(curvleft+curvright)*(gg*tt/curvright)**2/6d0 &
+                +(gg*tt)**4/(36d0*curvright**2))
+           !write(*,*) 'left:', ggg, 0.5d0*(curvleft+curvright)/curvright !+(gg*tt)**2/(6d0*curvright)
+           !calculating left conveniency coefficient
+           bb = curvright*(1d0-ggg)/curvleft+(gg*tt)**2/(3.0*curvleft)
+           !calculating left emissivity
+           eps = (4.0/3.0)*(gg+1d0/(sigtot*gas_rarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp))) &
+                /(1d0+0.7104d0*(gg+1d0/(sigtot*gas_rarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp))))
+           !eps = (4.0/3.0)*gg &
+           !     /(1d0+0.7104d0*gg)
+           !write(*,*) 'here',eps
+           if(eps>0d0.and.eps<=1.0001d0) then
+              gas_ppl(ig,ir) = 0.5*eps*bb/(bb-3d0*eps*tt/4d0)
+              if(gas_ppl(ig,ir)<0d0) then
+                 gas_ppl(ig,ir) = 4d0/(3d0*tt+6d0*0.7104d0)
+              endif
+           else
+              gas_ppl(ig,ir) = 4d0/(3d0*tt+6d0*0.7104d0)
+           endif
+           !
+           !calculating right albedo
+           sigtot=gas_sigmargright(ig,ir)+gas_sigbr(ir)
+           gg = sqrt(3d0*gas_fcoef(ir)*gas_sigmargright(ig,ir)/sigtot)
+           !calculating right optical depth
+           tt = sigtot*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
+           !calculating right discretization eigenvalue
+           ggg=0.5d0*(curvleft+curvright)/curvright+(gg*tt)**2/(6.0*curvright) &
+                +sqrt((0.5*(curvright-curvleft)/curvright)**2 &
+                +(curvleft+curvright)*(gg*tt/curvright)**2/6.0 &
+                +(gg*tt)**4/(36.0*curvright**2))
+           !write(*,*) 'right: ', ggg
+           !calculating right conveniency coefficient
+           bb = curvleft*(1d0-1d0/ggg)/curvright+(gg*tt)**2/(3.0*curvright)
+           !calculating right emissivity
+           eps = (4.0/3.0)*(gg-1d0/(sigtot*gas_rarr(ir+1)*(gas_velno*1.0+gas_velyes*tsp_texp))) &
+                /(1d0+0.7104d0*(gg-1d0/(sigtot*gas_rarr(ir+1)*(gas_velno*1.0+gas_velyes*tsp_texp))))
+           !eps = (4.0/3.0)*gg &
+           !     /(1d0+0.7104d0*gg)
+           !write(*,*) 'here', eps
+           if(eps>0d0.and.eps<=1.0001d0) then
+              !write(*,*) 'here'
+              gas_ppr(ig,ir) = 0.5*eps*bb/(bb-3d0*eps*tt/4d0)
+              if(gas_ppr(ig,ir)<0d0) then
+                 gas_ppr(ig,ir) = 4d0/(3d0*tt+6d0*0.7104d0)
+              endif
+           else
+              gas_ppr(ig,ir) = 4d0/(3d0*tt+6d0*0.7104d0)
+           endif
+        enddo
      enddo
-  enddo
-  
+  else
+     do ir = 1, gas_nr
+        do ig = 1, gas_ng
+           tt = (gas_sigmargleft(ig,ir)+gas_sigbl(ir)) &
+                *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp) !&
+           gas_ppl(ig,ir) = 4.0d0/(3d0*tt+6d0*0.7104d0)
+           !
+           tt = (gas_sigmargright(ig,ir)+gas_sigbr(ir)) &
+                *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp) !&
+           gas_ppr(ig,ir) = 4.0d0/(3d0*tt+6d0*0.7104d0)
+        enddo
+     enddo
+  endif
+
   !Calculating DDMC(-to-IMC) leakage opacities (Densmore, 2007, 2012): loop
   do ir = 1, gas_nr
      do ig = 1, gas_ng
