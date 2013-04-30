@@ -183,7 +183,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         ! converting comoving wavelength to lab frame wavelength
         wl = wl*(1.0-gas_velyes*r*mu/pc_c)
         if (((gas_sig(z)+gas_sigmapg(g,z))*gas_drarr(z)* &
-             (gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
+             (gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
            hyparam = 2
            E = E*(1.0-gas_velyes*r*mu/pc_c)
@@ -202,7 +202,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            gas_eright = gas_eright+E*elabfact
         ! Checking if DDMC region right
         elseif (((gas_sig(z+1)+gas_sigmapg(g,z+1))*gas_drarr(z+1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
+             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) &
                  .and.(in_puretran.eqv..false.)) then
            r1 = rand()
            mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
@@ -231,7 +231,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
               gas_eleft = gas_eleft+E*elabfact
            else
               if (((gas_sig(z+1)+gas_sigmapg(g,z+1))*gas_drarr(z+1) &
-                   *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
+                   *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) &
                    .and.(in_puretran.eqv..false.)) then
                  r1 = rand()
                  mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
@@ -253,7 +253,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
               endif
            endif
         elseif (((gas_sig(z-1)+gas_sigmapg(g,z-1))*gas_drarr(z-1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) &
+             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()
            mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)

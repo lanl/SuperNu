@@ -42,6 +42,7 @@ c-- particles
       logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
       logical :: in_isimcanlog = .false. !use analog IMC tally if true
       logical :: in_isddmcanlog = .true. !use analog DDMC tally if true
+      real*8 :: in_tauddmc = 5d0 !number of mean free paths per cell required for DDMC
       real*8 :: in_alpha = 1d0 !time centering control parameter [0,1]
 c
 c-- time step
@@ -111,7 +112,8 @@ c-- runtime parameter namelist
      & in_wldex,in_iswlread, in_isanalgrp,in_grptype,in_suol,
      & in_suolpick1, in_ldisp1, in_ldisp2,
      & in_isanalsrc, in_srctype, in_theav, in_nheav, in_srcmax,
-     & in_isimcanlog, in_isddmcanlog
+     & in_isimcanlog, in_isddmcanlog,
+     & in_tauddmc
 c
       public
       private inputpars

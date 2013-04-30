@@ -18,6 +18,7 @@ subroutine advance
 !##################################################
 
   integer :: ipart, difs, transps, g, zholder, zfdiff, ir
+  integer :: trandex
   real*8 :: r1, alph2
   integer, pointer :: zsrc, rtsrc !, gsrc
   real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
@@ -115,7 +116,7 @@ subroutine advance
         ! Checking if particle conversions are required since prior time step
         if (in_puretran.eqv..false.) then
            if ((gas_sig(zsrc)+gas_sigmapg(g,zsrc))*gas_drarr(zsrc) &
-                *(gas_velno*1.0+gas_velyes*tsp_texp)<5.0d0) then
+                *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc) then
               !write(*,*) 'here', g, wlsrc, esrc
               if (rtsrc == 2) then
                  r1 =  rand()
@@ -190,23 +191,12 @@ subroutine advance
               if(gas_isshell.and.zsrc==1) then
                  prt_done = .true.
                  isvacant = .true.
-              else !if(.not.in_puretran) then
-                 zfdiff = -1
-                 do ir = zsrc-1, zholder, -1
-                    if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
-                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
-                       zfdiff = ir
-                       exit
-                    endif
-                 enddo
-                 if(zfdiff==-1) then
-                    zsrc = zholder
-                 else
-                    zsrc=zfdiff+1
-                    rsrc=gas_rarr(zsrc)
+              else
+                 zsrc = zholder
+                 if((gas_sig(zsrc)+gas_sigmapg(g,zsrc))*gas_drarr(zsrc) &
+                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) then
+                    rtsrc = 2
                  endif
-              !else
-              !   zsrc = zholder
               endif
               !
            endif
@@ -293,23 +283,12 @@ subroutine advance
               if(gas_isshell.and.zsrc==1) then
                  prt_done = .true.
                  isvacant = .true.
-              else !if(.not.in_puretran) then
-                 zfdiff = -1
-                 do ir = zsrc-1, zholder, -1
-                    if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
-                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
-                       zfdiff = ir
-                       exit
-                    endif
-                 enddo
-                 if(zfdiff==-1) then
-                    zsrc = zholder
-                 else
-                    zsrc=zfdiff+1
-                    rsrc=gas_rarr(zsrc)
+              else
+                 zsrc = zholder
+                 if((gas_sig(zsrc)+gas_sigmapg(g,zsrc))*gas_drarr(zsrc) &
+                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) then
+                    rtsrc = 2
                  endif
-              !else
-              !   zsrc = zholder
               endif
               !
            endif
