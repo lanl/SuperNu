@@ -55,8 +55,9 @@ subroutine interior_source
            !Ryan W.: particle group removed (rev. 120)
            !prt_particles(ivac)%gsrc = iig
            !Calculating comoving wavelength uniformly from group
-           r1 = rand()
-           wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
+           !r1 = rand()
+           !wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
+           wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
            !write(*,*) wl0, gas_wl(iig)+r1*gas_wl(iig+1)
            !write(*,*) gas_wl
            !Calculating radial position
@@ -141,8 +142,9 @@ subroutine interior_source
            !Ryan W.: particle group removed (rev. 120)
            !prt_particles(ivac)%gsrc = iig
            !Calculating wavelength uniformly from group
-           r1 = rand()
-           wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
+           !r1 = rand()
+           !wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
+           wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
            !write(*,*) wl0, iig
            !write(*,*) gas_wl
            !Calculating radial position
@@ -170,7 +172,7 @@ subroutine interior_source
            Ep0 = gas_vals2(ir)%emit/real(gas_vals2(ir)%nvol)
            if (((gas_sigmapg(iig,ir)+gas_sig(ir))*gas_drarr(ir)* &
                 (gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc) &
-                .OR.(in_puretran.eqv..true.)) then
+                .or.(in_puretran.eqv..true.)) then
               prt_particles(ivac)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
               prt_particles(ivac)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
               !(rev 120)

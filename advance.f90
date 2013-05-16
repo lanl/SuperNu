@@ -18,14 +18,15 @@ subroutine advance
 !##################################################
 
   integer :: ipart, difs, transps, g, zholder, zfdiff, ir
-  integer :: trandex
-  real*8 :: r1, alph2
+  real*8 :: r1, alph2, r2
   integer, pointer :: zsrc, rtsrc !, gsrc
   real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
   logical, pointer :: isvacant
   real :: t0,t1  !timing
 
   logical :: isshift=.true.
+  logical :: partstopper=.true.
+  logical :: showidfront=.false.
 
   gas_edep = 0.0
   gas_erad = 0.0
@@ -39,6 +40,19 @@ subroutine advance
   gas_numcensus(1:gas_nr) = 0
   alph2 = 0.5d0  !>=0,<=1
 
+  if(showidfront) then
+     do ir = 1, gas_nr-1
+        if(in_isvelocity.and.(gas_sig(ir)+gas_sigmapg(1,ir))*gas_drarr(ir) &
+             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc &
+             .and. &
+             (gas_sig(ir+1)+gas_sigmapg(1,ir+1))*gas_drarr(ir+1) &
+             *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc) then
+           write(*,*) ir, gas_sigmapg(1,ir)*gas_drarr(ir)*tsp_texp, &
+                gas_sigmapg(1,ir+1)*gas_drarr(ir+1)*tsp_texp
+        endif
+     enddo
+  endif
+  
   call time(t0)
   ! Propagating all particles that are not considered vacant: loop
   do ipart = 1, prt_npartmax
@@ -126,6 +140,9 @@ subroutine advance
                  musrc = (musrc + gas_velyes*rsrc/pc_c)/(1.0 + gas_velyes*rsrc*musrc/pc_c)
                  esrc = esrc/(1.0 - gas_velyes*musrc*rsrc/pc_c)
                  ebirth = ebirth/(1.0 - gas_velyes*musrc*rsrc/pc_c)
+                 wlsrc = 0.5d0*(gas_wl(g)+gas_wl(g+1))
+                 !r1 = rand()
+                 !wlsrc=gas_wl(g)*(1d0-r1)+gas_wl(g+1)*r1
                  wlsrc = wlsrc*(1.0-gas_velyes*musrc*rsrc/pc_c)
               endif
               rtsrc = 1
@@ -191,17 +208,28 @@ subroutine advance
               if(gas_isshell.and.zsrc==1) then
                  prt_done = .true.
                  isvacant = .true.
+              elseif(.not.in_puretran.and.partstopper) then
+                 zfdiff = -1
+                 do ir = zsrc-1,zholder,-1
+                    if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
+                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) then
+                       zfdiff = ir
+                       exit
+                    endif
+                 enddo
+                 if(zfdiff.ne.-1) then
+                    zsrc = zfdiff+1
+                    rsrc = gas_rarr(zsrc)
+                 else
+                    zsrc = zholder
+                 endif
               else
                  zsrc = zholder
-                 if((gas_sig(zsrc)+gas_sigmapg(g,zsrc))*gas_drarr(zsrc) &
-                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) then
-                    rtsrc = 2
-                 endif
               endif
               !
            endif
-           !
         endif
+           !
         endif
 
         !if(rtsrc==1) then
@@ -223,6 +251,11 @@ subroutine advance
            endif
         enddo
 !----------------------------------------------------------------------- 
+        if(rtsrc == 2.and.in_isvelocity) then
+           esrc = esrc*exp(-tsp_dt/tsp_texp)
+           ebirth = ebirth*exp(-tsp_dt/tsp_texp)
+           !wlsrc = wlsrc*exp(-tsp_dt/tsp_texp)
+        endif
 
         ! Looking up group
         if(rtsrc==1) then
@@ -270,9 +303,8 @@ subroutine advance
 
         if(isshift) then
         if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
-           
            !
-           rsrc = rsrc*tsp_texp/(tsp_texp+(1.0-alph2)*tsp_dt)
+           rsrc = rsrc*(tsp_texp+alph2*tsp_dt)/(tsp_texp+tsp_dt)
            !
            if (rsrc < gas_rarr(zsrc)) then
               !
@@ -283,18 +315,30 @@ subroutine advance
               if(gas_isshell.and.zsrc==1) then
                  prt_done = .true.
                  isvacant = .true.
+              elseif(.not.in_puretran.and.partstopper) then
+                 zfdiff = -1
+                 do ir = zsrc-1,zholder,-1
+                    if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
+                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) then
+                       zfdiff = ir
+                       exit
+                    endif
+                 enddo
+                 if(zfdiff.ne.-1) then
+                    zsrc = zfdiff+1
+                    rsrc = gas_rarr(zsrc)
+                 else
+                    zsrc = zholder
+                 endif
               else
                  zsrc = zholder
-                 if((gas_sig(zsrc)+gas_sigmapg(g,zsrc))*gas_drarr(zsrc) &
-                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) then
-                    rtsrc = 2
-                 endif
               endif
               !
            endif
            !
         endif
         endif
+
      endif
   
   enddo

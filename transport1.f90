@@ -1,6 +1,6 @@
 !Pure transport routine
 
-subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
+subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 
   use gasgridmod
   use timestepmod
@@ -17,6 +17,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !##################################################
   !
   integer, intent(inout) :: z, hyparam !,g
+  integer, intent(inout) :: trndx
   real*8, intent(inout) :: r, mu, t, E, E0, wl
   logical, intent(inout) :: vacnt
   !
@@ -96,7 +97,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 
   ! minimum distance = d
   d = min(dcol,dthm,db,dcen)
-
+  
   rold = r
   r = sqrt((1.0d0-mu**2)*r**2+(d+r*mu)**2)
   told = t
@@ -109,8 +110,8 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
           *gas_sigmapg(g,z)*d*(gas_velno*1.d0+ &
           gas_velyes*tsp_texp)))*elabfact
      !
-     E = E*exp(-gas_fcoef(z)*gas_sigmapg(g,z)*d*(gas_velno*1.d0 &
-          +gas_velyes*tsp_texp))
+     E = E*exp(-gas_fcoef(z)*gas_sigmapg(g,z)*d*dcollabfact) !(gas_velno*1.d0 &
+          !+gas_velyes*tsp_texp))
      if (E/E0<0.001d0) then
         vacnt = .true.
         prt_done = .true.
@@ -178,8 +179,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*elabfact
         !-------------------------------------------------------
         ! uniformly sampling comoving wavelength in group
-        r1 = rand()
-        wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
+        !r1 = rand()
+        !wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
+        wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
         ! converting comoving wavelength to lab frame wavelength
         wl = wl*(1.0-gas_velyes*r*mu/pc_c)
         if (((gas_sig(z)+gas_sigmapg(g,z))*gas_drarr(z)* &

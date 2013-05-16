@@ -77,30 +77,30 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   endif
   gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*ddmct/tsp_dt
   !
-  E = E*(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
-  E0 = E0*(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
+  !E = E*(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
+  !E0 = E0*(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
   ! Recalculating comoving wavelength (rev. 120)
-  wl = wl/(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
+  !wl = wl/(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
   ! Recalculating current group (rev. 120)
-  g = minloc(abs(gas_wl-wl),1)
-  if(wl-gas_wl(g)<0d0) then
-     g = g-1
-  endif
+  !g = minloc(abs(gas_wl-wl),1)
+  !if(wl-gas_wl(g)<0d0) then
+  !   g = g-1
+  !endif
   !
-  if(g>gas_ng.or.g<1) then
-     !particle out of wlgrid bound
-     if(g>gas_ng) then
-        g=gas_ng
-        wl=gas_wl(gas_ng+1)
-     elseif(g<1) then
-        g=1
-        wl=gas_wl(1)
-     else
-        write(*,*) 'domain leak!!'
-        prt_done = .true.
-        vacnt = .true.
-     endif
-  endif
+  !if(g>gas_ng.or.g<1) then
+  !   !particle out of wlgrid bound
+  !   if(g>gas_ng) then
+  !      g=gas_ng
+  !      wl=gas_wl(gas_ng+1)
+  !   elseif(g<1) then
+  !      g=1
+  !      wl=gas_wl(1)
+  !   else
+  !      write(*,*) 'domain leak!!'
+  !      prt_done = .true.
+  !      vacnt = .true.
+  !   endif
+  !endif
   !
   t = t+ddmct
   !
@@ -219,8 +219,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         enddo
         !write(*,*) 'Scatter: ',g,'to ',iig
         g = iig
-        r1 = rand()
-        wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
+        !r1 = rand()
+        !wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
+        wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
         !
         if ((gas_sig(z)+gas_sigmapg(g,z))*gas_drarr(z) &
              *(gas_velno*1d0+gas_velyes*tsp_texp)>=prt_tauddmc) then

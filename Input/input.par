@@ -6,12 +6,12 @@ in_puretran = f
 
 !-- time step
 in_tfirst = 2d0
-in_tlast = 5d0
-in_nt = 32
+in_tlast = 11d0
+in_nt = 192
 in_alpha = 1d0
 
 !-- gas grid settings
-in_nr = 25
+in_nr = 50
 in_isvelocity = t
 in_isshell = f
 in_novolsrc = t
@@ -32,8 +32,8 @@ in_isanalsrc = t
 in_srctype = 'heav'
 in_srcmax = 4d24
 !-- heaviside case
-in_theav = 3d0
-in_nheav = 20
+in_theav = 9d0
+in_nheav = 40
 
 !-- power law heat capacity values
 in_cvcoef = 2.32d14
@@ -60,7 +60,7 @@ in_suolpick1 = 1d0
 
 !-- line case (disparity)
 in_ldisp1 = 1d0
-in_ldisp2 = 1d-4 
+in_ldisp2 = 1d-7
 
 !-- group settings
 in_wldex = 17
@@ -68,14 +68,14 @@ in_iswlread = t
 in_ng = 5
 
 !-- particle numbers
-in_ns = 10000
+in_ns = 100000
 in_npartmax = 10000000
 
 !-- imc tally method
 in_isimcanlog = f
 in_isddmcanlog = f
 !-- ddmc mfp per cell
-in_tauddmc = 1d0
+in_tauddmc = 3d0
 
 !-- opacity switches
 in_nobbopac = t
