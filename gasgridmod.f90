@@ -67,6 +67,7 @@ module gasgridmod
 
   real*8, dimension(:), allocatable :: gas_rarr  !(gas_nr+1)
   real*8, dimension(:), allocatable :: gas_drarr !(gas_nr)
+  real*8, dimension(:), allocatable :: gas_curvcent !(gas_nr), multiplied by tauddmc for mfp threshold
   real*8, dimension(:), allocatable :: gas_edep, gas_sigmap, gas_fcoef !(gas_nr)
   real*8, dimension(:), allocatable :: gas_tempb  !(gas_nr+1), interpolated temperatures (keV)
   real*8, dimension(:), allocatable :: gas_rhob !(gas_nr+1), interpolated densities
@@ -174,6 +175,7 @@ module gasgridmod
     allocate(gas_numcensus(gas_nr))  !# census prt_particles per cell
     allocate(gas_rarr(gas_nr+1)) !zone edge radii
     allocate(gas_drarr(gas_nr))  !radial zone length
+    allocate(gas_curvcent(gas_nr))  ! gas_curvcent*tauddmc=mean fee path threshold for IMC-DDMC heuristic
     allocate(gas_edep(gas_nr))  !energy absorbed by material
     allocate(gas_sigmap(gas_nr)) !Planck opacity (gray)
 !- Ryan W.: using power law to calculate gas_sig (similar to Planck opacity)

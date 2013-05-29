@@ -27,6 +27,8 @@ c
       real*8,parameter :: pc_abohr = 0.5291772108d-8 !cm
       real*8,parameter :: pc_rydberg = 1.0973731534d5 !cm^-1
 c
+      real*8,parameter :: pc_plkpk = 2.821439372122d0 !maximum of x^3/(e^x-1)
+c
       real*8,parameter :: pc_sb = 2*pc_pi**5*pc_kb**4/
      &  (15d0*pc_h**3*pc_c**2) !5.670400d-5 !erg/cm^2/s/K^4
       real*8,parameter :: pc_hsun = 3.826d33/(pc_pi4*pc_pi4) !erg/s/cm^2/sr

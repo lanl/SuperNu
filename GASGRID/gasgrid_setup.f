@@ -12,6 +12,7 @@ c     --------------------------------------
 ************************************************************************
       integer :: i,ir
       real*8 :: help, rrcenter, uudd, masv
+      real*8 :: help2
       real*8, allocatable :: wlstore(:) 
       integer :: ng,ngm,nrm,irr
 c
@@ -41,6 +42,16 @@ c-- grid with unit radius: scaled up below by gas_lr for static, or gas_velout f
        gas_rarr(ir+1) = gas_rarr(ir)+gas_drarr(ir)
        gas_vals2(ir)%dr3_34pi = gas_rarr(ir+1)**3-gas_rarr(ir)**3
        gas_vals2(ir)%volr = pc_pi4/3d0*gas_vals2(ir)%dr3_34pi!volume in outer radius units
+      enddo
+
+c
+c-- calculating IMC-DDMC heuristic coefficient for spherical geometry (rev 146)
+      do ir = 1, gas_nr
+         help2=gas_rarr(ir+1)**2+gas_rarr(ir)*gas_rarr(ir+1)
+         help2=help2+gas_rarr(ir)**2
+         help2 = sqrt(1d0/help2)
+         gas_curvcent(ir) = sqrt((gas_rarr(ir+1)**2+gas_rarr(ir)**2))
+         gas_curvcent(ir) = help2*gas_curvcent(ir)
       enddo
 c
 c-- set grid size to velout or lr depending on expanding or static

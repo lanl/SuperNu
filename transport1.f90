@@ -26,6 +26,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   real*8 :: db, dcol, dcen, dthm, d
   real*8 :: siglabfact, dcollabfact, elabfact
   real*8 :: rold, P, denom2, told, zholder
+  real*8 :: bmax, x1, x2, xx0
 
   siglabfact = 1.0d0 - gas_velyes*mu*r/pc_c
   dcollabfact = gas_velno*1.0 + gas_velyes*tsp_texp*(1.0d0-mu*r/pc_c)
@@ -178,14 +179,36 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         !(rev 121): calculating radiation energy tally per group
         !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*elabfact
         !-------------------------------------------------------
-        ! uniformly sampling comoving wavelength in group
+        ! sampling comoving wavelength in group
         !r1 = rand()
         !wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
-        wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
+        !wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
+        !
+        ! sampling sub-group Planck function:
+        x1 = pc_h*pc_c/(pc_ev*gas_wl(g+1))/(1d3*gas_vals2(z)%tempkev)
+        x2 = pc_h*pc_c/(pc_ev*gas_wl(g))/(1d3*gas_vals2(z)%tempkev)
+        if (x2<pc_plkpk) then
+           bmax = x2**3/(exp(x2)-1d0)
+        elseif (x1>pc_plkpk) then
+           bmax = x1**3/(exp(x1)-1d0)
+        else
+           bmax = pc_plkpk
+        endif
+        r1 = rand()
+        r2 = rand()
+        xx0 = (1d0-r1)*x1+r1*x2
+        do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
+           r1 = rand()
+           r2 = rand()
+           xx0 = (1d0-r1)*x1+r1*x2
+        enddo
+        wl = pc_h*pc_c/(pc_ev*xx0)/(1d3*gas_vals2(z)%tempkev)
+        !
+        !
         ! converting comoving wavelength to lab frame wavelength
         wl = wl*(1.0-gas_velyes*r*mu/pc_c)
         if (((gas_sig(z)+gas_sigmapg(g,z))*gas_drarr(z)* &
-             (gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) &
+             (gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z)) &
              .and.(in_puretran.eqv..false.)) then
            hyparam = 2
            E = E*(1.0-gas_velyes*r*mu/pc_c)
@@ -204,7 +227,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            gas_eright = gas_eright+E*elabfact
         ! Checking if DDMC region right
         elseif (((gas_sig(z+1)+gas_sigmapg(g,z+1))*gas_drarr(z+1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) &
+             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z+1)) &
                  .and.(in_puretran.eqv..false.)) then
            r1 = rand()
            mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
@@ -233,7 +256,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               gas_eleft = gas_eleft+E*elabfact
            else
               if (((gas_sig(z+1)+gas_sigmapg(g,z+1))*gas_drarr(z+1) &
-                   *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) &
+                   *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z+1)) &
                    .and.(in_puretran.eqv..false.)) then
                  r1 = rand()
                  mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
@@ -255,7 +278,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               endif
            endif
         elseif (((gas_sig(z-1)+gas_sigmapg(g,z-1))*gas_drarr(z-1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) &
+             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z-1)) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()
            mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)

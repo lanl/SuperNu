@@ -18,7 +18,7 @@ subroutine advance
 !##################################################
 
   integer :: ipart, difs, transps, g, zholder, zfdiff, ir
-  real*8 :: r1, alph2, r2
+  real*8 :: r1, alph2, r2, x1, x2, xx0, bmax
   integer, pointer :: zsrc, rtsrc !, gsrc
   real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
   logical, pointer :: isvacant
@@ -26,7 +26,7 @@ subroutine advance
 
   logical :: isshift=.true.
   logical :: partstopper=.true.
-  logical :: showidfront=.false.
+  logical :: showidfront=.true.
 
   gas_edep = 0.0
   gas_erad = 0.0
@@ -130,7 +130,7 @@ subroutine advance
         ! Checking if particle conversions are required since prior time step
         if (in_puretran.eqv..false.) then
            if ((gas_sig(zsrc)+gas_sigmapg(g,zsrc))*gas_drarr(zsrc) &
-                *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc) then
+                *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(zsrc)) then
               !write(*,*) 'here', g, wlsrc, esrc
               if (rtsrc == 2) then
                  r1 =  rand()
@@ -140,9 +140,29 @@ subroutine advance
                  musrc = (musrc + gas_velyes*rsrc/pc_c)/(1.0 + gas_velyes*rsrc*musrc/pc_c)
                  esrc = esrc/(1.0 - gas_velyes*musrc*rsrc/pc_c)
                  ebirth = ebirth/(1.0 - gas_velyes*musrc*rsrc/pc_c)
-                 wlsrc = 0.5d0*(gas_wl(g)+gas_wl(g+1))
+                 !wlsrc = 0.5d0*(gas_wl(g)+gas_wl(g+1))
                  !r1 = rand()
                  !wlsrc=gas_wl(g)*(1d0-r1)+gas_wl(g+1)*r1
+                 !
+                 x1 = pc_h*pc_c/(pc_ev*gas_wl(g+1))/(1d3*gas_vals2(zsrc)%tempkev)
+                 x2 = pc_h*pc_c/(pc_ev*gas_wl(g))/(1d3*gas_vals2(zsrc)%tempkev)
+                 if (x2<pc_plkpk) then
+                    bmax = x2**3/(exp(x2)-1d0)
+                 elseif (x1>pc_plkpk) then
+                    bmax = x1**3/(exp(x1)-1d0)
+                 else
+                    bmax = pc_plkpk
+                 endif
+                 r1 = rand()
+                 r2 = rand()
+                 xx0 = (1d0-r1)*x1+r1*x2
+                 do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
+                    r1 = rand()
+                    r2 = rand()
+                    xx0 = (1d0-r1)*x1+r1*x2
+                 enddo
+                 wlsrc = pc_h*pc_c/(pc_ev*xx0)/(1d3*gas_vals2(zsrc)%tempkev)
+                 !
                  wlsrc = wlsrc*(1.0-gas_velyes*musrc*rsrc/pc_c)
               endif
               rtsrc = 1
@@ -212,7 +232,7 @@ subroutine advance
                  zfdiff = -1
                  do ir = zsrc-1,zholder,-1
                     if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
-                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) then
+                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(ir)) then
                        zfdiff = ir
                        exit
                     endif
@@ -250,11 +270,50 @@ subroutine advance
                    esrc,ebirth,rtsrc,isvacant)
            endif
         enddo
-!----------------------------------------------------------------------- 
+!-----------------------------------------------------------------------
+        !---------------
+        !------------
+        ! Redshifting DDMC particle energy weights and wavelengths
         if(rtsrc == 2.and.in_isvelocity) then
+           ! Redshifting energy weight
            esrc = esrc*exp(-tsp_dt/tsp_texp)
            ebirth = ebirth*exp(-tsp_dt/tsp_texp)
-           !wlsrc = wlsrc*exp(-tsp_dt/tsp_texp)
+           !
+           ! Finding group
+           g = minloc(abs(gas_wl-wlsrc),1)
+           if(wlsrc-gas_wl(g)<0d0) then
+              g = g-1
+           endif
+           if(g>gas_ng.or.g<1) then
+              !particle out of wlgrid energy bound
+              if(g>gas_ng) then
+                 g=gas_ng
+              else
+                 g=1
+              endif
+           endif
+           !
+           !
+           x1 = pc_h*pc_c/(pc_ev*gas_wl(g+1))/(1d3*gas_vals2(zsrc)%tempkev)
+           x2 = pc_h*pc_c/(pc_ev*gas_wl(g))/(1d3*gas_vals2(zsrc)%tempkev)
+           if (x2<pc_plkpk) then
+              bmax = x2**3/(exp(x2)-1d0)
+           elseif (x1>pc_plkpk) then
+              bmax = x1**3/(exp(x1)-1d0)
+           else
+              bmax = pc_plkpk
+           endif
+           r1 = rand()
+           r2 = rand()
+           xx0 = (1d0-r1)*x1+r1*x2
+           do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
+              r1 = rand()
+              r2 = rand()
+              xx0 = (1d0-r1)*x1+r1*x2
+           enddo
+           wlsrc = pc_h*pc_c/(pc_ev*xx0)/(1d3*gas_vals2(zsrc)%tempkev)
+           !
+           wlsrc = wlsrc*exp(-tsp_dt/tsp_texp)
         endif
 
         ! Looking up group
@@ -319,7 +378,7 @@ subroutine advance
                  zfdiff = -1
                  do ir = zsrc-1,zholder,-1
                     if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
-                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) then
+                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(ir)) then
                        zfdiff = ir
                        exit
                     endif

@@ -60,7 +60,7 @@ in_suolpick1 = 1d0
 
 !-- line case (disparity)
 in_ldisp1 = 1d0
-in_ldisp2 = 1d-7
+in_ldisp2 = 1d-4
 
 !-- group settings
 in_wldex = 17
@@ -75,7 +75,7 @@ in_npartmax = 10000000
 in_isimcanlog = f
 in_isddmcanlog = f
 !-- ddmc mfp per cell
-in_tauddmc = 3d0
+in_tauddmc = 2d0
 
 !-- opacity switches
 in_nobbopac = t

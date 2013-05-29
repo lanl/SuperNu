@@ -25,7 +25,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   real*8 :: r1, r2
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus, PR, PL, PA
-  real*8, dimension(gas_ng) :: PDFg
+  !real*8, dimension(gas_ng) :: PDFg
   real*8 :: deleff=0.38
   real*8 :: alpeff
   !
@@ -138,7 +138,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
               write(6,*) 'Non-physical left leakage', g, gas_wl(g+1), wl
            endif
         elseif ((gas_sig(z-1)+gas_sigmapg(g,z-1))*gas_drarr(z-1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) then
+             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z-1)) then
            
            z = z-1
            !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
@@ -165,7 +165,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            mu = max(r1,r2)
            gas_eright = gas_eright+E*(1.0+gas_velyes*gas_rarr(gas_nr+1)*mu/pc_c)
         elseif ((gas_sig(z+1)+gas_sigmapg(g,z+1))*gas_drarr(z+1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc) then
+             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z+1)) then
            !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
            z = z+1
            !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
@@ -221,10 +221,11 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         g = iig
         !r1 = rand()
         !wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
+        ! during DDMC phase, wavelength is only a placeholder for group 
         wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
         !
         if ((gas_sig(z)+gas_sigmapg(g,z))*gas_drarr(z) &
-             *(gas_velno*1d0+gas_velyes*tsp_texp)>=prt_tauddmc) then
+             *(gas_velno*1d0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z)) then
            hyparam = 2
         else
            hyparam = 1

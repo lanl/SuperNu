@@ -169,6 +169,7 @@ subroutine xsections
      enddo
   endif
 
+
   !Calculating DDMC(-to-IMC) leakage opacities (Densmore, 2007, 2012): loop
   do ir = 1, gas_nr
      do ig = 1, gas_ng
@@ -180,7 +181,7 @@ subroutine xsections
                 *(gas_velno*1.0+gas_velyes*tsp_texp))
         !   
         elseif((gas_sig(ir-1)+gas_sigmapg(ig,ir-1))*gas_drarr(ir-1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc) then
+             *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(ir-1)) then
         !   
            gas_sigmal(ig,ir)=1.5*gas_ppl(ig,ir)*gas_rarr(ir)**2
            gas_sigmal(ig,ir)=gas_sigmal(ig,ir)/(gas_vals2(ir)%dr3_34pi &
@@ -203,7 +204,7 @@ subroutine xsections
                 *(gas_velno*1.0+gas_velyes*tsp_texp))
         !   
         elseif((gas_sig(ir+1)+gas_sigmapg(ig,ir+1))*gas_drarr(ir+1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc) then
+             *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(ir+1)) then
         !   
            gas_sigmar(ig,ir)=1.5*gas_ppr(ig,ir)*gas_rarr(ir+1)**2
            gas_sigmar(ig,ir)=gas_sigmar(ig,ir)/(gas_vals2(ir)%dr3_34pi &

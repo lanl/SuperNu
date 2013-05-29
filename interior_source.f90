@@ -15,7 +15,7 @@ subroutine interior_source
   integer :: ir,iir, ipart, ivac, ig, iig
   integer, dimension(gas_nr) :: irused
   real*8 :: r1, r2, r3, uul, uur, uumax, mu0, r0, Ep0, wl0
-  real*8 :: denom2,x1,x2,x3,x4
+  real*8 :: denom2,x1,x2,x3,x4, xx0, bmax
   real*8, dimension(gas_nr) :: exsumg
   logical :: isnotvacnt !checks for available particle space to populate in cell
 
@@ -82,7 +82,9 @@ subroutine interior_source
            Ep0 = exsumg(ir)*tsp_dt* &
              (4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)/real(gas_vals2(ir)%nvolex)
            !write(*,*) Ep0, gas_vals2(ir)%nvolex
-           if (((gas_sig(ir)+gas_sigmapg(iig,ir))*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc) &
+           
+           if (((gas_sig(ir)+gas_sigmapg(iig,ir))*gas_drarr(ir)* &
+                (gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(ir)) &
                 .or.(in_puretran.eqv..true.)) then
               prt_particles(ivac)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
               prt_particles(ivac)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
@@ -144,9 +146,26 @@ subroutine interior_source
            !Calculating wavelength uniformly from group
            !r1 = rand()
            !wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
-           wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
-           !write(*,*) wl0, iig
-           !write(*,*) gas_wl
+           !wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
+           x1 = pc_h*pc_c/(pc_ev*gas_wl(iig+1))/(1d3*gas_vals2(ir)%tempkev)
+           x2 = pc_h*pc_c/(pc_ev*gas_wl(iig))/(1d3*gas_vals2(ir)%tempkev)
+           if (x2<pc_plkpk) then
+              bmax = x2**3/(exp(x2)-1d0)
+           elseif (x1>pc_plkpk) then
+              bmax = x1**3/(exp(x1)-1d0)
+           else
+              bmax = pc_plkpk
+           endif
+           r1 = rand()
+           r2 = rand()
+           xx0 = (1d0-r1)*x1+r1*x2
+           do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
+              r1 = rand()
+              r2 = rand()
+              xx0 = (1d0-r1)*x1+r1*x2
+           enddo
+           wl0 = pc_h*pc_c/(pc_ev*xx0)/(1d3*gas_vals2(ir)%tempkev)
+
            !Calculating radial position
            r1 = 0d0
            r2 = 1d0
@@ -170,8 +189,9 @@ subroutine interior_source
            prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = gas_vals2(ir)%emit/real(gas_vals2(ir)%nvol)
+
            if (((gas_sigmapg(iig,ir)+gas_sig(ir))*gas_drarr(ir)* &
-                (gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc) &
+                (gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(ir)) &
                 .or.(in_puretran.eqv..true.)) then
               prt_particles(ivac)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
               prt_particles(ivac)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
