@@ -75,7 +75,7 @@ in_npartmax = 10000000
 in_isimcanlog = f
 in_isddmcanlog = f
 !-- ddmc mfp per cell
-in_tauddmc = 2d0
+in_tauddmc = 5d0
 
 !-- opacity switches
 in_nobbopac = t
