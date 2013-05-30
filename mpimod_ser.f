@@ -10,7 +10,7 @@ c     -------------
 c
       contains
 c
-      subroutine bcast_permanent
+      subroutine bcast_persistent
 c     --------------------------
       use inputparmod, only:in_nomp
       implicit none
@@ -18,26 +18,26 @@ c     --------------------------
 * Broadcast the data that does not evolve over time (or temperature).
 * - stub
 ************************************************************************
-      end subroutine bcast_permanent
+      end subroutine bcast_persistent
 c
 c
-      subroutine bcast_mutable
+      subroutine bcast_nonpersistent
 c     ------------------------
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
 * - stub
 ************************************************************************
-      end subroutine bcast_mutable
+      end subroutine bcast_nonpersistent
 c
 c
-      subroutine reduce_enabs
+      subroutine reduce_tally
 c     --------------------------
 ************************************************************************
 * Reduce the results from the packet transport that are needed for the
 * temperature correction.
 * - stub
 ************************************************************************
-      end subroutine reduce_enabs
+      end subroutine reduce_tally
 c
 c
       subroutine reduce_fluxes

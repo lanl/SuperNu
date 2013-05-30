@@ -162,12 +162,6 @@ c-- close file
         close(4)!}}}
        endif !do_output
 c
-c-- add some gray opacity, for testing
-       if(in_opcap>0.) then
-        forall(i=1:gas_ng) gas_cap(:,i) = gas_cap(:,i) + in_opcap*
-     &    gas_vals2(:)%mass/gas_vals2(:)%volcrp
-       endif
-c
 c
 c-- Rosseland opacity
 c-- normalization integral first

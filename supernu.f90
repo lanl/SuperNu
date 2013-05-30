@@ -93,19 +93,24 @@ program supernu
   
   !calculating analytic initial particle distribution (if any)
   call initialnumbers
-    
+
+  call bcast_persistent
+
   ! Beginning time step loop
   do tsp_tn = 1, tsp_nt
-    write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
-    !
-    !Ryan W.: gasgrid_update temporarily deprecated due to seg fault
-    !call gasgrid_update
-    !Ryan W.: gasgrid_upold is an update file for testing
-    call gasgrid_upold
-    !Calculating Fleck factor, leakage opacities
-    call xsections
-    !Calculating number of source prt_particles per cell
-    call sourcenumbers
+    if(impi==impi0) then
+     write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
+     !
+     !Ryan W.: gasgrid_update temporarily deprecated due to seg fault
+     !call gasgrid_update
+     !Ryan W.: gasgrid_upold is an update file for testing
+     call gasgrid_upold
+     !Calculating Fleck factor, leakage opacities
+     call xsections
+     !Calculating number of source prt_particles per cell
+     call sourcenumbers
+    endif !impi
+
     !Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
     allocate(prt_vacantarr(prt_nnew))
     call vacancies
@@ -115,13 +120,19 @@ program supernu
     call interior_source
     deallocate(prt_vacantarr)
     !Advancing prt_particles to update radiation field    
-    call advance    
-    
-    call temperature_update
-    call timestep_update(dt) !Updating elapsed tsp_time and expansion tsp_time
 
-    call write_output
-!   call write_restart
+    !-- advance particles
+    call bcast_nonpersistent
+    call advance
+    call reduce_tally
+    
+    if(impi==impi0) then
+     call temperature_update
+     call timestep_update(dt) !Updating elapsed tsp_time and expansion tsp_time
+
+     call write_output
+!    call write_restart
+    endif !impi
   enddo
 !
 !

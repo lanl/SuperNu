@@ -7,6 +7,9 @@ c     ------------------
 ************************************************************************
 c-- write stdout to file
       logical :: in_grab_stdout = .false. !write stdout to file
+c-- parallelization
+      integer :: in_nomp = 1       !# openmp threads
+c
 c-- gas grid
       integer :: in_nr = 0 !# spatial grid in spherical geom
       integer :: in_ng = 0 !# groups
@@ -14,24 +17,22 @@ c-- gas grid
       logical :: in_isshell = .false.  !switch to change domain topology from solid sphere to shell
       real*8 :: in_l0 = 0d0  !innermost radius of the domain, used if in_isshell
       real*8 :: in_lr = 0d0  !spatial length of the domain
+c
+c-- specify the atmospheric stratification
       real*8 :: in_velout = 0d0  !cm/s, velocity of outer bound
       real*8 :: in_v0 !velocity of inner bound (analogous to in_l0), used if in_isshell
       real*8 :: in_totmass = 0d0  !g
       real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
+      logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
+c
 c-- flat-structure parameters
       logical :: in_istempflat = .true. !if false, reads temperature from input.restart
       real*8 :: in_consttempkev = 0d0  !keV
-      logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
-
-c-- external source structure
-      logical :: in_isanalsrc = .false. !switch to use analytic_source routine (instead of physical source)
-      character(4) :: in_srctype='heav'   !heav|strt|manu: external source structure type
-      integer :: in_nheav = 0   !outer cell bound if heaviside ('heav') source
-      real*8 :: in_theav = 0d0 !duration of heaviside source
-      real*8 :: in_srcmax = 0d0 !peak source strength (ergs/cm^3/s)
 c
-c-- energy source
-      logical :: in_novolsrc = .true.  !switch to turn off any volume source (could be useful for debugs)
+c-- analytic heat capacity terms
+      real*8 :: in_cvcoef = 1d0 !power law heat capacity coefficient
+      real*8 :: in_cvtpwr = 0d0 !power law heat capacity temperature exponent
+      real*8 :: in_cvrpwr = 0d0 !power law heat capacity density exponent
 c
 c-- random number generator
       integer :: in_seed = 1984117 !starting point of random number generator
@@ -50,13 +51,26 @@ c-- time step
       real*8 :: in_tlast = 0d0  !last point in time evolution
       integer :: in_nt = -1   !# time steps
 c
-c-- parallelization
-      integer :: in_nomp = 1       !# openmp threads
+c--
+      real*8 :: in_wlmin = 1000d0     !lower wavelength boundary in output spectrum
+      real*8 :: in_wlmax = 30000d0    !upper wavelength boundary in output spectrum
 c
 c-- group structure
       logical :: in_isanalgrp = .true. !switch to use analytic_opacity routine (instead of physical opacities)
       logical :: in_iswlread = .false. !switch to read input wavelength grid
       integer :: in_wldex = 1 !# if in_iswlread = t, selects group grid from formatted group grid file
+c
+c
+c-- physical opacities
+      real*8 :: in_opcapgam = .06d0   ![cm^2/g] extinction coefficient for gamma radiation
+      real*8 :: in_epsline = 1d0      !line absorption fraction (the rest is scattering)
+c-- test switches
+      logical :: in_nobbopac = .false.    !turn off bound-bound opacity
+      logical :: in_nobfopac = .false.    !turn off bound-bound opacity
+      logical :: in_noffopac = .false.    !turn off bound-bound opacity
+c
+c
+c-- analytic opacities
       character(4) :: in_grptype = 'grey'    !grey|mono|pick|line: group opacity structure type
 c-- picket fence specific group structure
       character(4) :: in_suol = 'tsta'    !tsta|tstb|tstc: Su&Olson picket fence (pick) test cases 
@@ -64,19 +78,6 @@ c-- picket fence specific group structure
 c-- line specific group structure
       real*8 :: in_ldisp1 = 1d0  !loosely speaking, the analytic odd group line strength
       real*8 :: in_ldisp2 = 1d0  !loosely speaking, the analytic even group line strength
-c
-c
-      real*8 :: in_wlmin = 1000d0     !lower wavelength boundary in output spectrum
-      real*8 :: in_wlmax = 30000d0    !upper wavelength boundary in output spectrum
-c
-c-- opacity (cm^2/gram)
-      real*8 :: in_opcapgam = .06d0   ![cm^2/g] extinction coefficient for gamma radiation
-      real*8 :: in_opcap = 0d0        !additional gray opacity (for testing with in_nobbopac only!)
-      real*8 :: in_epsline = 1d0      !line absorption fraction (the rest is scattering)
-      logical :: in_nobbopac = .false.    !turn off bound-bound opacity
-      logical :: in_nobfopac = .false.    !turn off bound-bound opacity
-      logical :: in_noffopac = .false.    !turn off bound-bound opacity
-c-- analytic opacities
 c-- scattering terms:
       real*8 :: in_sigcoefs = 0d0 !power law absorption opacity coefficient
       real*8 :: in_sigtpwrs = 0d0 !power law absorption opacity temperature exponent
@@ -85,10 +86,16 @@ c-- absorption terms:
       real*8 :: in_sigcoef = 0d0 !power law absorption opacity coefficient
       real*8 :: in_sigtpwr = 0d0 !power law absorption opacity temperature exponent
       real*8 :: in_sigrpwr = 0d0 !power law absorption opacity density exponent
-c-- analytic heat capacity terms
-      real*8 :: in_cvcoef = 1d0 !power law heat capacity coefficient
-      real*8 :: in_cvtpwr = 0d0 !power law heat capacity temperature exponent
-      real*8 :: in_cvrpwr = 0d0 !power law heat capacity density exponent
+c
+c
+c-- external source structure
+      logical :: in_isanalsrc = .false. !switch to use analytic_source routine (instead of physical source)
+      character(4) :: in_srctype='heav'   !heav|strt|manu: external source structure type
+      integer :: in_nheav = 0   !outer cell bound if heaviside ('heav') source
+      real*8 :: in_theav = 0d0 !duration of heaviside source
+      real*8 :: in_srcmax = 0d0 !peak source strength (ergs/cm^3/s)
+c-- disable all sources
+      logical :: in_novolsrc = .true.  !switch to turn off any volume source (could be useful for debugs)
 c
 c-- misc
       character(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
@@ -103,7 +110,7 @@ c-- runtime parameter namelist
      & in_tfirst,in_tlast,in_nt,
      & in_grab_stdout,in_nomp,
      & in_wlmin,in_wlmax,
-     & in_opcapgam,in_opcap,in_epsline,in_nobbopac,in_nobfopac,
+     & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
      & in_noffopac,
      & in_opacdump,in_pdensdump,
      & in_sigcoefs,in_sigtpwrs,in_sigrpwrs,
@@ -209,12 +216,6 @@ c
       if(in_wlmax<=0d0 .or. in_wlmax<in_wlmin) stop 'in_wlmax invalid'
 c
       if(in_opcapgam<0d0) stop 'in_opcapgam invalid'
-      if(in_opcap<0d0) then
-       stop 'in_opcap invalid'
-      elseif(in_opcap>0d0) then
-       call warn('read_inputpars',
-     &   'gray opacity added! For testing uses only!')
-      endif
       if(in_epsline<0d0 .or. in_epsline>1d0) stop 'in_epsline invalid'
 c
       if(in_nobbopac) call warn('read_inputpars','bb opacity disabled!')
