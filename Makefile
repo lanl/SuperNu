@@ -19,7 +19,7 @@ OBJFILES := sourcenumbers.o vacancies.o boundary_source.o interior_source.o adva
  write_output.o diffusion1.o transport1.o read_wlgrid.o wlgrid_setup.o \
  read_bbxs_data.o restart_file.o dealloc_all.o specint.o initialnumbers.o
 
-LIBRARIES := GASGRID/gasgrid.a MISC/misc.a OPACITY/opacity.a
+LIBRARIES := GASGRID/gasgrid.a MISC/misc.a
 SUBDIRS := $(dir $(LIBRARIES))
 
 VERSIONPY := $(wildcard version.py)

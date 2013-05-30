@@ -72,7 +72,7 @@ c-- total, units=ergs
 c
 c
 c
-c-- update volume and density
+c-- update volume and density 
 c============================
       if(gas_isvelocity) then!{{{
        help = gas_velout*tsp_texp
@@ -90,6 +90,39 @@ c-- density
 c
 c-- keep track of temperature evolution
       gas_temphist(:,tsp_tn) = gas_vals2%temp!}}}
+c
+c
+c-- update interpolated density and temperatures at cell edges
+c=============================================================
+!Interpolating cell boundary temperatures (in keV currently): loop!{{{
+      if(gas_isshell) then
+       gas_tempb(1)=gas_templ0
+      else
+       gas_tempb(1)=gas_vals2(1)%tempkev
+      endif
+!gas_tempb(1) = 1.0
+      do ir=2,gas_nr
+       gas_tempb(ir) = (gas_vals2(ir)%tempkev**4 +
+     &   gas_vals2(ir-1)%tempkev**4)/2.0
+       gas_tempb(ir) = gas_tempb(ir)**0.25
+      enddo
+      gas_tempb(gas_nr+1) = gas_vals2(gas_nr)%tempkev
+!Interpolating cell boundary densities (in g/cm^3): loop
+      gas_rhob(1) = gas_vals2(1)%rho
+      do ir = 2, gas_nr
+       !gas_rhob(ir)=(gas_vals2(ir)%rho*gas_vals2(ir)%vol+ &
+       !     gas_vals2(ir-1)%rho*gas_vals2(ir-1)%vol)/ &
+       !     (gas_vals2(ir)%vol+gas_vals2(ir-1)%vol)
+       gas_rhob(ir) = (gas_vals2(ir)%rho*gas_vals2(ir-1)%rho)**0.5d0
+      enddo
+      gas_rhob(gas_nr+1) = gas_vals2(gas_nr)%rho
+
+!Calculating power law heat capacity
+      do ir=1,gas_nr
+       gas_vals2(ir)%bcoef = gas_cvcoef *
+     &   gas_vals2(ir)%tempkev**gas_cvtpwr *
+     &   gas_vals2(ir)%rho**gas_cvrpwr
+      enddo!}}}
 c
 c
 c
@@ -129,8 +162,16 @@ c-- thomson scattering
        gas_sig = cthomson*gas_vals2(:)%nelec*
      &   gas_vals2(:)%natom/gas_vals2(:)%volcrp
 c
-c--
-       call opacity_calculation
+c
+c-- physical opacities
+       if(.not. in_isanalgrp) then
+        call opacity_calculation
+c
+!-- Calculating simple physical group/grey opacities: Planck and Rosseland 
+!-- Ryan W.:(moved from supernu.f90 in rev 105)
+       else
+        call analytic_opacity
+       endif
 c
 c-- write out opacities (additional gray opacity not included!)
 c--------------------------------------------------------------
@@ -164,6 +205,9 @@ c-- convert from opacity in redona's rcell units to opacity per cm
 c-- close file
         close(4)!}}}
        endif !do_output
+c
+c-- 
+       call 
 c
 c
 c-- Rosseland opacity
