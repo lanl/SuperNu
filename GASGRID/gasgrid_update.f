@@ -74,12 +74,12 @@ c
 c
 c-- update volume and density
 c============================
-      if(gas_isvelocity) then
+      if(gas_isvelocity) then!{{{
        help = gas_velout*tsp_texp
       else
        help = gas_lr
       endif
-      !gas_vals2%vol = gas_vals2%volr*(gas_velout*tsp_tcenter)**3 !volume in cm^3!{{{
+      !gas_vals2%vol = gas_vals2%volr*(gas_velout*tsp_tcenter)**3 !volume in cm^3
       gas_vals2%vol = gas_vals2%volr*help**3 !volume in cm^3
       gas_vals2%volcrp = gas_vals2%vol !effective volume in cm^3
 c
@@ -97,6 +97,9 @@ c-- reset counters
 c=================
       gas_erad = 0.0   !Total radiation energy
       gas_eint = 0.0   !Total internal energy
+
+      gas_eraddensg =0d0 !radiation density field
+      gas_vals2%eraddens =0d0
 c
 !     return !DEBUG
 c
