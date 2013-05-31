@@ -20,6 +20,7 @@ c
       subroutine read_inputstr(nr)
 c     ----------------------------
       use physconstmod
+      use miscmod
       implicit none
       integer,intent(in) :: nr
 ************************************************************************
@@ -33,7 +34,10 @@ c     ----------------------------
 c
 c-- open file
       open(4,file=fname,status='old')
-      if(ierr/=0) stop 'read_inputstr: missing file: input.str'
+      if(ierr/=0) then
+       call warn('read_inputstr','file missing: input.str')
+       return
+      endif
 c
 c-- read dimensions
       read(4,*)

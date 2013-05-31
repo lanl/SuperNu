@@ -84,7 +84,7 @@ miscmod.o: MISC/warn.f MISC/lcase.f
 mpimod.o: gasgridmod.o inputparmod.o timestepmod.o timingmod.o
 timestepmod.o: physconstmod.o
 gasgridmod.o: inputparmod.o
-inputstrmod.o: physconstmod.o
+inputstrmod.o: physconstmod.o miscmod.o
 #
 #-- OBJ FILES
 #-- note: prerequisites don't need to include modules as these are always built first
