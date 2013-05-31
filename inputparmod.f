@@ -13,17 +13,22 @@ c
 c-- gas grid
       integer :: in_nr = 0 !# spatial grid in spherical geom
       integer :: in_ng = 0 !# groups
+      real*8 :: in_lr = 0d0  !spatial length of the domain
+      real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
+c
+c-- do read input structure file instead of specifying the stucture with input parameters
+c==================
+      logical :: in_noreadstruct = .false.
+c-- special grid
       logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
       logical :: in_isshell = .false.  !switch to change domain topology from solid sphere to shell
       real*8 :: in_l0 = 0d0  !innermost radius of the domain, used if in_isshell
-      real*8 :: in_lr = 0d0  !spatial length of the domain
-c
 c-- specify the atmospheric stratification
       real*8 :: in_velout = 0d0  !cm/s, velocity of outer bound
-      real*8 :: in_v0 !velocity of inner bound (analogous to in_l0), used if in_isshell
+      real*8 :: in_v0 = 0d0 !velocity of inner bound (analogous to in_l0), used if in_isshell
       real*8 :: in_totmass = 0d0  !g
-      real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
       logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
+c============
 c
 c-- flat-structure parameters
       logical :: in_istempflat = .true. !if false, reads temperature from input.restart
@@ -88,8 +93,7 @@ c-- absorption terms:
 c
 c
 c-- external source structure
-      logical :: in_isanalsrc = .false. !switch to use analytic_source routine (instead of physical source)
-      character(4) :: in_srctype='heav'   !heav|strt|manu: external source structure type
+      character(4) :: in_srctype='none'   !none|heav|strt|manu: external source structure type
       integer :: in_nheav = 0   !outer cell bound if heaviside ('heav') source
       real*8 :: in_theav = 0d0 !duration of heaviside source
       real*8 :: in_srcmax = 0d0 !peak source strength (ergs/cm^3/s)
@@ -104,7 +108,7 @@ c-- runtime parameter namelist
       namelist /inputpars/
      & in_nr,in_ng,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
      & in_totmass,in_templ0,in_velout,in_v0,
-     & in_consttempkev,in_solidni56, in_istempflat,
+     & in_consttempkev,in_solidni56,in_istempflat,
      & in_seed,in_ns,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,
      & in_grab_stdout,in_nomp,
@@ -117,7 +121,7 @@ c-- runtime parameter namelist
      & in_cvcoef,in_cvtpwr,in_cvrpwr,
      & in_wldex,in_iswlread,in_grptype,in_suol,
      & in_suolpick1, in_ldisp1, in_ldisp2,
-     & in_isanalsrc, in_srctype, in_theav, in_nheav, in_srcmax,
+     & in_srctype, in_theav, in_nheav, in_srcmax,
      & in_isimcanlog, in_isddmcanlog,
      & in_tauddmc
 c
@@ -182,7 +186,8 @@ c
 c
       if(in_isvelocity) then
        if(in_lr>0d0) stop 'vel grid: use in_velout, not in_lr'
-       if(in_velout<=0d0) stop 'vel grid: use in_velout, not in_lr'
+       if(in_velout<=0d0 .and. in_noreadstruct) stop
+     &   'vel grid: use in_velout, not in_lr'
       else
        if(in_lr<=0d0) stop 'static grid: use in_lr, not in_velout'
        if(in_l0<0d0) stop 'static grid: in_l0 invalid'
@@ -193,7 +198,7 @@ c
       if(in_npartmax<=0) stop 'in_npartmax invalid'
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
 c
-      if(in_totmass<=0d0) stop 'in_totmass <= 0'
+      if(in_totmass<=0d0 .and. in_noreadstruct) stop 'in_totmass <= 0'
       if(in_consttempkev<=0d0) stop 'in_consttempkev <= 0'
 c
       if(in_nt<1) stop 'in_nt invalid'
@@ -201,6 +206,24 @@ c
       if(in_tlast<in_tfirst) stop 'in_tlast invalid'
 c
       if(in_nr<=0) stop 'in_nr invalid'
+c
+c-- special grid
+      if(.not.in_noreadstruct) then
+       if(in_isshell) error stop 'isshell incomp. with struct'
+       if(in_l0/=0d0) error stop 'l0 incomp. with struct'
+       if(in_velout/=0d0) error stop 'velout incomp. with struct'
+       if(in_v0/=0d0) error stop 'v0 incomp. with struct'
+       if(in_totmass/=0d0) error stop 'totmass incomp. with struct'
+      endif
+c
+      select case(in_srctype)
+      case('none')
+      case('heav')
+      case('strt')
+      case('manu')
+      case default
+       stop 'in_srctype unknown'
+      end select
 c
       select case(in_grptype)
       case('none')

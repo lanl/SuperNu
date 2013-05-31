@@ -7,7 +7,7 @@ c     ------------------
       character(9),private :: fname='input.str'
       integer :: str_nabund=0
 c
-      real*8,allocatable :: str_vel(:) !(nr)
+      real*8,allocatable :: str_velright(:) !(nr)
       real*8,allocatable :: str_mass(:) !(nr)
       real*8,allocatable :: str_massfr(:,:) !(nabund,nr)
       character(8),allocatable :: str_abundlabl(:) !(nabund)
@@ -17,12 +17,13 @@ c
 c
       contains
 c
-      subroutine read_inputstr(nr)
-c     ----------------------------
+      subroutine read_inputstr(nr,velout)
+c     -----------------------------------
       use physconstmod
       use miscmod
       implicit none
       integer,intent(in) :: nr
+      real*8,intent(out) :: velout
 ************************************************************************
 * Read the input structure file
 ************************************************************************
@@ -34,10 +35,7 @@ c     ----------------------------
 c
 c-- open file
       open(4,file=fname,status='old')
-      if(ierr/=0) then
-       call warn('read_inputstr','file missing: input.str')
-       return
-      endif
+      if(ierr/=0) error stop 'read_inputstr: file missing: input.str'
 c
 c-- read dimensions
       read(4,*)
@@ -47,7 +45,7 @@ c-- verify dimension
       if(nr_r/=nr) error stop 'read_inputstr: incompatible nr dimension'
 c
 c-- allocate arrays
-      allocate(str_vel(str_nabund))
+      allocate(str_velright(str_nabund))
       allocate(str_mass(str_nabund))
       allocate(str_massfr(str_nabund,nr))
       allocate(str_abundlabl(str_nabund))
@@ -62,12 +60,15 @@ c-- read body
       if(ierr/=0) stop 'read_inputstr: input.str format err: body'
 c
 c-- transer data to final arrays
-      str_vel = raw(1,:)
+      str_velright = raw(1,:)
       str_mass = raw(2,:)
       str_massfr = raw(3:,:)
 c
 c-- close file
       close(4)
+c
+c-- result
+      velout = str_velright(nr)
 c
 c-- output
       write(6,*)

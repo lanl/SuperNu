@@ -64,7 +64,7 @@ module gasgridmod
 
   real*8 :: gas_emat
 
-  real*8, dimension(:), allocatable :: gas_rarr   !(gas_nr+1)
+  real*8, dimension(:), allocatable :: gas_rarr   !(gas_nr+1), left cell edge values
   real*8, dimension(:), allocatable :: gas_drarr  !(gas_nr)
   real*8, dimension(:), allocatable :: gas_curvcent !(gas_nr), multiplied by tauddmc for mfp threshold
   real*8, dimension(:), allocatable :: gas_edep, gas_siggrey, gas_fcoef !(gas_nr)
@@ -126,7 +126,6 @@ module gasgridmod
     gas_nr = in_nr
     gas_ng = in_ng
     gas_lr = in_lr
-    gas_velout = in_velout
     gas_v0 = in_v0
     !
     gas_isvelocity = in_isvelocity
@@ -159,7 +158,6 @@ module gasgridmod
     gas_ldisp2 = in_ldisp2
     !external analytic source input:
     gas_srctype = in_srctype
-    gas_isanalsrc = in_isanalsrc
     gas_theav = in_theav
     gas_nheav = in_nheav
     gas_srcmax = in_srcmax

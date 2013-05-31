@@ -1,4 +1,4 @@
-subroutine advance
+subroutine particle_advance
 
   use particlemod
   use timestepmod
@@ -407,4 +407,4 @@ subroutine advance
   write(6,*) transps, difs
   !write(6,*) eleft, eright
 
-end subroutine advance
+end subroutine particle_advance

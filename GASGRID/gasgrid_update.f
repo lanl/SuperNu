@@ -195,7 +195,7 @@ c-- write opacity grid
 c-- convert from opacity in redona's rcell units to opacity per cm
          write(4,'(a,3i8,1p,2e12.4)') '#',tsp_tn,tsp_tn,ir,
      &     gas_vals2(ir)%temp,gas_sig
-         write(4,'(1p,10e12.4)') (gas_cap(ir,j),j=1,gas_ng)
+         write(4,'(1p,10e12.4)') (gas_cap(j,ir),j=1,gas_ng)
         enddo
 c-- close file
         close(4)
@@ -226,10 +226,10 @@ c-- now the opacity weighting integral
        forall(ir=1:gas_nr)
      &  chiross(ir) = chiross(ir) /
      &    sum(dplanckdtemp(gas_wl,gas_vals2(ir)%temp)*gas_dwl/
-     &    (gas_cap(ir,:) + gas_sig(ir)))
+     &    (gas_cap(:,ir) + gas_sig(ir)))
        forall(ir=1:gas_nr)
      &  capplanck(ir) = sum(planck(gas_wl,gas_vals2(ir)%temp)*
-     &    gas_cap(ir,:)*gas_dwl) / capplanck(ir)
+     &    gas_cap(:,ir)*gas_dwl) / capplanck(ir)
 c-- Rosseland output
        write(7,*) 'mean opacities:'
        write(7,'(a8,7a12)') 'ir',

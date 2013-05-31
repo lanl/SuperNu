@@ -14,7 +14,7 @@ c     ------------------------
       integer :: i,ir
       real*8 :: help, rrcenter, uudd, masv
       real*8 :: help2
-      real*8, allocatable :: wlstore(:) 
+      real*8, allocatable :: wlstore(:)
       integer :: ng,ngm,nrm,irr
 c
 c--
@@ -27,37 +27,32 @@ c--
        write(6,*) '==========================='
       endif
 c
-c-- grid with unit radius: scaled up below by gas_lr for static, or gas_velout for velocity grid
-      if(gas_isshell) then
+c-- WARNING: rarr first is [0,1], later [0,vout]. Grid with unit radius: scaled up below by gas_lr for static, or gas_velout for velocity grid
+c-- inner shell radius
+      if(.not.gas_isshell) then
+       gas_rarr(1) = 0.0d0    !Initial inner most radius
+      else
        if(gas_isvelocity) then
         gas_rarr(1) = gas_v0/(gas_velout-gas_v0)
        else
         gas_rarr(1) = gas_l0/gas_lr
        endif
-      else
-       gas_rarr(1) = 0.0d0    !Initial inner most radius
       endif
-         
+c
+c-- outer shells
       do ir=1,gas_nr
        gas_drarr(ir) = 1d0/real(gas_nr)
        gas_rarr(ir+1) = gas_rarr(ir)+gas_drarr(ir)
        gas_vals2(ir)%dr3_34pi = gas_rarr(ir+1)**3-gas_rarr(ir)**3
-       gas_vals2(ir)%volr = pc_pi4/3d0*gas_vals2(ir)%dr3_34pi!volume in outer radius units
       enddo
-
 c
-c-- calculating IMC-DDMC heuristic coefficient for spherical geometry (rev 146)
-      do ir = 1, gas_nr
-       help2=gas_rarr(ir+1)**2+gas_rarr(ir)*gas_rarr(ir+1)
-       help2=help2+gas_rarr(ir)**2
-       help2 = sqrt(1d0/help2)
-       gas_curvcent(ir) = sqrt((gas_rarr(ir+1)**2+gas_rarr(ir)**2))
-       gas_curvcent(ir) = help2*gas_curvcent(ir)
-      enddo
+c-- volume of unit-radius sphere shells
+      forall(ir=1:gas_nr) gas_vals2(ir)%volr = 
+     &  pc_pi4/3d0*(gas_rarr(ir+1)**3 - gas_rarr(ir)**3)  !volume in outer radius units
 c
 c-- set grid size to velout or lr depending on expanding or static
       if(gas_isvelocity) then
-       help = gas_velout-gas_v0
+       help = gas_velout - gas_v0
       else
        help = gas_lr
       endif
@@ -66,13 +61,25 @@ c-- set grid size to velout or lr depending on expanding or static
       gas_vals2%dr3_34pi = gas_vals2%dr3_34pi*help**3
 c
 c
+c
+c
+c-- IMC-DDMC heuristic coefficient for spherical geometry (rev 146)
+c==================================================================
+      do ir = 1, gas_nr
+       help2=gas_rarr(ir+1)**2+gas_rarr(ir)*gas_rarr(ir+1)
+       help2=help2+gas_rarr(ir)**2
+       help2 = sqrt(1d0/help2)
+       gas_curvcent(ir) = sqrt((gas_rarr(ir+1)**2+gas_rarr(ir)**2))
+       gas_curvcent(ir) = help2*gas_curvcent(ir)
+      enddo
+c
+c
 c--
       write(6,*)
       write(6,*) 'setup gas grid:'
       write(6,*) '==========================='
 c
-c-- initialize material (gas) properties
-c-- gas temperature, density
+c-- temperature
       if(in_istempflat) then
        do ir=1,gas_nr
         gas_vals2(ir)%tempkev = in_consttempkev
@@ -87,7 +94,7 @@ c-- gas temperature, density
       endif
 c-- Ryan W.: temporary override of initial temperature
 c-- to Gaussian for manufacture tests
-      if(in_isanalsrc.and.in_srctype=='manu') then
+      if(in_srctype=='manu') then
        uudd = 2.5d8
        do ir=1,gas_nr
         rrcenter=(gas_rarr(ir+1)+gas_rarr(ir))/2d0
@@ -97,19 +104,25 @@ c-- to Gaussian for manufacture tests
         endif
        enddo
       endif
-c--
 c
-      do ir=1,gas_nr
-       if(in_isanalsrc.and.in_srctype=='manu') then
-        masv = in_totmass*gas_vals2(ir)%dr3_34pi            
+c
+c-- mass
+      if(in_totmass==0d0) then
+       if(.not.allocated(str_mass)) error stop 'gg_setup: str_mass allc'
+       gas_vals2%mass = str_mass
+      elseif(in_srctype=='manu') then
+       do ir=1,gas_nr
+        masv = in_totmass*gas_vals2(ir)%dr3_34pi
         masv = masv/(gas_rarr(gas_nr+1)**3-gas_rarr(1)**3)
         gas_vals2(ir)%mass = masv
-       else
-        gas_vals2(ir)%mass = in_totmass/gas_nr
-       endif
-       gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb !initial guess, may be overwritten by read_temp_str
-       gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%tempkev**4
-      enddo
+       enddo
+      else
+       error stop 'gg_setup: in_totmass was not implemented yet'
+      endif
+c
+c-- temp and ur
+      gas_vals2%temp = gas_vals2%tempkev * 1e3*pc_ev/pc_kb !initial guess, may be overwritten by read_temp_str
+      gas_vals2%ur = pc_acoef*gas_vals2%tempkev**4
 c
 c-- set flat composition if selected
       if(in_solidni56) then

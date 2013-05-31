@@ -19,7 +19,10 @@ program supernu
 ! Main routine
 !
 ! todo:
-!  - dummy (drr, 2013/mar/05)
+! - unify dr3_34pi with volr (13/05/31)
+! - unify tempkev with temp (13/05/31)
+! - clean up manual stratification usage throughout code (into dedicated
+!   subroutine?)
 !***********************************************************************
   real*8 :: help, dt
   real*8 :: t_elapsed
@@ -62,7 +65,11 @@ program supernu
    call particle_init(in_npartmax,in_ns,in_isimcanlog,in_isddmcanlog,in_tauddmc)
 !
 !-- read input structure
-   call read_inputstr(in_nr)
+   if(.not.in_noreadstruct) then
+    call read_inputstr(in_nr,gas_velout)
+   else
+    gas_velout = in_velout
+   endif
 !
 !-- SETUP GRIDS
    call wlgrid_setup
@@ -126,7 +133,7 @@ program supernu
 
     !-- advance particles
     call bcast_nonpersistent
-    call advance
+    call particle_advance
     call reduce_tally
     
     if(impi==impi0) then

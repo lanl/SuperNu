@@ -21,8 +21,13 @@ subroutine analytic_source
 
   x1 = 1d0/gas_wl(gas_ng+1)
   x2 = 1d0/gas_wl(1)
-  if(gas_srctype=='heav') then
-     !Heaviside source (uniform source sphere)
+
+  gas_exsource = 0d0
+
+  if(gas_srctype=='none') then
+    return
+  elseif(gas_srctype=='heav') then
+     !Heaviside source (uniform source sphere)!{{{
      if (tsp_time<=gas_theav*pc_day) then
         do ir = 1, min(gas_nheav,gas_nr)
            do ig = 1, gas_ng
@@ -48,9 +53,9 @@ subroutine analytic_source
         !   prt_ns = 1
         !endif
      endif
-     !
+     !!}}}
   elseif(gas_srctype=='strt') then
-     !Linear source profile
+     !Linear source profile!{{{
      do ir = 1, gas_nr
         srcren = gas_srcmax*(gas_rarr(gas_nr+1)- &
              0.5d0*(gas_rarr(ir)+gas_rarr(ir+1)))/ & 
@@ -60,9 +65,9 @@ subroutine analytic_source
            x4 = 1d0/gas_wl(ig)
            gas_exsource(ig,ir)=srcren*(x4-x3)/(x2-x1)
         enddo
-     enddo
+     enddo!}}}
   elseif(gas_srctype=='manu') then
-     !
+     !!{{{
      !Manufactured Source (for gas_grptype='line')
      !if(gas_grptype.ne.'line') then
      !   stop 'analytic_source: gas_grptype=line for gas_srctype=manu'
@@ -78,8 +83,8 @@ subroutine analytic_source
            tmpgauss(ir)=in_templ0*exp(-0.5d0*(rrcenter/uudd)**2)* &
                 in_tfirst*pc_day/tsp_texp
            !
-           eradthin(ir)=((aa11*(in_velout-rrcenter)+ &
-                aa22*rrcenter)/in_velout)* &
+           eradthin(ir)=((aa11*(gas_velout-rrcenter)+ &
+                aa22*rrcenter)/gas_velout)* &
                 (in_tfirst*pc_day/tsp_texp)**4
            !Thin lines
            do ig = 1, gas_ng, 2
@@ -95,9 +100,9 @@ subroutine analytic_source
               gas_exsource(ig,ir) = gas_exsource(ig,ir)+&
                    (in_tfirst*pc_day/tsp_texp)**4*aa11/tsp_texp-&
                    5*eradthin(ir)/tsp_texp+3d0*eradthin(ir)/tsp_texp+&
-                   (in_tfirst*pc_day/tsp_texp)**4*(rrcenter/in_velout)*&
+                   (in_tfirst*pc_day/tsp_texp)**4*(rrcenter/gas_velout)*&
                    (aa22-aa11)/tsp_texp+(in_tfirst*pc_day/tsp_texp)**4*&
-                   (pc_c/in_velout)*(2d0*in_velout*aa11/rrcenter+3d0*&
+                   (pc_c/gas_velout)*(2d0*gas_velout*aa11/rrcenter+3d0*&
                    (aa22-aa11))+pc_c*gas_cap(ig,ir)*eradthin(ir)
               !
               gas_exsource(ig,ir)=gas_exsource(ig,ir)*(x4-x3)/(x2-x1)-&
@@ -136,7 +141,7 @@ subroutine analytic_source
         !write(*,*) eradthin(1), eradthin(5), eradthin(gas_nr), gas_nr
      else
         stop 'analytic_source: no static manufactured source'
-     endif
+     endif!}}}
   else
      stop 'analytic_source: gas_srctype invalid'
   endif
