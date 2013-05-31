@@ -1,7 +1,7 @@
 &inputpars
 
 !-- misc
-in_grab_stdout = f
+in_grab_stdout = t
 in_puretran = f
 
 !-- time step
@@ -25,7 +25,7 @@ in_templ0 = 1d0
 !-- flat structure
 in_istempflat = t
 in_consttempkev = 1d0
-in_solidni56 = t
+in_solidni56 = f
 
 !-- external source type
 in_srctype = 'heav'

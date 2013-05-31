@@ -6,6 +6,7 @@ c     ------------------
 ************************************************************************
       character(9),private :: fname='input.str'
       integer :: str_nabund=0
+      integer,allocatable :: str_iabund(:) !(nabund)
 c
       real*8,allocatable :: str_velright(:) !(nr)
       real*8,allocatable :: str_mass(:) !(nr)
@@ -70,6 +71,9 @@ c
 c-- result
       velout = str_velright(nr)
 c
+c-- convert abundlabl to element codes
+      call elnam2elcode
+c
 c-- output
       write(6,*)
       write(6,*) 'input structure:'
@@ -79,5 +83,53 @@ c-- output
       write(6,*) 'm_ni56:', help/pc_msun
 c
       end subroutine read_inputstr
+c
+c
+c
+      subroutine elnam2elcode
+c     ------------------------------
+      use miscmod, only:lcase
+      use gasgridmod, only:gas_ini56,gas_ico56
+      use elemdatamod
+      implicit none
+************************************************************************
+* convert the abundlabl labels to element codes (atomic z number), which
+* also serve as indexing pointers to the gas_vals2%mass0fr array.
+************************************************************************
+      integer :: i,j,iabund
+      character(4) :: elname
+c
+c-- allocate element code array (pointer to gas_vals2%mass0fr)
+      allocate(str_iabund(str_nabund))
+c
+c-- determine atomic z number
+      do i=1,str_nabund
+       iabund = 0
+       elname = lcase(trim(str_abundlabl(i)))
+       if(elname=='ni56') then
+c-- special case
+        iabund = gas_ini56
+       elseif(elname=='co56') then
+c-- special case
+        iabund = gas_ico56
+       else
+c
+c-- normal case, search elem_data for corresponding entry
+        do j=1,elem_neldata
+         if(lcase(trim(elem_data(j)%sym))==elname) exit
+        enddo
+c-- verify hit
+        if(j>elem_neldata) then
+         write(*,*) 'unknown chemical element name:',elname
+         stop 'elnam2elcode: no such element found in elemdata'
+        endif
+        iabund = j
+       endif
+c
+c-- store element code (pointer to gas_vals2%mass0fr)
+       str_iabund(i) = iabund
+      enddo
+c
+      end subroutine elnam2elcode
 c
       end module inputstrmod
