@@ -103,11 +103,11 @@ program supernu
      !
      call gasgrid_update
      !Calculating Fleck factor, leakage opacities
-     call fleck_factor
+     !call fleck_factor
      !Calculating emission probabilities for each group in each cell
-     call emission_probability
+     !call emission_probability
      !Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
-     call leakage_opacity
+     !call leakage_opacity
      !Calculating number of source prt_particles per cell
      call sourcenumbers
     endif !impi

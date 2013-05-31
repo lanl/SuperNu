@@ -208,6 +208,12 @@ c-- close file
 c
 c-- 
 c       call 
+!Calculating Fleck factor, leakage opacities
+       call fleck_factor
+!Calculating emission probabilities for each group in each cell
+       call emission_probability
+!Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
+       call leakage_opacity
 c
 c
 c-- Rosseland opacity
