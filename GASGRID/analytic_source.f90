@@ -145,6 +145,6 @@ subroutine analytic_source
   !write(*,*) gas_exsource(1,:)
   !write(*,*)
   !write(*,*) gas_exsource(2,:)
-  !write(*,*) gas_sigmap(gas_nr), gas_sigmapg(1,gas_nr)
+  !write(*,*) gas_siggrey(gas_nr), gas_sigmapg(1,gas_nr)
 
 end subroutine analytic_source

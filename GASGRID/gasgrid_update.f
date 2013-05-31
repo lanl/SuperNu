@@ -165,11 +165,9 @@ c
 c
 c-- physical opacities
        if(.not. in_isanalgrp) then
-        call opacity_calculation
-c
-!-- Calculating simple physical group/grey opacities: Planck and Rosseland 
-!-- Ryan W.:(moved from supernu.f90 in rev 105)
+        call physical_opacity
        else
+c-- simple physical group/grey opacities: Planck and Rosseland 
         call analytic_opacity
        endif
 c
@@ -206,13 +204,11 @@ c-- close file
         close(4)!}}}
        endif !do_output
 c
-c-- 
-c       call 
-!Calculating Fleck factor, leakage opacities
+c-- Calculating Fleck factor, leakage opacities
        call fleck_factor
-!Calculating emission probabilities for each group in each cell
+!-- Calculating emission probabilities for each group in each cell
        call emission_probability
-!Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
+!-- Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
        call leakage_opacity
 c
 c

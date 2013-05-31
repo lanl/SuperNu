@@ -7,9 +7,9 @@ include ../Makefile.inc
 LIBRARY = gasgrid.a
 
 FILES = eos_update.o \
-  gasgrid_setup.o gasgrid_update.o gasgrid_upold.o\
+  gasgrid_setup.o gasgrid_update.o \
   temperature_update.o analytic_source.o \
-  analytic_opacity.o opacity_calculation.o \
+  analytic_opacity.o physical_opacity.o \
   leakage_opacity.o fleck_factor.o \
   emission_probability.o
 
@@ -35,9 +35,7 @@ eos_update.o: gasgridmod.mod ionsmod.mod timestepmod.mod timingmod.mod
 gasgrid_setup.o: elemdatamod.mod gasgridmod.mod inputparmod.mod miscmod.mod physconstmod.mod timestepmod.mod
 gasgrid_update.o: gasgridmod.mod inputparmod.mod ionsmod.mod miscmod.mod mpimod.mod physconstmod.mod timestepmod.mod timingmod.mod
 ##
-gasgrid_upold.o: gasgridmod.mod inputparmod.mod ionsmod.mod miscmod.mod mpimod.mod physconstmod.mod timestepmod.mod timingmod.mod
-##
-opacity_calculation.o: bbxsmod.mod bfxsmod.mod ffxsmod.mod gasgridmod.mod inputparmod.mod ionsmod.mod miscmod.mod physconstmod.mod timingmod.mod
+physical_opacity.o: bbxsmod.mod bfxsmod.mod ffxsmod.mod gasgridmod.mod inputparmod.mod ionsmod.mod miscmod.mod physconstmod.mod timingmod.mod
 temperature_update.o: gasgridmod.mod physconstmod.mod timestepmod.mod
 leakage_opacity.o: gasgridmod.mod timestepmod.mod particlemod.mod
 emission_probability.o: gasgridmod.mod physconstmod.mod

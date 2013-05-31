@@ -1,5 +1,5 @@
-      subroutine opacity_calculation
-c     ------------------------------
+      subroutine physical_opacity
+c     ---------------------------
 c$    use omp_lib
       use physconstmod
       use inputparmod
@@ -207,4 +207,4 @@ c
       if(any(gas_cap==0.))
      & call warn('opacity_calc','some gas_cap==0')
 c
-      end subroutine opacity_calculation
+      end subroutine physical_opacity

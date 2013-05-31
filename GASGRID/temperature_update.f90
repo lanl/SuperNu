@@ -34,7 +34,7 @@ subroutine temperature_update
 !old dtemp = gas_edep(ir)*3.0/(4.0*pc_pi*gas_vals2(ir)%dr3_34pi*(gas_velno*1.0 + gas_velyes*tsp_texp**3))
      dtemp = gas_edep(ir)/gas_vals2(ir)%vol !new
      !write(6,*) gas_edep(ir), gas_vals2(ir)%vol
-     dtemp = (dtemp - tsp_dt*gas_fcoef(ir)*gas_sigmap(ir)*pc_c*gas_vals2(ir)%ur)/gas_vals2(ir)%bcoef
+     dtemp = (dtemp - tsp_dt*gas_fcoef(ir)*gas_siggrey(ir)*pc_c*gas_vals2(ir)%ur)/gas_vals2(ir)%bcoef
      !if(tsp_tn==17) then
         !write(6,*) dtemp, gas_edep(ir),gas_vals2(ir)%vol, gas_vals2(ir)%bcoef
      !endif
@@ -46,7 +46,7 @@ subroutine temperature_update
      endif
 
      gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb  !initial guess, may be overwritten by read_temp_str
-     !gas_vals2(ir)%ur=dtemp/(tsp_dt*pc_c*gas_sigmap(ir))
+     !gas_vals2(ir)%ur=dtemp/(tsp_dt*pc_c*gas_siggrey(ir))
      !gas_vals2(ir)%tempkev = (gas_vals2(ir)%ur/pc_acoef)**(0.25d0)
      !gas_vals2(ir)%bcoef = 2.0*pc_acoef*gas_vals2(ir)%tempkev**3
      gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%tempkev**4

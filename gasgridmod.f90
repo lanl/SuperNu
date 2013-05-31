@@ -68,11 +68,14 @@ module gasgridmod
   real*8, dimension(:), allocatable :: gas_rarr  !(gas_nr+1)
   real*8, dimension(:), allocatable :: gas_drarr !(gas_nr)
   real*8, dimension(:), allocatable :: gas_curvcent !(gas_nr), multiplied by tauddmc for mfp threshold
-  real*8, dimension(:), allocatable :: gas_edep, gas_sigmap, gas_fcoef !(gas_nr)
+  real*8, dimension(:), allocatable :: gas_edep, gas_siggrey, gas_fcoef !(gas_nr)
   real*8, dimension(:), allocatable :: gas_tempb  !(gas_nr+1), interpolated temperatures (keV)
   real*8, dimension(:), allocatable :: gas_rhob !(gas_nr+1), interpolated densities
-  real*8, dimension(:,:), allocatable :: gas_sigmapg, gas_sigmargleft, gas_sigmargright, gas_emitprobg  !(gas_ng,gas_nr)
-  real*8, dimension(:,:), allocatable :: gas_sigmal, gas_ppl, gas_sigmar, gas_ppr  !(gas_ng,gas_nr)
+  real*8, allocatable :: gas_sigmapg(:,:)       !(gas_ng,gas_nr)
+  real*8, allocatable :: gas_sigmargleft(:,:), gas_sigmargright(:,:)  !(gas_ng,gas_nr)
+  real*8, allocatable :: gas_emitprobg(:,:)               !(gas_ng,gas_nr)
+  real*8, allocatable :: gas_sigmal(:,:), gas_sigmar(:,:) !(gas_ng,gas_nr)
+  real*8, allocatable :: gas_ppl(:,:), gas_ppr(:,:)       !(gas_ng,gas_nr)
   
   real*8, dimension(:,:), allocatable :: gas_eraddensg !(gas_ng,gas_nr)
 
@@ -177,7 +180,7 @@ module gasgridmod
     allocate(gas_drarr(gas_nr))  !radial zone length
     allocate(gas_curvcent(gas_nr))  ! gas_curvcent*tauddmc=mean fee path threshold for IMC-DDMC heuristic
     allocate(gas_edep(gas_nr))  !energy absorbed by material
-    allocate(gas_sigmap(gas_nr)) !Planck opacity (gray)
+    allocate(gas_siggrey(gas_nr)) !Planck opacity (gray)
 !- Ryan W.: using power law to calculate gas_sig (similar to Planck opacity)
     allocate(gas_sig(gas_nr))    !grey scattering opacity
 !----------------------------------------------------------------
