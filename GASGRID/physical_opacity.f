@@ -35,16 +35,18 @@ c-- bfxs
 c-- bbxs
       integer :: i,iwl
       real*8 :: phi,ocggrnd,expfac,wl0
-      real*8 :: cap
+      real*8 :: caphelp
 c-- constants
       real*8 :: wlhelp,wlminlg
+c-- temporary cap array in the right order
+      real :: cap(gas_nr,gas_ng)
 c
 c-- constants
       wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
       wlminlg = log(dble(in_wlmin))
 c
 c-- reset
-      gas_cap = 0.
+      cap = 0.
 c
 c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_vals2%temp)
@@ -62,9 +64,9 @@ c-- bound-bound
 c
 c$omp parallel do
 c$omp& schedule(static)
-c$omp& private(iz,ii,wl0,wlinv,iwl,phi,cap,expfac,ocggrnd)
+c$omp& private(iz,ii,wl0,wlinv,iwl,phi,caphelp,expfac,ocggrnd)
 c$omp& firstprivate(grndlev,hckt)
-c$omp& shared(gas_cap)
+c$omp& shared(cap)
        do i=1,bb_nline
         iz = bb_xs(i)%iz
         ii = bb_xs(i)%ii
@@ -78,7 +80,7 @@ c-- iwl pointer
 c-- profile function
         phi = (gas_ng-1d0)*wlhelp*(wl0*pc_ang)/pc_c !line profile
 !       write(6,*) 'phi',phi
-c-- evaluate cap
+c-- evaluate caphelp
         do icg=1,gas_nr
          if(.not.gas_vals2(icg)%opdirty) cycle !opacities are still valid
          ocggrnd = grndlev(icg,ii,iz)
@@ -86,16 +88,16 @@ c-- oc high enough to be significant?
 *        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
          if(ocggrnd<=0d0) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
          expfac = 1d0 - exp(-hckt(icg)*wlinv)
-         cap = sngl(phi*bb_xs(i)%gxs*ocggrnd*
-     &     exp(-bb_xs(i)%chilw*hckt(icg))*expfac)
-!        if(cap==0.) write(6,*) 'cap0',gas_cap(icg,iwl),phi,
+         caphelp = phi*bb_xs(i)%gxs*ocggrnd*
+     &     exp(-bb_xs(i)%chilw*hckt(icg))*expfac
+!        if(caphelp==0.) write(6,*) 'cap0',cap(icg,iwl),phi,
 !    &     bb_xs(i)%gxs,ocggrnd,exp(-bb_xs(i)%chilw*hckt(icg)),expfac
-         if(cap==0.) cycle
-         gas_cap(icg,iwl) = gas_cap(icg,iwl) + cap
+         if(caphelp==0.) cycle
+         cap(icg,iwl) = cap(icg,iwl) + sngl(caphelp)
         enddo !icg
 c-- vectorized alternative is slower
 cslow   where(gas_vals2(:)%opdirty .and. grndlev(:,ii,iz)>1d-30)
-cslow    gas_cap(:,iwl) = gas_cap(:,iwl) +
+cslow    cap(:,iwl) = cap(:,iwl) +
 cslow&     sngl(phi*bb_xs(i)%gxs*grndlev(:,ii,iz)*
 cslow&     exp(-bb_xs(i)%chilw*hckt(:))*(1d0 - exp(-wlinv*hckt(:))))
 cslow   endwhere
@@ -120,7 +122,7 @@ c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(wl,en,ie,xs)
 c$omp& firstprivate(grndlev)
-c$omp& shared(gas_cap)
+c$omp& shared(cap)
        do iw=1,gas_ng
         wl = gas_wl(iw)
         en = pc_h*pc_c/(pc_ev*pc_ang*wl) !photon energy in eV
@@ -131,12 +133,12 @@ c$omp& shared(gas_cap)
           if(xs==0d0) cycle
           forall(icg=1:gas_nr)
 *         forall(icg=1:gas_nr,gas_vals2(icg)%opdirty)
-     &      gas_cap(icg,iw) = gas_cap(icg,iw) +
+     &      cap(icg,iw) = cap(icg,iw) +
      &      sngl(xs*pc_mbarn*grndlev(icg,ii,iz))
          enddo !ie
         enddo !iz
 !       write(6,*) 'wl done:',iw !DEBUG
-!       write(6,*) gas_cap(:,iw) !DEBUG
+!       write(6,*) cap(:,iw) !DEBUG
        enddo !iw
 c$omp end parallel do
 c
@@ -155,7 +157,7 @@ c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy)
 c$omp& firstprivate(hckt,hlparr)
-c$omp& shared(gas_cap)
+c$omp& shared(cap)
        do iw=1,gas_ng
         wl = pc_ang*gas_wl(iw)
         wlinv = 1d0/wl
@@ -195,7 +197,7 @@ c-- asymptotic value
 c-- cross section
           cap8 = cap8 + help*gff*iz**2*gas_vals2(icg)%natom1fr(iz)
          enddo !iz
-         gas_cap(icg,iw) = gas_cap(icg,iw) + sngl(cap8)
+         cap(icg,iw) = cap(icg,iw) + sngl(cap8)
         enddo !icg
        enddo !iw
 c$omp end parallel do
@@ -204,7 +206,9 @@ c
        call timereg(t_ff, t1-t0)!}}}
       endif !in_noffopac
 c
-      if(any(gas_cap==0.))
-     & call warn('opacity_calc','some gas_cap==0')
+      if(any(cap==0.))
+     & call warn('opacity_calc','some cap==0')
+c
+      gas_cap = gas_cap + transpose(cap)
 c
       end subroutine physical_opacity

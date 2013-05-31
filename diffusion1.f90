@@ -52,13 +52,13 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      endif
   endif
   !
-  denom = gas_sigmal(g,z)+gas_sigmar(g,z) !+gas_fcoef(z)*gas_sigmapg(g,z)
-  denom = denom+(1d0-alpeff)*(1d0-gas_emitprobg(g,z))*&
-       (1d0-gas_fcoef(z))*gas_sigmapg(g,z)
+  denom = gas_opacleakl(g,z)+gas_opacleakr(g,z) !+gas_fcoef(z)*gas_cap(g,z)
+  denom = denom+(1d0-alpeff)*(1d0-gas_emitprob(g,z))*&
+       (1d0-gas_fcoef(z))*gas_cap(g,z)
   if(prt_isddmcanlog) then
-     denom = denom+gas_fcoef(z)*gas_sigmapg(g,z)
+     denom = denom+gas_fcoef(z)*gas_cap(g,z)
   endif
-  !write(*,*) gas_emitprobg(g,z),g
+  !write(*,*) gas_emitprob(g,z),g
   r1 = rand()
   tau = abs(log(r1)/(pc_c*denom))
   tcensus = tsp_time+tsp_dt-t
@@ -66,16 +66,16 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   !
   if(.not.prt_isddmcanlog) then
      gas_edep(z)=gas_edep(z)+E*(1d0-exp(-gas_fcoef(z) &
-          *gas_sigmapg(g,z)*pc_c*ddmct))
+          *gas_cap(g,z)*pc_c*ddmct))
      !
-     E=E*exp(-gas_fcoef(z)*gas_sigmapg(g,z)*pc_c*ddmct)
+     E=E*exp(-gas_fcoef(z)*gas_cap(g,z)*pc_c*ddmct)
      if(E/E0<0.001d0) then
         vacnt=.true.
         prt_done=.true.
         gas_edep(z)=gas_edep(z)+E
      endif
   endif
-  gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*ddmct/tsp_dt
+  gas_eraddens(g,z)=gas_eraddens(g,z)+E*ddmct/tsp_dt
   !
   !E = E*(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
   !E0 = E0*(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
@@ -104,31 +104,31 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   !
   t = t+ddmct
   !
-  !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+  !gas_eraddens(g,z)=gas_eraddens(g,z)+E
   !
   !Recalculating histogram sum (rev. 120)
-  denom = gas_sigmal(g,z)+gas_sigmar(g,z) !+gas_fcoef(z)*gas_sigmapg(g,z)
-  denom = denom+(1d0-alpeff)*(1d0-gas_emitprobg(g,z))*&
-       (1d0-gas_fcoef(z))*gas_sigmapg(g,z)
+  denom = gas_opacleakl(g,z)+gas_opacleakr(g,z) !+gas_fcoef(z)*gas_cap(g,z)
+  denom = denom+(1d0-alpeff)*(1d0-gas_emitprob(g,z))*&
+       (1d0-gas_fcoef(z))*gas_cap(g,z)
   if(prt_isddmcanlog) then
-     denom=denom+gas_fcoef(z)*gas_sigmapg(g,z)
+     denom=denom+gas_fcoef(z)*gas_cap(g,z)
   endif
   if (ddmct == tau) then
      r1 = rand()
-     PR = gas_sigmar(g,z)/denom
-     PL = gas_sigmal(g,z)/denom
+     PR = gas_opacleakr(g,z)/denom
+     PL = gas_opacleakl(g,z)/denom
      if(prt_isddmcanlog) then
-        PA = gas_fcoef(z)*gas_sigmapg(g,z)/denom
+        PA = gas_fcoef(z)*gas_cap(g,z)/denom
      else
         PA = 0d0
      endif
      !tallying radiation energy density
-     !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*ddmct/tsp_dt
-     !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E/(denom*pc_c*tsp_dt)
+     !gas_eraddens(g,z)=gas_eraddens(g,z)+E*ddmct/tsp_dt
+     !gas_eraddens(g,z)=gas_eraddens(g,z)+E/(denom*pc_c*tsp_dt)
      !
      !
      if (0.0d0<=r1 .and. r1<PL) then
-        !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E/(gas_sigmal(g,z)*pc_c*tsp_dt)
+        !gas_eraddens(g,z)=gas_eraddens(g,z)+E/(gas_opacleakl(g,z)*pc_c*tsp_dt)
         if (z == 1) then
            if(gas_isshell) then
               vacnt = .true.
@@ -137,16 +137,16 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            else
               write(6,*) 'Non-physical left leakage', g, gas_wl(g+1), wl
            endif
-        elseif ((gas_sig(z-1)+gas_sigmapg(g,z-1))*gas_drarr(z-1) &
+        elseif ((gas_sig(z-1)+gas_cap(g,z-1))*gas_drarr(z-1) &
              *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z-1)) then
            
            z = z-1
-           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !gas_eraddens(g,z)=gas_eraddens(g,z)+E
         else
            hyparam = 1
            r = gas_rarr(z)
            z = z-1
-           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !gas_eraddens(g,z)=gas_eraddens(g,z)+E
            r1 = rand()
            r2 = rand()
            mu = -max(r1,r2)
@@ -156,7 +156,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            wl = wl*(1.0-gas_velyes*r*mu/pc_c)
         endif
      elseif (PL<=r1 .and. r1<PL+PR) then
-        !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E/(gas_sigmar(g,z)*pc_c*tsp_dt)
+        !gas_eraddens(g,z)=gas_eraddens(g,z)+E/(gas_opacleakr(g,z)*pc_c*tsp_dt)
         if (z == gas_nr) then
            vacnt = .true.
            prt_done = .true.
@@ -164,16 +164,16 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            r2 = rand()
            mu = max(r1,r2)
            gas_eright = gas_eright+E*(1.0+gas_velyes*gas_rarr(gas_nr+1)*mu/pc_c)
-        elseif ((gas_sig(z+1)+gas_sigmapg(g,z+1))*gas_drarr(z+1) &
+        elseif ((gas_sig(z+1)+gas_cap(g,z+1))*gas_drarr(z+1) &
              *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z+1)) then
-           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !gas_eraddens(g,z)=gas_eraddens(g,z)+E
            z = z+1
-           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !gas_eraddens(g,z)=gas_eraddens(g,z)+E
         else
            hyparam = 1
            r = gas_rarr(z+1)
            z = z+1
-           !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E
+           !gas_eraddens(g,z)=gas_eraddens(g,z)+E
            r1 = rand()
            r2 = rand()
            mu = max(r1,r2)
@@ -183,9 +183,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            wl = wl*(1.0-gas_velyes*r*mu/pc_c)
         endif
      elseif (PL+PR<=r1 .and. r1<PL+PR+PA) then
-        !gas_eraddensg(g,z)=gas_eraddensg(g,z)+ &
-        !     E/((gas_fcoef(z)+(1d0-gas_emitprobg(g,z))*(1d0-gas_fcoef(z))) &
-        !     *gas_sigmapg(g,z)*pc_c*tsp_dt)
+        !gas_eraddens(g,z)=gas_eraddens(g,z)+ &
+        !     E/((gas_fcoef(z)+(1d0-gas_emitprob(g,z))*(1d0-gas_fcoef(z))) &
+        !     *gas_cap(g,z)*pc_c*tsp_dt)
         vacnt = .true.
         prt_done = .true.
         gas_edep(z) = gas_edep(z)+E
@@ -199,13 +199,13 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         !endif
      else
         !write(*,*) 'scatter'
-        !gas_eraddensg(g,z)=gas_eraddensg(g,z)+ &
-        !     E/((gas_fcoef(z)+(1d0-gas_emitprobg(g,z))*(1d0-gas_fcoef(z))) &
-        !     *gas_sigmapg(g,z)*pc_c*tsp_dt)
+        !gas_eraddens(g,z)=gas_eraddens(g,z)+ &
+        !     E/((gas_fcoef(z)+(1d0-gas_emitprob(g,z))*(1d0-gas_fcoef(z))) &
+        !     *gas_cap(g,z)*pc_c*tsp_dt)
         denom2 = 0d0
         do ig = 1, gas_ng
            if(ig.ne.g) then
-              denom2 = denom2+gas_emitprobg(ig,z)
+              denom2 = denom2+gas_emitprob(ig,z)
            endif
         enddo
         denom3 = 0d0
@@ -213,8 +213,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         do ig = 1, gas_ng
            if(ig.ne.g) then
               iig = ig
-              if((r1>=denom3).and.(r1<denom3+gas_emitprobg(ig,z)/denom2)) exit
-              denom3 = denom3+gas_emitprobg(ig,z)/denom2
+              if((r1>=denom3).and.(r1<denom3+gas_emitprob(ig,z)/denom2)) exit
+              denom3 = denom3+gas_emitprob(ig,z)/denom2
            endif
         enddo
         !write(*,*) 'Scatter: ',g,'to ',iig
@@ -224,7 +224,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         ! during DDMC phase, wavelength is only a placeholder for group 
         wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
         !
-        if ((gas_sig(z)+gas_sigmapg(g,z))*gas_drarr(z) &
+        if ((gas_sig(z)+gas_cap(g,z))*gas_drarr(z) &
              *(gas_velno*1d0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z)) then
            hyparam = 2
         else
@@ -242,7 +242,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      !   stop 'diffusion1: invalid histogram sample'
      endif
   else
-     !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*ddmct/tsp_dt
+     !gas_eraddens(g,z)=gas_eraddens(g,z)+E*ddmct/tsp_dt
      prt_done = .true.
      gas_numcensus(z)=gas_numcensus(z)+1
      gas_erad = gas_erad+E

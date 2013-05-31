@@ -131,7 +131,7 @@ c=================
       gas_erad = 0.0   !Total radiation energy
       gas_eint = 0.0   !Total internal energy
 
-      gas_eraddensg =0d0 !radiation density field
+      gas_eraddens =0d0 !radiation density field
       gas_vals2%eraddens =0d0
 c
 !     return !DEBUG
@@ -162,14 +162,11 @@ c-- thomson scattering
        gas_sig = cthomson*gas_vals2(:)%nelec*
      &   gas_vals2(:)%natom/gas_vals2(:)%volcrp
 c
-c
-c-- physical opacities
-       if(.not. in_isanalgrp) then
-        call physical_opacity
-       else
 c-- simple physical group/grey opacities: Planck and Rosseland 
-        call analytic_opacity
-       endif
+       call analytic_opacity
+c-- add physical opacities
+       call physical_opacity
+       call convert_cap2capros
 c
 c-- write out opacities (additional gray opacity not included!)
 c--------------------------------------------------------------

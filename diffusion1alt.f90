@@ -19,16 +19,16 @@ subroutine diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
   real*8 :: ddmct, tauA, tauL, tauR, tauS, tcensus
   real*8, dimension(gas_ng) :: PDFg
 
-  !denom = gas_sigmal(g,z)+gas_sigmar(g,z)+gas_fcoef(z)*gas_sigmapg(g,z)
-  !denom = denom+(1.0-gas_emitprobg(g,z))*(1.0-gas_fcoef(z))*gas_sigmapg(g,z)
+  !denom = gas_opacleakl(g,z)+gas_opacleakr(g,z)+gas_fcoef(z)*gas_cap(g,z)
+  !denom = denom+(1.0-gas_emitprob(g,z))*(1.0-gas_fcoef(z))*gas_cap(g,z)
   r1 = rand()
-  tauA = abs(log(r1)/(pc_c*gas_fcoef(z)*gas_sigmapg(g,z)))
+  tauA = abs(log(r1)/(pc_c*gas_fcoef(z)*gas_cap(g,z)))
   r1 = rand()
-  tauS = abs(log(r1)/(pc_c*(1.0-gas_emitprobg(g,z))*(1.0-gas_fcoef(z))*gas_sigmapg(g,z)))
+  tauS = abs(log(r1)/(pc_c*(1.0-gas_emitprob(g,z))*(1.0-gas_fcoef(z))*gas_cap(g,z)))
   r1 = rand()
-  tauR = abs(log(r1)/(pc_c*gas_sigmar(g,z)))
+  tauR = abs(log(r1)/(pc_c*gas_opacleakr(g,z)))
   r1 = rand()
-  tauL = abs(log(r1)/(pc_c*gas_sigmal(g,z)))
+  tauL = abs(log(r1)/(pc_c*gas_opacleakl(g,z)))
   tcensus = tsp_time+tsp_dt-t
 
   ddmct = min(tauA,tauS,tauR,tauL,tcensus)
@@ -38,16 +38,16 @@ subroutine diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
   !write(6,*) ddmct, tau, tcensus
   !if (ddmct == tau) then
      !r1 = rand()
-     !PR = gas_sigmar(g,z)/denom
-     !PL = gas_sigmal(g,z)/denom
-     !PA = gas_fcoef(z)*gas_sigmapg(g,z)/denom
+     !PR = gas_opacleakr(g,z)/denom
+     !PL = gas_opacleakl(g,z)/denom
+     !PA = gas_fcoef(z)*gas_cap(g,z)/denom
   if (ddmct == tauL) then
      if (z == 1) then
         !write(6,*) 'Non-physical left leakage'
         vacnt = .true.
         prt_done = .true.
         gas_eleft = gas_eleft+E
-     !elseif (gas_sigmapg(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
+     !elseif (gas_cap(g,z-1)*gas_drarr(z-1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
      !   z = z-1
      else
      !   hyparam = 1
@@ -65,7 +65,7 @@ subroutine diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
         vacnt = .true.
         prt_done = .true.
         gas_eright = gas_eright+E
-     !elseif (gas_sigmapg(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
+     !elseif (gas_cap(g,z+1)*gas_drarr(z+1)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
      !   z = z+1
      else
      !   hyparam = 1
@@ -83,9 +83,9 @@ subroutine diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
      prt_done = .true.
      gas_edep(z) = gas_edep(z)+E
   elseif (ddmct == tauS) then
-     denom2 = gas_siggrey(z)-gas_ppick(g)*gas_sigmapg(g,z)
+     denom2 = gas_siggrey(z)-gas_ppick(g)*gas_cap(g,z)
      do ig = 1, gas_ng
-        PDFg(ig) = gas_emitprobg(ig,z)*gas_siggrey(z)/denom2
+        PDFg(ig) = gas_emitprob(ig,z)*gas_siggrey(z)/denom2
      enddo
      PDFg(g)=0.0
      denom2 = 0.0
@@ -96,7 +96,7 @@ subroutine diffusion1alt(z,g,r,mu,t,E,E0,hyparam,vacnt)
         denom2 = denom2+PDFg(ig)
      enddo
      g = iig
-     !if (gas_sigmapg(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
+     !if (gas_cap(g,z)*gas_drarr(z)*(gas_velno*1.0+gas_velyes*tsp_texp)>=5.0d0) then
      !   hyparam = 2
      !else
      !   hyparam = 1

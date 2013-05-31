@@ -9,7 +9,7 @@ LIBRARY = gasgrid.a
 FILES = eos_update.o \
   gasgrid_setup.o gasgrid_update.o \
   temperature_update.o analytic_source.o \
-  analytic_opacity.o physical_opacity.o \
+  analytic_opacity.o physical_opacity.o convert_cap2capros.o \
   leakage_opacity.o fleck_factor.o \
   emission_probability.o
 
@@ -36,6 +36,7 @@ gasgrid_setup.o: elemdatamod.mod gasgridmod.mod inputparmod.mod miscmod.mod phys
 gasgrid_update.o: gasgridmod.mod inputparmod.mod ionsmod.mod miscmod.mod mpimod.mod physconstmod.mod timestepmod.mod timingmod.mod
 ##
 physical_opacity.o: bbxsmod.mod bfxsmod.mod ffxsmod.mod gasgridmod.mod inputparmod.mod ionsmod.mod miscmod.mod physconstmod.mod timingmod.mod
+convert_cap2capros.o: gasgridmod.mod
 temperature_update.o: gasgridmod.mod physconstmod.mod timestepmod.mod
 leakage_opacity.o: gasgridmod.mod timestepmod.mod particlemod.mod
 emission_probability.o: gasgridmod.mod physconstmod.mod

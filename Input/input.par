@@ -51,7 +51,6 @@ in_sigtpwr = 0d0
 in_sigrpwr = 1d0
 
 !-- group absorption opacity structure type
-in_isanalgrp = t
 in_grptype = 'line'
 
 !-- picket fence case

@@ -31,8 +31,8 @@ subroutine leakage_opacity
         !write(*,*) curvleft, curvright
         do ig = 1, gas_ng
            !calculating left albedo
-           sigtot=gas_sigmargleft(ig,ir)+gas_sigbl(ir)
-           gg = sqrt(3d0*gas_fcoef(ir)*gas_sigmargleft(ig,ir)/sigtot)
+           sigtot=gas_caprosl(ig,ir)+gas_sigbl(ir)
+           gg = sqrt(3d0*gas_fcoef(ir)*gas_caprosl(ig,ir)/sigtot)
            !calculating left optical depth
            tt = sigtot*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
            !calculating left discretization eigenvalue
@@ -59,8 +59,8 @@ subroutine leakage_opacity
            endif
            !
            !calculating right albedo
-           sigtot=gas_sigmargright(ig,ir)+gas_sigbr(ir)
-           gg = sqrt(3d0*gas_fcoef(ir)*gas_sigmargright(ig,ir)/sigtot)
+           sigtot=gas_caprosr(ig,ir)+gas_sigbr(ir)
+           gg = sqrt(3d0*gas_fcoef(ir)*gas_caprosr(ig,ir)/sigtot)
            !calculating right optical depth
            tt = sigtot*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
            !calculating right discretization eigenvalue
@@ -91,11 +91,11 @@ subroutine leakage_opacity
   else
      do ir = 1, gas_nr
         do ig = 1, gas_ng
-           tt = (gas_sigmargleft(ig,ir)+gas_sigbl(ir)) &
+           tt = (gas_caprosl(ig,ir)+gas_sigbl(ir)) &
                 *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp) !&
            gas_ppl(ig,ir) = 4.0d0/(3d0*tt+6d0*0.7104d0)
            !
-           tt = (gas_sigmargright(ig,ir)+gas_sigbr(ir)) &
+           tt = (gas_caprosr(ig,ir)+gas_sigbr(ir)) &
                 *gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp) !&
            gas_ppr(ig,ir) = 4.0d0/(3d0*tt+6d0*0.7104d0)
         enddo
@@ -109,47 +109,47 @@ subroutine leakage_opacity
         !Computing left-leakage opacities
         if (ir==1) then
         !
-           gas_sigmal(ig,ir)=1.5*gas_ppl(ig,ir)*gas_rarr(ir)**2
-           gas_sigmal(ig,ir)=gas_sigmal(ig,ir)/(gas_vals2(ir)%dr3_34pi &
+           gas_opacleakl(ig,ir)=1.5*gas_ppl(ig,ir)*gas_rarr(ir)**2
+           gas_opacleakl(ig,ir)=gas_opacleakl(ig,ir)/(gas_vals2(ir)%dr3_34pi &
                 *(gas_velno*1.0+gas_velyes*tsp_texp))
         !   
-        elseif((gas_sig(ir-1)+gas_sigmapg(ig,ir-1))*gas_drarr(ir-1) &
+        elseif((gas_sig(ir-1)+gas_cap(ig,ir-1))*gas_drarr(ir-1) &
              *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(ir-1)) then
         !   
-           gas_sigmal(ig,ir)=1.5*gas_ppl(ig,ir)*gas_rarr(ir)**2
-           gas_sigmal(ig,ir)=gas_sigmal(ig,ir)/(gas_vals2(ir)%dr3_34pi &
+           gas_opacleakl(ig,ir)=1.5*gas_ppl(ig,ir)*gas_rarr(ir)**2
+           gas_opacleakl(ig,ir)=gas_opacleakl(ig,ir)/(gas_vals2(ir)%dr3_34pi &
                 *(gas_velno*1.0+gas_velyes*tsp_texp))
         !   
         else
         !
-           tt = (gas_sigbl(ir)+gas_sigmargleft(ig,ir))*gas_drarr(ir)+ &
-                (gas_sigbr(ir-1)+gas_sigmargright(ig,ir-1))*gas_drarr(ir-1)
+           tt = (gas_sigbl(ir)+gas_caprosl(ig,ir))*gas_drarr(ir)+ &
+                (gas_sigbr(ir-1)+gas_caprosr(ig,ir-1))*gas_drarr(ir-1)
         !   
-           gas_sigmal(ig,ir)=(2.0*gas_rarr(ir)**2)/(gas_vals2(ir)%dr3_34pi &
+           gas_opacleakl(ig,ir)=(2.0*gas_rarr(ir)**2)/(gas_vals2(ir)%dr3_34pi &
                 *(gas_velno*1.0+gas_velyes*tsp_texp**2))
-           gas_sigmal(ig,ir) = gas_sigmal(ig,ir)/tt
+           gas_opacleakl(ig,ir) = gas_opacleakl(ig,ir)/tt
         endif
         !Computing right-leakage opacities
         if (ir==gas_nr) then
         !
-           gas_sigmar(ig,ir)=1.5*gas_ppr(ig,ir)*gas_rarr(ir+1)**2
-           gas_sigmar(ig,ir)=gas_sigmar(ig,ir)/(gas_vals2(ir)%dr3_34pi &
+           gas_opacleakr(ig,ir)=1.5*gas_ppr(ig,ir)*gas_rarr(ir+1)**2
+           gas_opacleakr(ig,ir)=gas_opacleakr(ig,ir)/(gas_vals2(ir)%dr3_34pi &
                 *(gas_velno*1.0+gas_velyes*tsp_texp))
         !   
-        elseif((gas_sig(ir+1)+gas_sigmapg(ig,ir+1))*gas_drarr(ir+1) &
+        elseif((gas_sig(ir+1)+gas_cap(ig,ir+1))*gas_drarr(ir+1) &
              *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(ir+1)) then
         !   
-           gas_sigmar(ig,ir)=1.5*gas_ppr(ig,ir)*gas_rarr(ir+1)**2
-           gas_sigmar(ig,ir)=gas_sigmar(ig,ir)/(gas_vals2(ir)%dr3_34pi &
+           gas_opacleakr(ig,ir)=1.5*gas_ppr(ig,ir)*gas_rarr(ir+1)**2
+           gas_opacleakr(ig,ir)=gas_opacleakr(ig,ir)/(gas_vals2(ir)%dr3_34pi &
                 *(gas_velno*1.0+gas_velyes*tsp_texp))
         !   
         else
         !
-           tt = (gas_sigbr(ir)+gas_sigmargright(ig,ir))*gas_drarr(ir)+ &
-                (gas_sigbl(ir+1)+gas_sigmargleft(ig,ir+1))*gas_drarr(ir+1)
-           gas_sigmar(ig,ir) = (2.0*gas_rarr(ir+1)**2)/(gas_vals2(ir)%dr3_34pi &
+           tt = (gas_sigbr(ir)+gas_caprosr(ig,ir))*gas_drarr(ir)+ &
+                (gas_sigbl(ir+1)+gas_caprosl(ig,ir+1))*gas_drarr(ir+1)
+           gas_opacleakr(ig,ir) = (2.0*gas_rarr(ir+1)**2)/(gas_vals2(ir)%dr3_34pi &
                 *(gas_velno*1.0+gas_velyes*tsp_texp**2))
-           gas_sigmar(ig,ir) = gas_sigmar(ig,ir)/tt
+           gas_opacleakr(ig,ir) = gas_opacleakr(ig,ir)/tt
         endif
      enddo
   enddo

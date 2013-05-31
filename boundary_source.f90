@@ -16,7 +16,7 @@ subroutine boundary_source
   Esurfpart = gas_esurf/real(prt_nsurf)
 
   !Calculating grouped thermal emission probabilities
-  if(gas_isanalgrp.and.gas_grptype=='pick') then
+  if(gas_grptype=='pick') then
      emitsurfprobg(1) = gas_ppick(1)
      emitsurfprobg(2) = gas_ppick(2)
      do ig = 3, gas_ng
@@ -66,7 +66,7 @@ subroutine boundary_source
      prt_particles(ivac)%rsrc = gas_rarr(1)
      r0 = prt_particles(ivac)%rsrc
      
-     if (((gas_sig(z0)+gas_sigmapg(iig,z0))*gas_drarr(z0)* &
+     if (((gas_sig(z0)+gas_cap(iig,z0))*gas_drarr(z0)* &
           (gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(z0)) &
           .OR.(in_puretran.eqv..true.).OR.P>1d0.OR.P<0d0) then
         !transport => lab frame quantities
@@ -91,9 +91,9 @@ subroutine boundary_source
 
      !source tally
      !if(prt_particles(ivac)%rtsrc==1) then
-     !   gas_eraddensg(iig,z0)=gas_eraddensg(iig,z0)+Esurfpart
+     !   gas_eraddens(iig,z0)=gas_eraddens(iig,z0)+Esurfpart
      !else
-     !   gas_eraddensg(iig,z0)=gas_eraddensg(iig,z0)+P*Esurfpart
+     !   gas_eraddens(iig,z0)=gas_eraddens(iig,z0)+P*Esurfpart
      !endif
   enddo
   !deallocate(prt_vacantarr)

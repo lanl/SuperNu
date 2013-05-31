@@ -98,10 +98,10 @@ subroutine analytic_source
                    (in_tfirst*pc_day/tsp_texp)**4*(rrcenter/in_velout)*&
                    (aa22-aa11)/tsp_texp+(in_tfirst*pc_day/tsp_texp)**4*&
                    (pc_c/in_velout)*(2d0*in_velout*aa11/rrcenter+3d0*&
-                   (aa22-aa11))+pc_c*gas_sigmapg(ig,ir)*eradthin(ir)
+                   (aa22-aa11))+pc_c*gas_cap(ig,ir)*eradthin(ir)
               !
               gas_exsource(ig,ir)=gas_exsource(ig,ir)*(x4-x3)/(x2-x1)-&
-                   pc_c*gas_sigmapg(ig,ir)*pc_acoef*tmpgauss(ir)**4*&
+                   pc_c*gas_cap(ig,ir)*pc_acoef*tmpgauss(ir)**4*&
                    bspeced
               !
               !gas_exsource(ig,ir)=0d0
@@ -123,9 +123,9 @@ subroutine analytic_source
               gas_exsource(ig,ir) = pc_acoef*tmpgauss(ir)**4* &
                    (((4.0d0*(rrcenter/uudd)**2/tsp_texp-1d0/tsp_texp)+&
                    (1d0/tsp_texp+4d0*pc_c/&
-                   (3d0*gas_sigmapg(ig,ir)*(uudd*tsp_texp)**2))*&
-                   (3d0-4d0*(rrcenter/uudd)**2)+pc_c*gas_sigmapg(ig,ir))*&
-                   (x4-x3)/(x2-x1)-pc_c*gas_sigmapg(ig,ir)*bspeced)
+                   (3d0*gas_cap(ig,ir)*(uudd*tsp_texp)**2))*&
+                   (3d0-4d0*(rrcenter/uudd)**2)+pc_c*gas_cap(ig,ir))*&
+                   (x4-x3)/(x2-x1)-pc_c*gas_cap(ig,ir)*bspeced)
               !
               !gas_exsource(ig,ir)=0d0
               !
@@ -145,6 +145,6 @@ subroutine analytic_source
   !write(*,*) gas_exsource(1,:)
   !write(*,*)
   !write(*,*) gas_exsource(2,:)
-  !write(*,*) gas_siggrey(gas_nr), gas_sigmapg(1,gas_nr)
+  !write(*,*) gas_siggrey(gas_nr), gas_cap(1,gas_nr)
 
 end subroutine analytic_source

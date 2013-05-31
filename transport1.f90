@@ -71,16 +71,16 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   ! distance to fictitious collision = dcol
   !
   if(prt_isimcanlog) then
-     if(gas_sigmapg(g,z)>0d0) then
+     if(gas_cap(g,z)>0d0) then
         r1 = rand()
-        dcol = abs(log(r1)/(gas_sigmapg(g,z)*dcollabfact))
+        dcol = abs(log(r1)/(gas_cap(g,z)*dcollabfact))
      else
         dcol = 3.0*db
      endif
   else
-     if((1.0d0-gas_fcoef(z))*gas_sigmapg(g,z)>0.0d0) then
+     if((1.0d0-gas_fcoef(z))*gas_cap(g,z)>0.0d0) then
         r1 = rand()
-        dcol = abs(log(r1)/((1.0d0-gas_fcoef(z))*gas_sigmapg(g,z)*dcollabfact))
+        dcol = abs(log(r1)/((1.0d0-gas_fcoef(z))*gas_cap(g,z)*dcollabfact))
      else
         dcol = 3.0*db
      endif
@@ -108,10 +108,10 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   !calculating energy deposition
   if(.not.prt_isimcanlog) then
      gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z) &
-          *gas_sigmapg(g,z)*d*(gas_velno*1.d0+ &
+          *gas_cap(g,z)*d*(gas_velno*1.d0+ &
           gas_velyes*tsp_texp)))*elabfact
      !
-     E = E*exp(-gas_fcoef(z)*gas_sigmapg(g,z)*d*dcollabfact) !(gas_velno*1.d0 &
+     E = E*exp(-gas_fcoef(z)*gas_cap(g,z)*d*dcollabfact) !(gas_velno*1.d0 &
           !+gas_velyes*tsp_texp))
      if (E/E0<0.001d0) then
         vacnt = .true.
@@ -141,7 +141,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   endif
   !
   !
-  gas_eraddensg(g,z) = gas_eraddensg(g,z)+E* &
+  gas_eraddens(g,z) = gas_eraddens(g,z)+E* &
        elabfact*d*dcollabfact/(pc_c*tsp_dt)  
   !
 
@@ -153,7 +153,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      E = E*elabfact/(1.0-gas_velyes*mu*r/pc_c)
      wl=wl*(1.0-gas_velyes*r*mu/pc_c)/elabfact
      !
-     !gas_eraddensg(g,z) = gas_eraddensg(g,z)+E* &
+     !gas_eraddens(g,z) = gas_eraddens(g,z)+E* &
      !     (1.0-gas_velyes*mu*r/pc_c)/(pc_c*gas_sig(z)*tsp_dt)
      !
   elseif (d == dcol) then  !fictitious scattering with implicit capture
@@ -172,12 +172,12 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         r1 = rand()
         do ig = 1, gas_ng
            iig = ig
-           if ((r1>=denom2).and.(r1<denom2+gas_emitprobg(ig,z))) exit
-           denom2 = denom2+gas_emitprobg(ig,z)
+           if ((r1>=denom2).and.(r1<denom2+gas_emitprob(ig,z))) exit
+           denom2 = denom2+gas_emitprob(ig,z)
         enddo
         g = iig
         !(rev 121): calculating radiation energy tally per group
-        !gas_eraddensg(g,z)=gas_eraddensg(g,z)+E*elabfact
+        !gas_eraddens(g,z)=gas_eraddens(g,z)+E*elabfact
         !-------------------------------------------------------
         ! sampling comoving wavelength in group
         !r1 = rand()
@@ -207,7 +207,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         !
         ! converting comoving wavelength to lab frame wavelength
         wl = wl*(1.0-gas_velyes*r*mu/pc_c)
-        if (((gas_sig(z)+gas_sigmapg(g,z))*gas_drarr(z)* &
+        if (((gas_sig(z)+gas_cap(g,z))*gas_drarr(z)* &
              (gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z)) &
              .and.(in_puretran.eqv..false.)) then
            hyparam = 2
@@ -226,7 +226,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            prt_done = .true.
            gas_eright = gas_eright+E*elabfact
         ! Checking if DDMC region right
-        elseif (((gas_sig(z+1)+gas_sigmapg(g,z+1))*gas_drarr(z+1) &
+        elseif (((gas_sig(z+1)+gas_cap(g,z+1))*gas_drarr(z+1) &
              *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z+1)) &
                  .and.(in_puretran.eqv..false.)) then
            r1 = rand()
@@ -255,7 +255,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               prt_done = .true.
               gas_eleft = gas_eleft+E*elabfact
            else
-              if (((gas_sig(z+1)+gas_sigmapg(g,z+1))*gas_drarr(z+1) &
+              if (((gas_sig(z+1)+gas_cap(g,z+1))*gas_drarr(z+1) &
                    *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z+1)) &
                    .and.(in_puretran.eqv..false.)) then
                  r1 = rand()
@@ -277,7 +277,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
                  z = z+1
               endif
            endif
-        elseif (((gas_sig(z-1)+gas_sigmapg(g,z-1))*gas_drarr(z-1) &
+        elseif (((gas_sig(z-1)+gas_cap(g,z-1))*gas_drarr(z-1) &
              *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z-1)) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()

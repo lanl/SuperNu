@@ -33,7 +33,7 @@ subroutine advance
   gas_eright = 0.0
   gas_eleft = 0.0
 !--(rev. 121)
-  !gas_eraddensg =0d0
+  !gas_eraddens =0d0
 !--
   difs = 0
   transps = 0
@@ -42,13 +42,13 @@ subroutine advance
 
   if(showidfront) then
      do ir = 1, gas_nr-1
-        if(in_isvelocity.and.(gas_sig(ir)+gas_sigmapg(1,ir))*gas_drarr(ir) &
+        if(in_isvelocity.and.(gas_sig(ir)+gas_cap(1,ir))*gas_drarr(ir) &
              *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc &
              .and. &
-             (gas_sig(ir+1)+gas_sigmapg(1,ir+1))*gas_drarr(ir+1) &
+             (gas_sig(ir+1)+gas_cap(1,ir+1))*gas_drarr(ir+1) &
              *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc) then
-           write(*,*) ir, gas_sigmapg(1,ir)*gas_drarr(ir)*tsp_texp, &
-                gas_sigmapg(1,ir+1)*gas_drarr(ir+1)*tsp_texp
+           write(*,*) ir, gas_cap(1,ir)*gas_drarr(ir)*tsp_texp, &
+                gas_cap(1,ir+1)*gas_drarr(ir+1)*tsp_texp
         endif
      enddo
   endif
@@ -120,16 +120,16 @@ subroutine advance
 
         !deposition estimator
         !if(rtsrc==1) then
-        !   gas_edep(zsrc)=gas_edep(zsrc)+gas_fcoef(zsrc)*gas_sigmapg(g,zsrc) &
+        !   gas_edep(zsrc)=gas_edep(zsrc)+gas_fcoef(zsrc)*gas_cap(g,zsrc) &
         !        *pc_c*tsp_dt*esrc*(1d0-gas_velyes*musrc*rsrc/pc_c)
         !else
-        !   gas_edep(zsrc)=gas_edep(zsrc)+gas_fcoef(zsrc)*gas_sigmapg(g,zsrc) &
+        !   gas_edep(zsrc)=gas_edep(zsrc)+gas_fcoef(zsrc)*gas_cap(g,zsrc) &
         !        *pc_c*tsp_dt*esrc
         !endif
         
         ! Checking if particle conversions are required since prior time step
         if (in_puretran.eqv..false.) then
-           if ((gas_sig(zsrc)+gas_sigmapg(g,zsrc))*gas_drarr(zsrc) &
+           if ((gas_sig(zsrc)+gas_cap(g,zsrc))*gas_drarr(zsrc) &
                 *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(zsrc)) then
               !write(*,*) 'here', g, wlsrc, esrc
               if (rtsrc == 2) then
@@ -231,7 +231,7 @@ subroutine advance
               elseif(.not.in_puretran.and.partstopper) then
                  zfdiff = -1
                  do ir = zsrc-1,zholder,-1
-                    if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
+                    if((gas_sig(ir)+gas_cap(g,ir))*gas_drarr(ir) &
                          *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(ir)) then
                        zfdiff = ir
                        exit
@@ -377,7 +377,7 @@ subroutine advance
               elseif(.not.in_puretran.and.partstopper) then
                  zfdiff = -1
                  do ir = zsrc-1,zholder,-1
-                    if((gas_sig(ir)+gas_sigmapg(g,ir))*gas_drarr(ir) &
+                    if((gas_sig(ir)+gas_cap(g,ir))*gas_drarr(ir) &
                          *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(ir)) then
                        zfdiff = ir
                        exit

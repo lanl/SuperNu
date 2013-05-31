@@ -83,7 +83,7 @@ subroutine interior_source
              (4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)/real(gas_vals2(ir)%nvolex)
            !write(*,*) Ep0, gas_vals2(ir)%nvolex
            
-           if (((gas_sig(ir)+gas_sigmapg(iig,ir))*gas_drarr(ir)* &
+           if (((gas_sig(ir)+gas_cap(iig,ir))*gas_drarr(ir)* &
                 (gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(ir)) &
                 .or.(in_puretran.eqv..true.)) then
               prt_particles(ivac)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
@@ -111,7 +111,7 @@ subroutine interior_source
            
            !source tally
            !if(prt_particles(ivac)%rtsrc==2) then
-           !   gas_eraddensg(iig,ir)=gas_eraddensg(iig,ir)+Ep0
+           !   gas_eraddens(iig,ir)=gas_eraddens(iig,ir)+Ep0
            !endif
         else
            ir = ir+1
@@ -137,8 +137,8 @@ subroutine interior_source
            
            do ig = 1, gas_ng
               iig = ig
-              if (r1>=denom2.and.r1<denom2+gas_emitprobg(ig,ir)) exit
-              denom2 = denom2+gas_emitprobg(ig,ir)
+              if (r1>=denom2.and.r1<denom2+gas_emitprob(ig,ir)) exit
+              denom2 = denom2+gas_emitprob(ig,ir)
            enddo
            !write(*,*) 'here',ivac
            !Ryan W.: particle group removed (rev. 120)
@@ -190,7 +190,7 @@ subroutine interior_source
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = gas_vals2(ir)%emit/real(gas_vals2(ir)%nvol)
 
-           if (((gas_sigmapg(iig,ir)+gas_sig(ir))*gas_drarr(ir)* &
+           if (((gas_cap(iig,ir)+gas_sig(ir))*gas_drarr(ir)* &
                 (gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(ir)) &
                 .or.(in_puretran.eqv..true.)) then
               prt_particles(ivac)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
@@ -218,7 +218,7 @@ subroutine interior_source
 
            !source tally
            !if(prt_particles(ivac)%rtsrc==2) then
-           !   gas_eraddensg(iig,ir)=gas_eraddensg(iig,ir)+Ep0
+           !   gas_eraddens(iig,ir)=gas_eraddens(iig,ir)+Ep0
            !endif
 
         else

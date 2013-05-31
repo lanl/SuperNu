@@ -23,10 +23,10 @@ c-- bbxsmod
 c-- gasgridmod
       deallocate(gas_numcensus,gas_rarr,gas_drarr)
       deallocate(gas_edep,gas_tempb)
-      deallocate(gas_sigmapg,gas_sigmargleft)
-      deallocate(gas_sigmargright,gas_emitprobg,gas_sigmal,gas_sigmar)
+      deallocate(gas_cap,gas_caprosl)
+      deallocate(gas_caprosr,gas_emitprob,gas_opacleakl,gas_opacleakr)
       deallocate(gas_ppl,gas_ppr)
-      deallocate(gas_eraddensg)
+      deallocate(gas_eraddens)
       deallocate(gas_siggrey,gas_fcoef)
       deallocate(gas_sig,gas_sigbl,gas_sigbr)
       deallocate(gas_capgam)

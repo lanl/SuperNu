@@ -15,7 +15,7 @@ module gasgridmod
 
   real*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
   real*8,allocatable :: gas_dwl(:) !(gas_ng) wavelength grid bin width
-  real*8,allocatable :: gas_cap(:,:) !(gas_nr,gas_ng) Line+Cont extinction coeff
+  real,allocatable :: gas_cap(:,:) !(gas_ng,gas_nr) Line+Cont extinction coeff
   real*8,allocatable :: gas_sig(:) !(gas_nr) scattering coefficient
 !-(rev. 121): edge scattering coefficient (a secondary quantity)
   real*8,allocatable :: gas_sigbl(:) !(gas_nr), left
@@ -31,7 +31,6 @@ module gasgridmod
   logical :: gas_isvelocity
   logical :: gas_isshell  !domain is shell, innermost radius not zero
   logical :: gas_novolsrc !no external volume source (e.g. radioactivity)
-  logical :: gas_isanalgrp  !switch to use analytic_opacity
   logical :: gas_isanalsrc  !switch to use analytic_source
   integer :: gas_velno, gas_velyes
   real*8 :: gas_templ0=0 !surface temperature at innermost radius
@@ -65,19 +64,20 @@ module gasgridmod
 
   real*8 :: gas_emat
 
-  real*8, dimension(:), allocatable :: gas_rarr  !(gas_nr+1)
-  real*8, dimension(:), allocatable :: gas_drarr !(gas_nr)
+  real*8, dimension(:), allocatable :: gas_rarr   !(gas_nr+1)
+  real*8, dimension(:), allocatable :: gas_drarr  !(gas_nr)
   real*8, dimension(:), allocatable :: gas_curvcent !(gas_nr), multiplied by tauddmc for mfp threshold
   real*8, dimension(:), allocatable :: gas_edep, gas_siggrey, gas_fcoef !(gas_nr)
   real*8, dimension(:), allocatable :: gas_tempb  !(gas_nr+1), interpolated temperatures (keV)
-  real*8, dimension(:), allocatable :: gas_rhob !(gas_nr+1), interpolated densities
-  real*8, allocatable :: gas_sigmapg(:,:)       !(gas_ng,gas_nr)
-  real*8, allocatable :: gas_sigmargleft(:,:), gas_sigmargright(:,:)  !(gas_ng,gas_nr)
-  real*8, allocatable :: gas_emitprobg(:,:)               !(gas_ng,gas_nr)
-  real*8, allocatable :: gas_sigmal(:,:), gas_sigmar(:,:) !(gas_ng,gas_nr)
-  real*8, allocatable :: gas_ppl(:,:), gas_ppr(:,:)       !(gas_ng,gas_nr)
+  real*8, dimension(:), allocatable :: gas_rhob   !(gas_nr+1), interpolated densities
+  real*8, allocatable :: gas_emitprob(:,:)           !(gas_ng,gas_nr)
+  real*8, allocatable :: gas_ppl(:,:), gas_ppr(:,:)  !(gas_ng,gas_nr)
+!-- temporary array used to compute leakage opacities
+  real*8, allocatable :: gas_caprosl(:,:), gas_caprosr(:,:)  !(gas_ng,gas_nr)
+!-- leakage opacities
+  real*8, allocatable :: gas_opacleakl(:,:), gas_opacleakr(:,:) !(gas_ng,gas_nr)
   
-  real*8, dimension(:,:), allocatable :: gas_eraddensg !(gas_ng,gas_nr)
+  real*8, allocatable :: gas_eraddens(:,:) !(gas_ng,gas_nr)
 
   !Ryan W.: External sources (currently used for analytic_source):
   real*8, dimension(:,:), allocatable :: gas_exsource !(gas_ng,gas_nr)
@@ -132,7 +132,6 @@ module gasgridmod
     gas_isvelocity = in_isvelocity
     gas_isshell = in_isshell
     gas_novolsrc = in_novolsrc
-    gas_isanalgrp = in_isanalgrp
     !inner edge radius (if in_isshell):
     gas_l0 = in_l0
     !inner edge temp:
@@ -185,17 +184,16 @@ module gasgridmod
     allocate(gas_sig(gas_nr))    !grey scattering opacity
 !----------------------------------------------------------------
     allocate(gas_fcoef(gas_nr))  !Fleck factor
-    allocate(gas_sigmapg(gas_ng,gas_nr))  !group Planck opacities
-    allocate(gas_emitprobg(gas_ng,gas_nr))  !Probability of emission in a given zone and group
-    allocate(gas_sigmal(gas_ng,gas_nr))
-    allocate(gas_sigmar(gas_ng,gas_nr))
+    allocate(gas_emitprob(gas_ng,gas_nr))  !Probability of emission in a given zone and group
+    allocate(gas_opacleakl(gas_ng,gas_nr))
+    allocate(gas_opacleakr(gas_ng,gas_nr))
     allocate(gas_ppl(gas_ng,gas_nr))  !can potentially be removed
     allocate(gas_ppr(gas_ng,gas_nr))  !can potentially be removed
-    allocate(gas_eraddensg(gas_ng,gas_nr))  !radiation energy density in tsp_dt per group
+    allocate(gas_eraddens(gas_ng,gas_nr))  !radiation energy density in tsp_dt per group
 !-Ryan W: gas_wl being allocated in gasgrid_setup now--
     !allocate(gas_wl(gas_ng)) !wavelength grid
 !------------------------------------------------------
-    allocate(gas_cap(gas_nr,gas_ng)) !Line+Cont extinction coeff
+    allocate(gas_cap(gas_ng,gas_nr)) !Line+Cont extinction coeff
 
 !-- secondary
     allocate(gas_vals2(gas_nr))
@@ -211,8 +209,8 @@ module gasgridmod
     allocate(gas_tempb(gas_nr+1))  !cell boundary temperature
     allocate(gas_rhob(gas_nr+1))   !cell boundary density
     
-    allocate(gas_sigmargleft(gas_ng,gas_nr))  !left cell edge group Rosseland opacities
-    allocate(gas_sigmargright(gas_ng,gas_nr)) !right ||   ||    ||     ||        ||
+    allocate(gas_caprosl(gas_ng,gas_nr))  !left cell edge group Rosseland opacities
+    allocate(gas_caprosr(gas_ng,gas_nr)) !right ||   ||    ||     ||        ||
 
     allocate(gas_exsource(gas_ng,gas_nr))
 

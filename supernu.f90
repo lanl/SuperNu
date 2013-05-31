@@ -61,9 +61,7 @@ program supernu
 !
 !-- SETUP GRIDS
    call wlgrid_setup
-   if(in_isanalgrp.and.in_grptype=='pick') then
-      in_ng=2
-   endif
+   if(in_grptype=='pick') in_ng=2
    call gasgrid_init(in_nt)
    call gasgrid_setup
 
