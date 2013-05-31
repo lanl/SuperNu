@@ -7,6 +7,8 @@ program supernu
   use particlemod
   use physconstmod
 
+  use inputstrmod
+
   use ionsmod, only:ion_read_data,ion_alloc_grndlev
   use bfxsmod, only:bfxs_read_data
   use ffxsmod, only:ffxs_read_data
@@ -59,9 +61,11 @@ program supernu
 !-- particle init
    call particle_init(in_npartmax,in_ns,in_isimcanlog,in_isddmcanlog,in_tauddmc)
 !
+!-- read input structure
+   call read_inputstr(in_nr)
+!
 !-- SETUP GRIDS
    call wlgrid_setup
-   if(in_grptype=='pick') in_ng=2
    call gasgrid_init(in_nt)
    call gasgrid_setup
 

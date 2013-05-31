@@ -11,7 +11,7 @@ in_nt = 192
 in_alpha = 1d0
 
 !-- gas grid settings
-in_nr = 50
+in_nr = 128
 in_isvelocity = t
 in_isshell = f
 in_novolsrc = t

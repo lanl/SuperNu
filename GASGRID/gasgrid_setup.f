@@ -1,5 +1,5 @@
       subroutine gasgrid_setup
-c     --------------------------------------
+c     ------------------------
       use physconstmod
       use inputparmod
       use timestepmod
@@ -28,13 +28,13 @@ c--
 c
 c-- grid with unit radius: scaled up below by gas_lr for static, or gas_velout for velocity grid
       if(gas_isshell) then
-         if(gas_isvelocity) then
-            gas_rarr(1) = gas_v0/(gas_velout-gas_v0)
-         else
-            gas_rarr(1) = gas_l0/gas_lr
-         endif
+       if(gas_isvelocity) then
+        gas_rarr(1) = gas_v0/(gas_velout-gas_v0)
+       else
+        gas_rarr(1) = gas_l0/gas_lr
+       endif
       else
-         gas_rarr(1) = 0.0d0    !Initial inner most radius
+       gas_rarr(1) = 0.0d0    !Initial inner most radius
       endif
          
       do ir=1,gas_nr
@@ -47,11 +47,11 @@ c-- grid with unit radius: scaled up below by gas_lr for static, or gas_velout f
 c
 c-- calculating IMC-DDMC heuristic coefficient for spherical geometry (rev 146)
       do ir = 1, gas_nr
-         help2=gas_rarr(ir+1)**2+gas_rarr(ir)*gas_rarr(ir+1)
-         help2=help2+gas_rarr(ir)**2
-         help2 = sqrt(1d0/help2)
-         gas_curvcent(ir) = sqrt((gas_rarr(ir+1)**2+gas_rarr(ir)**2))
-         gas_curvcent(ir) = help2*gas_curvcent(ir)
+       help2=gas_rarr(ir+1)**2+gas_rarr(ir)*gas_rarr(ir+1)
+       help2=help2+gas_rarr(ir)**2
+       help2 = sqrt(1d0/help2)
+       gas_curvcent(ir) = sqrt((gas_rarr(ir+1)**2+gas_rarr(ir)**2))
+       gas_curvcent(ir) = help2*gas_curvcent(ir)
       enddo
 c
 c-- set grid size to velout or lr depending on expanding or static
@@ -73,41 +73,41 @@ c
 c-- initialize material (gas) properties
 c-- gas temperature, density
       if(in_istempflat) then
-         do ir=1,gas_nr
-            gas_vals2(ir)%tempkev = in_consttempkev
-         enddo
+       do ir=1,gas_nr
+        gas_vals2(ir)%tempkev = in_consttempkev
+       enddo
       else
-         call read_restart_file
-         do ir=1,gas_nr
-            if(gas_vals2(ir)%tempkev<1d-6) then
-               gas_vals2(ir)%tempkev=1d-6
-            endif
-         enddo
+       call read_restart_file
+       do ir=1,gas_nr
+        if(gas_vals2(ir)%tempkev<1d-6) then
+         gas_vals2(ir)%tempkev=1d-6
+        endif
+       enddo
       endif
 c-- Ryan W.: temporary override of initial temperature
 c-- to Gaussian for manufacture tests
       if(in_isanalsrc.and.in_srctype=='manu') then
-        uudd = 2.5d8
-        do ir=1,gas_nr
-          rrcenter=(gas_rarr(ir+1)+gas_rarr(ir))/2d0
-          gas_vals2(ir)%tempkev = in_templ0*exp(-0.5*(rrcenter/uudd)**2)
-          if(gas_vals2(ir)%tempkev<1d-3) then
-             gas_vals2(ir)%tempkev=1d-3
-          endif
-        enddo
+       uudd = 2.5d8
+       do ir=1,gas_nr
+        rrcenter=(gas_rarr(ir+1)+gas_rarr(ir))/2d0
+        gas_vals2(ir)%tempkev = in_templ0*exp(-0.5*(rrcenter/uudd)**2)
+        if(gas_vals2(ir)%tempkev<1d-3) then
+         gas_vals2(ir)%tempkev=1d-3
+        endif
+       enddo
       endif
 c--
 c
       do ir=1,gas_nr
-         if(in_isanalsrc.and.in_srctype=='manu') then
-            masv = in_totmass*gas_vals2(ir)%dr3_34pi            
-            masv = masv/(gas_rarr(gas_nr+1)**3-gas_rarr(1)**3)
-            gas_vals2(ir)%mass = masv
-         else
-            gas_vals2(ir)%mass = in_totmass/gas_nr
-         endif
-         gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb !initial guess, may be overwritten by read_temp_str
-         gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%tempkev**4
+       if(in_isanalsrc.and.in_srctype=='manu') then
+        masv = in_totmass*gas_vals2(ir)%dr3_34pi            
+        masv = masv/(gas_rarr(gas_nr+1)**3-gas_rarr(1)**3)
+        gas_vals2(ir)%mass = masv
+       else
+        gas_vals2(ir)%mass = in_totmass/gas_nr
+       endif
+       gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb !initial guess, may be overwritten by read_temp_str
+       gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%tempkev**4
       enddo
 c
 c-- set flat composition if selected

@@ -198,8 +198,8 @@ c-- convert from opacity in redona's rcell units to opacity per cm
          write(4,'(1p,10e12.4)') (gas_cap(ir,j),j=1,gas_ng)
         enddo
 c-- close file
-        close(4)!}}}
-       endif !do_output
+        close(4)
+       endif !do_output !}}}
 c
 c-- Calculating Fleck factor, leakage opacities
        call fleck_factor

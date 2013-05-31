@@ -11,7 +11,7 @@ MODULES := \
   miscmod.o \
   ionsmod.o ffxsmod.o bfxsmod.o bbxsmod.o \
   inputparmod.o timestepmod.o \
-  gasgridmod.o \
+  gasgridmod.o inputstrmod.o \
   particlemod.o \
   timingmod.o
 
@@ -84,6 +84,7 @@ miscmod.o: MISC/warn.f MISC/lcase.f
 mpimod.o: gasgridmod.o inputparmod.o timestepmod.o timingmod.o
 timestepmod.o: physconstmod.o
 gasgridmod.o: inputparmod.o
+inputstrmod.o: physconstmod.o
 #
 #-- OBJ FILES
 #-- note: prerequisites don't need to include modules as these are always built first
