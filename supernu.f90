@@ -101,12 +101,13 @@ program supernu
     if(impi==impi0) then
      write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
      !
-     !Ryan W.: gasgrid_update temporarily deprecated due to seg fault
-     !call gasgrid_update
-     !Ryan W.: gasgrid_upold is an update file for testing
-     call gasgrid_upold
+     call gasgrid_update
      !Calculating Fleck factor, leakage opacities
-     call xsections
+     call fleck_factor
+     !Calculating emission probabilities for each group in each cell
+     call emission_probability
+     !Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
+     call leakage_opacity
      !Calculating number of source prt_particles per cell
      call sourcenumbers
     endif !impi

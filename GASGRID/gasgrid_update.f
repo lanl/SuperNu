@@ -207,7 +207,7 @@ c-- close file
        endif !do_output
 c
 c-- 
-       call 
+c       call 
 c
 c
 c-- Rosseland opacity

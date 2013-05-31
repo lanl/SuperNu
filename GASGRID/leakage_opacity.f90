@@ -1,58 +1,22 @@
-subroutine xsections
+subroutine leakage_opacity
 
   use gasgridmod
   use timestepmod
-  use physconstmod
   use particlemod
   implicit none
 
 !##################################################
-  !This subroutine computes cross sections (opacities) used in
-  !the particle advance phase of the program.  These opacities
-  !include the grey Planck, grouped Planck, grouped Rosseland,
-  !and DDMC grouped leakage opacities.
+  !This subroutine computes
+  !DDMC grouped boundary probabilities (albedo) and leakage opacities.
 !##################################################
 
   integer :: ir, ig
-  real*8 :: Um, beta, tt, gg, ggg, eps, bb, sigtot
-  real*8 :: x1, x2, curvleft, curvright
-  real*8 :: specint
+  real*8 :: tt, gg, ggg, eps, bb, sigtot
+  real*8 :: curvleft, curvright
 
   logical :: missive = .false.
   ! Here: left=>toward r=0 and right=>outward
 
-  !Calculating Fleck factor: 
-  do ir = 1, gas_nr
-     Um = gas_vals2(ir)%bcoef*gas_vals2(ir)%tempkev
-     beta = 4.0*gas_vals2(ir)%ur/Um
-     gas_fcoef(ir) = 1.0/(1.0+tsp_alpha*beta*pc_c*tsp_dt*gas_sigmap(ir))
-  enddo
-
-  !Calculating grouped volume emission probabilities:
-  if(gas_isanalgrp.and.gas_grptype=='pick') then
-     do ir = 1, gas_nr
-        gas_emitprobg(1,ir) = gas_ppick(1)*gas_sigmapg(1,ir)/gas_sigmap(ir)
-        gas_emitprobg(2,ir) = gas_ppick(2)*gas_sigmapg(2,ir)/gas_sigmap(ir)
-        do ig = 3, gas_ng
-           gas_emitprobg(ig,ir) = 0d0
-        enddo
-     enddo
-  else
-     if(gas_ng==1) then
-        do ir = 1, gas_nr
-           gas_emitprobg(1,ir) = 1d0
-        enddo
-     else
-        do ir = 1, gas_nr
-           do ig = 1, gas_ng
-              x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_vals2(ir)%tempkev)
-              x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
-              gas_emitprobg(ig,ir) = 15d0*specint(x1,x2,3)*gas_sigmapg(ig,ir)/ &
-                   (gas_sigmap(ir)*pc_pi**4)              
-           enddo
-        enddo
-     endif
-  endif
   
   !Calculating IMC-to-DDMC leakage albedo coefficients (Densmore, 2007): loop
   !These quantities may not need to be stored directly (pending further analysis)
@@ -190,4 +154,4 @@ subroutine xsections
      enddo
   enddo
 
-end subroutine xsections
+end subroutine leakage_opacity

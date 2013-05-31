@@ -10,7 +10,8 @@ FILES = eos_update.o \
   gasgrid_setup.o gasgrid_update.o gasgrid_upold.o\
   temperature_update.o analytic_source.o \
   analytic_opacity.o opacity_calculation.o \
-  xsections.o
+  leakage_opacity.o fleck_factor.o \
+  emission_probability.o
 
 ########################################################################
 # TARGETS
@@ -38,4 +39,6 @@ gasgrid_upold.o: gasgridmod.mod inputparmod.mod ionsmod.mod miscmod.mod mpimod.m
 ##
 opacity_calculation.o: bbxsmod.mod bfxsmod.mod ffxsmod.mod gasgridmod.mod inputparmod.mod ionsmod.mod miscmod.mod physconstmod.mod timingmod.mod
 temperature_update.o: gasgridmod.mod physconstmod.mod timestepmod.mod
-xsections.o: gasgridmod.mod physconstmod.mod timestepmod.mod
+leakage_opacity.o: gasgridmod.mod timestepmod.mod particlemod.mod
+emission_probability.o: gasgridmod.mod physconstmod.mod
+fleck_factor.o: gasgridmod.mod timestepmod.mod physconstmod.mod
