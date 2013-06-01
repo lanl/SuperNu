@@ -85,8 +85,6 @@ c============================
 c
 c-- density
       gas_vals2%rho = gas_vals2%mass/gas_vals2%vol
-      !gas_vals2%bcoef = 2.0*pc_acoef*gas_vals2%tempkev**3
-      !gas_vals2%bcoef = 0.4*(1.e12*gas_vals2%rho)*580.25d0 !currently performed in xsection (power law)
 c
 c-- keep track of temperature evolution
       gas_temphist(:,tsp_tn) = gas_vals2%temp!}}}
@@ -96,9 +94,9 @@ c-- update interpolated density and temperatures at cell edges
 c=============================================================
 !Interpolating cell boundary temperatures (in keV currently): loop!{{{
       if(gas_isshell) then
-       gas_tempb(1)=gas_templ0
+       gas_tempb(1) = gas_templ0
       else
-       gas_tempb(1)=gas_vals2(1)%tempkev
+       gas_tempb(1) = gas_vals2(1)%tempkev
       endif
 !gas_tempb(1) = 1.0
       do ir=2,gas_nr

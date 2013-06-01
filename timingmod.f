@@ -21,7 +21,7 @@ c-- task-based time registers:
       real*8 :: t_ff(2)=0d0     !bound-free opacity
 c
 c-- parallel statistics packet timer
-      real*8 :: t_pckt_stat(3)!min,mean,max
+      real*8 :: t_pckt_stat(3)  !min,mean,max
 c
       save
 c

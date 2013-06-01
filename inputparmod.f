@@ -209,11 +209,11 @@ c
 c
 c-- special grid
       if(.not.in_noreadstruct) then
-       if(in_isshell) error stop 'isshell incomp. with struct'
-       if(in_l0/=0d0) error stop 'l0 incomp. with struct'
-       if(in_velout/=0d0) error stop 'velout incomp. with struct'
-       if(in_v0/=0d0) error stop 'v0 incomp. with struct'
-       if(in_totmass/=0d0) error stop 'totmass incomp. with struct'
+       if(in_isshell) stop 'isshell incomp. with struct'
+       if(in_l0/=0d0) stop 'l0 incomp. with struct'
+       if(in_velout/=0d0) stop 'velout incomp. with struct'
+       if(in_v0/=0d0) stop 'v0 incomp. with struct'
+       if(in_totmass/=0d0) stop 'totmass incomp. with struct'
       endif
 c
       select case(in_srctype)
@@ -230,9 +230,9 @@ c
       case('grey')
       case('mono')
       case('pick')
-       if(.not.in_nobbopac) error stop 'no phys opac + in_grptyp==none'
-       if(.not.in_nobfopac) error stop 'no phys opac + in_grptyp==none'
-       if(.not.in_noffopac) error stop 'no phys opac + in_grptyp==none'
+       if(.not.in_nobbopac) stop 'no phys opac + in_grptyp==none'
+       if(.not.in_nobfopac) stop 'no phys opac + in_grptyp==none'
+       if(.not.in_noffopac) stop 'no phys opac + in_grptyp==none'
        if(in_ng /= 2) then
         call warn('inputparmod','overriding in_ng=2 for grptyp==pick')
         in_ng = 2

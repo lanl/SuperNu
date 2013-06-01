@@ -36,8 +36,8 @@ subroutine initialnumbers
   gas_vals2(:)%eraddens=0d0
   x1 = 1d0/gas_wl(gas_ng+1)
   x2 = 1d0/gas_wl(1)
-  if(gas_isanalsrc.and.gas_srctype=='manu') then
-
+  if(gas_srctype=='manu') then
+!{{{
      do ir = 1, gas_nr
         !
         rrcenter=(gas_rarr(ir+1)+gas_rarr(ir))/2d0
@@ -63,7 +63,7 @@ subroutine initialnumbers
         nvolinit(ir)=nint(gas_vals2(ir)%eraddens*gas_vals2(ir)%dr3_34pi*pc_pi4*&
              (gas_velno*1.0+gas_velyes*tsp_texp**3)*nvolinittot/(etotinit*3d0))
         nvolinitapp = nvolinitapp+nvolinit(ir)
-     enddo
+     enddo!}}}
   endif
 
   !insantiating initial particles

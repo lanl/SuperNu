@@ -26,6 +26,9 @@ program supernu
 ! - verify linear and uniform velocity grid in input.str (13/05/31)
 ! - check wavelength units for bb and bf data
 ! - fix gas_wl indexing BUG in physical_opacity
+! - remove velyes|velno from analytic expressions throughout the code (13/06/01)
+! - improve grid construction: store unit-sphere radii separately (13/06/01)
+! - remove duplication of gas_tempkev with gas_vals2%tempkev (13/05/31)
 !***********************************************************************
   real*8 :: help, dt
   real*8 :: t_elapsed
@@ -106,7 +109,7 @@ program supernu
   !calculating analytic initial particle distribution (if any)
   call initialnumbers
 
-  call bcast_persistent
+  call bcast_permanent !MPI
 
 !
 !-- time step loop
@@ -118,9 +121,11 @@ program supernu
       call gasgrid_update
 !-- number of source prt_particles per cell
       call sourcenumbers
+     write(0,*) prt_nnew
     endif !impi
 
 !-- Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
+    write(0,*) prt_nnew
     allocate(prt_vacantarr(prt_nnew))
     call vacancies
     !Calculating properties of prt_particles on domain boundary
@@ -131,9 +136,10 @@ program supernu
     !Advancing prt_particles to update radiation field    
 
     !-- advance particles
-    call bcast_nonpersistent !mpi
+    gas_tempkev = gas_vals2%tempkev  !DIRTY HACK -- THIS TEMPKEV DUPLICATION NEEDS TO GO...
+    call bcast_nonpermanent !MPI
     call particle_advance
-    call reduce_tally !mpi
+    call reduce_tally !MPI
     
     if(impi==impi0) then
       call temperature_update

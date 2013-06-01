@@ -12,142 +12,195 @@ c
 c
 c
 c
-      subroutine bcast_persistent
-cc     --------------------------!{{{
-c      use inputparmod
-c      use timestepmod, only:tsp_nt
-c      use gasgridmod
-c      implicit none
-c************************************************************************
-c* Broadcast the data that does not evolve over time (or temperature).
-c* Also once the constants are broadcasted, all allocatable arrays are
-c* allocated.
-c*
-c* data:
-c* - rgrid
-c* - gas_wl
-c* constants:
-c* - in_ncostf,in_nphif,in_nwlf,in_wlmin,in_wlmax
-c* - gas_ng,in_epsline,in_niwlem
-c* - in_nr,rg_ncr,gas_nr,gas_npacket
-c* - in_nomp,tsp_nt,in_ntc
-c* - gas_xi2beta,gas_dxwin
-c* - flx_wlhelp,flx_wlminlg
-c*
-c* Also scatter the rng_offset_all to the mpi ranks.
-c************************************************************************
-c      integer :: i
-c      integer,allocatable :: isndvec(:)
-c      real*8,allocatable :: sndvec(:)
-cc
-cc-- broadcast integer constants
-c      allocate(isndvec(12))
-c      if(impi==impi0) isndvec = (/in_ncostf,in_nphif,in_nwlf,gas_ng,
-c     &  in_niwlem,in_nr,rg_ncr,gas_nr,gas_npacket,in_nomp,tsp_nt,
-c     &  in_ntc/)
-c      call mpi_bcast(isndvec,12,MPI_INTEGER,
-c     &  impi0,MPI_COMM_WORLD,ierr)
-cc-- copy back
-c      in_ncostf = isndvec(1)
-c      in_nphif = isndvec(2)
-c      in_nwlf = isndvec(3)
-c      gas_ng = isndvec(4)
-c      in_niwlem = isndvec(5)
-c      in_nr = isndvec(6)
-c      rg_ncr = isndvec(7)
-c      gas_nr = isndvec(8)
-c      gas_npacket = isndvec(9)
-c      in_nomp = isndvec(10)
-c      tsp_nt = isndvec(11)
-c      in_ntc = isndvec(12)
-c      deallocate(isndvec)
-cc
-cc-- broadcast real*8 constants
-c      allocate(sndvec(7))
-c      if(impi==impi0) then
-c       sndvec(1:3) = (/in_wlmin,in_wlmax,in_epsline/)
-c       sndvec(4:7) = (/gas_xi2beta,gas_dxwin,flx_wlhelp,flx_wlminlg/)
-c      endif
-c      call mpi_bcast(sndvec,7,MPI_REAL8,
-c     &  impi0,MPI_COMM_WORLD,ierr)
-cc-- copy back
-c      in_wlmin = sndvec(1)
-c      in_wlmax = sndvec(2)
-c      in_epsline = sndvec(3)
-c      gas_xi2beta = sndvec(4)
-c      gas_dxwin = sndvec(5)
-c      flx_wlhelp = sndvec(6)
-c      flx_wlminlg = sndvec(7)
-c      deallocate(sndvec)
-cc
-cc$    if(in_nomp/=0) call omp_set_num_threads(in_nomp)
-cc
-cc-- allocate all arrays. These are deallocated in dealloc_all.f
-c      if(impi/=impi0) then
-c       allocate(rgrid(rg_ncr))
-c       allocate(gas_vals(gas_nr))
-c       allocate(gas_wl(gas_ng))
-c       allocate(gas_cap(gas_nr,gas_ng))
-c       allocate(flx_flux(in_nwlf,in_ncostf,in_nphif))
-c       allocate(flx_iflux(in_nwlf,in_ncostf,in_nphif))
-c      endif
-c      allocate(rng_offset(0:in_nomp-1))
-cc
-cc-- broadcast data
-c      call mpi_bcast(gas_wl,gas_ng,MPI_REAL8,
-c     &  impi0,MPI_COMM_WORLD,ierr)
-cc
-cc WARNING, sizeof may not work on hetrogeneous clusters!!!
-c      call mpi_bcast(rgrid,sizeof(rgrid),MPI_BYTE,
-c     &  impi0,MPI_COMM_WORLD,ierr)
-cc
-cc-- scatter rng_offset
-c      i = sizeof(rng_offset)
-cc-- verify sizes
-c      if(impi==impi0) then
-c       if(sizeof(rng_offset_all) /= i*nmpi) stop
-c     &   'bcast_perm_mpi: rng_offset_all size wrong'
-c      endif
-cc
-cc-- allocate dummy source on non-master ranks
-c!     if(impi/=impi0) allocate(rng_offset_all(nmpi*in_nomp)) !dummy, needed in debug mode
-c      if(impi/=impi0) allocate(rng_offset_all(1)) !dummy, needed for mpi+ifort in debug mode
-cc
-c      call mpi_scatter(rng_offset_all,i,MPI_BYTE,
-c     &  rng_offset,i,MPI_BYTE,
-c     &  impi0,MPI_COMM_WORLD,ierr)
-c      deallocate(rng_offset_all)
-c!     write(6,'(5i13)') (impi*in_nomp+i,rng_offset(i),i=0,in_nomp-1)
-cc!}}}
-      end subroutine bcast_persistent
+      subroutine bcast_permanent
+c     --------------------------!{{{
+      use inputparmod
+      use gasgridmod
+      use particlemod
+      implicit none
+************************************************************************
+* Broadcast the data that does not evolve over time (or temperature).
+* Also once the constants are broadcasted, all allocatable arrays are
+* allocated.
+*
+* arrays:
+* -------
+* real*8 :: gas_rarr(gas_nr+1)
+* real*8 :: gas_drarr(gas_nr)
+* real*8 :: gas_curvcent(gas_nr)
+*
+* scalars:
+*----------
+*-- logical
+* logical :: in_isvelocity
+* logical :: in_puretran
+* logical :: gas_isshell
+* logical :: prt_isimcanlog
+* logical :: prt_isddmcanlog
+*-- integer
+* integer :: gas_nr
+* integer :: gas_ng
+* integer :: gas_velno
+* integer :: gas_velyes
+* integer :: prt_npartmax
+*-- real*8
+* real*8 :: prt_tauddmc
+*
+************************************************************************
+      integer :: n
+      logical,allocatable :: lsndvec(:)
+      integer,allocatable :: isndvec(:)
+      real*8,allocatable :: sndvec(:)
+c
+c-- broadcast constants
+c-- logical
+      n = 5
+      allocate(lsndvec(n))
+      if(impi==impi0) lsndvec = (/in_isvelocity,in_puretran,gas_isshell,
+     &  prt_isimcanlog,prt_isddmcanlog/)
+      call mpi_bcast(lsndvec,n,MPI_LOGICAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c-- copy back
+      in_isvelocity = lsndvec(1)
+      in_puretran = lsndvec(2)
+      gas_isshell = lsndvec(3)
+      prt_isimcanlog = lsndvec(4)
+      prt_isddmcanlog = lsndvec(5)
+      deallocate(lsndvec)
+c
+c-- integer
+      n = 6
+      allocate(isndvec(n))
+      if(impi==impi0) isndvec = (/gas_nr,gas_ng,gas_velno,gas_velyes,
+     &  prt_npartmax,in_nomp/)
+      call mpi_bcast(isndvec,n,MPI_INTEGER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c-- copy back
+      gas_nr = isndvec(1)
+      gas_ng = isndvec(2)
+      gas_velno = isndvec(3)
+      gas_velyes = isndvec(4)
+      prt_npartmax = isndvec(5)
+      in_nomp = isndvec(6)
+      deallocate(isndvec)
+c
+c-- real*8
+      n = 1
+      allocate(sndvec(n))
+      if(impi==impi0) sndvec = (/prt_tauddmc/)
+      call mpi_bcast(sndvec,n,MPI_INTEGER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c-- copy back
+      prt_tauddmc = sndvec(1)
+      deallocate(sndvec)
+c
+c
+c$    if(in_nomp/=0) call omp_set_num_threads(in_nomp)
+c
+c
+c-- allocate all arrays. These are deallocated in dealloc_all.f
+      if(impi/=impi0) then
+       allocate(gas_rarr(gas_nr+1))
+       allocate(gas_drarr(gas_nr))
+       allocate(gas_curvcent(gas_nr))
+      endif
+c
+c-- broadcast data
+      call mpi_bcast(gas_rarr,gas_nr+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_drarr,gas_nr,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_curvcent,gas_nr,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c!}}}
+      end subroutine bcast_permanent
 c
 c
 c
-      subroutine bcast_nonpersistent
-cc     ------------------------!{{{
-c      use inputparmod
-c      use gasgridmod
-c      use timestepmod
-c      implicit none
-c************************************************************************
-c* Broadcast the data that changes with time/temperature.
-c* constants:
-c* - tim_itc
-c* data:
-c* - gas_vals
-c* - gas_cap
-c************************************************************************
-c      call mpi_bcast(tim_itc,1,MPI_INTEGER,
-c     &  impi0,MPI_COMM_WORLD,ierr)
-cc
-c      call mpi_bcast(gas_cap,gas_ng*gas_nr,MPI_REAL,
-c     &  impi0,MPI_COMM_WORLD,ierr)
-cc
-cc WARNING, this may not work on heterogeneous clusters!!!
-c      call mpi_bcast(gas_vals,sizeof(gas_vals),MPI_BYTE,
-c     &  impi0,MPI_COMM_WORLD,ierr)
-cc!}}}
-      end subroutine bcast_nonpersistent
+      subroutine bcast_nonpermanent
+c     ------------------------!{{{
+      use gasgridmod
+      use particlemod
+      use timestepmod
+      implicit none
+************************************************************************
+* Broadcast the data that changes with time/temperature.
+*-- scalars:
+* real*8 :: tsp_time
+* real*8 :: tsp_texp
+* real*8 :: tsp_dt
+*
+*-- arrays:
+* real*8 :: gas_tempkev(gas_nr)
+* real*8 :: gas_fcoef(gas_nr)
+* real*8 :: gas_sig(gas_nr)
+* real*8 :: gas_emitprob(gas_ng,gas_nr)
+* real*8 :: gas_ppl(gas_ng,gas_nr)
+* real*8 :: gas_ppr(gas_ng,gas_nr)
+* real*8 :: gas_opacleakl(gas_ng,gas_nr)
+* real*8 :: gas_opacleakr(gas_ng,gas_nr)
+* real*8 :: gas_cap(gas_ng,gas_nr)
+* real*8 :: gas_wl(gas_ng)
+*-- derived type
+* type(packet) :: prt_particles(prt_npartmax)
+************************************************************************
+      integer :: n
+      real*8,allocatable :: sndvec(:)
+c
+c-- real*8
+      n = 3
+      allocate(sndvec(n))
+      if(impi==impi0) sndvec = (/tsp_time,tsp_texp,tsp_dt/)
+      call mpi_bcast(sndvec,n,MPI_INTEGER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c-- copy back
+      tsp_time = sndvec(1)
+      tsp_texp = sndvec(2)
+      tsp_dt = sndvec(3)
+      deallocate(sndvec)
+c
+c-- allocate all arrays. These are deallocated in dealloc_all.f
+      if(impi/=impi0) then
+       allocate(gas_tempkev(gas_nr))
+       allocate(gas_fcoef(gas_nr))
+       allocate(gas_sig(gas_nr))
+       allocate(gas_emitprob(gas_ng,gas_nr))
+       allocate(gas_ppl(gas_ng,gas_nr))
+       allocate(gas_ppr(gas_ng,gas_nr))
+       allocate(gas_opacleakl(gas_ng,gas_nr))
+       allocate(gas_opacleakr(gas_ng,gas_nr))
+       allocate(gas_cap(gas_ng,gas_nr))
+       allocate(gas_wl(gas_ng))
+c-- derived type
+       allocate(prt_particles(prt_npartmax))
+      endif
+c
+      call mpi_bcast(gas_tempkev,gas_nr,MPI_REAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_fcoef,gas_nr,MPI_REAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_sig,gas_nr,MPI_REAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_emitprob,gas_nr*gas_ng,MPI_REAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_ppl,gas_nr*gas_ng,MPI_REAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_ppr,gas_nr*gas_ng,MPI_REAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_opacleakl,gas_nr*gas_ng,MPI_REAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_opacleakr,gas_nr*gas_ng,MPI_REAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_cap,gas_nr*gas_ng,MPI_REAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_wl,gas_ng,MPI_REAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+c WARNING, this may not work on heterogeneous clusters!!!
+      call mpi_bcast(prt_particles,sizeof(prt_particles),MPI_BYTE,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c!}}}
+      end subroutine bcast_nonpermanent
 c
 c
 c

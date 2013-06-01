@@ -24,8 +24,7 @@ subroutine sourcenumbers
   gas_etot = gas_esurf
 
   ! Calculating gas_exsource from analytic distribution
-  ! if gas_isanalsrc=t:
-  if(gas_isanalsrc) then
+  if(gas_srctype/='none') then
      call analytic_source
   else
      gas_exsource=0d0
@@ -39,7 +38,7 @@ subroutine sourcenumbers
 !new !gas_vals2(ir)%emit = (1.e35)*gas_vals2(ir)%volr
 !new gas_vals2(ir)%emit = tsp_dt*gas_fcoef(ir)*gas_siggrey(ir)*pc_c*gas_vals2(ir)%ur*gas_vals2(ir)%volr
      !gas_vals2(ir)%emit = gas_vals2(ir)%emit*(gas_velno*1.0+gas_velyes*tsp_texp**3)
-     if(.not.gas_novolsrc.and..not.gas_isanalsrc) then
+     if(.not.gas_novolsrc .and. gas_srctype=='none') then
         gas_vals2(ir)%emit = gas_vals2(ir)%emit + gas_vals2(ir)%nisource
      endif
      gas_etot = gas_etot + gas_vals2(ir)%emit

@@ -10,7 +10,7 @@ c     -------------
 c
       contains
 c
-      subroutine bcast_persistent
+      subroutine bcast_permanent
 c     --------------------------
       use inputparmod, only:in_nomp
       implicit none
@@ -18,16 +18,16 @@ c     --------------------------
 * Broadcast the data that does not evolve over time (or temperature).
 * - stub
 ************************************************************************
-      end subroutine bcast_persistent
+      end subroutine bcast_permanent
 c
 c
-      subroutine bcast_nonpersistent
+      subroutine bcast_nonpermanent
 c     ------------------------
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
 * - stub
 ************************************************************************
-      end subroutine bcast_nonpersistent
+      end subroutine bcast_nonpermanent
 c
 c
       subroutine reduce_tally

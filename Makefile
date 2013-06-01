@@ -58,6 +58,10 @@ run: RUNDIR := $(CURDIR)/Run
 run: all prepare_run
 	cd $(RUNDIR) && ./supernu
 
+runmpi: RUNDIR := $(CURDIR)/Run
+runmpi: all prepare_run
+	cd $(RUNDIR) && mpirun -np 1 ./supernu
+
 check: all $(TESTS)
 	@echo "TESTSUITE SUCCESSFUL: $(shell date)"
 	@echo
@@ -81,7 +85,7 @@ bbxsmod.o: physconstmod.o elemdatamod.o miscmod.o
 inputparmod.o: miscmod.o physconstmod.o
 ionsmod.o: miscmod.o physconstmod.o
 miscmod.o: MISC/warn.f MISC/lcase.f
-mpimod.o: gasgridmod.o inputparmod.o timestepmod.o timingmod.o
+mpimod.o: gasgridmod.o inputparmod.o timestepmod.o timingmod.o particlemod.o
 timestepmod.o: physconstmod.o
 gasgridmod.o: inputparmod.o
 inputstrmod.o: physconstmod.o miscmod.o

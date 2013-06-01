@@ -104,7 +104,7 @@ c-- to Gaussian for manufacture tests
 c
 c-- mass
       if(in_totmass==0d0) then!{{{
-       if(.not.allocated(str_mass)) error stop 'gg_setup: str_mass allc'
+       if(.not.allocated(str_mass)) stop 'gg_setup: str_mass allc'
        gas_vals2%mass = str_mass
       elseif(in_srctype=='manu') then
        do ir=1,gas_nr
@@ -113,7 +113,7 @@ c-- mass
         gas_vals2(ir)%mass = masv
        enddo
       else
-       error stop 'gg_setup: in_totmass was not implemented yet'
+       stop 'gg_setup: in_totmass was not implemented yet'
       endif!}}}
 c
 c-- temp and ur
@@ -122,7 +122,7 @@ c-- temp and ur
 c
 c-- adopt partial masses from input file
       if(.not.in_noreadstruct) then
-       if(.not.allocated(str_massfr)) error stop 'no input.str read'
+       if(.not.allocated(str_massfr)) stop 'no input.str read'
        do i=1,str_nabund
         j = str_iabund(i)
         if(j>gas_nelem) j = 0 !divert to container
@@ -134,7 +134,7 @@ c-- set flat composition if selected
        gas_vals2%mass0fr(28) = 1d0 !stable+unstable Ni abundance
        gas_vals2(1:nint(4d0*gas_nr/5d0))%mass0fr(-1) = 1d0 !Ni56 core
       else
-       error stop 'gg_setup: no input.str and no solidni56!'
+       stop 'gg_setup: no input.str and no solidni56!'
       endif
 c
 c-- convert mass fractions to # atoms

@@ -36,18 +36,18 @@ c     -----------------------------------
 c
 c-- open file
       open(4,file=fname,status='old')
-      if(ierr/=0) error stop 'read_inputstr: file missing: input.str'
+      if(ierr/=0) stop 'read_inputstr: file missing: input.str'
 c
 c-- read dimensions
       read(4,*)
       read(4,*,iostat=ierr) dmy,nr_r,str_nabund
       if(ierr/=0) stop 'read_inputstr: input.str format err: dimensions'
 c-- verify dimension
-      if(nr_r/=nr) error stop 'read_inputstr: incompatible nr dimension'
+      if(nr_r/=nr) stop 'read_inputstr: incompatible nr dimension'
 c
 c-- allocate arrays
-      allocate(str_velright(str_nabund))
-      allocate(str_mass(str_nabund))
+      allocate(str_velright(nr))
+      allocate(str_mass(nr))
       allocate(str_massfr(str_nabund,nr))
       allocate(str_abundlabl(str_nabund))
       allocate(raw(str_nabund+2,nr))

@@ -28,11 +28,11 @@ module gasgridmod
 
   real*8 :: gas_lr = 0
   real*8 :: gas_l0 = 0  !innermost static radius
-  logical :: gas_isvelocity
-  logical :: gas_isshell  !domain is shell, innermost radius not zero
-  logical :: gas_novolsrc !no external volume source (e.g. radioactivity)
-  logical :: gas_isanalsrc  !switch to use analytic_source
-  integer :: gas_velno, gas_velyes
+  logical :: gas_isvelocity = .false.
+  logical :: gas_isshell = .false.  !domain is shell, innermost radius not zero
+  logical :: gas_novolsrc = .false. !no external volume source (e.g. radioactivity)
+  integer :: gas_velno = 1
+  integer :: gas_velyes = 0
   real*8 :: gas_templ0=0 !surface temperature at innermost radius
 !-(rev. 121)
   real*8 :: gas_sigcoefs=0  !analytic scattering opacity power law coefficient
@@ -52,23 +52,24 @@ module gasgridmod
   character(4) :: gas_suol = 'tsta' !if gas_opacanaltype='pick', sets picket
   !magnitudes with values from cases in literature (Su&Olson 1999).
   
-  real*8 :: gas_ldisp1 !if gas_opacanaltype='line',
-  real*8 :: gas_ldisp2 !if gas_opacanaltype-'line'
+  real*8 :: gas_ldisp1 = 0d0 !if gas_opacanaltype='line',
+  real*8 :: gas_ldisp2 = 0d0 !if gas_opacanaltype-'line'
   !ratio of strong line group opacity strength to weak group
 
-  character(4) :: gas_srctype = 'heav' !analytic external source dependence
+  character(4) :: gas_srctype = 'none' !analytic external source dependence
   !on space (and group if gas_srctype='manu')
   integer :: gas_nheav = 0 !outer cell bound of external heaviside ('heav') source
   real*8 :: gas_theav = 0d0 !duration of heaviside source
   real*8 :: gas_srcmax = 0d0 !peak strength (ergs/cm^3/s) of external source
 
-  real*8 :: gas_emat
+  real*8 :: gas_emat = 0d0
 
   real*8, dimension(:), allocatable :: gas_rarr   !(gas_nr+1), left cell edge values
   real*8, dimension(:), allocatable :: gas_drarr  !(gas_nr)
   real*8, dimension(:), allocatable :: gas_curvcent !(gas_nr), multiplied by tauddmc for mfp threshold
   real*8, dimension(:), allocatable :: gas_edep, gas_siggrey, gas_fcoef !(gas_nr)
   real*8, dimension(:), allocatable :: gas_tempb  !(gas_nr+1), interpolated temperatures (keV)
+  real*8, dimension(:), allocatable :: gas_tempkev !(gas_nr), interpolated temperatures (keV)
   real*8, dimension(:), allocatable :: gas_rhob   !(gas_nr+1), interpolated densities
   real*8, allocatable :: gas_emitprob(:,:)           !(gas_ng,gas_nr)
   real*8, allocatable :: gas_ppl(:,:), gas_ppr(:,:)  !(gas_ng,gas_nr)
@@ -205,6 +206,7 @@ module gasgridmod
     allocate(gas_dwl(gas_ng)) !wavelength grid bin width
 
     allocate(gas_tempb(gas_nr+1))  !cell boundary temperature
+    allocate(gas_tempkev(gas_nr))  !HACK
     allocate(gas_rhob(gas_nr+1))   !cell boundary density
     
     allocate(gas_caprosl(gas_ng,gas_nr))  !left cell edge group Rosseland opacities
