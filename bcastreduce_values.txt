@@ -1,0 +1,78 @@
+The quantities listed here are used in
+particle_advance.  They must be broadcasted and/or
+reduced by MPI.
+
+============================================
+Permanent input values (bcast_persistent):
+
+-physconstmod:
+real*8 :: pc_c
+real*8 :: pc_h
+real*8 :: pc_ev
+real*8 :: pc_plkpk
+
+-gasgridmod:
+integer :: gas_nr
+integer :: gas_ng
+integer :: gas_velno
+integer :: gas_velyes
+logical :: gas_isshell
+real*8 :: gas_rarr(gas_nr+1)
+real*8 :: gas_drarr(gas_nr)
+real*8 :: gas_curvcent(gas_nr)
+real*8 :: gas_wl(gas_ng)
+
+-particlesmod:
+integer :: prt_npartmax
+logical :: prt_isimcanlog
+logical :: prt_isddmcanlog
+real*8 :: prt_tauddmc
+
+-timestepmod:
+real*8 :: tsp_dt
+
+-inputparmod:
+logical :: in_isvelocity
+logical :: in_puretran
+
+============================================
+
+============================================
+Nonpermanent input values (bcast_nonpersistent):
+
+-gasgridmod:
+real*8 :: gas_vals2(gas_nr)%tempkev
+real*8 :: gas_fcoef(gas_nr)
+real*8 :: gas_sig(gas_nr)
+real*8 :: gas_emitprob(gas_ng,gas_nr)
+real*8 :: gas_ppl(gas_ng,gas_nr)
+real*8 :: gas_ppr(gas_ng,gas_nr)
+real*8 :: gas_opacleakl(gas_ng,gas_nr)
+real*8 :: gas_opacleakr(gas_ng,gas_nr)
+real :: gas_cap(gas_ng,gas_nr)
+
+-particlemod:
+logical :: prt_done
+type(packet) :: particles(prt_npartmax)
+
+-timestepmod:
+real*8 :: tsp_time
+real*8 :: tsp_texp
+
+-timingmod:
+real*8 :: t_pckt(2)
+
+============================================
+
+============================================
+Tallied output values
+
+-gasgridmod:
+real*8 :: gas_erad
+real*8 :: gas_eright
+real*8 :: gas_eleft
+real*8 :: gas_numcensus(gas_nr)
+real*8 :: gas_edep(gas_nr)
+real*8 :: gas_eraddens(gas_ng,gas_nr)
+
+============================================
