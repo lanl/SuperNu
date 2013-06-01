@@ -24,6 +24,8 @@ program supernu
 ! - clean up manual stratification usage throughout code (into dedicated
 !   subroutine?) (13/05/31)
 ! - verify linear and uniform velocity grid in input.str (13/05/31)
+! - check wavelength units for bb and bf data
+! - fix gas_wl indexing BUG in physical_opacity
 !***********************************************************************
   real*8 :: help, dt
   real*8 :: t_elapsed

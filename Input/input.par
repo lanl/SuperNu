@@ -1,7 +1,7 @@
 &inputpars
 
 !-- misc
-in_grab_stdout = t
+in_grab_stdout = f
 in_puretran = f
 
 !-- time step
