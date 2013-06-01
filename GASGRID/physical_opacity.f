@@ -39,14 +39,14 @@ c-- bbxs
 c-- constants
       real*8 :: wlhelp,wlminlg
 c-- temporary cap array in the right order
-      real :: cap(gas_nr,gas_ng)
+      real*8 :: cap(gas_nr,gas_ng)
 c
 c-- constants
       wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
       wlminlg = log(dble(in_wlmin))
 c
 c-- reset
-      cap = 0.
+      cap = 0d0
 c
 c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_vals2%temp)
@@ -93,13 +93,13 @@ c-- oc high enough to be significant?
 !        if(caphelp==0.) write(6,*) 'cap0',cap(icg,iwl),phi,
 !    &     bb_xs(i)%gxs,ocggrnd,exp(-bb_xs(i)%chilw*hckt(icg)),expfac
          if(caphelp==0.) cycle
-         cap(icg,iwl) = cap(icg,iwl) + sngl(caphelp)
+         cap(icg,iwl) = cap(icg,iwl) + caphelp
         enddo !icg
 c-- vectorized alternative is slower
 cslow   where(gas_vals2(:)%opdirty .and. grndlev(:,ii,iz)>1d-30)
 cslow    cap(:,iwl) = cap(:,iwl) +
-cslow&     sngl(phi*bb_xs(i)%gxs*grndlev(:,ii,iz)*
-cslow&     exp(-bb_xs(i)%chilw*hckt(:))*(1d0 - exp(-wlinv*hckt(:))))
+cslow&     phi*bb_xs(i)%gxs*grndlev(:,ii,iz)*
+cslow&     exp(-bb_xs(i)%chilw*hckt(:))*(1d0 - exp(-wlinv*hckt(:)))
 cslow   endwhere
        enddo !i
 c$omp end parallel do
@@ -134,7 +134,7 @@ c$omp& shared(cap)
           forall(icg=1:gas_nr)
 *         forall(icg=1:gas_nr,gas_vals2(icg)%opdirty)
      &      cap(icg,iw) = cap(icg,iw) +
-     &      sngl(xs*pc_mbarn*grndlev(icg,ii,iz))
+     &      xs*pc_mbarn*grndlev(icg,ii,iz)
          enddo !ie
         enddo !iz
 !       write(6,*) 'wl done:',iw !DEBUG
@@ -197,7 +197,7 @@ c-- asymptotic value
 c-- cross section
           cap8 = cap8 + help*gff*iz**2*gas_vals2(icg)%natom1fr(iz)
          enddo !iz
-         cap(icg,iw) = cap(icg,iw) + sngl(cap8)
+         cap(icg,iw) = cap(icg,iw) + cap8
         enddo !icg
        enddo !iw
 c$omp end parallel do
@@ -206,7 +206,7 @@ c
        call timereg(t_ff, t1-t0)!}}}
       endif !in_noffopac
 c
-      if(any(cap==0.))
+      if(any(cap==0d0))
      & call warn('opacity_calc','some cap==0')
 c
       gas_cap = gas_cap + transpose(cap)

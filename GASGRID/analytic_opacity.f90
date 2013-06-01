@@ -45,7 +45,7 @@ subroutine analytic_opacity
         sigll = gas_siggrey(ir)*(gas_tempb(ir)/gas_vals2(ir)%tempkev)**gas_sigtpwr
         sigrr = gas_siggrey(ir)*(gas_tempb(ir+1)/gas_vals2(ir)%tempkev)**gas_sigtpwr
         do ig = 1, gas_ng
-           gas_cap(ig,ir) = sngl(gas_siggrey(ir))
+           gas_cap(ig,ir) = gas_siggrey(ir)
            gas_caprosl(ig,ir) = sigll
            gas_caprosr(ig,ir) = sigrr
         enddo
@@ -66,7 +66,7 @@ subroutine analytic_opacity
            !group (Planck) opacities:
            x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3)
            x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3)
-           gas_cap(ig,ir) = sngl(0.5d0*gas_siggrey(ir)*(x1+x2)/(x1*x2)**2)
+           gas_cap(ig,ir) = 0.5d0*gas_siggrey(ir)*(x1+x2)/(x1*x2)**2
            !
            !group left (Rosseland) opacities:
            x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3)
@@ -102,8 +102,8 @@ subroutine analytic_opacity
      enddo
      if(gas_suol=='tsta') then    !Case: A
         do ir = 1, gas_nr
-           gas_cap(1,ir) = sngl(gas_siggrey(ir))
-           gas_cap(2,ir) = sngl(gas_siggrey(ir))
+           gas_cap(1,ir) = gas_siggrey(ir)
+           gas_cap(2,ir) = gas_siggrey(ir)
            gas_caprosl(1,ir) = sigll
            gas_caprosl(2,ir) = sigll
            gas_caprosr(1,ir) = sigrr
@@ -116,8 +116,8 @@ subroutine analytic_opacity
         enddo
      elseif(gas_suol=='tstb') then  !Case: B
         do ir = 1, gas_nr
-           gas_cap(1,ir) = sngl(2d0*gas_siggrey(ir)/11d0)
-           gas_cap(2,ir) = sngl(20d0*gas_siggrey(ir)/11d0)
+           gas_cap(1,ir) = 2d0*gas_siggrey(ir)/11d0
+           gas_cap(2,ir) = 20d0*gas_siggrey(ir)/11d0
            gas_caprosl(1,ir) = 2d0*sigll/11d0
            gas_caprosl(2,ir) = 20d0*sigll/11d0
            gas_caprosr(1,ir) = 2d0*sigrr/11d0
@@ -130,8 +130,8 @@ subroutine analytic_opacity
         enddo
      elseif(gas_suol=='tstc') then  !Case: C
         do ir = 1, gas_nr
-           gas_cap(1,ir) = sngl(2d0*gas_siggrey(ir)/101d0)
-           gas_cap(2,ir) = sngl(200d0*gas_siggrey(ir)/101d0)
+           gas_cap(1,ir) = 2d0*gas_siggrey(ir)/101d0
+           gas_cap(2,ir) = 200d0*gas_siggrey(ir)/101d0
            gas_caprosl(1,ir) = 2d0*sigll/101d0
            gas_caprosl(2,ir) = 200d0*sigll/101d0
            gas_caprosr(1,ir) = 2d0*sigrr/101d0
@@ -158,13 +158,13 @@ subroutine analytic_opacity
         !
         !set odd group magnitudes (low)
         do ig = 1, gas_ng, 2
-           gas_cap(ig,ir) = sngl(gas_siggrey(ir)*gas_ldisp1)
+           gas_cap(ig,ir) = gas_siggrey(ir)*gas_ldisp1
            gas_caprosl(ig,ir) = sigll*gas_ldisp1
            gas_caprosr(ig,ir) = sigrr*gas_ldisp1
         enddo
         !set even group magnitudes (high)
         do ig = 2, gas_ng, 2
-           gas_cap(ig,ir) = sngl(gas_siggrey(ir)*gas_ldisp2)
+           gas_cap(ig,ir) = gas_siggrey(ir)*gas_ldisp2
            gas_caprosl(ig,ir) = sigll*gas_ldisp2
            gas_caprosr(ig,ir) = sigrr*gas_ldisp2
         enddo

@@ -15,7 +15,7 @@ module gasgridmod
 
   real*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
   real*8,allocatable :: gas_dwl(:) !(gas_ng) wavelength grid bin width
-  real,allocatable :: gas_cap(:,:) !(gas_ng,gas_nr) Line+Cont extinction coeff
+  real*8,allocatable :: gas_cap(:,:) !(gas_ng,gas_nr) Line+Cont extinction coeff
   real*8,allocatable :: gas_sig(:) !(gas_nr) scattering coefficient
 !-(rev. 121): edge scattering coefficient (a secondary quantity)
   real*8,allocatable :: gas_sigbl(:) !(gas_nr), left
