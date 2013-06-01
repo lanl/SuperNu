@@ -35,7 +35,7 @@ c     -----------------------------------
       real*8 :: help
 c
 c-- open file
-      open(4,file=fname,status='old')
+      open(4,file=fname,status='old',iostat=ierr)
       if(ierr/=0) stop 'read_inputstr: file missing: input.str'
 c
 c-- read dimensions

@@ -136,22 +136,19 @@ program supernu
     call vacancies
     !Calculating properties of prt_particles on domain boundary
     call boundary_source
-write(0,*) 'test2b',impi
     !Calculating properties of prt_particles emitted in domain interior
+write(0,*) 'test1',impi
     call interior_source
-write(0,*) 'test2c',impi
+write(0,*) 'test2',impi
     deallocate(prt_vacantarr)
     !Advancing prt_particles to update radiation field    
 
-write(0,*) 'test3',impi
 !-- advance particles
     call particle_advance
 
-write(0,*) 'test4',impi
 !-- collect particle results from all workers
     call reduce_tally !MPI
     
-write(0,*) 'test5',impi
     if(impi==impi0) then
       call temperature_update
       call timestep_update(dt) !Updating elapsed tsp_time and expansion tsp_time
