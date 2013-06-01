@@ -29,6 +29,7 @@ program supernu
 ! - remove velyes|velno from analytic expressions throughout the code (13/06/01)
 ! - improve grid construction: store unit-sphere radii separately (13/06/01)
 ! - remove duplication of gas_tempkev with gas_vals2%tempkev (13/05/31)
+! - clean up dealloc_all and add all arrays allocated in mpimod_mpi.f
 !***********************************************************************
   real*8 :: help, dt
   real*8 :: t_elapsed
@@ -49,7 +50,7 @@ program supernu
 !-- other tasks before packet propagation begins.
 !--
   if(impi==impi0) then
-   lmpi0 = .true. !master rank flag
+   lmpi0 = .true. !master rank flag!{{{
    call time(t0)
 !-- startup message
    call banner
@@ -103,44 +104,56 @@ program supernu
    if(.not.in_noffopac) call ffxs_read_data           !free-free cross section data
 !
    call time(t1)
-   t_setup = t1-t0
+   t_setup = t1-t0!}}}
   endif !impi
-  
-  !calculating analytic initial particle distribution (if any)
-  call initialnumbers
 
   call bcast_permanent !MPI
+
+!-- calculating analytic initial particle distribution (if any)
+! not working currently, as prt_particle data structure is only
+! available after bcast_nonpermanent
+!  call initialnumbers
 
 !
 !-- time step loop
 !=================
-  do tsp_tn = 1, tsp_nt
+  do tsp_it = 1, tsp_nt
     if(impi==impi0) then
-      write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
+      write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_it,tsp_texp/pc_day
 !-- update all non-permanent variables
       call gasgrid_update
 !-- number of source prt_particles per cell
       call sourcenumbers
-     write(0,*) prt_nnew
+!-- DIRTY HACK:
+      gas_tempkev = gas_vals2%tempkev  !DIRTY HACK -- THIS TEMPKEV DUPLICATION NEEDS TO GO...
     endif !impi
 
+write(0,*) 'test1',impi
+!-- broadcast to all workers
+    call bcast_nonpermanent !MPI
+
+write(0,*) 'test2',impi
 !-- Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
-    write(0,*) prt_nnew
     allocate(prt_vacantarr(prt_nnew))
     call vacancies
+write(0,*) 'test2a',impi
     !Calculating properties of prt_particles on domain boundary
     call boundary_source
+write(0,*) 'test2b',impi
     !Calculating properties of prt_particles emitted in domain interior
     call interior_source
     deallocate(prt_vacantarr)
     !Advancing prt_particles to update radiation field    
 
-    !-- advance particles
-    gas_tempkev = gas_vals2%tempkev  !DIRTY HACK -- THIS TEMPKEV DUPLICATION NEEDS TO GO...
-    call bcast_nonpermanent !MPI
+write(0,*) 'test3',impi
+!-- advance particles
     call particle_advance
+
+    write(0,*) 'test4',impi
+!-- collect particle results from all workers
     call reduce_tally !MPI
     
+    write(0,*) 'test5',impi
     if(impi==impi0) then
       call temperature_update
       call timestep_update(dt) !Updating elapsed tsp_time and expansion tsp_time

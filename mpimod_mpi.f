@@ -17,6 +17,7 @@ c     --------------------------!{{{
       use inputparmod
       use gasgridmod
       use particlemod
+      use timestepmod
       implicit none
 ************************************************************************
 * Broadcast the data that does not evolve over time (or temperature).
@@ -43,6 +44,8 @@ c     --------------------------!{{{
 * integer :: gas_velno
 * integer :: gas_velyes
 * integer :: prt_npartmax
+* integer :: in_nomp
+* integer :: tsp_nt
 *-- real*8
 * real*8 :: prt_tauddmc
 *
@@ -69,10 +72,10 @@ c-- copy back
       deallocate(lsndvec)
 c
 c-- integer
-      n = 6
+      n = 7
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/gas_nr,gas_ng,gas_velno,gas_velyes,
-     &  prt_npartmax,in_nomp/)
+     &  prt_npartmax,in_nomp,tsp_nt/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -82,6 +85,7 @@ c-- copy back
       gas_velyes = isndvec(4)
       prt_npartmax = isndvec(5)
       in_nomp = isndvec(6)
+      tsp_nt = isndvec(7)
       deallocate(isndvec)
 c
 c-- real*8
@@ -103,6 +107,7 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(gas_rarr(gas_nr+1))
        allocate(gas_drarr(gas_nr))
        allocate(gas_curvcent(gas_nr))
+       allocate(prt_particles(prt_npartmax))
       endif
 c
 c-- broadcast data
@@ -129,6 +134,8 @@ c     ------------------------!{{{
 * real*8 :: tsp_time
 * real*8 :: tsp_texp
 * real*8 :: tsp_dt
+* integer :: prt_nnew
+* integer :: prt_nsurf
 *
 *-- arrays:
 * real*8 :: gas_tempkev(gas_nr)
@@ -141,11 +148,21 @@ c     ------------------------!{{{
 * real*8 :: gas_opacleakr(gas_ng,gas_nr)
 * real*8 :: gas_cap(gas_ng,gas_nr)
 * real*8 :: gas_wl(gas_ng)
-*-- derived type
-* type(packet) :: prt_particles(prt_npartmax)
 ************************************************************************
       integer :: n
+      integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:)
+c
+c-- integer
+      n = 2
+      allocate(isndvec(n))
+      if(impi==impi0) isndvec = (/prt_nnew,prt_nsurf/)
+      call mpi_bcast(isndvec,n,MPI_INTEGER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c-- copy back
+      prt_nnew = isndvec(1)
+      prt_nsurf = isndvec(2)
+      deallocate(isndvec)
 c
 c-- real*8
       n = 3
@@ -160,7 +177,7 @@ c-- copy back
       deallocate(sndvec)
 c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
-      if(impi/=impi0) then
+      if(impi/=impi0 .and. tsp_it==1) then
        allocate(gas_tempkev(gas_nr))
        allocate(gas_fcoef(gas_nr))
        allocate(gas_sig(gas_nr))
@@ -171,8 +188,6 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(gas_opacleakr(gas_ng,gas_nr))
        allocate(gas_cap(gas_ng,gas_nr))
        allocate(gas_wl(gas_ng))
-c-- derived type
-       allocate(prt_particles(prt_npartmax))
       endif
 c
       call mpi_bcast(gas_tempkev,gas_nr,MPI_REAL,
@@ -194,10 +209,6 @@ c
       call mpi_bcast(gas_cap,gas_nr*gas_ng,MPI_REAL,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_wl,gas_ng,MPI_REAL,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-c WARNING, this may not work on heterogeneous clusters!!!
-      call mpi_bcast(prt_particles,sizeof(prt_particles),MPI_BYTE,
      &  impi0,MPI_COMM_WORLD,ierr)
 c!}}}
       end subroutine bcast_nonpermanent

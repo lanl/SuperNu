@@ -2,7 +2,7 @@
 c     --------------------------------
       use gasgridmod
       use ionsmod
-      use timestepmod, only:tsp_tn
+      use timestepmod, only:tsp_it
       use timingmod
       implicit none
       logical,intent(in) :: do_output
@@ -58,7 +58,7 @@ c
 c-- print partial densities
       if(do_output) then
        write(8,*)!{{{
-       write(8,*) 'partial densities:',tsp_tn
+       write(8,*) 'partial densities:',tsp_it
 c-- electron density
        write(8,'(2a12)') 'nelec','elec_dens' ![atom^-1],[cm^-3]
        do icg=1,gas_nr

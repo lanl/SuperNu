@@ -38,7 +38,7 @@ c
       write(7,*)
       write(7,*) 'update gas grid:'
       write(7,*) '---------------------------'
-      if(tsp_tn==1) then
+      if(tsp_it==1) then
        write(6,*)
        write(6,*) 'update gas grid:'
        write(6,*) '---------------------------'
@@ -87,7 +87,7 @@ c-- density
       gas_vals2%rho = gas_vals2%mass/gas_vals2%vol
 c
 c-- keep track of temperature evolution
-      gas_temphist(:,tsp_tn) = gas_vals2%temp!}}}
+      gas_temphist(:,tsp_it) = gas_vals2%temp!}}}
 c
 c
 c-- update interpolated density and temperatures at cell edges
@@ -138,23 +138,23 @@ c
 c-- solve LTE EOS
 c================
       do_output = (in_pdensdump=='each' .or. !{{{
-     &  (in_pdensdump=='one' .and. tsp_tn==1))
+     &  (in_pdensdump=='one' .and. tsp_it==1))
 c
       call eos_update(do_output)
-      if(tsp_tn==1) write(6,'(1x,a27,2(f8.2,"s"))')
+      if(tsp_it==1) write(6,'(1x,a27,2(f8.2,"s"))')
      &  'eos timing                :',t_eos!}}}
 c
 c
 c
 c-- opacity per rcell unit
 c========================
-      calc_opac: if(tsp_tn==0) then
+      calc_opac: if(tsp_it==0) then
 c!{{{
 c-- gamma opacity
        gas_capgam = in_opcapgam*ye*
      &   gas_vals2(:)%mass/gas_vals2(:)%volcrp
 c!}}}
-      else calc_opac !tsp_tn
+      else calc_opac !tsp_it
 c!{{{
 c-- thomson scattering
        gas_sig = cthomson*gas_vals2(:)%nelec*
@@ -172,11 +172,11 @@ c--------------------------------------------------------------
 c-- do nothing
        else
 c-- open file descriptor
-        if(tsp_tn==1) then
+        if(tsp_it==1) then
          open(4,file='opacdump',action='write',status='replace')
 c-- write wl-grid
          write(4,'(a,3i8)') '#',gas_ng,gas_nr
-         write(4,'(a,3i8,1p,2e12.4)') '#',tsp_tn,tsp_tn,0, 0., 0.
+         write(4,'(a,3i8,1p,2e12.4)') '#',tsp_it,tsp_it,0, 0., 0.
          write(4,'(1p,10e12.4)') gas_wl
         elseif(trim(in_opacdump)=='each') then
          open(4,file='opacdump',action='write',status='replace')
@@ -191,7 +191,7 @@ c-- write opacity grid
        if(do_output) then
         do ir=1,gas_nr
 c-- convert from opacity in redona's rcell units to opacity per cm
-         write(4,'(a,3i8,1p,2e12.4)') '#',tsp_tn,tsp_tn,ir,
+         write(4,'(a,3i8,1p,2e12.4)') '#',tsp_it,tsp_it,ir,
      &     gas_vals2(ir)%temp,gas_sig
          write(4,'(1p,10e12.4)') (gas_cap(j,ir),j=1,gas_ng)
         enddo
@@ -244,10 +244,10 @@ c-- Rosseland output
        enddo
 c
 c-- timing output
-       if(tsp_tn==1 .and. tsp_tn==1)
+       if(tsp_it==1 .and. tsp_it==1)
      &   write(6,'(1x,a27,3(f8.2,"s"))') 'opacity timing: bb|bf|ff  :',
      &   t_bb(1),t_bf(1),t_ff(1) !}}}
-      endif calc_opac !tsp_tn
+      endif calc_opac !tsp_it
 c
 c
 c
@@ -256,10 +256,10 @@ c=========
 c-- to stdout!{{{
 c
 c-- energy depots
-      if(tsp_tn==1) then
+      if(tsp_it==1) then
        write(6,'(1x,a,1p,e12.4)') 'energy deposition (Lagr)  :',
      &   sum(gas_vals2(:)%nisource)
-      endif !tsp_tn
+      endif !tsp_it
 c-- totals
       write(7,*)
       write(7,'(1x,a,1p,e12.4)') 'energy deposition (Lagr)  :',
@@ -277,7 +277,7 @@ c-- arrays
       enddo
 !c
 !c-- scattering coefficients
-!      if(tsp_tn>0) then
+!      if(tsp_it>0) then
 !       write(7,*)
 !       write(7,*) 'sig'
 !       write(7,'(1p,10e12.4)') gas_sig

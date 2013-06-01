@@ -1,13 +1,15 @@
 &inputpars
 
 !-- misc
-in_grab_stdout = f
+in_nomp = 1
+in_grab_stdout = t
 in_puretran = f
 
 !-- time step
 in_tfirst = 2d0
 in_tlast = 11d0
-in_nt = 192
+in_nt = 1
+!in_nt = 192
 in_alpha = 1d0
 
 !-- gas grid settings

@@ -17,7 +17,7 @@ c-- ionsmod
 c-- bbxsmod
       if(allocated(bb_xs)) deallocate(bb_xs) !only impi==impi0, but only if nobbopac==f
 !c-- gasgridmod
-      deallocate(gas_wl,gas_cap)
+      deallocate(gas_wl)
 *     if(impi==impi0) deallocate(gas_vals2,gas_temphist,gas_dwl)
       deallocate(gas_vals2,gas_temphist,gas_dwl)
 c-- gasgridmod

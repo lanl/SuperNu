@@ -3,7 +3,7 @@ module timestepmod
   implicit none
 
   integer :: tsp_nt = 0  !total # of time steps
-  integer :: tsp_tn  !current time step number
+  integer :: tsp_it  !current time step number
   real*8 :: tsp_texp
   real*8 :: tsp_tcenter
   real*8 :: tsp_time
