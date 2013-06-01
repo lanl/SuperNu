@@ -75,7 +75,7 @@ c
 c-- update volume and density 
 c============================
       if(gas_isvelocity) then!{{{
-       help = gas_velout*tsp_texp
+       help = (gas_velout-gas_v0)*tsp_texp
       else
        help = gas_lr
       endif
