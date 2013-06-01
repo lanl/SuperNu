@@ -22,7 +22,8 @@ program supernu
 ! - unify dr3_34pi with volr (13/05/31)
 ! - unify tempkev with temp (13/05/31)
 ! - clean up manual stratification usage throughout code (into dedicated
-!   subroutine?)
+!   subroutine?) (13/05/31)
+! - verify linear and uniform velocity grid in input.str (13/05/31)
 !***********************************************************************
   real*8 :: help, dt
   real*8 :: t_elapsed

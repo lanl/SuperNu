@@ -11,11 +11,10 @@ c     ------------------------
 * Initialize the gas grid, the part that is constant with time and
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
-      integer :: i,ir
+      integer :: i,j,ir
       real*8 :: help, rrcenter, uudd, masv
       real*8 :: help2
       real*8, allocatable :: wlstore(:)
-      integer :: ng,ngm,nrm,irr
 c
 c--
       write(6,*)
@@ -29,7 +28,7 @@ c--
 c
 c-- WARNING: rarr first is [0,1], later [0,vout]. Grid with unit radius: scaled up below by gas_lr for static, or gas_velout for velocity grid
 c-- inner shell radius
-      if(.not.gas_isshell) then
+      if(.not.gas_isshell) then!{{{
        gas_rarr(1) = 0.0d0    !Initial inner most radius
       else
        if(gas_isvelocity) then
@@ -58,20 +57,18 @@ c-- set grid size to velout or lr depending on expanding or static
       endif
       gas_rarr = gas_rarr*help
       gas_drarr = gas_drarr*help
-      gas_vals2%dr3_34pi = gas_vals2%dr3_34pi*help**3
-c
-c
+      gas_vals2%dr3_34pi = gas_vals2%dr3_34pi*help**3!}}}
 c
 c
 c-- IMC-DDMC heuristic coefficient for spherical geometry (rev 146)
 c==================================================================
-      do ir = 1, gas_nr
+      do ir = 1, gas_nr!{{{
        help2=gas_rarr(ir+1)**2+gas_rarr(ir)*gas_rarr(ir+1)
        help2=help2+gas_rarr(ir)**2
        help2 = sqrt(1d0/help2)
        gas_curvcent(ir) = sqrt((gas_rarr(ir+1)**2+gas_rarr(ir)**2))
        gas_curvcent(ir) = help2*gas_curvcent(ir)
-      enddo
+      enddo!}}}
 c
 c
 c--
@@ -80,7 +77,7 @@ c--
       write(6,*) '==========================='
 c
 c-- temperature
-      if(in_istempflat) then
+      if(in_istempflat) then!{{{
        do ir=1,gas_nr
         gas_vals2(ir)%tempkev = in_consttempkev
        enddo
@@ -103,11 +100,10 @@ c-- to Gaussian for manufacture tests
          gas_vals2(ir)%tempkev=1d-3
         endif
        enddo
-      endif
-c
+      endif!}}}
 c
 c-- mass
-      if(in_totmass==0d0) then
+      if(in_totmass==0d0) then!{{{
        if(.not.allocated(str_mass)) error stop 'gg_setup: str_mass allc'
        gas_vals2%mass = str_mass
       elseif(in_srctype=='manu') then
@@ -118,32 +114,39 @@ c-- mass
        enddo
       else
        error stop 'gg_setup: in_totmass was not implemented yet'
-      endif
+      endif!}}}
 c
 c-- temp and ur
       gas_vals2%temp = gas_vals2%tempkev * 1e3*pc_ev/pc_kb !initial guess, may be overwritten by read_temp_str
       gas_vals2%ur = pc_acoef*gas_vals2%tempkev**4
 c
+c-- adopt partial masses from input file
+      if(.not.in_noreadstruct) then
+       if(.not.allocated(str_massfr)) error stop 'no input.str read'
+       do i=1,str_nabund
+        j = str_iabund(i)
+        if(j>gas_nelem) j = 0 !divert to container
+        gas_vals2(:)%mass0fr(j) = str_massfr(i,:)
+       enddo
+c
 c-- set flat composition if selected
-      if(in_solidni56) then
+      elseif(in_solidni56) then
        gas_vals2%mass0fr(28) = 1d0 !stable+unstable Ni abundance
        gas_vals2(1:nint(4d0*gas_nr/5d0))%mass0fr(-1) = 1d0 !Ni56 core
       else
-       if(.not.allocated(str_mass)) error stop 'no input.str read'
-c-- no alternative implemented yet
-       stop 'gg_setup: in_solidni56==.false. no mass fractions defined'
+       error stop 'gg_setup: no input.str and no solidni56!'
       endif
 c
 c-- convert mass fractions to # atoms
       call massfr2natomfr
-!c
-!c-- output
-!      write(6,*) 'mass fractions'
-!      write(6,'(1p,33i12)') (i,i=-2,30)
-!      write(6,'(1p,33e12.4)') (gas_vals2(i)%mass0fr,i=1,gas_nr)
-!      write(6,*) 'number fractions'
-!      write(6,'(1p,33i12)') (i,i=-2,30)
-!      write(6,'(1p,33e12.4)') (gas_vals2(i)%natom1fr,i=1,gas_nr)
+c
+c-- output
+      write(6,*) 'mass fractions'
+      write(6,'(1p,33i12)') (i,i=-2,30)
+      write(6,'(1p,33e12.4)') (gas_vals2(i)%mass0fr,i=1,gas_nr)
+      write(6,*) 'number fractions'
+      write(6,'(1p,33i12)') (i,i=-2,30)
+      write(6,'(1p,33e12.4)') (gas_vals2(i)%natom1fr,i=1,gas_nr)
 c
       end subroutine gasgrid_setup
 c
@@ -162,7 +165,7 @@ c     -------------------------
       real*8 :: help
 c
       do i=1,gas_nr
-c
+c!{{{
 c-- sanity test
        if(all(gas_vals2(i)%mass0fr(1:)==0d0)) stop 'massfr2natomfr: '//
      &   'all mass fractions zero'
@@ -209,7 +212,7 @@ c
 c-- convert natoms to natom fractions
        gas_vals2(i)%natom1fr = gas_vals2(i)%natom1fr/gas_vals2(i)%natom
        gas_vals2(i)%natom0fr = gas_vals2(i)%natom0fr/gas_vals2(i)%natom
-c
+c!}}}
       enddo !i
 c
       end subroutine massfr2natomfr
