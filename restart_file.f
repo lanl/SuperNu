@@ -4,8 +4,13 @@ c     ----------------------------
 ************************************************************************
 * read restart file
 ************************************************************************
-      !open(unit=4,file='Tinit.dat',status='unknown')
-      open(unit=4,file='input.restart',status='unknown')
+      character(13) :: fname = 'input.restart'
+      logical :: lexist
+c
+      inquire(file=fname,exist=lexist)
+      if(.not.lexist) return
+c
+      open(unit=4,file=fname,status='unknown')
       read(4,*) gas_vals2%tempkev
       close(4)
       end subroutine read_restart_file
@@ -18,7 +23,8 @@ c     -----------------------------
 ************************************************************************
 * write restart file
 ************************************************************************
-      open(unit=4,file='output.restart',status='unknown')
+      character(14) :: fname = 'output.restart'
+      open(unit=4,file=fname,status='unknown',position='append')
       write(4,*) gas_vals2%tempkev
       close(4)
       end subroutine write_restart_file

@@ -75,7 +75,7 @@ c-- test switches
 c
 c
 c-- analytic opacities
-      character(4) :: in_grptype = 'none'    !none|grey|mono|pick|line: group opacity structure type
+      character(4) :: in_opacanaltype = 'none'    !none|grey|mono|pick|line: group opacity structure type
 c-- picket fence specific group structure
       character(4) :: in_suol = 'tsta'    !tsta|tstb|tstc: Su&Olson picket fence (pick) test cases 
       real*8 :: in_suolpick1 = 1d0  !in [0,1]: probability of being at first picket
@@ -119,7 +119,7 @@ c-- runtime parameter namelist
      & in_sigcoefs,in_sigtpwrs,in_sigrpwrs,
      & in_sigcoef,in_sigtpwr,in_sigrpwr,
      & in_cvcoef,in_cvtpwr,in_cvrpwr,
-     & in_wldex,in_iswlread,in_grptype,in_suol,
+     & in_wldex,in_iswlread,in_opacanaltype,in_suol,
      & in_suolpick1, in_ldisp1, in_ldisp2,
      & in_srctype, in_theav, in_nheav, in_srcmax,
      & in_isimcanlog, in_isddmcanlog,
@@ -225,7 +225,7 @@ c
        stop 'in_srctype unknown'
       end select
 c
-      select case(in_grptype)
+      select case(in_opacanaltype)
       case('none')
       case('grey')
       case('mono')
@@ -239,7 +239,7 @@ c
        endif
       case('line')
       case default
-       stop 'in_grptype unknown'
+       stop 'in_opacanaltype unknown'
       end select
 c
       if(in_wlmin<0d0) stop 'in_wlmin invalid'

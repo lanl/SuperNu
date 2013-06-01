@@ -68,9 +68,9 @@ subroutine analytic_source
      enddo!}}}
   elseif(gas_srctype=='manu') then
      !!{{{
-     !Manufactured Source (for gas_grptype='line')
-     !if(gas_grptype.ne.'line') then
-     !   stop 'analytic_source: gas_grptype=line for gas_srctype=manu'
+     !Manufactured Source (for gas_opacanaltype='line')
+     !if(gas_opacanaltype.ne.'line') then
+     !   stop 'analytic_source: gas_opacanaltype=line for gas_srctype=manu'
      !endif
      !
 

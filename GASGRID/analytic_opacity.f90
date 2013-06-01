@@ -22,17 +22,19 @@ subroutine analytic_opacity
 
   gas_siggrey = 0d0
   gas_cap = 0.
-  gas_caprosl = 0d0
-  gas_caprosr = 0d0
+!-- opacity of zero should contribute infinitely little to the rosseland
+!   opacity sum (calculated in convert_cap2capros).
+  gas_caprosl = huge(gas_cap)
+  gas_caprosr = huge(gas_cap)
 
   gas_sig = 0d0
   gas_sigbl = 0d0
   gas_sigbr = 0d0
 
   !Calculating grouped Planck and Rosseland opacities
-  if(gas_grptype=='none') then
+  if(gas_opacanaltype=='none') then
      return
-  elseif(gas_grptype=='grey') then
+  elseif(gas_opacanaltype=='grey') then
      ! sigmaP = A*T^B*rho^C (A,B,C set in input.par)!{{{
      ! sigmaP_g, sigmaR_g = sigmaP for all g 
      ! Input wavelength grid not used
@@ -48,7 +50,7 @@ subroutine analytic_opacity
            gas_caprosr(ig,ir) = sigrr
         enddo
      enddo!}}}
-  elseif(gas_grptype=='mono') then
+  elseif(gas_opacanaltype=='mono') then
      ! sigmaP = A*T^B*rho^C*f(T)!{{{
      ! sigmaP_g = sigmaP*func_P(T,g), sigmaR_g=sigmaP*func_R(T,g)
      ! func_P(T,g) and func_R(T,g) are functions proportional to integral_g(1/nu^3)
@@ -87,7 +89,7 @@ subroutine analytic_opacity
            gas_siggrey(ir) = gas_siggrey(ir)+15d0*gas_cap(ig,ir)*specint(x1,x2,3)/pc_pi**4
         enddo
      enddo!}}}
-  elseif(gas_grptype=='pick') then
+  elseif(gas_opacanaltype=='pick') then
      ! sigmaP = sigmaR = constant = A (gas_sigcoef set in input.par)!{{{
      ! Su&Olson picket-fence distributions (tests: A,B,C (Su and Olson 1999))
      ! Input wavelength grid not used
@@ -143,7 +145,7 @@ subroutine analytic_opacity
      else
         stop 'analytic_opacity: gas_suol invalid'
      endif!}}}
-  elseif(gas_grptype=='line') then
+  elseif(gas_opacanaltype=='line') then
      ! Highly structured line test: group opacities alternate in magnitude!{{{
      ! sigmaP = A*T^B*rho^C
      ! sigmaP_g = sigmaP*func_P(g), sigmaR_g = sigmaP
@@ -178,7 +180,7 @@ subroutine analytic_opacity
         !
      enddo!}}}
   else
-    stop 'analytic_opacity: gas_grptype invalid'
+    stop 'analytic_opacity: gas_opacanaltype invalid'
   endif
 
   !Calculating grey scattering opacity

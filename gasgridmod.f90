@@ -46,14 +46,14 @@ module gasgridmod
   real*8 :: gas_cvtpwr=0  !analytic heat capacity power law temperature exponent
   real*8 :: gas_cvrpwr=0  !analytic heat capacity power law density exponent
 
-  character(4) :: gas_grptype = 'grey' !analytic opacity dependence on group.
+  character(4) :: gas_opacanaltype = 'grey' !analytic opacity dependence on group.
   !is used with power law to create group opacities each timestep (see 
   !inputparmod for possible values).
-  character(4) :: gas_suol = 'tsta' !if gas_grptype='pick', sets picket
+  character(4) :: gas_suol = 'tsta' !if gas_opacanaltype='pick', sets picket
   !magnitudes with values from cases in literature (Su&Olson 1999).
   
-  real*8 :: gas_ldisp1 !if gas_grptype='line',
-  real*8 :: gas_ldisp2 !if gas_grptype-'line'
+  real*8 :: gas_ldisp1 !if gas_opacanaltype='line',
+  real*8 :: gas_ldisp2 !if gas_opacanaltype-'line'
   !ratio of strong line group opacity strength to weak group
 
   character(4) :: gas_srctype = 'heav' !analytic external source dependence
@@ -148,7 +148,7 @@ module gasgridmod
     gas_sigtpwr = in_sigtpwr
     gas_sigrpwr = in_sigrpwr
     !group type:
-    gas_grptype = in_grptype
+    gas_opacanaltype = in_opacanaltype
     !picket fence input:
     gas_suol = in_suol
     gas_ppick(1) = in_suolpick1

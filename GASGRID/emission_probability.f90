@@ -13,7 +13,7 @@ subroutine emission_probability
   real*8 :: specint
 
   !Calculating grouped volume emission probabilities:
-  if(gas_grptype=='pick') then
+  if(gas_opacanaltype=='pick') then
      do ir = 1, gas_nr
         gas_emitprob(1,ir) = gas_ppick(1)*gas_cap(1,ir)/gas_siggrey(ir)
         gas_emitprob(2,ir) = gas_ppick(2)*gas_cap(2,ir)/gas_siggrey(ir)

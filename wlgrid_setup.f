@@ -22,10 +22,10 @@ c-- read wavelength grid from file
 !----- --------------------------------------------
        forall(i=1:in_ng) gas_wl(i) =
      &   in_wlmin*(in_wlmax/dble(in_wlmin))**((i-1d0)/(in_ng-1d0))
-       gas_dwl = pc_ang*gas_wl*log(in_wlmax/dble(in_wlmin)) /
+       gas_dwl = gas_wl*log(in_wlmax/dble(in_wlmin)) /
      &   (in_ng-1d0)      !wl grid bin width
 c-- sa nity test
-       help = sum(gas_dwl)/pc_ang
+       help = sum(gas_dwl)
        if(abs(help/(in_wlmax-in_wlmin) - 1d0) .gt. 1d-3) then
         call warn('gasgrid_setup','ggrid_dwl not accurate')
         write(6,*) help,in_wlmax-in_wlmin

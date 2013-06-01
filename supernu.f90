@@ -76,7 +76,7 @@ program supernu
    call wlgrid_setup
    call gasgrid_init(in_nt)
    call gasgrid_setup
-
+!
 !-- read initial temperature structure from file
 !   call read_restart_file
 !-- hard coded temperature structure
@@ -106,23 +106,19 @@ program supernu
 
   call bcast_persistent
 
-  ! Beginning time step loop
+!
+!-- time step loop
+!=================
   do tsp_tn = 1, tsp_nt
     if(impi==impi0) then
-     write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
-     !
-     call gasgrid_update
-     !Calculating Fleck factor, leakage opacities
-     !call fleck_factor
-     !Calculating emission probabilities for each group in each cell
-     !call emission_probability
-     !Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
-     !call leakage_opacity
-     !Calculating number of source prt_particles per cell
-     call sourcenumbers
+      write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_tn,tsp_texp/pc_day
+!-- update all non-permanent variables
+      call gasgrid_update
+!-- number of source prt_particles per cell
+      call sourcenumbers
     endif !impi
 
-    !Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
+!-- Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
     allocate(prt_vacantarr(prt_nnew))
     call vacancies
     !Calculating properties of prt_particles on domain boundary
@@ -133,16 +129,16 @@ program supernu
     !Advancing prt_particles to update radiation field    
 
     !-- advance particles
-    call bcast_nonpersistent
+    call bcast_nonpersistent !mpi
     call particle_advance
-    call reduce_tally
+    call reduce_tally !mpi
     
     if(impi==impi0) then
-     call temperature_update
-     call timestep_update(dt) !Updating elapsed tsp_time and expansion tsp_time
+      call temperature_update
+      call timestep_update(dt) !Updating elapsed tsp_time and expansion tsp_time
 
-     call write_output
-!    call write_restart
+      call write_output
+      call write_restart_file
     endif !impi
   enddo
 !

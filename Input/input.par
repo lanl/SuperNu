@@ -24,7 +24,7 @@ in_templ0 = 1d0
 
 !-- flat structure
 in_istempflat = t
-in_consttempkev = 1d0
+in_consttempkev = 1e-3
 in_solidni56 = f
 
 !-- external source type
@@ -50,7 +50,7 @@ in_sigtpwr = 0d0
 in_sigrpwr = 1d0
 
 !-- group absorption opacity structure type
-in_grptype = 'line'
+in_opacanaltype = 'none'
 
 !-- picket fence case
 in_suol = 'tsta'
@@ -61,7 +61,7 @@ in_ldisp1 = 1d0
 in_ldisp2 = 1d-4
 
 !-- group settings
-in_wldex = 17
+in_wldex = 6
 in_iswlread = t
 in_ng = 5
 
@@ -76,9 +76,9 @@ in_isddmcanlog = f
 in_tauddmc = 5d0
 
 !-- opacity switches
-in_nobbopac = t
-in_nobfopac = t
-in_noffopac = t
+in_nobbopac = f
+in_nobfopac = f
+in_noffopac = f
 
 &end
 

@@ -71,14 +71,14 @@ c$omp& shared(cap)
         iz = bb_xs(i)%iz
         ii = bb_xs(i)%ii
         wl0 = bb_xs(i)%wl0 !in ang
-        wlinv = 1d0/(wl0*pc_ang)
+        wlinv = 1d0/wl0
 c-- iwl pointer
         iwl = int((wlhelp*(gas_ng - 1d0))*(log(dble(wl0)) - !sensitive to multiplication order!
      &    wlminlg)) + 1
         if(iwl<1) cycle
         if(iwl>gas_ng) cycle
 c-- profile function
-        phi = (gas_ng-1d0)*wlhelp*(wl0*pc_ang)/pc_c !line profile
+        phi = (gas_ng-1d0)*wlhelp*wl0/pc_c !line profile
 !       write(6,*) 'phi',phi
 c-- evaluate caphelp
         do icg=1,gas_nr
@@ -125,7 +125,7 @@ c$omp& firstprivate(grndlev)
 c$omp& shared(cap)
        do iw=1,gas_ng
         wl = gas_wl(iw)
-        en = pc_h*pc_c/(pc_ev*pc_ang*wl) !photon energy in eV
+        en = pc_h*pc_c/(pc_ev*wl) !photon energy in eV
         do iz=1,gas_nelem
          do ii=1,min(iz,ion_el(iz)%ni - 1) !last stage is bare nucleus
           ie = iz - ii + 1
@@ -159,7 +159,7 @@ c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy)
 c$omp& firstprivate(hckt,hlparr)
 c$omp& shared(cap)
        do iw=1,gas_ng
-        wl = pc_ang*gas_wl(iw)
+        wl = gas_wl(iw)
         wlinv = 1d0/wl
 c-- gcell loop
         do icg=1,gas_nr

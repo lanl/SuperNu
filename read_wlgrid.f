@@ -55,8 +55,9 @@ c
       gas_wl = wlstore(3:)
       deallocate(wlstore)
 c
-      write(6,*) gas_wl
+      write(6,*)
       write(6,*) 'wavelength grid in [cm]'
+      write(6,*) gas_wl
       !Resetting in_ng to value of particular group entry from file
       in_ng = ng
 c

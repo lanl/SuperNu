@@ -31,7 +31,7 @@ in_cvrpwr = 1d0
 
 !-- group opacity structure type
 in_isanalgrp = t
-in_grptype = 'pick'
+in_opacanaltype = 'pick'
 
 !-- picket fence case
 in_suol = 'tsta'

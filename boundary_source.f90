@@ -16,7 +16,7 @@ subroutine boundary_source
   Esurfpart = gas_esurf/real(prt_nsurf)
 
   !Calculating grouped thermal emission probabilities
-  if(gas_grptype=='pick') then
+  if(gas_opacanaltype=='pick') then
      emitsurfprobg(1) = gas_ppick(1)
      emitsurfprobg(2) = gas_ppick(2)
      do ig = 3, gas_ng
