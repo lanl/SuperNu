@@ -32,15 +32,15 @@ c-- inner shell radius
        gas_rarr(1) = 0.0d0    !Initial inner most radius
       else
        if(gas_isvelocity) then
-        gas_rarr(1) = gas_v0/(gas_velout-gas_v0)
+        gas_rarr(1) = gas_v0/gas_velout
        else
-        gas_rarr(1) = gas_l0/gas_lr
+        gas_rarr(1) = gas_l0/(gas_l0+gas_lr)
        endif
       endif
 c
 c-- outer shells
       do ir=1,gas_nr
-       gas_drarr(ir) = 1d0/real(gas_nr)
+       gas_drarr(ir) = (1d0-gas_rarr(1))/real(gas_nr)
        gas_rarr(ir+1) = gas_rarr(ir)+gas_drarr(ir)
        gas_vals2(ir)%dr3_34pi = gas_rarr(ir+1)**3-gas_rarr(ir)**3
       enddo
@@ -51,9 +51,9 @@ c-- volume of unit-radius sphere shells
 c
 c-- set grid size to velout or lr depending on expanding or static
       if(gas_isvelocity) then
-       help = gas_velout - gas_v0
+       help = gas_velout
       else
-       help = gas_lr
+       help = gas_lr+gas_l0
       endif
       gas_rarr = gas_rarr*help
       gas_drarr = gas_drarr*help
