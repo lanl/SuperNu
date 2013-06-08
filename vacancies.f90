@@ -19,7 +19,7 @@ subroutine vacancies
   !Filling prt_vacantarr with particle index of vacant particles: loop
   do while (isfull.eqv..false.)
      ipart = ipart+1
-     if (prt_particles(ipart)%isvacant.eqv..true.) then
+     if (prt_particles(ipart)%isvacant) then
         ivac = ivac+1
         prt_vacantarr(ivac) = ipart
      endif

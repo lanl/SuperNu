@@ -108,6 +108,7 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(gas_drarr(gas_nr))
        allocate(gas_curvcent(gas_nr))
        allocate(prt_particles(prt_npartmax))
+       prt_particles%isvacant = .true.
       endif
 c
 c-- broadcast data
@@ -134,10 +135,12 @@ c     ------------------------!{{{
 * real*8 :: tsp_time
 * real*8 :: tsp_texp
 * real*8 :: tsp_dt
+* real*8 :: gas_esurf
 * integer :: prt_nnew
 * integer :: prt_nsurf
 *
 *-- arrays:
+* real*8 :: gas_tempb(gas_nr+1)
 * real*8 :: gas_tempkev(gas_nr)
 * real*8 :: gas_fcoef(gas_nr)
 * real*8 :: gas_sig(gas_nr)
@@ -165,19 +168,21 @@ c-- copy back
       deallocate(isndvec)
 c
 c-- real*8
-      n = 3
+      n = 4
       allocate(sndvec(n))
-      if(impi==impi0) sndvec = (/tsp_time,tsp_texp,tsp_dt/)
+      if(impi==impi0) sndvec = (/tsp_time,tsp_texp,tsp_dt,gas_esurf/)
       call mpi_bcast(sndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       tsp_time = sndvec(1)
       tsp_texp = sndvec(2)
       tsp_dt = sndvec(3)
+      gas_esurf = sndvec(4)
       deallocate(sndvec)
 c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0 .and. tsp_it==1) then
+       allocate(gas_tempb(gas_nr+1))
        allocate(gas_tempkev(gas_nr))
        allocate(gas_fcoef(gas_nr))
        allocate(gas_sig(gas_nr))
@@ -190,6 +195,8 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(gas_wl(gas_ng))
       endif
 c
+      call mpi_bcast(gas_tempb,gas_nr+1,MPI_REAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_tempkev,gas_nr,MPI_REAL,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_fcoef,gas_nr,MPI_REAL,
@@ -216,48 +223,71 @@ c
 c
 c
       subroutine reduce_tally
-cc     -----------------------!{{{
-c      use gasgridmod
-c      use timestepmod
-c      use timingmod
-c      implicit none
-c************************************************************************
-c* Reduce the results from the packet transport that are needed for the
-c* temperature correction.
-c* - gas_vals%enabs_e
-c* - gas_vals%enabs_c
-c* - t_pckt_stat !min,mean,max
-c************************************************************************
-c      real*8 :: sndvec(gas_nr),rcvvec(gas_nr)
-c      real*8 :: help
-cc
-c      sndvec = gas_vals(:)%enabs_e
-c      call mpi_reduce(sndvec,rcvvec,gas_nr,MPI_REAL8,MPI_SUM,
-c     &  impi0,MPI_COMM_WORLD,ierr)
-c      gas_vals(:)%enabs_e = rcvvec
-cc
-c      sndvec = gas_vals(:)%enabs_c
-c      call mpi_reduce(sndvec,rcvvec,gas_nr,MPI_REAL8,MPI_SUM,
-c     &  impi0,MPI_COMM_WORLD,ierr)
-c      gas_vals(:)%enabs_c = rcvvec
-cc
-c      if(tim_itc>0) then
-c       sndvec = gas_vals%enocoll
-c       call mpi_reduce(sndvec,rcvvec,gas_nr,MPI_REAL8,MPI_SUM,
-c     &   impi0,MPI_COMM_WORLD,ierr)
-c       gas_vals%enocoll = rcvvec
-c      endif
-cc
-c      help = t_pckt_stat(1)
-c      call mpi_reduce(help,t_pckt_stat(1),1,MPI_REAL8,MPI_MIN,
-c     &  impi0,MPI_COMM_WORLD,ierr)
-c      help = t_pckt_stat(2)/nmpi
-c      call mpi_reduce(help,t_pckt_stat(2),1,MPI_REAL8,MPI_SUM,
-c     &  impi0,MPI_COMM_WORLD,ierr)
-c      help = t_pckt_stat(3)
-c      call mpi_reduce(help,t_pckt_stat(3),1,MPI_REAL8,MPI_MAX,
-c     &  impi0,MPI_COMM_WORLD,ierr)
-cc!}}}
+c     -----------------------!{{{
+      use gasgridmod
+      use timingmod
+      implicit none
+************************************************************************
+* Reduce the results from particle_advance that are needed for the
+* temperature correction.
+* - t_pckt_stat !min,mean,max
+* 
+*-- dim==0
+* real*8 :: gas_erad
+* real*8 :: gas_eright
+* real*8 :: gas_eleft
+*-- dim==1
+* real*8 :: gas_numcensus(gas_nr)
+* real*8 :: gas_edep(gas_nr)
+*-- dim==2
+* real*8 :: gas_eraddens(gas_ng,gas_nr)
+************************************************************************
+      integer :: n
+      real*8,allocatable :: sndvec(:)
+      real*8,allocatable :: sndmat(:,:)
+      real*8 :: help
+c
+c-- dim==0
+      n = 3
+      allocate(sndvec(n))
+      if(impi==impi0) sndvec = (/gas_erad,gas_eright,gas_eleft/)
+      call mpi_reduce(sndvec,n,MPI_INTEGER,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c-- copy back
+      gas_erad = sndvec(1)
+      gas_eright = sndvec(2)
+      gas_eleft = sndvec(3)
+      deallocate(sndvec)
+c
+c-- dim==1
+      allocate(sndvec(gas_nr))
+      sndvec = gas_numcensus
+      call mpi_reduce(sndvec,gas_numcensus,gas_nr,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      sndvec = gas_edep
+      call mpi_reduce(sndvec,gas_edep,gas_nr,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      deallocate(sndvec)
+c
+c-- dim==2
+      allocate(sndmat(gas_ng,gas_nr))
+      n = gas_ng*gas_nr
+      sndmat = gas_eraddens
+      call mpi_reduce(sndmat,gas_eraddens,n,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      deallocate(sndmat)
+c
+c-- timing statistics
+      help = t_pckt_stat(1)
+      call mpi_reduce(help,t_pckt_stat(1),1,MPI_REAL8,MPI_MIN,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      help = t_pckt_stat(2)/nmpi
+      call mpi_reduce(help,t_pckt_stat(2),1,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      help = t_pckt_stat(3)
+      call mpi_reduce(help,t_pckt_stat(3),1,MPI_REAL8,MPI_MAX,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c!}}}
       end subroutine reduce_tally
 c
 c
