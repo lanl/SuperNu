@@ -60,7 +60,7 @@ module gasgridmod
   !on space (and group if gas_srctype='manu')
   integer :: gas_nheav = 0 !outer cell bound of external heaviside ('heav') source
   real*8 :: gas_theav = 0d0 !duration of heaviside source
-  real*8 :: gas_srcmax = 0d0 !peak strength (ergs/cm^3/s) of external source
+  real*8 :: gas_srcmax = 0d0 !peak strength (ergs*s^2/cm^3 if isvelocity, else ergs/cm^3/s) of external source
 
   real*8 :: gas_emat = 0d0
 

@@ -34,6 +34,9 @@ subroutine analytic_source
               x3 = 1d0/gas_wl(ig+1) 
               x4 = 1d0/gas_wl(ig)
               gas_exsource(ig,ir)=gas_srcmax*(x4-x3)/(x2-x1)
+              if(gas_isvelocity) then
+                 gas_exsource(ig,ir)=gas_exsource(ig,ir)/tsp_texp**3
+              endif
            enddo
         enddo
         do ir = gas_nheav+1, gas_nr

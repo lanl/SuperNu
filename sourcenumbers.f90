@@ -21,7 +21,11 @@ subroutine sourcenumbers
   gas_esurf = 0d0
 
   gas_esurf = 0.25*tsp_dt*pc_c*pc_acoef*(4.0*pc_pi*gas_rarr(1)**2)*gas_tempb(1)**4
-  gas_etot = gas_esurf
+  if(gas_isvelocity) then
+     gas_etot = gas_esurf*tsp_texp**2
+  else
+     gas_etot = gas_esurf
+  endif
 
   ! Calculating gas_exsource from analytic distribution
   if(gas_srctype/='none') then
@@ -37,7 +41,9 @@ subroutine sourcenumbers
           gas_vals2(ir)%ur*(4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0) !old
 !new !gas_vals2(ir)%emit = (1.e35)*gas_vals2(ir)%volr
 !new gas_vals2(ir)%emit = tsp_dt*gas_fcoef(ir)*gas_siggrey(ir)*pc_c*gas_vals2(ir)%ur*gas_vals2(ir)%volr
-     !gas_vals2(ir)%emit = gas_vals2(ir)%emit*(gas_velno*1.0+gas_velyes*tsp_texp**3)
+     if(gas_isvelocity) then
+        gas_vals2(ir)%emit = gas_vals2(ir)%emit*tsp_texp**3
+     endif
      if(.not.gas_novolsrc .and. gas_srctype=='none') then
         gas_vals2(ir)%emit = gas_vals2(ir)%emit + gas_vals2(ir)%nisource
      endif
@@ -47,8 +53,14 @@ subroutine sourcenumbers
   ! Adding external energy to gas_etot
   do ir = 1, gas_nr
      do ig = 1, gas_ng
+        if(gas_isvelocity) then
         gas_etot = gas_etot+tsp_dt*abs(gas_exsource(ig,ir))* &
+             (4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)* &
+             tsp_texp**3
+        else
+           gas_etot = gas_etot+tsp_dt*abs(gas_exsource(ig,ir))* &
              (4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)
+        endif
      enddo
   enddo
   
@@ -63,10 +75,18 @@ subroutine sourcenumbers
      prt_nnew = prt_nnew + gas_vals2(ir)%nvol
      !external source volume numbers
      exsumg = 0d0
-     do ig=1,gas_ng
-        exsumg=exsumg+tsp_dt*abs(gas_exsource(ig,ir))* &
-             (4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)
-     enddo
+     if(gas_isvelocity) then
+        do ig=1,gas_ng
+           exsumg=exsumg+tsp_dt*abs(gas_exsource(ig,ir))* &
+                (4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)* &
+                tsp_texp**3
+        enddo
+     else
+        do ig=1,gas_ng
+           exsumg=exsumg+tsp_dt*abs(gas_exsource(ig,ir))* &
+                (4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)
+        enddo
+     endif
      gas_vals2(ir)%nvolex=nint(exsumg*prt_ns/gas_etot)
      prt_nexsrc = prt_nexsrc + gas_vals2(ir)%nvolex
      prt_nnew = prt_nnew + gas_vals2(ir)%nvolex

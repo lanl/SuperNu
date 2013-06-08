@@ -2,14 +2,14 @@
 
 !-- misc
 in_nomp = 1
-in_grab_stdout = t
+in_grab_stdout = f
 in_puretran = f
 
 !-- time step
 in_tfirst = 2d0
 in_tlast = 11d0
-in_nt = 1
-!in_nt = 192
+!in_nt = 1
+in_nt = 192
 in_alpha = 1d0
 
 !-- gas grid settings
@@ -52,7 +52,7 @@ in_sigtpwr = 0d0
 in_sigrpwr = 1d0
 
 !-- group absorption opacity structure type
-in_opacanaltype = 'none'
+in_opacanaltype = 'line'
 
 !-- picket fence case
 in_suol = 'tsta'
@@ -63,7 +63,7 @@ in_ldisp1 = 1d0
 in_ldisp2 = 1d-4
 
 !-- group settings
-in_wldex = 6
+in_wldex = 17
 in_iswlread = t
 in_ng = 5
 
@@ -78,9 +78,9 @@ in_isddmcanlog = f
 in_tauddmc = 5d0
 
 !-- opacity switches
-in_nobbopac = f
-in_nobfopac = f
-in_noffopac = f
+in_nobbopac = t
+in_nobfopac = t
+in_noffopac = t
 
 &end
 
