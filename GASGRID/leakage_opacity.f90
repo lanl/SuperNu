@@ -35,7 +35,10 @@ subroutine leakage_opacity
            sigtot=gas_caprosl(ig,ir)+gas_sigbl(ir)
            gg = sqrt(3d0*gas_fcoef(ir)*gas_caprosl(ig,ir)/sigtot)
            !calculating left optical depth
-           tt = sigtot*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
+           tt = sigtot*gas_drarr(ir)
+           if(gas_isvelocity) then
+              tt = tt*tsp_texp
+           endif
            !calculating left discretization eigenvalue
            ggg=0.5d0*(curvleft+curvright)/curvright+(gg*tt)**2/(6d0*curvright) &
                 -sqrt((0.5d0*(curvright-curvleft)/curvright)**2 &
@@ -65,7 +68,10 @@ subroutine leakage_opacity
            sigtot=gas_caprosr(ig,ir)+gas_sigbr(ir)
            gg = sqrt(3d0*gas_fcoef(ir)*gas_caprosr(ig,ir)/sigtot)
            !calculating right optical depth
-           tt = sigtot*gas_drarr(ir)*(gas_velno*1.0+gas_velyes*tsp_texp)
+           tt = sigtot*gas_drarr(ir)
+           if(gas_isvelocity) then
+              tt = tt*tsp_texp
+           endif
            !calculating right discretization eigenvalue
            ggg=0.5d0*(curvleft+curvright)/curvright+(gg*tt)**2/(6.0*curvright) &
                 +sqrt((0.5*(curvright-curvleft)/curvright)**2 &
@@ -129,28 +135,33 @@ subroutine leakage_opacity
               gas_opacleakl(ig,ir) = gas_opacleakl(ig,ir)*tsp_texp**2
            endif
         !   
-        elseif((gas_sig(ir-1)+gas_cap(ig,ir-1))*gas_drarr(ir-1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(ir-1)) then
-        !   
-           gas_opacleakl(ig,ir)=1.5*gas_ppl(ig,ir)*gas_rarr(ir)**2
-           gas_opacleakl(ig,ir)=gas_opacleakl(ig,ir)/ &
-                (3d0*gas_vals2(ir)%vol/pc_pi4)
-           if(gas_isvelocity) then
-              gas_opacleakl(ig,ir) = gas_opacleakl(ig,ir)*tsp_texp**2
-           endif
-        !   
         else
-        !
-           tt = (gas_sigbl(ir)+gas_caprosl(ig,ir))*gas_drarr(ir)+ &
-                (gas_sigbr(ir-1)+gas_caprosr(ig,ir-1))*gas_drarr(ir-1)
-        !   
-           gas_opacleakl(ig,ir)=(2.0*gas_rarr(ir)**2)/ &
-                (3d0*gas_vals2(ir)%vol/pc_pi4)
-           
-           gas_opacleakl(ig,ir) = gas_opacleakl(ig,ir)/tt
-
+           help = (gas_sig(ir-1)+gas_cap(ig,ir-1))*gas_drarr(ir-1)
            if(gas_isvelocity) then
-              gas_opacleakl(ig,ir) = gas_opacleakl(ig,ir)*tsp_texp
+              help = help*tsp_texp
+           endif
+           if(help < prt_tauddmc*gas_curvcent(ir-1)) then
+        !   
+              gas_opacleakl(ig,ir)=1.5*gas_ppl(ig,ir)*gas_rarr(ir)**2
+              gas_opacleakl(ig,ir)=gas_opacleakl(ig,ir)/ &
+                   (3d0*gas_vals2(ir)%vol/pc_pi4)
+              if(gas_isvelocity) then
+                 gas_opacleakl(ig,ir) = gas_opacleakl(ig,ir)*tsp_texp**2
+              endif
+        !   
+           else
+        !
+              tt = (gas_sigbl(ir)+gas_caprosl(ig,ir))*gas_drarr(ir)+ &
+                   (gas_sigbr(ir-1)+gas_caprosr(ig,ir-1))*gas_drarr(ir-1)
+        !   
+              gas_opacleakl(ig,ir)=(2.0*gas_rarr(ir)**2)/ &
+                   (3d0*gas_vals2(ir)%vol/pc_pi4)
+              
+              gas_opacleakl(ig,ir) = gas_opacleakl(ig,ir)/tt
+              
+              if(gas_isvelocity) then
+                 gas_opacleakl(ig,ir) = gas_opacleakl(ig,ir)*tsp_texp
+              endif
            endif
 
         endif
@@ -164,27 +175,31 @@ subroutine leakage_opacity
               gas_opacleakr(ig,ir) = gas_opacleakr(ig,ir)*tsp_texp**2
            endif
         !   
-        elseif((gas_sig(ir+1)+gas_cap(ig,ir+1))*gas_drarr(ir+1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(ir+1)) then
-        !   
-           gas_opacleakr(ig,ir)=1.5*gas_ppr(ig,ir)*gas_rarr(ir+1)**2
-           gas_opacleakr(ig,ir)=gas_opacleakr(ig,ir)/ &
-                (3d0*gas_vals2(ir)%vol/pc_pi4)
-           if(gas_isvelocity) then
-              gas_opacleakr(ig,ir) = gas_opacleakr(ig,ir)*tsp_texp**2
-           endif
-        !   
         else
-        !
-           tt = (gas_sigbr(ir)+gas_caprosr(ig,ir))*gas_drarr(ir)+ &
-                (gas_sigbl(ir+1)+gas_caprosl(ig,ir+1))*gas_drarr(ir+1)
-           gas_opacleakr(ig,ir) = (2.0*gas_rarr(ir+1)**2)/ &
-                (3d0*gas_vals2(ir)%vol/pc_pi4)
-           gas_opacleakr(ig,ir) = gas_opacleakr(ig,ir)/tt
+           help = (gas_sig(ir+1)+gas_cap(ig,ir+1))*gas_drarr(ir+1)
            if(gas_isvelocity) then
-              gas_opacleakr(ig,ir) = gas_opacleakr(ig,ir)*tsp_texp
+              help = help*tsp_texp
            endif
-
+           if(help < prt_tauddmc*gas_curvcent(ir+1)) then
+        !   
+              gas_opacleakr(ig,ir)=1.5*gas_ppr(ig,ir)*gas_rarr(ir+1)**2
+              gas_opacleakr(ig,ir)=gas_opacleakr(ig,ir)/ &
+                   (3d0*gas_vals2(ir)%vol/pc_pi4)
+              if(gas_isvelocity) then
+                 gas_opacleakr(ig,ir) = gas_opacleakr(ig,ir)*tsp_texp**2
+              endif
+        !   
+           else
+        !
+              tt = (gas_sigbr(ir)+gas_caprosr(ig,ir))*gas_drarr(ir)+ &
+                   (gas_sigbl(ir+1)+gas_caprosl(ig,ir+1))*gas_drarr(ir+1)
+              gas_opacleakr(ig,ir) = (2.0*gas_rarr(ir+1)**2)/ &
+                   (3d0*gas_vals2(ir)%vol/pc_pi4)
+              gas_opacleakr(ig,ir) = gas_opacleakr(ig,ir)/tt
+              if(gas_isvelocity) then
+                 gas_opacleakr(ig,ir) = gas_opacleakr(ig,ir)*tsp_texp
+              endif
+           endif
         endif
      enddo
   enddo
