@@ -18,7 +18,7 @@ subroutine particle_advance
 !##################################################
 
   integer :: ipart, difs, transps, g, zholder, zfdiff, ir
-  real*8 :: r1, alph2, r2, x1, x2, xx0, bmax
+  real*8 :: r1, alph2, r2, x1, x2, xx0, bmax, help
   integer, pointer :: zsrc, rtsrc !, gsrc
   real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
   logical, pointer :: isvacant
@@ -26,7 +26,7 @@ subroutine particle_advance
 
   logical :: isshift=.true.
   logical :: partstopper=.true.
-  logical :: showidfront=.true.
+  logical :: showidfront=.false.
 
   gas_edep = 0.0
   gas_erad = 0.0
@@ -42,11 +42,11 @@ subroutine particle_advance
 
   if(showidfront) then
      do ir = 1, gas_nr-1
-        if(in_isvelocity.and.(gas_sig(ir)+gas_cap(1,ir))*gas_drarr(ir) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc &
+        if(gas_isvelocity.and.(gas_sig(ir)+gas_cap(1,ir))*gas_drarr(ir) &
+             *tsp_texp>=prt_tauddmc &
              .and. &
              (gas_sig(ir+1)+gas_cap(1,ir+1))*gas_drarr(ir+1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc) then
+             *tsp_texp<prt_tauddmc) then
            write(*,*) ir, gas_cap(1,ir)*gas_drarr(ir)*tsp_texp, &
                 gas_cap(1,ir+1)*gas_drarr(ir+1)*tsp_texp
         endif
@@ -75,19 +75,34 @@ subroutine particle_advance
 
         ! Looking up group
         if(rtsrc==1) then
-           g = minloc(abs(gas_wl-wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)),1)
-           if(wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
-              g = g-1
+           if(gas_isvelocity) then
+              g = minloc(abs(gas_wl-wlsrc/(1.0d0-rsrc*musrc/pc_c)),1)
+              if(wlsrc/(1.0d0-rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
+                 g = g-1
+              endif
+           else
+              g = minloc(abs(gas_wl-wlsrc),1)
+              if(wlsrc-gas_wl(g)<0d0) then
+                 g = g-1
+              endif
            endif
            !
            if(g>gas_ng.or.g<1) then
               !particle out of wlgrid energy bound
               if(g>gas_ng) then
                  g=gas_ng
-                 wlsrc=gas_wl(gas_ng+1)*(1.0d0-gas_velyes*rsrc*musrc/pc_c)
+                 if(gas_isvelocity) then
+                    wlsrc=gas_wl(gas_ng+1)*(1.0d0-rsrc*musrc/pc_c)
+                 else
+                    wlsrc=gas_wl(gas_ng+1)
+                 endif
               elseif(g<1) then
                  g=1
-                 wlsrc=gas_wl(1)*(1.0d0-gas_velyes*rsrc*musrc/pc_c)
+                 if(gas_isvelocity) then
+                    wlsrc=gas_wl(1)*(1.0d0-rsrc*musrc/pc_c)
+                 else
+                    wlsrc=gas_wl(1)
+                 endif
               else
                  write(*,*) 'domain leak!!'
                  prt_done = .true.
@@ -118,28 +133,27 @@ subroutine particle_advance
            !
         endif
 
-        !deposition estimator
-        !if(rtsrc==1) then
-        !   gas_edep(zsrc)=gas_edep(zsrc)+gas_fcoef(zsrc)*gas_cap(g,zsrc) &
-        !        *pc_c*tsp_dt*esrc*(1d0-gas_velyes*musrc*rsrc/pc_c)
-        !else
-        !   gas_edep(zsrc)=gas_edep(zsrc)+gas_fcoef(zsrc)*gas_cap(g,zsrc) &
-        !        *pc_c*tsp_dt*esrc
-        !endif
         
         ! Checking if particle conversions are required since prior time step
         if (in_puretran.eqv..false.) then
+           if(gas_isvelocity) then
+              help = tsp_texp
+           else
+              help = 1d0
+           endif
            if ((gas_sig(zsrc)+gas_cap(g,zsrc))*gas_drarr(zsrc) &
-                *(gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(zsrc)) then
+                *help<prt_tauddmc*gas_curvcent(zsrc)) then
               !write(*,*) 'here', g, wlsrc, esrc
               if (rtsrc == 2) then
                  r1 =  rand()
                  rsrc = (r1*gas_rarr(zsrc+1)**3 + (1.0-r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
                  r1 = rand()
                  musrc = 1.0 - 2.0*r1
-                 musrc = (musrc + gas_velyes*rsrc/pc_c)/(1.0 + gas_velyes*rsrc*musrc/pc_c)
-                 esrc = esrc/(1.0 - gas_velyes*musrc*rsrc/pc_c)
-                 ebirth = ebirth/(1.0 - gas_velyes*musrc*rsrc/pc_c)
+                 if(gas_isvelocity) then
+                    musrc = (musrc + rsrc/pc_c)/(1.0 + rsrc*musrc/pc_c)
+                    esrc = esrc/(1.0 - musrc*rsrc/pc_c)
+                    ebirth = ebirth/(1.0 - musrc*rsrc/pc_c)
+                 endif
                  !wlsrc = 0.5d0*(gas_wl(g)+gas_wl(g+1))
                  !r1 = rand()
                  !wlsrc=gas_wl(g)*(1d0-r1)+gas_wl(g+1)*r1
@@ -163,7 +177,9 @@ subroutine particle_advance
                  enddo
                  wlsrc = pc_h*pc_c/(pc_ev*xx0)/(1d3*gas_vals2(zsrc)%tempkev)
                  !
-                 wlsrc = wlsrc*(1.0-gas_velyes*musrc*rsrc/pc_c)
+                 if(gas_isvelocity) then
+                    wlsrc = wlsrc*(1.0-musrc*rsrc/pc_c)
+                 endif
               endif
               rtsrc = 1
            else
@@ -172,18 +188,33 @@ subroutine particle_advance
         endif
         ! Looking up group
         if(rtsrc==1) then
-           g = minloc(abs(gas_wl-wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)),1)
-           if(wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
-              g = g-1
+           if(gas_isvelocity) then
+              g = minloc(abs(gas_wl-wlsrc/(1.0d0-rsrc*musrc/pc_c)),1)
+              if(wlsrc/(1.0d0-rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
+                 g = g-1
+              endif
+           else
+              g = minloc(abs(gas_wl-wlsrc),1)
+              if(wlsrc-gas_wl(g)<0d0) then
+                 g = g-1
+              endif
            endif
            if(g>gas_ng.or.g<1) then
               !particle out of wlgrid energy bound
               if(g>gas_ng) then
                  g=gas_ng
-                 wlsrc=gas_wl(gas_ng+1)*(1.0d0-gas_velyes*rsrc*musrc/pc_c)
+                 if(gas_isvelocity) then
+                    wlsrc=gas_wl(gas_ng+1)*(1.0d0-rsrc*musrc/pc_c)
+                 else
+                    wlsrc=gas_wl(gas_ng+1)
+                 endif
               elseif(g<1) then
                  g=1
-                 wlsrc=gas_wl(1)*(1.0d0-gas_velyes*rsrc*musrc/pc_c)
+                 if(gas_isvelocity) then
+                    wlsrc=gas_wl(1)*(1.0d0-rsrc*musrc/pc_c)
+                 else
+                    wlsrc=gas_wl(1)
+                 endif
               else
                  write(*,*) 'domain leak!!'
                  prt_done = .true.
@@ -216,7 +247,7 @@ subroutine particle_advance
 
         ! First portion of operator split particle velocity position adjustment
         if(isshift) then
-        if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
+        if ((gas_isvelocity.eqv..true.).and.(rtsrc==1)) then
            rsrc = rsrc*tsp_texp/(tsp_texp+alph2*tsp_dt)
            !
            if (rsrc < gas_rarr(zsrc)) then
@@ -230,9 +261,14 @@ subroutine particle_advance
                  isvacant = .true.
               elseif(.not.in_puretran.and.partstopper) then
                  zfdiff = -1
+                 if(gas_isvelocity) then
+                    help = tsp_texp
+                 else
+                    help = 1d0
+                 endif
                  do ir = zsrc-1,zholder,-1
                     if((gas_sig(ir)+gas_cap(g,ir))*gas_drarr(ir) &
-                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(ir)) then
+                         *help>=prt_tauddmc*gas_curvcent(ir)) then
                        zfdiff = ir
                        exit
                     endif
@@ -274,7 +310,7 @@ subroutine particle_advance
         !---------------
         !------------
         ! Redshifting DDMC particle energy weights and wavelengths
-        if(rtsrc == 2.and.in_isvelocity) then
+        if(rtsrc == 2.and.gas_isvelocity) then
            ! Redshifting energy weight
            esrc = esrc*exp(-tsp_dt/tsp_texp)
            ebirth = ebirth*exp(-tsp_dt/tsp_texp)
@@ -318,18 +354,33 @@ subroutine particle_advance
 
         ! Looking up group
         if(rtsrc==1) then
-           g = minloc(abs(gas_wl-wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)),1)
-           if(wlsrc/(1.0d0-gas_velyes*rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
-              g = g-1
+           if(gas_isvelocity) then
+              g = minloc(abs(gas_wl-wlsrc/(1.0d0-rsrc*musrc/pc_c)),1)
+              if(wlsrc/(1.0d0-rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
+                 g = g-1
+              endif
+           else
+              g = minloc(abs(gas_wl-wlsrc),1)
+              if(wlsrc-gas_wl(g)<0d0) then
+                 g = g-1
+              endif
            endif
            if(g>gas_ng.or.g<1) then
               !particle out of wlgrid energy bound
               if(g>gas_ng) then
                  g=gas_ng
-                 wlsrc=gas_wl(gas_ng+1)*(1.0d0-gas_velyes*rsrc*musrc/pc_c)
+                 if(gas_isvelocity) then
+                    wlsrc=gas_wl(gas_ng+1)*(1.0d0-rsrc*musrc/pc_c)
+                 else
+                    wlsrc=gas_wl(gas_ng+1)
+                 endif
               elseif(g<1) then
                  g=1
-                 wlsrc=gas_wl(1)*(1.0d0-gas_velyes*rsrc*musrc/pc_c)
+                 if(gas_isvelocity) then
+                    wlsrc=gas_wl(1)*(1.0d0-rsrc*musrc/pc_c)
+                 else
+                    wlsrc=gas_wl(1)
+                 endif
               else
                  write(*,*) 'domain leak!!'
                  prt_done = .true.
@@ -361,7 +412,7 @@ subroutine particle_advance
         endif
 
         if(isshift) then
-        if ((in_isvelocity.eqv..true.).and.(rtsrc==1)) then
+        if ((gas_isvelocity.eqv..true.).and.(rtsrc==1)) then
            !
            rsrc = rsrc*(tsp_texp+alph2*tsp_dt)/(tsp_texp+tsp_dt)
            !
@@ -377,8 +428,13 @@ subroutine particle_advance
               elseif(.not.in_puretran.and.partstopper) then
                  zfdiff = -1
                  do ir = zsrc-1,zholder,-1
+                    if(gas_isvelocity) then
+                       help = tsp_texp
+                    else
+                       help = 1d0
+                    endif
                     if((gas_sig(ir)+gas_cap(g,ir))*gas_drarr(ir) &
-                         *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(ir)) then
+                         *help>=prt_tauddmc*gas_curvcent(ir)) then
                        zfdiff = ir
                        exit
                     endif

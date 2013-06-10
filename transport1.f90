@@ -22,14 +22,21 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   logical, intent(inout) :: vacnt
   !
   integer :: ig, iig, g
-  real*8 :: r1, r2
+  real*8 :: r1, r2, help
   real*8 :: db, dcol, dcen, dthm, d
   real*8 :: siglabfact, dcollabfact, elabfact
   real*8 :: rold, P, denom2, told, zholder
   real*8 :: bmax, x1, x2, xx0
 
-  siglabfact = 1.0d0 - gas_velyes*mu*r/pc_c
-  dcollabfact = gas_velno*1.0 + gas_velyes*tsp_texp*(1.0d0-mu*r/pc_c)
+  if(gas_isvelocity) then
+     siglabfact = 1.0d0 - mu*r/pc_c
+     dcollabfact = tsp_texp*(1d0-mu*r/pc_c)
+     help = tsp_texp
+  else
+     siglabfact = 1d0
+     dcollabfact = 1d0
+     help = 1d0
+  endif
 
   ! distance to boundary = db
   if(gas_isshell) then
@@ -49,19 +56,35 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   endif
 
   ! Calculating current group (rev. 120)
-  g = minloc(abs(gas_wl-wl/(1.0d0-gas_velyes*r*mu/pc_c)),1)
-  !write(*,*) 'g 1: ',g
-  if(wl/(1.0d0-gas_velyes*r*mu/pc_c)-gas_wl(g)<0d0) then
-     g = g-1
+  if(gas_isvelocity) then
+     g = minloc(abs(gas_wl-wl/(1.0d0-r*mu/pc_c)),1)
+     !write(*,*) 'g 1: ',g
+     if(wl/(1.0d0-r*mu/pc_c)-gas_wl(g)<0d0) then
+        g = g-1
+     endif
+  else
+     g = minloc(abs(gas_wl-wl),1)
+     !write(*,*) 'g 1: ',g
+     if(wl-gas_wl(g)<0d0) then
+        g = g-1
+     endif
   endif
   if(g>gas_ng.or.g<1) then
      !particle out of wlgrid energy bound
      if(g>gas_ng) then
         g=gas_ng
-        wl=gas_wl(gas_ng+1)*(1.0d0-gas_velyes*r*mu/pc_c)
+        if(gas_isvelocity) then
+           wl=gas_wl(gas_ng+1)*(1.0d0-r*mu/pc_c)
+        else
+           wl=gas_wl(gas_ng+1)
+        endif
      elseif(g<1) then
         g=1
-        wl=gas_wl(1)*(1.0d0-gas_velyes*r*mu/pc_c)
+        if(gas_isvelocity) then
+           wl=gas_wl(1)*(1.0d0-r*mu/pc_c)
+        else
+           wl=gas_wl(1)
+        endif
      else
         write(*,*) 'domain leak!!'
         prt_done = .true.
@@ -94,7 +117,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      dthm = 3.0*db
   endif
   ! distance to census = dcen
-  dcen = abs(pc_c*(tsp_time+tsp_dt-t)/(gas_velno*1.0+gas_velyes*tsp_texp))
+  dcen = abs(pc_c*(tsp_time+tsp_dt-t)/help)
 
   ! minimum distance = d
   d = min(dcol,dthm,db,dcen)
@@ -102,17 +125,19 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   rold = r
   r = sqrt((1.0d0-mu**2)*r**2+(d+r*mu)**2)
   told = t
-  t = t + (gas_velno*1.0+gas_velyes*tsp_texp)*d/pc_c
+  t = t + help*d/pc_c
   mu = (rold*mu+d)/r
-  elabfact = 1.0d0 - gas_velyes*mu*r/pc_c
+  if(gas_isvelocity) then
+     elabfact = 1.0d0 - mu*r/pc_c
+  else
+     elabfact = 1d0
+  endif
   !calculating energy deposition
   if(.not.prt_isimcanlog) then
      gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z) &
-          *gas_cap(g,z)*d*(gas_velno*1.d0+ &
-          gas_velyes*tsp_texp)))*elabfact
+          *gas_cap(g,z)*d*help))*elabfact
      !
-     E = E*exp(-gas_fcoef(z)*gas_cap(g,z)*d*dcollabfact) !(gas_velno*1.d0 &
-          !+gas_velyes*tsp_texp))
+     E = E*exp(-gas_fcoef(z)*gas_cap(g,z)*d*dcollabfact)
      if (E/E0<0.001d0) then
         vacnt = .true.
         prt_done = .true.
@@ -121,18 +146,33 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   endif
 
   ! Recalculating current group (rev. 120)
-  g = minloc(abs(gas_wl-wl/(1.0d0-gas_velyes*r*mu/pc_c)),1)
-  if(wl/(1.0d0-gas_velyes*r*mu/pc_c)-gas_wl(g)<0d0) then
-     g = g-1
+  if(gas_isvelocity) then
+     g = minloc(abs(gas_wl-wl/(1.0d0-r*mu/pc_c)),1)
+     if(wl/(1.0d0-r*mu/pc_c)-gas_wl(g)<0d0) then
+        g = g-1
+     endif
+  else
+     g = minloc(abs(gas_wl-wl),1)
+     if(wl-gas_wl(g)<0d0) then
+        g = g-1
+     endif
   endif
   if(g>gas_ng.or.g<1) then
      !particle out of wlgrid energy bound
      if(g>gas_ng) then
         g=gas_ng
-        wl=gas_wl(gas_ng+1)*(1.0d0-gas_velyes*r*mu/pc_c)
+        if(gas_isvelocity) then
+           wl=gas_wl(gas_ng+1)*(1.0d0-r*mu/pc_c)
+        else
+           wl=gas_wl(gas_ng+1)
+        endif
      elseif(g<1) then
         g=1
-        wl=gas_wl(1)*(1.0d0-gas_velyes*r*mu/pc_c)
+        if(gas_isvelocity) then
+           wl=gas_wl(1)*(1.0d0-r*mu/pc_c)
+        else
+           wl=gas_wl(1)
+        endif
      else
         write(*,*) 'domain leak!!'
         prt_done = .true.
@@ -149,12 +189,12 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      !
      r1 = rand()
      mu = 1.0-2.0*r1
-     mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
-     E = E*elabfact/(1.0-gas_velyes*mu*r/pc_c)
-     wl=wl*(1.0-gas_velyes*r*mu/pc_c)/elabfact
+     if(gas_isvelocity) then
+        mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
+        E = E*elabfact/(1.0-mu*r/pc_c)
+        wl=wl*(1.0-r*mu/pc_c)/elabfact
+     endif
      !
-     !gas_eraddens(g,z) = gas_eraddens(g,z)+E* &
-     !     (1.0-gas_velyes*mu*r/pc_c)/(pc_c*gas_sig(z)*tsp_dt)
      !
   elseif (d == dcol) then  !fictitious scattering with implicit capture
      !
@@ -166,8 +206,10 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      else
         r1 = rand()
         mu = 1.0-2.0*r1
-        mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
-        E = E*elabfact/(1.0-gas_velyes*mu*r/pc_c)
+        if(gas_isvelocity) then
+           mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
+           E = E*elabfact/(1.0-mu*r/pc_c)
+        endif
         denom2 = 0.0
         r1 = rand()
         do ig = 1, gas_ng
@@ -205,15 +247,19 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         wl = pc_h*pc_c/(pc_ev*xx0)/(1d3*gas_vals2(z)%tempkev)
         !
         !
-        ! converting comoving wavelength to lab frame wavelength
-        wl = wl*(1.0-gas_velyes*r*mu/pc_c)
+        if(gas_isvelocity) then
+           ! converting comoving wavelength to lab frame wavelength
+           wl = wl*(1.0-r*mu/pc_c)
+        endif
         if (((gas_sig(z)+gas_cap(g,z))*gas_drarr(z)* &
-             (gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z)) &
+             help >= prt_tauddmc*gas_curvcent(z)) &
              .and.(in_puretran.eqv..false.)) then
            hyparam = 2
-           E = E*(1.0-gas_velyes*r*mu/pc_c)
-           E0 = E0*(1.0-gas_velyes*r*mu/pc_c)
-           wl = wl/(1.0-gas_velyes*r*mu/pc_c)
+           if(gas_isvelocity) then
+              E = E*(1.0-r*mu/pc_c)
+              E0 = E0*(1.0-r*mu/pc_c)
+              wl = wl/(1.0-r*mu/pc_c)
+           endif
         else
            hyparam = 1
         endif
@@ -227,22 +273,28 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            gas_eright = gas_eright+E*elabfact
         ! Checking if DDMC region right
         elseif (((gas_sig(z+1)+gas_cap(g,z+1))*gas_drarr(z+1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z+1)) &
+             *help >= prt_tauddmc*gas_curvcent(z+1)) &
                  .and.(in_puretran.eqv..false.)) then
            r1 = rand()
-           mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
+           if(gas_isvelocity) then
+              mu = (mu-r/pc_c)/(1.0-r*mu/pc_c)
+           endif
            P = gas_ppl(g,z+1)*(1.0+1.5*abs(mu))
            if (r1 < P) then
               hyparam = 2
-              E = E*elabfact
-              E0 = E0*elabfact
-              wl = wl/(1.0-gas_velyes*r*mu/pc_c)
+              if(gas_isvelocity) then
+                 E = E*elabfact
+                 E0 = E0*elabfact
+                 wl = wl/(1.0-r*mu/pc_c)
+              endif
               z = z+1
            else
               r1 = rand()
               r2 = rand()
               mu = -max(r1,r2)
-              mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
+              if(gas_isvelocity) then
+                 mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
+              endif
            endif
         ! End of check
         else
@@ -256,44 +308,56 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               gas_eleft = gas_eleft+E*elabfact
            else
               if (((gas_sig(z+1)+gas_cap(g,z+1))*gas_drarr(z+1) &
-                   *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z+1)) &
+                   *help >= prt_tauddmc*gas_curvcent(z+1)) &
                    .and.(in_puretran.eqv..false.)) then
                  r1 = rand()
-                 mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
+                 if(gas_isvelocity) then
+                    mu = (mu-r/pc_c)/(1.0-r*mu/pc_c)
+                 endif
                  P = gas_ppl(g,z+1)*(1.0+1.5*abs(mu))
                  if (r1 < P) then
                     hyparam = 2
-                    E = E*elabfact
-                    E0 = E0*elabfact
-                    wl = wl/(1.0-gas_velyes*r*mu/pc_c)
+                    if(gas_isvelocity) then
+                       E = E*elabfact
+                       E0 = E0*elabfact
+                       wl = wl/(1.0-r*mu/pc_c)
+                    endif
                     z = z+1
                  else
                     r1 = rand()
                     r2 = rand()
                     mu = -max(r1,r2)
-                    mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
+                    if(gas_isvelocity) then
+                       mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
+                    endif
                  endif
               else
                  z = z+1
               endif
            endif
         elseif (((gas_sig(z-1)+gas_cap(g,z-1))*gas_drarr(z-1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z-1)) &
+             *help >= prt_tauddmc*gas_curvcent(z-1)) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()
-           mu = (mu-gas_velyes*r/pc_c)/(1.0-gas_velyes*r*mu/pc_c)
+           if(gas_isvelocity) then
+              mu = (mu-r/pc_c)/(1.0-r*mu/pc_c)
+           endif
            P = gas_ppr(g,z-1)*(1.0+1.5*abs(mu))
            if (r1 < P) then
               hyparam = 2
-              E = E*elabfact
-              E0 = E0*elabfact
-              wl = wl/(1.0-gas_velyes*r*mu/pc_c)
+              if(gas_isvelocity) then
+                 E = E*elabfact
+                 E0 = E0*elabfact
+                 wl = wl/(1.0-r*mu/pc_c)
+              endif
               z = z-1
            else
               r1 = rand()
               r2 = rand()
               mu = max(r1,r2)
-              mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
+              if(gas_isvelocity) then
+                 mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
+              endif
            endif
         ! End of check
         else

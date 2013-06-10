@@ -9,12 +9,17 @@ subroutine boundary_source
 
   integer :: ipart, ivac, ig, iig, z0
   real*8 :: r1, r2, P, mu0, r0, Esurfpart, wl0
-  real*8 :: denom2, x1, x2, specint
+  real*8 :: denom2, x1, x2, specint, help
   real*8, dimension(gas_ng) :: emitsurfprobg  !surface emission probabilities 
   !, Ryan W.: size will=# of groups in first cell
 
   Esurfpart = gas_esurf/real(prt_nsurf)
 
+  if(gas_isvelocity) then
+     help = tsp_texp
+  else
+     help = 1d0
+  endif
   !Calculating grouped thermal emission probabilities
   if(gas_opacanaltype=='pick') then
      emitsurfprobg(1) = gas_ppick(1)
@@ -67,15 +72,24 @@ subroutine boundary_source
      r0 = prt_particles(ivac)%rsrc
      
      if (((gas_sig(z0)+gas_cap(iig,z0))*gas_drarr(z0)* &
-          (gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(z0)) &
-          .OR.(in_puretran.eqv..true.).OR.P>1d0.OR.P<0d0) then
+          help < prt_tauddmc*gas_curvcent(z0)) &
+          .or.(in_puretran.eqv..true.).or.P>1d0.or.P<0d0) then
+        if(gas_isvelocity) then
         !transport => lab frame quantities
-        prt_particles(ivac)%Esrc = Esurfpart*(1.0+gas_velyes*r0*mu0/pc_c)
-        prt_particles(ivac)%Ebirth = Esurfpart*(1.0+gas_velyes*r0*mu0/pc_c)
+           prt_particles(ivac)%Esrc = Esurfpart*(1.0+r0*mu0/pc_c)
+           prt_particles(ivac)%Ebirth = Esurfpart*(1.0+r0*mu0/pc_c)
         !(rev 120)
-        prt_particles(ivac)%wlsrc = wl0/(1.0+gas_velyes*r0*mu0/pc_c)
+           prt_particles(ivac)%wlsrc = wl0/(1.0+r0*mu0/pc_c)
         !
-        prt_particles(ivac)%musrc = (mu0+gas_velyes*r0/pc_c)/(1.0+gas_velyes*r0*mu0/pc_c)
+           prt_particles(ivac)%musrc = (mu0+r0/pc_c)/(1.0+r0*mu0/pc_c)
+        else
+           prt_particles(ivac)%Esrc = Esurfpart
+           prt_particles(ivac)%Ebirth = Esurfpart
+        !
+           prt_particles(ivac)%wlsrc = wl0
+        !
+           prt_particles(ivac)%musrc = mu0
+        endif
         prt_particles(ivac)%rtsrc = 1
      else
         !diffusion => comoving frame quantities (with diffuse reflection accounted)
@@ -83,6 +97,8 @@ subroutine boundary_source
         prt_particles(ivac)%Ebirth = P*Esurfpart
         !(rev 120)
         prt_particles(ivac)%wlsrc = wl0
+        !
+        prt_particles(ivac)%musrc = mu0
         !
         prt_particles(ivac)%rtsrc = 2
      endif
