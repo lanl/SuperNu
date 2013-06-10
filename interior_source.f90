@@ -15,9 +15,15 @@ subroutine interior_source
   integer :: ir,iir, ipart, ivac, ig, iig
   integer, dimension(gas_nr) :: irused
   real*8 :: r1, r2, r3, uul, uur, uumax, mu0, r0, Ep0, wl0
-  real*8 :: denom2,x1,x2,x3,x4, xx0, bmax
+  real*8 :: denom2,x1,x2,x3,x4, xx0, bmax, help
   real*8, dimension(gas_nr) :: exsumg
   logical :: isnotvacnt !checks for available particle space to populate in cell
+
+  if(gas_isvelocity) then
+     help = tsp_texp
+  else
+     help = 1d0
+  endif
 
   ir = 1
   irused(1:gas_nr) = 0
@@ -84,14 +90,23 @@ subroutine interior_source
            !write(*,*) Ep0, gas_vals2(ir)%nvolex
            
            if (((gas_sig(ir)+gas_cap(iig,ir))*gas_drarr(ir)* &
-                (gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(ir)) &
+                help < prt_tauddmc*gas_curvcent(ir)) &
                 .or.(in_puretran.eqv..true.)) then
-              prt_particles(ivac)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
-              prt_particles(ivac)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
+              if(gas_isvelocity) then
+                 prt_particles(ivac)%Esrc = Ep0*(1.0+r0*mu0/pc_c)
+                 prt_particles(ivac)%Ebirth = Ep0*(1.0+r0*mu0/pc_c)
               !(rev 120)
-              prt_particles(ivac)%wlsrc = wl0/(1.0+gas_velyes*r0*mu0/pc_c)
+                 prt_particles(ivac)%wlsrc = wl0/(1.0+r0*mu0/pc_c)
               !
-              prt_particles(ivac)%musrc = (mu0+gas_velyes*r0/pc_c)/(1.0+gas_velyes*r0*mu0/pc_c)
+                 prt_particles(ivac)%musrc = (mu0+r0/pc_c)/(1.0+r0*mu0/pc_c)
+              else
+                 prt_particles(ivac)%Esrc = Ep0
+                 prt_particles(ivac)%Ebirth = Ep0
+              !
+                 prt_particles(ivac)%wlsrc = wl0
+              !
+                 prt_particles(ivac)%musrc = mu0
+              endif
               prt_particles(ivac)%rtsrc = 1
            else
               prt_particles(ivac)%Esrc = Ep0
@@ -191,14 +206,23 @@ subroutine interior_source
            Ep0 = gas_vals2(ir)%emit/real(gas_vals2(ir)%nvol)
 
            if (((gas_cap(iig,ir)+gas_sig(ir))*gas_drarr(ir)* &
-                (gas_velno*1.0+gas_velyes*tsp_texp)<prt_tauddmc*gas_curvcent(ir)) &
+                help < prt_tauddmc*gas_curvcent(ir)) &
                 .or.(in_puretran.eqv..true.)) then
-              prt_particles(ivac)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
-              prt_particles(ivac)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
+              if(gas_isvelocity) then
+                 prt_particles(ivac)%Esrc = Ep0*(1.0+r0*mu0/pc_c)
+                 prt_particles(ivac)%Ebirth = Ep0*(1.0+r0*mu0/pc_c)
               !(rev 120)
-              prt_particles(ivac)%wlsrc = wl0/(1.0+gas_velyes*r0*mu0/pc_c)
+                 prt_particles(ivac)%wlsrc = wl0/(1.0+r0*mu0/pc_c)
               !
-              prt_particles(ivac)%musrc = (mu0+gas_velyes*r0/pc_c)/(1.0+gas_velyes*r0*mu0/pc_c)
+                 prt_particles(ivac)%musrc = (mu0+r0/pc_c)/(1.0+r0*mu0/pc_c)
+              else
+                 prt_particles(ivac)%Esrc = Ep0
+                 prt_particles(ivac)%Ebirth = Ep0
+              !
+                 prt_particles(ivac)%wlsrc = wl0
+              !
+                 prt_particles(ivac)%musrc = mu0
+              endif
               prt_particles(ivac)%rtsrc = 1
            else
               prt_particles(ivac)%Esrc = Ep0

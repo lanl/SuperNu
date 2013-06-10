@@ -116,13 +116,22 @@ subroutine initialnumbers
                 /real(nvolinit(iir))
            !write(*,*) Ep0, gas_vals2(iir)%eraddens, nvolinit(iir)
            
-           prt_particles(ipart)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
-           prt_particles(ipart)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
+           if(gas_isvelocity) then
+              prt_particles(ipart)%Esrc = Ep0*(1.0+r0*mu0/pc_c)
+              prt_particles(ipart)%Ebirth = Ep0*(1.0+r0*mu0/pc_c)
            
-           prt_particles(ipart)%wlsrc = wl0/(1.0+gas_velyes*r0*mu0/pc_c)
+              prt_particles(ipart)%wlsrc = wl0/(1.0+r0*mu0/pc_c)
            !
-           prt_particles(ipart)%musrc = (mu0+gas_velyes*r0/pc_c)/&
-                (1.0+gas_velyes*r0*mu0/pc_c)
+              prt_particles(ipart)%musrc = (mu0+r0/pc_c)/&
+                   (1.0+r0*mu0/pc_c)
+           else
+              prt_particles(ipart)%Esrc = Ep0
+              prt_particles(ipart)%Ebirth = Ep0
+           
+              prt_particles(ipart)%wlsrc = wl0
+           !
+              prt_particles(ipart)%musrc = mu0
+           endif
            prt_particles(ipart)%rtsrc = 1
            
            !Setting ir = zone of particle

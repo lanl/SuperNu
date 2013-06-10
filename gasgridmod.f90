@@ -31,8 +31,6 @@ module gasgridmod
   logical :: gas_isvelocity = .false.
   logical :: gas_isshell = .false.  !domain is shell, innermost radius not zero
   logical :: gas_novolsrc = .false. !no external volume source (e.g. radioactivity)
-  integer :: gas_velno = 1
-  integer :: gas_velyes = 0
   real*8 :: gas_templ0=0 !surface temperature at innermost radius
 !-(rev. 121)
   real*8 :: gas_sigcoefs=0  !analytic scattering opacity power law coefficient
@@ -163,14 +161,6 @@ module gasgridmod
     gas_nheav = in_nheav
     gas_srcmax = in_srcmax
 
-    ! Setting velocity option
-    if (in_isvelocity.eqv..true.) then
-       gas_velyes = 1
-       gas_velno = 0
-    else
-       gas_velyes = 0
-       gas_velno = 1
-    endif
 
 !-- primary
     allocate(gas_numcensus(gas_nr))  !# census prt_particles per cell

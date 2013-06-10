@@ -8,8 +8,6 @@ Permanent input values (bcast_persistent):
 -gasgridmod:
 integer :: gas_nr
 integer :: gas_ng
-integer :: gas_velno
-integer :: gas_velyes
 logical :: gas_isshell
 real*8 :: gas_rarr(gas_nr+1)
 real*8 :: gas_drarr(gas_nr)

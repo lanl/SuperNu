@@ -41,8 +41,6 @@ c     --------------------------!{{{
 *-- integer
 * integer :: gas_nr
 * integer :: gas_ng
-* integer :: gas_velno
-* integer :: gas_velyes
 * integer :: prt_npartmax
 * integer :: in_nomp
 * integer :: tsp_nt
@@ -72,20 +70,18 @@ c-- copy back
       deallocate(lsndvec)
 c
 c-- integer
-      n = 7
+      n = 5
       allocate(isndvec(n))
-      if(impi==impi0) isndvec = (/gas_nr,gas_ng,gas_velno,gas_velyes,
+      if(impi==impi0) isndvec = (/gas_nr,gas_ng,
      &  prt_npartmax,in_nomp,tsp_nt/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       gas_nr = isndvec(1)
       gas_ng = isndvec(2)
-      gas_velno = isndvec(3)
-      gas_velyes = isndvec(4)
-      prt_npartmax = isndvec(5)
-      in_nomp = isndvec(6)
-      tsp_nt = isndvec(7)
+      prt_npartmax = isndvec(3)
+      in_nomp = isndvec(4)
+      tsp_nt = isndvec(5)
       deallocate(isndvec)
 c
 c-- real*8
