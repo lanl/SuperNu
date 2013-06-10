@@ -38,6 +38,6 @@ gasgrid_update.o: gasgridmod.mod inputparmod.mod ionsmod.mod miscmod.mod mpimod.
 physical_opacity.o: bbxsmod.mod bfxsmod.mod ffxsmod.mod gasgridmod.mod inputparmod.mod ionsmod.mod miscmod.mod physconstmod.mod timingmod.mod
 convert_cap2capros.o: gasgridmod.mod
 temperature_update.o: gasgridmod.mod physconstmod.mod timestepmod.mod
-leakage_opacity.o: gasgridmod.mod timestepmod.mod particlemod.mod
+leakage_opacity.o: gasgridmod.mod timestepmod.mod particlemod.mod physconstmod.mod
 emission_probability.o: gasgridmod.mod physconstmod.mod
 fleck_factor.o: gasgridmod.mod timestepmod.mod physconstmod.mod

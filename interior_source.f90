@@ -79,10 +79,8 @@ subroutine interior_source
            prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = exsumg(ir)*tsp_dt* &
-             (4.0*pc_pi*gas_vals2(ir)%dr3_34pi/3.0)/real(gas_vals2(ir)%nvolex)
-           if(gas_isvelocity) then
-              Ep0 = Ep0*tsp_texp**3
-           endif
+             gas_vals2(ir)%vol/real(gas_vals2(ir)%nvolex)
+           
            !write(*,*) Ep0, gas_vals2(ir)%nvolex
            
            if (((gas_sig(ir)+gas_cap(iig,ir))*gas_drarr(ir)* &
