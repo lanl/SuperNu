@@ -86,7 +86,7 @@ module gasgridmod
   type gas_secondary
     sequence
     integer :: nvol, nvolex
-    real*8 :: dr3_34pi, tempkev, emit, eraddens
+    real*8 :: tempkev, emit, eraddens
     real*8 :: ur, rho, bcoef, nisource
        real*8 :: temp       !gcell temperature
        real*8 :: volr       !gcell volume [rout=1 units]

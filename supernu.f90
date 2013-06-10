@@ -19,7 +19,7 @@ program supernu
 ! Main routine
 !
 ! todo:
-! - unify dr3_34pi with volr (13/05/31)
+! - unify dr3_34pi with volr (13/05/31)   ==> Ryan W.: unified dr3_34pi with vol (now vol only in spatial coordinates)
 ! - unify tempkev with temp (13/05/31)
 ! - clean up manual stratification usage throughout code (into dedicated
 !   subroutine?) (13/05/31)

@@ -21,6 +21,7 @@ subroutine initialnumbers
   integer,dimension(gas_nr) :: nvolinit, iirused
   integer :: nvolinittot, nvolinitapp
   real*8 :: wl0, mu0, Ep0, r0
+  real*8 :: help
   real*8 :: r1,r2,r3
   real*8 :: exsumg, rrcenter, etotinit,denom2
   real*8 :: x1,x2,x3,x4
@@ -36,6 +37,13 @@ subroutine initialnumbers
   gas_vals2(:)%eraddens=0d0
   x1 = 1d0/gas_wl(gas_ng+1)
   x2 = 1d0/gas_wl(1)
+
+  if(gas_isvelocity) then
+     help = gas_velout*tsp_texp
+  else
+     help = gas_l0+gas_lr
+  endif
+
   if(gas_srctype=='manu') then
 !{{{
      do ir = 1, gas_nr
@@ -56,12 +64,13 @@ subroutine initialnumbers
            gas_vals2(ir)%eraddens=gas_vals2(ir)%eraddens+&
                 ((x4-x3)/(x2-x1))*pc_acoef*gas_vals2(ir)%tempkev**4
         enddo
-        etotinit = etotinit + gas_vals2(ir)%eraddens*gas_vals2(ir)%dr3_34pi*pc_pi4*&
-             (gas_velno*1.0+gas_velyes*tsp_texp**3)/3d0
+        
+        etotinit = etotinit + gas_vals2(ir)%eraddens* &
+             gas_vals2(ir)%volr*help**3
      enddo
      do ir = 1, gas_nr
-        nvolinit(ir)=nint(gas_vals2(ir)%eraddens*gas_vals2(ir)%dr3_34pi*pc_pi4*&
-             (gas_velno*1.0+gas_velyes*tsp_texp**3)*nvolinittot/(etotinit*3d0))
+        nvolinit(ir)=nint(gas_vals2(ir)%eraddens*gas_vals2(ir)%volr*help**3 &
+             *nvolinittot/etotinit)
         nvolinitapp = nvolinitapp+nvolinit(ir)
      enddo!}}}
   endif
@@ -103,9 +112,9 @@ subroutine initialnumbers
            !calculating particle time
            prt_particles(ipart)%tsrc = tsp_time
            !calculating particle energy
-           Ep0 = gas_vals2(iir)%eraddens*gas_vals2(iir)%dr3_34pi*pc_pi4* &
-                (gas_velno*1.0+gas_velyes*tsp_texp**3)/(3d0*real(nvolinit(iir)))
-           !write(*,*) Ep0, gas_vals2(iir)%eraddens, nvolinit(iir), gas_vals2(iir)%dr3_34pi
+           Ep0 = gas_vals2(iir)%eraddens*gas_vals2(iir)%volr*help**3 &
+                /real(nvolinit(iir))
+           !write(*,*) Ep0, gas_vals2(iir)%eraddens, nvolinit(iir)
            
            prt_particles(ipart)%Esrc = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)
            prt_particles(ipart)%Ebirth = Ep0*(1.0+gas_velyes*r0*mu0/pc_c)

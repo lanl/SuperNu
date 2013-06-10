@@ -42,7 +42,6 @@ c-- outer shells
       do ir=1,gas_nr
        gas_drarr(ir) = (1d0-gas_rarr(1))/real(gas_nr)
        gas_rarr(ir+1) = gas_rarr(ir)+gas_drarr(ir)
-       gas_vals2(ir)%dr3_34pi = gas_rarr(ir+1)**3-gas_rarr(ir)**3
       enddo
 c
 c-- volume of unit-radius sphere shells
@@ -57,7 +56,7 @@ c-- set grid size to velout or lr depending on expanding or static
       endif
       gas_rarr = gas_rarr*help
       gas_drarr = gas_drarr*help
-      gas_vals2%dr3_34pi = gas_vals2%dr3_34pi*help**3!}}}
+      !}}}
 c
 c
 c-- IMC-DDMC heuristic coefficient for spherical geometry (rev 146)
@@ -108,8 +107,11 @@ c-- mass
        gas_vals2%mass = str_mass
       elseif(in_srctype=='manu') then
        do ir=1,gas_nr
-        masv = in_totmass*gas_vals2(ir)%dr3_34pi
+        masv = in_totmass*gas_vals2(ir)%vol*3d0/pc_pi4
         masv = masv/(gas_rarr(gas_nr+1)**3-gas_rarr(1)**3)
+        if(gas_isvelocity) then
+           masv = masv/tsp_texp**3
+        endif
         gas_vals2(ir)%mass = masv
        enddo
       else
