@@ -22,7 +22,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   logical, intent(inout) :: vacnt
   !
   integer :: ig, iig, g
-  real*8 :: r1, r2
+  real*8 :: r1, r2, help
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus, PR, PL, PA
   !real*8, dimension(gas_ng) :: PDFg
@@ -30,6 +30,12 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   real*8 :: alpeff
   !
   alpeff= 0d0 !gas_fcoef(z)**(deleff/(1-deleff))
+  !
+  if(gas_isvelocity) then
+     help = tsp_texp
+  else
+     help = 1d0
+  endif
   !
   ! Calculating current group (rev. 120)
   g = minloc(abs(gas_wl-wl),1)
@@ -77,30 +83,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   endif
   gas_eraddens(g,z)=gas_eraddens(g,z)+E*ddmct/tsp_dt
   !
-  !E = E*(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
-  !E0 = E0*(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
-  ! Recalculating comoving wavelength (rev. 120)
-  !wl = wl/(gas_velno*1.0+gas_velyes*exp(-ddmct/tsp_texp))
-  ! Recalculating current group (rev. 120)
-  !g = minloc(abs(gas_wl-wl),1)
-  !if(wl-gas_wl(g)<0d0) then
-  !   g = g-1
-  !endif
-  !
-  !if(g>gas_ng.or.g<1) then
-  !   !particle out of wlgrid bound
-  !   if(g>gas_ng) then
-  !      g=gas_ng
-  !      wl=gas_wl(gas_ng+1)
-  !   elseif(g<1) then
-  !      g=1
-  !      wl=gas_wl(1)
-  !   else
-  !      write(*,*) 'domain leak!!'
-  !      prt_done = .true.
-  !      vacnt = .true.
-  !   endif
-  !endif
   !
   t = t+ddmct
   !
@@ -138,11 +120,13 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
               write(6,*) 'Non-physical left leakage', g, gas_wl(g+1), wl
            endif
         elseif ((gas_sig(z-1)+gas_cap(g,z-1))*gas_drarr(z-1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z-1)) then
+             *help >= prt_tauddmc*gas_curvcent(z-1)) then
            
            z = z-1
            !gas_eraddens(g,z)=gas_eraddens(g,z)+E
         else
+!
+!--- Ryan W.: wl needs resample (rev 178)
            hyparam = 1
            r = gas_rarr(z)
            z = z-1
@@ -150,10 +134,12 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            r1 = rand()
            r2 = rand()
            mu = -max(r1,r2)
-           mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
-           E = E/(1.0-gas_velyes*r*mu/pc_c)
-           E0 = E0/(1.0-gas_velyes*r*mu/pc_c)
-           wl = wl*(1.0-gas_velyes*r*mu/pc_c)
+           if(gas_isvelocity) then
+              mu = (mu+r/pc_c)/(1d0+r*mu/pc_c)
+              E = E/(1.0-r*mu/pc_c)
+              E0 = E0/(1.0-r*mu/pc_c)
+              wl = wl*(1.0-r*mu/pc_c)
+           endif
         endif
      elseif (PL<=r1 .and. r1<PL+PR) then
         !gas_eraddens(g,z)=gas_eraddens(g,z)+E/(gas_opacleakr(g,z)*pc_c*tsp_dt)
@@ -163,13 +149,19 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            r1 = rand()
            r2 = rand()
            mu = max(r1,r2)
-           gas_eright = gas_eright+E*(1.0+gas_velyes*gas_rarr(gas_nr+1)*mu/pc_c)
+           if(gas_isvelocity) then
+              gas_eright = gas_eright+E*(1.0+gas_rarr(gas_nr+1)*mu/pc_c)
+           else
+              gas_eright = gas_eright+E
+           endif
         elseif ((gas_sig(z+1)+gas_cap(g,z+1))*gas_drarr(z+1) &
-             *(gas_velno*1.0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z+1)) then
+             *help >= prt_tauddmc*gas_curvcent(z+1)) then
            !gas_eraddens(g,z)=gas_eraddens(g,z)+E
            z = z+1
            !gas_eraddens(g,z)=gas_eraddens(g,z)+E
         else
+!
+!--- Ryan W.: wl needs resample (rev 178)
            hyparam = 1
            r = gas_rarr(z+1)
            z = z+1
@@ -177,10 +169,12 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            r1 = rand()
            r2 = rand()
            mu = max(r1,r2)
-           mu = (mu+gas_velyes*r/pc_c)/(1.0+r*mu/pc_c)
-           E = E/(1.0-gas_velyes*r*mu/pc_c)
-           E0 = E0/(1.0-gas_velyes*r*mu/pc_c)
-           wl = wl*(1.0-gas_velyes*r*mu/pc_c)
+           if(gas_isvelocity) then
+              mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
+              E = E/(1.0-r*mu/pc_c)
+              E0 = E0/(1.0-r*mu/pc_c)
+              wl = wl*(1.0-r*mu/pc_c)
+           endif
         endif
      elseif (PL+PR<=r1 .and. r1<PL+PR+PA) then
         !gas_eraddens(g,z)=gas_eraddens(g,z)+ &
@@ -225,7 +219,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
         !
         if ((gas_sig(z)+gas_cap(g,z))*gas_drarr(z) &
-             *(gas_velno*1d0+gas_velyes*tsp_texp)>=prt_tauddmc*gas_curvcent(z)) then
+             *help >= prt_tauddmc*gas_curvcent(z)) then
            hyparam = 2
         else
            hyparam = 1
@@ -233,10 +227,12 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            mu = 1.0-2.0*r1
            r1 = rand()
            r = (r1*gas_rarr(z+1)**3+(1.0-r1)*gas_rarr(z)**3)**(1.0/3.0)
-           mu = (mu+gas_velyes*r/pc_c)/(1.0+gas_velyes*r*mu/pc_c)
-           E = E/(1.0-gas_velyes*mu*r/pc_c)
-           E0 = E0/(1.0-gas_velyes*mu*r/pc_c)
-           wl = wl*(1.0-gas_velyes*r*mu/pc_c)
+           if(gas_isvelocity) then
+              mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
+              E = E/(1.0-mu*r/pc_c)
+              E0 = E0/(1.0-mu*r/pc_c)
+              wl = wl*(1.0-r*mu/pc_c)
+           endif
         endif
      !else
      !   stop 'diffusion1: invalid histogram sample'
