@@ -78,13 +78,13 @@ c
 c-- temperature
       if(in_istempflat) then!{{{
        do ir=1,gas_nr
-        gas_vals2(ir)%tempkev = in_consttempkev
+        gas_vals2(ir)%temp = in_consttemp
        enddo
       else
        call read_restart_file
        do ir=1,gas_nr
-        if(gas_vals2(ir)%tempkev<1d-6) then
-         gas_vals2(ir)%tempkev=1d-6
+        if(gas_vals2(ir)%temp<10d0) then
+         gas_vals2(ir)%temp=10d0
         endif
        enddo
       endif
@@ -94,9 +94,9 @@ c-- to Gaussian for manufacture tests
        uudd = 2.5d8
        do ir=1,gas_nr
         rrcenter=(gas_rarr(ir+1)+gas_rarr(ir))/2d0
-        gas_vals2(ir)%tempkev = in_templ0*exp(-0.5*(rrcenter/uudd)**2)
-        if(gas_vals2(ir)%tempkev<1d-3) then
-         gas_vals2(ir)%tempkev=1d-3
+        gas_vals2(ir)%temp = in_templ0*exp(-0.5*(rrcenter/uudd)**2)
+        if(gas_vals2(ir)%temp<10000d0) then
+         gas_vals2(ir)%temp=10000d0
         endif
        enddo
       endif!}}}
@@ -119,8 +119,8 @@ c-- mass
       endif!}}}
 c
 c-- temp and ur
-      gas_vals2%temp = gas_vals2%tempkev * 1e3*pc_ev/pc_kb !initial guess, may be overwritten by read_temp_str
-      gas_vals2%ur = pc_acoef*gas_vals2%tempkev**4
+      gas_vals2%tempkev = gas_vals2%temp * pc_kb/(1d3*pc_ev) !initial guess, may be overwritten by read_temp_str
+      gas_vals2%ur = pc_acoef*gas_vals2%temp**4
 c
 c-- adopt partial masses from input file
       if(.not.in_noreadstruct) then

@@ -40,17 +40,14 @@ subroutine temperature_update
      !endif
      if(gas_srctype=='manu') then
         !this may cause drift
-        gas_vals2(ir)%tempkev=gas_vals2(ir)%tempkev*tsp_texp/(tsp_texp+tsp_dt)
+        gas_vals2(ir)%temp=gas_vals2(ir)%temp*tsp_texp/(tsp_texp+tsp_dt)
      else
-        gas_vals2(ir)%tempkev = gas_vals2(ir)%tempkev + dtemp
+        gas_vals2(ir)%temp = gas_vals2(ir)%temp + dtemp
      endif
 
-     gas_vals2(ir)%temp = gas_vals2(ir)%tempkev * 1e3*pc_ev/pc_kb  !initial guess, may be overwritten by read_temp_str
-     !gas_vals2(ir)%ur=dtemp/(tsp_dt*pc_c*gas_siggrey(ir))
-     !gas_vals2(ir)%tempkev = (gas_vals2(ir)%ur/pc_acoef)**(0.25d0)
-     !gas_vals2(ir)%bcoef = 2.0*pc_acoef*gas_vals2(ir)%tempkev**3
-     gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%tempkev**4
-     !gas_edep(ir) = gas_edep(ir)/gas_vals2(ir)%vol
+     gas_vals2(ir)%tempkev = gas_vals2(ir)%temp * pc_kb/(1d3*pc_ev)     
+     gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%temp**4
+     
   enddo
 
 end subroutine temperature_update

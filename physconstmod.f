@@ -5,8 +5,8 @@ c     -------------------
 * physical constants and conversion factors
 ************************************************************************
 c
-c-- LOOK OUT KEV UNITS!!!
-      real*8,parameter :: pc_acoef = 1.371e14  !radiation constant (erg/Kev^4/cm^3)
+c
+      real*8,parameter :: pc_acoef = 7.5657d-15  !radiation constant (erg/K^4/cm^3)
 c
 c
 c-- physical constants

@@ -96,15 +96,15 @@ c=============================================================
       if(gas_isshell) then
        gas_tempb(1) = gas_templ0
       else
-       gas_tempb(1) = gas_vals2(1)%tempkev
+       gas_tempb(1) = gas_vals2(1)%temp
       endif
 !gas_tempb(1) = 1.0
       do ir=2,gas_nr
-       gas_tempb(ir) = (gas_vals2(ir)%tempkev**4 +
-     &   gas_vals2(ir-1)%tempkev**4)/2.0
+       gas_tempb(ir) = (gas_vals2(ir)%temp**4 +
+     &   gas_vals2(ir-1)%temp**4)/2.0
        gas_tempb(ir) = gas_tempb(ir)**0.25
       enddo
-      gas_tempb(gas_nr+1) = gas_vals2(gas_nr)%tempkev
+      gas_tempb(gas_nr+1) = gas_vals2(gas_nr)%temp
 !Interpolating cell boundary densities (in g/cm^3): loop
       gas_rhob(1) = gas_vals2(1)%rho
       do ir = 2, gas_nr
@@ -118,7 +118,7 @@ c=============================================================
 !Calculating power law heat capacity
       do ir=1,gas_nr
        gas_vals2(ir)%bcoef = gas_cvcoef *
-     &   gas_vals2(ir)%tempkev**gas_cvtpwr *
+     &   gas_vals2(ir)%temp**gas_cvtpwr *
      &   gas_vals2(ir)%rho**gas_cvrpwr
       enddo!}}}
 c

@@ -67,7 +67,6 @@ module gasgridmod
   real*8, dimension(:), allocatable :: gas_curvcent !(gas_nr), multiplied by tauddmc for mfp threshold
   real*8, dimension(:), allocatable :: gas_edep, gas_siggrey, gas_fcoef !(gas_nr)
   real*8, dimension(:), allocatable :: gas_tempb  !(gas_nr+1), interpolated temperatures (keV)
-  real*8, dimension(:), allocatable :: gas_tempkev !(gas_nr), interpolated temperatures (keV)
   real*8, dimension(:), allocatable :: gas_rhob   !(gas_nr+1), interpolated densities
   real*8, allocatable :: gas_emitprob(:,:)           !(gas_ng,gas_nr)
   real*8, allocatable :: gas_ppl(:,:), gas_ppr(:,:)  !(gas_ng,gas_nr)
@@ -196,7 +195,6 @@ module gasgridmod
     allocate(gas_dwl(gas_ng)) !wavelength grid bin width
 
     allocate(gas_tempb(gas_nr+1))  !cell boundary temperature
-    allocate(gas_tempkev(gas_nr))  !HACK
     allocate(gas_rhob(gas_nr+1))   !cell boundary density
     
     allocate(gas_caprosl(gas_ng,gas_nr))  !left cell edge group Rosseland opacities

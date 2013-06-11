@@ -14,7 +14,7 @@ subroutine fleck_factor
 
   !Calculating Fleck factor: 
   do ir = 1, gas_nr
-     Um = gas_vals2(ir)%bcoef*gas_vals2(ir)%tempkev
+     Um = gas_vals2(ir)%bcoef*gas_vals2(ir)%temp
      beta = 4.0*gas_vals2(ir)%ur/Um
      gas_fcoef(ir) = 1.0/(1.0+tsp_alpha*beta*pc_c*tsp_dt*gas_siggrey(ir))
   enddo

@@ -19,17 +19,15 @@ program supernu
 ! Main routine
 !
 ! todo:
-! - unify dr3_34pi with volr (13/05/31)   ==> Ryan W.: unified dr3_34pi with vol (now vol only in spatial coordinates)
 ! - unify tempkev with temp (13/05/31)
 ! - clean up manual stratification usage throughout code (into dedicated
 !   subroutine?) (13/05/31)
 ! - verify linear and uniform velocity grid in input.str (13/05/31)
 ! - check wavelength units for bb and bf data
 ! - fix gas_wl indexing BUG in physical_opacity
-! - remove velyes|velno from analytic expressions throughout the code (13/06/01)
 ! - improve grid construction: store unit-sphere radii separately (13/06/01)
-! - remove duplication of gas_tempkev with gas_vals2%tempkev (13/05/31)
 ! - clean up dealloc_all and add all arrays allocated in mpimod_mpi.f
+!
 !***********************************************************************
   real*8 :: help, dt
   real*8 :: t_elapsed
@@ -124,8 +122,6 @@ program supernu
       call gasgrid_update
 !-- number of source prt_particles per cell
       call sourcenumbers
-!-- DIRTY HACK:
-      gas_tempkev = gas_vals2%tempkev  !DIRTY HACK -- THIS TEMPKEV DUPLICATION NEEDS TO GO...
     endif !impi
 
 !-- broadcast to all workers
