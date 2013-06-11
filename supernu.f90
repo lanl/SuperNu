@@ -19,7 +19,6 @@ program supernu
 ! Main routine
 !
 ! todo:
-! - unify tempkev with temp (13/05/31)
 ! - clean up manual stratification usage throughout code (into dedicated
 !   subroutine?) (13/05/31)
 ! - verify linear and uniform velocity grid in input.str (13/05/31)
