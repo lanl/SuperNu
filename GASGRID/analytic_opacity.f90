@@ -81,11 +81,10 @@ subroutine analytic_opacity
         enddo
         x1 = (pc_h*pc_c/(pc_ev*gas_wl(gas_ng+1)))/(1d3)
         x2 = (pc_h*pc_c/(pc_ev*gas_wl(1)))/(1d3)
-        !gas_siggrey(ir) = 0.5d0*gas_siggrey(ir)*gas_vals2(ir)%tempkev**(-3)*(x1+x2)/(x1*x2)**2
         gas_siggrey(ir) = 0d0
         do ig = 1, gas_ng
-           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_vals2(ir)%tempkev)
-           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
+           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_vals2(ir)%temp)
+           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_vals2(ir)%temp)
            gas_siggrey(ir) = gas_siggrey(ir)+15d0*gas_cap(ig,ir)*specint(x1,x2,3)/pc_pi**4
         enddo
      enddo!}}}
@@ -172,8 +171,8 @@ subroutine analytic_opacity
         !calculate Planck, Rosseland opacities
         gas_siggrey(ir) = 0d0
         do ig = 1, gas_ng
-           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_vals2(ir)%tempkev)
-           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
+           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_vals2(ir)%temp)
+           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_vals2(ir)%temp)
            gas_siggrey(ir) = gas_siggrey(ir)+15d0*gas_cap(ig,ir)* &
                 specint(x1,x2,3)/pc_pi**4
         enddo

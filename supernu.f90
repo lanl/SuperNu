@@ -81,14 +81,6 @@ program supernu
    call gasgrid_init(in_nt)
    call gasgrid_setup
 !
-!-- read initial temperature structure from file
-!   call read_restart_file
-!-- hard coded temperature structure
-!   do ir = 1, gas_nr
-!     if (gas_vals2(ir)%tempkev<1.e-6) then
-!       gas_vals2(ir)%tempkev = 1.e-6
-!     endif
-!   enddo
 
 !-- READ DATA
 !-- read ion and level data

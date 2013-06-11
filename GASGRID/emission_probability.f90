@@ -29,8 +29,8 @@ subroutine emission_probability
      else
         do ir = 1, gas_nr
            do ig = 1, gas_ng
-              x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_vals2(ir)%tempkev)
-              x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_vals2(ir)%tempkev)
+              x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_vals2(ir)%temp)
+              x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_vals2(ir)%temp)
               gas_emitprob(ig,ir) = 15d0*specint(x1,x2,3)*gas_cap(ig,ir)/ &
                    (gas_siggrey(ir)*pc_pi**4)              
            enddo

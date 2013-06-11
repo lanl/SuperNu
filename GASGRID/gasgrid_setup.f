@@ -119,8 +119,7 @@ c-- mass
       endif!}}}
 c
 c-- temp and ur
-      gas_vals2%tempkev = gas_vals2%temp * pc_kb/(1d3*pc_ev) !initial guess, may be overwritten by read_temp_str
-      gas_vals2%ur = pc_acoef*gas_vals2%temp**4
+      gas_vals2%ur = pc_acoef*gas_vals2%temp**4 !initial guess, may be overwritten by read_temp_str
 c
 c-- adopt partial masses from input file
       if(.not.in_noreadstruct) then

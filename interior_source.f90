@@ -162,8 +162,8 @@ subroutine interior_source
            !r1 = rand()
            !wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
            !wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
-           x1 = pc_h*pc_c/(pc_ev*gas_wl(iig+1))/(1d3*gas_vals2(ir)%tempkev)
-           x2 = pc_h*pc_c/(pc_ev*gas_wl(iig))/(1d3*gas_vals2(ir)%tempkev)
+           x1 = pc_h*pc_c/(gas_wl(iig+1)*pc_kb*gas_vals2(ir)%temp)
+           x2 = pc_h*pc_c/(gas_wl(iig)*pc_kb*gas_vals2(ir)%temp)
            if (x2<pc_plkpk) then
               bmax = x2**3/(exp(x2)-1d0)
            elseif (x1>pc_plkpk) then
@@ -179,7 +179,7 @@ subroutine interior_source
               r2 = rand()
               xx0 = (1d0-r1)*x1+r1*x2
            enddo
-           wl0 = pc_h*pc_c/(pc_ev*xx0)/(1d3*gas_vals2(ir)%tempkev)
+           wl0 = pc_h*pc_c/(xx0*pc_kb*gas_vals2(ir)%temp)
 
            !Calculating radial position
            r1 = 0d0

@@ -45,7 +45,6 @@ subroutine temperature_update
         gas_vals2(ir)%temp = gas_vals2(ir)%temp + dtemp
      endif
 
-     gas_vals2(ir)%tempkev = gas_vals2(ir)%temp * pc_kb/(1d3*pc_ev)     
      gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%temp**4
      
   enddo

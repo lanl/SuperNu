@@ -158,8 +158,8 @@ subroutine particle_advance
                  !r1 = rand()
                  !wlsrc=gas_wl(g)*(1d0-r1)+gas_wl(g+1)*r1
                  !
-                 x1 = pc_h*pc_c/(pc_ev*gas_wl(g+1))/(1d3*gas_vals2(zsrc)%tempkev)
-                 x2 = pc_h*pc_c/(pc_ev*gas_wl(g))/(1d3*gas_vals2(zsrc)%tempkev)
+                 x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_vals2(zsrc)%temp)
+                 x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_vals2(zsrc)%temp)
                  if (x2<pc_plkpk) then
                     bmax = x2**3/(exp(x2)-1d0)
                  elseif (x1>pc_plkpk) then
@@ -175,7 +175,7 @@ subroutine particle_advance
                     r2 = rand()
                     xx0 = (1d0-r1)*x1+r1*x2
                  enddo
-                 wlsrc = pc_h*pc_c/(pc_ev*xx0)/(1d3*gas_vals2(zsrc)%tempkev)
+                 wlsrc = pc_h*pc_c/(xx0*pc_kb*gas_vals2(zsrc)%temp)
                  !
                  if(gas_isvelocity) then
                     wlsrc = wlsrc*(1.0-musrc*rsrc/pc_c)
@@ -330,8 +330,8 @@ subroutine particle_advance
            endif
            !
            !
-           x1 = pc_h*pc_c/(pc_ev*gas_wl(g+1))/(1d3*gas_vals2(zsrc)%tempkev)
-           x2 = pc_h*pc_c/(pc_ev*gas_wl(g))/(1d3*gas_vals2(zsrc)%tempkev)
+           x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_vals2(zsrc)%temp)
+           x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_vals2(zsrc)%temp)
            if (x2<pc_plkpk) then
               bmax = x2**3/(exp(x2)-1d0)
            elseif (x1>pc_plkpk) then
@@ -347,7 +347,7 @@ subroutine particle_advance
               r2 = rand()
               xx0 = (1d0-r1)*x1+r1*x2
            enddo
-           wlsrc = pc_h*pc_c/(pc_ev*xx0)/(1d3*gas_vals2(zsrc)%tempkev)
+           wlsrc = pc_h*pc_c/(xx0*pc_kb*gas_vals2(zsrc)%temp)
            !
            wlsrc = wlsrc*exp(-tsp_dt/tsp_texp)
         endif

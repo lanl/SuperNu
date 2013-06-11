@@ -148,8 +148,8 @@ subroutine analytic_source
   else
      stop 'analytic_source: gas_srctype invalid'
   endif
-  !write(*,*) gas_exsource(1,1), gas_exsource(2,1), gas_exsource(3,1)
-  !write(*,*) gas_vals2(1)%tempkev, gas_vals2(2)%tempkev
+
+  !write(*,*) gas_exsource(1,1), gas_exsource(2,1), gas_exsource(3,1)  
   !write(*,*) gas_exsource(1,:)
   !write(*,*)
   !write(*,*) gas_exsource(2,:)
