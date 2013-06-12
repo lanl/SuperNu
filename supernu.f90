@@ -38,7 +38,6 @@ program supernu
   call mpi_init(ierr) !MPI
   call mpi_comm_rank(MPI_COMM_WORLD,impi,ierr) !MPI
   call mpi_comm_size(MPI_COMM_WORLD,nmpi,ierr) !MPI
-
 !
 !--
 !-- SETUP SIMULATION:
@@ -102,10 +101,10 @@ program supernu
 ! not working currently, as prt_particle data structure is only
 ! available after bcast_nonpermanent
 !  call initialnumbers
-
 !
 !-- time step loop
 !=================
+  write(*,*) 'nproc', nmpi
   do tsp_it = 1, tsp_nt
     if(impi==impi0) then
       write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_it,tsp_texp/pc_day
@@ -137,6 +136,18 @@ write(0,*) 'test2',impi
     call reduce_tally !MPI
     
     if(impi==impi0) then
+       ! averaging reduced results
+       if(nmpi>1) then
+!-- dim==0
+          gas_erad = gas_erad/(nmpi-1)
+          gas_eright = gas_eright/(nmpi-1)
+          gas_eleft = gas_eleft/(nmpi-1)
+!-- dim==1
+          gas_edep = gas_edep/(nmpi-1)
+!-- dim==2
+          gas_eraddens = gas_eraddens/(nmpi-1)
+       endif
+       !
       call temperature_update
       call timestep_update(dt) !Updating elapsed tsp_time and expansion tsp_time
 
