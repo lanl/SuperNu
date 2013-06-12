@@ -31,22 +31,15 @@ subroutine interior_source
   !Volume particle instantiation: loop
   !Loop run over the number of new particles that aren't surface source
   !particles.
-  do iir = 1, gas_nr
-     do ig = 1, gas_ng
-        exsumg(iir)=exsumg(iir)+gas_exsource(ig,iir)
-     enddo
-     !write(*,*) exsumg(ir)
-  enddo
-  !write(*,*) gas_exsource(1,1),gas_exsource(1,12),gas_exsource(1,25)
 
   x1=1d0/gas_wl(gas_ng+1)
   x2=1d0/gas_wl(1)
   do ipart = prt_nsurf+1, prt_nsurf+prt_nexsrc
      ivac = prt_vacantarr(ipart)
      isnotvacnt = .false.
-     !If adding particle ivac in current cell ir does not exceed gas_vals2, add ivac to ir: loop
+     !If adding particle ivac in current cell ir does not exceed nvolex, add ivac to ir: loop
      do while (isnotvacnt.eqv..false.)
-        if (irused(ir)<gas_vals2(ir)%nvolex) then
+        if (irused(ir)<gas_nvolex(ir)) then
            irused(ir) = irused(ir)+1
            !Calculating Group
            denom2 = 0d0
@@ -84,10 +77,7 @@ subroutine interior_source
            r1 = rand()
            prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
            !Calculating particle energy, lab frame direction and propagation type
-           Ep0 = exsumg(ir)*tsp_dt* &
-             gas_vals2(ir)%vol/real(gas_vals2(ir)%nvolex)
-           
-           !write(*,*) Ep0, gas_vals2(ir)%nvolex
+           Ep0 = gas_emitex(ir)/real(gas_nvolex(ir))
            
            if (((gas_sig(ir)+gas_cap(iig,ir))*gas_drarr(ir)* &
                 help < prt_tauddmc*gas_curvcent(ir)) &
@@ -134,7 +124,8 @@ subroutine interior_source
      enddo
   enddo
 
-  !Thermal volume particle instantiation: loop
+
+!-- Thermal volume particle instantiation: loop
   ir = 1
   irused(1:gas_nr) = 0
   !write(*,*) prt_nsurf,prt_nexsrc+1,prt_nnew
@@ -142,9 +133,9 @@ subroutine interior_source
   do ipart = prt_nsurf+prt_nexsrc+1, prt_nnew
      ivac = prt_vacantarr(ipart)
      isnotvacnt = .false.
-     !If adding particle ivac in current cell ir does not exceed gas_vals2, add ivac to ir: loop
+     !If adding particle ivac in current cell ir does not exceed nvol, add ivac to ir: loop
      do while (isnotvacnt.eqv..false.)
-        if (irused(ir)<gas_vals2(ir)%nvol) then
+        if (irused(ir)<gas_nvol(ir)) then
            irused(ir) = irused(ir)+1
            !Calculating Group
            denom2 = 0d0
@@ -203,7 +194,7 @@ subroutine interior_source
            r1 = rand()
            prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
            !Calculating particle energy, lab frame direction and propagation type
-           Ep0 = gas_vals2(ir)%emit/real(gas_vals2(ir)%nvol)
+           Ep0 = gas_emit(ir)/real(gas_nvol(ir))
 
            if (((gas_cap(iig,ir)+gas_sig(ir))*gas_drarr(ir)* &
                 help < prt_tauddmc*gas_curvcent(ir)) &

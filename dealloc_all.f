@@ -32,6 +32,7 @@ c-- gasgridmod
       deallocate(gas_capgam)
       deallocate(gas_exsource)
       deallocate(gas_curvcent)
+      deallocate(gas_emit,gas_emitex,gas_nvol,gas_nvolex)
 c-- particlemod
       deallocate(prt_particles)
 

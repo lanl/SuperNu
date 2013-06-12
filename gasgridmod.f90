@@ -80,10 +80,21 @@ module gasgridmod
   !Ryan W.: External sources (currently used for analytic_source):
   real*8, dimension(:,:), allocatable :: gas_exsource !(gas_ng,gas_nr)
 
+!
+! Ryan W.: These quantities have been removed from gas_secondary (rev 183).  They are used during particle generation/transport
+!---
+  integer, allocatable :: gas_nvol(:) !(gas_nr) number of thermal source particles generated per cell
+  integer, allocatable :: gas_nvolex(:) !(gas_nr) number of external source particles generated per cell
+  real*8, allocatable :: gas_emit(:) !(gas_nr) amount of fictitious thermal energy emitted per cell in a time step
+  real*8, allocatable :: gas_emitex(:) !(gas_nr) amount of external energy emitted per cell in a time step
+!
+  !real*8, allocatable :: gas_temp(:)
+!---
+!
   type gas_secondary
     sequence
-    integer :: nvol, nvolex
-    real*8 :: emit, eraddens
+    
+    real*8 :: eraddens
     real*8 :: ur, rho, bcoef, nisource
        real*8 :: temp       !gcell temperature
        real*8 :: volr       !gcell volume [rout=1 units]
@@ -182,7 +193,11 @@ module gasgridmod
     !allocate(gas_wl(gas_ng)) !wavelength grid
 !------------------------------------------------------
     allocate(gas_cap(gas_ng,gas_nr)) !Line+Cont extinction coeff
-
+!--Ryan W: values below were formerly secondary (rev 183)
+    allocate(gas_nvol(gas_nr))
+    allocate(gas_nvolex(gas_nr))
+    allocate(gas_emit(gas_nr))
+    allocate(gas_emitex(gas_nr))
 !-- secondary
     allocate(gas_vals2(gas_nr))
     !allocate(gas_sig(gas_nr))
