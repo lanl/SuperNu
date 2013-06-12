@@ -40,12 +40,12 @@ subroutine temperature_update
      !endif
      if(gas_srctype=='manu') then
         !this may cause drift
-        gas_vals2(ir)%temp=gas_vals2(ir)%temp*tsp_texp/(tsp_texp+tsp_dt)
+        gas_temp(ir)=gas_temp(ir)*tsp_texp/(tsp_texp+tsp_dt)
      else
-        gas_vals2(ir)%temp = gas_vals2(ir)%temp + dtemp
+        gas_temp(ir) = gas_temp(ir) + dtemp
      endif
 
-     gas_vals2(ir)%ur = pc_acoef*gas_vals2(ir)%temp**4
+     gas_vals2(ir)%ur = pc_acoef*gas_temp(ir)**4
      
   enddo
 

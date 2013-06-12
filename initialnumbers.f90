@@ -62,7 +62,7 @@ subroutine initialnumbers
            x3 = 1d0/gas_wl(ig+1)
            x4 = 1d0/gas_wl(ig)
            gas_vals2(ir)%eraddens=gas_vals2(ir)%eraddens+&
-                ((x4-x3)/(x2-x1))*pc_acoef*gas_vals2(ir)%temp**4
+                ((x4-x3)/(x2-x1))*pc_acoef*gas_temp(ir)**4
         enddo
         
         etotinit = etotinit + gas_vals2(ir)%eraddens* &

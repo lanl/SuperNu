@@ -29,7 +29,7 @@ logical :: in_puretran
 Nonpermanent input values (bcast_nonpersistent):
 
 -gasgridmod:
-real*8 :: gas_vals2(gas_nr)%temp
+real*8 :: gas_temp(gas_nr)
 real*8 :: gas_fcoef(gas_nr)
 real*8 :: gas_sig(gas_nr)
 real*8 :: gas_emitprob(gas_ng,gas_nr)

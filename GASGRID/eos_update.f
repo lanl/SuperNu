@@ -20,7 +20,7 @@ c-- loop over all gas_vals cells
       do icg=1,gas_nr
        ndens = gas_vals2(icg)%natom/gas_vals2(icg)%vol !atom number density
        call ion_solve_eos(gas_vals2(icg)%natom1fr(1:),
-     &   gas_vals2(icg)%temp,ndens,gas_vals2(icg)%nelec,niter)
+     &   gas_temp(icg),ndens,gas_vals2(icg)%nelec,niter)
 c
 c-- debug output
 !      write(6,*) icg,niter !DEBUG

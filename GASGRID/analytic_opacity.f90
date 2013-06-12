@@ -39,11 +39,11 @@ subroutine analytic_opacity
      ! sigmaP_g, sigmaR_g = sigmaP for all g 
      ! Input wavelength grid not used
      do ir = 1, gas_nr
-        gas_siggrey(ir) = gas_sigcoef*gas_vals2(ir)%temp**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
+        gas_siggrey(ir) = gas_sigcoef*gas_temp(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
         !sigll = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_rhob(ir)**gas_sigrpwr
         !sigrr = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_rhob(ir+1)**gas_sigrpwr
-        sigll = gas_siggrey(ir)*(gas_tempb(ir)/gas_vals2(ir)%temp)**gas_sigtpwr
-        sigrr = gas_siggrey(ir)*(gas_tempb(ir+1)/gas_vals2(ir)%temp)**gas_sigtpwr
+        sigll = gas_siggrey(ir)*(gas_tempb(ir)/gas_temp(ir))**gas_sigtpwr
+        sigrr = gas_siggrey(ir)*(gas_tempb(ir+1)/gas_temp(ir))**gas_sigtpwr
         do ig = 1, gas_ng
            gas_cap(ig,ir) = gas_siggrey(ir)
            gas_caprosl(ig,ir) = sigll
@@ -56,11 +56,11 @@ subroutine analytic_opacity
      ! func_P(T,g) and func_R(T,g) are functions proportional to integral_g(1/nu^3)
      !
      do ir = 1, gas_nr
-        gas_siggrey(ir) = gas_sigcoef*gas_vals2(ir)%temp**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
+        gas_siggrey(ir) = gas_sigcoef*gas_temp(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
         !sigll = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_rhob(ir)**gas_sigrpwr
         !sigrr = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_rhob(ir+1)**gas_sigrpwr
-        sigll = gas_siggrey(ir)*(gas_tempb(ir)/gas_vals2(ir)%temp)**gas_sigtpwr
-        sigrr = gas_siggrey(ir)*(gas_tempb(ir+1)/gas_vals2(ir)%temp)**gas_sigtpwr
+        sigll = gas_siggrey(ir)*(gas_tempb(ir)/gas_temp(ir))**gas_sigtpwr
+        sigrr = gas_siggrey(ir)*(gas_tempb(ir+1)/gas_temp(ir))**gas_sigtpwr
         do ig = 1, gas_ng
            !
            !group (Planck) opacities:
@@ -83,8 +83,8 @@ subroutine analytic_opacity
         x2 = (pc_h*pc_c/(pc_ev*gas_wl(1)))/(1d3)
         gas_siggrey(ir) = 0d0
         do ig = 1, gas_ng
-           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_vals2(ir)%temp)
-           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_vals2(ir)%temp)
+           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(ir))
+           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(ir))
            gas_siggrey(ir) = gas_siggrey(ir)+15d0*gas_cap(ig,ir)*specint(x1,x2,3)/pc_pi**4
         enddo
      enddo!}}}
@@ -93,7 +93,7 @@ subroutine analytic_opacity
      ! Su&Olson picket-fence distributions (tests: A,B,C (Su and Olson 1999))
      ! Input wavelength grid not used
      do ir = 1, gas_nr
-        gas_siggrey(ir) = gas_sigcoef*gas_vals2(ir)%temp**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
+        gas_siggrey(ir) = gas_sigcoef*gas_temp(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
         !sigll = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_rhob(ir)**gas_sigrpwr
         !sigrr = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_rhob(ir+1)**gas_sigrpwr
         sigll = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
@@ -149,11 +149,11 @@ subroutine analytic_opacity
      ! sigmaP = A*T^B*rho^C
      ! sigmaP_g = sigmaP*func_P(g), sigmaR_g = sigmaP
      do ir = 1, gas_nr
-        gas_siggrey(ir) = gas_sigcoef*gas_vals2(ir)%temp**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
+        gas_siggrey(ir) = gas_sigcoef*gas_temp(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
         !sigll = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_rhob(ir)**gas_sigrpwr
         !sigrr = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_rhob(ir+1)**gas_sigrpwr
-        sigll = gas_siggrey(ir)*(gas_tempb(ir)/gas_vals2(ir)%temp)**gas_sigtpwr
-        sigrr = gas_siggrey(ir)*(gas_tempb(ir+1)/gas_vals2(ir)%temp)**gas_sigtpwr
+        sigll = gas_siggrey(ir)*(gas_tempb(ir)/gas_temp(ir))**gas_sigtpwr
+        sigrr = gas_siggrey(ir)*(gas_tempb(ir+1)/gas_temp(ir))**gas_sigtpwr
         !
         !set odd group magnitudes (low)
         do ig = 1, gas_ng, 2
@@ -171,8 +171,8 @@ subroutine analytic_opacity
         !calculate Planck, Rosseland opacities
         gas_siggrey(ir) = 0d0
         do ig = 1, gas_ng
-           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_vals2(ir)%temp)
-           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_vals2(ir)%temp)
+           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(ir))
+           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(ir))
            gas_siggrey(ir) = gas_siggrey(ir)+15d0*gas_cap(ig,ir)* &
                 specint(x1,x2,3)/pc_pi**4
         enddo
@@ -184,7 +184,7 @@ subroutine analytic_opacity
 
   !Calculating grey scattering opacity
   do ir = 1, gas_nr
-     gas_sig(ir) = gas_sigcoefs*gas_vals2(ir)%temp**gas_sigtpwrs*gas_vals2(ir)%rho**gas_sigrpwrs
+     gas_sig(ir) = gas_sigcoefs*gas_temp(ir)**gas_sigtpwrs*gas_vals2(ir)%rho**gas_sigrpwrs
      gas_sigbl(ir) = gas_sigcoefs*gas_tempb(ir)**gas_sigtpwrs*gas_vals2(ir)%rho**gas_sigrpwrs
      gas_sigbr(ir) = gas_sigcoefs*gas_tempb(ir+1)**gas_sigtpwrs*gas_vals2(ir)%rho**gas_sigrpwrs
   enddo

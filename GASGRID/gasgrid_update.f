@@ -87,7 +87,7 @@ c-- density
       gas_vals2%rho = gas_vals2%mass/gas_vals2%vol
 c
 c-- keep track of temperature evolution
-      gas_temphist(:,tsp_it) = gas_vals2%temp!}}}
+      gas_temphist(:,tsp_it) = gas_temp!}}}
 c
 c
 c-- update interpolated density and temperatures at cell edges
@@ -96,15 +96,15 @@ c=============================================================
       if(gas_isshell) then
        gas_tempb(1) = gas_templ0
       else
-       gas_tempb(1) = gas_vals2(1)%temp
+       gas_tempb(1) = gas_temp(1)
       endif
 !gas_tempb(1) = 1.0
       do ir=2,gas_nr
-       gas_tempb(ir) = (gas_vals2(ir)%temp**4 +
-     &   gas_vals2(ir-1)%temp**4)/2.0
+       gas_tempb(ir) = (gas_temp(ir)**4 +
+     &   gas_temp(ir-1)**4)/2.0
        gas_tempb(ir) = gas_tempb(ir)**0.25
       enddo
-      gas_tempb(gas_nr+1) = gas_vals2(gas_nr)%temp
+      gas_tempb(gas_nr+1) = gas_temp(gas_nr)
 !Interpolating cell boundary densities (in g/cm^3): loop
       gas_rhob(1) = gas_vals2(1)%rho
       do ir = 2, gas_nr
@@ -118,7 +118,7 @@ c=============================================================
 !Calculating power law heat capacity
       do ir=1,gas_nr
        gas_vals2(ir)%bcoef = gas_cvcoef *
-     &   gas_vals2(ir)%temp**gas_cvtpwr *
+     &   gas_temp(ir)**gas_cvtpwr *
      &   gas_vals2(ir)%rho**gas_cvrpwr
       enddo!}}}
 c
@@ -192,7 +192,7 @@ c-- write opacity grid
         do ir=1,gas_nr
 c-- convert from opacity in redona's rcell units to opacity per cm
          write(4,'(a,3i8,1p,2e12.4)') '#',tsp_it,tsp_it,ir,
-     &     gas_vals2(ir)%temp,gas_sig
+     &     gas_temp(ir),gas_sig
          write(4,'(1p,10e12.4)') (gas_cap(j,ir),j=1,gas_ng)
         enddo
 c-- close file
@@ -210,23 +210,23 @@ c
 c-- Rosseland opacity
 c-- normalization integral first
        forall(ir=1:gas_nr)
-     &  chiross(ir) = sum(dplanckdtemp(gas_wl,gas_vals2(ir)%temp)*
+     &  chiross(ir) = sum(dplanckdtemp(gas_wl,gas_temp(ir))*
      &    gas_dwl)
        forall(ir=1:gas_nr)
-     &  capplanck(ir) = sum(planck(gas_wl,gas_vals2(ir)%temp)*
+     &  capplanck(ir) = sum(planck(gas_wl,gas_temp(ir))*
      &    gas_dwl)
 c-- check against analytic solution
 c      write(7,'(1p,10e12.4)') (chiross(ir),ir=1,gas_nr)
-c      write(7,'(1p,10e12.4)') (4/pi*sb*gas_vals2(ir)%temp**3,ir=1,gas_nr)
+c      write(7,'(1p,10e12.4)') (4/pi*sb*gas_temp(ir)**3,ir=1,gas_nr)
 c      write(7,'(1p,10e12.4)') (capplanck(ir),ir=1,gas_nr)
-c      write(7,'(1p,10e12.4)') (sb/pi*gas_vals2(ir)%temp**4,ir=1,gas_nr)
+c      write(7,'(1p,10e12.4)') (sb/pi*gas_temp(ir)**4,ir=1,gas_nr)
 c-- now the opacity weighting integral
        forall(ir=1:gas_nr)
      &  chiross(ir) = chiross(ir) /
-     &    sum(dplanckdtemp(gas_wl,gas_vals2(ir)%temp)*gas_dwl/
+     &    sum(dplanckdtemp(gas_wl,gas_temp(ir))*gas_dwl/
      &    (gas_cap(:,ir) + gas_sig(ir)))
        forall(ir=1:gas_nr)
-     &  capplanck(ir) = sum(planck(gas_wl,gas_vals2(ir)%temp)*
+     &  capplanck(ir) = sum(planck(gas_wl,gas_temp(ir))*
      &    gas_cap(:,ir)*gas_dwl) / capplanck(ir)
 c-- Rosseland output
        write(7,*) 'mean opacities:'

@@ -88,7 +88,7 @@ module gasgridmod
   real*8, allocatable :: gas_emit(:) !(gas_nr) amount of fictitious thermal energy emitted per cell in a time step
   real*8, allocatable :: gas_emitex(:) !(gas_nr) amount of external energy emitted per cell in a time step
 !
-  !real*8, allocatable :: gas_temp(:)
+  real*8, allocatable :: gas_temp(:)
 !---
 !
   type gas_secondary
@@ -96,7 +96,7 @@ module gasgridmod
     
     real*8 :: eraddens
     real*8 :: ur, rho, bcoef, nisource
-       real*8 :: temp       !gcell temperature
+       !real*8 :: temp       !gcell temperature
        real*8 :: volr       !gcell volume [rout=1 units]
        real*8 :: vol        !gcell volume [cm^3]
        real*8 :: volcrp     !effective volume (of linked rgrid cells) [cm^3]
@@ -209,6 +209,7 @@ module gasgridmod
     allocate(gas_temphist(gas_nr,nt))
     allocate(gas_dwl(gas_ng)) !wavelength grid bin width
 
+    allocate(gas_temp(gas_nr))  !cell average temperature
     allocate(gas_tempb(gas_nr+1))  !cell boundary temperature
     allocate(gas_rhob(gas_nr+1))   !cell boundary density
     

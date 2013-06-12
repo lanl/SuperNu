@@ -11,7 +11,7 @@ c
       if(.not.lexist) return
 c
       open(unit=4,file=fname,status='unknown')
-      read(4,*) gas_vals2%temp
+      read(4,*) gas_temp
       close(4)
       end subroutine read_restart_file
 c
@@ -25,6 +25,6 @@ c     -----------------------------
 ************************************************************************
       character(14) :: fname = 'output.restart'
       open(unit=4,file=fname,status='unknown',position='append')
-      write(4,*) gas_vals2%temp
+      write(4,*) gas_temp
       close(4)
       end subroutine write_restart_file

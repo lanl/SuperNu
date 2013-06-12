@@ -49,7 +49,7 @@ c-- reset
       cap = 0d0
 c
 c-- ion_grndlev helper array
-      hckt = pc_h*pc_c/(pc_kb*gas_vals2%temp)
+      hckt = pc_h*pc_c/(pc_kb*gas_temp)
 c
 c
 c-- bound-bound

@@ -18,7 +18,7 @@ subroutine write_output
 
   open(unit=4,file='output.temp',status='unknown',position=pos)
   do ir = 1, gas_nr
-    write(4,'(es16.8)',advance='no') gas_vals2(ir)%temp
+    write(4,'(es16.8)',advance='no') gas_temp(ir)
   enddo
   close(4)
 

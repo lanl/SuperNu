@@ -22,7 +22,7 @@ c-- bbxsmod
       deallocate(gas_vals2,gas_temphist,gas_dwl)
 c-- gasgridmod
       deallocate(gas_numcensus,gas_rarr,gas_drarr)
-      deallocate(gas_edep,gas_tempb)
+      deallocate(gas_edep,gas_temp,gas_tempb)
       deallocate(gas_cap,gas_caprosl)
       deallocate(gas_caprosr,gas_emitprob,gas_opacleakl,gas_opacleakr)
       deallocate(gas_ppl,gas_ppr)

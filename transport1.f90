@@ -227,8 +227,8 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         !wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
         !
         ! sampling sub-group Planck function:
-        x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_vals2(z)%temp)
-        x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_vals2(z)%temp)
+        x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(z))
+        x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_temp(z))
         if (x2<pc_plkpk) then
            bmax = x2**3/(exp(x2)-1d0)
         elseif (x1>pc_plkpk) then
@@ -244,7 +244,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            r2 = rand()
            xx0 = (1d0-r1)*x1+r1*x2
         enddo
-        wl = pc_h*pc_c/(xx0*pc_kb*gas_vals2(z)%temp)
+        wl = pc_h*pc_c/(xx0*pc_kb*gas_temp(z))
         !
         !
         if(gas_isvelocity) then
