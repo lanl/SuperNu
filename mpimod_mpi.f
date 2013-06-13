@@ -57,12 +57,12 @@ c-- broadcast constants
 c-- logical
       n = 5
       allocate(lsndvec(n))
-      if(impi==impi0) lsndvec = (/in_isvelocity,in_puretran,gas_isshell,
-     &  prt_isimcanlog,prt_isddmcanlog/)
+      if(impi==impi0) lsndvec = (/gas_isvelocity,in_puretran,
+     &  gas_isshell,prt_isimcanlog,prt_isddmcanlog/)
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      in_isvelocity = lsndvec(1)
+      gas_isvelocity = lsndvec(1)
       in_puretran = lsndvec(2)
       gas_isshell = lsndvec(3)
       prt_isimcanlog = lsndvec(4)
