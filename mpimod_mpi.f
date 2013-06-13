@@ -88,7 +88,7 @@ c-- real*8
       n = 1
       allocate(sndvec(n))
       if(impi==impi0) sndvec = (/prt_tauddmc/)
-      call mpi_bcast(sndvec,n,MPI_INTEGER,
+      call mpi_bcast(sndvec,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       prt_tauddmc = sndvec(1)
@@ -151,10 +151,47 @@ c     ------------------------!{{{
 * real*8 :: gas_opacleakr(gas_ng,gas_nr)
 * real*8 :: gas_cap(gas_ng,gas_nr)
 * real*8 :: gas_wl(gas_ng)
+*
+* Variables to be reduced
+*-- dim==0
+* real*8 :: gas_erad
+* real*8 :: gas_eright
+* real*8 :: gas_eleft
+*-- dim==1
+* integer :: gas_numcensus(gas_nr)
+* real*8 :: gas_edep(gas_nr)
+*-- dim==2
+* real*8 :: gas_eraddens(gas_ng,gas_nr)
 ************************************************************************
       integer :: n
       integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:)
+      real*8,allocatable :: sndmat(:,:)
+C$$$c-- variables to be reduced -----------------------------------
+C$$$c-- dim==0
+C$$$      n = 3
+C$$$      allocate(sndvec(n))
+C$$$      if(impi==impi0) sndvec = (/gas_erad,gas_eright,gas_eleft/)
+C$$$      call mpi_bcast(sndvec,n,MPI_REAL8,impi0,MPI_COMM_WORLD,
+C$$$     &  ierr)
+C$$$c-- copy back
+C$$$      gas_erad = sndvec(1)
+C$$$      gas_eright = sndvec(2)
+C$$$      gas_eleft = sndvec(3)
+C$$$      deallocate(sndvec)
+C$$$c-- dim==1,2
+C$$$      if(impi/=impi0 .and. tsp_it==1) then
+C$$$         allocate(gas_numcensus(gas_nr))
+C$$$         allocate(gas_edep(gas_nr))
+C$$$         allocate(gas_eraddens(gas_ng,gas_nr))
+C$$$      endif
+C$$$      call mpi_bcast(gas_edep,gas_nr,MPI_REAL8,
+C$$$     &  impi0,MPI_COMM_WORLD,ierr)
+C$$$      call mpi_bcast(gas_numcensus,gas_nr,MPI_INTEGER,
+C$$$     &  impi0,MPI_COMM_WORLD,ierr)
+C$$$      call mpi_bcast(gas_eraddens,gas_ng*gas_nr,MPI_REAL8,
+C$$$     &  impi0,MPI_COMM_WORLD,ierr)
+C$$$c--------------------------------------------------------------
 c
 c-- integer
       n = 2
@@ -171,7 +208,7 @@ c-- real*8
       n = 4
       allocate(sndvec(n))
       if(impi==impi0) sndvec = (/tsp_time,tsp_texp,tsp_dt,gas_esurf/)
-      call mpi_bcast(sndvec,n,MPI_INTEGER,
+      call mpi_bcast(sndvec,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       tsp_time = sndvec(1)
@@ -251,12 +288,13 @@ c     -----------------------!{{{
 * real*8 :: gas_eright
 * real*8 :: gas_eleft
 *-- dim==1
-* real*8 :: gas_numcensus(gas_nr)
+* integer :: gas_numcensus(gas_nr)
 * real*8 :: gas_edep(gas_nr)
 *-- dim==2
 * real*8 :: gas_eraddens(gas_ng,gas_nr)
 ************************************************************************
       integer :: n
+      integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:)
       real*8,allocatable :: sndmat(:,:)
       real*8 :: help
@@ -265,7 +303,7 @@ c-- dim==0
       n = 3
       allocate(sndvec(n))
       if(impi==impi0) sndvec = (/gas_erad,gas_eright,gas_eleft/)
-      call mpi_reduce(sndvec,n,MPI_INTEGER,MPI_SUM,
+      call mpi_reduce(sndvec,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       gas_erad = sndvec(1)
@@ -275,12 +313,14 @@ c-- copy back
 c
 c-- dim==1
       allocate(sndvec(gas_nr))
-      sndvec = gas_numcensus
-      call mpi_reduce(sndvec,gas_numcensus,gas_nr,MPI_INTEGER,MPI_SUM,
+      allocate(isndvec(gas_nr))
+      isndvec = gas_numcensus
+      call mpi_reduce(isndvec,gas_numcensus,gas_nr,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
       sndvec = gas_edep
       call mpi_reduce(sndvec,gas_edep,gas_nr,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
+      deallocate(isndvec)
       deallocate(sndvec)
 c
 c-- dim==2

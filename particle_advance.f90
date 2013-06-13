@@ -460,7 +460,7 @@ subroutine particle_advance
 
   call time(t1)
   call timereg(t_pckt, t1-t0)  !register timing
-  write(6,*) transps, difs
+  !write(6,*) transps, difs
   !write(6,*) eleft, eright
 
 end subroutine particle_advance

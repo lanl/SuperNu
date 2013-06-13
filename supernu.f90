@@ -104,7 +104,7 @@ program supernu
 !
 !-- time step loop
 !=================
-  write(*,*) 'nproc', nmpi
+  
   do tsp_it = 1, tsp_nt
     if(impi==impi0) then
       write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_it,tsp_texp/pc_day
@@ -139,13 +139,13 @@ write(0,*) 'test2',impi
        ! averaging reduced results
        if(nmpi>1) then
 !-- dim==0
-          gas_erad = gas_erad/(nmpi-1)
-          gas_eright = gas_eright/(nmpi-1)
-          gas_eleft = gas_eleft/(nmpi-1)
+          gas_erad = gas_erad/nmpi
+          gas_eright = gas_eright/nmpi
+          gas_eleft = gas_eleft/nmpi
 !-- dim==1
-          gas_edep = gas_edep/(nmpi-1)
+          gas_edep = gas_edep/nmpi
 !-- dim==2
-          gas_eraddens = gas_eraddens/(nmpi-1)
+          gas_eraddens = gas_eraddens/nmpi
        endif
        !
       call temperature_update

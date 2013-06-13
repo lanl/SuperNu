@@ -2,7 +2,7 @@
 
 !-- misc
 in_nomp = 1
-in_grab_stdout = f
+in_grab_stdout = t
 in_puretran = f
 
 !-- time step
