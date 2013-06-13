@@ -167,31 +167,31 @@ c     ------------------------!{{{
       integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:)
       real*8,allocatable :: sndmat(:,:)
-C$$$c-- variables to be reduced -----------------------------------
-C$$$c-- dim==0
-C$$$      n = 3
-C$$$      allocate(sndvec(n))
-C$$$      if(impi==impi0) sndvec = (/gas_erad,gas_eright,gas_eleft/)
-C$$$      call mpi_bcast(sndvec,n,MPI_REAL8,impi0,MPI_COMM_WORLD,
-C$$$     &  ierr)
-C$$$c-- copy back
-C$$$      gas_erad = sndvec(1)
-C$$$      gas_eright = sndvec(2)
-C$$$      gas_eleft = sndvec(3)
-C$$$      deallocate(sndvec)
-C$$$c-- dim==1,2
-C$$$      if(impi/=impi0 .and. tsp_it==1) then
-C$$$         allocate(gas_numcensus(gas_nr))
-C$$$         allocate(gas_edep(gas_nr))
-C$$$         allocate(gas_eraddens(gas_ng,gas_nr))
-C$$$      endif
-C$$$      call mpi_bcast(gas_edep,gas_nr,MPI_REAL8,
-C$$$     &  impi0,MPI_COMM_WORLD,ierr)
-C$$$      call mpi_bcast(gas_numcensus,gas_nr,MPI_INTEGER,
-C$$$     &  impi0,MPI_COMM_WORLD,ierr)
-C$$$      call mpi_bcast(gas_eraddens,gas_ng*gas_nr,MPI_REAL8,
-C$$$     &  impi0,MPI_COMM_WORLD,ierr)
-C$$$c--------------------------------------------------------------
+c-- variables to be reduced -----------------------------------
+c-- dim==0
+      n = 3
+      allocate(sndvec(n))
+      if(impi==impi0) sndvec = (/gas_erad,gas_eright,gas_eleft/)
+      call mpi_bcast(sndvec,n,MPI_REAL8,impi0,MPI_COMM_WORLD,
+     &  ierr)
+c-- copy back
+      gas_erad = sndvec(1)
+      gas_eright = sndvec(2)
+      gas_eleft = sndvec(3)
+      deallocate(sndvec)
+c-- dim==1,2
+      if(impi/=impi0 .and. tsp_it==1) then
+         allocate(gas_numcensus(gas_nr))
+         allocate(gas_edep(gas_nr))
+         allocate(gas_eraddens(gas_ng,gas_nr))
+      endif
+      call mpi_bcast(gas_edep,gas_nr,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_numcensus,gas_nr,MPI_INTEGER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_eraddens,gas_ng*gas_nr,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c--------------------------------------------------------------
 c
 c-- integer
       n = 2
@@ -295,21 +295,28 @@ c     -----------------------!{{{
 ************************************************************************
       integer :: n
       integer,allocatable :: isndvec(:)
-      real*8,allocatable :: sndvec(:)
+      real*8,allocatable :: sndvec(:),rcvvec(:)
       real*8,allocatable :: sndmat(:,:)
       real*8 :: help
+
 c
 c-- dim==0
       n = 3
       allocate(sndvec(n))
-      if(impi==impi0) sndvec = (/gas_erad,gas_eright,gas_eleft/)
-      call mpi_reduce(sndvec,n,MPI_REAL8,MPI_SUM,
+      allocate(rcvvec(n))
+      !if(impi==impi0) 
+      sndvec = (/gas_erad,gas_eright,gas_eleft/)
+      call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      gas_erad = sndvec(1)
-      gas_eright = sndvec(2)
-      gas_eleft = sndvec(3)
+      gas_erad = rcvvec(1)
+      gas_eright = rcvvec(2)
+      gas_eleft = rcvvec(3)
       deallocate(sndvec)
+      deallocate(rcvvec)
+      if(impi==impi0) then
+         write(0,*) gas_ng, gas_nr
+      endif
 c
 c-- dim==1
       allocate(sndvec(gas_nr))
