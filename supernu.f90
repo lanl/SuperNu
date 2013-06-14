@@ -30,7 +30,7 @@ program supernu
 !***********************************************************************
   real*8 :: help, dt
   real*8 :: t_elapsed
-  integer :: ierr
+  integer :: ierr, iimpi, iseed
   logical :: lmpi0 = .false. !master rank flag
   real :: t0,t1  !timing
 !
@@ -105,7 +105,10 @@ program supernu
 !
 !-- time step loop
 !=================
-  
+  do iimpi = 1, impi
+     iseed = 10*iimpi+3
+     help = rand(iseed)
+  enddo
   do tsp_it = 1, tsp_nt
     if(impi==impi0) then
       write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_it,tsp_texp/pc_day
@@ -138,16 +141,16 @@ write(0,*) 'test2',impi
     
     if(impi==impi0) then
        ! averaging reduced results
-       if(nmpi>1) then
+       !if(nmpi>1) then
 !-- dim==0
-          gas_erad = gas_erad/nmpi
-          gas_eright = gas_eright/nmpi
-          gas_eleft = gas_eleft/nmpi
+          gas_erad = gas_erad/real(nmpi)
+          gas_eright = gas_eright/real(nmpi)
+          gas_eleft = gas_eleft/real(nmpi)
 !-- dim==1
-          gas_edep = gas_edep/nmpi
+          gas_edep = gas_edep/real(nmpi)
 !-- dim==2
-          gas_eraddens = gas_eraddens/nmpi
-       endif
+          gas_eraddens = gas_eraddens/real(nmpi)
+       !endif
        !
       call temperature_update
       call timestep_update(dt) !Updating elapsed tsp_time and expansion tsp_time

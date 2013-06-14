@@ -106,6 +106,7 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(gas_curvcent(gas_nr))
        allocate(prt_particles(prt_npartmax))
        prt_particles%isvacant = .true.
+       prt_done = .false.
       endif
 c
 c-- broadcast data
