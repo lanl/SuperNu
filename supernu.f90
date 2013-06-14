@@ -49,6 +49,7 @@ program supernu
    lmpi0 = .true. !master rank flag!{{{
    call time(t0)
 !-- startup message
+   write(0,*) 'here'
    call banner
 !-- read runtime parameters
    call read_inputpars

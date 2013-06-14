@@ -52,6 +52,7 @@ c     --------------------------!{{{
       logical,allocatable :: lsndvec(:)
       integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:)
+      
 c
 c-- broadcast constants
 c-- logical
@@ -128,12 +129,17 @@ c     ------------------------!{{{
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
 *-- scalars:
+*-- real
 * real*8 :: tsp_time
 * real*8 :: tsp_texp
 * real*8 :: tsp_dt
 * real*8 :: gas_esurf
+* real*8 :: gas_etot
+*-- integer
 * integer :: prt_nnew
 * integer :: prt_nsurf
+* integer :: prt_nexsrc
+*--
 *
 *-- arrays:
 * real*8 :: gas_temp(gas_nr)
@@ -167,6 +173,7 @@ c     ------------------------!{{{
       integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:)
       real*8,allocatable :: sndmat(:,:)
+
 c-- variables to be reduced -----------------------------------
 c-- dim==0
       n = 3
@@ -194,20 +201,23 @@ c-- dim==1,2
 c--------------------------------------------------------------
 c
 c-- integer
-      n = 2
+      n = 3
       allocate(isndvec(n))
-      if(impi==impi0) isndvec = (/prt_nnew,prt_nsurf/)
+      if(impi==impi0) isndvec = (/prt_nnew,prt_nsurf,
+     & prt_nexsrc/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       prt_nnew = isndvec(1)
       prt_nsurf = isndvec(2)
+      prt_nexsrc = isndvec(3)
       deallocate(isndvec)
 c
 c-- real*8
-      n = 4
+      n = 5
       allocate(sndvec(n))
-      if(impi==impi0) sndvec = (/tsp_time,tsp_texp,tsp_dt,gas_esurf/)
+      if(impi==impi0) sndvec = (/tsp_time,tsp_texp,tsp_dt,gas_esurf,
+     & gas_etot/)
       call mpi_bcast(sndvec,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -215,6 +225,7 @@ c-- copy back
       tsp_texp = sndvec(2)
       tsp_dt = sndvec(3)
       gas_esurf = sndvec(4)
+      gas_etot = sndvec(5)
       deallocate(sndvec)
 c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
