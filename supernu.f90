@@ -49,7 +49,6 @@ program supernu
    lmpi0 = .true. !master rank flag!{{{
    call time(t0)
 !-- startup message
-   write(0,*) 'here'
    call banner
 !-- read runtime parameters
    call read_inputpars
@@ -57,7 +56,7 @@ program supernu
    call parse_inputpars(nmpi)
 !
 !-- init random number generator
-   help = rand(in_seed)
+   !help = rand(in_seed)
 !
 !-- time step init
 !-- constant time step, may be coded to loop if time step is not uniform
@@ -119,7 +118,7 @@ program supernu
 !=================
   do tsp_it = 1, tsp_nt
     if(impi==impi0) then
-      write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_it,tsp_texp/pc_day
+!      write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_it,tsp_texp/pc_day
 !-- update all non-permanent variables
       call gasgrid_update
 !-- number of source prt_particles per cell
@@ -130,9 +129,9 @@ program supernu
       !Calculating properties of prt_particles on domain boundary
       call boundary_source
       !Calculating properties of prt_particles emitted in domain interior
-write(0,*) 'test1',impi
+!write(0,*) 'test1',impi
       call interior_source
-write(0,*) 'test2',impi
+!write(0,*) 'test2',impi
       deallocate(prt_vacantarr)
     endif !impi
 
@@ -140,10 +139,10 @@ write(0,*) 'test2',impi
     call bcast_nonpermanent !MPI
 
     !Advancing prt_particles to update radiation field    
-    write(6,*) 'pretran',prt_particles(1:5)%rsrc
+    
 !-- advance particles
     call particle_advance
-    write(6,*) 'posttran',prt_particles(1:5)%rsrc
+    
 !-- collect particle results from all workers
     call reduce_tally !MPI
     
