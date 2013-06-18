@@ -104,9 +104,10 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(gas_rarr(gas_nr+1))
        allocate(gas_drarr(gas_nr))
        allocate(gas_curvcent(gas_nr))
-       allocate(prt_particles(prt_npartmax))
-       prt_particles%isvacant = .true.
-       prt_done = .false.
+       !prt_done = .false.
+      endif
+      if(impi==impi0) then
+         prt_particles%isvacant=.true.
       endif
 c
 c-- broadcast data
@@ -193,10 +194,10 @@ c-- dim==1,2
          allocate(gas_edep(gas_nr))
          allocate(gas_eraddens(gas_ng,gas_nr))
       endif
-      call mpi_bcast(gas_edep,gas_nr,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_numcensus,gas_nr,MPI_INTEGER,
-     &  impi0,MPI_COMM_WORLD,ierr)
+!      call mpi_bcast(gas_edep,gas_nr,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!      call mpi_bcast(gas_numcensus,gas_nr,MPI_INTEGER,
+!     &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_eraddens,gas_ng*gas_nr,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c--------------------------------------------------------------
@@ -247,7 +248,33 @@ c
        allocate(gas_opacleakr(gas_ng,gas_nr))
        allocate(gas_cap(gas_ng,gas_nr))
        allocate(gas_wl(gas_ng))
+c
+c-- allocating particle array for helper ranks
+       allocate(prt_particles(prt_npartmax))
+       !prt_particles%isvacant = .true.
+c--
       endif
+c
+c-- broadcasting particle array
+      call mpi_bcast(prt_particles%isvacant,prt_npartmax,
+     &  MPI_LOGICAL,impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(prt_particles%zsrc,prt_npartmax,
+     &  MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(prt_particles%rtsrc,prt_npartmax,
+     &  MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(prt_particles%rsrc,prt_npartmax,
+     &  MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(prt_particles%musrc,prt_npartmax,
+     &  MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(prt_particles%tsrc,prt_npartmax,
+     &  MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(prt_particles%esrc,prt_npartmax,
+     &  MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(prt_particles%ebirth,prt_npartmax,
+     &  MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(prt_particles%wlsrc,prt_npartmax,
+     &  MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
+c--
 c
       call mpi_bcast(gas_temp,gas_nr,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)

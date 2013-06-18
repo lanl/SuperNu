@@ -142,12 +142,12 @@ c-- convert mass fractions to # atoms
       call massfr2natomfr
 c
 c-- output
-      write(6,*) 'mass fractions'
-      write(6,'(1p,33i12)') (i,i=-2,30)
-      write(6,'(1p,33e12.4)') (gas_vals2(i)%mass0fr,i=1,gas_nr)
-      write(6,*) 'number fractions'
-      write(6,'(1p,33i12)') (i,i=-2,30)
-      write(6,'(1p,33e12.4)') (gas_vals2(i)%natom1fr,i=1,gas_nr)
+C$$$      write(6,*) 'mass fractions'
+C$$$      write(6,'(1p,33i12)') (i,i=-2,30)
+C$$$      write(6,'(1p,33e12.4)') (gas_vals2(i)%mass0fr,i=1,gas_nr)
+C$$$      write(6,*) 'number fractions'
+C$$$      write(6,'(1p,33i12)') (i,i=-2,30)
+C$$$      write(6,'(1p,33e12.4)') (gas_vals2(i)%natom1fr,i=1,gas_nr)
 c
       end subroutine gasgrid_setup
 c
