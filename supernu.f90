@@ -30,7 +30,7 @@ program supernu
 !***********************************************************************
   real*8 :: help, dt
   real*8 :: t_elapsed
-  integer :: ierr, iimpi, iseed
+  integer :: ierr, ihelp
   logical :: lmpi0 = .false. !master rank flag
   real :: t0,t1  !timing
 !
@@ -98,6 +98,18 @@ program supernu
 
   call bcast_permanent !MPI
 
+!
+!-- initialize random number generator
+  if(in_seed==0) then
+!-- all ranks use the same seed
+    ihelp = in_seed
+  else
+!-- use different seeds for each rank
+    ihelp = 10*impi + in_seed  !this expression uses the same seed for rank==0 as previously used in a the serial run
+  endif
+  help = rand(ihelp)
+
+
 !-- calculating analytic initial particle distribution (if any)
 ! not working currently, as prt_particle data structure is only
 ! available after bcast_nonpermanent
@@ -105,10 +117,6 @@ program supernu
 !
 !-- time step loop
 !=================
-  do iimpi = 1, impi
-     iseed = 10*iimpi+3
-     help = rand(iseed)
-  enddo
   do tsp_it = 1, tsp_nt
     if(impi==impi0) then
       write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_it,tsp_texp/pc_day
