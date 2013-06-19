@@ -55,7 +55,7 @@ c     --------------------------!{{{
       logical,allocatable :: lsndvec(:)
       integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:)
-      character*4,allocatable :: csndvec
+      character*4,allocatable :: csndvec(:)
       
 c
 c-- broadcast constants
