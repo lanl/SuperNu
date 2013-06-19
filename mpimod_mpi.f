@@ -47,12 +47,15 @@ c     --------------------------!{{{
 * integer :: in_seed
 *-- real*8
 * real*8 :: prt_tauddmc
+*-- character
+* character(4) :: gas_srctype
 *
 ************************************************************************
       integer :: n
       logical,allocatable :: lsndvec(:)
       integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:)
+      character*4,allocatable :: csndvec
       
 c
 c-- broadcast constants
@@ -96,6 +99,12 @@ c-- real*8
 c-- copy back
       prt_tauddmc = sndvec(1)
       deallocate(sndvec)
+c
+c-- character
+      call mpi_bcast(gas_srctype,4,MPI_CHARACTER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_opacanaltype,4,MPI_CHARACTER,
+     &  impi0,MPI_COMM_WORLD,ierr)
 c
 c
 c$    if(in_nomp/=0) call omp_set_num_threads(in_nomp)
@@ -160,7 +169,7 @@ c     ------------------------!{{{
 * real*8 :: gas_opacleakl(gas_ng,gas_nr)
 * real*8 :: gas_opacleakr(gas_ng,gas_nr)
 * real*8 :: gas_cap(gas_ng,gas_nr)
-* real*8 :: gas_wl(gas_ng)
+* real*8 :: gas_wl(gas_ng+1)
 *
 * Variables to be reduced
 *-- dim==0
@@ -249,7 +258,7 @@ c
        allocate(gas_opacleakl(gas_ng,gas_nr))
        allocate(gas_opacleakr(gas_ng,gas_nr))
        allocate(gas_cap(gas_ng,gas_nr))
-       allocate(gas_wl(gas_ng))
+       allocate(gas_wl(gas_ng+1))
 c
 c-- allocating particle array for helper ranks
        allocate(prt_particles(prt_npartmax))
@@ -307,7 +316,7 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_cap,gas_nr*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_wl,gas_ng,MPI_REAL8,
+      call mpi_bcast(gas_wl,gas_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c!}}}
       end subroutine bcast_nonpermanent

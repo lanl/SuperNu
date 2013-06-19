@@ -9,26 +9,19 @@ subroutine vacancies
 !##################################################
 
   integer :: ipart, ivac
-  logical :: isfull
 
   !Initializing index counters and full array checking boolean
-  isfull = .false.
   ipart = 0
   ivac = 0
 
   !Filling prt_vacantarr with particle index of vacant particles: loop
-  do while (isfull.eqv..false.)
-     ipart = ipart+1
+  do ipart=1,prt_npartmax
      if (prt_particles(ipart)%isvacant) then
         ivac = ivac+1
         prt_vacantarr(ivac) = ipart
      endif
-     if (ivac == prt_nnew) then
-        isfull = .true.
-     elseif (ipart == prt_npartmax) then
-        write(6,*) 'Maximum number of prt_particles reached'
-        isfull = .true.
-     endif
+     if (ivac == prt_nnew) exit
   enddo
+  if(ipart > prt_npartmax) write(6,*) 'Maximum number of prt_particles reached'
 
 end subroutine vacancies

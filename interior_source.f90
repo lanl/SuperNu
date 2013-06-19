@@ -38,7 +38,7 @@ subroutine interior_source
      ivac = prt_vacantarr(ipart)
      isnotvacnt = .false.
      !If adding particle ivac in current cell ir does not exceed nvolex, add ivac to ir: loop
-     do while (isnotvacnt.eqv..false.)
+     do while (.not.isnotvacnt)
         if (irused(ir)<gas_nvolex(ir)) then
            irused(ir) = irused(ir)+1
            !Calculating Group
@@ -81,7 +81,7 @@ subroutine interior_source
            
            if (((gas_sig(ir)+gas_cap(iig,ir))*gas_drarr(ir)* &
                 help < prt_tauddmc*gas_curvcent(ir)) &
-                .or.(in_puretran.eqv..true.)) then
+                .or.(in_puretran)) then
               if(gas_isvelocity) then
                  prt_particles(ivac)%Esrc = Ep0*(1.0+r0*mu0/pc_c)
                  prt_particles(ivac)%Ebirth = Ep0*(1.0+r0*mu0/pc_c)
@@ -134,8 +134,12 @@ subroutine interior_source
      ivac = prt_vacantarr(ipart)
      isnotvacnt = .false.
      !If adding particle ivac in current cell ir does not exceed nvol, add ivac to ir: loop
-     do while (isnotvacnt.eqv..false.)
-        if (irused(ir)<gas_nvol(ir)) then
+     do while (.not.isnotvacnt)
+        if (irused(ir)>=gas_nvol(ir)) then
+!-- do what?
+           ir = ir + 1
+        else
+!-- or what?
            irused(ir) = irused(ir)+1
            !Calculating Group
            denom2 = 0d0
@@ -198,7 +202,7 @@ subroutine interior_source
 
            if (((gas_cap(iig,ir)+gas_sig(ir))*gas_drarr(ir)* &
                 help < prt_tauddmc*gas_curvcent(ir)) &
-                .or.(in_puretran.eqv..true.)) then
+                .or.(in_puretran)) then
               if(gas_isvelocity) then
                  prt_particles(ivac)%Esrc = Ep0*(1.0+r0*mu0/pc_c)
                  prt_particles(ivac)%Ebirth = Ep0*(1.0+r0*mu0/pc_c)
@@ -236,8 +240,6 @@ subroutine interior_source
            !   gas_eraddens(iig,ir)=gas_eraddens(iig,ir)+Ep0
            !endif
 
-        else
-           ir = ir + 1
         endif
      enddo
   enddo

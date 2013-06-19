@@ -138,18 +138,12 @@ program supernu
     deallocate(prt_vacantarr)
 
     !Advancing prt_particles to update radiation field    
-    
-write(0,*) 'rand2',impi,rand()
 !-- advance particles
     call particle_advance
-write(0,*) 'rand3',impi,rand()
     
-write(0,*) impi,gas_erad
 !-- collect particle results from all workers
     call reduce_tally !MPI
 
-write(0,*) impi,gas_erad
-    
     if(impi==impi0) then
        ! averaging reduced results
        !if(nmpi>1) then

@@ -64,7 +64,7 @@ subroutine sourcenumbers
   enddo
   
   ! Calculating number of domain inner boundary particles (if any)
-  prt_nsurf=nint(gas_esurf*prt_ns/gas_etot)+1
+  prt_nsurf = nint(gas_esurf*prt_ns/gas_etot)+1
   prt_nnew = prt_nsurf
 
   ! Calculating number of particles per cell (gas_vals2%nvol): loop

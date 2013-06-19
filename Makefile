@@ -109,7 +109,7 @@ vacancies.o: particlemod.o
 write_output.o: gasgridmod.o particlemod.o timestepmod.o
 
 banner.o: version.inc mpimod.o
-supernu.o: $(OBJFILES)
+supernu.o: $(MODULES)
 
 #
 #-- LIBRARIES
