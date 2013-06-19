@@ -69,8 +69,8 @@ in_iswlread = t
 in_ng = 5
 
 !-- particle numbers
-in_ns = 10
-in_npartmax = 100000
+in_ns = 50000
+in_npartmax = 5000000
 
 !-- imc tally method
 in_isimcanlog = f

@@ -123,20 +123,22 @@ program supernu
       call gasgrid_update
 !-- number of source prt_particles per cell
       call sourcenumbers
-!-- Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
-      allocate(prt_vacantarr(prt_nnew))
-      call vacancies
-      !Calculating properties of prt_particles on domain boundary
-      call boundary_source
-      !Calculating properties of prt_particles emitted in domain interior
-!write(0,*) 'test1',impi
-      call interior_source
-!write(0,*) 'test2',impi
-      deallocate(prt_vacantarr)
+
     endif !impi
 
 !-- broadcast to all workers
     call bcast_nonpermanent !MPI
+
+!-- Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
+    allocate(prt_vacantarr(prt_nnew))
+    call vacancies
+    !Calculating properties of prt_particles on domain boundary
+    call boundary_source
+    !Calculating properties of prt_particles emitted in domain interior
+write(0,*) 'test1',impi
+    call interior_source
+write(0,*) 'test2',impi
+    deallocate(prt_vacantarr)
 
     !Advancing prt_particles to update radiation field    
     
