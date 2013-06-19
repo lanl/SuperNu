@@ -123,7 +123,6 @@ program supernu
       call gasgrid_update
 !-- number of source prt_particles per cell
       call sourcenumbers
-
     endif !impi
 
 !-- broadcast to all workers
@@ -135,30 +134,33 @@ program supernu
     !Calculating properties of prt_particles on domain boundary
     call boundary_source
     !Calculating properties of prt_particles emitted in domain interior
-write(0,*) 'test1',impi
     call interior_source
-write(0,*) 'test2',impi
     deallocate(prt_vacantarr)
 
     !Advancing prt_particles to update radiation field    
     
+write(0,*) 'rand2',impi,rand()
 !-- advance particles
     call particle_advance
+write(0,*) 'rand3',impi,rand()
     
+write(0,*) impi,gas_erad
 !-- collect particle results from all workers
     call reduce_tally !MPI
+
+write(0,*) impi,gas_erad
     
     if(impi==impi0) then
        ! averaging reduced results
        !if(nmpi>1) then
 !-- dim==0
-          gas_erad = gas_erad/real(nmpi)
-          gas_eright = gas_eright/real(nmpi)
-          gas_eleft = gas_eleft/real(nmpi)
+          gas_erad = gas_erad/dble(nmpi)
+          gas_eright = gas_eright/dble(nmpi)
+          gas_eleft = gas_eleft/dble(nmpi)
 !-- dim==1
-          gas_edep = gas_edep/real(nmpi)
+          gas_edep = gas_edep/dble(nmpi)
 !-- dim==2
-          gas_eraddens = gas_eraddens/real(nmpi)
+          gas_eraddens = gas_eraddens/dble(nmpi)
        !endif
        !
       call temperature_update
@@ -183,11 +185,8 @@ write(0,*) 'test2',impi
    write(6,*) 'SuperNu finished'
    if(in_grab_stdout)write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
   endif
-  write(6,*) 'here 1'
 !-- Clean up memory. (This help to locate memory leaks)
   call dealloc_all
-  write(6,*) 'here 2'
   call mpi_finalize(ierr) !MPI
-  write(6,*) 'here 3'
 
 end program supernu

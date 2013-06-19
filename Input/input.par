@@ -9,8 +9,8 @@ in_seed = 0
 !-- time step
 in_tfirst = 2d0
 in_tlast = 2.375d0
-!in_nt = 1
-in_nt = 8
+in_nt = 1
+!in_nt = 8
 in_alpha = 1d0
 
 !-- gas grid settings
@@ -69,7 +69,7 @@ in_iswlread = t
 in_ng = 5
 
 !-- particle numbers
-in_ns = 50000
+in_ns = 1
 in_npartmax = 5000000
 
 !-- imc tally method

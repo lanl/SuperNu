@@ -44,6 +44,7 @@ c     --------------------------!{{{
 * integer :: prt_npartmax
 * integer :: in_nomp
 * integer :: tsp_nt
+* integer :: in_seed
 *-- real*8
 * real*8 :: prt_tauddmc
 *
@@ -71,10 +72,10 @@ c-- copy back
       deallocate(lsndvec)
 c
 c-- integer
-      n = 5
+      n = 6
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/gas_nr,gas_ng,
-     &  prt_npartmax,in_nomp,tsp_nt/)
+     &  prt_npartmax,in_nomp,tsp_nt,in_seed/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -83,6 +84,7 @@ c-- copy back
       prt_npartmax = isndvec(3)
       in_nomp = isndvec(4)
       tsp_nt = isndvec(5)
+      in_seed = isndvec(6)
       deallocate(isndvec)
 c
 c-- real*8
@@ -333,9 +335,9 @@ c     -----------------------!{{{
 * real*8 :: gas_eraddens(gas_ng,gas_nr)
 ************************************************************************
       integer :: n
-      integer,allocatable :: isndvec(:)
+      integer,allocatable :: isndvec(:),ircvvec(:)
       real*8,allocatable :: sndvec(:),rcvvec(:)
-      real*8,allocatable :: sndmat(:,:)
+      real*8,allocatable :: sndmat(:,:),rcvmat(:,:)
       real*8 :: help
 
 c
@@ -348,25 +350,29 @@ c-- dim==0
       call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      gas_erad = rcvvec(1)
-      gas_eright = rcvvec(2)
-      gas_eleft = rcvvec(3)
+      if(impi==0) then
+       gas_erad = rcvvec(1)
+       gas_eright = rcvvec(2)
+       gas_eleft = rcvvec(3)
+      else
+       gas_erad = 0d0
+       gas_eright = 0d0
+       gas_eleft = 0d0
+      endif !impi
       deallocate(sndvec)
       deallocate(rcvvec)
-      if(impi==impi0) then
-         write(0,*) gas_ng, gas_nr
-      endif
 c
 c-- dim==1
-      allocate(sndvec(gas_nr))
       allocate(isndvec(gas_nr))
       isndvec = gas_numcensus
       call mpi_reduce(isndvec,gas_numcensus,gas_nr,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
+      deallocate(isndvec)
+c--
+      allocate(sndvec(gas_nr))
       sndvec = gas_edep
       call mpi_reduce(sndvec,gas_edep,gas_nr,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      deallocate(isndvec)
       deallocate(sndvec)
 c
 c-- dim==2
