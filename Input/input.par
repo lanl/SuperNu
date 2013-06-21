@@ -4,12 +4,11 @@
 in_nomp = 1
 in_grab_stdout = f
 in_puretran = f
-in_seed = 0
+in_seed = 1
 
 !-- time step
 in_tfirst = 2d0
 in_tlast = 2.375d0
-!in_nt = 1
 in_nt = 8
 in_alpha = 1d0
 
@@ -69,14 +68,14 @@ in_iswlread = t
 in_ng = 5
 
 !-- particle numbers
-in_ns = 50000
-in_npartmax = 5000000
+in_ns = 100000
+in_npartmax = 10000000
 
 !-- imc tally method
 in_isimcanlog = f
 in_isddmcanlog = f
 !-- ddmc mfp per cell
-in_tauddmc = 5d0
+in_tauddmc = 2d0
 
 !-- opacity switches
 in_nobbopac = t

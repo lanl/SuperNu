@@ -132,4 +132,25 @@ c-- store element code (pointer to gas_vals2%mass0fr)
 c
       end subroutine elnam2elcode
 c
+c
+c
+c-- use input.par variables to fill
+      subroutine generate_inputstr(nr,velout)
+      use inputparmod
+      implicit none
+************************************************************************
+* generate stratification from input.par variables
+* if in_noreadstruct==.true.
+************************************************************************
+      integer,intent(in) :: nr
+      real*8,intent(out) :: velout
+      
+      velout = in_velout
+c
+c-- allocate arrays
+      allocate(str_velright(nr))
+      allocate(str_mass(nr))
+      
+      end subroutine generate_inputstr
+c
       end module inputstrmod

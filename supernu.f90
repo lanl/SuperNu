@@ -25,7 +25,6 @@ program supernu
 ! - check wavelength units for bb and bf data
 ! - fix gas_wl indexing BUG in physical_opacity
 ! - improve grid construction: store unit-sphere radii separately (13/06/01)
-! - clean up dealloc_all and add all arrays allocated in mpimod_mpi.f
 !
 !***********************************************************************
   real*8 :: help, dt
@@ -68,10 +67,12 @@ program supernu
    call particle_init(in_npartmax,in_ns,in_isimcanlog,in_isddmcanlog,in_tauddmc)
 !
 !-- read input structure
-   if(.not.in_noreadstruct) then
+   if(.not.in_noreadstruct.and.in_isvelocity) then
     call read_inputstr(in_nr,gas_velout)
    else
-    gas_velout = in_velout
+!== generate_inputstr development in progress
+    call generate_inputstr(in_nr,gas_velout)
+!==
    endif
 !
 !-- SETUP GRIDS
@@ -118,7 +119,7 @@ program supernu
 !=================
   do tsp_it = 1, tsp_nt
     if(impi==impi0) then
-!      write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_it,tsp_texp/pc_day
+      write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_it,tsp_texp/pc_day
 !-- update all non-permanent variables
       call gasgrid_update
 !-- number of source prt_particles per cell
