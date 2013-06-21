@@ -71,7 +71,7 @@ program supernu
     call read_inputstr(in_nr,gas_velout)
    else
 !== generate_inputstr development in progress
-    call generate_inputstr(in_nr,gas_velout)
+    call generate_inputstr(in_nr,gas_v0,gas_velout,gas_isshell)
 !==
    endif
 !

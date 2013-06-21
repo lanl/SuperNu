@@ -135,7 +135,6 @@ module gasgridmod
     gas_nr = in_nr
     gas_ng = in_ng
     gas_lr = in_lr
-    gas_v0 = in_v0
     !
     gas_isvelocity = in_isvelocity
     gas_isshell = in_isshell

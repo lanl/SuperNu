@@ -135,7 +135,7 @@ c
 c
 c
 c-- use input.par variables to fill
-      subroutine generate_inputstr(nr,velout)
+      subroutine generate_inputstr(nr,v0,velout,isshell)
       use inputparmod
       implicit none
 ************************************************************************
@@ -143,13 +143,22 @@ c-- use input.par variables to fill
 * if in_noreadstruct==.true.
 ************************************************************************
       integer,intent(in) :: nr
-      real*8,intent(out) :: velout
-      
+      real*8,intent(out) :: v0,velout
+c
+      integer :: ir
+
+      v0 = in_v0
       velout = in_velout
+      isshell = in_isshell
 c
 c-- allocate arrays
       allocate(str_velright(nr))
       allocate(str_mass(nr))
+c
+c-- outer shells
+      do ir = 1, nr
+         str_velright(ir)=
+      enddo
       
       end subroutine generate_inputstr
 c

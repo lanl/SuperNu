@@ -26,7 +26,7 @@ c--
        write(6,*) '==========================='
       endif
 c
-c-- WARNING: rarr first is [0,1], later [0,vout]. Grid with unit radius: scaled up below by gas_lr for static, or gas_velout for velocity grid
+c-- WARNING: rarr first is [0,1], later [0,vout]. Grid with unit radius: scaled up below by gas_lr+gas_l0 for static, or gas_velout for velocity grid
 c-- inner shell radius
       if(.not.gas_isshell) then!{{{
        gas_rarr(1) = 0.0d0    !Initial inner most radius
