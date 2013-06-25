@@ -27,6 +27,7 @@ c-- specify the atmospheric stratification
       real*8 :: in_velout = 0d0  !cm/s, velocity of outer bound
       real*8 :: in_v0 = 0d0 !velocity of inner bound (analogous to in_l0), used if in_isshell
       real*8 :: in_totmass = 0d0  !g
+      character(4) :: in_dentype = 'unif' ! unif|mass: 'unif' for uniform density, 'mass' for equal mass accross cells
       logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
 c============
 c
@@ -123,7 +124,7 @@ c-- runtime parameter namelist
      & in_suolpick1, in_ldisp1, in_ldisp2,
      & in_srctype, in_theav, in_nheav, in_srcmax,
      & in_isimcanlog, in_isddmcanlog,
-     & in_tauddmc
+     & in_tauddmc, in_dentype, in_noreadstruct
 c
       public
       private inputpars

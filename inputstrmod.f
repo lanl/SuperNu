@@ -8,9 +8,12 @@ c     ------------------
       integer :: str_nabund=0
       integer,allocatable :: str_iabund(:) !(nabund)
 c
-      real*8,allocatable :: str_velright(:) !(nr)
+      real*8,allocatable :: str_velright(:) !if read (nr), else (nr+1)
       real*8,allocatable :: str_mass(:) !(nr)
       real*8,allocatable :: str_massfr(:,:) !(nabund,nr)
+c
+      real*8,allocatable :: str_rout(:) !(nr+1)
+c
       character(8),allocatable :: str_abundlabl(:) !(nabund)
 c
       save
@@ -18,11 +21,12 @@ c
 c
       contains
 c
-      subroutine read_inputstr(nr,velout)
+      subroutine read_inputstr(nr,velout,isshell)
 c     -----------------------------------
       use physconstmod
       use miscmod
       implicit none
+      logical,intent(in) :: isshell
       integer,intent(in) :: nr
       real*8,intent(out) :: velout
 ************************************************************************
@@ -44,6 +48,9 @@ c-- read dimensions
       if(ierr/=0) stop 'read_inputstr: input.str format err: dimensions'
 c-- verify dimension
       if(nr_r/=nr) stop 'read_inputstr: incompatible nr dimension'
+c
+c-- verify not shell
+      if(isshell) stop 'read_inpitstr: in_isshell must be false'
 c
 c-- allocate arrays
       allocate(str_velright(nr))
@@ -134,32 +141,77 @@ c
 c
 c
 c
-c-- use input.par variables to fill
-      subroutine generate_inputstr(nr,v0,velout,isshell)
+c-- use input.par variables to populate mass and grid arrays
+c-- WARNING: size (nr+1) allocated for str_velright in generate_inputstr
+      subroutine generate_inputstr(l0,lr,v0,velout)
       use inputparmod
       implicit none
 ************************************************************************
 * generate stratification from input.par variables
 * if in_noreadstruct==.true.
 ************************************************************************
-      integer,intent(in) :: nr
-      real*8,intent(out) :: v0,velout
+c
+      real*8,intent(out) :: l0,lr,v0,velout
 c
       integer :: ir
-
-      v0 = in_v0
-      velout = in_velout
-      isshell = in_isshell
+      real*8 :: help, help2, dr
+c      
+c-- verifications (input.par)
+      if((in_v0<0d0.or.in_v0>=in_velout).and.in_isvelocity)
+     &     stop 'generate_inputstr: invalid in_velout'
+      if(in_l0<0d0.and..not.in_isvelocity)
+     &     stop 'generate_inputstr: invalid in_l0'
+      if(in_velout<=0d0.and.in_isvelocity) 
+     &     stop 'generate_inputstr: invalid in_velout'
+      if(in_lr<=0.and..not.in_isvelocity)
+     &     stop 'generate_inputstr: invalid in_lr'
+      if(in_totmass<0d0)
+     &     stop 'generate_inputstr: invalid in_totmass'
 c
 c-- allocate arrays
-      allocate(str_velright(nr))
-      allocate(str_mass(nr))
+      allocate(str_rout(in_nr+1))
+      allocate(str_velright(in_nr+1))
+      allocate(str_mass(in_nr))
+c
+c
+      v0 = in_v0
+      velout = in_velout
+      l0 = in_l0
+      lr = in_lr
+c      
+c-- create unit sphere radii str_rout
+      if(in_isvelocity) then
+         if(in_isshell) then
+            help = 0d0
+         else
+            help = in_v0/in_velout
+         endif
+         help2 = in_velout
+      else
+         if(in_isshell) then
+            help = 0d0
+            help2 = in_lr
+         else
+            help = in_l0/(in_l0+in_lr)
+            help2 = in_l0+in_lr
+         endif         
+      endif
+      dr = (1d0-help)/real(in_nr)
+      forall(ir=1:in_nr+1)str_rout(ir)=help+(ir-1)*dr
 c
 c-- outer shells
-      do ir = 1, nr
-         str_velright(ir)=
-      enddo
-      
+      str_velright=help2*str_rout
+c
+c-- mass
+      if(in_dentype=='unif') then
+         str_mass = in_totmass*(str_rout(2:)**3-str_rout(:in_nr)**3)
+         str_mass = str_mass/(1d0-str_rout(1)**3)
+      elseif(in_dentype=='mass') then
+         str_mass = in_totmass/real(in_nr)
+      else
+         stop 'generate_inputstr: invalid in_dentype'
+      endif
+c
       end subroutine generate_inputstr
 c
       end module inputstrmod

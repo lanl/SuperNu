@@ -26,37 +26,34 @@ c--
        write(6,*) '==========================='
       endif
 c
-c-- WARNING: rarr first is [0,1], later [0,vout]. Grid with unit radius: scaled up below by gas_lr+gas_l0 for static, or gas_velout for velocity grid
-c-- inner shell radius
-      if(.not.gas_isshell) then!{{{
-       gas_rarr(1) = 0.0d0    !Initial inner most radius
+c----
+c-- agnostic grid setup (rev. 200) ----------------------------------
+      if(in_noreadstruct) then
+         ! str_velright misnomer: works for static or fluid material
+         ! and is size (gas_nr+1)
+         gas_rarr = str_velright
       else
-       if(gas_isvelocity) then
-        gas_rarr(1) = gas_v0/gas_velout
-       else
-        gas_rarr(1) = gas_l0/(gas_l0+gas_lr)
-       endif
+         gas_rarr(1) = 0d0
+         gas_rarr(2:gas_nr+1) = str_velright
       endif
+      forall(ir=1:gas_nr) gas_drarr(ir)=gas_rarr(ir+1)-gas_rarr(ir)
+c--------------------------------------------------------------------
 c
-c-- outer shells
-      do ir=1,gas_nr
-       gas_drarr(ir) = (1d0-gas_rarr(1))/real(gas_nr)
-       gas_rarr(ir+1) = gas_rarr(ir)+gas_drarr(ir)
-      enddo
+c-- agnostic mass setup (rev. 200) ----------------------------------
+       gas_vals2%mass = str_mass
+c--------------------------------------------------------------------
+c----
 c
-c-- volume of unit-radius sphere shells
-      forall(ir=1:gas_nr) gas_vals2(ir)%volr = 
-     &  pc_pi4/3d0*(gas_rarr(ir+1)**3 - gas_rarr(ir)**3)  !volume in outer radius units
-c
-c-- set grid size to velout or lr depending on expanding or static
+c-- scale gas cell volumes to unit sphere depending on expanding or static
       if(gas_isvelocity) then
        help = gas_velout
       else
        help = gas_lr+gas_l0
       endif
-      gas_rarr = gas_rarr*help
-      gas_drarr = gas_drarr*help
-      !}}}
+c
+c-- volume of unit-radius sphere shells
+      forall(ir=1:gas_nr) gas_vals2(ir)%volr = 
+     &  pc_pi4/3d0*(gas_rarr(ir+1)**3 - gas_rarr(ir)**3)/help**3  !volume in outer radius units
 c
 c
 c-- IMC-DDMC heuristic coefficient for spherical geometry (rev 146)
@@ -99,23 +96,6 @@ c-- to Gaussian for manufacture tests
          gas_temp(ir)=10000d0
         endif
        enddo
-      endif!}}}
-c
-c-- mass
-      if(in_totmass==0d0) then!{{{
-       if(.not.allocated(str_mass)) stop 'gg_setup: str_mass allc'
-       gas_vals2%mass = str_mass
-      elseif(in_srctype=='manu') then
-       do ir=1,gas_nr
-        masv = in_totmass*gas_vals2(ir)%vol*3d0/pc_pi4
-        masv = masv/(gas_rarr(gas_nr+1)**3-gas_rarr(1)**3)
-        if(gas_isvelocity) then
-           masv = masv/tsp_texp**3
-        endif
-        gas_vals2(ir)%mass = masv
-       enddo
-      else
-       stop 'gg_setup: in_totmass was not implemented yet'
       endif!}}}
 c
 c-- temp and ur

@@ -54,9 +54,6 @@ program supernu
 !-- parse and verify runtime parameters
    call parse_inputpars(nmpi)
 !
-!-- init random number generator
-   !help = rand(in_seed)
-!
 !-- time step init
 !-- constant time step, may be coded to loop if time step is not uniform
    t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
@@ -68,10 +65,10 @@ program supernu
 !
 !-- read input structure
    if(.not.in_noreadstruct.and.in_isvelocity) then
-    call read_inputstr(in_nr,gas_velout)
+    call read_inputstr(in_nr,gas_velout,in_isshell)
    else
 !== generate_inputstr development in progress
-    call generate_inputstr(in_nr,gas_v0,gas_velout,gas_isshell)
+    call generate_inputstr(gas_l0,gas_lr,gas_v0,gas_velout)
 !==
    endif
 !

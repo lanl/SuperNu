@@ -91,6 +91,7 @@ module gasgridmod
   real*8, allocatable :: gas_temp(:)
 !---
 !
+!
   type gas_secondary
     sequence
     
@@ -134,13 +135,11 @@ module gasgridmod
 !
     gas_nr = in_nr
     gas_ng = in_ng
-    gas_lr = in_lr
     !
     gas_isvelocity = in_isvelocity
     gas_isshell = in_isshell
     gas_novolsrc = in_novolsrc
     !inner edge radius (if in_isshell):
-    gas_l0 = in_l0
     !inner edge temp:
     gas_templ0 = in_templ0
     !power law heat capacity input:
@@ -199,7 +198,6 @@ module gasgridmod
     allocate(gas_emitex(gas_nr))
 !-- secondary
     allocate(gas_vals2(gas_nr))
-    !allocate(gas_sig(gas_nr))
     allocate(gas_capgam(gas_nr))
 !--Ryan W: added edge scattering opacities for leakage coefficients (rev. 121)
     allocate(gas_sigbl(gas_nr))
