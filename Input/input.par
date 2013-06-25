@@ -9,12 +9,12 @@ in_noreadstruct = t
 
 !-- time step
 in_tfirst = 2d0
-in_tlast = 2.375d0
-in_nt = 8
+in_tlast = 11d0
+in_nt = 192
 in_alpha = 1d0
 
 !-- gas grid settings
-in_nr = 128
+in_nr = 50
 in_isvelocity = t
 in_isshell = f
 in_novolsrc = t
@@ -29,7 +29,7 @@ in_templ0 = 11605d3
 !-- flat structure
 in_istempflat = t
 in_consttemp = 11605d0
-in_solidni56 = f
+in_solidni56 = t
 
 !-- external source type
 in_srctype = 'heav'
@@ -77,7 +77,7 @@ in_npartmax = 10000000
 in_isimcanlog = f
 in_isddmcanlog = f
 !-- ddmc mfp per cell
-in_tauddmc = 2d0
+in_tauddmc = 3d0
 
 !-- opacity switches
 in_nobbopac = t

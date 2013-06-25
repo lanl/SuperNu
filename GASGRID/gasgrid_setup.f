@@ -59,11 +59,12 @@ c
 c-- IMC-DDMC heuristic coefficient for spherical geometry (rev 146)
 c==================================================================
       do ir = 1, gas_nr!{{{
-       help2=gas_rarr(ir+1)**2+gas_rarr(ir)*gas_rarr(ir+1)
-       help2=help2+gas_rarr(ir)**2
-       help2 = sqrt(1d0/help2)
-       gas_curvcent(ir) = sqrt((gas_rarr(ir+1)**2+gas_rarr(ir)**2))
-       gas_curvcent(ir) = help2*gas_curvcent(ir)
+C$$$       help2=gas_rarr(ir+1)**2+gas_rarr(ir)*gas_rarr(ir+1)
+C$$$       help2=help2+gas_rarr(ir)**2
+C$$$       help2 = sqrt(1d0/help2)
+C$$$       gas_curvcent(ir) = sqrt((gas_rarr(ir+1)**2+gas_rarr(ir)**2))
+C$$$       gas_curvcent(ir) = help2*gas_curvcent(ir)
+         gas_curvcent(ir) = 1d0
       enddo!}}}
 c
 c

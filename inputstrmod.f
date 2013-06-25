@@ -207,7 +207,7 @@ c-- mass
          str_mass = in_totmass*(str_rout(2:)**3-str_rout(:in_nr)**3)
          str_mass = str_mass/(1d0-str_rout(1)**3)
       elseif(in_dentype=='mass') then
-         str_mass = in_totmass/real(in_nr)
+         forall(ir=1:in_nr)str_mass(ir)=in_totmass/real(in_nr)
       else
          stop 'generate_inputstr: invalid in_dentype'
       endif
