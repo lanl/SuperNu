@@ -19,12 +19,9 @@ program supernu
 ! Main routine
 !
 ! todo:
-! - clean up manual stratification usage throughout code (into dedicated
-!   subroutine?) (13/05/31)
 ! - verify linear and uniform velocity grid in input.str (13/05/31)
 ! - check wavelength units for bb and bf data
 ! - fix gas_wl indexing BUG in physical_opacity
-! - improve grid construction: store unit-sphere radii separately (13/06/01)
 !
 !***********************************************************************
   real*8 :: help, dt
