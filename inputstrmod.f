@@ -182,18 +182,18 @@ c
 c-- create unit sphere radii str_rout
       if(in_isvelocity) then
          if(in_isshell) then
-            help = 0d0
-         else
             help = in_v0/in_velout
+         else
+            help = 0d0            
          endif
          help2 = in_velout
       else
          if(in_isshell) then
-            help = 0d0
-            help2 = in_lr
-         else
             help = in_l0/(in_l0+in_lr)
             help2 = in_l0+in_lr
+         else
+            help = 0d0
+            help2 = in_lr
          endif         
       endif
       dr = (1d0-help)/real(in_nr)

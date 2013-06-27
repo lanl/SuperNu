@@ -59,12 +59,11 @@ c
 c-- IMC-DDMC heuristic coefficient for spherical geometry (rev 146)
 c==================================================================
       do ir = 1, gas_nr!{{{
-C$$$       help2=gas_rarr(ir+1)**2+gas_rarr(ir)*gas_rarr(ir+1)
-C$$$       help2=help2+gas_rarr(ir)**2
-C$$$       help2 = sqrt(1d0/help2)
-C$$$       gas_curvcent(ir) = sqrt((gas_rarr(ir+1)**2+gas_rarr(ir)**2))
-C$$$       gas_curvcent(ir) = help2*gas_curvcent(ir)
-         gas_curvcent(ir) = 1d0
+       help2=gas_rarr(ir+1)**2+gas_rarr(ir)*gas_rarr(ir+1)
+       help2=help2+gas_rarr(ir)**2
+       help2 = sqrt(1d0/help2)
+       gas_curvcent(ir) = sqrt((gas_rarr(ir+1)**2+gas_rarr(ir)**2))
+       gas_curvcent(ir) = help2*gas_curvcent(ir)
       enddo!}}}
 c
 c
@@ -93,8 +92,8 @@ c-- to Gaussian for manufacture tests
        do ir=1,gas_nr
         rrcenter=(gas_rarr(ir+1)+gas_rarr(ir))/2d0
         gas_temp(ir) = in_templ0*exp(-0.5*(rrcenter/uudd)**2)
-        if(gas_temp(ir)<10000d0) then
-         gas_temp(ir)=10000d0
+        if(gas_temp(ir)<11605d0) then
+         gas_temp(ir)=11605d0
         endif
        enddo
       endif!}}}

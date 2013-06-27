@@ -120,7 +120,7 @@ subroutine leakage_opacity
      enddo
   endif
 
-
+  write(6,*) gas_isvelocity
   !Calculating DDMC(-to-IMC) leakage opacities (Densmore, 2007, 2012): loop
   do ir = 1, gas_nr
      do ig = 1, gas_ng

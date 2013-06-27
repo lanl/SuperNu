@@ -164,7 +164,7 @@ c-- simple physical group/grey opacities: Planck and Rosseland
        call analytic_opacity
 c-- add physical opacities
        call physical_opacity
-       call convert_cap2capros
+       !call convert_cap2capros
 c
 c-- write out opacities (additional gray opacity not included!)
 c--------------------------------------------------------------
