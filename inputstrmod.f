@@ -8,7 +8,8 @@ c     ------------------
       integer :: str_nabund=0
       integer,allocatable :: str_iabund(:) !(nabund)
 c
-      real*8,allocatable :: str_velright(:) !if read (nr), else (nr+1)
+      real*8,allocatable :: str_velright(:) !(nr)
+      real*8,allocatable :: str_velleft(:) !(nr+1)
       real*8,allocatable :: str_mass(:) !(nr)
       real*8,allocatable :: str_massfr(:,:) !(nabund,nr)
 c
@@ -54,6 +55,7 @@ c-- verify not shell
 c
 c-- allocate arrays
       allocate(str_velright(nr))
+      allocate(str_velleft(nr+1))
       allocate(str_mass(nr))
       allocate(str_massfr(str_nabund,nr))
       allocate(str_abundlabl(str_nabund))
@@ -71,6 +73,10 @@ c-- transer data to final arrays
       str_velright = raw(1,:)
       str_mass = raw(2,:)
       str_massfr = raw(3:,:)
+c
+c-- translate to velleft
+      str_velleft(2:) = str_velright
+      str_velleft(1) = 0d0
 c
 c-- close file
       close(4)
@@ -170,7 +176,8 @@ c-- verifications (input.par)
 c
 c-- allocate arrays
       allocate(str_rout(in_nr+1))
-      allocate(str_velright(in_nr+1))
+      allocate(str_velright(in_nr))
+      allocate(str_velleft(in_nr+1))
       allocate(str_mass(in_nr))
 c
 c
@@ -200,7 +207,8 @@ c-- create unit sphere radii str_rout
       forall(ir=1:in_nr+1)str_rout(ir)=help+(ir-1)*dr
 c
 c-- outer shells
-      str_velright=help2*str_rout
+      str_velleft = help2*str_rout
+      str_velright = str_velleft(2:)
 c
 c-- mass
       if(in_dentype=='unif') then

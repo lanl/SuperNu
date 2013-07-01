@@ -28,14 +28,7 @@ c--
 c
 c----
 c-- agnostic grid setup (rev. 200) ----------------------------------
-      if(in_noreadstruct) then
-         ! str_velright misnomer: works for static or fluid material
-         ! and is size (gas_nr+1)
-         gas_rarr = str_velright
-      else
-         gas_rarr(1) = 0d0
-         gas_rarr(2:gas_nr+1) = str_velright
-      endif
+      gas_rarr = str_velleft
       forall(ir=1:gas_nr) gas_drarr(ir)=gas_rarr(ir+1)-gas_rarr(ir)
 c--------------------------------------------------------------------
 c
