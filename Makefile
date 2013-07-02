@@ -95,7 +95,7 @@ inputstrmod.o: physconstmod.o miscmod.o
 initialnumbers.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
 particle_advance.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o timingmod.o
 boundary_source.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
-dealloc_all.o: bbxsmod.o gasgridmod.o ionsmod.o mpimod.o particlemod.o
+dealloc_all.o: bbxsmod.o gasgridmod.o ionsmod.o mpimod.o particlemod.o inputstrmod.o
 diffusion1alt.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
 diffusion1.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
 interior_source.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o

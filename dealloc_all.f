@@ -5,6 +5,7 @@ c     ----------------------
       use bbxsmod
       use gasgridmod
       use particlemod
+      use inputstrmod
       implicit none
 ************************************************************************
 * deallocate all that was used till the end of the program. Any
