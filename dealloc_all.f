@@ -24,6 +24,7 @@ c-- bbxsmod
 c-- gasgridmod
       deallocate(gas_numcensus,gas_rarr,gas_drarr)
       deallocate(gas_edep,gas_temp,gas_tempb)
+      deallocate(gas_rhob)
       deallocate(gas_cap)
       deallocate(gas_emitprob,gas_opacleakl,gas_opacleakr)
       deallocate(gas_ppl,gas_ppr)
@@ -37,5 +38,12 @@ c-- gasgridmod
       deallocate(gas_emit,gas_emitex,gas_nvol,gas_nvolex)
 c-- particlemod
       deallocate(prt_particles)
+c-- inputstrmod
+      deallocate(str_velright)
+      deallocate(str_velleft)
+      deallocate(str_mass)
+      if(allocated(str_massfr)) deallocate(str_massfr)
+      if(allocated(str_abundlabl)) deallocate(str_abundlabl)
+      if(allocated(str_iabund)) deallocate(str_iabund)
 
       end subroutine dealloc_all
