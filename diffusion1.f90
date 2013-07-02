@@ -21,7 +21,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   real*8, intent(inout) :: r, mu, t, E, E0, wl
   logical, intent(inout) :: vacnt
   !
-  integer :: ig, iig, g
+  integer :: ig, iig, g, binsrch
   real*8 :: r1, r2, help
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus, PR, PL, PA
@@ -37,11 +37,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      help = 1d0
   endif
   !
-  ! Calculating current group (rev. 120)
-  g = minloc(abs(gas_wl-wl),1)
-  if(wl-gas_wl(g)<0d0) then
-     g = g-1
-  endif
+  ! Calculating current group (rev 206)
+  g = binsrch(wl,gas_wl,gas_ng+1)
   !
   if(g>gas_ng.or.g<1) then
      !particle out of wlgrid bound

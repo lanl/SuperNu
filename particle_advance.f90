@@ -18,7 +18,7 @@ subroutine particle_advance
   !total subroutine calls in program.
 !##################################################
 
-  integer :: ipart, difs, transps, g, zholder, zfdiff, ir
+  integer :: ipart, difs, transps, g, zholder, zfdiff, ir, binsrch
   real*8 :: r1, alph2, r2, x1, x2, xx0, bmax, help
   integer, pointer :: zsrc, rtsrc !, gsrc
   real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
@@ -79,15 +79,9 @@ subroutine particle_advance
      ! Looking up group
      if(rtsrc==1) then
         if(gas_isvelocity) then
-           g = minloc(abs(gas_wl-wlsrc/(1.0d0-rsrc*musrc/pc_c)),1)
-           if(wlsrc/(1.0d0-rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
-              g = g-1
-           endif
+           g = binsrch(wlsrc/(1d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1)
         else
-           g = minloc(abs(gas_wl-wlsrc),1)
-           if(wlsrc-gas_wl(g)<0d0) then
-              g = g-1
-           endif
+           g = binsrch(wlsrc,gas_wl,gas_ng+1)
         endif
         !
         if(g>gas_ng.or.g<1) then
@@ -114,10 +108,7 @@ subroutine particle_advance
         endif
         !
      else
-        g = minloc(abs(gas_wl-wlsrc),1)
-        if(wlsrc-gas_wl(g)<0d0) then
-           g = g-1
-        endif
+        g = binsrch(wlsrc,gas_wl,gas_ng+1)
         !
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid bound
@@ -192,15 +183,9 @@ subroutine particle_advance
      ! Looking up group
      if(rtsrc==1) then
         if(gas_isvelocity) then
-           g = minloc(abs(gas_wl-wlsrc/(1.0d0-rsrc*musrc/pc_c)),1)
-           if(wlsrc/(1.0d0-rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
-              g = g-1
-           endif
+           g = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1)
         else
-           g = minloc(abs(gas_wl-wlsrc),1)
-           if(wlsrc-gas_wl(g)<0d0) then
-              g = g-1
-           endif
+           g = binsrch(wlsrc,gas_wl,gas_ng+1)
         endif
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid energy bound
@@ -226,10 +211,7 @@ subroutine particle_advance
         endif
         !
      else
-        g = minloc(abs(gas_wl-wlsrc),1)
-        if(wlsrc-gas_wl(g)<0d0) then
-           g = g-1
-        endif
+        g = binsrch(wlsrc,gas_wl,gas_ng+1)
         !
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid bound
@@ -255,10 +237,8 @@ subroutine particle_advance
         !
         if (rsrc < gas_rarr(zsrc)) then
            !
-           zholder = minloc(abs(gas_rarr-rsrc),1)
-           if(rsrc<gas_rarr(zholder)) then
-              zholder = zholder-1
-           endif
+           zholder = binsrch(rsrc,gas_rarr,gas_nr+1)
+           !
            if(gas_isshell.and.zsrc==1) then
               prt_done = .true.
               isvacant = .true.
@@ -319,10 +299,8 @@ subroutine particle_advance
         ebirth = ebirth*exp(-tsp_dt/tsp_texp)
         !
         ! Finding group
-        g = minloc(abs(gas_wl-wlsrc),1)
-        if(wlsrc-gas_wl(g)<0d0) then
-           g = g-1
-        endif
+        g = binsrch(wlsrc,gas_wl,gas_ng+1)
+        !
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid energy bound
            if(g>gas_ng) then
@@ -358,15 +336,9 @@ subroutine particle_advance
      ! Looking up group
      if(rtsrc==1) then
         if(gas_isvelocity) then
-           g = minloc(abs(gas_wl-wlsrc/(1.0d0-rsrc*musrc/pc_c)),1)
-           if(wlsrc/(1.0d0-rsrc*musrc/pc_c)-gas_wl(g)<0d0) then
-              g = g-1
-           endif
+           g = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1)
         else
-           g = minloc(abs(gas_wl-wlsrc),1)
-           if(wlsrc-gas_wl(g)<0d0) then
-              g = g-1
-           endif
+           g = binsrch(wlsrc,gas_wl,gas_ng+1)
         endif
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid energy bound
@@ -392,10 +364,7 @@ subroutine particle_advance
         endif
         !
      else
-        g = minloc(abs(gas_wl-wlsrc),1)
-        if(wlsrc-gas_wl(g)<0d0) then
-           g = g-1
-        endif
+        g = binsrch(wlsrc,gas_wl,gas_ng+1)
         !
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid bound
@@ -421,10 +390,8 @@ subroutine particle_advance
         !
         if (rsrc < gas_rarr(zsrc)) then
            !
-           zholder = minloc(abs(gas_rarr-rsrc),1)
-           if(rsrc<gas_rarr(zholder)) then
-              zholder = zholder-1
-           endif
+           zholder = binsrch(rsrc,gas_rarr,gas_nr+1)
+           !
            if(gas_isshell.and.zsrc==1) then
               prt_done = .true.
               isvacant = .true.

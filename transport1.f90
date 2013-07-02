@@ -21,7 +21,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   real*8, intent(inout) :: r, mu, t, E, E0, wl
   logical, intent(inout) :: vacnt
   !
-  integer :: ig, iig, g
+  integer :: ig, iig, g, binsrch
   real*8 :: r1, r2, help
   real*8 :: db, dcol, dcen, dthm, d
   real*8 :: siglabfact, dcollabfact, elabfact
@@ -57,17 +57,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 
   ! Calculating current group (rev. 120)
   if(gas_isvelocity) then
-     g = minloc(abs(gas_wl-wl/(1.0d0-r*mu/pc_c)),1)
-     !write(*,*) 'g 1: ',g
-     if(wl/(1.0d0-r*mu/pc_c)-gas_wl(g)<0d0) then
-        g = g-1
-     endif
+     g = binsrch(wl/(1.0d0-r*mu/pc_c),gas_wl,gas_ng+1)
   else
-     g = minloc(abs(gas_wl-wl),1)
-     !write(*,*) 'g 1: ',g
-     if(wl-gas_wl(g)<0d0) then
-        g = g-1
-     endif
+     g = binsrch(wl,gas_wl,gas_ng+1)
   endif
   if(g>gas_ng.or.g<1) then
      !particle out of wlgrid energy bound
@@ -147,15 +139,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 
   ! Recalculating current group (rev. 120)
   if(gas_isvelocity) then
-     g = minloc(abs(gas_wl-wl/(1.0d0-r*mu/pc_c)),1)
-     if(wl/(1.0d0-r*mu/pc_c)-gas_wl(g)<0d0) then
-        g = g-1
-     endif
+     g = binsrch(wl/(1.0d0-r*mu/pc_c),gas_wl,gas_ng+1)
   else
-     g = minloc(abs(gas_wl-wl),1)
-     if(wl-gas_wl(g)<0d0) then
-        g = g-1
-     endif
+     g = binsrch(wl,gas_wl,gas_ng+1)
   endif
   if(g>gas_ng.or.g<1) then
      !particle out of wlgrid energy bound
