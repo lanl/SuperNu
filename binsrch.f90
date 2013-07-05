@@ -26,7 +26,17 @@ function binsrch(lamp,wl,ng)
         imin = imid
         imid = (imax+imin)/2
      else
-        stop 'binsrch: invalid inputs'
+        if(lamp<wl(1)) then
+           imin = 0
+           imid = 0
+           exit
+        elseif(lamp>wl(ng)) then
+           imin = ng
+           imid = ng
+           exit
+        else
+           stop 'binsrch: invalid inputs'
+        endif
      endif
   enddo
   if(imid/=imin) stop 'binsrch: no index'

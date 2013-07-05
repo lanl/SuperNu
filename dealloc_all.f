@@ -40,9 +40,9 @@ c-- gasgridmod
 c-- particlemod
       deallocate(prt_particles)
 c-- inputstrmod
-      deallocate(str_velright)
-      deallocate(str_velleft)
-      deallocate(str_mass)
+      if(impi==impi0) deallocate(str_velright)
+      if(impi==impi0) deallocate(str_velleft)
+      if(impi==impi0) deallocate(str_mass)
       if(allocated(str_massfr)) deallocate(str_massfr)
       if(allocated(str_abundlabl)) deallocate(str_abundlabl)
       if(allocated(str_iabund)) deallocate(str_iabund)
