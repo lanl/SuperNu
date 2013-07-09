@@ -19,7 +19,6 @@ program supernu
 ! Main routine
 !
 ! todo:
-! - verify linear and uniform velocity grid in input.str (13/05/31)
 ! - check wavelength units for bb and bf data
 ! - fix gas_wl indexing BUG in physical_opacity
 !
