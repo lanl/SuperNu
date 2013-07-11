@@ -204,6 +204,7 @@ c-- dim==1,2
          allocate(gas_numcensus(gas_nr))
          allocate(gas_edep(gas_nr))
          allocate(gas_eraddens(gas_ng,gas_nr))
+         allocate(gas_luminos(gas_ng))
       endif
 !      call mpi_bcast(gas_edep,gas_nr,MPI_REAL8,
 !     &  impi0,MPI_COMM_WORLD,ierr)
@@ -381,6 +382,12 @@ c--
       allocate(sndvec(gas_nr))
       sndvec = gas_edep
       call mpi_reduce(sndvec,gas_edep,gas_nr,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      deallocate(sndvec)
+c
+      allocate(sndvec(gas_ng))
+      sndvec = gas_luminos
+      call mpi_reduce(sndvec,gas_luminos,gas_ng,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
       deallocate(sndvec)
 c

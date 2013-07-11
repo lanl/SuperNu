@@ -60,7 +60,7 @@ run: all prepare_run
 
 runmpi: RUNDIR := $(CURDIR)/Run
 runmpi: all prepare_run
-	cd $(RUNDIR) && mpirun -n 24 ./supernu
+	cd $(RUNDIR) && mpirun -n 2 ./supernu
 
 check: all $(TESTS)
 	@echo "TESTSUITE SUCCESSFUL: $(shell date)"

@@ -5,7 +5,7 @@ subroutine write_output
   use particlemod
   implicit none
 
-  integer :: ir
+  integer :: ir, ig
   character(16), save :: pos='rewind'
 
   open(unit=4,file='output.tsp_time',status='unknown',position=pos)
@@ -13,7 +13,9 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.Lum',status='unknown',position=pos)
-  write(4,*) gas_eright/tsp_dt
+  do ig = 1, gas_ng
+     write(4,'(es16.8)',advance='no') gas_luminos(ig)
+  enddo
   close(4)
 
   open(unit=4,file='output.temp',status='unknown',position=pos)

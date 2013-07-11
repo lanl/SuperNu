@@ -82,7 +82,7 @@ program supernu
    if(.not.in_nobbopac) call read_bbxs_data(gas_nelem)!bound-bound cross section data
 !-- read bfxs data
    if(.not.in_nobfopac) call bfxs_read_data           !bound-free cross section data
-!-- read bfxs data
+!-- read ffxs data
    if(.not.in_noffopac) call ffxs_read_data           !free-free cross section data
 !
    call time(t1)
@@ -147,6 +147,7 @@ program supernu
           gas_eleft = gas_eleft/dble(nmpi)
 !-- dim==1
           gas_edep = gas_edep/dble(nmpi)
+          gas_luminos = gas_luminos/dble(nmpi)
 !-- dim==2
           gas_eraddens = gas_eraddens/dble(nmpi)
        !endif

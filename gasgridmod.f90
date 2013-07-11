@@ -79,7 +79,9 @@ module gasgridmod
 
   !Ryan W.: External sources (currently used for analytic_source):
   real*8, dimension(:,:), allocatable :: gas_exsource !(gas_ng,gas_nr)
-
+!
+!-- outbound grouped luminosity
+  real*8, allocatable :: gas_luminos(:) !(gas_ng)
 !
 ! Ryan W.: These quantities have been removed from gas_secondary (rev 183).  They are used during particle generation/transport
 !---
@@ -187,6 +189,7 @@ module gasgridmod
     allocate(gas_ppl(gas_ng,gas_nr))  !can potentially be removed
     allocate(gas_ppr(gas_ng,gas_nr))  !can potentially be removed
     allocate(gas_eraddens(gas_ng,gas_nr))  !radiation energy density in tsp_dt per group
+    allocate(gas_luminos(gas_ng))  !outbound grouped luminosity array
 !-Ryan W: gas_wl being allocated in gasgrid_setup now--
     !allocate(gas_wl(gas_ng)) !wavelength grid
 !------------------------------------------------------

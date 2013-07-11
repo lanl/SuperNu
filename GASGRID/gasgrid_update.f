@@ -156,7 +156,7 @@ c-- gamma opacity
 c!}}}
       else calc_opac !tsp_it
 c!{{{
-c-- thomson scattering
+c-- thomson scattering -- Ryan W.: this is being overwritten
        gas_sig = cthomson*gas_vals2(:)%nelec*
      &   gas_vals2(:)%natom/gas_vals2(:)%volcrp
 c

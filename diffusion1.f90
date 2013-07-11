@@ -146,10 +146,15 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            r1 = rand()
            r2 = rand()
            mu = max(r1,r2)
+!-- outbound luminosity tally
            if(gas_isvelocity) then
               gas_eright = gas_eright+E*(1.0+gas_rarr(gas_nr+1)*mu/pc_c)
+              gas_luminos(g)=gas_luminos(g)+(E/tsp_dt)* &
+                   (mu+gas_rarr(gas_nr+1)/pc_c)/ &
+                   (1.0+gas_rarr(gas_nr+1)*mu/pc_c)
            else
               gas_eright = gas_eright+E
+              gas_luminos(g)=gas_luminos(g)+(E/tsp_dt)*mu
            endif
         elseif ((gas_sig(z+1)+gas_cap(g,z+1))*gas_drarr(z+1) &
              *help >= prt_tauddmc*gas_curvcent(z+1)) then
