@@ -3,7 +3,7 @@
 !-- misc
 in_nomp = 4
 in_grab_stdout = f
-in_puretran = f
+in_puretran = t
 in_seed = 1
 in_noreadstruct = f
 
@@ -29,7 +29,7 @@ in_templ0 = 11605d3
 !-- flat structure
 in_istempflat = t
 in_consttemp = 11605d3
-in_solidni56 = t
+in_solidni56 = f
 
 !-- external source type
 in_srctype = 'none'
@@ -65,7 +65,7 @@ in_ldisp1 = 1d0
 in_ldisp2 = 1d-4
 
 !-- group settings
-in_wldex = 17
+in_wldex = 1
 in_iswlread = t
 in_ng = 5
 

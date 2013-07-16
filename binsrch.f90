@@ -16,7 +16,7 @@ function binsrch(lamp,wl,ng)
   !initialize binary indexes and key
   imin = 1
   imax = ng
-  imid = ng/2+1
+  imid = (ng+1)/2
 
   do while(imax - imin > 1)
      if(lamp>=wl(imin).and.lamp<wl(imid)) then
@@ -39,6 +39,7 @@ function binsrch(lamp,wl,ng)
         endif
      endif
   enddo
+  
   if(imid/=imin) stop 'binsrch: no index'
   binsrch = imid
 
