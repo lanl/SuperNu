@@ -34,6 +34,7 @@ c-- bfxs
       real*8 :: en,xs,wl
 c-- bbxs
       integer :: i,iwl
+      integer :: binsrch
       real*8 :: phi,ocggrnd,expfac,wl0
       real*8 :: caphelp
 c-- constants
@@ -42,8 +43,10 @@ c-- temporary cap array in the right order
       real*8 :: cap(gas_nr,gas_ng)
 c
 c-- constants
-      wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
-      wlminlg = log(dble(in_wlmin))
+C$$$      wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
+C$$$      wlminlg = log(dble(in_wlmin))
+      wlhelp = 1d0/log(gas_wl(1)/dble(gas_wl(gas_ng+1)))
+      wlminlg = log(dble(gas_wl(1))/pc_ang)
 c
 c-- reset
       cap = 0d0
@@ -73,8 +76,11 @@ c$omp& shared(cap)
         wl0 = bb_xs(i)%wl0 !in ang
         wlinv = 1d0/wl0
 c-- iwl pointer
-        iwl = int((wlhelp*(gas_ng - 1d0))*(log(dble(wl0)) - !sensitive to multiplication order!
-     &    wlminlg)) + 1
+C$$$        iwl = int((wlhelp*(gas_ng - 1d0))*(log(dble(wl0)) - !sensitive to multiplication order!
+C$$$     &    wlminlg)) + 1
+c-- Ryan W.: iwl pointer using gas_wl (correct interpretation?)
+        iwl = binsrch(wl0*pc_ang,gas_wl,gas_ng+1)
+c--
         if(iwl<1) cycle
         if(iwl>gas_ng) cycle
 c-- profile function

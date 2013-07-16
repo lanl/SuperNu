@@ -2,27 +2,27 @@
 
 !-- misc
 in_nomp = 4
-in_grab_stdout = t
+in_grab_stdout = f
 in_puretran = f
 in_seed = 1
-in_noreadstruct = t
+in_noreadstruct = f
 
 !-- time step
 in_tfirst = 2d0
-in_tlast = 5d0
-in_nt = 64
+in_tlast = 20d0
+in_nt = 384
 in_alpha = 1d0
 
 !-- gas grid settings
-in_nr = 50
+in_nr = 128
 in_isvelocity = t
 in_isshell = f
-in_novolsrc = t
+in_novolsrc = f
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_v0 = 2d8
-in_velout = 1d9
+in_velout = 0d0
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_l0 = 100d7
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_lr = 5d7
-in_totmass = 1d33
+in_totmass = 0d0
 in_dentype = 'mass'
 in_templ0 = 11605d3
 
@@ -32,7 +32,7 @@ in_consttemp = 11605d3
 in_solidni56 = t
 
 !-- external source type
-in_srctype = 'heav'
+in_srctype = 'none'
 in_srcmax = 4d24
 !-- heaviside case
 in_theav = 9d0
@@ -54,7 +54,7 @@ in_sigtpwr = 0d0
 in_sigrpwr = 1d0
 
 !-- group absorption opacity structure type
-in_opacanaltype = 'line'
+in_opacanaltype = 'none'
 
 !-- picket fence case
 in_suol = 'tsta'
@@ -80,9 +80,9 @@ in_isddmcanlog = f
 in_tauddmc = 2d0
 
 !-- opacity switches
-in_nobbopac = t
-in_nobfopac = t
-in_noffopac = t
+in_nobbopac = f
+in_nobfopac = f
+in_noffopac = f
 
 &end
 
