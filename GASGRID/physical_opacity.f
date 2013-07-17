@@ -34,13 +34,15 @@ c-- bfxs
       real*8 :: en,xs,wl
 c-- bbxs
       integer :: i,iwl
-      integer :: binsrch
       real*8 :: phi,ocggrnd,expfac,wl0
       real*8 :: caphelp
 c-- constants
       real*8 :: wlhelp,wlminlg
 c-- temporary cap array in the right order
       real*8 :: cap(gas_nr,gas_ng)
+c-- special functions
+      integer :: binsrch
+      real*8 :: specint, x1, x2
 c
 c-- constants
 C$$$      wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
@@ -216,5 +218,15 @@ c
      & call warn('opacity_calc','some cap==0')
 c
       gas_cap = gas_cap + transpose(cap)
+c
+c-- computing Planck opacity (rev 216)
+      do icg=1,gas_nr
+         do iw=1,gas_ng
+            x1 = pc_h*pc_c/(gas_wl(iw+1)*pc_kb*gas_temp(icg))
+            x2 = pc_h*pc_c/(gas_wl(iw)*pc_kb*gas_temp(icg))
+            gas_siggrey(icg)=gas_siggrey(icg)+
+     &           15d0*gas_cap(iw,icg)*specint(x1,x2,3)/pc_pi**4
+         enddo
+      enddo
 c
       end subroutine physical_opacity
