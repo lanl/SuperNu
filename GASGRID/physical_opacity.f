@@ -76,7 +76,7 @@ c$omp& shared(cap)
         iz = bb_xs(i)%iz
         ii = bb_xs(i)%ii
         wl0 = bb_xs(i)%wl0 !in ang
-        wlinv = 1d0/wl0
+        wlinv = 1d0/(wl0*pc_ang)
 c-- iwl pointer
 C$$$        iwl = int((wlhelp*(gas_ng - 1d0))*(log(dble(wl0)) - !sensitive to multiplication order!
 C$$$     &    wlminlg)) + 1
@@ -95,9 +95,9 @@ c-- evaluate caphelp
 c-- oc high enough to be significant?
 *        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
          if(ocggrnd<=0d0) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
-         expfac = 1d0 - exp(-hckt(icg)*wlinv/pc_ang) !Ang converted to cm (rev. 218)
+         expfac = 1d0 - exp(-hckt(icg)*wlinv)
          caphelp = phi*bb_xs(i)%gxs*ocggrnd*
-     &     exp(-bb_xs(i)%chilw*hckt(icg)/pc_ang)*expfac !Ang converted to cm (rev. 218)
+     &     exp(-bb_xs(i)%chilw*hckt(icg))*expfac
 !        if(caphelp==0.) write(6,*) 'cap0',cap(icg,iwl),phi,
 !    &     bb_xs(i)%gxs,ocggrnd,exp(-bb_xs(i)%chilw*hckt(icg)),expfac
          if(caphelp==0.) cycle
