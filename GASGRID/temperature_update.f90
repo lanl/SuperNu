@@ -31,7 +31,6 @@ subroutine temperature_update
 
   !calculating temperature
   do ir = 1, gas_nr
-
      dtemp = gas_edep(ir)/gas_vals2(ir)%vol !new
      !write(6,*) gas_edep(ir), gas_vals2(ir)%vol
      dtemp = (dtemp - tsp_dt*gas_fcoef(ir)*gas_siggrey(ir)*pc_c*gas_vals2(ir)%ur)/gas_vals2(ir)%bcoef

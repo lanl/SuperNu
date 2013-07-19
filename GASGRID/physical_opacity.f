@@ -47,7 +47,7 @@ c
 c-- constants
 C$$$      wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
 C$$$      wlminlg = log(dble(in_wlmin))
-      wlhelp = 1d0/log(gas_wl(1)/dble(gas_wl(gas_ng+1)))
+      wlhelp = 1d0/log(gas_wl(gas_ng+1)/dble(gas_wl(1)))
       wlminlg = log(dble(gas_wl(1))/pc_ang)
 c
 c-- reset
@@ -95,9 +95,9 @@ c-- evaluate caphelp
 c-- oc high enough to be significant?
 *        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
          if(ocggrnd<=0d0) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
-         expfac = 1d0 - exp(-hckt(icg)*wlinv)
+         expfac = 1d0 - exp(-hckt(icg)*wlinv/pc_ang) !Ang converted to cm (rev. 218)
          caphelp = phi*bb_xs(i)%gxs*ocggrnd*
-     &     exp(-bb_xs(i)%chilw*hckt(icg))*expfac
+     &     exp(-bb_xs(i)%chilw*hckt(icg)/pc_ang)*expfac !Ang converted to cm (rev. 218)
 !        if(caphelp==0.) write(6,*) 'cap0',cap(icg,iwl),phi,
 !    &     bb_xs(i)%gxs,ocggrnd,exp(-bb_xs(i)%chilw*hckt(icg)),expfac
          if(caphelp==0.) cycle
@@ -228,5 +228,5 @@ c-- computing Planck opacity (rev 216)
      &           15d0*gas_cap(iw,icg)*specint(x1,x2,3)/pc_pi**4
          enddo
       enddo
-c
+c      hckt = pc_h*pc_c/(pc_kb*gas_temp)
       end subroutine physical_opacity
