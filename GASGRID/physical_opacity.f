@@ -86,7 +86,9 @@ c--
         if(iwl<1) cycle
         if(iwl>gas_ng) cycle
 c-- profile function
-        phi = (gas_ng-1d0)*wlhelp*wl0/pc_c !line profile
+! Ryan W.: changed gas_ng-1 to gas_ng and wl0 to wl0*pc_ang
+!        phi = (gas_ng-1d0)*wlhelp*wl0/pc_c !line profile
+        phi = gas_ng*wlhelp*wl0*pc_ang/pc_c
 !       write(6,*) 'phi',phi
 c-- evaluate caphelp
         do icg=1,gas_nr
