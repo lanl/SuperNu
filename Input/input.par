@@ -65,7 +65,7 @@ in_ldisp1 = 1d0
 in_ldisp2 = 1d-4
 
 !-- group settings
-in_wldex = 20
+in_wldex = 19
 in_iswlread = t
 in_ng = 5
 
