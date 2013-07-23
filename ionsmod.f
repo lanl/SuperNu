@@ -239,29 +239,22 @@ c     -----------------------------------
 * solve saha equations, updating the ionization balance, for a given
 * nelec and temperature (both within sahac2) and return a new nelec.
 ************************************************************************
-      integer :: ii,iz,nion
+      integer :: ii,iz,nion,istart
       real*8 :: nsum
 c
       do iz=1,nelem
        nion = ion_el(iz)%ni
 c
 c-- recursively compute n_(i+1)
-       ion_el(iz)%i(1)%n = 1d0 !use arbitrary start value for n_1
-       do ii=2,nion
-        help = sahac2*exp(-kti*ion_el(iz)%i(ii-1)%e)*
-     &    ion_el(iz)%i(ii-1)%n*ion_el(iz)%i(ii)%q/ion_el(iz)%i(ii-1)%q
-        if(help>huge(nsum)) exit  !overflow, try again below
-        ion_el(iz)%i(ii)%n = help
-       enddo !ii
-c
-c-- in case of overflow double the dynamic range
-       if(help>huge(nsum)) then
-        ion_el(iz)%i(1)%n = 1d-300 !use very small start value for n_1
-        do ii=2,nion
-         ion_el(iz)%i(ii)%n = sahac2*exp(-kti*ion_el(iz)%i(ii-1)%e)*
+       do istart=1,nion-1
+        ion_el(iz)%i(istart)%n = 1d0 !use arbitrary start value for n_1
+        do ii=istart+1,nion
+         help = sahac2*exp(-kti*ion_el(iz)%i(ii-1)%e)*
      &     ion_el(iz)%i(ii-1)%n*ion_el(iz)%i(ii)%q/ion_el(iz)%i(ii-1)%q
+         ion_el(iz)%i(ii)%n = help
         enddo !ii
-       endif
+        if(help<huge(nsum)) exit  !no overflow, we're done
+       enddo !istart
 c
 c-- normalize n_i
        nsum = sum(ion_el(iz)%i(:nion)%n)
