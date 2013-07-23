@@ -47,7 +47,7 @@ c
 c-- constants
 C$$$      wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
 C$$$      wlminlg = log(dble(in_wlmin))
-      wlhelp = 1d0/log(gas_wl(gas_ng+1)/dble(gas_wl(1)))
+!      wlhelp = 1d0/log(gas_wl(gas_ng+1)/dble(gas_wl(1)))
       wlminlg = log(dble(gas_wl(1))/pc_ang)
 c
 c-- reset
@@ -82,6 +82,7 @@ C$$$        iwl = int((wlhelp*(gas_ng - 1d0))*(log(dble(wl0)) - !sensitive to mu
 C$$$     &    wlminlg)) + 1
 c-- Ryan W.: iwl pointer using gas_wl (correct interpretation?)
         iwl = binsrch(wl0*pc_ang,gas_wl,gas_ng+1)
+        wlhelp = 1d0/log(gas_wl(iwl+1)/gas_wl(iwl))/gas_ng
 c--
         if(iwl<1) cycle
         if(iwl>gas_ng) cycle

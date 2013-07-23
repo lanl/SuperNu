@@ -49,12 +49,12 @@ in_sigtpwrs = 0d0
 in_sigrpwrs = 0d0
 
 !-- power law absorption opacity values
-in_sigcoef = 0.01d0
+in_sigcoef = 0.13d0
 in_sigtpwr = 0d0
 in_sigrpwr = 1d0
 
 !-- group absorption opacity structure type
-in_opacanaltype = 'grey'
+in_opacanaltype = 'none'
 
 !-- picket fence case
 in_suol = 'tsta'
@@ -65,24 +65,24 @@ in_ldisp1 = 1d0
 in_ldisp2 = 1d-4
 
 !-- group settings
-in_wldex = 1
+in_wldex = 20
 in_iswlread = t
 in_ng = 5
 
 !-- particle numbers
-in_ns = 10000
+in_ns = 100000
 in_npartmax = 10000000
 
 !-- imc tally method
-in_isimcanlog = t
+in_isimcanlog = f
 in_isddmcanlog = f
 !-- ddmc mfp per cell
 in_tauddmc = 2d0
 
 !-- opacity switches
-in_nobbopac = t
-in_nobfopac = t
-in_noffopac = t
+in_nobbopac = f
+in_nobfopac = f
+in_noffopac = f
 
 &end
 
