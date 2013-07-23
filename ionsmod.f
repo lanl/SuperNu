@@ -41,7 +41,7 @@ c
 c
 c
       subroutine ion_alloc_grndlev(ncg)
-c     ---------------------------------
+c     ---------------------------------!{{{
       implicit none
       integer,intent(in) :: ncg
 ************************************************************************
@@ -58,13 +58,13 @@ c
         allocate(ion_grndlev(iz,icg)%oc(ni))
         allocate(ion_grndlev(iz,icg)%g(ni))
        enddo
-      enddo
+      enddo!}}}
       end subroutine ion_alloc_grndlev
 c
 c
 c
       subroutine ion_dealloc
-c     ----------------------
+c     ----------------------!{{{
       implicit none
 ************************************************************************
 * deallocate the complex ion_el datastructure, and ion_grndlev
@@ -90,7 +90,7 @@ c
      &    deallocate(ion_grndlev(iz,icg)%g)
        enddo
       enddo
-      deallocate(ion_grndlev)
+      deallocate(ion_grndlev)!}}}
       end subroutine ion_dealloc
 c
 c
@@ -248,9 +248,20 @@ c
 c-- recursively compute n_(i+1)
        ion_el(iz)%i(1)%n = 1d0 !use arbitrary start value for n_1
        do ii=2,nion
-        ion_el(iz)%i(ii)%n = sahac2*exp(-kti*ion_el(iz)%i(ii-1)%e)*
+        help = sahac2*exp(-kti*ion_el(iz)%i(ii-1)%e)*
      &    ion_el(iz)%i(ii-1)%n*ion_el(iz)%i(ii)%q/ion_el(iz)%i(ii-1)%q
+        if(help>huge(nsum)) exit  !overflow, try again below
+        ion_el(iz)%i(ii)%n = help
        enddo !ii
+c
+c-- in case of overflow double the dynamic range
+       if(help>huge(nsum)) then
+        ion_el(iz)%i(1)%n = 1d-300 !use very small start value for n_1
+        do ii=2,nion
+         ion_el(iz)%i(ii)%n = sahac2*exp(-kti*ion_el(iz)%i(ii-1)%e)*
+     &     ion_el(iz)%i(ii-1)%n*ion_el(iz)%i(ii)%q/ion_el(iz)%i(ii-1)%q
+        enddo !ii
+       endif
 c
 c-- normalize n_i
        nsum = sum(ion_el(iz)%i(:nion)%n)
