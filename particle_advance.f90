@@ -76,6 +76,7 @@ subroutine particle_advance
      ebirth => prt_particles(ipart)%ebirth
      isvacant => prt_particles(ipart)%isvacant
 
+
      ! Looking up group
      if(rtsrc==1) then
         if(gas_isvelocity) then

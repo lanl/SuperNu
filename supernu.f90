@@ -134,7 +134,7 @@ program supernu
     !Advancing prt_particles to update radiation field    
 !-- advance particles
     call particle_advance
-    
+
 !-- collect particle results from all workers
     call reduce_tally !MPI
 
