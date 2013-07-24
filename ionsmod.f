@@ -149,7 +149,7 @@ c--
         ion_el(iz)%i(ii)%q = sum(ion_el(iz)%i(ii)%glev(:)*
      &    exp(-kti*ion_el(iz)%i(ii)%elev(:))) !elev is h*c*chi, with [chi]=1/cm
        enddo !ii
-       ion_el(iz)%i(ii+1)%q = 1d0 !todo: is this right?
+       ion_el(iz)%i(ii)%q = 1d0 !todo: is this right?
 !DEBUG>
 !     if(iz==2) then
 !      write(6,*) 'q:',ion_el(2)%i(:)%q !DEBUG
