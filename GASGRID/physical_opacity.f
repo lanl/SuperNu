@@ -82,10 +82,10 @@ C$$$        iwl = int((wlhelp*(gas_ng - 1d0))*(log(dble(wl0)) - !sensitive to mu
 C$$$     &    wlminlg)) + 1
 c-- Ryan W.: iwl pointer using gas_wl (correct interpretation?)
         iwl = binsrch(wl0*pc_ang,gas_wl,gas_ng+1)
-        wlhelp = 1d0/log(gas_wl(iwl+1)/gas_wl(iwl))/gas_ng
 c--
         if(iwl<1) cycle
         if(iwl>gas_ng) cycle
+        wlhelp = 1d0/log(gas_wl(iwl+1)/gas_wl(iwl))/gas_ng
 c-- profile function
 ! Ryan W.: changed gas_ng-1 to gas_ng and wl0 to wl0*pc_ang
 !        phi = (gas_ng-1d0)*wlhelp*wl0/pc_c !line profile
