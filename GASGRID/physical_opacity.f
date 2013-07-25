@@ -43,6 +43,9 @@ c-- temporary cap array in the right order
 c-- special functions
       integer :: binsrch
       real*8 :: specint, x1, x2
+c-- thomson scattering
+      real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
+     &  *pc_c**4)
 c
 c-- constants
 C$$$      wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
@@ -56,6 +59,9 @@ c
 c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_temp)
 c
+c-- thomson scattering -- Ryan W.: this is being overwritten
+      gas_sig = cthomson*gas_vals2(:)%nelec*
+     &  gas_vals2(:)%natom/gas_vals2(:)%volcrp
 c
 c-- bound-bound
       if(.not. in_nobbopac) then

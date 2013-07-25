@@ -66,8 +66,6 @@ in_ldisp2 = 1d-4
 
 !-- group settings
 in_wldex = 19
-in_iswlread = t
-in_ng = 5
 
 !-- particle numbers
 in_ns = 100000

@@ -39,8 +39,6 @@ in_suolpick1=1d0
 
 !-- group settings
 in_wldex = 1
-in_iswlread = t
-in_ng = 10
 
 !-- particle numbers
 in_ns = 10000

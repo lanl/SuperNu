@@ -21,13 +21,11 @@ c     -----------------------
       logical :: do_output
       integer :: i,j,ir
       real*8 :: help
+      real*8 :: dwl(gas_ng)
       real*8 :: natom1fr(gas_nr,-2:-1) !todo: memory storage order?
       real*8 :: natom2fr(gas_nr,-2:-1)
 c-- gamma opacity
       real*8,parameter :: ye=.5d0 !todo: compute this value
-c-- thomson scattering
-      real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
-     &  *pc_c**4)
 c-- distribute packets
       real*8 :: chiross(gas_nr),capplanck(gas_nr)
 c-- timing
@@ -156,10 +154,6 @@ c-- gamma opacity
 c!}}}
       else calc_opac !tsp_it
 c!{{{
-c-- thomson scattering -- Ryan W.: this is being overwritten
-       gas_sig = cthomson*gas_vals2(:)%nelec*
-     &   gas_vals2(:)%natom/gas_vals2(:)%volcrp
-c
 c-- simple physical group/grey opacities: Planck and Rosseland 
        call analytic_opacity
 c-- add physical opacities
@@ -213,12 +207,11 @@ c
 c
 c-- Rosseland opacity
 c-- normalization integral first
+       dwl = gas_wl(2:) - gas_wl(:gas_ng)
        forall(ir=1:gas_nr)
-     &  chiross(ir) = sum(dplanckdtemp(gas_wl,gas_temp(ir))*
-     &    gas_dwl)
+     &  chiross(ir) = sum(dplanckdtemp(gas_wl,gas_temp(ir))*dwl)
        forall(ir=1:gas_nr)
-     &  capplanck(ir) = sum(planck(gas_wl,gas_temp(ir))*
-     &    gas_dwl)
+     &  capplanck(ir) = sum(planck(gas_wl,gas_temp(ir))*dwl)
 c-- check against analytic solution
 c      write(7,'(1p,10e12.4)') (chiross(ir),ir=1,gas_nr)
 c      write(7,'(1p,10e12.4)') (4/pi*sb*gas_temp(ir)**3,ir=1,gas_nr)
@@ -227,24 +220,21 @@ c      write(7,'(1p,10e12.4)') (sb/pi*gas_temp(ir)**4,ir=1,gas_nr)
 c-- now the opacity weighting integral
        forall(ir=1:gas_nr)
      &  chiross(ir) = chiross(ir) /
-     &    sum(dplanckdtemp(gas_wl,gas_temp(ir))*gas_dwl/
+     &    sum(dplanckdtemp(gas_wl,gas_temp(ir))*dwl/
      &    (gas_cap(:,ir) + gas_sig(ir)))
        forall(ir=1:gas_nr)
      &  capplanck(ir) = sum(planck(gas_wl,gas_temp(ir))*
-     &    gas_cap(:,ir)*gas_dwl) / capplanck(ir)
+     &    gas_cap(:,ir)*dwl) / capplanck(ir)
 c-- Rosseland output
        write(7,*) 'mean opacities:'
        write(7,'(a8,7a12)') 'ir',
-     &   'tau_Ross','mfp_Ross','chi Ross','cap_B','  cap_B',
-     &   ' sig','    sig'
+     &   'tau_Ross','mfp_Ross','chi Ross','cap_B','sig'
        write(7,'(a8,7a12)') 'units:',
-     &   '     [1]','    [cu]',' [cm^-1]',' [cu]','[cm^-1]',
-     &   '[cu]','[cm^-1]'
+     &   '[1]','[cm]',' [cm^-1]','[cm^-1]','[cm^-1]'
        do ir=1,gas_nr
         write(7,'(i8,1p,7e12.4)') ir,
      &    sum(chiross(ir:)),1d0/chiross(ir),chiross(ir),
-     &    capplanck(ir),capplanck(ir),
-     &    gas_sig(ir),gas_sig(ir)
+     &    capplanck(ir),gas_sig(ir)
        enddo
 c
 c-- timing output

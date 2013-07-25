@@ -14,7 +14,6 @@ module gasgridmod
   real*8 :: gas_v0 = 0d0 !inner boundary velocity (if in_isshell)
 
   real*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
-  real*8,allocatable :: gas_dwl(:) !(gas_ng) wavelength grid bin width
   real*8,allocatable :: gas_cap(:,:) !(gas_ng,gas_nr) Line+Cont extinction coeff
   real*8,allocatable :: gas_sig(:) !(gas_nr) scattering coefficient
 !-(rev. 121): edge scattering coefficient (a secondary quantity)
@@ -128,15 +127,15 @@ module gasgridmod
   contains
 
 
-  subroutine gasgrid_init(nt)
+  subroutine gasgrid_init(nt,ng)
 !-------------------------------------------------------
     use inputparmod
     implicit none
 !
-    integer,intent(in) :: nt
+    integer,intent(in) :: nt,ng
 !
     gas_nr = in_nr
-    gas_ng = in_ng
+    gas_ng = ng
     !
     gas_isvelocity = in_isvelocity
     gas_isshell = in_isshell
@@ -207,7 +206,6 @@ module gasgridmod
     allocate(gas_sigbr(gas_nr))
 !------------------------------------
     allocate(gas_temphist(gas_nr,nt))
-    allocate(gas_dwl(gas_ng)) !wavelength grid bin width
 
     allocate(gas_temp(gas_nr))  !cell average temperature
     allocate(gas_tempb(gas_nr+1))  !cell boundary temperature

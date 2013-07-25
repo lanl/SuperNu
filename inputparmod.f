@@ -12,7 +12,6 @@ c-- parallelization
 c
 c-- gas grid
       integer :: in_nr = 0 !# spatial grid in spherical geom
-      integer :: in_ng = 0 !# groups
       real*8 :: in_lr = 0d0  !spatial length of the domain
       real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
 c
@@ -57,12 +56,7 @@ c-- time step
       real*8 :: in_tlast = 0d0  !last point in time evolution
       integer :: in_nt = -1   !# time steps
 c
-c--
-      real*8 :: in_wlmin = 1000d0     !lower wavelength boundary in output spectrum
-      real*8 :: in_wlmax = 30000d0    !upper wavelength boundary in output spectrum
-c
 c-- group structure
-      logical :: in_iswlread = .false. !switch to read input wavelength grid
       integer :: in_wldex = 1 !# if in_iswlread = t, selects group grid from formatted group grid file
 c
 c
@@ -107,20 +101,19 @@ c-- misc
 c     
 c-- runtime parameter namelist
       namelist /inputpars/
-     & in_nr,in_ng,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
+     & in_nr,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
      & in_totmass,in_templ0,in_velout,in_v0,
      & in_consttemp,in_solidni56,in_istempflat,
      & in_seed,in_ns,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,
      & in_grab_stdout,in_nomp,
-     & in_wlmin,in_wlmax,
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
      & in_noffopac,
      & in_opacdump,in_pdensdump,
      & in_sigcoefs,in_sigtpwrs,in_sigrpwrs,
      & in_sigcoef,in_sigtpwr,in_sigrpwr,
      & in_cvcoef,in_cvtpwr,in_cvrpwr,
-     & in_wldex,in_iswlread,in_opacanaltype,in_suol,
+     & in_wldex,in_opacanaltype,in_suol,
      & in_suolpick1, in_ldisp1, in_ldisp2,
      & in_srctype, in_theav, in_nheav, in_srcmax,
      & in_isimcanlog, in_isddmcanlog,
@@ -183,7 +176,6 @@ c-- check input parameter validity
       if(in_nomp==0 .and. nmpi>1) stop 'no in_nomp==0 in mpi mode'
 c
       if(in_nr<=0) stop 'in_nr invalid'
-      if(in_ng<=0) stop 'in_ng invalid'
 c
       if(in_isvelocity) then
        if(in_lr>0d0) stop 'vel grid: use in_velout, not in_lr'
@@ -234,17 +226,10 @@ c
        if(.not.in_nobbopac) stop 'no phys opac + in_grptyp==none'
        if(.not.in_nobfopac) stop 'no phys opac + in_grptyp==none'
        if(.not.in_noffopac) stop 'no phys opac + in_grptyp==none'
-       if(in_ng /= 2) then
-        call warn('inputparmod','overriding in_ng=2 for grptyp==pick')
-        in_ng = 2
-       endif
       case('line')
       case default
        stop 'in_opacanaltype unknown'
       end select
-c
-      if(in_wlmin<0d0) stop 'in_wlmin invalid'
-      if(in_wlmax<=0d0 .or. in_wlmax<in_wlmin) stop 'in_wlmax invalid'
 c
       if(in_opcapgam<0d0) stop 'in_opcapgam invalid'
       if(in_epsline<0d0 .or. in_epsline>1d0) stop 'in_epsline invalid'

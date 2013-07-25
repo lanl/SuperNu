@@ -25,7 +25,7 @@ program supernu
 !***********************************************************************
   real*8 :: help, dt
   real*8 :: t_elapsed
-  integer :: ierr, ihelp
+  integer :: ierr, ihelp, ng
   logical :: lmpi0 = .false. !master rank flag
   real :: t0,t1  !timing
 !
@@ -69,8 +69,8 @@ program supernu
    endif
 !
 !-- SETUP GRIDS
-   call wlgrid_setup
-   call gasgrid_init(in_nt)
+   call read_wlgrid(ng)
+   call gasgrid_init(in_nt,ng)
    call gasgrid_setup
 !
 

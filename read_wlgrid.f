@@ -1,8 +1,9 @@
-      subroutine read_wlgrid
-c     ----------------------
+      subroutine read_wlgrid(ng)
+c     --------------------------
       use gasgridmod
       use inputparmod
       implicit none
+      integer,intent(out) :: ng
 ************************************************************************
 * read wavelength grid from file
 *
@@ -26,7 +27,7 @@ c     ----------------------
 ************************************************************************
 c
       real*8, allocatable :: wlstore(:) 
-      integer :: ng,ngm,nrm,irr,ir
+      integer :: ngm,nrm,irr,ir
 c
       open(4,file='input.wlgrid',status='old')
 c
@@ -58,7 +59,5 @@ c
       write(6,*)
       write(6,*) 'wavelength grid in [cm]'
       write(6,*) gas_wl
-      !Resetting in_ng to value of particular group entry from file
-      in_ng = ng
 c
       end subroutine read_wlgrid
