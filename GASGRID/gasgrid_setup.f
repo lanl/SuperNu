@@ -12,9 +12,8 @@ c     ------------------------
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
       integer :: i,j,ir
-      real*8 :: help, rrcenter, uudd, masv
+      real*8 :: help,rrcenter,uudd
       real*8 :: help2
-      real*8, allocatable :: wlstore(:)
 c
 c--
       write(6,*)
@@ -66,17 +65,16 @@ c--
       write(6,*) '==========================='
 c
 c-- temperature
-      if(in_istempflat) then!{{{
-       do ir=1,gas_nr
-        gas_temp(ir) = in_consttemp
-       enddo
-      else
+      if(in_consttemp==0d0) then!{{{
        call read_restart_file
-       do ir=1,gas_nr
-        if(gas_temp(ir)<10d0) then
-         gas_temp(ir)=10d0
-        endif
-       enddo
+      else
+       gas_temp = in_consttemp
+!>> drr: not the right place for temp limiters?
+!      do ir=1,gas_nr
+!       if(gas_temp(ir)<10d0) then
+!        gas_temp(ir)=10d0
+!       endif
+!      enddo
       endif
 c-- Ryan W.: temporary override of initial temperature
 c-- to Gaussian for manufacture tests

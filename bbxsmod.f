@@ -50,8 +50,9 @@ c     use physconstmod
       character(80) :: word
       character(8) :: fname
 c-- level id
-      integer :: i,lidmax
+      integer :: i,lidmax,istat2
       integer,allocatable :: lid(:)
+      integer(1) :: byte
 c
 c-- filename
       write(fname,'(a2,i1,".atom")') lcase(trim(elem_data(iz)%sym)),ii
@@ -73,10 +74,24 @@ c-- allocate
       allocate(bbxs_level(bb_nlevel),bbxs_line(bb_nline))
 c
 c-- read data
+c-- level data
       read(4,'(f11.3,13x,2i5)',iostat=istat) bbxs_level
-      if(istat/=0) goto 66
+      if(istat/=0) then
+       write(6,*) fname
+       error stop 'read_atom: level data read error'
+      endif
+c-- line data
       read(4,'(2i5,f7.3)',iostat=istat) bbxs_line
-      if(istat/=0) goto 66
+      if(istat/=0) then
+       write(6,*) fname
+       error stop 'read_atom: level data read error'
+      endif
+c-- verify eof
+      read(4,*,iostat=istat2) byte
+      if(istat2>=0) then
+       write(6,*) fname,byte
+       error stop 'read_atom: data remaining on input file'
+      endif
 c
 c-- construct reverse level pointer
       lidmax = maxval(bbxs_level(:)%id)

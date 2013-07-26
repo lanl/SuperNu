@@ -286,7 +286,7 @@ c
 c
 c
       subroutine update_natomfr(tsince)
-c     -------------------------------
+c     -------------------------------!{{{
       use physconstmod
       use gasgridmod
       use inputparmod
@@ -326,5 +326,5 @@ c-- Ni56
 c-- Ni
       gas_vals2(:)%natom1fr(28) = gas_vals2(:)%natom1fr(gas_ini56) + !unstable
      &  gas_vals2(:)%natom0fr(2)                              !initial Ni (stable)
-c
+c!}}}
       end subroutine update_natomfr

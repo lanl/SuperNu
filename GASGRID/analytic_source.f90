@@ -17,7 +17,7 @@ subroutine analytic_source
   
   real*8 :: aa11=1.371d14
   real*8 :: aa22= 1.371d2!1.371d0
-  real*8 :: rrcenter, aa00, bspeced, xx3, xx4
+  real*8 :: rrcenter, bspeced, xx3, xx4
 
   x1 = 1d0/gas_wl(gas_ng+1)
   x2 = 1d0/gas_wl(1)

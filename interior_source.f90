@@ -12,7 +12,7 @@ subroutine interior_source
   !This subroutine instantiates new volume (cell) particle properties.
 !##################################################
 
-  integer :: ir,iir, ipart, ivac, ig, iig
+  integer :: ir, ipart, ivac, ig, iig
   integer, dimension(gas_nr) :: irused
   real*8 :: r1, r2, r3, uul, uur, uumax, mu0, r0, Ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, xx0, bmax, help

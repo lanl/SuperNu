@@ -14,7 +14,7 @@ in_nt = 200
 in_alpha = 1d0
 
 !-- gas grid settings
-in_nr = 128
+in_nr = 64
 in_isvelocity = t
 in_isshell = f
 in_novolsrc = f
@@ -27,9 +27,8 @@ in_dentype = 'unif'
 in_templ0 = 11605d1
 
 !-- flat structure
-in_istempflat = t
-in_consttemp = 11605d1
-in_solidni56 = t
+in_consttemp = 0d0
+in_solidni56 = f
 
 !-- external source type
 in_srctype = 'none'
@@ -68,7 +67,7 @@ in_ldisp2 = 1d-4
 in_wldex = 19
 
 !-- particle numbers
-in_ns = 100000
+in_ns = 1000
 in_npartmax = 10000000
 
 !-- imc tally method
@@ -77,7 +76,7 @@ in_isddmcanlog = f
 !-- ddmc mfp per cell
 in_tauddmc = 2d0
 
-!-- opacity switches
+!-- opacity debug switches
 in_nobbopac = f
 in_nobfopac = f
 in_noffopac = f

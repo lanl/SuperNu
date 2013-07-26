@@ -34,10 +34,8 @@ c-- bfxs
       real*8 :: en,xs,wl
 c-- bbxs
       integer :: i,iwl
-      real*8 :: phi,ocggrnd,expfac,wl0
+      real*8 :: phi,ocggrnd,expfac,wl0,dwl
       real*8 :: caphelp
-c-- constants
-      real*8 :: wlhelp,wlminlg
 c-- temporary cap array in the right order
       real*8 :: cap(gas_nr,gas_ng)
 c-- special functions
@@ -46,12 +44,10 @@ c-- special functions
 c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
-c
-c-- constants
-C$$$      wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
-C$$$      wlminlg = log(dble(in_wlmin))
-!      wlhelp = 1d0/log(gas_wl(gas_ng+1)/dble(gas_wl(1)))
-      wlminlg = log(dble(gas_wl(1))/pc_ang)
+!c
+!c-- constants
+!old  wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
+!old  wlminlg = log(dble(in_wlmin))
 c
 c-- reset
       cap = 0d0
@@ -75,27 +71,23 @@ c-- bound-bound
 c
 c$omp parallel do
 c$omp& schedule(static)
-c$omp& private(iz,ii,wl0,wlinv,iwl,phi,caphelp,expfac,ocggrnd)
+c$omp& private(iz,ii,wl0,dwl,wlinv,iwl,phi,caphelp,expfac,ocggrnd)
 c$omp& firstprivate(grndlev,hckt)
 c$omp& shared(cap)
        do i=1,bb_nline
         iz = bb_xs(i)%iz
         ii = bb_xs(i)%ii
-        wl0 = bb_xs(i)%wl0 !in ang
-        wlinv = 1d0/(wl0*pc_ang)
+        wl0 = bb_xs(i)%wl0*pc_ang  !in cm
+        wlinv = 1d0/wl0  !in cm
 c-- iwl pointer
-C$$$        iwl = int((wlhelp*(gas_ng - 1d0))*(log(dble(wl0)) - !sensitive to multiplication order!
-C$$$     &    wlminlg)) + 1
-c-- Ryan W.: iwl pointer using gas_wl (correct interpretation?)
-        iwl = binsrch(wl0*pc_ang,gas_wl,gas_ng+1)
+        iwl = binsrch(wl0,gas_wl,gas_ng+1)  !todo: thread safe?
 c--
         if(iwl<1) cycle
         if(iwl>gas_ng) cycle
-        wlhelp = 1d0/log(gas_wl(iwl+1)/gas_wl(iwl))/gas_ng
+        dwl = gas_wl(iwl+1) - gas_wl(iwl)  !in cm
 c-- profile function
-! Ryan W.: changed gas_ng-1 to gas_ng and wl0 to wl0*pc_ang
-!        phi = (gas_ng-1d0)*wlhelp*wl0/pc_c !line profile
-        phi = gas_ng*wlhelp*wl0*pc_ang/pc_c
+!old    phi = gas_ng*wlhelp*wl0/pc_c !line profile
+        phi = wl0/(dwl*pc_c)
 !       write(6,*) 'phi',phi
 c-- evaluate caphelp
         do icg=1,gas_nr
@@ -141,7 +133,7 @@ c$omp& private(wl,en,ie,xs)
 c$omp& firstprivate(grndlev)
 c$omp& shared(cap)
        do iw=1,gas_ng
-        wl = gas_wl(iw)
+        wl = gas_wl(iw)  !in cm
         en = pc_h*pc_c/(pc_ev*wl) !photon energy in eV
         do iz=1,gas_nelem
          do ii=1,min(iz,ion_el(iz)%ni - 1) !last stage is bare nucleus
@@ -176,8 +168,8 @@ c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy)
 c$omp& firstprivate(hckt,hlparr)
 c$omp& shared(cap)
        do iw=1,gas_ng
-        wl = gas_wl(iw)
-        wlinv = 1d0/wl
+        wl = gas_wl(iw)  !in cm
+        wlinv = 1d0/wl  !in cm
 c-- gcell loop
         do icg=1,gas_nr
          u = hckt(icg)*wlinv

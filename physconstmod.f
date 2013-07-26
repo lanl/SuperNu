@@ -71,15 +71,15 @@ c     ---------------------------------------
       real*8 :: b(size(wl))
 ************************************************************************
 * planck vector function
-* note that wl input is in Anstrom
+* note that wl input is in cm!
 ************************************************************************
       real*8,parameter :: c1 = 2d0*pc_h*pc_c**2
       real*8,parameter :: c2 = pc_h*pc_c/pc_kb
 c-- standard form
-c     b = wl*pc_ang
+c     b = wl
 c     b = 2*pc_h*pc_c**2/(b**5*(exp(pc_h*pc_c/(b*pc_kb*temp)) - 1d0)) !in erg/cm^2/s/cm/ster
 c-- optimized form
-      b = 1d0/(wl*pc_ang*temp)
+      b = 1d0/(wl*temp)
       b = c1*(temp*b)**5/(exp(c2*b) - 1d0)
       end function planck
 c
@@ -93,16 +93,16 @@ c     ---------------------------------------------
       real*8 :: b(size(wl))
 ************************************************************************
 * dB/dT vector function
-* note that wl input is in Anstrom
+* note that wl input is in cm
 ************************************************************************
       real*8,parameter :: c1 = 2*pc_h*pc_c**2
       real*8,parameter :: c2 = pc_h*pc_c/pc_kb
 c
 c-- normal form
-c     b = pc_h*pc_c/(wl*pc_ang*pc_kb*temp)
+c     b = pc_h*pc_c/(wl*pc_kb*temp)
 c     b = 2*pc_kb**5*temp**4/(pc_h**4*pc_c**3) * b**6*exp(b)/(exp(b) - 1d0)**2   !in erg/cm^2/s/cm/ster/K
 c-- optimized form
-      b = 1d0/(wl*pc_ang*temp)
+      b = 1d0/(wl*temp)
       b = c1*c2*(temp*b)**6*exp(c2*b)/(temp*(exp(c2*b) - 1d0))**2
       end function dplanckdtemp
 c

@@ -13,7 +13,6 @@ c
 c-- gas grid
       integer :: in_nr = 0 !# spatial grid in spherical geom
       real*8 :: in_lr = 0d0  !spatial length of the domain
-      real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
 c
 c-- do read input structure file instead of specifying the stucture with input parameters
 c==================
@@ -30,9 +29,9 @@ c-- specify the atmospheric stratification
       logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
 c============
 c
-c-- flat-structure parameters
-      logical :: in_istempflat = .true. !if false, reads temperature from input.restart
-      real*8 :: in_consttemp = 0d0  !K
+c-- temperature parameters
+      real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
+      real*8 :: in_consttemp = 0d0 !non-zero will not read temp from file. units: K
 c
 c-- analytic heat capacity terms
       real*8 :: in_cvcoef = 1d0 !power law heat capacity coefficient
@@ -103,7 +102,7 @@ c-- runtime parameter namelist
       namelist /inputpars/
      & in_nr,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
      & in_totmass,in_templ0,in_velout,in_v0,
-     & in_consttemp,in_solidni56,in_istempflat,
+     & in_consttemp,in_solidni56,
      & in_seed,in_ns,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,
      & in_grab_stdout,in_nomp,
@@ -192,7 +191,7 @@ c
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
 c
       if(in_totmass<=0d0 .and. in_noreadstruct) stop 'in_totmass <= 0'
-      if(in_consttemp<=0d0) stop 'in_consttemp <= 0'
+      if(in_consttemp<0d0) stop 'in_consttemp < 0'
 c
       if(in_nt<1) stop 'in_nt invalid'
       if(in_tfirst<=0d0) stop 'in_tfirst invalid'
