@@ -56,8 +56,8 @@ c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_temp)
 c
 c-- thomson scattering -- Ryan W.: this is being overwritten
-      gas_sig = cthomson*gas_vals2(:)%nelec*
-     &  gas_vals2(:)%natom/gas_vals2(:)%volcrp
+C$$$      gas_sig = cthomson*gas_vals2(:)%nelec*
+C$$$     &  gas_vals2(:)%natom/gas_vals2(:)%volcrp
 c
 c-- bound-bound
       if(.not. in_nobbopac) then
@@ -87,7 +87,7 @@ c--
         dwl = gas_wl(iwl+1) - gas_wl(iwl)  !in cm
 c-- profile function
 !old    phi = gas_ng*wlhelp*wl0/pc_c !line profile
-        phi = wl0/(dwl*pc_c)
+        phi = wl0**2/(dwl*pc_c)
 !       write(6,*) 'phi',phi
 c-- evaluate caphelp
         do icg=1,gas_nr

@@ -8,7 +8,7 @@ c     ----------------------------
       integer :: istat
 c
       open(unit=4,file=fname,status='old',iostat=istat)
-      if(istat/=0) error stop 'read_restart: no input.restart file'
+      if(istat/=0) stop 'read_restart: no input.restart file'
       read(4,*) gas_temp
       close(4)
       end subroutine read_restart_file

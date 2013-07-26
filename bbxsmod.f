@@ -78,19 +78,19 @@ c-- level data
       read(4,'(f11.3,13x,2i5)',iostat=istat) bbxs_level
       if(istat/=0) then
        write(6,*) fname
-       error stop 'read_atom: level data read error'
+       stop 'read_atom: level data read error'
       endif
 c-- line data
       read(4,'(2i5,f7.3)',iostat=istat) bbxs_line
       if(istat/=0) then
        write(6,*) fname
-       error stop 'read_atom: level data read error'
+       stop 'read_atom: level data read error'
       endif
 c-- verify eof
       read(4,*,iostat=istat2) byte
       if(istat2>=0) then
        write(6,*) fname,byte
-       error stop 'read_atom: data remaining on input file'
+       stop 'read_atom: data remaining on input file'
       endif
 c
 c-- construct reverse level pointer

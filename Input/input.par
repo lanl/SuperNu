@@ -8,8 +8,8 @@ in_seed = 1
 in_noreadstruct = f
 
 !-- time step
-in_tfirst = 2d0
-in_tlast = 52d0
+in_tfirst = 4d0
+in_tlast = 54d0
 in_nt = 200
 in_alpha = 1d0
 
@@ -64,7 +64,7 @@ in_ldisp1 = 1d0
 in_ldisp2 = 1d-4
 
 !-- group settings
-in_wldex = 19
+in_wldex = 8
 
 !-- particle numbers
 in_ns = 1000
