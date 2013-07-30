@@ -44,6 +44,8 @@ c-- special functions
 c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
+c-- planck opacity addition condition
+      logical :: planckcheck
 !c
 !c-- constants
 !old  wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
@@ -223,13 +225,18 @@ c
       gas_cap = gas_cap + transpose(cap)
 c
 c-- computing Planck opacity (rev 216)
-      do icg=1,gas_nr
-         do iw=1,gas_ng
-            x1 = pc_h*pc_c/(gas_wl(iw+1)*pc_kb*gas_temp(icg))
-            x2 = pc_h*pc_c/(gas_wl(iw)*pc_kb*gas_temp(icg))
-            gas_siggrey(icg)=gas_siggrey(icg)+
-     &           15d0*gas_cap(iw,icg)*specint(x1,x2,3)/pc_pi**4
+      planckcheck = (.not.in_nobbopac.or..not.in_nobfopac.or.
+     & .not.in_noffopac)
+      if(planckcheck) then
+         gas_siggrey = 0d0
+         do icg=1,gas_nr
+            do iw=1,gas_ng
+               x1 = pc_h*pc_c/(gas_wl(iw+1)*pc_kb*gas_temp(icg))
+               x2 = pc_h*pc_c/(gas_wl(iw)*pc_kb*gas_temp(icg))
+               gas_siggrey(icg)=gas_siggrey(icg)+
+     &              15d0*gas_cap(iw,icg)*specint(x1,x2,3)/pc_pi**4
+            enddo
          enddo
-      enddo
+      endif
 c      hckt = pc_h*pc_c/(pc_kb*gas_temp)
       end subroutine physical_opacity
