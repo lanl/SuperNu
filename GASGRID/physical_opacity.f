@@ -55,9 +55,11 @@ c
 c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_temp)
 c
-c-- thomson scattering -- Ryan W.: this is being overwritten
-C$$$      gas_sig = cthomson*gas_vals2(:)%nelec*
-C$$$     &  gas_vals2(:)%natom/gas_vals2(:)%volcrp
+c-- thomson scattering
+      if(.not.in_nothmson) then
+         gas_sig = cthomson*gas_vals2(:)%nelec*
+     &        gas_vals2(:)%natom/gas_vals2(:)%volcrp
+      endif
 c
 c-- bound-bound
       if(.not. in_nobbopac) then

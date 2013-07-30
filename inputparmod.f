@@ -47,6 +47,7 @@ c-- particles
       logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
       logical :: in_isimcanlog = .false. !use analog IMC tally if true
       logical :: in_isddmcanlog = .true. !use analog DDMC tally if true
+      logical :: in_depestimate = .true. !use deposition estimator to update temperature
       real*8 :: in_tauddmc = 5d0 !number of mean free paths per cell required for DDMC
       real*8 :: in_alpha = 1d0 !time centering control parameter [0,1]
 c
@@ -66,6 +67,7 @@ c-- test switches
       logical :: in_nobbopac = .false.    !turn off bound-bound opacity
       logical :: in_nobfopac = .false.    !turn off bound-bound opacity
       logical :: in_noffopac = .false.    !turn off bound-bound opacity
+      logical :: in_nothmson = .false.    !turn off thomson scattering
 c
 c
 c-- analytic opacities
@@ -107,7 +109,7 @@ c-- runtime parameter namelist
      & in_tfirst,in_tlast,in_nt,
      & in_grab_stdout,in_nomp,
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
-     & in_noffopac,
+     & in_noffopac,in_nothmson,
      & in_opacdump,in_pdensdump,
      & in_sigcoefs,in_sigtpwrs,in_sigrpwrs,
      & in_sigcoef,in_sigtpwr,in_sigrpwr,
@@ -115,7 +117,7 @@ c-- runtime parameter namelist
      & in_wldex,in_opacanaltype,in_suol,
      & in_suolpick1, in_ldisp1, in_ldisp2,
      & in_srctype, in_theav, in_nheav, in_srcmax,
-     & in_isimcanlog, in_isddmcanlog,
+     & in_isimcanlog, in_isddmcanlog,in_depestimate,
      & in_tauddmc, in_dentype, in_noreadstruct
 c
       public
@@ -236,6 +238,7 @@ c
       if(in_nobbopac) call warn('read_inputpars','bb opacity disabled!')
       if(in_nobfopac) call warn('read_inputpars','bf opacity disabled!')
       if(in_noffopac) call warn('read_inputpars','ff opacity disabled!')
+      if(in_nothmson) call warn('read_inputpars','Thomson disabled')
 c
       if(trim(in_opacdump)=='off') then
       elseif(trim(in_opacdump)=='one') then

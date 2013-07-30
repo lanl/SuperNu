@@ -5,33 +5,33 @@ in_nomp = 4
 in_grab_stdout = f
 in_puretran = f
 in_seed = 1
-in_noreadstruct = f
+in_noreadstruct = t
 
 !-- time step
-in_tfirst = 4d0
-in_tlast = 54d0
-in_nt = 200
+in_tfirst = 2d0
+in_tlast = 5d0
+in_nt = 64
 in_alpha = 1d0
 
 !-- gas grid settings
-in_nr = 64
+in_nr = 50
 in_isvelocity = t
 in_isshell = f
 in_novolsrc = f
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_v0 = 2d8
-in_velout = 0d0
+in_velout = 1d9
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_l0 = 100d7
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_lr = 5d7
-in_totmass = 0d0
-in_dentype = 'unif'
-in_templ0 = 11605d1
+in_totmass = 1d33
+in_dentype = 'mass'
+in_templ0 = 11605d3
 
 !-- flat structure
-in_consttemp = 0d0
-in_solidni56 = f
+in_consttemp = 11605d3
+in_solidni56 = t
 
 !-- external source type
-in_srctype = 'none'
+in_srctype = 'heav'
 in_srcmax = 4d24
 !-- heaviside case
 in_theav = 9d0
@@ -53,7 +53,7 @@ in_sigtpwr = 0d0
 in_sigrpwr = 1d0
 
 !-- group absorption opacity structure type
-in_opacanaltype = 'none'
+in_opacanaltype = 'line'
 
 !-- picket fence case
 in_suol = 'tsta'
@@ -64,22 +64,24 @@ in_ldisp1 = 1d0
 in_ldisp2 = 1d-4
 
 !-- group settings
-in_wldex = 8
+in_wldex = 17
 
 !-- particle numbers
-in_ns = 1000
+in_ns = 100000
 in_npartmax = 10000000
 
 !-- imc tally method
 in_isimcanlog = f
 in_isddmcanlog = f
+in_depestimate = t
 !-- ddmc mfp per cell
 in_tauddmc = 2d0
 
 !-- opacity debug switches
-in_nobbopac = f
-in_nobfopac = f
-in_noffopac = f
+in_nobbopac = t
+in_nobfopac = t
+in_noffopac = t
+in_nothmson = t
 
 &end
 

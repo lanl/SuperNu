@@ -30,6 +30,7 @@ module gasgridmod
   logical :: gas_isvelocity = .false.
   logical :: gas_isshell = .false.  !domain is shell, innermost radius not zero
   logical :: gas_novolsrc = .false. !no external volume source (e.g. radioactivity)
+  logical :: gas_depestimate = .true. !if true uses deposition estimator to update temperature
   real*8 :: gas_templ0=0 !surface temperature at innermost radius
 !-(rev. 121)
   real*8 :: gas_sigcoefs=0  !analytic scattering opacity power law coefficient
@@ -140,6 +141,7 @@ module gasgridmod
     gas_isvelocity = in_isvelocity
     gas_isshell = in_isshell
     gas_novolsrc = in_novolsrc
+    gas_depestimate = in_depestimate
     !inner edge radius (if in_isshell):
     !inner edge temp:
     gas_templ0 = in_templ0

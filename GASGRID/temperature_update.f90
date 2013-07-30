@@ -18,16 +18,21 @@ subroutine temperature_update
   !calculating radiation energy density
   do ir = 1, gas_nr
      gas_vals2(ir)%eraddens = 0d0
-     !gas_edep(ir) = 0d0
      do ig = 1, gas_ng
         gas_eraddens(ig,ir)=gas_eraddens(ig,ir)/gas_vals2(ir)%vol
         gas_vals2(ir)%eraddens = gas_vals2(ir)%eraddens+ &
              gas_eraddens(ig,ir)
-        !gas_edep(ir) = gas_edep(ir)+pc_c*tsp_dt*gas_fcoef(ir)* &
-        !     gas_cap(ig,ir)*gas_eraddens(ig,ir)*gas_vals2(ir)%vol
      enddo
   enddo
-  !write(*,*) gas_edep(1), gas_vals2(1)%eraddens
+  !calculating deposition estimate
+  if(gas_depestimate) then
+     gas_edep = 0d0
+     do ir = 1, gas_nr
+        forall(ig=1:gas_ng) gas_edep(ir)=gas_edep(ir)+ &
+             pc_c*tsp_dt*gas_fcoef(ir)*gas_cap(ig,ir)* &
+             gas_eraddens(ig,ir)*gas_vals2(ir)%vol
+     enddo
+  endif
 
   !calculating temperature
   do ir = 1, gas_nr
