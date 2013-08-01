@@ -57,7 +57,7 @@ subroutine sourcenumbers
   do ir = 1, gas_nr
      do ig = 1, gas_ng
         
-        gas_etot = gas_etot+tsp_dt*gas_exsource(ig,ir)* &
+        gas_etot = gas_etot+tsp_dt*abs(gas_exsource(ig,ir))* &
              gas_vals2(ir)%vol
         
      enddo
@@ -80,6 +80,12 @@ subroutine sourcenumbers
              gas_vals2(ir)%vol
      enddo
      gas_emitex(ir) = exsumg
+     exsumg = 0d0
+     
+     do ig=1,gas_ng
+        exsumg=exsumg+tsp_dt*abs(gas_exsource(ig,ir))* &
+             gas_vals2(ir)%vol
+     enddo
      gas_nvolex(ir)=nint(exsumg*prt_ns/gas_etot)
      prt_nexsrc = prt_nexsrc + gas_nvolex(ir)
      prt_nnew = prt_nnew + gas_nvolex(ir)

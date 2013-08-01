@@ -106,7 +106,7 @@ program supernu
 !-- calculating analytic initial particle distribution (if any)
 ! not working currently, as prt_particle data structure is only
 ! available after bcast_nonpermanent
-!  call initialnumbers
+  call initialnumbers
 !
 !-- time step loop
 !=================

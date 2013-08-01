@@ -66,12 +66,13 @@ subroutine interior_source
            r0 = prt_particles(ivac)%rsrc
            !Calculating direction cosine (comoving)
            if(gas_srctype=='manu' .and. mod(iig,2)/=0) then
-              mu0=1d0
+              !mu0=1d0
               !r1 = rand()
               !mu0 = 1d0-2d0*r1
            else
-              r1 = rand()
-              mu0 = 1d0-2d0*r1
+              mu0 = 1d0
+              !r1 = rand()
+              !mu0 = 1d0-2d0*r1
            endif
            !Calculating particle tsp_time
            r1 = rand()
