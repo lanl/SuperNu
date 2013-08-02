@@ -76,17 +76,20 @@ c-- temperature
 !       endif
 !      enddo
       endif
-c-- Ryan W.: temporary override of initial temperature
-c-- to Gaussian for manufacture tests
+c-- Ryan W.: temporary override of initial temperature for manu source test
       if(in_srctype=='manu') then
-       uudd = 2.5d8
-       do ir=1,gas_nr
-        rrcenter=(gas_rarr(ir+1)+gas_rarr(ir))/2d0
-        gas_temp(ir) = in_templ0*exp(-0.5*(rrcenter/uudd)**2)
-        if(gas_temp(ir)<11605d0) then
-         gas_temp(ir)=11605d0
-        endif
-       enddo
+         if(gas_isvelocity) then
+            uudd = 2.5d8
+            do ir=1,gas_nr
+               rrcenter=(gas_rarr(ir+1)+gas_rarr(ir))/2d0
+               gas_temp(ir) = in_templ0*exp(-0.5*(rrcenter/uudd)**2)
+               if(gas_temp(ir)<11605d0) then
+                  gas_temp(ir)=11605d0
+               endif
+            enddo
+         else
+            gas_temp=0d0
+         endif
       endif!}}}
 c
 c-- temp and ur

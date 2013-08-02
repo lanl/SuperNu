@@ -15,8 +15,8 @@ subroutine analytic_source
   real*8 :: tmpgauss(gas_nr)  !manufactured gaussian temperature
   real*8 :: eradthin(gas_nr) !manufactured rad. en. density
   
-  real*8 :: aa11=1.371d14
-  real*8 :: aa22= 1.371d2 !1.371d0
+  real*8 :: aa11=1.371d14*pc_c
+  real*8 :: aa22= 1.371d12*pc_c !1.371d0
   real*8 :: rrcenter, bspeced, xx3, xx4
   real*8 :: ddrr2, ddrr3, ddrr4
 
@@ -149,8 +149,29 @@ subroutine analytic_source
            !
         enddo
         !write(*,*) eradthin(1), eradthin(5), eradthin(gas_nr), gas_nr
+     
      else
-        stop 'analytic_source: no static manufactured source'
+        !constant linear profile test (grey)
+        if(gas_opacanaltype.ne.'grey') then
+           stop 'analytic_source: grey for static manu'
+        endif
+        !
+        do ir = 1, gas_nr
+           ddrr3 = gas_rarr(ir+1)**3-gas_rarr(ir)**3
+           ddrr4 = gas_rarr(ir+1)**4-gas_rarr(ir)**4           
+           do ig = 1, gas_ng
+              x3 = 1d0/gas_wl(ig+1)
+              x4 = 1d0/gas_wl(ig)
+              gas_exsource(ig,ir)=gas_cap(ig,ir)* &
+                   (aa11-0.75d0*(aa11-aa22)*ddrr4/(gas_rarr(gas_nr+1)*ddrr3))
+              gas_exsource(ig,ir)=gas_exsource(ig,ir)*(x4-x3)/(x2-x1)
+              !write(*,*) gas_exsource(ig,ir)
+              !gas_exsource(ig,ir) = 0d0
+           enddo
+           
+        enddo
+        !
+        !stop 'analytic_source: no static manufactured source'
      endif!}}}
   else
      stop 'analytic_source: gas_srctype invalid'

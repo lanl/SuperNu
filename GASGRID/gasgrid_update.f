@@ -135,13 +135,15 @@ c
 c
 c-- solve LTE EOS
 c================
-      do_output = (in_pdensdump=='each' .or. !{{{
-     &  (in_pdensdump=='one' .and. tsp_it==1))
+      if(gas_srctype/='manu') then
+         do_output = (in_pdensdump=='each' .or. !{{{
+     &        (in_pdensdump=='one' .and. tsp_it==1))
 c
-      call eos_update(do_output)
-      if(tsp_it==1) write(6,'(1x,a27,2(f8.2,"s"))')
-     &  'eos timing                :',t_eos!}}}
-c
+            call eos_update(do_output)
+            if(tsp_it==1) write(6,'(1x,a27,2(f8.2,"s"))')
+     &           'eos timing                :',t_eos !}}}
+      endif
+c     
 c
 c
 c-- opacity per rcell unit

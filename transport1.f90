@@ -124,17 +124,31 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   else
      elabfact = 1d0
   endif
-  !calculating energy deposition
+  !calculating energy deposition and density
+  !
   if(.not.prt_isimcanlog) then
      gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z) &
           *gas_cap(g,z)*d*help))*elabfact
-     !
+     !--
+     if(gas_fcoef(z)*gas_cap(g,z)>0d0) then     
+        gas_eraddens(g,z) = gas_eraddens(g,z)+E* &
+             (1.0d0-exp(-gas_fcoef(z)*gas_cap(g,z)*d*help))* &
+             elabfact/(gas_fcoef(z)*gas_cap(g,z)*pc_c*tsp_dt)
+     else
+        gas_eraddens(g,z) = gas_eraddens(g,z)+E* &
+             elabfact*d*dcollabfact/(pc_c*tsp_dt)
+     endif
+     !--
      E = E*exp(-gas_fcoef(z)*gas_cap(g,z)*d*dcollabfact)
      if (E/E0<0.001d0) then
         vacnt = .true.
         prt_done = .true.
         gas_edep(z) = gas_edep(z) + E*elabfact
      endif
+  else
+     !
+     gas_eraddens(g,z) = gas_eraddens(g,z)+E* &
+          elabfact*d*dcollabfact/(pc_c*tsp_dt)
   endif
 
   ! Recalculating current group (rev. 120)
@@ -165,10 +179,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         vacnt = .true.
      endif
   endif
-  !
-  !
-  gas_eraddens(g,z) = gas_eraddens(g,z)+E* &
-       elabfact*d*dcollabfact/(pc_c*tsp_dt)  
   !
 
   if (d == dthm) then  !physical scattering (Thomson-type)

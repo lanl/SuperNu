@@ -66,20 +66,30 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   tau = abs(log(r1)/(pc_c*denom))
   tcensus = tsp_time+tsp_dt-t
   ddmct = min(tau,tcensus)
+  !calculating energy depostion and density
   !
   if(.not.prt_isddmcanlog) then
      gas_edep(z)=gas_edep(z)+E*(1d0-exp(-gas_fcoef(z) &
           *gas_cap(g,z)*pc_c*ddmct))
-     !
+     !--
+     if(gas_fcoef(z)*gas_cap(g,z)>0d0) then
+        gas_eraddens(g,z)=gas_eraddens(g,z)+E* &
+             (1d0-exp(-gas_fcoef(z)*gas_cap(g,z)*pc_c*ddmct))/ &
+             (gas_fcoef(z)*gas_cap(g,z)*pc_c*tsp_dt)
+     else
+        gas_eraddens(g,z)=gas_eraddens(g,z)+E*ddmct/tsp_dt
+     endif
+     !--
      E=E*exp(-gas_fcoef(z)*gas_cap(g,z)*pc_c*ddmct)
      if(E/E0<0.001d0) then
         vacnt=.true.
         prt_done=.true.
         gas_edep(z)=gas_edep(z)+E
      endif
+  else
+     !
+     gas_eraddens(g,z)=gas_eraddens(g,z)+E*ddmct/tsp_dt
   endif
-  gas_eraddens(g,z)=gas_eraddens(g,z)+E*ddmct/tsp_dt
-  !
   !
   t = t+ddmct
   !

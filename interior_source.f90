@@ -14,8 +14,10 @@ subroutine interior_source
 
   integer :: ir, ipart, ivac, ig, iig
   integer, dimension(gas_nr) :: irused
-  real*8 :: r1, r2, r3, uul, uur, uumax, mu0, r0, Ep0, wl0
+  real*8 :: r1, r2, r3, r4, uul, uur, uumax, mu0, r0, Ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, xx0, bmax, help
+  real*8 :: aa11=1.371d14*pc_c
+  real*8 :: aa22=1.371d12*pc_c
   real*8, dimension(gas_nr) :: exsumg
   logical :: isnotvacnt !checks for available particle space to populate in cell
 
@@ -54,9 +56,9 @@ subroutine interior_source
            !Ryan W.: particle group removed (rev. 120)
            !prt_particles(ivac)%gsrc = iig
            !Calculating comoving wavelength uniformly from group
-           !r1 = rand()
-           !wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
-           wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
+           r1 = rand()
+           wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
+           !wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
            !write(*,*) wl0, gas_wl(iig)+r1*gas_wl(iig+1)
            !write(*,*) gas_wl
            !Calculating radial position
@@ -65,14 +67,47 @@ subroutine interior_source
                 (1.0-r3)*gas_rarr(ir)**3)**(1.0/3.0)
            r0 = prt_particles(ivac)%rsrc
            !Calculating direction cosine (comoving)
-           if(gas_srctype=='manu' .and. mod(iig,2)/=0) then
-              !mu0=1d0
-              !r1 = rand()
-              !mu0 = 1d0-2d0*r1
+           if(gas_isvelocity) then
+              if(gas_srctype=='manu' .and. mod(iig,2)/=0) then
+                 !mu0=1d0
+                 r1 = rand()
+                 mu0 = 1d0-2d0*r1
+              else
+                 !mu0 = 1d0
+                 r1 = rand()
+                 mu0 = 1d0-2d0*r1
+              endif
            else
-              mu0 = 1d0
-              !r1 = rand()
-              !mu0 = 1d0-2d0*r1
+              if(gas_srctype=='manu') then
+                 r1 = rand()
+                 r0= (r1*gas_rarr(ir+1)**3 + &
+                      (1.0-r1)*gas_rarr(ir)**3)**(1.0/3.0)
+                 r1 = rand()
+                 mu0=1d0-2d0*r1
+                 r4 = gas_siggrey(ir)* &
+                      ((aa11-aa22)*(gas_rarr(gas_nr+1)-r0)+&
+                      aa22*gas_rarr(gas_nr+1))-mu0*(aa11-aa22)
+                 r4 = r4/(gas_siggrey(ir)*aa11*gas_rarr(gas_nr+1)+&
+                      aa11-aa22)
+                 r2 = rand()
+                 do while (r2 > r4)
+                    r1 = rand()
+                    r0= (r1*gas_rarr(ir+1)**3 + &
+                         (1.0-r1)*gas_rarr(ir)**3)**(1.0/3.0)
+                    r1 = rand()
+                    mu0=1d0-2d0*r1
+                    r4 = gas_siggrey(ir)* &
+                         ((aa11-aa22)*(gas_rarr(gas_nr+1)-r0)+&
+                         aa22*gas_rarr(gas_nr+1))-mu0*(aa11-aa22)
+                    r4 = r4/(gas_siggrey(ir)*aa11*gas_rarr(gas_nr+1)+&
+                         aa11-aa22)
+                    r2 = rand()
+                 enddo
+                 prt_particles(ivac)%rsrc=r0
+              else
+                 r1 = rand()
+                 mu0 = 1d0-2d0*r1
+              endif
            endif
            !Calculating particle tsp_time
            r1 = rand()
