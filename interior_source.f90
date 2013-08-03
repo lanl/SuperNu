@@ -5,6 +5,7 @@ subroutine interior_source
   use particlemod
   use physconstmod
   use inputparmod
+  use manufacmod
 
   implicit none
 
@@ -16,8 +17,6 @@ subroutine interior_source
   integer, dimension(gas_nr) :: irused
   real*8 :: r1, r2, r3, r4, uul, uur, uumax, mu0, r0, Ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, xx0, bmax, help
-  real*8 :: aa11=1.371d14*pc_c
-  real*8 :: aa22=1.371d12*pc_c
   real*8, dimension(gas_nr) :: exsumg
   logical :: isnotvacnt !checks for available particle space to populate in cell
 
@@ -85,10 +84,10 @@ subroutine interior_source
                  r1 = rand()
                  mu0=1d0-2d0*r1
                  r4 = gas_siggrey(ir)* &
-                      ((aa11-aa22)*(gas_rarr(gas_nr+1)-r0)+&
-                      aa22*gas_rarr(gas_nr+1))-mu0*(aa11-aa22)
-                 r4 = r4/(gas_siggrey(ir)*aa11*gas_rarr(gas_nr+1)+&
-                      aa11-aa22)
+                      ((man_aa11-man_aa22)*(gas_rarr(gas_nr+1)-r0)+&
+                      man_aa22*gas_rarr(gas_nr+1))-mu0*(man_aa11-man_aa22)
+                 r4 = r4/(gas_siggrey(ir)*man_aa11*gas_rarr(gas_nr+1)+&
+                      man_aa11-man_aa22)
                  r2 = rand()
                  do while (r2 > r4)
                     r1 = rand()
@@ -97,10 +96,10 @@ subroutine interior_source
                     r1 = rand()
                     mu0=1d0-2d0*r1
                     r4 = gas_siggrey(ir)* &
-                         ((aa11-aa22)*(gas_rarr(gas_nr+1)-r0)+&
-                         aa22*gas_rarr(gas_nr+1))-mu0*(aa11-aa22)
-                    r4 = r4/(gas_siggrey(ir)*aa11*gas_rarr(gas_nr+1)+&
-                         aa11-aa22)
+                         ((man_aa11-man_aa22)*(gas_rarr(gas_nr+1)-r0)+&
+                         man_aa22*gas_rarr(gas_nr+1))-mu0*(man_aa11-man_aa22)
+                    r4 = r4/(gas_siggrey(ir)*man_aa11*gas_rarr(gas_nr+1)+&
+                         man_aa11-man_aa22)
                     r2 = rand()
                  enddo
                  prt_particles(ivac)%rsrc=r0

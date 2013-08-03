@@ -13,7 +13,7 @@ MODULES := \
   inputparmod.o timestepmod.o \
   gasgridmod.o inputstrmod.o \
   particlemod.o \
-  timingmod.o
+  timingmod.o manufacmod.o
 
 OBJFILES := sourcenumbers.o vacancies.o boundary_source.o interior_source.o particle_advance.o \
  write_output.o diffusion1.o transport1.o read_wlgrid.o \
@@ -92,16 +92,16 @@ inputstrmod.o: physconstmod.o miscmod.o
 #
 #-- OBJ FILES
 #-- note: prerequisites don't need to include modules as these are always built first
-initialnumbers.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
+initialnumbers.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o manufacmod.o
 particle_advance.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o timingmod.o
 boundary_source.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
 dealloc_all.o: bbxsmod.o gasgridmod.o ionsmod.o mpimod.o particlemod.o inputstrmod.o
-diffusion1alt.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
+#diffusion1alt.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
 diffusion1.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
-interior_source.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
+interior_source.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o manufacmod.o
 read_bbxs_data.o: bbxsmod.o ionsmod.o miscmod.o physconstmod.o timingmod.o
 restart_file.o: gasgridmod.o
-sourcenumbers.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
+sourcenumbers.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o manufacmod.o
 supernu.o: bfxsmod.o ffxsmod.o gasgridmod.o inputparmod.o ionsmod.o mpimod.o particlemod.o physconstmod.o timestepmod.o timingmod.o
 transport1.o: gasgridmod.o inputparmod.o particlemod.o physconstmod.o timestepmod.o
 vacancies.o: particlemod.o

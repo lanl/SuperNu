@@ -5,6 +5,7 @@ subroutine initialnumbers
   use particlemod
   use physconstmod
   use inputparmod
+  use manufacmod
   implicit none
 
 !##################################################
@@ -25,8 +26,6 @@ subroutine initialnumbers
   real*8 :: r1,r2,r3
   real*8 :: exsumg, rrcenter, etotinit,denom2
   real*8 :: x1,x2,x3,x4
-  real*8 :: aa11 = 1.371e14*pc_c
-  real*8 :: aa22 = 1.371e12*pc_c
   real*8 :: uudd = 2.5d8, ddrr3, ddrr4
   logical :: isnotvacnt
   !
@@ -54,8 +53,8 @@ subroutine initialnumbers
               x3 = 1d0/gas_wl(ig+1)
               x4 = 1d0/gas_wl(ig)
               gas_vals2(ir)%eraddens=gas_vals2(ir)%eraddens+&
-                   ((x4-x3)/(x2-x1))*((aa11*(in_velout-rrcenter)+ &
-                   aa22*rrcenter)/in_velout)* &
+                   ((x4-x3)/(x2-x1))*((man_aa11*(in_velout-rrcenter)+ &
+                   man_aa22*rrcenter)/in_velout)* &
                    (in_tfirst*pc_day/tsp_texp)**4
            enddo
            
@@ -71,7 +70,7 @@ subroutine initialnumbers
         do ir = 1, gas_nr
            ddrr3=gas_rarr(ir+1)**3-gas_rarr(ir)**3
            ddrr4=gas_rarr(ir+1)**4-gas_rarr(ir)**4
-           gas_vals2(ir)%eraddens=aa11-0.75d0*(aa11-aa22)*ddrr4/ &
+           gas_vals2(ir)%eraddens=man_aa11-0.75d0*(man_aa11-man_aa22)*ddrr4/ &
                 (gas_rarr(gas_nr+1)*ddrr3)
         enddo
      endif                

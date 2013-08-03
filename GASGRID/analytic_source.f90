@@ -5,6 +5,7 @@ subroutine analytic_source
   use timestepmod
   use particlemod
   use inputparmod
+  use manufacmod
   implicit none
 
   integer :: ir, ig
@@ -15,8 +16,6 @@ subroutine analytic_source
   real*8 :: tmpgauss(gas_nr)  !manufactured gaussian temperature
   real*8 :: eradthin(gas_nr) !manufactured rad. en. density
   
-  real*8 :: aa11=1.371d14*pc_c
-  real*8 :: aa22= 1.371d12*pc_c !1.371d0
   real*8 :: rrcenter, bspeced, xx3, xx4
   real*8 :: ddrr2, ddrr3, ddrr4
 
@@ -90,9 +89,9 @@ subroutine analytic_source
            tmpgauss(ir)=in_templ0*exp(-0.5d0*(rrcenter/uudd)**2)* &
                 in_tfirst*pc_day/tsp_texp
            !
-           !eradthin(ir)=((aa11*(gas_velout-rrcenter)+ &
-           !     aa22*rrcenter)/gas_velout)* &
-           eradthin(ir)=(aa11+(aa22-aa11)*3d0*ddrr4/(4d0*ddrr3*gas_velout)) &
+           !eradthin(ir)=((man_aa11*(gas_velout-rrcenter)+ &
+           !     man_aa22*rrcenter)/gas_velout)* &
+           eradthin(ir)=(man_aa11+(man_aa22-man_aa11)*3d0*ddrr4/(4d0*ddrr3*gas_velout)) &
                 *(in_tfirst*pc_day/(tsp_texp+tsp_dt/2d0))**4
            
            !Thin lines
@@ -107,13 +106,13 @@ subroutine analytic_source
               !
               gas_exsource(ig,ir) = 0d0
               gas_exsource(ig,ir) = gas_exsource(ig,ir)+&
-                   (in_tfirst*pc_day/(tsp_texp+tsp_dt/2))**4*aa11/tsp_texp-&
+                   (in_tfirst*pc_day/(tsp_texp+tsp_dt/2))**4*man_aa11/tsp_texp-&
                    5*eradthin(ir)/tsp_texp+3d0*eradthin(ir)/(tsp_texp+tsp_dt/2)+&
                    (in_tfirst*pc_day/(tsp_texp+tsp_dt/2)**4 &
                    *(3d0*ddrr4/(4d0*ddrr3*gas_velout))*&
-                   (aa22-aa11)/(tsp_texp+tsp_dt/2)+(in_tfirst*pc_day/(tsp_texp+tsp_dt/2))**4*&
-                   (pc_c/gas_velout)*(3d0*gas_velout*aa11*ddrr2/ddrr3+3d0*&
-                   (aa22-aa11))+pc_c*gas_cap(ig,ir)*eradthin(ir))
+                   (man_aa22-man_aa11)/(tsp_texp+tsp_dt/2)+(in_tfirst*pc_day/(tsp_texp+tsp_dt/2))**4*&
+                   (pc_c/gas_velout)*(3d0*gas_velout*man_aa11*ddrr2/ddrr3+3d0*&
+                   (man_aa22-man_aa11))+pc_c*gas_cap(ig,ir)*eradthin(ir))
               !
               gas_exsource(ig,ir)=(gas_exsource(ig,ir)*(x4-x3)/(x2-x1)-&
                    pc_c*gas_cap(ig,ir)*pc_acoef*tmpgauss(ir)**4*&
@@ -163,7 +162,7 @@ subroutine analytic_source
               x3 = 1d0/gas_wl(ig+1)
               x4 = 1d0/gas_wl(ig)
               gas_exsource(ig,ir)=gas_cap(ig,ir)* &
-                   (aa11-0.75d0*(aa11-aa22)*ddrr4/(gas_rarr(gas_nr+1)*ddrr3))
+                   (man_aa11-0.75d0*(man_aa11-man_aa22)*ddrr4/(gas_rarr(gas_nr+1)*ddrr3))
               gas_exsource(ig,ir)=gas_exsource(ig,ir)*(x4-x3)/(x2-x1)
               !write(*,*) gas_exsource(ig,ir)
               !gas_exsource(ig,ir) = 0d0

@@ -5,6 +5,7 @@ subroutine sourcenumbers
   use particlemod
   use physconstmod
   use inputparmod
+  use manufacmod
   implicit none
 
 !##################################################
@@ -15,8 +16,6 @@ subroutine sourcenumbers
 
   integer :: ir, ig
   real*8 :: exsumg
-  real*8,parameter :: aa11 = 1.371d14*pc_c
-  real*8,parameter :: aa22 = 1.371d12*pc_c
   real*8 :: ddrr3, ddrr4
   ! gas_esurf for any new prt_particles from a surface source
   ! prt_nsurf = number of surface prt_particles
@@ -52,7 +51,7 @@ subroutine sourcenumbers
         ddrr4 = gas_rarr(ir+1)**4-gas_rarr(ir)**4
         gas_emit(ir)=gas_emit(ir)+(gas_fcoef(ir)-1d0)*tsp_dt* &
              gas_vals2(ir)%vol*gas_siggrey(ir)*&
-             (aa11-0.75d0*(aa11-aa22)*ddrr4/(gas_rarr(gas_nr+1)*ddrr3))
+             (man_aa11-0.75d0*(man_aa11-man_aa22)*ddrr4/(gas_rarr(gas_nr+1)*ddrr3))
      endif
      if(.not.gas_novolsrc .and. gas_srctype=='none') then
         gas_emit(ir) = gas_emit(ir) + gas_vals2(ir)%nisource

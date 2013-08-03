@@ -3,6 +3,7 @@ subroutine temperature_update
   use gasgridmod
   use timestepmod
   use physconstmod
+  use manufacmod
   implicit none
 
 !##################################################
@@ -14,8 +15,6 @@ subroutine temperature_update
   real*8 :: dtemp
   real*8,parameter :: tauni = 8.8d0*86400.0d0
   real*8,parameter :: tauco = 111.3d0*86400.0d0
-  real*8,parameter :: aa11=1.371d14*pc_c
-  real*8,parameter :: aa22=1.371d12*pc_c
   real*8 :: ddrr3, ddrr4
 
   !calculating radiation energy density
@@ -56,7 +55,7 @@ subroutine temperature_update
            ddrr4 = gas_rarr(ir+1)**4-gas_rarr(ir)**4
            gas_temp(ir)=gas_temp(ir)+dtemp - &
                 (tsp_dt*gas_fcoef(ir)*gas_siggrey(ir)/gas_vals2(ir)%bcoef)*&
-                (aa11-0.75d0*(aa11-aa22)*ddrr4/(gas_rarr(gas_nr+1)*ddrr3))
+                (man_aa11-0.75d0*(man_aa11-man_aa22)*ddrr4/(gas_rarr(gas_nr+1)*ddrr3))
            write(*,*) gas_temp(ir)
            if(gas_temp(ir)<0d0) then
               gas_temp(ir)=0d0
