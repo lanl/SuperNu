@@ -265,15 +265,16 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   elseif (d == db) then   !------boundary crossing ----
      if (mu>=0.0d0) then
         if (z == gas_nr) then
-           if(.not.reflectin) then
+           !if(.not.reflectin) then
               vacnt = .true.
               prt_done = .true.
 !-- outbound luminosity tally
               gas_eright = gas_eright+E*elabfact
               gas_luminos(g) = gas_luminos(g)+mu*E/tsp_dt
-           else
-              mu=-mu
-           endif
+           !else
+           !   mu=-mu
+              
+           !endif
         ! Checking if DDMC region right
         elseif (((gas_sig(z+1)+gas_cap(g,z+1))*gas_drarr(z+1) &
              *help >= prt_tauddmc*gas_curvcent(z+1)) &

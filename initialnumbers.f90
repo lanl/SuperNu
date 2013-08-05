@@ -29,7 +29,7 @@ subroutine initialnumbers
   real*8 :: uudd = 2.5d8, ddrr3, ddrr4
   logical :: isnotvacnt
   !
-  nvolinittot = 1000*gas_nr
+  nvolinittot = 50*gas_nr
   nvolinitapp = 0
   etotinit = 0d0
   !
