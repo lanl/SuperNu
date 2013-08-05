@@ -118,7 +118,7 @@ program supernu
 !-- number of source prt_particles per cell
       call sourcenumbers
     endif !impi
-
+    
 !-- broadcast to all workers
     call bcast_nonpermanent !MPI
 
@@ -129,6 +129,7 @@ program supernu
     call boundary_source
     !Calculating properties of prt_particles emitted in domain interior
     call interior_source
+    
     deallocate(prt_vacantarr)
 
     !Advancing prt_particles to update radiation field    

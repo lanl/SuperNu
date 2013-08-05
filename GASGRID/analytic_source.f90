@@ -95,56 +95,51 @@ subroutine analytic_source
                 *(in_tfirst*pc_day/(tsp_texp+tsp_dt/2d0))**4
            
            !Thin lines
-           do ig = 1, gas_ng, 2
+           do ig = 1, gas_ng !, 2
               x3 = 1d0/gas_wl(ig+1)
               x4 = 1d0/gas_wl(ig)
               !calculating manufactured source
-              xx3 = x3*pc_h*pc_c/(pc_kb*tmpgauss(ir))
-              xx4 = x4*pc_h*pc_c/(pc_kb*tmpgauss(ir))
+!              xx3 = x3*pc_h*pc_c/(pc_kb*tmpgauss(ir))
+!              xx4 = x4*pc_h*pc_c/(pc_kb*tmpgauss(ir))
               
-              bspeced = 15d0*specint(xx3,xx4,3)/pc_pi**4
+!              bspeced = 15d0*specint(xx3,xx4,3)/pc_pi**4
               !
-              gas_exsource(ig,ir) = 0d0
-              gas_exsource(ig,ir) = gas_exsource(ig,ir)+&
-                   (in_tfirst*pc_day/(tsp_texp+tsp_dt/2))**4*man_aa11/tsp_texp-&
-                   5*eradthin(ir)/tsp_texp+3d0*eradthin(ir)/(tsp_texp+tsp_dt/2)+&
-                   (in_tfirst*pc_day/(tsp_texp+tsp_dt/2)**4 &
-                   *(3d0*ddrr4/(4d0*ddrr3*gas_velout))*&
-                   (man_aa22-man_aa11)/(tsp_texp+tsp_dt/2)+(in_tfirst*pc_day/(tsp_texp+tsp_dt/2))**4*&
-                   (pc_c/gas_velout)*(3d0*gas_velout*man_aa11*ddrr2/ddrr3+3d0*&
-                   (man_aa22-man_aa11))+pc_c*gas_cap(ig,ir)*eradthin(ir))
-              !
-              gas_exsource(ig,ir)=(gas_exsource(ig,ir)*(x4-x3)/(x2-x1)-&
-                   pc_c*gas_cap(ig,ir)*pc_acoef*tmpgauss(ir)**4*&
-                   bspeced)
+              gas_exsource(ig,ir)= (1d0/tsp_dt)*(&
+                   log((tsp_texp+tsp_dt)/tsp_texp)*(4d0*man_aa11/pc_c)+&
+                   (3d0*in_totmass*in_sigcoef/(8d0*pc_pi*gas_velout))* &
+                   ((gas_velout*tsp_texp)**(-2d0)-&
+                   (gas_velout*(tsp_texp+tsp_dt))**(-2d0))*&
+                   (man_aa11-pc_acoef*pc_c*man_temp0**4) &
+                   )*(x4-x3)/(x2-x1)
+              !write(*,*) gas_exsource(ig,ir)
               !
               !gas_exsource(ig,ir)=0d0
            enddo
            !
            !Thick lines
-           do ig = 2, gas_ng, 2
-              gas_exsource(ig,ir) = 0d0
-              x3 = 1d0/gas_wl(ig+1)
-              x4 = 1d0/gas_wl(ig)
-              !calculating false thick group rad. energy density
-              !eradmanu(ig,ir)=pc_acoef*tmpgauss(ir)**4*(x4-x3)/(x2-x1)
-              !
-              !calculating manufactured source
-              xx3 = x3*pc_h*pc_c/(pc_kb*tmpgauss(ir))
-              xx4 = x4*pc_h*pc_c/(pc_kb*tmpgauss(ir))
-              bspeced = 15d0*specint(xx3,xx4,3)/pc_pi**4
-              !
-              gas_exsource(ig,ir) = pc_acoef*tmpgauss(ir)**4* &
-                   (((4.0d0*(rrcenter/uudd)**2/tsp_texp-1d0/tsp_texp)+&
-                   (1d0/tsp_texp+4d0*pc_c/&
-                   (3d0*gas_cap(ig,ir)*(uudd*tsp_texp)**2))*&
-                   (3d0-4d0*(rrcenter/uudd)**2)+pc_c*gas_cap(ig,ir))*&
-                   (x4-x3)/(x2-x1)-pc_c*gas_cap(ig,ir)*bspeced)
-              !
-              !gas_exsource(ig,ir)=0d0
-              !
-              !
-           enddo
+!            do ig = 2, gas_ng, 2
+!               gas_exsource(ig,ir) = 0d0
+!               x3 = 1d0/gas_wl(ig+1)
+!               x4 = 1d0/gas_wl(ig)
+!               !calculating false thick group rad. energy density
+!               !eradmanu(ig,ir)=pc_acoef*tmpgauss(ir)**4*(x4-x3)/(x2-x1)
+!               !
+!               !calculating manufactured source
+!               xx3 = x3*pc_h*pc_c/(pc_kb*tmpgauss(ir))
+!               xx4 = x4*pc_h*pc_c/(pc_kb*tmpgauss(ir))
+!               bspeced = 15d0*specint(xx3,xx4,3)/pc_pi**4
+!               !
+!               gas_exsource(ig,ir) = pc_acoef*tmpgauss(ir)**4* &
+!                    (((4.0d0*(rrcenter/uudd)**2/tsp_texp-1d0/tsp_texp)+&
+!                    (1d0/tsp_texp+4d0*pc_c/&
+!                    (3d0*gas_cap(ig,ir)*(uudd*tsp_texp)**2))*&
+!                    (3d0-4d0*(rrcenter/uudd)**2)+pc_c*gas_cap(ig,ir))*&
+!                    (x4-x3)/(x2-x1)-pc_c*gas_cap(ig,ir)*bspeced)
+!               !
+!               !gas_exsource(ig,ir)=0d0
+!               !
+!               !
+!            enddo
            !
         enddo
         !write(*,*) eradthin(1), eradthin(5), eradthin(gas_nr), gas_nr
@@ -162,7 +157,9 @@ subroutine analytic_source
               x3 = 1d0/gas_wl(ig+1)
               x4 = 1d0/gas_wl(ig)
               gas_exsource(ig,ir)=gas_cap(ig,ir)* &
-                   (man_aa11-0.75d0*(man_aa11-man_aa22)*ddrr4/(gas_rarr(gas_nr+1)*ddrr3))
+                   (man_aa11-0.75d0*(man_aa11-man_aa22)* &
+                   ddrr4/(gas_rarr(gas_nr+1)*ddrr3) - &
+                   pc_c*pc_acoef*man_temp0**4)
               gas_exsource(ig,ir)=gas_exsource(ig,ir)*(x4-x3)/(x2-x1)
               !write(*,*) gas_exsource(ig,ir)
               !gas_exsource(ig,ir) = 0d0

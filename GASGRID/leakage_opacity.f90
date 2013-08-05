@@ -16,6 +16,7 @@ subroutine leakage_opacity
   real*8 :: curvleft, curvright, help
 
   logical :: missive = .false.
+  logical :: reflectin = .true.
   ! Here: left=>toward r=0 and right=>outward
 
   
@@ -173,6 +174,9 @@ subroutine leakage_opacity
                 (3d0*gas_vals2(ir)%vol/pc_pi4)
            if(gas_isvelocity) then
               gas_opacleakr(ig,ir) = gas_opacleakr(ig,ir)*tsp_texp**2
+           endif
+           if(reflectin) then  !temporary hack
+              gas_opacleakr(ig,ir) = 0d0
            endif
         !   
         else

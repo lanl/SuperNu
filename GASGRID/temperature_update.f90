@@ -4,6 +4,7 @@ subroutine temperature_update
   use timestepmod
   use physconstmod
   use manufacmod
+  use inputparmod
   implicit none
 
 !##################################################
@@ -12,7 +13,7 @@ subroutine temperature_update
   !of gamma ray energy introduced in the time step.
 !##################################################
   integer :: ir, ig
-  real*8 :: dtemp
+  real*8 :: dtemp, dtemp2
   real*8,parameter :: tauni = 8.8d0*86400.0d0
   real*8,parameter :: tauco = 111.3d0*86400.0d0
   real*8 :: ddrr3, ddrr4
@@ -48,17 +49,29 @@ subroutine temperature_update
      if(gas_srctype=='manu') then
         if(gas_isvelocity) then
            !this may cause drift
-           gas_temp(ir)=gas_temp(ir)*tsp_texp/(tsp_texp+tsp_dt)
+!           gas_temp(ir)=gas_temp(ir)*tsp_texp/(tsp_texp+tsp_dt)
+           gas_temp(ir)=gas_temp(ir)+dtemp
+            dtemp2= &
+                (gas_fcoef(ir)/gas_vals2(ir)%bcoef)*&
+                (3d0*in_totmass*in_sigcoef/(8d0*pc_pi*gas_velout))* &
+                ((gas_velout*tsp_texp)**(-2d0)-&
+                (gas_velout*(tsp_texp+tsp_dt))**(-2d0))*&
+                (pc_acoef*pc_c*man_temp0**4-man_aa11)
+           !if(dtemp2>0d0) then
+            gas_temp(ir)=gas_temp(ir)+dtemp2
+           !endif
         else
            !gas_temp(ir)=0d0
            ddrr3 = gas_rarr(ir+1)**3-gas_rarr(ir)**3
            ddrr4 = gas_rarr(ir+1)**4-gas_rarr(ir)**4
-           gas_temp(ir)=gas_temp(ir)+dtemp - &
+           gas_temp(ir)=gas_temp(ir)+dtemp + &
                 (tsp_dt*gas_fcoef(ir)*gas_siggrey(ir)/gas_vals2(ir)%bcoef)*&
-                (man_aa11-0.75d0*(man_aa11-man_aa22)*ddrr4/(gas_rarr(gas_nr+1)*ddrr3))
-           write(*,*) gas_temp(ir)
+                (pc_c*pc_acoef*man_temp0**4-&
+                (man_aa11-0.75d0*(man_aa11-man_aa22)*&
+                ddrr4/(gas_rarr(gas_nr+1)*ddrr3)))
+           !write(*,*) gas_temp(ir)
            if(gas_temp(ir)<0d0) then
-              gas_temp(ir)=0d0
+              gas_temp(ir)=man_temp0
            endif
         endif
      else

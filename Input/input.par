@@ -8,22 +8,20 @@ in_seed = 1
 in_noreadstruct = t
 
 !-- time step
-!in_tfirst = 2d0
-!in_tlast = 2.0012d0
-in_tfirst = 1.1574d-14
-in_tlast = 2.3148d-14
-in_nt = 100
+in_tfirst = 2d0
+in_tlast = 3d0
+in_nt = 10
 in_alpha = 1d0
 
 !-- gas grid settings
-in_nr = 50
-in_isvelocity = f
+in_nr = 20
+in_isvelocity = t
 in_isshell = f
 in_novolsrc = f
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_v0 = 2d8
-!in_velout = 1d9
+in_velout = 1d9
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_l0 = 100d7
-in_lr = 1d0
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!in_lr = 1d0
 in_totmass = 1d33
 in_dentype = 'unif'
 in_templ0 = 0d0
@@ -40,9 +38,9 @@ in_theav = 9d0
 in_nheav = 40
 
 !-- power law heat capacity values
-in_cvcoef = 8.617d7
+in_cvcoef = 2d7
 in_cvtpwr = 0d0
-in_cvrpwr = 0d0
+in_cvrpwr = 1d0
 
 !-- power law scattering opacity values
 in_sigcoefs = 0d0
@@ -50,9 +48,9 @@ in_sigtpwrs = 0d0
 in_sigrpwrs = 0d0
 
 !-- power law absorption opacity values
-in_sigcoef = 200d0
+in_sigcoef = 0.1d0
 in_sigtpwr = 0d0
-in_sigrpwr = 0d0
+in_sigrpwr = 1d0
 
 !-- group absorption opacity structure type
 in_opacanaltype = 'grey'
@@ -69,7 +67,7 @@ in_ldisp2 = 1d-4
 in_wldex = 18
 
 !-- particle numbers
-in_ns = 4000000
+in_ns = 100000
 in_npartmax = 10000000
 
 !-- imc tally method
