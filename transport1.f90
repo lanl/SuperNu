@@ -27,7 +27,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   real*8 :: siglabfact, dcollabfact, elabfact
   real*8 :: rold, P, denom2, told, zholder
   real*8 :: bmax, x1, x2, xx0
-  logical :: reflectin=.true. !temporary
 
   if(gas_isvelocity) then
      siglabfact = 1.0d0 - mu*r/pc_c
@@ -129,12 +128,12 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   !
   if(.not.prt_isimcanlog) then
      gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z) &
-          *gas_cap(g,z)*d*help))*elabfact
+          *gas_cap(g,z)*siglabfact*d*help))*elabfact
      !--
      if(gas_fcoef(z)*gas_cap(g,z)>0d0) then     
         gas_eraddens(g,z) = gas_eraddens(g,z)+E* &
-             (1.0d0-exp(-gas_fcoef(z)*gas_cap(g,z)*d*help))* &
-             elabfact/(gas_fcoef(z)*gas_cap(g,z)*pc_c*tsp_dt)
+             (1.0d0-exp(-gas_fcoef(z)*siglabfact*gas_cap(g,z)*d*help))* &
+             elabfact/(gas_fcoef(z)*siglabfact*gas_cap(g,z)*pc_c*tsp_dt)
      else
         gas_eraddens(g,z) = gas_eraddens(g,z)+E* &
              elabfact*d*dcollabfact/(pc_c*tsp_dt)
@@ -265,16 +264,11 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   elseif (d == db) then   !------boundary crossing ----
      if (mu>=0.0d0) then
         if (z == gas_nr) then
-           !if(.not.reflectin) then
               vacnt = .true.
               prt_done = .true.
 !-- outbound luminosity tally
               gas_eright = gas_eright+E*elabfact
               gas_luminos(g) = gas_luminos(g)+mu*E/tsp_dt
-           !else
-           !   mu=-mu
-              
-           !endif
         ! Checking if DDMC region right
         elseif (((gas_sig(z+1)+gas_cap(g,z+1))*gas_drarr(z+1) &
              *help >= prt_tauddmc*gas_curvcent(z+1)) &

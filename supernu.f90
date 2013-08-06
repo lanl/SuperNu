@@ -118,7 +118,7 @@ program supernu
 !-- number of source prt_particles per cell
       call sourcenumbers
     endif !impi
-    
+
 !-- broadcast to all workers
     call bcast_nonpermanent !MPI
 
