@@ -29,6 +29,8 @@ subroutine interior_source
   ir = 1
   irused(1:gas_nr) = 0
   exsumg(1:gas_nr) = 0d0
+  exsumg = sum(gas_exsource,1)
+!  write(*,*) exsumg(10), gas_exsource(1,10)+gas_exsource(2,10)
   !Volume particle instantiation: loop
   !Loop run over the number of new particles that aren't surface source
   !particles.
@@ -49,8 +51,10 @@ subroutine interior_source
               x3=1d0/gas_wl(ig+1)
               x4=1d0/gas_wl(ig)
               iig = ig
-              if(r1>=denom2.and.r1<denom2+(x4-x3)/(x2-x1)) exit
-              denom2 = denom2+(x4-x3)/(x2-x1)
+              !if(r1>=denom2.and.r1<denom2+(x4-x3)/(x2-x1)) exit
+              !denom2 = denom2+(x4-x3)/(x2-x1)
+              if(r1>=denom2.and.r1<denom2+gas_exsource(ig,ir)/exsumg(ir)) exit
+              denom2 = denom2+gas_exsource(ig,ir)/exsumg(ir)
            enddo
            !Ryan W.: particle group removed (rev. 120)
            !prt_particles(ivac)%gsrc = iig
@@ -192,27 +196,27 @@ subroutine interior_source
            !Ryan W.: particle group removed (rev. 120)
            !prt_particles(ivac)%gsrc = iig
            !Calculating wavelength uniformly from group
-           r1 = rand()
-           wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
+!           r1 = rand()
+!           wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
            !wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
-!            x1 = pc_h*pc_c/(gas_wl(iig+1)*pc_kb*gas_temp(ir))
-!            x2 = pc_h*pc_c/(gas_wl(iig)*pc_kb*gas_temp(ir))
-!            if (x2<pc_plkpk) then
-!               bmax = x2**3/(exp(x2)-1d0)
-!            elseif (x1>pc_plkpk) then
-!               bmax = x1**3/(exp(x1)-1d0)
-!            else
-!               bmax = pc_plkpk
-!            endif
-!            r1 = rand()
-!            r2 = rand()
-!            xx0 = (1d0-r1)*x1+r1*x2
-!            do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
-!               r1 = rand()
-!               r2 = rand()
-!               xx0 = (1d0-r1)*x1+r1*x2
-!            enddo
-!            wl0 = pc_h*pc_c/(xx0*pc_kb*gas_temp(ir))
+           x1 = pc_h*pc_c/(gas_wl(iig+1)*pc_kb*gas_temp(ir))
+           x2 = pc_h*pc_c/(gas_wl(iig)*pc_kb*gas_temp(ir))
+           if (x2<pc_plkpk) then
+              bmax = x2**3/(exp(x2)-1d0)
+           elseif (x1>pc_plkpk) then
+              bmax = x1**3/(exp(x1)-1d0)
+           else
+              bmax = pc_plkpk
+           endif
+           r1 = rand()
+           r2 = rand()
+           xx0 = (1d0-r1)*x1+r1*x2
+           do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
+              r1 = rand()
+              r2 = rand()
+              xx0 = (1d0-r1)*x1+r1*x2
+           enddo
+           wl0 = pc_h*pc_c/(xx0*pc_kb*gas_temp(ir))
 
            !Calculating radial position
 !            r1 = 0d0

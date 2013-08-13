@@ -331,7 +331,7 @@ subroutine particle_advance
         enddo
         wlsrc = pc_h*pc_c/(xx0*pc_kb*gas_temp(zsrc))
         !
-        wlsrc = wlsrc*exp(-tsp_dt/tsp_texp)
+        wlsrc = wlsrc*exp(tsp_dt/tsp_texp)
      endif
 
      ! Looking up group

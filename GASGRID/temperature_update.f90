@@ -27,6 +27,7 @@ subroutine temperature_update
              gas_eraddens(ig,ir)
      enddo
   enddo
+  write(*,*) gas_eraddens(:,3)
   !calculating deposition estimate
   if(gas_depestimate) then
      gas_edep = 0d0
@@ -50,16 +51,20 @@ subroutine temperature_update
         if(gas_isvelocity) then
            !this may cause drift
 !           gas_temp(ir)=gas_temp(ir)*tsp_texp/(tsp_texp+tsp_dt)
-           gas_temp(ir)=gas_temp(ir)+dtemp
-            dtemp2= &
-                (gas_fcoef(ir)/gas_vals2(ir)%bcoef)*&
-                (3d0*in_totmass*in_sigcoef/(8d0*pc_pi*gas_velout))* &
-                ((gas_velout*tsp_texp)**(-2d0)-&
-                (gas_velout*(tsp_texp+tsp_dt))**(-2d0))*&
-                (pc_acoef*pc_c*man_temp0**4-man_aa11)
-           !if(dtemp2>0d0) then
-            gas_temp(ir)=gas_temp(ir)+dtemp2
-           !endif
+!           if(tsp_it>10) then
+              gas_temp(ir)=gas_temp(ir)+dtemp
+!           endif
+!             dtemp2= &
+!                 (gas_fcoef(ir)/gas_vals2(ir)%bcoef)*&
+!                 (3d0*in_totmass*in_sigcoef/(8d0*pc_pi*gas_velout))* &
+!                 ((gas_velout*tsp_texp)**(-2d0)-&
+!                 (gas_velout*(tsp_texp+tsp_dt))**(-2d0))*&
+!                 (pc_acoef*pc_c*man_temp0**4-man_aa11)
+!            !if(dtemp2>0d0) then
+             !dtemp2=(gas_fcoef(ir)/gas_vals2(ir)%bcoef)*&
+                  
+             !gas_temp(ir)=gas_temp(ir)+dtemp2
+!            !endif
         else
            !gas_temp(ir)=0d0
            ddrr3 = gas_rarr(ir+1)**3-gas_rarr(ir)**3

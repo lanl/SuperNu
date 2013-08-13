@@ -72,7 +72,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      gas_edep(z)=gas_edep(z)+E*(1d0-exp(-gas_fcoef(z) &
           *gas_cap(g,z)*pc_c*ddmct))
      !--
-     if(gas_fcoef(z)*gas_cap(g,z)>0d0) then
+     if(gas_fcoef(z)*gas_cap(g,z)*gas_drarr(z)*help>1d-6) then
         gas_eraddens(g,z)=gas_eraddens(g,z)+E* &
              (1d0-exp(-gas_fcoef(z)*gas_cap(g,z)*pc_c*ddmct))/ &
              (gas_fcoef(z)*gas_cap(g,z)*pc_c*tsp_dt)

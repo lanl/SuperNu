@@ -130,7 +130,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z) &
           *gas_cap(g,z)*siglabfact*d*help))*elabfact
      !--
-     if(gas_fcoef(z)*gas_cap(g,z)>0d0) then     
+     if(gas_fcoef(z)*gas_cap(g,z)*gas_drarr(z)*help>1d-6) then     
         gas_eraddens(g,z) = gas_eraddens(g,z)+E* &
              (1.0d0-exp(-gas_fcoef(z)*siglabfact*gas_cap(g,z)*d*help))* &
              elabfact/(gas_fcoef(z)*siglabfact*gas_cap(g,z)*pc_c*tsp_dt)
@@ -264,11 +264,19 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   elseif (d == db) then   !------boundary crossing ----
      if (mu>=0.0d0) then
         if (z == gas_nr) then
+           if(g/=1) then
               vacnt = .true.
               prt_done = .true.
 !-- outbound luminosity tally
               gas_eright = gas_eright+E*elabfact
               gas_luminos(g) = gas_luminos(g)+mu*E/tsp_dt
+           else
+              r1 = rand()
+              r2 = rand()
+              mu = -max(r1,r2)
+           !   mu = -mu
+           !   mu = -r1
+           endif
         ! Checking if DDMC region right
         elseif (((gas_sig(z+1)+gas_cap(g,z+1))*gas_drarr(z+1) &
              *help >= prt_tauddmc*gas_curvcent(z+1)) &

@@ -160,6 +160,9 @@ c-- simple physical group/grey opacities: Planck and Rosseland
        call analytic_opacity
 c-- add physical opacities
        call physical_opacity
+       !write(*,*) gas_siggrey(1)
+       !write(*,*) gas_cap(:,1)
+       !gas_siggrey(:)=0.5*gas_cap(2,:)
 c-- use convert_cap2capros only when physical opacities are used
        if(.not.in_nobbopac.or..not.in_nobfopac.or.
      &   .not.in_noffopac) then

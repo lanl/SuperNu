@@ -50,6 +50,9 @@ subroutine boundary_source
      !particle group removed (rev 120)
      !prt_particles(ivac)%gsrc = iig
      !Calculating comoving particle wavelength uniformly in group
+     if(gas_isvelocity.and.gas_srctype=='manu') then
+        iig = 2
+     endif
      r1 = rand()
      wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
 
@@ -65,8 +68,15 @@ subroutine boundary_source
      r1 = rand()
      prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
 
-     prt_particles(ivac)%zsrc = 1
+     if(gas_isvelocity.and.gas_srctype=='manu') then
+        prt_particles(ivac)%zsrc = gas_nr
+        mu0 = -mu0
+        prt_particles(ivac)%musrc = mu0
+     else
+        prt_particles(ivac)%zsrc = 1
+     endif
      z0 = prt_particles(ivac)%zsrc
+     
 
      prt_particles(ivac)%rsrc = gas_rarr(1)
      r0 = prt_particles(ivac)%rsrc

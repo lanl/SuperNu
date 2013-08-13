@@ -29,7 +29,7 @@ subroutine initialnumbers
   real*8 :: uudd = 2.5d8, ddrr3, ddrr4
   logical :: isnotvacnt
   !
-  nvolinittot = 50*gas_nr
+  nvolinittot = 2000*gas_nr
   nvolinitapp = 0
   etotinit = 0d0
   !
@@ -48,19 +48,21 @@ subroutine initialnumbers
         do ir = 1, gas_nr
            !
            rrcenter=(gas_rarr(ir+1)+gas_rarr(ir))/2d0
-           do ig = 1, gas_ng !, 2
-              x3 = 1d0/gas_wl(ig+1)
-              x4 = 1d0/gas_wl(ig)
+           do ig = 1, gas_ng, 2
+!              x3 = 1d0/gas_wl(ig+1)
+!              x4 = 1d0/gas_wl(ig)
               gas_vals2(ir)%eraddens=gas_vals2(ir)%eraddens+&
-                   (man_aa11/pc_c)*(x4-x3)/(x2-x1)
+!                   (man_aa11/pc_c)*(x4-x3)/(x2-x1)
+                   0.5d0*man_aa11/pc_c
            enddo
            !write(*,*) gas_vals2(ir)%eraddens
-!            do ig = 2, gas_ng, 2
-!               x3 = 1d0/gas_wl(ig+1)
-!               x4 = 1d0/gas_wl(ig)
-!               gas_vals2(ir)%eraddens=gas_vals2(ir)%eraddens+&
+            do ig = 2, gas_ng, 2
+!                x3 = 1d0/gas_wl(ig+1)
+!                x4 = 1d0/gas_wl(ig)
+               gas_vals2(ir)%eraddens=gas_vals2(ir)%eraddens+&
 !                    ((x4-x3)/(x2-x1))*pc_acoef*gas_temp(ir)**4
-!            enddo
+                    0.5d0*man_aa11/pc_c
+            enddo
            !
            etotinit = etotinit + gas_vals2(ir)%eraddens* &
                 gas_vals2(ir)%volr*help**3
@@ -98,8 +100,10 @@ subroutine initialnumbers
               x3 = 1d0/gas_wl(ig+1)
               x4 = 1d0/gas_wl(ig)
               iig = ig
-              if(r1>=denom2.and.r1<denom2+(x4-x3)/(x2-x1)) exit
-              denom2 = denom2+(x4-x3)/(x2-x1)
+!               if(r1>=denom2.and.r1<denom2+(x4-x3)/(x2-x1)) exit
+!               denom2 = denom2+(x4-x3)/(x2-x1)
+              if(r1>=denom2.and.r1<denom2+0.5d0) exit
+              denom2 = denom2+0.5d0
            enddo
            !calculating wavelegth unformly
            r1 = rand()
