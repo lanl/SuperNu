@@ -39,11 +39,11 @@ subroutine sourcenumbers
      gas_etot = gas_esurf
   endif
 
-  ! Calculating gas_exsource from analytic distribution
+  ! Calculating gas_emitex from analytic distribution
   if(gas_srctype/='none') then
      call analytic_source
   else
-     gas_exsource=0d0
+     gas_emitex=0d0
   endif
 
   ! Calculating fictitious emission energy per cell: loop
@@ -78,15 +78,14 @@ subroutine sourcenumbers
      if(.not.gas_novolsrc .and. gas_srctype=='none') then
         gas_emit(ir) = gas_emit(ir) + gas_vals2(ir)%nisource
      endif
-     gas_etot = gas_etot + abs(gas_emit(ir))
+     gas_etot = gas_etot + gas_emit(ir)
   enddo
   
   ! Adding external energy to gas_etot
   do ir = 1, gas_nr
      do ig = 1, gas_ng
-        
-        gas_etot = gas_etot+tsp_dt*abs(gas_exsource(ig,ir))* &
-             gas_vals2(ir)%vol
+        ! changed from rev 244
+        gas_etot = gas_etot+gas_emitex(ig,ir)
         
      enddo
   enddo
@@ -102,17 +101,13 @@ subroutine sourcenumbers
      prt_nnew = prt_nnew + gas_nvol(ir)
      !external source volume numbers
      exsumg = 0d0
-     
      do ig=1,gas_ng
-        exsumg=exsumg+tsp_dt*gas_exsource(ig,ir)* &
-             gas_vals2(ir)%vol
+        exsumg=exsumg+gas_emitex(ig,ir)
      enddo
-     gas_emitex(ir) = exsumg
+     gas_emitex(ig,ir) = exsumg
      exsumg = 0d0
-     
      do ig=1,gas_ng
-        exsumg=exsumg+tsp_dt*abs(gas_exsource(ig,ir))* &
-             gas_vals2(ir)%vol
+        exsumg=exsumg+abs(gas_emitex(ig,ir))
      enddo
      gas_nvolex(ir)=nint(exsumg*prt_ns/gas_etot)
      prt_nexsrc = prt_nexsrc + gas_nvolex(ir)

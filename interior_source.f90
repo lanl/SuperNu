@@ -29,8 +29,8 @@ subroutine interior_source
   ir = 1
   irused(1:gas_nr) = 0
   exsumg(1:gas_nr) = 0d0
-  exsumg = sum(gas_exsource,1)
-!  write(*,*) exsumg(10), gas_exsource(1,10)+gas_exsource(2,10)
+  exsumg = sum(gas_emitex,1)
+!  write(*,*) exsumg(10), gas_emitex(1,10)+gas_emitex(2,10)
   !Volume particle instantiation: loop
   !Loop run over the number of new particles that aren't surface source
   !particles.
@@ -53,8 +53,8 @@ subroutine interior_source
               iig = ig
               !if(r1>=denom2.and.r1<denom2+(x4-x3)/(x2-x1)) exit
               !denom2 = denom2+(x4-x3)/(x2-x1)
-              if(r1>=denom2.and.r1<denom2+gas_exsource(ig,ir)/exsumg(ir)) exit
-              denom2 = denom2+gas_exsource(ig,ir)/exsumg(ir)
+              if(r1>=denom2.and.r1<denom2+gas_emitex(ig,ir)/exsumg(ir)) exit
+              denom2 = denom2+gas_emitex(ig,ir)/exsumg(ir)
            enddo
            !Ryan W.: particle group removed (rev. 120)
            !prt_particles(ivac)%gsrc = iig
@@ -70,57 +70,15 @@ subroutine interior_source
                 (1.0-r3)*gas_rarr(ir)**3)**(1.0/3.0)
            r0 = prt_particles(ivac)%rsrc
            !Calculating direction cosine (comoving)
-           if(gas_isvelocity) then
-              if(gas_srctype=='manu' .and. mod(iig,2)/=0) then
-                 !mu0=1d0
-                 r1 = rand()
-                 mu0 = 1d0-2d0*r1
-              else
-                 !mu0 = 1d0
-                 r1 = rand()
-                 mu0 = 1d0-2d0*r1
-              endif
-           else
-              if(gas_srctype=='manu') then
-!                  r1 = rand()
-!                  r0= (r1*gas_rarr(ir+1)**3 + &
-!                       (1.0-r1)*gas_rarr(ir)**3)**(1.0/3.0)
-!                  r1 = rand()
-!                  mu0=1d0-2d0*r1
-!                  r4 = gas_cap(iig,ir)* &
-!                       ((man_aa11-man_aa22)*(gas_rarr(gas_nr+1)-r0)+&
-!                       (man_aa22-pc_c*pc_acoef*man_temp0**4)*&
-!                       gas_rarr(gas_nr+1))-mu0*(man_aa11-man_aa22)
-!                  r4 = r4/(gas_cap(iig,ir)*man_aa11*gas_rarr(gas_nr+1)+&
-!                       man_aa11-man_aa22)
-!                  r2 = rand()
-!                  do while (r2 > r4)
-!                     r1 = rand()
-!                     r0= (r1*gas_rarr(ir+1)**3 + &
-!                          (1.0-r1)*gas_rarr(ir)**3)**(1.0/3.0)
-!                     r1 = rand()
-!                     mu0=1d0-2d0*r1
-!                     r4 = gas_cap(iig,ir)* &
-!                          ((man_aa11-man_aa22)*(gas_rarr(gas_nr+1)-r0)+&
-!                          (man_aa22-pc_c*pc_acoef*man_temp0**4)*&
-!                          gas_rarr(gas_nr+1))-mu0*(man_aa11-man_aa22)
-!                     r4 = r4/(gas_cap(iig,ir)*man_aa11*gas_rarr(gas_nr+1)+&
-!                          man_aa11-man_aa22)
-!                     r2 = rand()
-!                  enddo
-!                  prt_particles(ivac)%rsrc=r0
-                 r1 = rand()
-                 mu0 = 1d0-2d0*r1
-              else
-                 r1 = rand()
-                 mu0 = 1d0-2d0*r1
-              endif
-           endif
+           !mu0 = 1d0
+           r1 = rand()
+           mu0 = 1d0-2d0*r1
+
            !Calculating particle tsp_time
            r1 = rand()
            prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
            !Calculating particle energy, lab frame direction and propagation type
-           Ep0 = gas_emitex(ir)/real(gas_nvolex(ir))
+           Ep0 = exsumg(ir)/real(gas_nvolex(ir))
            
            if (((gas_sig(ir)+gas_cap(iig,ir))*gas_drarr(ir)* &
                 help < prt_tauddmc*gas_curvcent(ir)) &

@@ -159,7 +159,7 @@ c     ------------------------!{{{
 * real*8 :: gas_nvol(gas_nr)
 * real*8 :: gas_nvolex(gas_nr)
 * real*8 :: gas_emit(gas_nr)
-* real*8 :: gas_emitex(gas_nr)
+* real*8 :: gas_emitex(gas_ng,gas_nr)
 * real*8 :: gas_tempb(gas_nr+1)
 * real*8 :: gas_fcoef(gas_nr)
 * real*8 :: gas_sig(gas_nr)
@@ -248,7 +248,7 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(gas_nvol(gas_nr))
        allocate(gas_nvolex(gas_nr))
        allocate(gas_emit(gas_nr))
-       allocate(gas_emitex(gas_nr))
+       allocate(gas_emitex(gas_ng,gas_nr))
 c
        allocate(gas_tempb(gas_nr+1))
        allocate(gas_fcoef(gas_nr))
@@ -296,7 +296,7 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_emit,gas_nr,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_emitex,gas_nr,MPI_REAL8,
+      call mpi_bcast(gas_emitex,gas_nr*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
       call mpi_bcast(gas_tempb,gas_nr+1,MPI_REAL8,

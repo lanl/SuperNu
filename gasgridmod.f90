@@ -77,8 +77,6 @@ module gasgridmod
   
   real*8, allocatable :: gas_eraddens(:,:) !(gas_ng,gas_nr)
 
-  !Ryan W.: External sources (currently used for analytic_source):
-  real*8, dimension(:,:), allocatable :: gas_exsource !(gas_ng,gas_nr)
 !
 !-- outbound grouped luminosity
   real*8, allocatable :: gas_luminos(:) !(gas_ng)
@@ -88,7 +86,10 @@ module gasgridmod
   integer, allocatable :: gas_nvol(:) !(gas_nr) number of thermal source particles generated per cell
   integer, allocatable :: gas_nvolex(:) !(gas_nr) number of external source particles generated per cell
   real*8, allocatable :: gas_emit(:) !(gas_nr) amount of fictitious thermal energy emitted per cell in a time step
-  real*8, allocatable :: gas_emitex(:) !(gas_nr) amount of external energy emitted per cell in a time step
+!
+! R.W.: unified gas_emitex with gas_exsource to be broadcast to particle routine (rev. 244)
+!---
+  real*8, allocatable :: gas_emitex(:,:) !(gas_ng,gas_nr) amount of external energy emitted per cell per group in a time step
 !
   real*8, allocatable :: gas_temp(:)
 !---
@@ -113,6 +114,8 @@ module gasgridmod
        logical :: opdirty=.true. !opacity needs recalculation
 !-- energy reservoir
        real*8 :: engdep     !energy deposited by gamma rays
+!-- material energy (temperature) source (may be manufactured), rev>244
+       real*8 :: matsrc = 0d0
   end type gas_secondary
   type(gas_secondary),pointer :: gas_vals2(:)
 
@@ -199,7 +202,7 @@ module gasgridmod
     allocate(gas_nvol(gas_nr))
     allocate(gas_nvolex(gas_nr))
     allocate(gas_emit(gas_nr))
-    allocate(gas_emitex(gas_nr))
+    allocate(gas_emitex(gas_ng,gas_nr))
 !-- secondary
     allocate(gas_vals2(gas_nr))
     allocate(gas_capgam(gas_nr))
@@ -215,8 +218,6 @@ module gasgridmod
     
     allocate(gas_caprosl(gas_ng,gas_nr))  !left cell edge group Rosseland opacities
     allocate(gas_caprosr(gas_ng,gas_nr)) !right ||   ||    ||     ||        ||
-
-    allocate(gas_exsource(gas_ng,gas_nr))
 
   end subroutine gasgrid_init
 

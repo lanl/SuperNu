@@ -33,7 +33,7 @@ c-- gasgridmod
       deallocate(gas_fcoef)
       deallocate(gas_sig)
       if(impi==impi0) deallocate(gas_sigbl,gas_sigbr)
-      if(impi==impi0) deallocate(gas_exsource,gas_capgam)
+      if(impi==impi0) deallocate(gas_capgam)
       deallocate(gas_curvcent)
       deallocate(gas_emit,gas_emitex,gas_nvol,gas_nvolex)
 c-- particlemod

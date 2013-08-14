@@ -24,7 +24,7 @@ c
 c     ----------------------------
       use miscmod, only:warn
       use inputparmod, only: in_nobbopac,in_nobfopac,in_noffopac,
-     &     in_nothmson,in_dentype
+     &     in_nothmson,in_dentype,in_opacanaltype
       implicit none
 ************************************************************************
 * check relevant input parameters for consistency with manufactured

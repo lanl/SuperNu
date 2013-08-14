@@ -22,7 +22,7 @@ subroutine analytic_source
   x1 = 1d0/gas_wl(gas_ng+1)
   x2 = 1d0/gas_wl(1)
 
-  gas_exsource = 0d0
+  gas_emitex = 0d0
 
   if(gas_srctype=='none') then
     return
@@ -33,28 +33,27 @@ subroutine analytic_source
            do ig = 1, gas_ng
               x3 = 1d0/gas_wl(ig+1) 
               x4 = 1d0/gas_wl(ig)
-              gas_exsource(ig,ir)=gas_srcmax*(x4-x3)/(x2-x1)
+              gas_emitex(ig,ir)=gas_srcmax*(x4-x3)/(x2-x1)
               if(gas_isvelocity) then
-                 gas_exsource(ig,ir)=gas_exsource(ig,ir)/tsp_texp**3
+                 gas_emitex(ig,ir)=gas_emitex(ig,ir)/tsp_texp**3
               endif
            enddo
+!
+           gas_emitex(:,ir) = gas_emitex(:,ir)* &
+                gas_vals2(ir)%vol*tsp_dt
+!
         enddo
         do ir = gas_nheav+1, gas_nr
            do ig = 1, gas_ng
-              gas_exsource(ig,ir)=0d0
+              gas_emitex(ig,ir)=0d0
            enddo
         enddo
      else
         do ir = 1, min(gas_nheav,gas_nr)
            do ig = 1, gas_ng
-              gas_exsource(ig,ir)=0d0
+              gas_emitex(ig,ir)=0d0
            enddo
         enddo
-        !Ryan W.: Temporary fix (?) for over generation,
-        !resetting prt_ns
-        !if(gas_sigcoef==0d0) then
-        !   prt_ns = 1
-        !endif
      endif
      !!}}}
   elseif(gas_srctype=='strt') then
@@ -66,8 +65,12 @@ subroutine analytic_source
         do ig = 1, gas_ng
            x3 = 1d0/gas_wl(ig+1) 
            x4 = 1d0/gas_wl(ig)
-           gas_exsource(ig,ir)=srcren*(x4-x3)/(x2-x1)
+           gas_emitex(ig,ir)=srcren*(x4-x3)/(x2-x1)
         enddo
+!
+           gas_emitex(:,ir) = gas_emitex(:,ir)* &
+                gas_vals2(ir)%vol*tsp_dt
+!
      enddo!}}}
   elseif(gas_srctype=='manu') then
      !!{{{
@@ -93,20 +96,20 @@ subroutine analytic_source
               
 !              bspeced = 15d0*specint(xx3,xx4,3)/pc_pi**4
               !
-!               gas_exsource(ig,ir)= (1d0/tsp_dt)*(&
+!               gas_emitex(ig,ir)= (1d0/tsp_dt)*(&
 !                    log((tsp_texp+tsp_dt)/tsp_texp)*(3d0*man_aa11/pc_c)+&
 !                    (3d0*in_totmass*in_sigcoef/(8d0*pc_pi*gas_velout))* &
 !                    ((gas_velout*tsp_texp)**(-2d0)-&
 !                    (gas_velout*(tsp_texp+tsp_dt))**(-2d0))*&
 !                    (man_aa11-pc_acoef*pc_c*man_temp0**4) &
 !                    )*(x4-x3)/(x2-x1)
-              gas_exsource(ig,ir)=(1d0/tsp_dt)*&
+              gas_emitex(ig,ir)=(1d0/tsp_dt)*&
                    log((tsp_texp+tsp_dt)/tsp_texp)*(man_aa11/pc_c)*&
                    (1.5d0-(1d0-aleff1)*0.5d0*x3/(x4-x3))!-0.5*(15d0/pc_pi**4)*xx3**4/(exp(xx3)-1))
                    !2.0d0
               !write(*,*) x3/(x4-x3)
               !
-              !gas_exsource(ig,ir)=0d0
+              !gas_emitex(ig,ir)=0d0
            enddo
            !
            !Thick lines
@@ -114,11 +117,15 @@ subroutine analytic_source
                x3 = 1d0/gas_wl(ig)
                x4 = 1d0/gas_wl(ig-1)
                xx3 = x3*pc_h*pc_c/(pc_kb*man_temp0)
-               gas_exsource(ig,ir)=(1d0/tsp_dt)*&
+               gas_emitex(ig,ir)=(1d0/tsp_dt)*&
                     log((tsp_texp+tsp_dt)/tsp_texp)*(man_aa11/pc_c)*&
                     (2d0-aleff1*0.5d0*x3/(x4-x3))
             enddo
            !
+!
+           gas_emitex(:,ir) = gas_emitex(:,ir)* &
+                gas_vals2(ir)%vol*tsp_dt
+!
         enddo
         !write(*,*) eradthin(1), eradthin(5), eradthin(gas_nr), gas_nr
      
@@ -134,15 +141,18 @@ subroutine analytic_source
            do ig = 1, gas_ng
               x3 = 1d0/gas_wl(ig+1)
               x4 = 1d0/gas_wl(ig)
-              gas_exsource(ig,ir)=gas_cap(ig,ir)* &
+              gas_emitex(ig,ir)=gas_cap(ig,ir)* &
                    (man_aa11-0.75d0*(man_aa11-man_aa22)* &
                    ddrr4/(gas_rarr(gas_nr+1)*ddrr3) - &
                    pc_c*pc_acoef*man_temp0**4)
-              gas_exsource(ig,ir)=gas_exsource(ig,ir)*(x4-x3)/(x2-x1)
-              !write(*,*) gas_exsource(ig,ir)
-              !gas_exsource(ig,ir) = 0d0
+              gas_emitex(ig,ir)=gas_emitex(ig,ir)*(x4-x3)/(x2-x1)
+              !write(*,*) gas_emitex(ig,ir)
+              !gas_emitex(ig,ir) = 0d0
            enddo
-           
+!
+           gas_emitex(:,ir) = gas_emitex(:,ir)* &
+                gas_vals2(ir)%vol*tsp_dt
+!           
         enddo
         !
         !stop 'analytic_source: no static manufactured source'
@@ -151,10 +161,10 @@ subroutine analytic_source
      stop 'analytic_source: gas_srctype invalid'
   endif
 
-  !write(*,*) gas_exsource(1,1), gas_exsource(2,1), gas_exsource(3,1)  
-  !write(*,*) gas_exsource(1,:)
+  !write(*,*) gas_emitex(1,1), gas_emitex(2,1), gas_emitex(3,1)  
+  !write(*,*) gas_emitex(1,:)
   !write(*,*)
-  !write(*,*) gas_exsource(2,:)
+  !write(*,*) gas_emitex(2,:)
   !write(*,*) gas_siggrey(gas_nr), gas_cap(1,gas_nr)
 
 end subroutine analytic_source
