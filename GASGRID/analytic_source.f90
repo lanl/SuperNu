@@ -17,7 +17,7 @@ subroutine analytic_source
   real*8 :: eradthin(gas_nr) !manufactured rad. en. density
   
   real*8 :: rrcenter, bspeced, xx3, xx4
-  real*8 :: ddrr2, ddrr3, ddrr4
+  real*8 :: ddrr2, ddrr3, ddrr4, aleff1 = 1d0
 
   x1 = 1d0/gas_wl(gas_ng+1)
   x2 = 1d0/gas_wl(1)
@@ -116,7 +116,7 @@ subroutine analytic_source
 !                    )*(x4-x3)/(x2-x1)
               gas_exsource(ig,ir)=(1d0/tsp_dt)*&
                    log((tsp_texp+tsp_dt)/tsp_texp)*(man_aa11/pc_c)*&
-                   (1.5d0+0.5d0*x3/(x4-x3))
+                   (1.5d0-(1d0-aleff1)*0.5d0*x3/(x4-x3))!-0.5*(15d0/pc_pi**4)*xx3**4/(exp(xx3)-1))
                    !2.0d0
               !write(*,*) x3/(x4-x3)
               !
@@ -127,9 +127,10 @@ subroutine analytic_source
             do ig = 2, gas_ng, 2
                x3 = 1d0/gas_wl(ig)
                x4 = 1d0/gas_wl(ig-1)
+               xx3 = x3*pc_h*pc_c/(pc_kb*man_temp0)
                gas_exsource(ig,ir)=(1d0/tsp_dt)*&
                     log((tsp_texp+tsp_dt)/tsp_texp)*(man_aa11/pc_c)*&
-                    (2d0-0.5d0*x3/(x4-x3))
+                    (2d0-aleff1*0.5d0*x3/(x4-x3))
             enddo
            !
         enddo
