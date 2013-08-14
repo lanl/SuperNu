@@ -104,11 +104,6 @@ subroutine sourcenumbers
      do ig=1,gas_ng
         exsumg=exsumg+gas_emitex(ig,ir)
      enddo
-     gas_emitex(ig,ir) = exsumg
-     exsumg = 0d0
-     do ig=1,gas_ng
-        exsumg=exsumg+abs(gas_emitex(ig,ir))
-     enddo
      gas_nvolex(ir)=nint(exsumg*prt_ns/gas_etot)
      prt_nexsrc = prt_nexsrc + gas_nvolex(ir)
      prt_nnew = prt_nnew + gas_nvolex(ir)

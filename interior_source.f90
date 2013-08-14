@@ -30,7 +30,7 @@ subroutine interior_source
   irused(1:gas_nr) = 0
   exsumg(1:gas_nr) = 0d0
   exsumg = sum(gas_emitex,1)
-!  write(*,*) exsumg(10), gas_emitex(1,10)+gas_emitex(2,10)
+  !write(*,*) exsumg(10), gas_emitex(1,10),gas_emitex(2,10)
   !Volume particle instantiation: loop
   !Loop run over the number of new particles that aren't surface source
   !particles.
@@ -56,6 +56,7 @@ subroutine interior_source
               if(r1>=denom2.and.r1<denom2+gas_emitex(ig,ir)/exsumg(ir)) exit
               denom2 = denom2+gas_emitex(ig,ir)/exsumg(ir)
            enddo
+           
            !Ryan W.: particle group removed (rev. 120)
            !prt_particles(ivac)%gsrc = iig
            !Calculating comoving wavelength uniformly from group
