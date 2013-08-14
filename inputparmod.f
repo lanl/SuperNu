@@ -221,12 +221,15 @@ c
 c
       select case(in_opacanaltype)
       case('none')
+c--R.W.: condition under case(pick) supposed to be here? (rev 243)
+         if(in_nobbopac.and.in_nobfopac.and.in_noffopac)
+     &        stop 'no phys opac + in_opacanaltype==none'
       case('grey')
       case('mono')
       case('pick')
-       if(.not.in_nobbopac) stop 'no phys opac + in_grptyp==none'
-       if(.not.in_nobfopac) stop 'no phys opac + in_grptyp==none'
-       if(.not.in_noffopac) stop 'no phys opac + in_grptyp==none'
+C$$$       if(.not.in_nobbopac) stop 'no phys opac + in_grptyp==none'
+C$$$       if(.not.in_nobfopac) stop 'no phys opac + in_grptyp==none'
+C$$$       if(.not.in_noffopac) stop 'no phys opac + in_grptyp==none'
       case('line')
       case default
        stop 'in_opacanaltype unknown'

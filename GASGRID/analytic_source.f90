@@ -82,21 +82,7 @@ subroutine analytic_source
         if(gas_ng>2) then
            stop 'analytic_source: gas_ng<=2 manufactured'
         endif
-        do ir = 1, gas_nr
-           !cell center
-           !rrcenter=(gas_rarr(ir+1)+gas_rarr(ir))/2d0
-           !ddrr2 = gas_rarr(ir+1)**2-gas_rarr(ir)**2
-           !ddrr3 = gas_rarr(ir+1)**3-gas_rarr(ir)**3
-           !ddrr4 = gas_rarr(ir+1)**4-gas_rarr(ir)**4
-           !
-           !tmpgauss(ir)=in_templ0*exp(-0.5d0*(rrcenter/uudd)**2)* &
-           !     in_tfirst*pc_day/tsp_texp
-           !
-           !eradthin(ir)=((man_aa11*(gas_velout-rrcenter)+ &
-           !     man_aa22*rrcenter)/gas_velout)* &
-           !eradthin(ir)=(man_aa11+(man_aa22-man_aa11)*3d0*ddrr4/(4d0*ddrr3*gas_velout)) &
-           !     *(in_tfirst*pc_day/(tsp_texp+tsp_dt/2d0))**4
-           
+        do ir = 1, gas_nr           
            !Thin lines
            do ig = 1, gas_ng, 2
               x3 = 1d0/gas_wl(ig+1)
