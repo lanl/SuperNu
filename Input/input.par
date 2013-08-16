@@ -53,7 +53,7 @@ in_sigtpwr = 0d0
 in_sigrpwr = 1d0
 
 !-- group absorption opacity structure type
-in_opacanaltype = 'line'
+in_opacanaltype = 'grey'
 
 !-- picket fence case
 in_suol = 'tsta'
@@ -64,7 +64,7 @@ in_ldisp1 = 0d0
 in_ldisp2 = 1d0
 
 !-- group settings
-in_wldex = 21
+in_wldex = 18
 
 !-- particle numbers
 in_ns = 100000

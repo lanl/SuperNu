@@ -49,11 +49,11 @@ subroutine initialnumbers
            !
            rrcenter=(gas_rarr(ir+1)+gas_rarr(ir))/2d0
            do ig = 1, gas_ng, 2
-!              x3 = 1d0/gas_wl(ig+1)
-!              x4 = 1d0/gas_wl(ig)
+              x3 = 1d0/gas_wl(ig+1)
+              x4 = 1d0/gas_wl(ig)
               gas_vals2(ir)%eraddens=gas_vals2(ir)%eraddens+&
-!                   (man_aa11/pc_c)*(x4-x3)/(x2-x1)
-                   0.5d0*man_aa11/pc_c
+                   (man_aa11/pc_c)*(x4-x3)/(x2-x1)
+!                   0.5d0*man_aa11/pc_c
            enddo
            !write(*,*) gas_vals2(ir)%eraddens
             do ig = 2, gas_ng, 2
