@@ -43,6 +43,7 @@ c-- random number generator
 c
 c-- particles
       integer :: in_ns = 0   !# source particles generated per time step
+      integer :: in_ninit = 0 !# initial particles at in_tfirst
       integer :: in_npartmax = 0 !total # particles allowed
       logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
       logical :: in_isimcanlog = .false. !use analog IMC tally if true
@@ -105,7 +106,7 @@ c-- runtime parameter namelist
      & in_nr,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
      & in_totmass,in_templ0,in_velout,in_v0,
      & in_consttemp,in_solidni56,
-     & in_seed,in_ns,in_npartmax,in_puretran,in_alpha,
+     & in_seed,in_ns,in_ninit,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,
      & in_grab_stdout,in_nomp,
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
@@ -189,6 +190,7 @@ c
       endif
 c
       if(in_ns<=0) stop 'in_ns invalid'
+      if(in_ninit<0) stop 'in_ninit invalid'
       if(in_npartmax<=0) stop 'in_npartmax invalid'
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
 c

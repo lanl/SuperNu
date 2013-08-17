@@ -61,9 +61,9 @@ subroutine interior_source
            !prt_particles(ivac)%gsrc = iig
            !Calculating comoving wavelength uniformly from group
            r1 = rand()
-           wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
+           wl0 = 1d0/((1d0-r1)/gas_wl(iig)+r1/gas_wl(iig+1))
            !wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
-           !write(*,*) wl0, gas_wl(iig)+r1*gas_wl(iig+1)
+           !write(*,*) wl0, gas_wl(iig),gas_wl(iig+1)
            !write(*,*) gas_wl
            !Calculating radial position
            r3 = rand()

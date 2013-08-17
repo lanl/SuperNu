@@ -5,7 +5,6 @@ subroutine sourcenumbers
   use particlemod
   use physconstmod
   use inputparmod
-  use manufacmod
   implicit none
 
 !##################################################
@@ -26,13 +25,9 @@ subroutine sourcenumbers
   gas_esurf = 0d0
   gas_emit = 0d0
   gas_emitex = 0d0
-
-  !if(gas_isvelocity.and.gas_srctype=='manu') then
-  !   gas_esurf = 0.25*tsp_dt*(4.0*pc_pi*gas_rarr(gas_nr+1)**2)* &
-  !        man_aa11
-  !else
-  !   gas_esurf = 0.25*tsp_dt*pc_c*pc_acoef*(4.0*pc_pi*gas_rarr(1)**2)*gas_tempb(1)**4
-  !endif
+  
+  gas_etot = 0d0
+  gas_esurf = 0d0 !0.25*tsp_dt*pc_c*pc_acoef*(4.0*pc_pi*gas_rarr(1)**2)*gas_tempb(1)**4
   if(gas_isvelocity) then
      gas_etot = gas_esurf*tsp_texp**2
   else

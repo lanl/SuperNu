@@ -27,7 +27,7 @@ subroutine temperature_update
              gas_eraddens(ig,ir)
      enddo
   enddo
-  write(*,*) gas_eraddens(:,3)
+  write(*,*) gas_eraddens(:,5)
   !calculating deposition estimate
   if(gas_depestimate) then
      gas_edep = 0d0

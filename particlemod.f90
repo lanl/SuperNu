@@ -11,7 +11,7 @@ module particlemod
   end type packet
   TYPE(packet), dimension(:), pointer :: prt_particles  !(prt_npartmax)
 
-  integer :: prt_npartmax, prt_ns
+  integer :: prt_npartmax, prt_ns, prt_ninit
   integer :: prt_nsurf, prt_nexsrc, prt_nnew
   integer, dimension(:), allocatable :: prt_vacantarr
 
@@ -27,9 +27,9 @@ module particlemod
 
   contains
 
-  subroutine particle_init(npartmax,ns,isimcanlog,isddmcanlog,tauddmc)
+  subroutine particle_init(npartmax,ns,ninit,isimcanlog,isddmcanlog,tauddmc)
 !--------------------------------------
-    integer,intent(in) :: npartmax, ns
+    integer,intent(in) :: npartmax, ns, ninit
     logical,intent(in) :: isimcanlog, isddmcanlog
     real*8,intent(in) :: tauddmc
 !***********************************************************************
@@ -39,6 +39,7 @@ module particlemod
 !-- adopt input values in module internal storage
     prt_npartmax = npartmax
     prt_ns = ns
+    prt_ninit = ninit
     prt_isimcanlog = isimcanlog
     prt_isddmcanlog = isddmcanlog
     prt_tauddmc = tauddmc

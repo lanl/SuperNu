@@ -59,7 +59,7 @@ c     ------------------------------
 * per group in ergs with manufactured parameters
 ************************************************************************
       integer :: ir, ig
-      real*8 :: x1,x2,x3,x4,xx3,xx4
+      real*8 :: x1,x2,x3,x4,xx3,xx4 !,alf
 c
 c-- verify applicable input pars
       call check_manufacpars
@@ -104,6 +104,7 @@ c-- line solution
             if(gas_ldisp1/gas_ldisp2>=1d-3)
      &           stop 'generate_manuradsrc: gas_ldisp1/gas_ldisp2>=1d-3'
 c
+            !alf=0.5d0
             do ir = 1, gas_nr           
 !-- thin lines
                do ig = 1, gas_ng, 2
@@ -117,8 +118,8 @@ c
                   gas_emitex(ig,ir)=(1d0/dt)*
      &                 log((texp+dt)/texp)*
      &                 (man_aa11/pc_c)*
-     &                 (1.5d0)
-!     write(*,*) x3/(x4-x3)
+     &                 (2d0+0.5d0*x3/(x4-x3))
+                  !write(*,*) alf*x3/(x4-x3)
 !
 !     gas_emitex(ig,ir)=0d0
                enddo
@@ -131,7 +132,7 @@ c
                   gas_emitex(ig,ir)=(1d0/dt)*
      &                 log((texp+dt)/texp)*(man_aa11/pc_c)*
      &                 (2d0-0.5d0*x3/(x4-x3))
-!     write(*,*) x3/(x4-x3)
+                  !write(6,*) alf*x3/(x4-x3)
                enddo
 !     
 !
@@ -209,32 +210,63 @@ c
       end subroutine generate_manutempsrc
 c
 c
-      subroutine init_manuprofile
+      subroutine init_manuprofile(texp)
 c     ---------------------------
       use physconstmod
       use gasgridmod      
       implicit none
+      real*8,intent(in) :: texp
 ************************************************************************
 * calculate finite volume manufactured initial energy per cell per group
 * in ergs with manufactured parameters
 ************************************************************************
+      integer :: ir, ig
+      real*8 :: x1,x2,x3,x4,xx3,xx4,help
 c
 c-- verify applicable input pars
       call check_manufacpars
 c
 c-- determine manufacture type
       if(gas_isvelocity) then
+         help = gas_velout*tsp_texp
 c
 c-- implement/modify velocity dependent manufactured temperature source
          select case (gas_opacanaltype)
          case ('grey')
 c-- grey solution
+            x1 = 1d0/gas_wl(gas_ng+1)
+            x2 = 1d0/gas_wl(1)
+            do ir = 1, gas_nr
+               do ig = 1, gas_ng
+                  x3 = 1d0/gas_wl(ig+1)
+                  x4 = 1d0/gas_wl(ig)
+                  gas_evolinit(ig,ir)=(man_aa11/pc_c)*(x4-x3)/(x2-x1)
+               enddo
+!
+               gas_evolinit(:,ir) = gas_evolinit(:,ir)*
+     &              gas_vals2(ir)%volr*help**3
+!     
+            enddo
+c
          case ('mono')
             stop 'init_manuprofile: gas_opacanaltype=mono'
          case ('pick')
             stop 'init_manuprofile: gas_opacanaltype=pick'
          case ('line')
 c-- line solution
+            if(gas_ng/=2)
+     &           stop 'generate_manuradsrc: gas_opacanaltype=line'
+            if(gas_ldisp1/gas_ldisp2>=1d-3)
+     &           stop 'generate_manuradsrc: gas_ldisp1/gas_ldisp2>=1d-3'
+c-- g=1
+            gas_evolinit(1,:)=0.5d0*man_aa11/pc_c
+c
+c-- g=2
+            gas_evolinit(2,:)=0.5d0*man_aa11/pc_c
+!
+            forall(ir=1,gas_nr) gas_evolinit(:,ir)=
+     &           gas_evolinit(:,ir)*gas_vals2(ir)%volr*help**3
+!           
          case default
             stop 'gas_opacanaltype unknown'
          end select

@@ -81,15 +81,14 @@ module gasgridmod
 !-- outbound grouped luminosity
   real*8, allocatable :: gas_luminos(:) !(gas_ng)
 !
-! Ryan W.: These quantities have been removed from gas_secondary (rev 183).  They are used during particle generation/transport
 !---
   integer, allocatable :: gas_nvol(:) !(gas_nr) number of thermal source particles generated per cell
   integer, allocatable :: gas_nvolex(:) !(gas_nr) number of external source particles generated per cell
+  integer, allocatable :: gas_nvolinit(:) !(gas_nr) number of initial (t=tfirst) particles per cell
+!  
   real*8, allocatable :: gas_emit(:) !(gas_nr) amount of fictitious thermal energy emitted per cell in a time step
-!
-! R.W.: unified gas_emitex with gas_exsource to be broadcast to particle routine (rev. 244)
-!---
   real*8, allocatable :: gas_emitex(:,:) !(gas_ng,gas_nr) amount of external energy emitted per cell per group in a time step
+  real*8, allocatable :: gas_evolinit(:,:) !(gas_ng,gas_nr) amount of initial energy per cell per group
 !
   real*8, allocatable :: gas_temp(:)
 !---

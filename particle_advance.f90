@@ -299,8 +299,8 @@ subroutine particle_advance
      ! Redshifting DDMC particle energy weights and wavelengths
      if(rtsrc == 2.and.gas_isvelocity) then
         ! Redshifting energy weight
-        esrc = esrc*exp(-tsp_dt/tsp_texp)
-        ebirth = ebirth*exp(-tsp_dt/tsp_texp)
+         esrc = esrc*exp(-tsp_dt/tsp_texp)
+         ebirth = ebirth*exp(-tsp_dt/tsp_texp)
         !
         ! Finding group
         g = binsrch(wlsrc,gas_wl,gas_ng+1)
@@ -313,6 +313,7 @@ subroutine particle_advance
               g=1
            endif
         endif
+        !
         !
         r1=rand()
         if(r1<gas_cap(g,zsrc)/(gas_cap(g,zsrc)+gas_sig(zsrc))) then
@@ -335,9 +336,16 @@ subroutine particle_advance
               xx0 = (1d0-r1)*x1+r1*x2
            enddo
            wlsrc = pc_h*pc_c/(xx0*pc_kb*gas_temp(zsrc))
+        else
+           r1 = rand()
+           wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
         endif
         !
+        !r1 = rand()
+        !wlsrc = gas_wl(g+1)*r1+gas_wl(g)*(1d0-r1)
         wlsrc = wlsrc*exp(tsp_dt/tsp_texp)
+        !endif
+        
      endif
 
      ! Looking up group
