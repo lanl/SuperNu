@@ -200,8 +200,10 @@ module gasgridmod
 !--Ryan W: values below were formerly secondary (rev 183)
     allocate(gas_nvol(gas_nr))
     allocate(gas_nvolex(gas_nr))
+    allocate(gas_nvolinit(gas_nr))
     allocate(gas_emit(gas_nr))
     allocate(gas_emitex(gas_ng,gas_nr))
+    allocate(gas_evolinit(gas_ng,gas_nr))
 !-- secondary
     allocate(gas_vals2(gas_nr))
     allocate(gas_capgam(gas_nr))

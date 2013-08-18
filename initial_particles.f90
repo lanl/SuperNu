@@ -5,7 +5,6 @@ subroutine initial_particles
   use particlemod
   use physconstmod
   use inputparmod
-  use manufacmod
   implicit none
 
 !##################################################
@@ -16,7 +15,7 @@ subroutine initial_particles
     integer :: ig, iir, iig, ipart
     integer, dimension(gas_nr) :: iirused
     real*8 :: wl0, mu0, Ep0, r0
-    real*8 :: help
+    real*8 :: help, denom2
     real*8 :: r1,r2,r3
     real*8 :: x1,x2,x3,x4
     real*8 :: einittot, ninittot
@@ -28,10 +27,10 @@ subroutine initial_particles
     iirused(1:gas_nr) = 0
     suminitg(1:gas_nr) = 0d0
     suminitg = sum(gas_evolinit,1)
-    do ipart = 1, in_ninit
+    do ipart = 1, prt_ninitnew
        isnotvacnt=.false.
        do while(.not.isnotvacnt)
-          if(iirused(iir)<nvolinit(iir)) then
+          if(iirused(iir)<gas_nvolinit(iir)) then
              iirused(iir)=iirused(iir)+1
              denom2 = 0d0
              r1=rand()
@@ -39,8 +38,8 @@ subroutine initial_particles
                 x3 = 1d0/gas_wl(ig+1)
                 x4 = 1d0/gas_wl(ig)
                 iig = ig
-                if(r1>=denom2.and.r1<denom2+gas_evolinit(ig,iir)/suminitg)) exit
-                denom2 = denom2+gas_nvol
+                if(r1>=denom2.and.r1<denom2+gas_evolinit(ig,iir)/suminitg(iir)) exit
+                denom2 = denom2+gas_evolinit(ig,iir)
              enddo
              !calculating wavelegth unformly
              r1 = rand()
@@ -56,9 +55,7 @@ subroutine initial_particles
              !calculating particle time
              prt_particles(ipart)%tsrc = tsp_time
              !calculating particle energy
-             Ep0 = gas_vals2(iir)%eraddens*gas_vals2(iir)%volr*help**3 &
-                  /real(nvolinit(iir))
-             !write(*,*) Ep0, gas_vals2(iir)%eraddens, nvolinit(iir)
+             Ep0 = suminitg(iir)/real(gas_nvolinit(iir))
 
              if(gas_isvelocity) then
                 prt_particles(ipart)%Esrc = Ep0*(1.0+r0*mu0/pc_c)

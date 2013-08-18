@@ -36,6 +36,7 @@ c-- gasgridmod
       if(impi==impi0) deallocate(gas_capgam)
       deallocate(gas_curvcent)
       deallocate(gas_emit,gas_emitex,gas_nvol,gas_nvolex)
+      deallocate(gas_evolinit,gas_nvolinit)
 c-- particlemod
       deallocate(prt_particles)
 c-- inputstrmod

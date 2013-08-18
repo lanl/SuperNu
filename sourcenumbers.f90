@@ -35,11 +35,7 @@ subroutine sourcenumbers
   endif
 
   ! Calculating gas_emitex from analytic distribution
-  if(gas_srctype/='none') then
-     call analytic_source
-  else
-     gas_emitex=0d0
-  endif
+  call analytic_source
 
   ! Calculating fictitious emission energy per cell: loop
   do ir = 1, gas_nr

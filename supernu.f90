@@ -57,7 +57,7 @@ program supernu
    call timestep_init(in_nt,in_alpha,in_tfirst,dt)
 !
 !-- particle init
-   call particle_init(in_npartmax,in_ns,in_isimcanlog,in_isddmcanlog,in_tauddmc)
+   call particle_init(in_npartmax,in_ns,in_ninit,in_isimcanlog,in_isddmcanlog,in_tauddmc)
 !
 !-- read input structure
    if(.not.in_noreadstruct.and.in_isvelocity) then
@@ -104,9 +104,10 @@ program supernu
 
 
 !-- calculating analytic initial particle distribution (if any)
-! not working currently, as prt_particle data structure is only
-! available after bcast_nonpermanent
-  call initialnumbers
+  if(impi==impi0) then
+     call initialnumbers
+  endif
+  call initial_particles
 !
 !-- time step loop
 !=================

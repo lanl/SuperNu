@@ -9,8 +9,8 @@ in_noreadstruct = t
 
 !-- time step
 in_tfirst = 2d0
-in_tlast = 5d0
-in_nt = 30
+in_tlast = 2.1d0
+in_nt = 10
 in_alpha = 1d0
 
 !-- gas grid settings
@@ -67,8 +67,8 @@ in_ldisp2 = 1d0
 in_wldex = 21
 
 !-- particle numbers
-in_ninit = 200000
-in_ns = 200000
+in_ninit = 100000
+in_ns = 100000
 in_npartmax = 10000000
 
 !-- imc tally method

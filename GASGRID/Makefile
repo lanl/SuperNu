@@ -11,7 +11,7 @@ FILES = eos_update.o \
   temperature_update.o analytic_source.o \
   analytic_opacity.o physical_opacity.o convert_cap2capros.o \
   leakage_opacity.o fleck_factor.o \
-  emission_probability.o
+  emission_probability.o analytic_initial.o
 
 ########################################################################
 # TARGETS
@@ -31,6 +31,7 @@ clean:
 ########################################################################
 analytic_opacity.o: gasgridmod.mod physconstmod.mod
 analytic_source.o: gasgridmod.mod physconstmod.mod timestepmod.mod particlemod.mod inputparmod.mod manufacmod.mod
+analytic_initial.o: gasgridmod.mod physconstmod.mod timestepmod.mod particlemod.mod inputparmod.mod manufacmod.mod
 eos_update.o: gasgridmod.mod ionsmod.mod timestepmod.mod timingmod.mod
 gasgrid_setup.o: elemdatamod.mod gasgridmod.mod inputparmod.mod miscmod.mod physconstmod.mod timestepmod.mod inputstrmod.mod manufacmod.mod
 gasgrid_update.o: gasgridmod.mod inputparmod.mod ionsmod.mod miscmod.mod mpimod.mod physconstmod.mod timestepmod.mod timingmod.mod

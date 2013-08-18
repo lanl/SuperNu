@@ -228,7 +228,7 @@ c-- verify applicable input pars
 c
 c-- determine manufacture type
       if(gas_isvelocity) then
-         help = gas_velout*tsp_texp
+         help = gas_velout*texp
 c
 c-- implement/modify velocity dependent manufactured temperature source
          select case (gas_opacanaltype)
@@ -264,7 +264,7 @@ c
 c-- g=2
             gas_evolinit(2,:)=0.5d0*man_aa11/pc_c
 !
-            forall(ir=1,gas_nr) gas_evolinit(:,ir)=
+            forall(ir=1:gas_nr) gas_evolinit(:,ir)=
      &           gas_evolinit(:,ir)*gas_vals2(ir)%volr*help**3
 !           
          case default
