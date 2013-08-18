@@ -2,7 +2,7 @@
 
 !-- misc
 in_nomp = 4
-in_grab_stdout = f
+in_grab_stdout = t
 in_puretran = t
 in_seed = 1
 in_noreadstruct = t

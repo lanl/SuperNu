@@ -87,6 +87,10 @@ program supernu
 !
    call time(t1)
    t_setup = t1-t0!}}}
+!
+!-- initial radiation energy
+   call initialnumbers
+!   
   endif !impi
 
   call bcast_permanent !MPI
@@ -103,10 +107,7 @@ program supernu
   help = rand(ihelp)
 
 
-!-- calculating analytic initial particle distribution (if any)
-  if(impi==impi0) then
-     call initialnumbers
-  endif
+!-- instantiating initial particles (if any)
   call initial_particles
 !
 !-- time step loop

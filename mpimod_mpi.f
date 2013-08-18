@@ -26,9 +26,12 @@ c     --------------------------!{{{
 *
 * arrays:
 * -------
+* integer :: gas_nvolinit(gas_nr)
 * real*8 :: gas_rarr(gas_nr+1)
 * real*8 :: gas_drarr(gas_nr)
 * real*8 :: gas_curvcent(gas_nr)
+* real*8 :: gas_evolinit(gas_ng,gas_nr)
+* real*8 :: gas_wl(gas_ng+1)
 *
 * scalars:
 *----------
@@ -45,6 +48,7 @@ c     --------------------------!{{{
 * integer :: in_nomp
 * integer :: tsp_nt
 * integer :: in_seed
+* integer :: prt_ninitnew
 *-- real*8
 * real*8 :: prt_tauddmc
 *-- character
@@ -75,10 +79,10 @@ c-- copy back
       deallocate(lsndvec)
 c
 c-- integer
-      n = 6
+      n = 7
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/gas_nr,gas_ng,
-     &  prt_npartmax,in_nomp,tsp_nt,in_seed/)
+     &  prt_npartmax,in_nomp,tsp_nt,in_seed,prt_ninitnew/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -88,6 +92,7 @@ c-- copy back
       in_nomp = isndvec(4)
       tsp_nt = isndvec(5)
       in_seed = isndvec(6)
+      prt_ninitnew = isndvec(7)
       deallocate(isndvec)
 c
 c-- real*8
@@ -112,21 +117,34 @@ c
 c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0) then
+       allocate(gas_nvolinit(gas_nr))
        allocate(gas_rarr(gas_nr+1))
        allocate(gas_drarr(gas_nr))
        allocate(gas_curvcent(gas_nr))
+       allocate(gas_evolinit(gas_ng,gas_nr))
+       allocate(gas_wl(gas_ng+1))
        !prt_done = .false.
+c-- allocating particle array for helper ranks
+       allocate(prt_particles(prt_npartmax))
+       prt_particles%isvacant = .true.
+c--
       endif
       !if(impi==impi0) then
       !   prt_particles%isvacant=.true.
       !endif
 c
 c-- broadcast data
+      call mpi_bcast(gas_nvolinit,gas_nr,MPI_INTEGER,
+     &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_rarr,gas_nr+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_drarr,gas_nr,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_curvcent,gas_nr,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_evolinit,gas_nr*gas_ng,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_wl,gas_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c!}}}
       end subroutine bcast_permanent
@@ -259,12 +277,8 @@ c
        allocate(gas_opacleakl(gas_ng,gas_nr))
        allocate(gas_opacleakr(gas_ng,gas_nr))
        allocate(gas_cap(gas_ng,gas_nr))
-       allocate(gas_wl(gas_ng+1))
+!       allocate(gas_wl(gas_ng+1))
 c
-c-- allocating particle array for helper ranks
-       allocate(prt_particles(prt_npartmax))
-       prt_particles%isvacant = .true.
-c--
       endif
 c
 c-- broadcasting particle array
