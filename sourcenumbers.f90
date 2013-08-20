@@ -43,7 +43,8 @@ subroutine sourcenumbers
      gas_emit(ir) =  tsp_dt*gas_fcoef(ir)*gas_siggrey(ir)*pc_c* &
           gas_vals2(ir)%ur*gas_vals2(ir)%vol
 !
-     gas_emit(ir) = tsp_dt*gas_vals2(ir)%vol*(1d0-gas_fcoef(ir))*&
+     gas_emit(ir) = gas_emit(ir)+&
+          tsp_dt*gas_vals2(ir)%vol*(1d0-gas_fcoef(ir))*&
           gas_vals2(ir)%matsrc
 !
      if(.not.gas_novolsrc .and. gas_srctype=='none') then
@@ -62,13 +63,13 @@ subroutine sourcenumbers
   enddo
   
   ! Calculating number of domain inner boundary particles (if any)
-  prt_nsurf = nint(gas_esurf*prt_ns/gas_etot)+1
+  prt_nsurf = nint(gas_esurf*prt_ns/gas_etot)
   prt_nnew = prt_nsurf
 
   ! Calculating number of particles per cell (gas_vals2%nvol): loop
   prt_nexsrc=0
   do ir = 1, gas_nr
-     gas_nvol(ir)=nint(abs(gas_emit(ir))*prt_ns/gas_etot) !+1
+     gas_nvol(ir)=nint(abs(gas_emit(ir))*prt_ns/gas_etot)+1
      prt_nnew = prt_nnew + gas_nvol(ir)
      !external source volume numbers
      exsumg = 0d0

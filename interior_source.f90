@@ -34,7 +34,7 @@ subroutine interior_source
   !Volume particle instantiation: loop
   !Loop run over the number of new particles that aren't surface source
   !particles.
-
+  
   x1=1d0/gas_wl(gas_ng+1)
   x2=1d0/gas_wl(1)
   do ipart = prt_nsurf+1, prt_nsurf+prt_nexsrc
@@ -155,27 +155,27 @@ subroutine interior_source
            !Ryan W.: particle group removed (rev. 120)
            !prt_particles(ivac)%gsrc = iig
            !Calculating wavelength uniformly from group
-!           r1 = rand()
-!           wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
-           !wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
-           x1 = pc_h*pc_c/(gas_wl(iig+1)*pc_kb*gas_temp(ir))
-           x2 = pc_h*pc_c/(gas_wl(iig)*pc_kb*gas_temp(ir))
-           if (x2<pc_plkpk) then
-              bmax = x2**3/(exp(x2)-1d0)
-           elseif (x1>pc_plkpk) then
-              bmax = x1**3/(exp(x1)-1d0)
-           else
-              bmax = pc_plkpk
-           endif
            r1 = rand()
-           r2 = rand()
-           xx0 = (1d0-r1)*x1+r1*x2
-           do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
-              r1 = rand()
-              r2 = rand()
-              xx0 = (1d0-r1)*x1+r1*x2
-           enddo
-           wl0 = pc_h*pc_c/(xx0*pc_kb*gas_temp(ir))
+           wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
+           !wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
+!            x1 = pc_h*pc_c/(gas_wl(iig+1)*pc_kb*gas_temp(ir))
+!            x2 = pc_h*pc_c/(gas_wl(iig)*pc_kb*gas_temp(ir))
+!            if (x2<pc_plkpk) then
+!               bmax = x2**3/(exp(x2)-1d0)
+!            elseif (x1>pc_plkpk) then
+!               bmax = x1**3/(exp(x1)-1d0)
+!            else
+!               bmax = pc_plkpk
+!            endif
+!            r1 = rand()
+!            r2 = rand()
+!            xx0 = (1d0-r1)*x1+r1*x2
+!            do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
+!               r1 = rand()
+!               r2 = rand()
+!               xx0 = (1d0-r1)*x1+r1*x2
+!            enddo
+!            wl0 = pc_h*pc_c/(xx0*pc_kb*gas_temp(ir))
 
            !Calculating radial position
 !            r1 = 0d0
@@ -184,7 +184,7 @@ subroutine interior_source
 !            uur = gas_tempb(ir+1)**4
 !            uumax = max(uul,uur)
 !           do while (r2 > r1)
-!              r3 = rand()
+              r3 = rand()
               r0 = (r3*gas_rarr(ir+1)**3+(1.0-r3)*gas_rarr(ir)**3)**(1.0/3.0)
 !              r3 = (r0-gas_rarr(ir))/gas_drarr(ir)
 !              r1 = (r3*uur+(1.0-r3)*uul)/uumax
@@ -195,6 +195,9 @@ subroutine interior_source
            !Calculating direction cosine (comoving)
            r1 = rand()
            mu0 = 1d0-2d0*r1
+           if(abs(mu0)<0.0000001d0) then
+              mu0=0.0000001d0
+           endif
            !Calculating particle tsp_time
            r1 = rand()
            prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt

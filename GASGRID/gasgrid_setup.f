@@ -57,6 +57,7 @@ c==================================================================
        help2 = sqrt(1d0/help2)
        gas_curvcent(ir) = sqrt((gas_rarr(ir+1)**2+gas_rarr(ir)**2))
        gas_curvcent(ir) = help2*gas_curvcent(ir)
+       gas_curvcent(ir) = 1d0
       enddo!}}}
 c
 c
@@ -66,27 +67,14 @@ c--
       write(6,*) '==========================='
 c
 c-- temperature
-      if(in_consttemp==0d0) then!{{{
+      if(in_srctype=='manu') then!{{{
+       call init_manutemp(tsp_texp)
+      elseif(in_consttemp==0d0) then
        call read_restart_file
       else
        gas_temp = in_consttemp
-!>> drr: not the right place for temp limiters?
-!      do ir=1,gas_nr
-!       if(gas_temp(ir)<10d0) then
-!        gas_temp(ir)=10d0
-!       endif
-!      enddo
-      endif
-c-- Ryan W.: temporary override of initial temperature for manu source test
-      if(in_srctype=='manu') then
-         if(gas_isvelocity) then
-            ! setting uniform here at nominal manufacture value
-            gas_temp=man_temp0
-         else
-            ! setting uniform here at nominal manufacture value
-            gas_temp=man_temp0
-         endif
       endif!}}}
+c
 c
 c-- temp and ur
       gas_vals2%ur = pc_acoef*gas_temp**4 !initial guess, may be overwritten by read_temp_str

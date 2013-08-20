@@ -35,6 +35,7 @@ function binsrch(lamp,wl,ng)
            imid = ng
            exit
         else
+           write(*,*) ng, wl(imin), wl(imid), lamp
            stop 'binsrch: invalid inputs'
         endif
      endif

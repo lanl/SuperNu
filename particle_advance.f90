@@ -173,6 +173,9 @@ subroutine particle_advance
                     xx0 = (1d0-r1)*x1+r1*x2
                  enddo
                  wlsrc = pc_h*pc_c/(xx0*pc_kb*gas_temp(zsrc))
+              else
+                 r1 = rand()
+                 wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
               endif
               !
               if(gas_isvelocity) then

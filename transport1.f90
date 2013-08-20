@@ -25,7 +25,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   real*8 :: r1, r2, help
   real*8 :: db, dcol, dcen, dthm, d
   real*8 :: siglabfact, dcollabfact, elabfact
-  real*8 :: rold, P, denom2, told, zholder
+  real*8 :: rold, P, denom2, told, zholder, muold
   real*8 :: bmax, x1, x2, xx0
 
   if(gas_isvelocity) then
@@ -112,12 +112,15 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   dcen = abs(pc_c*(tsp_time+tsp_dt-t)/help)
 
   ! minimum distance = d
+  !write(*,*) dcol, dthm, db, dcen
   d = min(dcol,dthm,db,dcen)
   
   rold = r
-  r = sqrt((1.0d0-mu**2)*r**2+(d+r*mu)**2)
+  !r = sqrt((1.0d0-mu**2)*r**2+(d+r*mu)**2)
+  r = sqrt(r**2+d**2+2d0*d*r*mu)
   told = t
   t = t + help*d/pc_c
+!  muold = mu
   mu = (rold*mu+d)/r
   if(gas_isvelocity) then
      elabfact = 1.0d0 - mu*r/pc_c
@@ -127,8 +130,8 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   !calculating energy deposition and density
   !
   if(.not.prt_isimcanlog) then
-     gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z) &
-          *gas_cap(g,z)*siglabfact*d*help))*elabfact
+        gas_edep(z)=gas_edep(z)+E*(1.0d0-exp(-gas_fcoef(z) &
+             *gas_cap(g,z)*siglabfact*d*help))*elabfact
      !--
      if(gas_fcoef(z)*gas_cap(g,z)*gas_drarr(z)*help>1d-6) then     
         gas_eraddens(g,z) = gas_eraddens(g,z)+E* &
@@ -185,6 +188,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      !
      r1 = rand()
      mu = 1.0-2.0*r1
+     if(abs(mu)<0.0000001d0) then
+        mu = 0.0000001d0
+     endif
      if(gas_isvelocity) then
         mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
         E = E*elabfact/(1.0-mu*r/pc_c)
@@ -202,6 +208,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      else
         r1 = rand()
         mu = 1.0-2.0*r1
+        if(abs(mu)<0.0000001d0) then
+           mu = 0.0000001d0
+        endif
         if(gas_isvelocity) then
            mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
            E = E*elabfact/(1.0-mu*r/pc_c)
@@ -218,29 +227,29 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         !gas_eraddens(g,z)=gas_eraddens(g,z)+E*elabfact
         !-------------------------------------------------------
         ! sampling comoving wavelength in group
-        !r1 = rand()
-        !wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
+        r1 = rand()
+        wl = 1d0/((1d0-r1)/gas_wl(g)+r1/gas_wl(g+1))
         !wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
         !
         ! sampling sub-group Planck function:
-        x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(z))
-        x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_temp(z))
-        if (x2<pc_plkpk) then
-           bmax = x2**3/(exp(x2)-1d0)
-        elseif (x1>pc_plkpk) then
-           bmax = x1**3/(exp(x1)-1d0)
-        else
-           bmax = pc_plkpk
-        endif
-        r1 = rand()
-        r2 = rand()
-        xx0 = (1d0-r1)*x1+r1*x2
-        do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
-           r1 = rand()
-           r2 = rand()
-           xx0 = (1d0-r1)*x1+r1*x2
-        enddo
-        wl = pc_h*pc_c/(xx0*pc_kb*gas_temp(z))
+!         x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(z))
+!         x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_temp(z))
+!         if (x2<pc_plkpk) then
+!            bmax = x2**3/(exp(x2)-1d0)
+!         elseif (x1>pc_plkpk) then
+!            bmax = x1**3/(exp(x1)-1d0)
+!         else
+!            bmax = pc_plkpk
+!         endif
+!         r1 = rand()
+!         r2 = rand()
+!         xx0 = (1d0-r1)*x1+r1*x2
+!         do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
+!            r1 = rand()
+!            r2 = rand()
+!            xx0 = (1d0-r1)*x1+r1*x2
+!         enddo
+!         wl = pc_h*pc_c/(xx0*pc_kb*gas_temp(z))
         !
         !
         if(gas_isvelocity) then
@@ -305,6 +314,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         ! End of check
         else
            z = z+1
+           r = gas_rarr(z)
         endif
      else
         if (z==1) then

@@ -20,7 +20,26 @@ subroutine analytic_initial
 !
 !-- currently only supplying nonzero for gas_srctype=manu
   if(gas_srctype=='none') then
-     return
+     if(gas_opacanaltype=='pick') then
+!
+!-- checking input validity for picket fence
+        if(gas_ng/=2) stop 'analytic_initial: &
+             gas_ng/=2 and opacanaltype=pick'
+        if(gas_isvelocity) stop 'analytic_initial: invalid gas_isvelocity'
+!
+!-- tstd initial energy profile currently approximation
+        if(gas_suol=='tstd') then
+           gas_evolinit(1,:)=0d0
+           gas_evolinit(2,:)=gas_ppick(2)*gas_vals2%ur*&
+                gas_vals2%volr*(gas_l0+gas_lr)**3
+!           gas_evolinit(2,:)=gas_vals2%ur*&
+!                gas_vals2%volr*(gas_l0+gas_lr)**3           
+        else
+           stop 'analytic_initial: gas_suol/=tstd not available'
+        endif
+     else
+        return
+     endif
   elseif(gas_srctype=='heav') then
      return
   elseif(gas_srctype=='strt') then
@@ -28,7 +47,7 @@ subroutine analytic_initial
   elseif(gas_srctype=='manu') then
      call init_manuprofile(tsp_texp)
   else
-     stop 'analytic_initial'
+     stop 'analytic_initial: invalid gas_srctype'
   endif
 
 end subroutine analytic_initial

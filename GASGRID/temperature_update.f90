@@ -27,7 +27,7 @@ subroutine temperature_update
              gas_eraddens(ig,ir)
      enddo
   enddo
-  write(*,*) gas_eraddens(:,5)
+  !write(*,*) gas_eraddens(:,5), gas_temp(5), gas_vals2(5)%bcoef, gas_nvol(5)
   !calculating deposition estimate
   if(gas_depestimate) then
      gas_edep = 0d0
@@ -39,6 +39,7 @@ subroutine temperature_update
   endif
 
   !calculating temperature
+!  if(tsp_it/=1) then
   do ir = 1, gas_nr
      dtemp = gas_edep(ir)/gas_vals2(ir)%vol !new
      !write(6,*) gas_edep(ir), gas_vals2(ir)%vol
@@ -48,9 +49,11 @@ subroutine temperature_update
           gas_vals2(ir)%matsrc
 
      gas_temp(ir)=gas_temp(ir)+dtemp+dtemp2
+     !gas_temp(ir)=gas_temp(ir)*1d0
 
      gas_vals2(ir)%ur = pc_acoef*gas_temp(ir)**4
      
   enddo
+!  endif
 
 end subroutine temperature_update

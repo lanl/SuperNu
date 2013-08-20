@@ -230,7 +230,7 @@ c-- determine manufacture type
       if(gas_isvelocity) then
          help = gas_velout*texp
 c
-c-- implement/modify velocity dependent manufactured temperature source
+c-- implement/modify velocity dependent manufactured initial profile
          select case (gas_opacanaltype)
          case ('grey')
 c-- grey solution
@@ -255,9 +255,9 @@ c
          case ('line')
 c-- line solution
             if(gas_ng/=2)
-     &           stop 'generate_manuradsrc: gas_opacanaltype=line'
+     &           stop 'init_manuprofile: gas_opacanaltype=line'
             if(gas_ldisp1/gas_ldisp2>=1d-3)
-     &           stop 'generate_manuradsrc: gas_ldisp1/gas_ldisp2>=1d-3'
+     &           stop 'init_manuprofile: gas_ldisp1/gas_ldisp2>=1d-3'
 c-- g=1
             gas_evolinit(1,:)=0.5d0*man_aa11/pc_c
 c
@@ -275,11 +275,62 @@ c
       else
 c
 c-- implement/modify static manufactured temperature source
-         stop 'generate_manutempsrc: no static sources'
+         stop 'init_manuprofile: no static sources'
 c
 c
       endif      
 c
       end subroutine init_manuprofile
+c
+c
+      subroutine init_manutemp(texp)
+c     ---------------------------
+      use physconstmod
+      use gasgridmod      
+      implicit none
+      real*8,intent(in) :: texp
+************************************************************************
+* calculate initial temperature in Kelvin
+* with manufactured parameters
+************************************************************************
+c
+c-- verify applicable input pars
+      call check_manufacpars
+c
+c-- determine manufacture type
+      if(gas_isvelocity) then
+c
+c-- implement/modify velocity dependent manufactured initial profile
+         select case (gas_opacanaltype)
+         case ('grey')
+c-- grey solution (uniform nominal temperature)
+            gas_temp=man_temp0
+c
+         case ('mono')
+            stop 'init_manutemp: gas_opacanaltype=mono'
+         case ('pick')
+            stop 'init_manutemp: gas_opacanaltype=pick'
+         case ('line')
+c-- line solution
+            if(gas_ng/=2)
+     &           stop 'init_manutemp: gas_opacanaltype=line'
+            if(gas_ldisp1/gas_ldisp2>=1d-3)
+     &           stop 'init_manutemp: gas_ldisp1/gas_ldisp2>=1d-3'
+c
+            gas_temp=man_temp0
+c
+         case default
+            stop 'gas_opacanaltype unknown'
+         end select
+c
+c
+      else
+c
+c-- implement/modify static manufactured initial temperature
+         stop 'init_manutemp: no static solution'
+c         
+      endif
+c
+      end subroutine init_manutemp
 c
       end module manufacmod

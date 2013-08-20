@@ -89,6 +89,7 @@ subroutine analytic_opacity
         enddo
      enddo!}}}
   elseif(gas_opacanaltype=='pick') then
+     if(gas_ng/=2) stop 'analytic_opacity: invalid gas_ng'
      ! sigmaP = sigmaR = constant = A (gas_sigcoef set in input.par)!{{{
      ! Su&Olson picket-fence distributions (tests: A,B,C (Su and Olson 1999))
      ! Input wavelength grid not used
@@ -98,52 +99,48 @@ subroutine analytic_opacity
         !sigrr = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_rhob(ir+1)**gas_sigrpwr
         sigll = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
         sigrr = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-     enddo
-     if(gas_suol=='tsta') then    !Case: A
-        do ir = 1, gas_nr
+     
+        if(gas_suol=='tsta') then    !Case: A
+
            gas_cap(1,ir) = gas_siggrey(ir)
            gas_cap(2,ir) = gas_siggrey(ir)
            gas_caprosl(1,ir) = sigll
            gas_caprosl(2,ir) = sigll
            gas_caprosr(1,ir) = sigrr
            gas_caprosr(2,ir) = sigrr
-           do ig = 3, gas_ng
-              gas_cap(ig,ir) = 0.
-              gas_caprosl(ig,ir) = 0d0
-              gas_caprosr(ig,ir) = 0d0
-           enddo
-        enddo
-     elseif(gas_suol=='tstb') then  !Case: B
-        do ir = 1, gas_nr
+
+        elseif(gas_suol=='tstb') then  !Case: B
+
            gas_cap(1,ir) = 2d0*gas_siggrey(ir)/11d0
            gas_cap(2,ir) = 20d0*gas_siggrey(ir)/11d0
            gas_caprosl(1,ir) = 2d0*sigll/11d0
            gas_caprosl(2,ir) = 20d0*sigll/11d0
            gas_caprosr(1,ir) = 2d0*sigrr/11d0
            gas_caprosr(2,ir) = 20d0*sigrr/11d0
-           do ig = 3, gas_ng
-              gas_cap(ig,ir) = 0.
-              gas_caprosl(ig,ir) = 0d0
-              gas_caprosr(ig,ir) = 0d0
-           enddo
-        enddo
-     elseif(gas_suol=='tstc') then  !Case: C
-        do ir = 1, gas_nr
+
+        elseif(gas_suol=='tstc') then  !Case: C
+
            gas_cap(1,ir) = 2d0*gas_siggrey(ir)/101d0
            gas_cap(2,ir) = 200d0*gas_siggrey(ir)/101d0
            gas_caprosl(1,ir) = 2d0*sigll/101d0
            gas_caprosl(2,ir) = 200d0*sigll/101d0
            gas_caprosr(1,ir) = 2d0*sigrr/101d0
            gas_caprosr(2,ir) = 200d0*sigrr/101d0
-           do ig = 3, gas_ng
-              gas_cap(ig,ir) = 0.
-              gas_caprosl(ig,ir) = 0d0
-              gas_caprosr(ig,ir) = 0d0
-           enddo
-        enddo
-     else
-        stop 'analytic_opacity: gas_suol invalid'
-     endif!}}}
+
+!-- added evacuated picket test
+        elseif(gas_suol=='tstd') then !Case: D (not in SuOlson)
+
+           gas_cap(1,ir) = 0d0
+           gas_cap(2,ir) = 2d0*gas_siggrey(ir)
+           gas_caprosl(1,ir) = 0d0
+           gas_caprosl(2,ir) = 2d0*sigll
+           gas_caprosr(1,ir) = 0d0
+           gas_caprosr(2,ir) = 2d0*sigrr
+
+        else
+           stop 'analytic_opacity: gas_suol invalid'
+        endif!}}}
+     enddo
   elseif(gas_opacanaltype=='line') then
      ! Highly structured line test: group opacities alternate in magnitude!{{{
      ! sigmaP = A*T^B*rho^C
