@@ -69,7 +69,7 @@ subroutine sourcenumbers
   ! Calculating number of particles per cell (gas_vals2%nvol): loop
   prt_nexsrc=0
   do ir = 1, gas_nr
-     gas_nvol(ir)=nint(abs(gas_emit(ir))*prt_ns/gas_etot)+1
+     gas_nvol(ir)=nint(abs(gas_emit(ir))*prt_ns/gas_etot)+50
      prt_nnew = prt_nnew + gas_nvol(ir)
      !external source volume numbers
      exsumg = 0d0

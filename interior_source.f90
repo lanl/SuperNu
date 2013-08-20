@@ -156,7 +156,7 @@ subroutine interior_source
            !prt_particles(ivac)%gsrc = iig
            !Calculating wavelength uniformly from group
            r1 = rand()
-           wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
+           wl0 = 1d0/((1d0-r1)/gas_wl(iig)+r1/gas_wl(iig+1))
            !wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
 !            x1 = pc_h*pc_c/(gas_wl(iig+1)*pc_kb*gas_temp(ir))
 !            x2 = pc_h*pc_c/(gas_wl(iig)*pc_kb*gas_temp(ir))
@@ -178,18 +178,18 @@ subroutine interior_source
 !            wl0 = pc_h*pc_c/(xx0*pc_kb*gas_temp(ir))
 
            !Calculating radial position
-!            r1 = 0d0
-!            r2 = 1d0
-!            uul = gas_tempb(ir)**4
-!            uur = gas_tempb(ir+1)**4
-!            uumax = max(uul,uur)
-!           do while (r2 > r1)
+            r1 = 0d0
+            r2 = 1d0
+            uul = gas_tempb(ir)**4
+            uur = gas_tempb(ir+1)**4
+            uumax = max(uul,uur)
+           do while (r2 > r1)
               r3 = rand()
               r0 = (r3*gas_rarr(ir+1)**3+(1.0-r3)*gas_rarr(ir)**3)**(1.0/3.0)
-!              r3 = (r0-gas_rarr(ir))/gas_drarr(ir)
-!              r1 = (r3*uur+(1.0-r3)*uul)/uumax
-!              r2 = rand()
-!           enddo
+              r3 = (r0-gas_rarr(ir))/gas_drarr(ir)
+              r1 = (r3*uur+(1.0-r3)*uul)/uumax
+              r2 = rand()
+           enddo
            prt_particles(ivac)%rsrc = r0
 
            !Calculating direction cosine (comoving)

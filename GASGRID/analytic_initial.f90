@@ -29,7 +29,8 @@ subroutine analytic_initial
 !
 !-- tstd initial energy profile currently approximation
         if(gas_suol=='tstd') then
-           gas_evolinit(1,:)=0d0
+           gas_evolinit(1,:)=0d0!gas_ppick(1)*gas_vals2%ur*&
+                !gas_vals2%volr*(gas_l0+gas_lr)**3
            gas_evolinit(2,:)=gas_ppick(2)*gas_vals2%ur*&
                 gas_vals2%volr*(gas_l0+gas_lr)**3
 !           gas_evolinit(2,:)=gas_vals2%ur*&

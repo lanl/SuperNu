@@ -400,7 +400,7 @@ subroutine particle_advance
         endif
         !
      endif
-
+     
      if(isshift) then
      if ((gas_isvelocity).and.(rtsrc==1)) then
         !

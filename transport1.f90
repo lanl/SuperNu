@@ -112,12 +112,12 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   dcen = abs(pc_c*(tsp_time+tsp_dt-t)/help)
 
   ! minimum distance = d
-  !write(*,*) dcol, dthm, db, dcen
+!  if(z==6.and.tsp_it==6) write(*,*) dcol, dthm, db, dcen
   d = min(dcol,dthm,db,dcen)
   
   rold = r
-  !r = sqrt((1.0d0-mu**2)*r**2+(d+r*mu)**2)
-  r = sqrt(r**2+d**2+2d0*d*r*mu)
+  r = sqrt((1.0d0-mu**2)*r**2+(d+r*mu)**2)
+!  r = sqrt(r**2+d**2+2d0*d*r*mu)
   told = t
   t = t + help*d/pc_c
 !  muold = mu
@@ -229,6 +229,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         ! sampling comoving wavelength in group
         r1 = rand()
         wl = 1d0/((1d0-r1)/gas_wl(g)+r1/gas_wl(g+1))
+        !wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
         !wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
         !
         ! sampling sub-group Planck function:

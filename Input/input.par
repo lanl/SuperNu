@@ -3,27 +3,27 @@
 !-- misc
 in_nomp = 4
 in_grab_stdout = f
-in_puretran = t
+in_puretran = f
 in_seed = 1
 in_noreadstruct = t
 
 !-- time step
-in_tfirst = 0.00157407
-in_tlast = 0.0023148
+in_tfirst = 5.7910433541826765d-16
+in_tlast = 1.1582086708365353d-15
 !in_tfirst = 1.1574074e-5
 !in_tlast = 2.3148148e-5
 in_nt = 100
 in_alpha = 1d0
 
 !-- gas grid settings
-in_nr = 50
+in_nr = 25
 in_isvelocity = f
 in_isshell = f
 in_novolsrc = t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_v0 = 2d8
 !in_velout = 1d9
 !in_l0 = 1d0
-in_lr = 1.7987547372d13
+in_lr = 1d0
 in_totmass = 1d33
 in_dentype = 'unif'
 in_templ0 = 0d0
@@ -50,7 +50,7 @@ in_sigtpwrs = 0d0
 in_sigrpwrs = 0d0
 
 !-- power law absorption opacity values
-in_sigcoef = 5.5594d-12
+in_sigcoef = 100d0
 in_sigtpwr = 0d0
 in_sigrpwr = 0d0
 
@@ -69,8 +69,8 @@ in_ldisp2 = 1d0
 in_wldex = 21
 
 !-- particle numbers
-in_ninit = 100000
-in_ns = 100000
+in_ninit = 40000
+in_ns = 400000
 in_npartmax = 10000000
 
 !-- imc tally method
