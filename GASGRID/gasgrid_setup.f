@@ -57,7 +57,7 @@ c==================================================================
        help2 = sqrt(1d0/help2)
        gas_curvcent(ir) = sqrt((gas_rarr(ir+1)**2+gas_rarr(ir)**2))
        gas_curvcent(ir) = help2*gas_curvcent(ir)
-       gas_curvcent(ir) = 1d0
+!       gas_curvcent(ir) = 1d0
       enddo!}}}
 c
 c

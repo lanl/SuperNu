@@ -20,6 +20,7 @@ subroutine particle_advance
 
   integer :: ipart, difs, transps, g, zholder, zfdiff, ir, binsrch
   real*8 :: r1, alph2, r2, x1, x2, xx0, bmax, help
+  real*8 :: uul, uur, uumax, r0, r3
   integer, pointer :: zsrc, rtsrc !, gsrc
   real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
   logical, pointer :: isvacant
@@ -140,10 +141,28 @@ subroutine particle_advance
              *help<prt_tauddmc*gas_curvcent(zsrc)) then
            !write(*,*) 'here', g, wlsrc, esrc
            if (rtsrc == 2) then
-              r1 =  rand()
-              rsrc = (r1*gas_rarr(zsrc+1)**3 + (1.0-r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
+!-- sampling position uniformly
+!              r1 =  rand()
+!              rsrc = (r1*gas_rarr(zsrc+1)**3 + (1.0-r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
+!-- sampling position from source tilt
+              r1 = 0d0
+              r2 = 1d0
+              uul = gas_tempb(zsrc)**4
+              uur = gas_tempb(zsrc+1)**4
+              uumax = max(uul,uur)
+              do while (r2 > r1)
+                 r3 = rand()
+                 r0 = (r3*gas_rarr(zsrc+1)**3+(1.0-r3)*gas_rarr(zsrc)**3)**(1.0/3.0)
+                 r3 = (r0-gas_rarr(zsrc))/gas_drarr(zsrc)
+                 r1 = (r3*uur+(1d0-r3)*uul)/uumax
+                 r2 = rand()
+              enddo
+              rsrc = r0
+!
+!-- sampling angle isotropically
               r1 = rand()
               musrc = 1.0 - 2.0*r1
+!-- converting to lab frame (doppler and aberration)
               if(gas_isvelocity) then
                  musrc = (musrc + rsrc/pc_c)/(1.0 + rsrc*musrc/pc_c)
                  esrc = esrc/(1.0 - musrc*rsrc/pc_c)
@@ -153,30 +172,30 @@ subroutine particle_advance
               !r1 = rand()
               !wlsrc=gas_wl(g)*(1d0-r1)+gas_wl(g+1)*r1
               !
-              r1 = rand()
-              if(r1<gas_cap(g,zsrc)/(gas_cap(g,zsrc)+gas_sig(zsrc))) then
-                 x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(zsrc))
-                 x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_temp(zsrc))
-                 if (x2<pc_plkpk) then
-                    bmax = x2**3/(exp(x2)-1d0)
-                 elseif (x1>pc_plkpk) then
-                    bmax = x1**3/(exp(x1)-1d0)
-                 else
-                    bmax = pc_plkpk
-                 endif
-                 r1 = rand()
-                 r2 = rand()
-                 xx0 = (1d0-r1)*x1+r1*x2
-                 do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
-                    r1 = rand()
-                    r2 = rand()
-                    xx0 = (1d0-r1)*x1+r1*x2
-                 enddo
-                 wlsrc = pc_h*pc_c/(xx0*pc_kb*gas_temp(zsrc))
-              else
+!               r1 = rand()
+!               if(r1<gas_cap(g,zsrc)/(gas_cap(g,zsrc)+gas_sig(zsrc))) then
+!                  x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(zsrc))
+!                  x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_temp(zsrc))
+!                  if (x2<pc_plkpk) then
+!                     bmax = x2**3/(exp(x2)-1d0)
+!                  elseif (x1>pc_plkpk) then
+!                     bmax = x1**3/(exp(x1)-1d0)
+!                  else
+!                     bmax = pc_plkpk
+!                  endif
+!                  r1 = rand()
+!                  r2 = rand()
+!                  xx0 = (1d0-r1)*x1+r1*x2
+!                  do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
+!                     r1 = rand()
+!                     r2 = rand()
+!                     xx0 = (1d0-r1)*x1+r1*x2
+!                  enddo
+!                  wlsrc = pc_h*pc_c/(xx0*pc_kb*gas_temp(zsrc))
+!               else
                  r1 = rand()
                  wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
-              endif
+!              endif
               !
               if(gas_isvelocity) then
                  wlsrc = wlsrc*(1.0-musrc*rsrc/pc_c)
@@ -187,7 +206,8 @@ subroutine particle_advance
            rtsrc = 2
         endif
      endif
-     ! Looking up group
+!
+!-- looking up group
      if(rtsrc==1) then
         if(gas_isvelocity) then
            g = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1)
@@ -301,11 +321,12 @@ subroutine particle_advance
      !------------
      ! Redshifting DDMC particle energy weights and wavelengths
      if(rtsrc == 2.and.gas_isvelocity) then
-        ! Redshifting energy weight
-         esrc = esrc*exp(-tsp_dt/tsp_texp)
-         ebirth = ebirth*exp(-tsp_dt/tsp_texp)
+!-- redshifting energy weight
+        esrc = esrc*exp(-tsp_dt/tsp_texp)
+        !ebirth = ebirth*exp(-tsp_dt/tsp_texp)
         !
-        ! Finding group
+!
+!-- find group
         g = binsrch(wlsrc,gas_wl,gas_ng+1)
         !
         if(g>gas_ng.or.g<1) then
@@ -318,37 +339,10 @@ subroutine particle_advance
         endif
         !
         !
-        r1=rand()
-        if(r1<gas_cap(g,zsrc)/(gas_cap(g,zsrc)+gas_sig(zsrc))) then
-        !
-           x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(zsrc))
-           x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_temp(zsrc))
-           if (x2<pc_plkpk) then
-              bmax = x2**3/(exp(x2)-1d0)
-           elseif (x1>pc_plkpk) then
-              bmax = x1**3/(exp(x1)-1d0)
-           else
-              bmax = pc_plkpk
-           endif
-           r1 = rand()
-           r2 = rand()
-           xx0 = (1d0-r1)*x1+r1*x2
-           do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
-              r1 = rand()
-              r2 = rand()
-              xx0 = (1d0-r1)*x1+r1*x2
-           enddo
-           wlsrc = pc_h*pc_c/(xx0*pc_kb*gas_temp(zsrc))
-        else
-           r1 = rand()
-           wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
-        endif
-        !
-        !r1 = rand()
-        !wlsrc = gas_wl(g+1)*r1+gas_wl(g)*(1d0-r1)
+        r1 = rand()
+        wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
         wlsrc = wlsrc*exp(tsp_dt/tsp_texp)
-        !endif
-        
+        !
      endif
 
      ! Looking up group

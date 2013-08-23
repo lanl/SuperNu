@@ -22,8 +22,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   logical, intent(inout) :: vacnt
   !
   integer :: ig, iig, g, binsrch
-  real*8 :: r1, r2, help
-  real*8 :: denom, denom2, denom3
+  real*8 :: r1, r2, help, x1, x2, r3, uur, uul, uumax, r0
+  real*8 :: denom, denom2, denom3, xx0, bmax
   real*8 :: ddmct, tau, tcensus, PR, PL, PA
   !real*8, dimension(gas_ng) :: PDFg
   real*8 :: deleff=0.38
@@ -76,6 +76,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         gas_eraddens(g,z)=gas_eraddens(g,z)+E* &
              (1d0-exp(-gas_fcoef(z)*gas_cap(g,z)*pc_c*ddmct))/ &
              (gas_fcoef(z)*gas_cap(g,z)*pc_c*tsp_dt)
+!        gas_eraddens(g,z)=gas_eraddens(g,z)+E*ddmct/tsp_dt        
      else
         gas_eraddens(g,z)=gas_eraddens(g,z)+E*ddmct/tsp_dt
      endif
@@ -133,14 +134,42 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            !gas_eraddens(g,z)=gas_eraddens(g,z)+E
         else
 !
-!--- Ryan W.: wl needs resample (rev 178)
+!-- wl thermal resample
+!            x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(z))
+!            x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_temp(z))
+!            if (x2<pc_plkpk) then
+!               bmax = x2**3/(exp(x2)-1d0)
+!            elseif (x1>pc_plkpk) then
+!               bmax = x1**3/(exp(x1)-1d0)
+!            else
+!               bmax = pc_plkpk
+!            endif
+!            r1 = rand()
+!            r2 = rand()
+!            xx0 = (1d0-r1)*x1+r1*x2
+!            do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
+!               r1 = rand()
+!               r2 = rand()
+!               xx0 = (1d0-r1)*x1+r1*x2
+!            enddo
+!            wl = pc_h*pc_c/(xx0*pc_kb*gas_temp(z))
+            r1 = rand()
+            wl = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
+!
+!-- method changed to IMC
            hyparam = 1
+!
+!-- location set right bound of left cell
            r = gas_rarr(z)
+!-- current particle cell set to 1 left
            z = z-1
-           !gas_eraddens(g,z)=gas_eraddens(g,z)+E
+!
+!-- particl angle sampled from isotropic b.c. inward
            r1 = rand()
            r2 = rand()
            mu = -max(r1,r2)
+!
+!-- doppler and aberration corrections
            if(gas_isvelocity) then
               mu = (mu+r/pc_c)/(1d0+r*mu/pc_c)
               E = E/(1.0-r*mu/pc_c)
@@ -173,14 +202,42 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            !gas_eraddens(g,z)=gas_eraddens(g,z)+E
         else
 !
-!--- Ryan W.: wl needs resample (rev 178)
+!-- wavelength thermal resample
+!            x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(z))
+!            x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_temp(z))
+!            if (x2<pc_plkpk) then
+!               bmax = x2**3/(exp(x2)-1d0)
+!            elseif (x1>pc_plkpk) then
+!               bmax = x1**3/(exp(x1)-1d0)
+!            else
+!               bmax = pc_plkpk
+!            endif
+!            r1 = rand()
+!            r2 = rand()
+!            xx0 = (1d0-r1)*x1+r1*x2
+!            do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
+!               r1 = rand()
+!               r2 = rand()
+!               xx0 = (1d0-r1)*x1+r1*x2
+!            enddo
+!            wl = pc_h*pc_c/(xx0*pc_kb*gas_temp(z))
+            r1 = rand()
+            wl = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
+!
+!-- method changed to IMC
            hyparam = 1
+!
+!-- location set left bound of right cell
            r = gas_rarr(z+1)
+!-- current particle cell set 1 right
            z = z+1
-           !gas_eraddens(g,z)=gas_eraddens(g,z)+E
+!
+!--  particl angle sampled from isotropic b.c. outward
            r1 = rand()
            r2 = rand()
            mu = max(r1,r2)
+!
+!-- doppler and aberration corrections
            if(gas_isvelocity) then
               mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
               E = E/(1.0-r*mu/pc_c)
@@ -189,25 +246,10 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            endif
         endif
      elseif (PL+PR<=r1 .and. r1<PL+PR+PA) then
-        !gas_eraddens(g,z)=gas_eraddens(g,z)+ &
-        !     E/((gas_fcoef(z)+(1d0-gas_emitprob(g,z))*(1d0-gas_fcoef(z))) &
-        !     *gas_cap(g,z)*pc_c*tsp_dt)
         vacnt = .true.
         prt_done = .true.
         gas_edep(z) = gas_edep(z)+E
-        !write(*,*) 'here'
-        !E = E*(1d0-PA)
-        !gas_edep(z) = gas_edep(z)+PA*E
-        !if(E/E0<0.001d0) then
-        !   vacnt = .true.
-        !   prt_done = .true.
-        !   gas_edep(z)=gas_edep(z)+E
-        !endif
      else
-        !write(*,*) 'scatter'
-        !gas_eraddens(g,z)=gas_eraddens(g,z)+ &
-        !     E/((gas_fcoef(z)+(1d0-gas_emitprob(g,z))*(1d0-gas_fcoef(z))) &
-        !     *gas_cap(g,z)*pc_c*tsp_dt)
         denom2 = 0d0
         do ig = 1, gas_ng
            if(ig.ne.g) then
@@ -225,20 +267,58 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         enddo
         !write(*,*) 'Scatter: ',g,'to ',iig
         g = iig
-        !r1 = rand()
-        !wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
+        r1 = rand()
+        wl = 1d0/((1d0-r1)/gas_wl(g)+r1/gas_wl(g+1))
         ! during DDMC phase, wavelength is only a placeholder for group 
-        wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
+        !wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
         !
         if ((gas_sig(z)+gas_cap(g,z))*gas_drarr(z) &
              *help >= prt_tauddmc*gas_curvcent(z)) then
            hyparam = 2
         else
            hyparam = 1
+!-- wavelength thermal resample
+!            x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(z))
+!            x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_temp(z))
+!            if (x2<pc_plkpk) then
+!               bmax = x2**3/(exp(x2)-1d0)
+!            elseif (x1>pc_plkpk) then
+!               bmax = x1**3/(exp(x1)-1d0)
+!            else
+!               bmax = pc_plkpk
+!            endif
+!            r1 = rand()
+!            r2 = rand()
+!            xx0 = (1d0-r1)*x1+r1*x2
+!            do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
+!               r1 = rand()
+!               r2 = rand()
+!               xx0 = (1d0-r1)*x1+r1*x2
+!            enddo
+!            wl = pc_h*pc_c/(xx0*pc_kb*gas_temp(z))
+!
+!-- direction sampled isotropically           
            r1 = rand()
            mu = 1.0-2.0*r1
-           r1 = rand()
-           r = (r1*gas_rarr(z+1)**3+(1.0-r1)*gas_rarr(z)**3)**(1.0/3.0)
+!-- position sampled uniformly
+!            r1 = rand()
+!            r = (r1*gas_rarr(z+1)**3+(1.0-r1)*gas_rarr(z)**3)**(1.0/3.0)
+!-- position sampled from source tilt
+!            r1 = 0d0
+!            r2 = 1d0
+!            uul = gas_tempb(z)**4
+!            uur = gas_tempb(z+1)**4
+!            uumax = max(uul,uur)
+!            do while (r2 > r1)
+!               r3 = rand()
+!               r0 = (r3*gas_rarr(z+1)**3+(1.0-r3)*gas_rarr(z)**3)**(1.0/3.0)
+!               r3 = (r0-gas_rarr(z))/gas_drarr(z)
+!               r1 = (r3*uur+(1d0-r3)*uul)/uumax
+!               r2 = rand()
+!            enddo
+!            r = r0
+!
+!-- doppler and aberration corrections
            if(gas_isvelocity) then
               mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
               E = E/(1.0-mu*r/pc_c)
