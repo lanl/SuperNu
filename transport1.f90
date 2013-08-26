@@ -22,11 +22,11 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   logical, intent(inout) :: vacnt
   !
   integer :: ig, iig, g, binsrch
-  real*8 :: r1, r2, help
-  real*8 :: db, dcol, dcen, dthm, d
+  real*8 :: r1, r2, help, mu0, wl0, vdiff, rdop1, rdop2
+  real*8 :: db, dcol, dcen, dthm, ddop, d
   real*8 :: siglabfact, dcollabfact, elabfact
   real*8 :: rold, P, denom2, told, zholder, muold
-  real*8 :: bmax, x1, x2, xx0
+  real*8 :: bmax, x1, x2, xx0, ddop1, ddop2
 
   if(gas_isvelocity) then
      siglabfact = 1.0d0 - mu*r/pc_c
@@ -38,24 +38,8 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      help = 1d0
   endif
 
-  ! distance to boundary = db
-  if(gas_isshell) then
-     if (mu < -sqrt(1.0d0-(gas_rarr(z)/r)**2)) then
-        db = abs(sqrt(gas_rarr(z)**2-(1.0d0-mu**2)*r**2)+mu*r)
-     else
-        db = abs(sqrt(gas_rarr(z+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
-     endif
-  else
-     if (z == 1) then
-        db = abs(sqrt(gas_rarr(z+1)**2-(1.0-mu**2)*r**2)-mu*r)
-     elseif (mu < -sqrt(1.0d0-(gas_rarr(z)/r)**2)) then
-        db = abs(sqrt(gas_rarr(z)**2-(1.0d0-mu**2)*r**2)+mu*r)
-     else
-        db = abs(sqrt(gas_rarr(z+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
-     endif
-  endif
-
-  ! Calculating current group (rev. 120)
+!
+!-- calculating current group (rev. 120)
   if(gas_isvelocity) then
      g = binsrch(wl/(1.0d0-r*mu/pc_c),gas_wl,gas_ng+1)
   else
@@ -83,8 +67,27 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         vacnt = .true.
      endif
   endif
-  ! distance to fictitious collision = dcol
-  !
+!
+!== DISTANCE CALCULATIONS
+!
+!-- distance to boundary = db
+  if(gas_isshell) then
+     if (mu < -sqrt(1.0d0-(gas_rarr(z)/r)**2)) then
+        db = abs(sqrt(gas_rarr(z)**2-(1.0d0-mu**2)*r**2)+mu*r)
+     else
+        db = abs(sqrt(gas_rarr(z+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
+     endif
+  else
+     if (z == 1) then
+        db = abs(sqrt(gas_rarr(z+1)**2-(1.0-mu**2)*r**2)-mu*r)
+     elseif (mu < -sqrt(1.0d0-(gas_rarr(z)/r)**2)) then
+        db = abs(sqrt(gas_rarr(z)**2-(1.0d0-mu**2)*r**2)+mu*r)
+     else
+        db = abs(sqrt(gas_rarr(z+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
+     endif
+  endif
+!
+!-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
      if(gas_cap(g,z)>0d0) then
         r1 = rand()
@@ -100,21 +103,41 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         dcol = 3.0*db
      endif
   endif
-  !
-  ! distance to physical collision = dthm
+!
+!-- distance to Thomson-type collision = dthm
   if(gas_sig(z)>0.0d0) then
      r1 = rand()
      dthm = abs(log(r1)/(gas_sig(z)*dcollabfact))
   else
      dthm = 3.0*db
   endif
-  ! distance to census = dcen
+!
+!-- distance to census = dcen
   dcen = abs(pc_c*(tsp_time+tsp_dt-t)/help)
-
-  ! minimum distance = d
-!  if(z==6.and.tsp_it==6) write(*,*) dcol, dthm, db, dcen
-  d = min(dcol,dthm,db,dcen)
-  
+!
+!-- distance to Doppler shift = ddop
+  if(gas_isvelocity.and.g<gas_ng) then
+     rdop1 = abs((pc_c/mu)*(1d0-wl/gas_wl(g+1)))
+     if(rdop1<r) then
+        if(mu<-sqrt(1d0-(rdop1/r)**2)) then
+           ddop = abs(sqrt(rdop1**2-(1d0-mu**2)*r**2)+mu*r)
+        else
+           ddop = 3.0*db
+        endif
+     else
+        ddop = abs(sqrt(rdop1**2-(1d0-mu**2)*r**2)-mu*r)
+     endif
+  else
+     ddop = 3.0*db
+  endif
+!
+!-- minimum distance = d
+!  if(tsp_it==2) write(*,*) dcol,dthm,db,dcen,ddop
+  d = min(dcol,dthm,db,dcen,ddop)
+!
+!== END OF DISTANCE CALCULATIONS
+!
+!-- position, angle, time update  
   rold = r
   r = sqrt((1.0d0-mu**2)*r**2+(d+r*mu)**2)
 !  r = sqrt(r**2+d**2+2d0*d*r*mu)
@@ -154,37 +177,31 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
           elabfact*d*dcollabfact/(pc_c*tsp_dt)
   endif
 
-  ! Recalculating current group (rev. 120)
-  if(gas_isvelocity) then
-     g = binsrch(wl/(1.0d0-r*mu/pc_c),gas_wl,gas_ng+1)
-  else
-     g = binsrch(wl,gas_wl,gas_ng+1)
-  endif
-  if(g>gas_ng.or.g<1) then
-     !particle out of wlgrid energy bound
-     if(g>gas_ng) then
-        g=gas_ng
+  !
+  if(d == ddop) then !group shift
+!-- redshifting
+     if(g<gas_ng) then
+        g = g+1
+!-- lab frame wavelength
+        wl = gas_wl(g)*(1d0-mu*r/pc_c)
+     else
+        wl = gas_wl(gas_ng+1)*(1d0-mu*r/pc_c)
+     endif
+!-- check if ddmc region
+     if (((gas_sig(z)+gas_cap(g,z))*gas_drarr(z)* &
+          help >= prt_tauddmc*gas_curvcent(z)) &
+          .and.(in_puretran.eqv..false.)) then
+        hyparam = 2
         if(gas_isvelocity) then
-           wl=gas_wl(gas_ng+1)*(1.0d0-r*mu/pc_c)
-        else
-           wl=gas_wl(gas_ng+1)
-        endif
-     elseif(g<1) then
-        g=1
-        if(gas_isvelocity) then
-           wl=gas_wl(1)*(1.0d0-r*mu/pc_c)
-        else
-           wl=gas_wl(1)
+           E = E*(1.0-r*mu/pc_c)
+           E0 = E0*(1.0-r*mu/pc_c)
+           wl = wl/(1.0-r*mu/pc_c)
         endif
      else
-        write(*,*) 'domain leak!!'
-        prt_done = .true.
-        vacnt = .true.
+        hyparam = 1
      endif
-  endif
-  !
-
-  if (d == dthm) then  !physical scattering (Thomson-type)
+!
+  elseif (d == dthm) then  !physical scattering (Thomson-type)
      !
      r1 = rand()
      mu = 1.0-2.0*r1
@@ -194,7 +211,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      if(gas_isvelocity) then
         mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
         E = E*elabfact/(1.0-mu*r/pc_c)
-        wl=wl*(1.0-r*mu/pc_c)/elabfact
      endif
      !
      !
@@ -214,7 +230,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         if(gas_isvelocity) then
            mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
            E = E*elabfact/(1.0-mu*r/pc_c)
+           wl = wl*(1.0-mu*r/pc_c)/elabfact
         endif
+!
         denom2 = 0.0
         r1 = rand()
         do ig = 1, gas_ng
@@ -254,7 +272,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         !
         !
         if(gas_isvelocity) then
-           ! converting comoving wavelength to lab frame wavelength
+!-- converting comoving wavelength to lab frame wavelength
            wl = wl*(1.0-r*mu/pc_c)
         endif
         if (((gas_sig(z)+gas_cap(g,z))*gas_drarr(z)* &

@@ -319,31 +319,32 @@ subroutine particle_advance
 !-----------------------------------------------------------------------
      !---------------
      !------------
+
      ! Redshifting DDMC particle energy weights and wavelengths
-     if(rtsrc == 2.and.gas_isvelocity) then
-!-- redshifting energy weight
-        esrc = esrc*exp(-tsp_dt/tsp_texp)
-        !ebirth = ebirth*exp(-tsp_dt/tsp_texp)
-        !
-!
-!-- find group
-        g = binsrch(wlsrc,gas_wl,gas_ng+1)
-        !
-        if(g>gas_ng.or.g<1) then
-           !particle out of wlgrid energy bound
-           if(g>gas_ng) then
-              g=gas_ng
-           else
-              g=1
-           endif
-        endif
-        !
-        !
-        r1 = rand()
-        wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
-        wlsrc = wlsrc*exp(tsp_dt/tsp_texp)
-        !
-     endif
+!      if(rtsrc == 2.and.gas_isvelocity) then
+! !-- redshifting energy weight
+!         esrc = esrc*exp(-tsp_dt/tsp_texp)
+!         ebirth = ebirth*exp(-tsp_dt/tsp_texp)
+!         !
+! !
+! !-- find group
+! !         g = binsrch(wlsrc,gas_wl,gas_ng+1)
+! !         !
+! !         if(g>gas_ng.or.g<1) then
+! !            !particle out of wlgrid energy bound
+! !            if(g>gas_ng) then
+! !               g=gas_ng
+! !            else
+! !               g=1
+! !            endif
+! !         endif
+! !         !
+! !         !
+! !         r1 = rand()
+! !         wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
+! !         wlsrc = wlsrc*exp(tsp_dt/tsp_texp)
+!         !
+!      endif
 
      ! Looking up group
      if(rtsrc==1) then

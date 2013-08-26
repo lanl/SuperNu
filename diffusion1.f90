@@ -24,7 +24,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   integer :: ig, iig, g, binsrch
   real*8 :: r1, r2, help, x1, x2, r3, uur, uul, uumax, r0
   real*8 :: denom, denom2, denom3, xx0, bmax
-  real*8 :: ddmct, tau, tcensus, PR, PL, PA
+  real*8 :: ddmct, tau, tcensus, PR, PL, PA, PD
   !real*8, dimension(gas_ng) :: PDFg
   real*8 :: deleff=0.38
   real*8 :: alpeff
@@ -58,6 +58,11 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   denom = gas_opacleakl(g,z)+gas_opacleakr(g,z) !+gas_fcoef(z)*gas_cap(g,z)
   denom = denom+(1d0-alpeff)*(1d0-gas_emitprob(g,z))*&
        (1d0-gas_fcoef(z))*gas_cap(g,z)
+!--add doppler term
+  if(gas_isvelocity.and.g<gas_ng) then
+     denom=denom+(gas_wl(g)/(gas_wl(g+1)-gas_wl(g)))/(pc_c*tsp_texp)
+  endif
+!--add analog term
   if(prt_isddmcanlog) then
      denom = denom+gas_fcoef(z)*gas_cap(g,z)
   endif
@@ -66,6 +71,12 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   tau = abs(log(r1)/(pc_c*denom))
   tcensus = tsp_time+tsp_dt-t
   ddmct = min(tau,tcensus)
+!
+!-- redshift weight
+  E=E*exp(-ddmct/tsp_texp)
+  E0=E0*exp(-ddmct/tsp_texp)
+!--
+!
   !calculating energy depostion and density
   !
   if(.not.prt_isddmcanlog) then
@@ -100,18 +111,33 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   denom = gas_opacleakl(g,z)+gas_opacleakr(g,z) !+gas_fcoef(z)*gas_cap(g,z)
   denom = denom+(1d0-alpeff)*(1d0-gas_emitprob(g,z))*&
        (1d0-gas_fcoef(z))*gas_cap(g,z)
+!--add doppler term
+  if(gas_isvelocity.and.g<gas_ng) then
+     denom=denom+(gas_wl(g)/(gas_wl(g+1)-gas_wl(g)))/(pc_c*tsp_texp)
+  endif
+!--add analog term
   if(prt_isddmcanlog) then
      denom=denom+gas_fcoef(z)*gas_cap(g,z)
   endif
   if (ddmct == tau) then
      r1 = rand()
+!-- right leak probability
      PR = gas_opacleakr(g,z)/denom
+!-- left leak probability
      PL = gas_opacleakl(g,z)/denom
+!-- absorption probability
      if(prt_isddmcanlog) then
         PA = gas_fcoef(z)*gas_cap(g,z)/denom
      else
         PA = 0d0
      endif
+!-- group Doppler shift probability
+     if(gas_isvelocity.and.g<gas_ng) then
+        PD = (gas_wl(g)/(gas_wl(g+1)-gas_wl(g)))/(pc_c*tsp_texp*denom)
+     else
+        PD = 0d0
+     endif
+!
      !tallying radiation energy density
      !gas_eraddens(g,z)=gas_eraddens(g,z)+E*ddmct/tsp_dt
      !gas_eraddens(g,z)=gas_eraddens(g,z)+E/(denom*pc_c*tsp_dt)
@@ -249,6 +275,38 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         vacnt = .true.
         prt_done = .true.
         gas_edep(z) = gas_edep(z)+E
+     elseif(PL+PR+PA<=r1.and.r1<PL+PR+PA+PD) then
+!-- group shift
+        if(g<gas_ng) then
+           g = g+1
+           !r1 = rand()
+           !wl = 1d0/((1d0-r1)/gas_wl(g)+r1/gas_wl(g+1))
+           wl = gas_wl(g)
+        else
+           g = gas_ng
+           wl = gas_wl(gas_ng+1)
+        endif
+        if((gas_sig(z)+gas_cap(g,z))*gas_drarr(z) &
+             *help >= prt_tauddmc*gas_curvcent(z)) then
+           hyparam = 2
+        else
+           hyparam = 1
+!-- direction sampled isotropically           
+           r1 = rand()
+           mu = 1.0-2.0*r1
+!-- position sampled uniformly
+           r1 = rand()
+           r = (r1*gas_rarr(z+1)**3+(1.0-r1)*gas_rarr(z)**3)**(1.0/3.0)
+!
+!-- doppler and aberration corrections
+           if(gas_isvelocity) then
+              mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
+              E = E/(1.0-r*mu/pc_c)
+              E0 = E0/(1.0-r*mu/pc_c)
+              wl = wl*(1.0-r*mu/pc_c)
+           endif
+        endif
+!
      else
         denom2 = 0d0
         do ig = 1, gas_ng
@@ -301,8 +359,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            r1 = rand()
            mu = 1.0-2.0*r1
 !-- position sampled uniformly
-!            r1 = rand()
-!            r = (r1*gas_rarr(z+1)**3+(1.0-r1)*gas_rarr(z)**3)**(1.0/3.0)
+            r1 = rand()
+            r = (r1*gas_rarr(z+1)**3+(1.0-r1)*gas_rarr(z)**3)**(1.0/3.0)
 !-- position sampled from source tilt
 !            r1 = 0d0
 !            r2 = 1d0
@@ -335,5 +393,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      gas_numcensus(z)=gas_numcensus(z)+1
      gas_erad = gas_erad+E
   endif
+
 
 end subroutine diffusion1
