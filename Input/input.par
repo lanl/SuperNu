@@ -2,15 +2,15 @@
 
 !-- misc
 in_nomp = 4
-in_grab_stdout = t
-in_puretran = t
+in_grab_stdout = f
+in_puretran = f
 in_seed = 1
 in_noreadstruct = t
 
 !-- time step
 in_tfirst = 2d0
 in_tlast = 11d0
-in_nt = 3000
+in_nt = 192
 in_alpha = 1d0
 
 !-- gas grid settings
@@ -68,7 +68,7 @@ in_wldex = 17
 
 !-- particle numbers
 in_ninit = 0
-in_ns = 5000
+in_ns = 100000
 in_npartmax = 10000000
 
 !-- imc tally method

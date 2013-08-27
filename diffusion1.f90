@@ -27,7 +27,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   real*8 :: ddmct, tau, tcensus, PR, PL, PA, PD
   !real*8, dimension(gas_ng) :: PDFg
   real*8 :: deleff=0.38
-  real*8 :: alpeff
+  real*8 :: alpeff, dopcoup
   !
   alpeff= 0d0 !gas_fcoef(z)**(deleff/(1-deleff))
   !
@@ -54,14 +54,22 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         vacnt = .true.
      endif
   endif
+!
+!--calculate doppler term
+  if(gas_isvelocity.and.g<gas_ng) then
+!--currently scattering fully elastic, grey
+     dopcoup = (gas_sig(z)/(gas_cap(g,z)+gas_sig(z)))*&
+          (gas_wl(g)/(gas_wl(g+1)-gas_wl(g)))/(pc_c*tsp_texp)
+  else
+     dopcoup = 0d0
+  endif
+!
   !
   denom = gas_opacleakl(g,z)+gas_opacleakr(g,z) !+gas_fcoef(z)*gas_cap(g,z)
   denom = denom+(1d0-alpeff)*(1d0-gas_emitprob(g,z))*&
        (1d0-gas_fcoef(z))*gas_cap(g,z)
 !--add doppler term
-  if(gas_isvelocity.and.g<gas_ng) then
-     denom=denom+(gas_wl(g)/(gas_wl(g+1)-gas_wl(g)))/(pc_c*tsp_texp)
-  endif
+     denom=denom+dopcoup
 !--add analog term
   if(prt_isddmcanlog) then
      denom = denom+gas_fcoef(z)*gas_cap(g,z)
@@ -112,9 +120,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   denom = denom+(1d0-alpeff)*(1d0-gas_emitprob(g,z))*&
        (1d0-gas_fcoef(z))*gas_cap(g,z)
 !--add doppler term
-  if(gas_isvelocity.and.g<gas_ng) then
-     denom=denom+(gas_wl(g)/(gas_wl(g+1)-gas_wl(g)))/(pc_c*tsp_texp)
-  endif
+  denom=denom+dopcoup
 !--add analog term
   if(prt_isddmcanlog) then
      denom=denom+gas_fcoef(z)*gas_cap(g,z)
@@ -133,7 +139,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      endif
 !-- group Doppler shift probability
      if(gas_isvelocity.and.g<gas_ng) then
-        PD = (gas_wl(g)/(gas_wl(g+1)-gas_wl(g)))/(pc_c*tsp_texp*denom)
+        PD = dopcoup/denom
      else
         PD = 0d0
      endif
