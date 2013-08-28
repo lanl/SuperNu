@@ -109,7 +109,9 @@ c=============================================================
        !gas_rhob(ir)=(gas_vals2(ir)%rho*gas_vals2(ir)%vol+ &
        !     gas_vals2(ir-1)%rho*gas_vals2(ir-1)%vol)/ &
        !     (gas_vals2(ir)%vol+gas_vals2(ir-1)%vol)
-       gas_rhob(ir) = (gas_vals2(ir)%rho*gas_vals2(ir-1)%rho)**0.5d0
+       !gas_rhob(ir) = (gas_vals2(ir)%rho*gas_vals2(ir-1)%rho)**0.5d0
+         gas_rhob(ir)=1d0/(.5d0/gas_vals2(ir-1)%rho+
+     & .5d0/gas_vals2(ir)%rho)
       enddo
       gas_rhob(gas_nr+1) = gas_vals2(gas_nr)%rho
 

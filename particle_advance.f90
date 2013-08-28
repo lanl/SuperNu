@@ -19,8 +19,8 @@ subroutine particle_advance
 !##################################################
 
   integer :: ipart, difs, transps, g, zholder, zfdiff, ir, binsrch
-  real*8 :: r1, alph2, r2, x1, x2, xx0, bmax, help
-  real*8 :: uul, uur, uumax, r0, r3
+  real*8 :: r1, alph2, r2, x1, x2, xx0, bmax, help, alph3
+  real*8 :: uul, uur, uumax, r0, r3, mu0, rold, dddd
   integer, pointer :: zsrc, rtsrc !, gsrc
   real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
   logical, pointer :: isvacant
@@ -41,7 +41,10 @@ subroutine particle_advance
   difs = 0
   transps = 0
   gas_numcensus(1:gas_nr) = 0
-  alph2 = 0.5d0  !>=0,<=1
+!-- advection split parameter
+  alph2 = 0d0  !>=0,<=1
+!-- DDMC cell advection entrance parameter
+!  alph3 = 0.5d0
 
   if(showidfront) then
      do ir = 1, gas_nr-1
@@ -257,9 +260,10 @@ subroutine particle_advance
         !
      endif
 
-     ! First portion of operator split particle velocity position adjustment
+!-- First portion of operator split particle velocity position adjustment
      if(isshift) then
      if ((gas_isvelocity).and.(rtsrc==1)) then
+        rold = rsrc
         rsrc = rsrc*tsp_texp/(tsp_texp+alph2*tsp_dt)
         !
         if (rsrc < gas_rarr(zsrc)) then
@@ -284,8 +288,21 @@ subroutine particle_advance
                  endif
               enddo
               if(zfdiff.ne.-1) then
+!
+!========= Under review =================
+!
+!                 do ir = zsrc, zfdiff+1,-1
+!                    dddd = min(rold,gas_rarr(ir+1))-max(rsrc,gas_rarr(ir))
+!                    gas_edep(ir)=gas_edep(ir)+esrc*(1d0-gas_fcoef(ir)*gas_cap(g,ir)*dddd*help)
+!                    esrc = esrc*exp(-gas_fcoef(ir)*gas_cap(g,ir)*dddd*help)
+!                    gas_eraddens(g,ir)=gas_eraddens(g,ir)+esrc*dddd*help/(pc_c*tsp_dt)
+!                 enddo
+!
                  zsrc = zfdiff+1
                  rsrc = gas_rarr(zsrc)
+
+!========================================
+!
               else
                  zsrc = zholder
               endif
@@ -399,6 +416,7 @@ subroutine particle_advance
      if(isshift) then
      if ((gas_isvelocity).and.(rtsrc==1)) then
         !
+        rold = rsrc
         rsrc = rsrc*(tsp_texp+alph2*tsp_dt)/(tsp_texp+tsp_dt)
         !
         if (rsrc < gas_rarr(zsrc)) then
@@ -410,12 +428,12 @@ subroutine particle_advance
               isvacant = .true.
            elseif(.not.in_puretran.and.partstopper) then
               zfdiff = -1
-              do ir = zsrc-1,zholder,-1
-                 if(gas_isvelocity) then
-                    help = tsp_texp
-                 else
-                    help = 1d0
-                 endif
+              if(gas_isvelocity) then
+                 help = tsp_texp
+              else
+                 help = 1d0
+              endif
+              do ir = zsrc-1,zholder,-1                 
                  if((gas_sig(ir)+gas_cap(g,ir))*gas_drarr(ir) &
                       *help>=prt_tauddmc*gas_curvcent(ir)) then
                     zfdiff = ir
@@ -423,8 +441,21 @@ subroutine particle_advance
                  endif
               enddo
               if(zfdiff.ne.-1) then
+!
+!========= Under review =================
+!
+!                 do ir = zsrc, zfdiff+1,-1
+!                    dddd = min(rold,gas_rarr(ir+1))-max(rsrc,gas_rarr(ir))
+!                    gas_edep(ir)=gas_edep(ir)+esrc*(1d0-gas_fcoef(ir)*gas_cap(g,ir)*dddd*help)
+!                    esrc = esrc*exp(-gas_fcoef(ir)*gas_cap(g,ir)*dddd*help)
+!                    gas_eraddens(g,ir)=gas_eraddens(g,ir)+esrc*dddd*help/(pc_c*tsp_dt)
+!                 enddo
+!
                  zsrc = zfdiff+1
                  rsrc = gas_rarr(zsrc)
+
+!========================================
+!
               else
                  zsrc = zholder
               endif

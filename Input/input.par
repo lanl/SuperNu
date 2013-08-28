@@ -9,8 +9,8 @@ in_noreadstruct = t
 
 !-- time step
 in_tfirst = 2d0
-in_tlast = 11d0
-in_nt = 192
+in_tlast = 4d0
+in_nt = 1000
 in_alpha = 1d0
 
 !-- gas grid settings
@@ -68,7 +68,7 @@ in_wldex = 17
 
 !-- particle numbers
 in_ninit = 0
-in_ns = 100000
+in_ns = 5000
 in_npartmax = 10000000
 
 !-- imc tally method
@@ -76,7 +76,7 @@ in_isimcanlog = f
 in_isddmcanlog = f
 in_depestimate = f
 !-- ddmc mfp per cell
-in_tauddmc = 2d0
+in_tauddmc = 10d0
 
 !-- opacity debug switches
 in_nobbopac = t

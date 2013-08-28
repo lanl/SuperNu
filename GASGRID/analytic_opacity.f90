@@ -147,10 +147,10 @@ subroutine analytic_opacity
      ! sigmaP_g = sigmaP*func_P(g), sigmaR_g = sigmaP
      do ir = 1, gas_nr
         gas_siggrey(ir) = gas_sigcoef*gas_temp(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-        !sigll = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_rhob(ir)**gas_sigrpwr
-        !sigrr = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_rhob(ir+1)**gas_sigrpwr
-        sigll = gas_siggrey(ir)*(gas_tempb(ir)/gas_temp(ir))**gas_sigtpwr
-        sigrr = gas_siggrey(ir)*(gas_tempb(ir+1)/gas_temp(ir))**gas_sigtpwr
+        sigll = gas_sigcoef*gas_tempb(ir)**gas_sigtpwr*gas_rhob(ir)**gas_sigrpwr
+        sigrr = gas_sigcoef*gas_tempb(ir+1)**gas_sigtpwr*gas_rhob(ir+1)**gas_sigrpwr
+!        sigll = gas_siggrey(ir)*(gas_tempb(ir)/gas_temp(ir))**gas_sigtpwr
+!        sigrr = gas_siggrey(ir)*(gas_tempb(ir+1)/gas_temp(ir))**gas_sigtpwr
         !
         !set odd group magnitudes (low)
         do ig = 1, gas_ng, 2
