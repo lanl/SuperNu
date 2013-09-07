@@ -81,8 +81,10 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   ddmct = min(tau,tcensus)
 !
 !-- redshift weight
-  E=E*exp(-ddmct/tsp_texp)
-  E0=E0*exp(-ddmct/tsp_texp)
+  if(gas_isvelocity) then
+     E=E*exp(-ddmct/tsp_texp)
+     E0=E0*exp(-ddmct/tsp_texp)
+  endif
 !--
 !
   !calculating energy depostion and density
@@ -164,6 +166,14 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            
            z = z-1
            !gas_eraddens(g,z)=gas_eraddens(g,z)+E
+!
+!-- redshift weight
+!            if(gas_isvelocity) then
+!               E=E*exp(-ddmct/tsp_texp)
+!               E0=E0*exp(-ddmct/tsp_texp)
+!            endif
+!--
+!
         else
 !
 !-- wl thermal resample
@@ -232,7 +242,20 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            !gas_eraddens(g,z)=gas_eraddens(g,z)+E
            z = z+1
            !gas_eraddens(g,z)=gas_eraddens(g,z)+E
+!
+!-- redshift weight
+!            if(gas_isvelocity) then
+!               E=E*exp(-ddmct/tsp_texp)
+!               E0=E0*exp(-ddmct/tsp_texp)
+!            endif
+!--
+!
         else
+!----------------- amplify
+!             if(gas_isvelocity) then
+!                E = (1d0+0.7d0*r/pc_c)*E
+!                E0 = (1d0+0.7d0*r/pc_c)*E0
+!             endif
 !
 !-- wavelength thermal resample
 !            x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(z))
@@ -295,6 +318,14 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         if((gas_sig(z)+gas_cap(g,z))*gas_drarr(z) &
              *help >= prt_tauddmc*gas_curvcent(z)) then
            hyparam = 2
+!
+!-- redshift weight
+!            if(gas_isvelocity) then
+!               E=E*exp(-ddmct/tsp_texp)
+!               E0=E0*exp(-ddmct/tsp_texp)
+!            endif
+!--
+!
         else
            hyparam = 1
 !-- direction sampled isotropically           
@@ -339,6 +370,14 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         if ((gas_sig(z)+gas_cap(g,z))*gas_drarr(z) &
              *help >= prt_tauddmc*gas_curvcent(z)) then
            hyparam = 2
+!
+!-- redshift weight
+!            if(gas_isvelocity) then
+!               E=E*exp(-ddmct/tsp_texp)
+!               E0=E0*exp(-ddmct/tsp_texp)
+!            endif
+!--
+!
         else
            hyparam = 1
 !-- wavelength thermal resample

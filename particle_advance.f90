@@ -28,7 +28,7 @@ subroutine particle_advance
 
   logical :: isshift=.true.
   logical :: partstopper=.true.
-  logical :: showidfront=.false.
+  logical :: showidfront=.true.
 
   gas_edep = 0.0
   gas_erad = 0.0
@@ -42,9 +42,9 @@ subroutine particle_advance
   transps = 0
   gas_numcensus(1:gas_nr) = 0
 !-- advection split parameter
-  alph2 = 0d0  !>=0,<=1
+  alph2 = 0.5d0  !>=0,<=1
 !-- DDMC cell advection entrance parameter
-!  alph3 = 0.5d0
+  alph3 = 1d0
 
   if(showidfront) then
      do ir = 1, gas_nr-1
@@ -166,6 +166,10 @@ subroutine particle_advance
               r1 = rand()
               musrc = 1.0 - 2.0*r1
 !-- converting to lab frame (doppler and aberration)
+!                if(gas_isvelocity) then
+!                   esrc = (1d0+0.7d0*rsrc/pc_c)*esrc
+!                   ebirth = (1d0+0.7d0*rsrc/pc_c)*ebirth
+!                endif
               if(gas_isvelocity) then
                  musrc = (musrc + rsrc/pc_c)/(1.0 + rsrc*musrc/pc_c)
                  esrc = esrc/(1.0 - musrc*rsrc/pc_c)
@@ -208,7 +212,7 @@ subroutine particle_advance
         else
            rtsrc = 2
         endif
-     endif
+     endif 
 !
 !-- looking up group
      if(rtsrc==1) then
@@ -290,17 +294,14 @@ subroutine particle_advance
               if(zfdiff.ne.-1) then
 !
 !========= Under review =================
-!
-!                 do ir = zsrc, zfdiff+1,-1
-!                    dddd = min(rold,gas_rarr(ir+1))-max(rsrc,gas_rarr(ir))
-!                    gas_edep(ir)=gas_edep(ir)+esrc*(1d0-gas_fcoef(ir)*gas_cap(g,ir)*dddd*help)
-!                    esrc = esrc*exp(-gas_fcoef(ir)*gas_cap(g,ir)*dddd*help)
-!                    gas_eraddens(g,ir)=gas_eraddens(g,ir)+esrc*dddd*help/(pc_c*tsp_dt)
-!                 enddo
-!
-                 zsrc = zfdiff+1
-                 rsrc = gas_rarr(zsrc)
-
+                 r1 = rand()
+                 if(r1<alph3) then
+                    zsrc = zfdiff+1
+                    rsrc = gas_rarr(zsrc)
+                 else
+                    zsrc = zfdiff
+                    rtsrc = 2
+                 endif
 !========================================
 !
               else
@@ -308,6 +309,10 @@ subroutine particle_advance
               endif
            else
               zsrc = zholder
+              if((gas_sig(zsrc)+gas_cap(g,zsrc))*gas_drarr(zsrc) &
+                   *tsp_texp>=prt_tauddmc*gas_curvcent(zsrc)) then
+                 rtsrc = 2
+              endif
            endif
            !
         endif
@@ -443,17 +448,16 @@ subroutine particle_advance
               if(zfdiff.ne.-1) then
 !
 !========= Under review =================
-!
-!                 do ir = zsrc, zfdiff+1,-1
-!                    dddd = min(rold,gas_rarr(ir+1))-max(rsrc,gas_rarr(ir))
-!                    gas_edep(ir)=gas_edep(ir)+esrc*(1d0-gas_fcoef(ir)*gas_cap(g,ir)*dddd*help)
-!                    esrc = esrc*exp(-gas_fcoef(ir)*gas_cap(g,ir)*dddd*help)
-!                    gas_eraddens(g,ir)=gas_eraddens(g,ir)+esrc*dddd*help/(pc_c*tsp_dt)
-!                 enddo
-!
                  zsrc = zfdiff+1
                  rsrc = gas_rarr(zsrc)
-
+                 r1 = rand()
+                 if(r1<alph3) then
+                    zsrc = zfdiff+1
+                    rsrc = gas_rarr(zsrc)
+                 else
+                    zsrc = zfdiff
+                    rtsrc = 2
+                 endif
 !========================================
 !
               else

@@ -93,14 +93,14 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         r1 = rand()
         dcol = abs(log(r1)/(gas_cap(g,z)*dcollabfact))
      else
-        dcol = 3.0*db
+        dcol = abs(pc_c*tsp_dt/help) !> dcen
      endif
   else
      if((1.0d0-gas_fcoef(z))*gas_cap(g,z)>0.0d0) then
         r1 = rand()
         dcol = abs(log(r1)/((1.0d0-gas_fcoef(z))*gas_cap(g,z)*dcollabfact))
      else
-        dcol = 3.0*db
+        dcol = abs(pc_c*tsp_dt/help) !> dcen
      endif
   endif
 !
@@ -130,11 +130,11 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !     write(*,*) pc_c*(wl/gas_wl(g+1)-1d0)+r*mu
      ddop = abs(pc_c*(1d0-wl/gas_wl(g+1))-r*mu)
   else
-     ddop = 3.0*db
+     ddop = abs(pc_c*tsp_dt/help) !> dcen
   endif
 !
 !-- minimum distance = d
-!  if(tsp_it==2) write(*,*) dcol,dthm,db,dcen,ddop
+!  if(tsp_it==29) write(*,*) dcol,dthm,db,dcen,ddop
   d = min(dcol,dthm,db,dcen,ddop)
 !
 !== END OF DISTANCE CALCULATIONS
@@ -295,16 +295,16 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      if (mu>=0.0d0) then
         if (z == gas_nr) then
 !           if(g/=1) then
-              vacnt = .true.
-              prt_done = .true.
+              !vacnt = .true.
+              !prt_done = .true.
 !-- outbound luminosity tally
-              gas_eright = gas_eright+E*elabfact
-              gas_luminos(g) = gas_luminos(g)+mu*E/tsp_dt
+              !gas_eright = gas_eright+E*elabfact
+              !gas_luminos(g) = gas_luminos(g)+mu*E/tsp_dt
 !            else
 !               r1 = rand()
 !               r2 = rand()
 !               mu = -max(r1,r2)
-!               mu = -mu
+               mu = -mu
 !               mu = -r1
 !            endif
         ! Checking if DDMC region right
@@ -316,6 +316,15 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               mu = (mu-r/pc_c)/(1.0-r*mu/pc_c)
            endif
            P = gas_ppl(g,z+1)*(1.0+1.5*abs(mu))
+!-- new albedo test
+!            P = P+gas_ppl(g,z+1)* &
+!                 (2d0/((gas_sig(z+1)+gas_cap(g,z+1))*gas_rarr(z+1)*help))*&
+!                 (7.09752*abs(mu)**4-15.5997*abs(mu)**3+9.62187*abs(mu)**2&
+!                 -3.9273*abs(mu)+1.48571)
+!            if(P<0d0) then
+!               P = gas_ppl(g,z+1)*(1.0+1.5*abs(mu))
+!            endif
+!--
            if (r1 < P) then
               hyparam = 2
               if(gas_isvelocity) then
@@ -352,6 +361,15 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
                     mu = (mu-r/pc_c)/(1.0-r*mu/pc_c)
                  endif
                  P = gas_ppl(g,z+1)*(1.0+1.5*abs(mu))
+!-- new albedo test
+!                  P = P+gas_ppl(g,z+1)* &
+!                       (2d0/((gas_sig(z+1)+gas_cap(g,z+1))*gas_rarr(z+1)*help))*&
+!                       (7.09752*abs(mu)**4-15.5997*abs(mu)**3+9.62187*abs(mu)**2-&
+!                       3.9273*abs(mu)+1.48571)
+!                  if(P<0d0) then
+!                     P = gas_ppl(g,z+1)*(1.0+1.5*abs(mu))
+!                  endif
+!--
                  if (r1 < P) then
                     hyparam = 2
                     if(gas_isvelocity) then
@@ -380,6 +398,15 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               mu = (mu-r/pc_c)/(1.0-r*mu/pc_c)
            endif
            P = gas_ppr(g,z-1)*(1.0+1.5*abs(mu))
+!-- new albedo test
+!            P = P+gas_ppr(g,z-1)* &
+!                 (2d0/((gas_sig(z-1)+gas_cap(g,z-1))*gas_rarr(z)*help))* &
+!                 (7.09752*abs(mu)**4-15.5997*abs(mu)**3+9.62187*abs(mu)**2-&
+!                 3.9273*abs(mu)+1.48571)
+!            if(P<0d0) then
+!               P = gas_ppr(g,z-1)*(1.0+1.5*abs(mu))
+!            endif
+!--
            if (r1 < P) then
               hyparam = 2
               if(gas_isvelocity) then
