@@ -32,9 +32,11 @@ subroutine temperature_update
   if(gas_depestimate) then
      gas_edep = 0d0
      do ir = 1, gas_nr
-        forall(ig=1:gas_ng) gas_edep(ir)=gas_edep(ir)+ &
+        do ig=1,gas_ng
+           gas_edep(ir) = gas_edep(ir)+ &
              pc_c*tsp_dt*gas_fcoef(ir)*gas_cap(ig,ir)* &
              gas_eraddens(ig,ir)*gas_vals2(ir)%vol
+        enddo
      enddo
   endif
 

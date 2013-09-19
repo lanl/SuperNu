@@ -23,8 +23,7 @@ subroutine analytic_initial
      if(gas_opacanaltype=='pick') then
 !
 !-- checking input validity for picket fence
-        if(gas_ng/=2) stop 'analytic_initial: &
-             gas_ng/=2 and opacanaltype=pick'
+        if(gas_ng/=2) stop 'analytic_initial: gas_ng/=2 and opacanaltype=pick'
         if(gas_isvelocity) stop 'analytic_initial: invalid gas_isvelocity'
 !
 !-- tstd initial energy profile currently approximation
