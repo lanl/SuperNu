@@ -295,16 +295,16 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      if (mu>=0.0d0) then
         if (z == gas_nr) then
 !           if(g/=1) then
-              !vacnt = .true.
-              !prt_done = .true.
+              vacnt = .true.
+              prt_done = .true.
 !-- outbound luminosity tally
-              !gas_eright = gas_eright+E*elabfact
-              !gas_luminos(g) = gas_luminos(g)+mu*E/tsp_dt
+              gas_eright = gas_eright+E*elabfact
+              gas_luminos(g) = gas_luminos(g)+mu*E/tsp_dt
 !            else
 !               r1 = rand()
 !               r2 = rand()
 !               mu = -max(r1,r2)
-               mu = -mu
+!               mu = -mu
 !               mu = -r1
 !            endif
         ! Checking if DDMC region right
@@ -339,6 +339,10 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               mu = -max(r1,r2)
               if(gas_isvelocity) then
                  mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
+!-- amplification
+!                  E0= E0*(1d0+r/pc_c)
+!                  E = E*(1d0+r/pc_c)
+!--
               endif
            endif
         ! End of check
@@ -396,6 +400,10 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            r1 = rand()
            if(gas_isvelocity) then
               mu = (mu-r/pc_c)/(1.0-r*mu/pc_c)
+!-- amplification
+!              E0=E0*(1d0+(prt_tauddmc/10d0)*1.1d0*r/pc_c)
+!              E = E*(1d0+(prt_tauddmc/10d0)*1.1d0*r/pc_c)
+!--
            endif
            P = gas_ppr(g,z-1)*(1.0+1.5*abs(mu))
 !-- new albedo test

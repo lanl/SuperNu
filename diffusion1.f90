@@ -251,11 +251,11 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !--
 !
         else
-!----------------- amplify
-!             if(gas_isvelocity) then
-!                E = (1d0+0.7d0*r/pc_c)*E
-!                E0 = (1d0+0.7d0*r/pc_c)*E0
-!             endif
+!----------------- amplification
+!            if(gas_isvelocity) then
+!               E = (1d0+r/pc_c)*E
+!               E0 = (1d0+r/pc_c)*E0
+!            endif
 !
 !-- wavelength thermal resample
 !            x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(z))
