@@ -427,4 +427,17 @@ c!}}}
       end subroutine reduce_tally
 c
 c
+c
+c
+      subroutine collect_restart_data
+c     -------------------------------
+      use particlemod
+      use timestepmod
+************************************************************************
+* send particle array info and number of rand calls to master rank.
+* allows for restart at some time step
+************************************************************************
+
+      end subroutine collect_restart_data      
+c
       end module mpimod
