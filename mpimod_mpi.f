@@ -7,6 +7,7 @@ c
       integer :: impi !mpi rank
       integer :: nmpi !number of mpi tasks
       integer,private :: ierr
+      integer :: status(MPI_STATUS_SIZE)
 c
       contains
 c
@@ -437,7 +438,18 @@ c     -------------------------------
 * send particle array info and number of rand calls to master rank.
 * allows for restart at some time step
 ************************************************************************
-
-      end subroutine collect_restart_data      
+      if(impi==0) then
+         allocate(prt_tlyrandarr(nmpi))
+      endif
+c
+      call mpi_send(prt_tlyrand,1,MPI_INTEGER,
+     &     impi0,0,MPI_COMM_WORLD,ierr)
+c
+      if(impi==0) then
+         call mpi_recv(prt_tlyrandarr(impi),1,MPI_INTEGER,
+     &        impi,0,MPI_COMM_WORLD,status,ierr)
+      endif
+c
+      end subroutine collect_restart_data    
 c
       end module mpimod

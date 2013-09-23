@@ -38,7 +38,7 @@ c     ---------------------------------
 ************************************************************************
       character(15) :: fname = 'input.retlyrand'
 c
-      subroutine read_restart_randcount
+      end subroutine read_restart_randcount
 c
 c
 c
@@ -53,4 +53,4 @@ c     ----------------------------------
       open(unit=4,file=fname,status='unknown',position='append')
       write(4,*) prt_tlyrandarr
       close(4)
-      subroutine write_restart_randcount
+      end subroutine write_restart_randcount

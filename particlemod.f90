@@ -14,8 +14,11 @@ module particlemod
   integer :: prt_npartmax, prt_ns, prt_ninit
   integer :: prt_nsurf, prt_nexsrc, prt_nnew, prt_ninitnew
 !-- rtw: random number counter added (rev. 262). associated with particle routines
-  integer :: prt_tlyrnd
-  integer, dimension(:), allocatable :: prt_vacantarr
+  integer :: prt_tlyrand
+!-- rtw: array of rand counts from each rank
+  integer, allocatable :: prt_tlyrandarr(:)
+!
+  integer, allocatable :: prt_vacantarr(:)
 
   logical :: prt_done
   logical :: prt_isimcanlog !sets flux tally and energy deposition ...

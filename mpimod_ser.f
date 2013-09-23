@@ -49,6 +49,14 @@ c     -------------------------
       end subroutine reduce_fluxes
 c
 c
+      subroutine collect_restart_data
+************************************************************************
+* Collect data required for restarting a simulation at some time
+* - stub
+************************************************************************      
+      end subroutine collect_restart_data
+c
+c
       subroutine mpi_init(ierr_)
       implicit none
       integer :: ierr_

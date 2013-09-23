@@ -134,17 +134,19 @@ program supernu
     
     deallocate(prt_vacantarr)
 
-    !Advancing prt_particles to update radiation field    
 !-- advance particles
-!    write(*,*) 'here 1'
     call particle_advance
-!    write(*,*) 'here 2'
+
 !-- collect particle results from all workers
     call reduce_tally !MPI
 
+!-- collect data necessary for restart (tobe written by impi0)
+!    call collect_restart_data !MPI
+!
     if(impi==impi0) then
        ! averaging reduced results
        !if(nmpi>1) then
+!       write(*,*) prt_tlyrandarr(:)
 !-- dim==0
           gas_erad = gas_erad/dble(nmpi)
           gas_eright = gas_eright/dble(nmpi)
