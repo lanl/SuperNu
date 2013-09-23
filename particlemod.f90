@@ -13,6 +13,8 @@ module particlemod
 
   integer :: prt_npartmax, prt_ns, prt_ninit
   integer :: prt_nsurf, prt_nexsrc, prt_nnew, prt_ninitnew
+!-- rtw: random number counter added (rev. 262). associated with particle routines
+  integer :: prt_tlyrnd
   integer, dimension(:), allocatable :: prt_vacantarr
 
   logical :: prt_done

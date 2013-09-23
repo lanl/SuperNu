@@ -20,8 +20,8 @@ in_isshell = f
 in_novolsrc = t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_v0 = 2d8
 in_velout = 1d9
-!in_l0 = 1.9008d17
-!in_lr = 2.16d14
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!in_l0 = 1.9008d17
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!in_lr = 2.16d14
 in_totmass = 1d33
 in_dentype = 'mass'
 in_templ0 = 0d0
@@ -33,7 +33,6 @@ in_solidni56 = t
 !-- external source type
 in_srctype = 'heav'
 in_srcmax = 4d24
-!in_srcmax = 6.67d23
 !-- heaviside case
 in_theav = 9d0
 in_nheav = 40

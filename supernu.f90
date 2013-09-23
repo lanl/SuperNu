@@ -105,7 +105,7 @@ program supernu
     ihelp = 10*impi + in_seed  !this expression uses the same seed for rank==0 as previously used in a the serial run
   endif
   help = rand(ihelp)
-
+  prt_tlyrand = 1
 
 !-- instantiating initial particles (if any)
   call initial_particles

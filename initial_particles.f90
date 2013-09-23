@@ -34,6 +34,7 @@ subroutine initial_particles
              iirused(iir)=iirused(iir)+1
              denom2 = 0d0
              r1=rand()
+             prt_tlyrand = prt_tlyrand+1
              do ig = 1, gas_ng
                 x3 = 1d0/gas_wl(ig+1)
                 x4 = 1d0/gas_wl(ig)
@@ -43,14 +44,17 @@ subroutine initial_particles
              enddo
              !calculating wavelegth unformly
              r1 = rand()
+             prt_tlyrand = prt_tlyrand+1
              wl0 = 1d0/((1d0-r1)/gas_wl(iig)+r1/gas_wl(iig+1))
              !calculating radial position
              r3 = rand()
+             prt_tlyrand = prt_tlyrand+1
              prt_particles(ipart)%rsrc = (r3*gas_rarr(iir+1)**3 + &
                   (1.0-r3)*gas_rarr(iir)**3)**(1.0/3.0)
              r0 = prt_particles(ipart)%rsrc
              !calculating direction cosine (comoving)
              r1 = rand()
+             prt_tlyrand = prt_tlyrand+1
              mu0 = 1d0-2d0*r1
              if(abs(mu0)<0.0000001d0) then
                    mu0=0.0000001d0

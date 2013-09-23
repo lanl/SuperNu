@@ -91,6 +91,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   if(prt_isimcanlog) then
      if(gas_cap(g,z)>0d0) then
         r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
         dcol = abs(log(r1)/(gas_cap(g,z)*dcollabfact))
      else
         dcol = abs(pc_c*tsp_dt/help) !> dcen
@@ -98,6 +99,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   else
      if((1.0d0-gas_fcoef(z))*gas_cap(g,z)>0.0d0) then
         r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
         dcol = abs(log(r1)/((1.0d0-gas_fcoef(z))*gas_cap(g,z)*dcollabfact))
      else
         dcol = abs(pc_c*tsp_dt/help) !> dcen
@@ -107,6 +109,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !-- distance to Thomson-type collision = dthm
   if(gas_sig(z)>0.0d0) then
      r1 = rand()
+     prt_tlyrand = prt_tlyrand+1
      dthm = abs(log(r1)/(gas_sig(z)*dcollabfact))
   else
      dthm = 3.0*db
@@ -206,6 +209,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   elseif (d == dthm) then  !physical scattering (Thomson-type)
      !
      r1 = rand()
+     prt_tlyrand = prt_tlyrand+1
      mu = 1.0-2.0*r1
      if(abs(mu)<0.0000001d0) then
         mu = 0.0000001d0
@@ -219,12 +223,14 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   elseif (d == dcol) then  !fictitious scattering with implicit capture
      !
      r1 = rand()
+     prt_tlyrand = prt_tlyrand+1
      if(r1<=gas_fcoef(z).and.prt_isimcanlog) then
         vacnt=.true.
         prt_done=.true.
         gas_edep(z) = gas_edep(z) + E*elabfact
      else
         r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
         mu = 1.0-2.0*r1
         if(abs(mu)<0.0000001d0) then
            mu = 0.0000001d0
@@ -237,6 +243,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !
         denom2 = 0.0
         r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
         do ig = 1, gas_ng
            iig = ig
            if ((r1>=denom2).and.(r1<denom2+gas_emitprob(ig,z))) exit
@@ -248,6 +255,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         !-------------------------------------------------------
         ! sampling comoving wavelength in group
         r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
         wl = 1d0/((1d0-r1)/gas_wl(g)+r1/gas_wl(g+1))
         !wl = (1d0-r1)*gas_wl(g)+r1*gas_wl(g+1)
         !wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
@@ -263,11 +271,15 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !            bmax = pc_plkpk
 !         endif
 !         r1 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !         r2 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !         xx0 = (1d0-r1)*x1+r1*x2
 !         do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
 !            r1 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !            r2 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !            xx0 = (1d0-r1)*x1+r1*x2
 !         enddo
 !         wl = pc_h*pc_c/(xx0*pc_kb*gas_temp(z))
@@ -302,7 +314,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               gas_luminos(g) = gas_luminos(g)+mu*E/tsp_dt
 !            else
 !               r1 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !               r2 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !               mu = -max(r1,r2)
 !               mu = -mu
 !               mu = -r1
@@ -312,6 +326,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
              *help >= prt_tauddmc*gas_curvcent(z+1)) &
                  .and.(in_puretran.eqv..false.)) then
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
            if(gas_isvelocity) then
               mu = (mu-r/pc_c)/(1.0-r*mu/pc_c)
            endif
@@ -335,14 +350,12 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               z = z+1
            else
               r1 = rand()
+              prt_tlyrand = prt_tlyrand+1
               r2 = rand()
+              prt_tlyrand = prt_tlyrand+1
               mu = -max(r1,r2)
               if(gas_isvelocity) then
                  mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
-!-- amplification
-!                  E0= E0*(1d0+r/pc_c)
-!                  E = E*(1d0+r/pc_c)
-!--
               endif
            endif
         ! End of check
@@ -361,6 +374,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
                    *help >= prt_tauddmc*gas_curvcent(z+1)) &
                    .and.(in_puretran.eqv..false.)) then
                  r1 = rand()
+                 prt_tlyrand = prt_tlyrand+1
                  if(gas_isvelocity) then
                     mu = (mu-r/pc_c)/(1.0-r*mu/pc_c)
                  endif
@@ -384,7 +398,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
                     z = z+1
                  else
                     r1 = rand()
+                    prt_tlyrand = prt_tlyrand+1
                     r2 = rand()
+                    prt_tlyrand = prt_tlyrand+1
                     mu = -max(r1,r2)
                     if(gas_isvelocity) then
                        mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
@@ -398,11 +414,12 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
              *help >= prt_tauddmc*gas_curvcent(z-1)) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
            if(gas_isvelocity) then
               mu = (mu-r/pc_c)/(1.0-r*mu/pc_c)
 !-- amplification
-!              E0=E0*(1d0+(prt_tauddmc/10d0)*1.1d0*r/pc_c)
-!              E = E*(1d0+(prt_tauddmc/10d0)*1.1d0*r/pc_c)
+              E0=E0*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
+              E = E*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
 !--
            endif
            P = gas_ppr(g,z-1)*(1.0+1.5*abs(mu))
@@ -425,7 +442,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               z = z-1
            else
               r1 = rand()
+              prt_tlyrand = prt_tlyrand+1
               r2 = rand()
+              prt_tlyrand = prt_tlyrand+1
               mu = max(r1,r2)
               if(gas_isvelocity) then
                  mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)

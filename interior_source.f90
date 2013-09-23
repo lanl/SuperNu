@@ -47,6 +47,7 @@ subroutine interior_source
            !Calculating Group
            denom2 = 0d0
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
            do ig = 1, gas_ng
               x3=1d0/gas_wl(ig+1)
               x4=1d0/gas_wl(ig)
@@ -60,24 +61,33 @@ subroutine interior_source
            !Ryan W.: particle group removed (rev. 120)
            !prt_particles(ivac)%gsrc = iig
            !Calculating comoving wavelength uniformly from group
+
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
+
            wl0 = 1d0/((1d0-r1)/gas_wl(iig)+r1/gas_wl(iig+1))
-           !wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
-           !write(*,*) wl0, gas_wl(iig),gas_wl(iig+1)
-           !write(*,*) gas_wl
+
            !Calculating radial position
+
            r3 = rand()
+           prt_tlyrand = prt_tlyrand+1
+
            prt_particles(ivac)%rsrc = (r3*gas_rarr(ir+1)**3 + &
                 (1.0-r3)*gas_rarr(ir)**3)**(1.0/3.0)
            r0 = prt_particles(ivac)%rsrc
+
            !Calculating direction cosine (comoving)
            !mu0 = 1d0
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
            mu0 = 1d0-2d0*r1
 
            !Calculating particle tsp_time
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
+
            prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
+
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = exsumg(ir)/real(gas_nvolex(ir))
            
@@ -145,6 +155,7 @@ subroutine interior_source
            !Calculating Group
            denom2 = 0d0
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
            
            do ig = 1, gas_ng
               iig = ig
@@ -156,6 +167,7 @@ subroutine interior_source
            !prt_particles(ivac)%gsrc = iig
            !Calculating wavelength uniformly from group
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
            wl0 = 1d0/((1d0-r1)/gas_wl(iig)+r1/gas_wl(iig+1))
            !wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
 !            x1 = pc_h*pc_c/(gas_wl(iig+1)*pc_kb*gas_temp(ir))
@@ -168,11 +180,15 @@ subroutine interior_source
 !               bmax = pc_plkpk
 !            endif
 !            r1 = rand()
+!           prt_tlyrand = prt_tlyrand+1
 !            r2 = rand()
+!           prt_tlyrand = prt_tlyrand+1
 !            xx0 = (1d0-r1)*x1+r1*x2
 !            do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
 !               r1 = rand()
+!           prt_tlyrand = prt_tlyrand+1
 !               r2 = rand()
+!           prt_tlyrand = prt_tlyrand+1
 !               xx0 = (1d0-r1)*x1+r1*x2
 !            enddo
 !            wl0 = pc_h*pc_c/(xx0*pc_kb*gas_temp(ir))
@@ -185,21 +201,25 @@ subroutine interior_source
             uumax = max(uul,uur)
            do while (r2 > r1)
               r3 = rand()
+              prt_tlyrand = prt_tlyrand+1
               r0 = (r3*gas_rarr(ir+1)**3+(1.0-r3)*gas_rarr(ir)**3)**(1.0/3.0)
               r3 = (r0-gas_rarr(ir))/gas_drarr(ir)
               r1 = (r3*uur+(1.0-r3)*uul)/uumax
               r2 = rand()
+              prt_tlyrand = prt_tlyrand+1
            enddo
            prt_particles(ivac)%rsrc = r0
 
            !Calculating direction cosine (comoving)
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
            mu0 = 1d0-2d0*r1
            if(abs(mu0)<0.0000001d0) then
               mu0=0.0000001d0
            endif
            !Calculating particle tsp_time
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
            prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = gas_emit(ir)/real(gas_nvol(ir))
@@ -239,15 +259,9 @@ subroutine interior_source
 
            isnotvacnt = .true.
 
-           !source tally
-           !if(prt_particles(ivac)%rtsrc==2) then
-           !   gas_eraddens(iig,ir)=gas_eraddens(iig,ir)+Ep0
-           !endif
-
         endif
      enddo
   enddo
-  !write(*,*) 'here'
-  !deallocate(prt_vacantarr)
+
 
 end subroutine interior_source

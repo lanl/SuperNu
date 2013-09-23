@@ -42,6 +42,7 @@ subroutine boundary_source
      !sampling group
      denom2 = 0d0
      r1 = rand()
+     prt_tlyrand = prt_tlyrand+1
      do ig = 1, gas_ng
         iig = ig
         if(r1>=denom2.and.r1<denom2+emitsurfprobg(ig)) exit
@@ -54,18 +55,24 @@ subroutine boundary_source
         iig = 2
      endif
      r1 = rand()
+     prt_tlyrand = prt_tlyrand+1
      wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
 
      r1 = rand()
+     prt_tlyrand = prt_tlyrand+1
      r2 = rand()
+     prt_tlyrand = prt_tlyrand+1
+
      prt_particles(ivac)%musrc = 1d0*max(r1,r2)
      if (abs(prt_particles(ivac)%musrc)<0.0000001) then
         prt_particles(ivac)%musrc = 0.0000001
      endif
      mu0 = prt_particles(ivac)%musrc
      P = gas_ppl(iig,1)*(1.0+1.5*prt_particles(ivac)%musrc)
-     !write(*,*) P, prt_particles(ivac)%musrc, iig
+
      r1 = rand()
+     prt_tlyrand = prt_tlyrand+1
+
      prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
 
      if(gas_isvelocity.and.gas_srctype=='manu') then
@@ -115,13 +122,8 @@ subroutine boundary_source
 
      prt_particles(ivac)%isvacant = .false.
 
-     !source tally
-     !if(prt_particles(ivac)%rtsrc==1) then
-     !   gas_eraddens(iig,z0)=gas_eraddens(iig,z0)+Esurfpart
-     !else
-     !   gas_eraddens(iig,z0)=gas_eraddens(iig,z0)+P*Esurfpart
-     !endif
+
   enddo
-  !deallocate(prt_vacantarr)
+
 
 end subroutine boundary_source

@@ -146,6 +146,7 @@ subroutine particle_advance
            if (rtsrc == 2) then
 !-- sampling position uniformly
 !              r1 =  rand()
+!           prt_tlyrand = prt_tlyrand+1
 !              rsrc = (r1*gas_rarr(zsrc+1)**3 + (1.0-r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
 !-- sampling position from source tilt
               r1 = 0d0
@@ -155,15 +156,18 @@ subroutine particle_advance
               uumax = max(uul,uur)
               do while (r2 > r1)
                  r3 = rand()
+                 prt_tlyrand = prt_tlyrand+1
                  r0 = (r3*gas_rarr(zsrc+1)**3+(1.0-r3)*gas_rarr(zsrc)**3)**(1.0/3.0)
                  r3 = (r0-gas_rarr(zsrc))/gas_drarr(zsrc)
                  r1 = (r3*uur+(1d0-r3)*uul)/uumax
                  r2 = rand()
+                 prt_tlyrand = prt_tlyrand+1
               enddo
               rsrc = r0
 !
 !-- sampling angle isotropically
               r1 = rand()
+              prt_tlyrand = prt_tlyrand+1
               musrc = 1.0 - 2.0*r1
 !-- converting to lab frame (doppler and aberration)
 !                if(gas_isvelocity) then
@@ -177,9 +181,11 @@ subroutine particle_advance
               endif
               !wlsrc = 0.5d0*(gas_wl(g)+gas_wl(g+1))
               !r1 = rand()
+!           prt_tlyrand = prt_tlyrand+1
               !wlsrc=gas_wl(g)*(1d0-r1)+gas_wl(g+1)*r1
               !
 !               r1 = rand()
+!           prt_tlyrand = prt_tlyrand+1
 !               if(r1<gas_cap(g,zsrc)/(gas_cap(g,zsrc)+gas_sig(zsrc))) then
 !                  x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(zsrc))
 !                  x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_temp(zsrc))
@@ -191,16 +197,21 @@ subroutine particle_advance
 !                     bmax = pc_plkpk
 !                  endif
 !                  r1 = rand()
+!           prt_tlyrand = prt_tlyrand+1
 !                  r2 = rand()
+!           prt_tlyrand = prt_tlyrand+1
 !                  xx0 = (1d0-r1)*x1+r1*x2
 !                  do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
 !                     r1 = rand()
+!           prt_tlyrand = prt_tlyrand+1
 !                     r2 = rand()
+!           prt_tlyrand = prt_tlyrand+1
 !                     xx0 = (1d0-r1)*x1+r1*x2
 !                  enddo
 !                  wlsrc = pc_h*pc_c/(xx0*pc_kb*gas_temp(zsrc))
 !               else
                  r1 = rand()
+                 prt_tlyrand = prt_tlyrand+1
                  wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
 !              endif
               !
@@ -292,9 +303,9 @@ subroutine particle_advance
                  endif
               enddo
               if(zfdiff.ne.-1) then
-!
-!========= Under review =================
+!--
                  r1 = rand()
+                 prt_tlyrand = prt_tlyrand+1
                  if(r1<alph3) then
                     zsrc = zfdiff+1
                     rsrc = gas_rarr(zsrc)
@@ -302,8 +313,7 @@ subroutine particle_advance
                     zsrc = zfdiff
                     rtsrc = 2
                  endif
-!========================================
-!
+!--
               else
                  zsrc = zholder
               endif
@@ -363,6 +373,7 @@ subroutine particle_advance
 ! !         !
 ! !         !
 ! !         r1 = rand()
+!           prt_tlyrand = prt_tlyrand+1
 ! !         wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
 ! !         wlsrc = wlsrc*exp(tsp_dt/tsp_texp)
 !         !
@@ -446,11 +457,11 @@ subroutine particle_advance
                  endif
               enddo
               if(zfdiff.ne.-1) then
-!
-!========= Under review =================
+!--
                  zsrc = zfdiff+1
                  rsrc = gas_rarr(zsrc)
                  r1 = rand()
+                 prt_tlyrand = prt_tlyrand+1
                  if(r1<alph3) then
                     zsrc = zfdiff+1
                     rsrc = gas_rarr(zsrc)
@@ -458,8 +469,7 @@ subroutine particle_advance
                     zsrc = zfdiff
                     rtsrc = 2
                  endif
-!========================================
-!
+!--
               else
                  zsrc = zholder
               endif

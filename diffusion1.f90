@@ -76,6 +76,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   endif
   !write(*,*) gas_emitprob(g,z),g
   r1 = rand()
+  prt_tlyrand = prt_tlyrand+1
   tau = abs(log(r1)/(pc_c*denom))
   tcensus = tsp_time+tsp_dt-t
   ddmct = min(tau,tcensus)
@@ -129,6 +130,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   endif
   if (ddmct == tau) then
      r1 = rand()
+     prt_tlyrand = prt_tlyrand+1
 !-- right leak probability
      PR = gas_opacleakr(g,z)/denom
 !-- left leak probability
@@ -187,15 +189,20 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !               bmax = pc_plkpk
 !            endif
 !            r1 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !            r2 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !            xx0 = (1d0-r1)*x1+r1*x2
 !            do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
 !               r1 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !               r2 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !               xx0 = (1d0-r1)*x1+r1*x2
 !            enddo
 !            wl = pc_h*pc_c/(xx0*pc_kb*gas_temp(z))
             r1 = rand()
+            prt_tlyrand = prt_tlyrand+1
             wl = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
 !
 !-- method changed to IMC
@@ -208,7 +215,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !
 !-- particl angle sampled from isotropic b.c. inward
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
            r2 = rand()
+           prt_tlyrand = prt_tlyrand+1
            mu = -max(r1,r2)
 !
 !-- doppler and aberration corrections
@@ -225,7 +234,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            vacnt = .true.
            prt_done = .true.
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
            r2 = rand()
+           prt_tlyrand = prt_tlyrand+1
            mu = max(r1,r2)
 !-- outbound luminosity tally
            if(gas_isvelocity) then
@@ -268,15 +279,20 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !               bmax = pc_plkpk
 !            endif
 !            r1 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !            r2 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !            xx0 = (1d0-r1)*x1+r1*x2
 !            do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
 !               r1 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !               r2 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !               xx0 = (1d0-r1)*x1+r1*x2
 !            enddo
 !            wl = pc_h*pc_c/(xx0*pc_kb*gas_temp(z))
             r1 = rand()
+            prt_tlyrand = prt_tlyrand+1
             wl = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
 !
 !-- method changed to IMC
@@ -289,7 +305,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !
 !--  particl angle sampled from isotropic b.c. outward
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
            r2 = rand()
+           prt_tlyrand = prt_tlyrand+1
            mu = max(r1,r2)
 !
 !-- doppler and aberration corrections
@@ -309,6 +327,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         if(g<gas_ng) then
            g = g+1
            !r1 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
            !wl = 1d0/((1d0-r1)/gas_wl(g)+r1/gas_wl(g+1))
            wl = gas_wl(g)
         else
@@ -330,9 +349,11 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            hyparam = 1
 !-- direction sampled isotropically           
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
            mu = 1.0-2.0*r1
 !-- position sampled uniformly
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
            r = (r1*gas_rarr(z+1)**3+(1.0-r1)*gas_rarr(z)**3)**(1.0/3.0)
 !
 !-- doppler and aberration corrections
@@ -353,6 +374,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         enddo
         denom3 = 0d0
         r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
         do ig = 1, gas_ng
            if(ig.ne.g) then
               iig = ig
@@ -363,6 +385,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         !write(*,*) 'Scatter: ',g,'to ',iig
         g = iig
         r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
         wl = 1d0/((1d0-r1)/gas_wl(g)+r1/gas_wl(g+1))
         ! during DDMC phase, wavelength is only a placeholder for group 
         !wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
@@ -391,20 +414,26 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !               bmax = pc_plkpk
 !            endif
 !            r1 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !            r2 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !            xx0 = (1d0-r1)*x1+r1*x2
 !            do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
 !               r1 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !               r2 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !               xx0 = (1d0-r1)*x1+r1*x2
 !            enddo
 !            wl = pc_h*pc_c/(xx0*pc_kb*gas_temp(z))
 !
 !-- direction sampled isotropically           
            r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
            mu = 1.0-2.0*r1
 !-- position sampled uniformly
             r1 = rand()
+            prt_tlyrand = prt_tlyrand+1
             r = (r1*gas_rarr(z+1)**3+(1.0-r1)*gas_rarr(z)**3)**(1.0/3.0)
 !-- position sampled from source tilt
 !            r1 = 0d0
@@ -414,10 +443,12 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !            uumax = max(uul,uur)
 !            do while (r2 > r1)
 !               r3 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !               r0 = (r3*gas_rarr(z+1)**3+(1.0-r3)*gas_rarr(z)**3)**(1.0/3.0)
 !               r3 = (r0-gas_rarr(z))/gas_drarr(z)
 !               r1 = (r3*uur+(1d0-r3)*uul)/uumax
 !               r2 = rand()
+!                 prt_tlyrand = prt_tlyrand+1
 !            enddo
 !            r = r0
 !
