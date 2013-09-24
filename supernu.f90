@@ -141,7 +141,7 @@ program supernu
     call reduce_tally !MPI
 
 !-- collect data necessary for restart (tobe written by impi0)
-!    call collect_restart_data !MPI
+    call collect_restart_data !MPI
 !
     if(impi==impi0) then
        ! averaging reduced results
