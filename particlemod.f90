@@ -32,9 +32,9 @@ module particlemod
 
   contains
 
-  subroutine particle_init(npartmax,ns,ninit,isimcanlog,isddmcanlog,tauddmc)
+  subroutine particle_init(npartmax,ns,ninit,isimcanlog,isddmcanlog,tauddmc,nummespasint)
 !--------------------------------------
-    integer,intent(in) :: npartmax, ns, ninit
+    integer,intent(in) :: npartmax, ns, ninit, nummespasint
     logical,intent(in) :: isimcanlog, isddmcanlog
     real*8,intent(in) :: tauddmc
 !***********************************************************************
@@ -52,6 +52,9 @@ module particlemod
 !-- allocate permanent storage (dealloc in dealloc_all.f)
     allocate(prt_particles(prt_npartmax))
     prt_particles%isvacant = .true.
+!-- rand() count per rank allocation
+    allocate(prt_tlyrandarr(nummespasint))
+    prt_tlyrandarr = 0
 !
   end subroutine particle_init
 

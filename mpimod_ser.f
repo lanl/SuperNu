@@ -52,8 +52,10 @@ c
       subroutine collect_restart_data
 ************************************************************************
 * Collect data required for restarting a simulation at some time
-* - stub
-************************************************************************      
+*
+************************************************************************
+      use particlemod
+      prt_tlyrandarr=prt_tlyrand
       end subroutine collect_restart_data
 c
 c

@@ -57,7 +57,8 @@ program supernu
    call timestep_init(in_nt,in_alpha,in_tfirst,dt)
 !
 !-- particle init
-   call particle_init(in_npartmax,in_ns,in_ninit,in_isimcanlog,in_isddmcanlog,in_tauddmc)
+   call particle_init(in_npartmax,in_ns,in_ninit,in_isimcanlog, &
+        in_isddmcanlog,in_tauddmc,nmpi)
 !
 !-- read input structure
    if(.not.in_noreadstruct.and.in_isvelocity) then
@@ -162,8 +163,18 @@ program supernu
       call timestep_update(dt) !Updating elapsed tsp_time and expansion tsp_time
 
       call write_output
+!
+!-- restart writers
+!-- temp
       call write_restart_file
+!-- rand() count
+      call write_restart_randcount
+!
     endif !impi
+!
+!-- reset rand counters
+    prt_tlyrand = 0
+!
   enddo
 !
 !
