@@ -43,13 +43,13 @@ c     ---------------------------------
       integer :: it
       integer, allocatable :: helprandarr(:)
 c
-      allocate(helprandarr(size(prt_tlyrandarr,2)))
+      allocate(helprandarr(size(prt_tlyrandarr)))
       helprandarr = 0
 c
       if(tsp_ntres>1) then
          open(unit=4,file=fname,status='old',iostat=istat)
          if(istat/=0) stop 'read_restart: no input.retlyrand file'
-         do it = 1:tsp_ntres
+         do it = 1, tsp_ntres
             read(4,*) prt_tlyrandarr
             helprandarr=helprandarr+prt_tlyrandarr
          enddo
