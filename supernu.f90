@@ -54,11 +54,14 @@ program supernu
 !-- constant time step, may be coded to loop if time step is not uniform
    t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
    dt = t_elapsed/in_nt
-   call timestep_init(in_nt,in_alpha,in_tfirst,dt)
+   call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst,dt)
 !
 !-- particle init
    call particle_init(in_npartmax,in_ns,in_ninit,in_isimcanlog, &
         in_isddmcanlog,in_tauddmc,nmpi)
+!
+!-- read rand() count
+   call read_restart_randcount
 !
 !-- read input structure
    if(.not.in_noreadstruct.and.in_isvelocity) then
@@ -106,14 +109,22 @@ program supernu
     ihelp = 10*impi + in_seed  !this expression uses the same seed for rank==0 as previously used in a the serial run
   endif
   help = rand(ihelp)
-  prt_tlyrand = 1
-
+!
+!-- reading restart rand() count
+  call scatter_restart_data !MPI
+!-- set rand() counter
+  if(tsp_ntres==1) then
+     prt_tlyrand = 1
+  else
+     prt_tlyrand = 0
+  endif
+!
 !-- instantiating initial particles (if any)
   call initial_particles
 !
 !-- time step loop
 !=================
-  do tsp_it = 1, tsp_nt
+  do tsp_it = tsp_ntres, tsp_nt
     if(impi==impi0) then
       write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_it,tsp_texp/pc_day
 !-- update all non-permanent variables

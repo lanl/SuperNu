@@ -56,6 +56,7 @@ c-- time step
       real*8 :: in_tfirst = 0d0 !first point in time evolution
       real*8 :: in_tlast = 0d0  !last point in time evolution
       integer :: in_nt = -1   !# time steps
+      integer :: in_ntres = -1   !restart time step number
 c
 c-- group structure
       integer :: in_wldex = 1 !# if in_iswlread = t, selects group grid from formatted group grid file
@@ -107,7 +108,7 @@ c-- runtime parameter namelist
      & in_totmass,in_templ0,in_velout,in_v0,
      & in_consttemp,in_solidni56,
      & in_seed,in_ns,in_ninit,in_npartmax,in_puretran,in_alpha,
-     & in_tfirst,in_tlast,in_nt,
+     & in_tfirst,in_tlast,in_nt,in_ntres
      & in_grab_stdout,in_nomp,
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
      & in_noffopac,in_nothmson,

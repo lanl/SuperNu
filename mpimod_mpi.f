@@ -48,6 +48,7 @@ c     --------------------------!{{{
 * integer :: prt_npartmax
 * integer :: in_nomp
 * integer :: tsp_nt
+* integer :: tsp_ntres
 * integer :: in_seed
 * integer :: prt_ninitnew
 *-- real*8
@@ -80,10 +81,10 @@ c-- copy back
       deallocate(lsndvec)
 c
 c-- integer
-      n = 7
+      n = 8
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/gas_nr,gas_ng,
-     &  prt_npartmax,in_nomp,tsp_nt,in_seed,prt_ninitnew/)
+     &  prt_npartmax,in_nomp,tsp_nt,tsp_ntres,in_seed,prt_ninitnew/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -92,8 +93,9 @@ c-- copy back
       prt_npartmax = isndvec(3)
       in_nomp = isndvec(4)
       tsp_nt = isndvec(5)
-      in_seed = isndvec(6)
-      prt_ninitnew = isndvec(7)
+      tsp_ntres = isndvec(6)
+      in_seed = isndvec(7)
+      prt_ninitnew = isndvec(8)
       deallocate(isndvec)
 c
 c-- real*8
@@ -430,12 +432,33 @@ c
 c
 c
 c
+      subroutine scatter_restart_data
+c     -------------------------------
+      use particlemod
+************************************************************************
+* scatter restart data from master rank to subordinate ranks.
+* allows for restart at some time step, tsp_it.
+************************************************************************
+      integer :: isq
+      real :: help
+c
+      call mpi_scatter(prt_tlyrandarr,1,MPI_INTEGER,
+     &     prt_tlyrand,1,MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
+c
+c-- iterate through random number sequence to appropriate
+      do isq = 1, prt_tlyrand-1
+         help = rand()
+      enddo
+c
+      end subroutine scatter_restart_data
+c
+c
       subroutine collect_restart_data
 c     -------------------------------
       use particlemod
 ************************************************************************
 * send particle array info and number of rand calls to master rank.
-* allows for restart at some time step
+* allows for restart at some time step, tsp_it.
 ************************************************************************
 c
       call mpi_gather(prt_tlyrand,1,MPI_INTEGER,prt_tlyrandarr,1,

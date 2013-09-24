@@ -3,6 +3,7 @@ module timestepmod
   implicit none
 
   integer :: tsp_nt = 0  !total # of time steps
+  integer :: tsp_ntres = 0 !restart time step # (at beginning of time step)
   integer :: tsp_it  !current time step number
   real*8 :: tsp_texp
   real*8 :: tsp_tcenter
@@ -15,22 +16,28 @@ module timestepmod
   contains
 
 
-  subroutine timestep_init(nt, alpha, tfirst, dt)
+  subroutine timestep_init(nt, ntres, alpha, tfirst, dt)
 !------------------------------------------------
     use physconstmod
-    integer,intent(in) :: nt
+    integer,intent(in) :: nt, ntres
     real*8,intent(in) :: alpha, tfirst, dt
 !***********************************************************************
 ! set the timestep constants
 !***********************************************************************
     tsp_nt = nt
+    if(ntres<1) then
+       tsp_ntres=1
+    else
+       tsp_ntres=ntres
+    endif
     tsp_dt = dt
     tsp_alpha = alpha
 
-!-- beginning of first time step
-    tsp_time = 0d0
-    tsp_texp = tfirst*pc_day
-    tsp_tcenter = tsp_texp + .5d0*tsp_dt
+!-- beginning of first (restart) time step
+    tsp_time = 0d0+(tsp_ntres-1)*dt
+    tsp_texp = tfirst*pc_day+(tsp_ntres-1)*dt
+    tsp_tcenter = tsp_texp + .5d0*tsp_dt+(tsp_ntres-1)*dt
+!
   end subroutine timestep_init
 
 

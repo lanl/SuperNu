@@ -11,6 +11,7 @@ in_noreadstruct = t
 in_tfirst = 2d0
 in_tlast = 11d0
 in_nt = 192
+in_ntres = 0
 in_alpha = 1d0
 
 !-- gas grid settings
