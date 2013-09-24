@@ -437,24 +437,9 @@ c     -------------------------------
 * send particle array info and number of rand calls to master rank.
 * allows for restart at some time step
 ************************************************************************
-      integer :: impisub
 c
-      if(impi/=impi0) then
-         call mpi_send(impi,1,MPI_INTEGER,impi0,0,
-     &        MPI_COMM_WORLD,ierr)
-         call mpi_send(prt_tlyrand,1,MPI_INTEGER,impi0,1,
-     &        MPI_COMM_WORLD,ierr)
-      endif
-c
-      if(impi==impi0) then
-         prt_tlyrandarr(1)=prt_tlyrand
-         if(nmpi>1) then
-            call mpi_recv(impisub,1,MPI_INTEGER,impisub,0,
-     &           MPI_COMM_WORLD,status,ierr)
-            call mpi_recv(prt_tlyrandarr(impisub+1),1,MPI_INTEGER,
-     &           impisub,1,MPI_COMM_WORLD,status,ierr)
-         endif
-      endif
+      call mpi_gather(prt_tlyrand,1,MPI_INTEGER,prt_tlyrandarr,1,
+     &     MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
 c
       end subroutine collect_restart_data    
 c
