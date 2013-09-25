@@ -11,7 +11,7 @@ in_noreadstruct = t
 in_tfirst = 2d0
 in_tlast = 11d0
 in_nt = 192
-in_ntres = 0
+in_ntres = 3
 in_alpha = 1d0
 
 !-- gas grid settings
@@ -28,7 +28,8 @@ in_dentype = 'mass'
 in_templ0 = 0d0
 
 !-- flat structure
-in_consttemp = 11604505d0
+!in_consttemp = 11604505d0
+in_consttemp = 0d0
 in_solidni56 = t
 
 !-- external source type

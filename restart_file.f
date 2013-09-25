@@ -1,15 +1,26 @@
       subroutine read_restart_file
 c     ----------------------------
       use gasgridmod
+      use timestepmod
 ************************************************************************
 * read restart file
 ************************************************************************
       character(13) :: fname = 'input.restart'
       integer :: istat
+      integer :: it
 c
       open(unit=4,file=fname,status='old',iostat=istat)
       if(istat/=0) stop 'read_restart: no input.restart file'
-      read(4,*) gas_temp
+      if(tsp_ntres<=1) then
+         read(4,*) gas_temp
+      else
+c
+c-- assumes no header
+         do it = 1, tsp_ntres-2
+            read(4,*)
+         enddo
+         read(4,*) gas_temp
+      endif
       close(4)
       end subroutine read_restart_file
 c

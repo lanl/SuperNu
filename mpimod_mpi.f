@@ -221,7 +221,7 @@ c-- copy back
       gas_eleft = sndvec(3)
       deallocate(sndvec)
 c-- dim==1,2
-      if(impi/=impi0 .and. tsp_it==1) then
+      if(impi/=impi0 .and. tsp_it==tsp_ntres) then
          allocate(gas_numcensus(gas_nr))
          allocate(gas_edep(gas_nr))
          allocate(gas_eraddens(gas_ng,gas_nr))
@@ -264,7 +264,7 @@ c-- copy back
       deallocate(sndvec)
 c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
-      if(impi/=impi0 .and. tsp_it==1) then
+      if(impi/=impi0 .and. tsp_it==tsp_ntres) then
        allocate(gas_temp(gas_nr))
        allocate(gas_nvol(gas_nr))
        allocate(gas_nvolex(gas_nr))

@@ -49,12 +49,20 @@ c     -------------------------
       end subroutine reduce_fluxes
 c
 c
+      subroutine scatter_restart_data
+************************************************************************
+* Distribute data required for restarting a simulation at some time
+* - stub
+************************************************************************
+      end subroutine scatter_restart_data
+c
+c
       subroutine collect_restart_data
+      use particlemod
 ************************************************************************
 * Collect data required for restarting a simulation at some time
 *
 ************************************************************************
-      use particlemod
       prt_tlyrandarr=prt_tlyrand
       end subroutine collect_restart_data
 c

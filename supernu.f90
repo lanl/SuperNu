@@ -98,7 +98,6 @@ program supernu
   endif !impi
 
   call bcast_permanent !MPI
-
 !
 !-- initialize random number generator
   if(in_seed==0) then
