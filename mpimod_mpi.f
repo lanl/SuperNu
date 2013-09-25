@@ -459,10 +459,58 @@ c     -------------------------------
 ************************************************************************
 * send particle array info and number of rand calls to master rank.
 * allows for restart at some time step, tsp_it.
+* Files written here to avoid too many allocations of large particle
+* arrays.
 ************************************************************************
 c
+c-- gather rand() count to prt_tlyrandarr
       call mpi_gather(prt_tlyrand,1,MPI_INTEGER,prt_tlyrandarr,1,
      &     MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
+c
+c-- vacancy
+      call mpi_gather(prt_particles%isvacant,prt_npartmax,MPI_LOGICAL,
+     &     prt_tlyvacant,prt_npartmax,MPI_LOGICAL,impi0,MPI_COMM_WORLD,
+     &     ierr)
+c
+c-- zone
+      call mpi_gather(prt_particles%zsrc,prt_npartmax,MPI_INTEGER,
+     &     prt_tlyzsrc,prt_npartmax,MPI_INTEGER,impi0,MPI_COMM_WORLD,
+     &     ierr)
+c
+c-- transport index
+      call mpi_gather(prt_particles%rtsrc,prt_npartmax,MPI_INTEGER,
+     &     prt_tlyrtsrc,prt_npartmax,MPI_INTEGER,impi0,MPI_COMM_WORLD,
+     &     ierr)
+c
+c-- position
+      call mpi_gather(prt_particles%rsrc,prt_npartmax,MPI_REAL,
+     &     prt_tlyrsrc,prt_npartmax,MPI_REAL,impi0,MPI_COMM_WORLD,
+     &     ierr)
+c
+c-- angle
+      call mpi_gather(prt_particles%musrc,prt_npartmax,MPI_REAL,
+     &     prt_tlymusrc,prt_npartmax,MPI_REAL,impi0,MPI_COMM_WORLD,
+     &     ierr)
+c
+c-- time
+      call mpi_gather(prt_particles%tsrc,prt_npartmax,MPI_REAL,
+     &     prt_tlytsrc,prt_npartmax,MPI_REAL,impi0,MPI_COMM_WORLD,
+     &     ierr)
+c
+c-- energy
+      call mpi_gather(prt_particles%esrc,prt_npartmax,MPI_REAL,
+     &     prt_tlyesrc,prt_npartmax,MPI_REAL,impi0,MPI_COMM_WORLD,
+     &     ierr)
+c
+c-- birth energy
+      call mpi_gather(prt_particles%ebirth,prt_npartmax,MPI_REAL,
+     &     prt_tlyebirth,prt_npartmax,MPI_REAL,impi0,MPI_COMM_WORLD,
+     &     ierr)
+c
+c-- wavelength
+      call mpi_gather(prt_particles%wlsrc,prt_npartmax,MPI_REAL,
+     &     prt_tlywlsrc,prt_npartmax,MPI_REAL,impi0,MPI_COMM_WORLD,
+     &     ierr)
 c
       end subroutine collect_restart_data    
 c

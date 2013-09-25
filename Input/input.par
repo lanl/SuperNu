@@ -2,7 +2,7 @@
 
 !-- misc
 in_nomp = 4
-in_grab_stdout = t
+in_grab_stdout = f
 in_puretran = f
 in_seed = 1
 in_noreadstruct = t
@@ -11,7 +11,7 @@ in_noreadstruct = t
 in_tfirst = 2d0
 in_tlast = 11d0
 in_nt = 192
-in_ntres = 3
+in_ntres = 0
 in_alpha = 1d0
 
 !-- gas grid settings

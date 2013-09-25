@@ -6,19 +6,24 @@ module particlemod
   type packet
      integer :: zsrc, rtsrc !,gsrc
      real*8 :: rsrc, musrc, tsrc
-     real*8 :: Esrc, Ebirth, wlsrc
+     real*8 :: esrc, ebirth, wlsrc
      logical :: isvacant
   end type packet
-  TYPE(packet), dimension(:), pointer :: prt_particles  !(prt_npartmax)
-
+  type(packet), dimension(:), pointer :: prt_particles  !(prt_npartmax)
+!
   integer :: prt_npartmax, prt_ns, prt_ninit
   integer :: prt_nsurf, prt_nexsrc, prt_nnew, prt_ninitnew
 !-- rtw: random number counter added (rev. 262). associated with particle routines
   integer :: prt_tlyrand
 !-- rtw: array of rand counts from each rank
   integer, allocatable :: prt_tlyrandarr(:)
+!-- particle property restart arrays:
+  logical, allocatable :: prt_tlyvacant
+  integer, allocatable :: prt_tlyzsrc, prt_tlyrtsrc
+  real*8, allocatable :: prt_tlyrsrc, prt_tlymusrc, prt_tlytsrc
+  real*8, allocatable :: prt_tlyesrc, prt_tlyebirth, prt_tlywlsrc
 !
-  integer, allocatable :: prt_vacantarr(:)
+  integer, allocatable :: prt_vacantarr(:) !array of vacant particle array locations
 
   logical :: prt_done
   logical :: prt_isimcanlog !sets flux tally and energy deposition ...
@@ -55,6 +60,16 @@ module particlemod
 !-- rand() count per rank allocation
     allocate(prt_tlyrandarr(nummespasint))
     prt_tlyrandarr = 0
+!-- mpi gather arrays for particles
+    allocate(prt_tlyvacant(nummespasint,npartmax))
+    allocate(prt_tlyzsrc(nummespasint,npartmax))
+    allocate(prt_tlyrtsrc(nummespasint,npartmax))
+    allocate(prt_tlyrsrc(nummespasint,npartmax))
+    allocate(prt_tlymusrc(nummespasint,npartmax))
+    allocate(prt_tlytsrc(nummespasint,npartmax))
+    allocate(prt_tlyesrc(nummespasint,npartmax))
+    allocate(prt_tlyebirth(nummespasint,npartmax))
+    allocate(prt_tlywlsrc(nummespasint,npartmax))
 !
   end subroutine particle_init
 
