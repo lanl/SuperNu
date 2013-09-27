@@ -462,55 +462,34 @@ c     -------------------------------
 * Files written here to avoid too many allocations of large particle
 * arrays.
 ************************************************************************
+      integer :: partmpitype
+      integer :: oldparttypes(0:2), blockcounts(0:2), offsets(0:2)
+      integer :: extent
 c
-c-- gather rand() count to prt_tlyrandarr
+c-- gathering rand() counts
       call mpi_gather(prt_tlyrand,1,MPI_INTEGER,prt_tlyrandarr,1,
      &     MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
 c
-c-- vacancy
-      call mpi_gather(prt_particles%isvacant,prt_npartmax,MPI_LOGICAL,
-     &     prt_tlyvacant,prt_npartmax,MPI_LOGICAL,impi0,MPI_COMM_WORLD,
-     &     ierr)
+c-- particle properties:
+      offsets(0) = 0
+      oldparttypes(0) = MPI_INTEGER
+      blockcounts(0) = 2
 c
-c-- zone
-      call mpi_gather(prt_particles%zsrc,prt_npartmax,MPI_INTEGER,
-     &     prt_tlyzsrc,prt_npartmax,MPI_INTEGER,impi0,MPI_COMM_WORLD,
-     &     ierr)
+      call mpi_type_extent(MPI_INTEGER,extent,ierr)
+      offsets(1)=2*extent
+      oldparttypes(1) = MPI_REAL8
+      blockcounts(1) = 6
 c
-c-- transport index
-      call mpi_gather(prt_particles%rtsrc,prt_npartmax,MPI_INTEGER,
-     &     prt_tlyrtsrc,prt_npartmax,MPI_INTEGER,impi0,MPI_COMM_WORLD,
-     &     ierr)
+      call mpi_type_extent(MPI_REAL8,extent,ierr)
+      offsets(2)=6*extent
+      oldparttypes(2) = MPI_LOGICAL
+      blockcounts(2) = 1
 c
-c-- position
-      call mpi_gather(prt_particles%rsrc,prt_npartmax,MPI_REAL,
-     &     prt_tlyrsrc,prt_npartmax,MPI_REAL,impi0,MPI_COMM_WORLD,
-     &     ierr)
+      call mpi_type_struct(3,blockcounts,offsets,oldparttypes,
+     &     partmpitype,ierr)
 c
-c-- angle
-      call mpi_gather(prt_particles%musrc,prt_npartmax,MPI_REAL,
-     &     prt_tlymusrc,prt_npartmax,MPI_REAL,impi0,MPI_COMM_WORLD,
-     &     ierr)
+      call mpi_type_commit(partmpitype,ierr)
 c
-c-- time
-      call mpi_gather(prt_particles%tsrc,prt_npartmax,MPI_REAL,
-     &     prt_tlytsrc,prt_npartmax,MPI_REAL,impi0,MPI_COMM_WORLD,
-     &     ierr)
-c
-c-- energy
-      call mpi_gather(prt_particles%esrc,prt_npartmax,MPI_REAL,
-     &     prt_tlyesrc,prt_npartmax,MPI_REAL,impi0,MPI_COMM_WORLD,
-     &     ierr)
-c
-c-- birth energy
-      call mpi_gather(prt_particles%ebirth,prt_npartmax,MPI_REAL,
-     &     prt_tlyebirth,prt_npartmax,MPI_REAL,impi0,MPI_COMM_WORLD,
-     &     ierr)
-c
-c-- wavelength
-      call mpi_gather(prt_particles%wlsrc,prt_npartmax,MPI_REAL,
-     &     prt_tlywlsrc,prt_npartmax,MPI_REAL,impi0,MPI_COMM_WORLD,
-     &     ierr)
 c
       end subroutine collect_restart_data    
 c

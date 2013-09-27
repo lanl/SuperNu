@@ -179,6 +179,9 @@ program supernu
       call write_restart_file
 !-- rand() count
       call write_restart_randcount
+!-- particle properties of current time step
+      write(6,*) prt_tlyvacant(2,1:10)
+      call write_restart_particles
 !
     endif !impi
 !

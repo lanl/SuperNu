@@ -109,58 +109,18 @@ c     ----------------------------------
 * at each time step
 ************************************************************************
 c
-      character(14) :: fnamez = 'output.prtzsrc'
-      character(15) :: fnamert = 'output.prtrtsrc'
-      character(14) :: fnamer = 'output.prtrsrc'
-      character(15) :: fnamemu = 'output.prtmusrc'
-      character(14) :: fnamet = 'output.prttsrc'
-      character(14) :: fnamee = 'output.prtesrc'
-      character(16) :: fnameeb = 'output.prtebirth'
-      character(15) :: fnamewl = 'output.prtwlsrc'
+C$$$      character(14) :: fnamez = 'output.prtzsrc'
+C$$$      character(15) :: fnamert = 'output.prtrtsrc'
+C$$$      character(14) :: fnamer = 'output.prtrsrc'
+C$$$      character(15) :: fnamemu = 'output.prtmusrc'
+C$$$      character(14) :: fnamet = 'output.prttsrc'
+C$$$      character(14) :: fnamee = 'output.prtesrc'
+C$$$      character(16) :: fnameeb = 'output.prtebirth'
+C$$$      character(15) :: fnamewl = 'output.prtwlsrc'
       character(18) :: fnamevac = 'output.prtisvacant'
 c
-c-- write particle zones
-      open(unit=4,file=fnamez,status='unknown',position='rewind')
-      write(4,*) prt_tlyzsrc
-      close(4)
-c
-c-- write particle transport type
-      open(unit=4,file=fnamert,status='unnkown',position='rewind')
-      write(4,*) prt_tlyrtsrc
-      close(4)
-c
-c-- write particle radii
-      open(unit=4,file=fnamer,status='unnkown',position='rewind')
-      write(4,*) prt_tlyrsrc
-      close(4)
-c
-c-- write particle angles
-      open(unit=4,file=fnamemu,status='unnkown',position='rewind')
-      write(4,*) prt_tlymusrc
-      close(4)
-c
-c-- write particle times
-      open(unit=4,file=fnamet,status='unnkown',position='rewind')
-      write(4,*) prt_tlytsrc
-      close(4)
-c
-c-- write particle energies
-      open(unit=4,file=fnamee,status='unnkown',position='rewind')
-      write(4,*) prt_tlyesrc
-      close(4)
-c
-c-- write particle birth energies
-      open(unit=4,file=fnameeb,status='unnkown',position='rewind')
-      write(4,*) prt_tlyebirth
-      close(4)
-c
-c-- write particle wavelengths
-      open(unit=4,file=fnamewl,status='unnkown',position='rewind')
-      write(4,*) prt_tlywlsrc
-      close(4)
-c
 c-- write particle array vacancies
-      open(unit=4,file=fnamevac,status='unnkown',position='rewind')
+      open(unit=4,file=fnamevac,status='unknown',position='rewind')
       write(4,*) prt_tlyvacant
       close(4)
 c
