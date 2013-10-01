@@ -468,6 +468,10 @@ c     -------------------------------
       integer :: sizes(2)
       integer :: subsizes(2)
       integer :: starts(2)
+c-- type size values
+      logical :: l2
+      integer :: i4
+      real*8 :: r8
 c
       sizes = (/nmpi,prt_npartmax/)
       subsizes = (/1,prt_npartmax/)
@@ -485,14 +489,15 @@ c---- real*8
      &     MPI_ORDER_FORTRAN,MPI_REAL8,subs,ierr)
 c-- creating resized subarray types
 c---- logical
-      call mpi_type_create_resized(lsubs,0,prt_npartmax*sizeof(lsubs),
+      call mpi_type_create_resized(lsubs,0,prt_npartmax*sizeof(l2),
      &     lressubs,ierr)
 c---- integer
-      call mpi_type_create_resized(isubs,0,prt_npartmax*sizeof(isubs),
+      call mpi_type_create_resized(isubs,0,prt_npartmax*sizeof(i4),
      &     iressubs,ierr)
 c---- real*8
-      call mpi_type_create_resized(subs,0,prt_npartmax*sizeof(subs),
+      call mpi_type_create_resized(subs,0,prt_npartmax*sizeof(r8),
      &     ressubs,ierr)
+c
 c-- committing resized types
       call mpi_type_commit(lressubs)
       call mpi_type_commit(iressubs)
