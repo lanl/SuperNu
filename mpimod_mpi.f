@@ -462,6 +462,12 @@ c     -------------------------------
 * Files written here to avoid too many allocations of large particle
 * arrays.
 ************************************************************************
+c-- helper variables
+      integer :: ii
+c-- mpi helper arrays
+      logical,allocatable :: lsndmat(:,:)
+
+c-- mpi data type variables
       integer :: lsubs, lressubs !logical types
       integer :: isubs, iressubs !integer types
       integer :: subs, ressubs !real*8 types
@@ -472,6 +478,21 @@ c-- type size values
       logical :: l2
       integer :: i4
       real*8 :: r8
+c-- counts and displacements for global property arrays
+      integer, allocatable :: counts(:)
+      integer, allocatable :: displs(:)
+c
+c-- allocations
+      allocate(lsndmat(1,prt_npartmax))
+
+      allocate(counts(nmpi))
+      allocate(displs(nmpi))
+c
+c-- setting counts and displacements
+      counts = 1
+      do ii = 1, nmpi
+         displs(ii)=ii-1
+      enddo
 c
       sizes = (/nmpi,prt_npartmax/)
       subsizes = (/1,prt_npartmax/)
@@ -499,14 +520,22 @@ c---- real*8
      &     ressubs,ierr)
 c
 c-- committing resized types
-      call mpi_type_commit(lressubs)
-      call mpi_type_commit(iressubs)
-      call mpi_type_commit(ressubs)
+      call mpi_type_commit(lressubs,ierr)
+      call mpi_type_commit(iressubs,ierr)
+      call mpi_type_commit(ressubs,ierr)
+c
+c-- gathering vacancies
+      lsndmat(1,:)=prt_particles%isvacant
+      call mpi_gatherv(lsndmat,prt_npartmax,MPI_LOGICAL,
+     &     prt_tlyvacant,counts,
+     &     displs,lressubs,impi0,MPI_COMM_WORLD,ierr)
 c
 c-- gathering rand() counts
       call mpi_gather(prt_tlyrand,1,MPI_INTEGER,prt_tlyrandarr,1,
      &     MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
 c
+c-- deallocations
+      deallocate(lsndmat,counts,displs)
 c
       end subroutine collect_restart_data    
 c
