@@ -4,7 +4,6 @@ module particlemod
 
   !Ryan W.: Changing group attribute to continuous wavelength (rev. 120)
   type packet
-     sequence
      integer :: zsrc, rtsrc !,gsrc
      real*8 :: rsrc, musrc, tsrc
      real*8 :: esrc, ebirth, wlsrc

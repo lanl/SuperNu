@@ -60,8 +60,13 @@ program supernu
    call particle_init(in_npartmax,in_ns,in_ninit,in_isimcanlog, &
         in_isddmcanlog,in_tauddmc,nmpi)
 !
+!-- rand() count and prt restarts
+   if(tsp_ntres>1) then
 !-- read rand() count
-   call read_restart_randcount
+      call read_restart_randcount
+!-- read particle properties
+      call read_restart_particles
+   endif
 !
 !-- read input structure
    if(.not.in_noreadstruct.and.in_isvelocity) then
@@ -110,12 +115,12 @@ program supernu
   help = rand(ihelp)
 !
 !-- reading restart rand() count
-  call scatter_restart_data !MPI
-!-- set rand() counter
-  if(tsp_ntres==1) then
-     prt_tlyrand = 1
-  else
+  if(tsp_ntres>1) then
+     call scatter_restart_data !MPI
+!-- mimicking end of tsp reset
      prt_tlyrand = 0
+  else
+     prt_tlyrand = 1
   endif
 !
 !-- instantiating initial particles (if any)
