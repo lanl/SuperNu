@@ -462,33 +462,45 @@ c     -------------------------------
 * Files written here to avoid too many allocations of large particle
 * arrays.
 ************************************************************************
-      integer :: partmpitype
-      integer :: oldparttypes(0:2), blockcounts(0:2), offsets(0:2)
-      integer :: extent
+      integer :: lsubs, lressubs !logical types
+      integer :: isubs, iressubs !integer types
+      integer :: subs, ressubs !real*8 types
+      integer :: sizes(2)
+      integer :: subsizes(2)
+      integer :: starts(2)
+c
+      sizes = (/nmpi,prt_npartmax/)
+      subsizes = (/1,prt_npartmax/)
+      starts = (/0,0/)
+c
+c-- creating subarray types
+c---- logical
+      call mpi_type_create_subarray(2,sizes,subsizes,starts,
+     &     MPI_ORDER_FORTRAN,MPI_LOGICAL,lsubs,ierr)
+c---- integer
+      call mpi_type_create_subarray(2,sizes,subsizes,starts,
+     &     MPI_ORDER_FORTRAN,MPI_INTEGER,isubs,ierr)
+c---- real*8
+      call mpi_type_create_subarray(2,sizes,subsizes,starts,
+     &     MPI_ORDER_FORTRAN,MPI_REAL8,subs,ierr)
+c-- creating resized subarray types
+c---- logical
+      call mpi_type_create_resized(lsubs,0,prt_npartmax*sizeof(lsubs),
+     &     lressubs,ierr)
+c---- integer
+      call mpi_type_create_resized(isubs,0,prt_npartmax*sizeof(isubs),
+     &     iressubs,ierr)
+c---- real*8
+      call mpi_type_create_resized(subs,0,prt_npartmax*sizeof(subs),
+     &     ressubs,ierr)
+c-- committing resized types
+      call mpi_type_commit(lressubs)
+      call mpi_type_commit(iressubs)
+      call mpi_type_commit(ressubs)
 c
 c-- gathering rand() counts
       call mpi_gather(prt_tlyrand,1,MPI_INTEGER,prt_tlyrandarr,1,
      &     MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
-c
-c-- particle properties:
-      offsets(0) = 0
-      oldparttypes(0) = MPI_INTEGER
-      blockcounts(0) = 2
-c
-      call mpi_type_extent(MPI_INTEGER,extent,ierr)
-      offsets(1)=2*extent
-      oldparttypes(1) = MPI_REAL8
-      blockcounts(1) = 6
-c
-      call mpi_type_extent(MPI_REAL8,extent,ierr)
-      offsets(2)=6*extent
-      oldparttypes(2) = MPI_LOGICAL
-      blockcounts(2) = 1
-c
-      call mpi_type_struct(3,blockcounts,offsets,oldparttypes,
-     &     partmpitype,ierr)
-c
-      call mpi_type_commit(partmpitype,ierr)
 c
 c
       end subroutine collect_restart_data    
