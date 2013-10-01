@@ -466,7 +466,8 @@ c-- helper variables
       integer :: ii
 c-- mpi helper arrays
       logical,allocatable :: lsndmat(:,:)
-
+      integer,allocatable :: isndmat(:,:)
+      real*8,allocatable :: sndmat(:,:)
 c-- mpi data type variables
       integer :: lsubs, lressubs !logical types
       integer :: isubs, iressubs !integer types
@@ -484,7 +485,8 @@ c-- counts and displacements for global property arrays
 c
 c-- allocations
       allocate(lsndmat(1,prt_npartmax))
-
+      allocate(isndmat(1,prt_npartmax))
+      allocate(sndmat(1,prt_npartmax))
       allocate(counts(nmpi))
       allocate(displs(nmpi))
 c
@@ -524,18 +526,76 @@ c-- committing resized types
       call mpi_type_commit(iressubs,ierr)
       call mpi_type_commit(ressubs,ierr)
 c
-c-- gathering vacancies
+c-- gathering vacancy
       lsndmat(1,:)=prt_particles%isvacant
       call mpi_gatherv(lsndmat,prt_npartmax,MPI_LOGICAL,
-     &     prt_tlyvacant,counts,
-     &     displs,lressubs,impi0,MPI_COMM_WORLD,ierr)
+     &     prt_tlyvacant,counts,displs,lressubs,
+     &     impi0,MPI_COMM_WORLD,ierr)
+c
+c-- gathering zone
+      isndmat(1,:)=prt_particles%zsrc
+      call mpi_gatherv(isndmat,prt_npartmax,MPI_INTEGER,
+     &     prt_tlyzsrc,counts,displs,iressubs,
+     &     impi0,MPI_COMM_WORLD,ierr)
+c
+c-- gathering transport index
+      isndmat = 0
+      isndmat(1,:)=prt_particles%rtsrc
+      call mpi_gatherv(isndmat,prt_npartmax,MPI_INTEGER,
+     &     prt_tlyrtsrc,counts,displs,iressubs,
+     &     impi0,MPI_COMM_WORLD,ierr)
+c
+c-- gathering position
+      sndmat(1,:)=prt_particles%rsrc
+      call mpi_gatherv(sndmat,prt_npartmax,MPI_REAL8,
+     &     prt_tlyrsrc,counts,displs,ressubs,
+     &     impi0,MPI_COMM_WORLD,ierr)
+c
+c-- gathering direction cosine
+      sndmat = 0d0
+      sndmat(1,:)=prt_particles%musrc
+      call mpi_gatherv(sndmat,prt_npartmax,MPI_REAL8,
+     &     prt_tlymusrc,counts,displs,ressubs,
+     &     impi0,MPI_COMM_WORLD,ierr)
+c
+c-- gathering time
+      sndmat = 0d0
+      sndmat(1,:)=prt_particles%tsrc
+      call mpi_gatherv(sndmat,prt_npartmax,MPI_REAL8,
+     &     prt_tlytsrc,counts,displs,ressubs,
+     &     impi0,MPI_COMM_WORLD,ierr)
+c
+c-- gathering energy
+      sndmat = 0d0
+      sndmat(1,:)=prt_particles%esrc
+      call mpi_gatherv(sndmat,prt_npartmax,MPI_REAL8,
+     &     prt_tlyesrc,counts,displs,ressubs,
+     &     impi0,MPI_COMM_WORLD,ierr)
+c
+c-- gathering birth energy
+      sndmat = 0d0
+      sndmat(1,:)=prt_particles%ebirth
+      call mpi_gatherv(sndmat,prt_npartmax,MPI_REAL8,
+     &     prt_tlyebirth,counts,displs,ressubs,
+     &     impi0,MPI_COMM_WORLD,ierr)
+c
+c-- gathering wavelength
+      sndmat = 0d0
+      sndmat(1,:)=prt_particles%wlsrc
+      call mpi_gatherv(sndmat,prt_npartmax,MPI_REAL8,
+     &     prt_tlywlsrc,counts,displs,ressubs,
+     &     impi0,MPI_COMM_WORLD,ierr)
+c
+c
+c====
 c
 c-- gathering rand() counts
       call mpi_gather(prt_tlyrand,1,MPI_INTEGER,prt_tlyrandarr,1,
      &     MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
 c
 c-- deallocations
-      deallocate(lsndmat,counts,displs)
+      deallocate(counts,displs)
+      deallocate(lsndmat,isndmat,sndmat)
 c
       end subroutine collect_restart_data    
 c
