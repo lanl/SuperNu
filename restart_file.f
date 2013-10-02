@@ -97,6 +97,7 @@ c     ----------------------------------
 * at some time step
 ************************************************************************
 c
+
       end subroutine read_restart_particles
 c
 c
@@ -121,7 +122,8 @@ C$$$      character(15) :: fnamewl = 'output.prtwlsrc'
 c
 c-- write particle array vacancies
       open(unit=4,file=fnamevac,status='unknown',position='rewind')
-      write(4,*) prt_tlyvacant
+      write(4,*) prt_tlyvacant(1:10,1)
+      write(4,*) prt_tlyvacant(1:10,2)
       close(4)
 c
       end subroutine write_restart_particles

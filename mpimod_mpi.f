@@ -442,127 +442,9 @@ c     -------------------------------
 c-- helper variables
       integer :: isq, ii
       real :: help
-c-- mpi helper arrays
-      logical,allocatable :: lrcvmat(:,:)
-      integer,allocatable :: ircvmat(:,:)
-      real*8,allocatable :: rcvmat(:,:)
-c-- mpi data type variables
-      integer :: lsubs, lressubs !logical types
-      integer :: isubs, iressubs !integer types
-      integer :: subs, ressubs !real*8 types
-      integer :: sizes(2)
-      integer :: subsizes(2)
-      integer :: starts(2)
-c-- type size values
-      logical :: l2
-      integer :: i4
-      real*8 :: r8
-c-- counts and displacements for global property arrays
-      integer, allocatable :: counts(:)
-      integer, allocatable :: displs(:)
-c
-c-- allocations
-      allocate(lrcvmat(1,prt_npartmax))
-      allocate(ircvmat(1,prt_npartmax))
-      allocate(rcvmat(1,prt_npartmax))
-      allocate(counts(nmpi))
-      allocate(displs(nmpi))
-c
-c-- setting counts and displacements
-      counts = 1
-      do ii = 1, nmpi
-         displs(ii)=ii-1
-      enddo
-c
-      sizes = (/nmpi,prt_npartmax/)
-      subsizes = (/1,prt_npartmax/)
-      starts = (/0,0/)
-c
-c-- creating subarray types
-c---- logical
-      call mpi_type_create_subarray(2,sizes,subsizes,starts,
-     &     MPI_ORDER_FORTRAN,MPI_LOGICAL,lsubs,ierr)
-c---- integer
-      call mpi_type_create_subarray(2,sizes,subsizes,starts,
-     &     MPI_ORDER_FORTRAN,MPI_INTEGER,isubs,ierr)
-c---- real*8
-      call mpi_type_create_subarray(2,sizes,subsizes,starts,
-     &     MPI_ORDER_FORTRAN,MPI_REAL8,subs,ierr)
-c-- creating resized subarray types
-c---- logical
-      call mpi_type_create_resized(lsubs,0,prt_npartmax*sizeof(l2),
-     &     lressubs,ierr)
-c---- integer
-      call mpi_type_create_resized(isubs,0,prt_npartmax*sizeof(i4),
-     &     iressubs,ierr)
-c---- real*8
-      call mpi_type_create_resized(subs,0,prt_npartmax*sizeof(r8),
-     &     ressubs,ierr)
-c
-c-- committing resized types
-      call mpi_type_commit(lressubs,ierr)
-      call mpi_type_commit(iressubs,ierr)
-      call mpi_type_commit(ressubs,ierr)
-c
-c-- scattering vacancy
-      call mpi_scatterv(prt_tlyvacant,counts,displs,lressubs,
-     &     lrcvmat,prt_npartmax,MPI_LOGICAL,impi0,MPI_COMM_WORLD,
-     &     ierr)
-      prt_particles%isvacant=lrcvmat(1,:)
-c
-c-- scattering zone
-      call mpi_scatterv(prt_tlyzsrc,counts,displs,iressubs,
-     &     ircvmat,prt_npartmax,MPI_INTEGER,impi0,MPI_COMM_WORLD,
-     &     ierr)
-      prt_particles%zsrc=ircvmat(1,:)
-c
-c-- scattering transport index
-      ircvmat = 0
-      call mpi_scatterv(prt_tlyrtsrc,counts,displs,iressubs,
-     &     ircvmat,prt_npartmax,MPI_INTEGER,impi0,MPI_COMM_WORLD,
-     &     ierr)
-      prt_particles%rtsrc=ircvmat(1,:)
-c
-c-- scattering position
-      call mpi_scatterv(prt_tlyrsrc,counts,displs,ressubs,
-     &     rcvmat,prt_npartmax,MPI_REAL8,impi0,MPI_COMM_WORLD,
-     &     ierr)
-      prt_particles%rsrc=rcvmat(1,:)
-c
-c-- scattering direction cosine
-      rcvmat = 0d0
-      call mpi_scatterv(prt_tlymusrc,counts,displs,ressubs,
-     &     rcvmat,prt_npartmax,MPI_REAL8,impi0,MPI_COMM_WORLD,
-     &     ierr)
-      prt_particles%musrc=rcvmat(1,:)
-c
-c-- scattering time
-      rcvmat = 0d0
-      call mpi_scatterv(prt_tlytsrc,counts,displs,ressubs,
-     &     rcvmat,prt_npartmax,MPI_REAL8,impi0,MPI_COMM_WORLD,
-     &     ierr)
-      prt_particles%tsrc=rcvmat(1,:)
-c
-c-- scattering energy
-      rcvmat = 0d0
-      call mpi_scatterv(prt_tlyesrc,counts,displs,ressubs,
-     &     rcvmat,prt_npartmax,MPI_REAL8,impi0,MPI_COMM_WORLD,
-     &     ierr)
-      prt_particles%esrc=rcvmat(1,:)
-c
-c-- scattering birth energy
-      rcvmat = 0d0
-      call mpi_scatterv(prt_tlyebirth,counts,displs,ressubs,
-     &     rcvmat,prt_npartmax,MPI_REAL8,impi0,MPI_COMM_WORLD,
-     &     ierr)
-      prt_particles%ebirth=rcvmat(1,:)
-c
-c-- scattering wavelength
-      rcvmat = 0d0
-      call mpi_scatterv(prt_tlywlsrc,counts,displs,ressubs,
-     &     rcvmat,prt_npartmax,MPI_REAL8,impi0,MPI_COMM_WORLD,
-     &     ierr)
-      prt_particles%wlsrc=rcvmat(1,:)
+
+
+
 c
 c
 c====
@@ -577,11 +459,9 @@ c-- iterating to correct rand() count
       enddo
 c
 c-- deallocations
-      deallocate(counts,displs)
-      deallocate(lrcvmat,ircvmat,rcvmat)
-      call mpi_type_free(lressubs,ierr)
-      call mpi_type_free(iressubs,ierr)
-      call mpi_type_free(ressubs,ierr)
+
+
+
 c
       end subroutine scatter_restart_data
 c
@@ -597,136 +477,19 @@ c     -------------------------------
 ************************************************************************
 c-- helper variables
       integer :: ii
-c-- mpi helper arrays
-      logical,allocatable :: lsndmat(:,:)
-      integer,allocatable :: isndmat(:,:)
-      real*8,allocatable :: sndmat(:,:)
-c-- mpi data type variables
-      integer :: lsubs, lressubs !logical types
-      integer :: isubs, iressubs !integer types
-      integer :: subs, ressubs !real*8 types
-      integer :: sizes(2)
-      integer :: subsizes(2)
-      integer :: starts(2)
-c-- type size values
-      logical :: l2
-      integer :: i4
-      real*8 :: r8
-c-- counts and displacements for global property arrays
-      integer, allocatable :: counts(:)
-      integer, allocatable :: displs(:)
-c
-c-- allocations
-      allocate(counts(nmpi))
-      allocate(displs(nmpi))
-c
-c-- setting counts and displacements
-      counts = 1
-      do ii = 1, nmpi
-         displs(ii)=ii-1
-      enddo
-c
-      sizes = (/nmpi,prt_npartmax/)
-      subsizes = (/1,prt_npartmax/)
-      starts = (/0,0/)
-c
-c-- creating subarray types
-c---- logical
-      call mpi_type_create_subarray(2,sizes,subsizes,starts,
-     &     MPI_ORDER_FORTRAN,MPI_LOGICAL,lsubs,ierr)
-c---- integer
-      call mpi_type_create_subarray(2,sizes,subsizes,starts,
-     &     MPI_ORDER_FORTRAN,MPI_INTEGER,isubs,ierr)
-c---- real*8
-      call mpi_type_create_subarray(2,sizes,subsizes,starts,
-     &     MPI_ORDER_FORTRAN,MPI_REAL8,subs,ierr)
-c-- creating resized subarray types
-c---- logical
-      call mpi_type_create_resized(lsubs,0,prt_npartmax*sizeof(l2),
-     &     lressubs,ierr)
-c---- integer
-      call mpi_type_create_resized(isubs,0,prt_npartmax*sizeof(i4),
-     &     iressubs,ierr)
-c---- real*8
-      call mpi_type_create_resized(subs,0,prt_npartmax*sizeof(r8),
-     &     ressubs,ierr)
-c
-c-- committing resized types
-      call mpi_type_commit(lressubs,ierr)
-      call mpi_type_commit(iressubs,ierr)
-      call mpi_type_commit(ressubs,ierr)
-c
-c-- gathering vacancy
-      allocate(lsndmat(1,prt_npartmax))
-      lsndmat(1,:)=prt_particles%isvacant
-      call mpi_gatherv(lsndmat,prt_npartmax,MPI_LOGICAL,
-     &     prt_tlyvacant,counts,displs,lressubs,
-     &     impi0,MPI_COMM_WORLD,ierr)
-      deallocate(lsndmat)
-c
-c-- gathering zone
-      allocate(isndmat(1,prt_npartmax))
-      isndmat(1,:)=prt_particles%zsrc
-      call mpi_gatherv(isndmat,prt_npartmax,MPI_INTEGER,
-     &     prt_tlyzsrc,counts,displs,iressubs,
-     &     impi0,MPI_COMM_WORLD,ierr)
-      deallocate(isndmat)
-c
-c-- gathering transport index
-      allocate(isndmat(1,prt_npartmax))
-      isndmat(1,:)=prt_particles%rtsrc
-      call mpi_gatherv(isndmat,prt_npartmax,MPI_INTEGER,
-     &     prt_tlyrtsrc,counts,displs,iressubs,
-     &     impi0,MPI_COMM_WORLD,ierr)
-      deallocate(isndmat)
-c
-c-- gathering position
-      allocate(sndmat(1,prt_npartmax))
-      sndmat(1,:)=prt_particles%rsrc
-      call mpi_gatherv(sndmat,prt_npartmax,MPI_REAL8,
-     &     prt_tlyrsrc,counts,displs,ressubs,
-     &     impi0,MPI_COMM_WORLD,ierr)
-      deallocate(sndmat)
-c
-c-- gathering direction cosine
-      allocate(sndmat(1,prt_npartmax))
-      sndmat(1,:)=prt_particles%musrc
-      call mpi_gatherv(sndmat,prt_npartmax,MPI_REAL8,
-     &     prt_tlymusrc,counts,displs,ressubs,
-     &     impi0,MPI_COMM_WORLD,ierr)
-      deallocate(sndmat)
-c
-c-- gathering time
-      allocate(sndmat(1,prt_npartmax))
-      sndmat(1,:)=prt_particles%tsrc
-      call mpi_gatherv(sndmat,prt_npartmax,MPI_REAL8,
-     &     prt_tlytsrc,counts,displs,ressubs,
-     &     impi0,MPI_COMM_WORLD,ierr)
-      deallocate(sndmat)
-c
-c-- gathering energy
-      allocate(sndmat(1,prt_npartmax))
-      sndmat(1,:)=prt_particles%esrc
-      call mpi_gatherv(sndmat,prt_npartmax,MPI_REAL8,
-     &     prt_tlyesrc,counts,displs,ressubs,
-     &     impi0,MPI_COMM_WORLD,ierr)
-      deallocate(sndmat)
-c
-c-- gathering birth energy
-      allocate(sndmat(1,prt_npartmax))
-      sndmat(1,:)=prt_particles%ebirth
-      call mpi_gatherv(sndmat,prt_npartmax,MPI_REAL8,
-     &     prt_tlyebirth,counts,displs,ressubs,
-     &     impi0,MPI_COMM_WORLD,ierr)
-      deallocate(sndmat)
-c
-c-- gathering wavelength
-      allocate(sndmat(1,prt_npartmax))
-      sndmat(1,:)=prt_particles%wlsrc
-      call mpi_gatherv(sndmat,prt_npartmax,MPI_REAL8,
-     &     prt_tlywlsrc,counts,displs,ressubs,
-     &     impi0,MPI_COMM_WORLD,ierr)
-      deallocate(sndmat)
+C$$$      logical, allocatable :: vacnts(:,:)
+
+C$$$      if(impi==impi0) then
+         
+C$$$         allocate(vacnts(nmpi,prt_npartmax))
+         
+C$$$      endif
+
+      call mpi_gather(prt_particles%isvacant,prt_npartmax,MPI_LOGICAL,
+     &     prt_tlyvacant,prt_npartmax,MPI_LOGICAL,impi0,MPI_COMM_WORLD,
+     &     ierr)
+
+
 c
 c
 c====
@@ -736,10 +499,8 @@ c-- gathering rand() counts
      &     MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
 c
 c-- deallocations
-      deallocate(counts,displs)
-      call mpi_type_free(lressubs,ierr)
-      call mpi_type_free(iressubs,ierr)
-      call mpi_type_free(ressubs,ierr)
+
+
 c
       end subroutine collect_restart_data    
 c
