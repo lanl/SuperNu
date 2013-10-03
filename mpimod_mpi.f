@@ -42,6 +42,7 @@ c     --------------------------!{{{
 * logical :: gas_isshell
 * logical :: prt_isimcanlog
 * logical :: prt_isddmcanlog
+* logical :: in_norestart
 *-- integer
 * integer :: gas_nr
 * integer :: gas_ng
@@ -66,10 +67,10 @@ c     --------------------------!{{{
 c
 c-- broadcast constants
 c-- logical
-      n = 5
+      n = 6
       allocate(lsndvec(n))
       if(impi==impi0) lsndvec = (/gas_isvelocity,in_puretran,
-     &  gas_isshell,prt_isimcanlog,prt_isddmcanlog/)
+     &  gas_isshell,prt_isimcanlog,prt_isddmcanlog,in_norestart/)
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -78,6 +79,7 @@ c-- copy back
       gas_isshell = lsndvec(3)
       prt_isimcanlog = lsndvec(4)
       prt_isddmcanlog = lsndvec(5)
+      in_norestart = lsndvec(6)
       deallocate(lsndvec)
 c
 c-- integer

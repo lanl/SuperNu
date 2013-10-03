@@ -57,6 +57,7 @@ c-- time step
       real*8 :: in_tlast = 0d0  !last point in time evolution
       integer :: in_nt = -1   !# time steps
       integer :: in_ntres = -1   !restart time step number
+      logical :: in_norestart = .true.
 c
 c-- group structure
       integer :: in_wldex = 1 !# if in_iswlread = t, selects group grid from formatted group grid file
@@ -120,7 +121,7 @@ c-- runtime parameter namelist
      & in_suolpick1, in_ldisp1, in_ldisp2,
      & in_srctype, in_theav, in_nheav, in_srcmax,
      & in_isimcanlog, in_isddmcanlog,in_depestimate,
-     & in_tauddmc, in_dentype, in_noreadstruct
+     & in_tauddmc, in_dentype, in_noreadstruct, in_norestart
 c
       public
       private inputpars

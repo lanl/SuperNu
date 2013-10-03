@@ -58,10 +58,10 @@ program supernu
 !
 !-- particle init
    call particle_init(in_npartmax,in_ns,in_ninit,in_isimcanlog, &
-        in_isddmcanlog,in_tauddmc,nmpi)
+        in_isddmcanlog,in_tauddmc,nmpi,in_norestart)
 !
 !-- rand() count and prt restarts
-   if(tsp_ntres>1) then
+   if(tsp_ntres>1.and..not.in_norestart) then
 !-- read rand() count
       call read_restart_randcount
 !-- read particle properties
@@ -115,7 +115,7 @@ program supernu
   help = rand(ihelp)
 !
 !-- reading restart rand() count
-  if(tsp_ntres>1) then
+  if(tsp_ntres>1.and..not.in_norestart) then
      call scatter_restart_data !MPI
 !-- mimicking end of tsp reset
      prt_tlyrand = 0
@@ -157,7 +157,9 @@ program supernu
     call reduce_tally !MPI
 
 !-- collect data necessary for restart (tobe written by impi0)
-    call collect_restart_data !MPI
+    if(.not.in_norestart) then
+       call collect_restart_data !MPI
+    endif
 !
     if(impi==impi0) then
        ! averaging reduced results
@@ -180,12 +182,14 @@ program supernu
       call write_output
 !
 !-- restart writers
+      if(.not.in_norestart) then
 !-- temp
-      call write_restart_file
+         call write_restart_file
 !-- rand() count
-      call write_restart_randcount
+         call write_restart_randcount
 !-- particle properties of current time step
-      call write_restart_particles
+         call write_restart_particles
+      endif
 !
     endif !impi
 !
