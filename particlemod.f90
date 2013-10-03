@@ -20,9 +20,9 @@ module particlemod
   integer, allocatable :: prt_tlyrandarr(:)
 !-- particle property restart arrays:
    logical, allocatable :: prt_tlyvacant(:,:)
-!   integer, allocatable :: prt_tlyzsrc(:,:), prt_tlyrtsrc(:,:)
-!   real*8, allocatable :: prt_tlyrsrc(:,:), prt_tlymusrc(:,:), prt_tlytsrc(:,:)
-!   real*8, allocatable :: prt_tlyesrc(:,:), prt_tlyebirth(:,:), prt_tlywlsrc(:,:)
+  integer, allocatable :: prt_tlyzsrc(:,:), prt_tlyrtsrc(:,:)
+  real*8, allocatable :: prt_tlyrsrc(:,:), prt_tlymusrc(:,:), prt_tlytsrc(:,:)
+  real*8, allocatable :: prt_tlyesrc(:,:), prt_tlyebirth(:,:), prt_tlywlsrc(:,:)
 !
   integer, allocatable :: prt_vacantarr(:) !array of vacant particle array locations
 
@@ -63,14 +63,14 @@ module particlemod
     prt_tlyrandarr = 0
 !-- mpi gather arrays for particles
      allocate(prt_tlyvacant(npartmax,nummespasint))
-!     allocate(prt_tlyzsrc(nummespasint,npartmax))
-!     allocate(prt_tlyrtsrc(nummespasint,npartmax))
-!     allocate(prt_tlyrsrc(nummespasint,npartmax))
-!     allocate(prt_tlymusrc(nummespasint,npartmax))
-!     allocate(prt_tlytsrc(nummespasint,npartmax))
-!     allocate(prt_tlyesrc(nummespasint,npartmax))
-!     allocate(prt_tlyebirth(nummespasint,npartmax))
-!     allocate(prt_tlywlsrc(nummespasint,npartmax))
+     allocate(prt_tlyzsrc(npartmax,nummespasint))
+     allocate(prt_tlyrtsrc(npartmax,nummespasint))
+     allocate(prt_tlyrsrc(npartmax,nummespasint))
+     allocate(prt_tlymusrc(npartmax,nummespasint))
+     allocate(prt_tlytsrc(npartmax,nummespasint))
+     allocate(prt_tlyesrc(npartmax,nummespasint))
+     allocate(prt_tlyebirth(npartmax,nummespasint))
+     allocate(prt_tlywlsrc(npartmax,nummespasint))
 !
   end subroutine particle_init
 
