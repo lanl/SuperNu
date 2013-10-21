@@ -19,7 +19,7 @@ subroutine particle_advance
 !##################################################
 
   integer :: ipart, difs, transps, g, zholder, zfdiff, ir, binsrch
-  real*8 :: r1, alph2, r2, x1, x2, xx0, bmax, help, alph3
+  real*8 :: r1, alph2, r2, x1, x2, xx0, bmax, help, P
   real*8 :: uul, uur, uumax, r0, r3, mu0, rold, dddd
   integer, pointer :: zsrc, rtsrc !, gsrc
   real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
@@ -43,8 +43,7 @@ subroutine particle_advance
   gas_numcensus(1:gas_nr) = 0
 !-- advection split parameter
   alph2 = 0.5d0  !>=0,<=1
-!-- DDMC cell advection entrance parameter
-  alph3 = 1d0
+!--
 
   if(showidfront) then
      do ir = 1, gas_nr-1
@@ -304,15 +303,35 @@ subroutine particle_advance
               enddo
               if(zfdiff.ne.-1) then
 !--
-                 r1 = rand()
-                 prt_tlyrand = prt_tlyrand+1
-                 if(r1<alph3) then
-                    zsrc = zfdiff+1
-                    rsrc = gas_rarr(zsrc)
-                 else
-                    zsrc = zfdiff
-                    rtsrc = 2
-                 endif
+                 zsrc = zfdiff+1
+                 rsrc = gas_rarr(zsrc)
+!                  mu0 = (musrc-rsrc/pc_c)/(1d0-rsrc*musrc/pc_c)
+!                  if(musrc>=0d0.and.mu0<0d0) then
+! !--
+!                     ebirth=ebirth*(1d0+2d0*(0.55d0/abs(mu0)-1.3d0*abs(mu0))*rsrc/pc_c)
+!                     esrc=esrc*(1d0+2d0*(0.55d0/abs(mu0)-1.3d0*abs(mu0))*rsrc/pc_c)
+! !--
+!                     r1 = rand()
+!                     prt_tlyrand = prt_tlyrand+1
+!                     P=gas_ppr(g,zsrc-1)*(1d0+1.5d0*abs(mu0))
+!                     if(r1<P) then
+!                        zsrc = zfdiff
+!                        rtsrc = 2
+!                        esrc = esrc*(1d0-rsrc*musrc/pc_c)
+!                        ebirth = ebirth*(1d0-rsrc*musrc/pc_c)
+!                        wlsrc = wlsrc/(1d0-rsrc*musrc/pc_c)
+!                     else
+!                        r1 = rand()
+!                        prt_tlyrand = prt_tlyrand+1
+!                        r2 = rand()
+!                        prt_tlyrand = prt_tlyrand+1
+!                        mu0 = max(r1,r2)
+!                        if(gas_isvelocity) then
+!                           musrc = (mu0+rsrc/pc_c)/(1.0+rsrc*mu0/pc_c)
+!                        endif
+!                     endif
+! !--
+!                  endif
 !--
               else
                  zsrc = zholder
@@ -460,15 +479,33 @@ subroutine particle_advance
 !--
                  zsrc = zfdiff+1
                  rsrc = gas_rarr(zsrc)
-                 r1 = rand()
-                 prt_tlyrand = prt_tlyrand+1
-                 if(r1<alph3) then
-                    zsrc = zfdiff+1
-                    rsrc = gas_rarr(zsrc)
-                 else
-                    zsrc = zfdiff
-                    rtsrc = 2
-                 endif
+!                  mu0 = (musrc-rsrc/pc_c)/(1d0-rsrc*musrc/pc_c)
+!                  if(musrc>=0d0.and.mu0<0d0) then
+! !--
+!                     ebirth=ebirth*(1d0+2d0*(0.55d0/abs(mu0)-1.3d0*abs(mu0))*rsrc/pc_c)
+!                     esrc=esrc*(1d0+2d0*(0.55d0/abs(mu0)-1.3d0*abs(mu0))*rsrc/pc_c)
+! !--
+!                     r1 = rand()
+!                     prt_tlyrand = prt_tlyrand+1
+!                     P=gas_ppr(g,zsrc-1)*(1d0+1.5d0*abs(mu0))
+!                     if(r1<P) then
+!                        zsrc = zfdiff
+!                        rtsrc = 2
+!                        esrc = esrc*(1d0-rsrc*musrc/pc_c)
+!                        ebirth = ebirth*(1d0-rsrc*musrc/pc_c)
+!                        wlsrc = wlsrc/(1d0-rsrc*musrc/pc_c)
+!                     else
+!                        r1 = rand()
+!                        prt_tlyrand = prt_tlyrand+1
+!                        r2 = rand()
+!                        prt_tlyrand = prt_tlyrand+1
+!                        mu0 = max(r1,r2)
+!                        if(gas_isvelocity) then
+!                           musrc = (mu0+rsrc/pc_c)/(1.0+rsrc*mu0/pc_c)
+!                        endif
+!                     endif
+! !--
+!                 endif
 !--
               else
                  zsrc = zholder

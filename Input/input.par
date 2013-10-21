@@ -3,20 +3,20 @@
 !-- misc
 in_nomp = 4
 in_grab_stdout = t
-in_puretran = f
+in_puretran = t
 in_seed = 1
 in_noreadstruct = t
 in_norestart = t
 
 !-- time step
 in_tfirst = 2d0
-in_tlast = 11d0
-in_nt = 192
+in_tlast = 2.1d0
+in_nt = 10
 in_ntres = 0
 in_alpha = 1d0
 
 !-- gas grid settings
-in_nr = 50
+in_nr = 10
 in_isvelocity = t
 in_isshell = f
 in_novolsrc = t
@@ -25,7 +25,7 @@ in_velout = 1d9
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_l0 = 1.9008d17
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!in_lr = 2.16d14
 in_totmass = 1d33
-in_dentype = 'mass'
+in_dentype = 'unif'
 in_templ0 = 0d0
 
 !-- flat structure
@@ -34,7 +34,7 @@ in_consttemp = 0d0
 in_solidni56 = t
 
 !-- external source type
-in_srctype = 'heav'
+in_srctype = 'manu'
 in_srcmax = 4d24
 !-- heaviside case
 in_theav = 9d0
@@ -46,12 +46,12 @@ in_cvtpwr = 0d0
 in_cvrpwr = 1d0
 
 !-- power law scattering opacity values
-in_sigcoefs = 0d0
+in_sigcoefs = 0.1d0
 in_sigtpwrs = 0d0
-in_sigrpwrs = 0d0
+in_sigrpwrs = 1d0
 
 !-- power law absorption opacity values
-in_sigcoef = 0.13d0
+in_sigcoef = 0.1d0
 in_sigtpwr = 0d0
 in_sigrpwr = 1d0
 
@@ -63,15 +63,15 @@ in_suol = 'tstd'
 in_suolpick1 = 0.5d0
 
 !-- line case (disparity)
-in_ldisp1 = 1d0
-in_ldisp2 = 1d-4
+in_ldisp1 = 0d0
+in_ldisp2 = 1d0
 
 !-- group settings
-in_wldex = 17
+in_wldex = 21
 
 !-- particle numbers
-in_ninit = 0
-in_ns = 100000
+in_ninit = 200000
+in_ns = 200000
 in_npartmax = 10000000
 
 !-- imc tally method

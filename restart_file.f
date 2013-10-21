@@ -107,8 +107,6 @@ c
       character(14) :: fnamewl = 'input.prtwlsrc'
       character(17) :: fnamevac = 'input.prtisvacant'
 c
-      if(tsp_ntres>1) then
-c
 c-- reading particle vacancies
          open(unit=4,file=fnamevac,status='old',iostat=istat)
          if(istat/=0) stop 'read_restart: no input.tlyvacant file'
@@ -163,8 +161,6 @@ c-- reading particle wavelengths
          read(4,*) prt_tlywlsrc
          close(4)
 c
-      endif
-c
       end subroutine read_restart_particles
 c
 c
@@ -187,6 +183,7 @@ c
       character(15) :: fnamewl = 'output.prtwlsrc'
       character(18) :: fnamevac = 'output.prtisvacant'
 c
+      call compress_particle_output
 c-- writing particle vacancies
       open(unit=4,file=fnamevac,status='unknown',position='rewind')
       write(4,*) prt_tlyvacant
@@ -231,5 +228,22 @@ c-- writing particle wavelength
       open(unit=4,file=fnamewl,status='unknown',position='rewind')
       write(4,*) prt_tlywlsrc
       close(4)
+c
+c
+c
+
+c
+c
+      contains
+c
+      subroutine compress_particle_output
+************************************************************************
+* Resizing arrays to only write non-vacant particle histories.
+* Should reduce read/write work.
+* May be advantageous for many ranks or few source particles per rank.
+************************************************************************
+c
+c
+      end subroutine compress_particle_output
 c
       end subroutine write_restart_particles
