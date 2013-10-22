@@ -64,23 +64,35 @@ subroutine analytic_opacity
         do ig = 1, gas_ng
            !
            !group (Planck) opacities:
-           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3)
-           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3)
+
+            x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb)
+            x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb)
+
+!           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3)
+!           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3)
            gas_cap(ig,ir) = 0.5d0*gas_siggrey(ir)*(x1+x2)/(x1*x2)**2
            !
            !group left (Rosseland) opacities:
-           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3)
-           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3)
+
+            x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb)
+            x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb)
+
+!           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3)
+!           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3)
            gas_caprosl(ig,ir) = 0.5d0*sigll*(x1+x2)/(x1*x2)**2
            !
            !group right (Rosseland) opacities:
-           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3)
-           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3)
+
+            x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb)
+            x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb)
+
+!           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3)
+!           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3)
            gas_caprosr(ig,ir) = 0.5d0*sigrr*(x1+x2)/(x1*x2)**2
            !
         enddo
-        x1 = (pc_h*pc_c/(pc_ev*gas_wl(gas_ng+1)))/(1d3)
-        x2 = (pc_h*pc_c/(pc_ev*gas_wl(1)))/(1d3)
+!        x1 = (pc_h*pc_c/(pc_ev*gas_wl(gas_ng+1)))/(1d3)
+!        x2 = (pc_h*pc_c/(pc_ev*gas_wl(1)))/(1d3)
         gas_siggrey(ir) = 0d0
         do ig = 1, gas_ng
            x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(ir))

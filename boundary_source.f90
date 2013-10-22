@@ -29,8 +29,8 @@ subroutine boundary_source
      enddo
   else
      do ig = 1, gas_ng
-        x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3*gas_tempb(1))
-        x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3*gas_tempb(1))
+        x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_tempb(1))
+        x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_tempb(1))
         emitsurfprobg(ig) = 15d0*specint(x1,x2,3)/pc_pi**4 
      enddo
   endif
@@ -93,15 +93,15 @@ subroutine boundary_source
           .or.(in_puretran.eqv..true.).or.P>1d0.or.P<0d0) then
         if(gas_isvelocity) then
         !transport => lab frame quantities
-           prt_particles(ivac)%Esrc = Esurfpart*(1.0+r0*mu0/pc_c)
-           prt_particles(ivac)%Ebirth = Esurfpart*(1.0+r0*mu0/pc_c)
+           prt_particles(ivac)%esrc = Esurfpart*(1.0+r0*mu0/pc_c)
+           prt_particles(ivac)%ebirth = Esurfpart*(1.0+r0*mu0/pc_c)
         !(rev 120)
            prt_particles(ivac)%wlsrc = wl0/(1.0+r0*mu0/pc_c)
         !
            prt_particles(ivac)%musrc = (mu0+r0/pc_c)/(1.0+r0*mu0/pc_c)
         else
-           prt_particles(ivac)%Esrc = Esurfpart
-           prt_particles(ivac)%Ebirth = Esurfpart
+           prt_particles(ivac)%esrc = Esurfpart
+           prt_particles(ivac)%ebirth = Esurfpart
         !
            prt_particles(ivac)%wlsrc = wl0
         !
@@ -110,8 +110,8 @@ subroutine boundary_source
         prt_particles(ivac)%rtsrc = 1
      else
         !diffusion => comoving frame quantities (with diffuse reflection accounted)
-        prt_particles(ivac)%Esrc = P*Esurfpart
-        prt_particles(ivac)%Ebirth = P*Esurfpart
+        prt_particles(ivac)%esrc = P*Esurfpart
+        prt_particles(ivac)%ebirth = P*Esurfpart
         !(rev 120)
         prt_particles(ivac)%wlsrc = wl0
         !

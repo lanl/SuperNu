@@ -2,61 +2,61 @@
 
 !-- misc
 in_nomp = 4
-in_grab_stdout = t
+in_grab_stdout = f
 in_puretran = t
 in_seed = 1
 in_noreadstruct = t
 in_norestart = t
 
 !-- time step
-in_tfirst = 2d0
-in_tlast = 2.1d0
-in_nt = 10
+in_tfirst = 1d-7
+in_tlast = 2.1574074d-7
+in_nt = 100
 in_ntres = 0
 in_alpha = 1d0
 
 !-- gas grid settings
-in_nr = 10
-in_isvelocity = t
-in_isshell = f
+in_nr = 50
+in_isvelocity = f
+in_isshell = t
 in_novolsrc = t
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!in_v0 = 2d8
-in_velout = 1d9
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!in_l0 = 1.9008d17
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!in_lr = 2.16d14
+!in_v0 = 2d8
+!in_velout = 1d9
+in_l0 = 100d7
+in_lr = 5d7
 in_totmass = 1d33
 in_dentype = 'unif'
-in_templ0 = 0d0
+in_templ0 = 11604505d0
 
 !-- flat structure
 !in_consttemp = 11604505d0
-in_consttemp = 0d0
+in_consttemp = 11604.505d0
 in_solidni56 = t
 
 !-- external source type
-in_srctype = 'manu'
+in_srctype = 'none'
 in_srcmax = 4d24
 !-- heaviside case
 in_theav = 9d0
 in_nheav = 40
 
 !-- power law heat capacity values
-in_cvcoef = 2d7
+in_cvcoef = 8.617343d8
 in_cvtpwr = 0d0
-in_cvrpwr = 1d0
+in_cvrpwr = 0d0
 
 !-- power law scattering opacity values
-in_sigcoefs = 0.1d0
+in_sigcoefs = 0d0
 in_sigtpwrs = 0d0
-in_sigrpwrs = 1d0
+in_sigrpwrs = 0d0
 
 !-- power law absorption opacity values
-in_sigcoef = 0.1d0
-in_sigtpwr = 0d0
-in_sigrpwr = 1d0
+in_sigcoef = 5.3234498848d18
+in_sigtpwr = -0.5d0
+in_sigrpwr = 0d0
 
 !-- group absorption opacity structure type
-in_opacanaltype = 'line'
+in_opacanaltype = 'mono'
 
 !-- picket fence case
 in_suol = 'tstd'
@@ -67,11 +67,11 @@ in_ldisp1 = 0d0
 in_ldisp2 = 1d0
 
 !-- group settings
-in_wldex = 21
+in_wldex = 13
 
 !-- particle numbers
-in_ninit = 200000
-in_ns = 200000
+in_ninit = 0
+in_ns = 100000
 in_npartmax = 10000000
 
 !-- imc tally method
@@ -79,7 +79,7 @@ in_isimcanlog = f
 in_isddmcanlog = f
 in_depestimate = f
 !-- ddmc mfp per cell
-in_tauddmc = 3d0
+in_tauddmc = 5d0
 
 !-- opacity debug switches
 in_nobbopac = t

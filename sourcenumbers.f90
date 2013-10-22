@@ -27,7 +27,12 @@ subroutine sourcenumbers
   gas_emitex = 0d0
   
   gas_etot = 0d0
-  gas_esurf = 0d0 !0.25*tsp_dt*pc_c*pc_acoef*(4.0*pc_pi*gas_rarr(1)**2)*gas_tempb(1)**4
+  if(gas_isshell) then
+     gas_esurf = 0.25*tsp_dt*pc_c*pc_acoef* &
+          (4.0*pc_pi*gas_rarr(1)**2)*gas_tempb(1)**4
+  else
+     gas_esurf = 0d0
+  endif
   if(gas_isvelocity) then
      gas_etot = gas_esurf*tsp_texp**2
   else

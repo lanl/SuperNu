@@ -50,6 +50,7 @@ c-- nuclear decay
 c================
 c-- Get ni56 and co56 abundances on begin and end of the time step.!{{{
 c-- The difference between these two has decayed.
+      if(gas_isvelocity.and.gas_opacanaltype=='none') then
       call update_natomfr(tsp_texp)
       forall(i=-2:-1) natom1fr(:,i) = gas_vals2(:)%natom1fr(i)
       call update_natomfr(tsp_texp + tsp_dt)
@@ -67,6 +68,7 @@ c-- energy deposition
 c-- total, units=ergs
       gas_vals2(:)%nisource = gas_vals2(:)%nisource * gas_vals2(:)%natom
 !}}}
+      endif
 c
 c
 c
