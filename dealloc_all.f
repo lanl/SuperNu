@@ -6,6 +6,7 @@ c     ----------------------
       use gasgridmod
       use particlemod
       use inputstrmod
+      use inputparmod
       implicit none
 ************************************************************************
 * deallocate all that was used till the end of the program. Any
@@ -38,7 +39,7 @@ c-- gasgridmod
       deallocate(gas_emit,gas_emitex,gas_nvol,gas_nvolex)
       deallocate(gas_evolinit,gas_nvolinit)
 c-- particlemod
-      if(impi==impi0) deallocate(prt_tlyrandarr)
+      if(impi==impi0.and..not.in_norestart) deallocate(prt_tlyrandarr)
       deallocate(prt_particles)
 c-- inputstrmod
       if(impi==impi0) deallocate(str_velright)

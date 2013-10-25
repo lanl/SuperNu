@@ -28,7 +28,7 @@ subroutine particle_advance
 
   logical :: isshift=.true.
   logical :: partstopper=.true.
-  logical :: showidfront=.true.
+  logical :: showidfront=.false.
 
   gas_edep = 0.0
   gas_erad = 0.0

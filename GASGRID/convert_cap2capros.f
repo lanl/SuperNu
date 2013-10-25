@@ -10,13 +10,15 @@ c     -----------------------------
 * sum below its contribution vanishes.
 ************************************************************************
 c
-      gas_caprosl(:,2:) = 1d0/(1d0/gas_caprosl(:,2:) +
-     &  .5d0*(1d0/gas_cap(:,2:) + 1d0/gas_cap(:,:gas_nr-1)))
-      gas_caprosl(:,1) = 1d0/(1d0/gas_caprosl(:,1) +
-     &  1d0/gas_cap(:,1))
-      gas_caprosr(:,:gas_nr-1) = 1d0/(1d0/gas_caprosr(:,:gas_nr-1) +
-     &  .5d0*(1d0/gas_cap(:,:gas_nr-1) + 1d0/gas_cap(:,2:)))
-      gas_caprosr(:,gas_nr) = 1d0/(1d0/gas_caprosr(:,gas_nr) +
-     &  1d0/gas_cap(:,gas_nr))
+c$$$      gas_caprosl(:,2:) = 1d0/(1d0/gas_caprosl(:,2:) +
+c$$$     &  .5d0*(1d0/gas_cap(:,2:) + 1d0/gas_cap(:,:gas_nr-1)))
+c$$$      gas_caprosl(:,1) = 1d0/(1d0/gas_caprosl(:,1) +
+c$$$     &  1d0/gas_cap(:,1))
+c$$$      gas_caprosr(:,:gas_nr-1) = 1d0/(1d0/gas_caprosr(:,:gas_nr-1) +
+c$$$     &  .5d0*(1d0/gas_cap(:,:gas_nr-1) + 1d0/gas_cap(:,2:)))
+c$$$      gas_caprosr(:,gas_nr) = 1d0/(1d0/gas_caprosr(:,gas_nr) +
+c$$$     &  1d0/gas_cap(:,gas_nr))
+      gas_caprosl=gas_cap
+      gas_caprosr=gas_cap
 c
       end subroutine convert_cap2capros

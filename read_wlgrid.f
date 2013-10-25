@@ -58,6 +58,6 @@ c
 c
       write(6,*)
       write(6,*) 'wavelength grid in [cm]'
-      write(6,*) gas_wl
+c      write(6,*) gas_wl
 c
       end subroutine read_wlgrid

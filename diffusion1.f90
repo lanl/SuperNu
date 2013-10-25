@@ -29,7 +29,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   real*8 :: deleff=0.38
   real*8 :: alpeff, dopcoup
   !
-  alpeff= 0d0 !gas_fcoef(z)**(deleff/(1-deleff))
+  alpeff= gas_fcoef(z)**(deleff/(1-deleff))
   !
   if(gas_isvelocity) then
      help = tsp_texp
