@@ -52,6 +52,7 @@ c     --------------------------!{{{
 * integer :: tsp_ntres
 * integer :: in_seed
 * integer :: prt_ninitnew
+* integer :: gas_epslump
 *-- real*8
 * real*8 :: prt_tauddmc
 *-- character
@@ -83,10 +84,11 @@ c-- copy back
       deallocate(lsndvec)
 c
 c-- integer
-      n = 8
+      n = 9
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/gas_nr,gas_ng,
-     &  prt_npartmax,in_nomp,tsp_nt,tsp_ntres,in_seed,prt_ninitnew/)
+     &  prt_npartmax,in_nomp,tsp_nt,tsp_ntres,in_seed,prt_ninitnew,
+     &     gas_epslump/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -98,6 +100,7 @@ c-- copy back
       tsp_ntres = isndvec(6)
       in_seed = isndvec(7)
       prt_ninitnew = isndvec(8)
+      gas_epslump = isndvec(9)
       deallocate(isndvec)
 c
 c-- real*8
@@ -276,6 +279,7 @@ c
        allocate(gas_tempb(gas_nr+1))
        allocate(gas_fcoef(gas_nr))
        allocate(gas_sig(gas_nr))
+       allocate(gas_siggrey(gas_nr))
        allocate(gas_emitprob(gas_ng,gas_nr))
        allocate(gas_ppl(gas_ng,gas_nr))
        allocate(gas_ppr(gas_ng,gas_nr))
@@ -316,6 +320,9 @@ c
       call mpi_bcast(gas_emit,gas_nr,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_emitex,gas_nr*gas_ng,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      call mpi_bcast(gas_siggrey,gas_nr,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
       call mpi_bcast(gas_tempb,gas_nr+1,MPI_REAL8,

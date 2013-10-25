@@ -80,6 +80,7 @@ in_isddmcanlog = t
 in_depestimate = f
 !-- ddmc mfp per cell
 in_tauddmc = 5d0
+in_epslump = 1
 
 !-- opacity debug switches
 in_nobbopac = t
