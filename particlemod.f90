@@ -33,17 +33,18 @@ module particlemod
   !to analog in DDMC
 
   real*8 :: prt_tauddmc
+  real*8 :: prt_taulump
 
   save
 
   contains
 
   subroutine particle_init(npartmax,ns,ninit,isimcanlog, &
-       isddmcanlog,tauddmc,nummespasint,norestart)
+       isddmcanlog,tauddmc,taulump,nummespasint,norestart)
 !--------------------------------------
     integer,intent(in) :: npartmax, ns, ninit, nummespasint
     logical,intent(in) :: isimcanlog, isddmcanlog,norestart
-    real*8,intent(in) :: tauddmc
+    real*8,intent(in) :: tauddmc, taulump
 !***********************************************************************
 ! init particle module
 !***********************************************************************
@@ -55,6 +56,7 @@ module particlemod
     prt_isimcanlog = isimcanlog
     prt_isddmcanlog = isddmcanlog
     prt_tauddmc = tauddmc
+    prt_taulump = taulump
 !
 !-- allocate permanent storage (dealloc in dealloc_all.f)
     allocate(prt_particles(prt_npartmax))

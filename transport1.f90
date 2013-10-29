@@ -418,12 +418,13 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            if(gas_isvelocity) then
               mu = (mu-r/pc_c)/(1.0-r*mu/pc_c)
 !-- amplification
-!              E0=E0*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
-!              E = E*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
-               if(mu<0d0) then
-                  E0 = E0*(1d0+2d0*(0.55d0/abs(mu)-1.3d0*abs(mu))*r/pc_c)
-                  E = E*(1d0+2d0*(0.55d0/abs(mu)-1.3d0*abs(mu))*r/pc_c)
-               endif              
+              E0=E0*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
+              E = E*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
+               ! if(mu<0d0) then
+               !    E0 = E0*(1d0+2d0*(0.55d0/abs(mu)-1.3d0*abs(mu))*r/pc_c)
+               !    E = E*(1d0+2d0*(0.55d0/abs(mu)-1.3d0*abs(mu))*r/pc_c)
+               ! endif
+               
 !--
            endif
            P = gas_ppr(g,z-1)*(1.0+1.5*abs(mu))

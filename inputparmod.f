@@ -50,6 +50,7 @@ c-- particles
       logical :: in_isddmcanlog = .true. !use analog DDMC tally if true
       logical :: in_depestimate = .true. !use deposition estimator to update temperature
       real*8 :: in_tauddmc = 5d0 !number of mean free paths per cell required for DDMC
+      real*8 :: in_taulump = 10d0 !# of mean free paths needed to lump DDMC groups
       real*8 :: in_alpha = 1d0 !time centering control parameter [0,1]
 c-- lumping neighborhood
       integer :: in_epslump=0
@@ -124,7 +125,7 @@ c-- runtime parameter namelist
      & in_srctype, in_theav, in_nheav, in_srcmax,
      & in_isimcanlog, in_isddmcanlog,in_depestimate,
      & in_tauddmc, in_epslump, in_dentype, in_noreadstruct,
-     & in_norestart
+     & in_norestart, in_taulump
 c
       public
       private inputpars
@@ -199,6 +200,7 @@ c
       if(in_npartmax<=0) stop 'in_npartmax invalid'
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
       if(in_epslump<0) stop 'in_epslump invalid'
+      if(in_taulump<in_tauddmc) stop 'in_taulump<in_tauddmc'
 c
       if(in_totmass<=0d0 .and. in_noreadstruct) stop 'in_totmass <= 0'
       if(in_consttemp<0d0) stop 'in_consttemp < 0'

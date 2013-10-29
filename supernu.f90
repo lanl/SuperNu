@@ -58,7 +58,7 @@ program supernu
 !
 !-- particle init
    call particle_init(in_npartmax,in_ns,in_ninit,in_isimcanlog, &
-        in_isddmcanlog,in_tauddmc,nmpi,in_norestart)
+        in_isddmcanlog,in_tauddmc,in_taulump,nmpi,in_norestart)
 !
 !-- rand() count and prt restarts
    if(tsp_ntres>1.and..not.in_norestart) then

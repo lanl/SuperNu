@@ -55,6 +55,7 @@ c     --------------------------!{{{
 * integer :: gas_epslump
 *-- real*8
 * real*8 :: prt_tauddmc
+* real*8 :: prt_tauddmc
 *-- character
 * character(4) :: gas_srctype
 *
@@ -104,13 +105,14 @@ c-- copy back
       deallocate(isndvec)
 c
 c-- real*8
-      n = 1
+      n = 2
       allocate(sndvec(n))
-      if(impi==impi0) sndvec = (/prt_tauddmc/)
+      if(impi==impi0) sndvec = (/prt_tauddmc,prt_taulump/)
       call mpi_bcast(sndvec,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       prt_tauddmc = sndvec(1)
+      prt_taulump = sndvec(2)
       deallocate(sndvec)
 c
 c-- character
