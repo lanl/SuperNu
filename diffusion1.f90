@@ -72,7 +72,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !-- find lumping groups >= g
   iig = g
   do ig = g, gas_ng
-     if((gas_sig(z)+gas_cap(ig,z))*gas_drarr(z) &
+     if(gas_cap(ig,z)*gas_drarr(z) &
           *help < prt_taulump*gas_curvcent(z) &
           .or.ig-g > gas_epslump) then
         exit
@@ -85,7 +85,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !-- find lumping groups <= g
   iig = g
   do ig = g, 1,-1
-     if((gas_sig(z)+gas_cap(ig,z))*gas_drarr(z) &
+     if(gas_cap(ig,z)*gas_drarr(z) &
           *help < prt_taulump*gas_curvcent(z) &
           .or.g-ig > gas_epslump) then
         exit
