@@ -1,15 +1,22 @@
-########################################################################
-# GENERAL RULES
-########################################################################
-%: %.o
-	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)
+ifneq ($(TOP), $(CURDIR))
+%.mod: $(TOP)/%.mod
+	ln -f $< $(CURDIR)/
+endif
 
-#-- fixed format
+%.inc: $(TOP)/%.inc
+	ln -f $< $(CURDIR)/
+
 %.o: %.f
 	$(FC) $(FCFLAGS) $(FCFLAGS_FF) -c $<
-
 %.o: %.f90
 	$(FC) $(FCFLAGS) -c $<
 
-%.mod: ../%.mod
-	@cp -pf $< $@
+%.o: %.c
+	$(CC) $(CFLAGS) -c $<
+
+%: %.o
+	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)
+
+%.a: $(FILES) $(MODULES)
+	$(AR) $(ARFLAGS) $@ $^
+#	$(RANLIB) $@

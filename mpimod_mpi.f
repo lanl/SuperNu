@@ -1,7 +1,7 @@
       module mpimod
 c     -------------
       implicit none
-      include 'mpif.h'
+      INCLUDE 'mpif.h'
 c
       integer,parameter :: impi0 = 0 !the master rank
       integer :: impi !mpi rank
