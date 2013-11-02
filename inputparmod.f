@@ -64,6 +64,7 @@ c-- time step
 c
 c-- group structure
       integer :: in_wldex = 1 !# if in_iswlread = t, selects group grid from formatted group grid file
+      integer :: in_ngs = 1 !# subgroups per opacity group
 c
 c
 c-- physical opacities
@@ -108,7 +109,7 @@ c-- misc
 c     
 c-- runtime parameter namelist
       namelist /inputpars/
-     & in_nr,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
+     & in_nr,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,in_ngs,
      & in_totmass,in_templ0,in_velout,in_v0,
      & in_consttemp,in_solidni56,
      & in_seed,in_ns,in_ninit,in_npartmax,in_puretran,in_alpha,
@@ -195,6 +196,8 @@ c
        if(in_velout>0d0) stop 'static grid: use in_lr, not in_velout'
       endif
 c
+      if(in_ngs<=0) stop 'in_ngs invalid'
+c
       if(in_ns<=0) stop 'in_ns invalid'
       if(in_ninit<0) stop 'in_ninit invalid'
       if(in_npartmax<=0) stop 'in_npartmax invalid'
@@ -244,6 +247,11 @@ C$$$       if(.not.in_noffopac) stop 'no phys opac + in_grptyp==none'
       case default
        stop 'in_opacanaltype unknown'
       end select
+c-- disallow physical opacities when analytic opacities are selected
+      if(in_opacanaltype/='none' .and. .not.(in_nobbopac .and.
+     &  in_nobfopac .and. in_noffopac)) then
+       stop 'in_no??opac: no physical opacities allowed with anal opac'
+      endif
 c
       if(in_opcapgam<0d0) stop 'in_opcapgam invalid'
       if(in_epsline<0d0 .or. in_epsline>1d0) stop 'in_epsline invalid'

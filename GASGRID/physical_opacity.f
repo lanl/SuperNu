@@ -30,14 +30,15 @@ c-- ffxs
       integer :: iu,igg
       real*8 :: cap8
 c-- bfxs
-      integer :: iw,iz,ii,ie
-      real*8 :: en,xs,wl
+      integer :: ig,iz,ii,ie
+      real*8 :: en,xs,wl,wll,wlr
+      integer :: ilines,ilinee
 c-- bbxs
       integer :: i,iwl
       real*8 :: phi,ocggrnd,expfac,wl0,dwl
       real*8 :: caphelp
 c-- temporary cap array in the right order
-      real*8 :: cap(gas_nr,gas_ng)
+      real*8 :: cap(gas_nr,in_ngs)
 c-- special functions
       integer :: binsrch
       real*8 :: specint, x1, x2
@@ -46,13 +47,6 @@ c-- thomson scattering
      &  *pc_c**4)
 c-- planck opacity addition condition
       logical :: planckcheck
-!c
-!c-- constants
-!old  wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
-!old  wlminlg = log(dble(in_wlmin))
-c
-c-- reset
-      cap = 0d0
 c
 c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_temp)
@@ -63,35 +57,104 @@ c-- thomson scattering
      &        gas_vals2(:)%natom/gas_vals2(:)%volcrp
       endif
 c
-c-- bound-bound
-      if(.not. in_nobbopac) then
-       call time(t0)!{{{
-
+c-- ground level occupation number
+      if(.not.in_nobbopac .or. .not.in_nobfopac) then
        do iz=1,gas_nelem
         forall(icg=1:gas_nr,ii=1:min(iz,ion_el(iz)%ni - 1))
      &    grndlev(icg,ii,iz) = ion_grndlev(iz,icg)%oc(ii)/
      &    ion_grndlev(iz,icg)%g(ii)
        enddo !iz
+      endif !in_nobbopac
 c
+c-- find the start point: set end before first line that falls into a group
+      wlr = gas_wl(1)  !in cm
+      ilines = 0
+      do ilinee=ilines,bb_nline-1
+       wl0 = bb_xs(ilinee+1)%wl0*pc_ang  !in cm
+       if(wl0 > wlr) exit
+      enddo
+c
+c-- bb,bf,ff opacities - group by group
+      do ig=1,gas_ng
+c-- right edge of the group
+       wlr = gas_wl(ig+1)  !in cm
+c-- bb loop start end end points
+       ilines = ilinee + 1  !-- prevous end point is new starting point
+       do ilinee=ilines,bb_nline-1
+        wl0 = bb_xs(ilinee+1)%wl0*pc_ang  !in cm
+        if(wl0 > wlr) exit
+       enddo
+c
+       call group_opacity(ig)
+c
+       if(any(cap==0d0)) call warn('opacity_calc','some cap==0')
+c
+c-- assume evenly spaced subgroup bins
+       gas_cap(ig,:) = sum(cap,dim=2)/in_ngs !assume evenly spaced subgroup bins
+c-- todo: calculate gas_caprosl and gas_caprosr with cell-boundary temperature values
+       gas_caprosl(ig,:) = in_ngs/sum(1/cap,dim=2) !assume evenly spaced subgroup bins
+       gas_caprosr(ig,:) = gas_caprosl(ig,:)
+      enddo
+c
+c-- sanity check
+      if(count(gas_caprosl>gas_cap)>0) stop 'opacity_calc:'//
+     &  'gas_capros > cas_cap'
+c
+c-- computing Planck opacity (rev 216)
+      planckcheck = (.not.in_nobbopac.or..not.in_nobfopac.or.
+     & .not.in_noffopac)
+      if(planckcheck) then
+         gas_siggrey = 0d0
+         do icg=1,gas_nr
+            do ig=1,gas_ng
+               x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(icg))
+               x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(icg))
+               gas_siggrey(icg)=gas_siggrey(icg)+
+     &              15d0*gas_cap(ig,icg)*specint(x1,x2,3)/pc_pi**4
+            enddo
+         enddo
+      endif
+c
+      contains
+c
+      subroutine group_opacity(ig)
+c     ----------------------------!{{{
+      implicit none
+      integer,intent(in) :: ig
+************************************************************************
+* Calculate bb,bf,ff opacity for one wl group using a refined wl subgrid
+************************************************************************
+      integer :: igs
+c
+c-- left group-boundary wavelength
+      wll = gas_wl(ig)  !in cm
+c-- subgroup width
+      dwl = (gas_wl(ig+1) - wll)/in_ngs
+c
+c-- reset
+      cap = 0d0
+c
+c-- bound-bound
+      if(.not. in_nobbopac) then
+       call time(t0)!{{{
+c
+      igs = 1
 c$omp parallel do
 c$omp& schedule(static)
-c$omp& private(iz,ii,wl0,dwl,wlinv,iwl,phi,caphelp,expfac,ocggrnd)
-c$omp& firstprivate(grndlev,hckt)
+c$omp& private(iz,ii,wl0,wlinv,phi,caphelp,expfac,ocggrnd)
+c$omp& firstprivate(grndlev,hckt,igs)
 c$omp& shared(cap)
-       do i=1,bb_nline
+       do i=ilines,ilinee
         iz = bb_xs(i)%iz
         ii = bb_xs(i)%ii
         wl0 = bb_xs(i)%wl0*pc_ang  !in cm
         wlinv = 1d0/wl0  !in cm
-c-- iwl pointer
-        iwl = binsrch(wl0,gas_wl,gas_ng+1)  !todo: thread safe?
-c--
-        if(iwl<1) cycle
-        if(iwl>gas_ng) cycle
-        dwl = gas_wl(iwl+1) - gas_wl(iwl)  !in cm
+c-- igs pointer
+        do igs=igs,in_ngs-1
+         if(wl0 <= wll+igs*dwl) exit
+        enddo
 c-- profile function
-!old    phi = gas_ng*wlhelp*wl0/pc_c !line profile
-        phi = wl0**2/(dwl*pc_c)
+        phi = 1d0/dwl
 !       write(6,*) 'phi',phi
 c-- evaluate caphelp
         do icg=1,gas_nr
@@ -101,16 +164,16 @@ c-- oc high enough to be significant?
 *        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
          if(ocggrnd<=0d0) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
          expfac = 1d0 - exp(-hckt(icg)*wlinv)
-         caphelp = phi*bb_xs(i)%gxs*ocggrnd*
+         caphelp = phi*bb_xs(i)%gxs*ocggrnd * wl0**2/pc_c *
      &     exp(-bb_xs(i)%chilw*hckt(icg))*expfac
-!        if(caphelp==0.) write(6,*) 'cap0',cap(icg,iwl),phi,
+!        if(caphelp==0.) write(6,*) 'cap0',cap(icg,igs),phi,
 !    &     bb_xs(i)%gxs,ocggrnd,exp(-bb_xs(i)%chilw*hckt(icg)),expfac
          if(caphelp==0.) cycle
-         cap(icg,iwl) = cap(icg,iwl) + caphelp
+         cap(icg,igs) = cap(icg,igs) + caphelp
         enddo !icg
 c-- vectorized alternative is slower
 cslow   where(gas_vals2(:)%opdirty .and. grndlev(:,ii,iz)>1d-30)
-cslow    cap(:,iwl) = cap(:,iwl) +
+cslow    cap(:,igs) = cap(:,igs) +
 cslow&     phi*bb_xs(i)%gxs*grndlev(:,ii,iz)*
 cslow&     exp(-bb_xs(i)%chilw*hckt(:))*(1d0 - exp(-wlinv*hckt(:)))
 cslow   endwhere
@@ -136,8 +199,8 @@ c$omp& schedule(static)
 c$omp& private(wl,en,ie,xs)
 c$omp& firstprivate(grndlev)
 c$omp& shared(cap)
-       do iw=1,gas_ng
-        wl = gas_wl(iw)  !in cm
+       do igs=1,in_ngs
+        wl = wll + (igs-.5d0)*dwl !-- subgroup bin center value
         en = pc_h*pc_c/(pc_ev*wl) !photon energy in eV
         do iz=1,gas_nelem
          do ii=1,min(iz,ion_el(iz)%ni - 1) !last stage is bare nucleus
@@ -146,13 +209,13 @@ c$omp& shared(cap)
           if(xs==0d0) cycle
           forall(icg=1:gas_nr)
 *         forall(icg=1:gas_nr,gas_vals2(icg)%opdirty)
-     &      cap(icg,iw) = cap(icg,iw) +
+     &      cap(icg,igs) = cap(icg,igs) +
      &      xs*pc_mbarn*grndlev(icg,ii,iz)
          enddo !ie
         enddo !iz
-!       write(6,*) 'wl done:',iw !DEBUG
-!       write(6,*) cap(:,iw) !DEBUG
-       enddo !iw
+!       write(6,*) 'wl done:',igs !DEBUG
+!       write(6,*) cap(:,igs) !DEBUG
+       enddo !igs
 c$omp end parallel do
 c
        call time(t1)
@@ -171,8 +234,8 @@ c$omp& schedule(static)
 c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy)
 c$omp& firstprivate(hckt,hlparr)
 c$omp& shared(cap)
-       do iw=1,gas_ng
-        wl = gas_wl(iw)  !in cm
+       do igs=1,in_ngs
+        wl = wll + (igs-.5d0)*dwl !-- subgroup bin center value
         wlinv = 1d0/wl  !in cm
 c-- gcell loop
         do icg=1,gas_nr
@@ -210,33 +273,14 @@ c-- asymptotic value
 c-- cross section
           cap8 = cap8 + help*gff*iz**2*gas_vals2(icg)%natom1fr(iz)
          enddo !iz
-         cap(icg,iw) = cap(icg,iw) + cap8
+         cap(icg,igs) = cap(icg,igs) + cap8
         enddo !icg
-       enddo !iw
+       enddo !igs
 c$omp end parallel do
 c
        call time(t1)
        call timereg(t_ff, t1-t0)!}}}
-      endif !in_noffopac
+      endif !in_noffopac!}}}
+      end subroutine
 c
-      if(any(cap==0d0))
-     & call warn('opacity_calc','some cap==0')
-c
-      gas_cap = gas_cap + transpose(cap)
-c
-c-- computing Planck opacity (rev 216)
-      planckcheck = (.not.in_nobbopac.or..not.in_nobfopac.or.
-     & .not.in_noffopac)
-      if(planckcheck) then
-         gas_siggrey = 0d0
-         do icg=1,gas_nr
-            do iw=1,gas_ng
-               x1 = pc_h*pc_c/(gas_wl(iw+1)*pc_kb*gas_temp(icg))
-               x2 = pc_h*pc_c/(gas_wl(iw)*pc_kb*gas_temp(icg))
-               gas_siggrey(icg)=gas_siggrey(icg)+
-     &              15d0*gas_cap(iw,icg)*specint(x1,x2,3)/pc_pi**4
-            enddo
-         enddo
-      endif
-c      hckt = pc_h*pc_c/(pc_kb*gas_temp)
       end subroutine physical_opacity
