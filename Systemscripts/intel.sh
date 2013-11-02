@@ -3,7 +3,7 @@
 #default values
 FC="ifort"
 omp="-openmp"
-optimize="-O3 -msse3"
+optimize="-O2 -msse3"
 debug=""
 
 #override default

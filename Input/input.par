@@ -10,7 +10,7 @@ in_norestart = t
 
 !-- time step
 in_tfirst = 2d0
-in_tlast = 52d0
+in_tlast = 64d0
 in_nt = 200
 in_ntres = 0
 in_alpha = 1d0
@@ -67,7 +67,7 @@ in_ldisp1 = 1d0
 in_ldisp2 = 1d-7
 
 !-- group settings
-in_wldex = 22
+in_wldex = 7
 
 !-- particle numbers
 in_ninit = 0
@@ -81,7 +81,7 @@ in_depestimate = f
 !-- ddmc mfp per cell
 in_tauddmc = 2d0
 in_taulump = 20d0
-in_epslump = 40
+in_epslump = 5
 
 !-- opacity debug switches
 in_nobbopac = f
@@ -90,4 +90,3 @@ in_noffopac = f
 in_nothmson = f
 
 &end
-

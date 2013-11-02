@@ -6,7 +6,7 @@ include $(TOP)/Makefile.inc
 FILES = eos_update.o \
   gasgrid_setup.o gasgrid_update.o \
   temperature_update.o analytic_source.o \
-  analytic_opacity.o physical_opacity.o convert_cap2capros.o \
+  analytic_opacity.o physical_opacity.o \
   leakage_opacity.o fleck_factor.o \
   emission_probability.o analytic_initial.o
 

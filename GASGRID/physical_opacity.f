@@ -94,11 +94,19 @@ c-- assume evenly spaced subgroup bins
 c-- todo: calculate gas_caprosl and gas_caprosr with cell-boundary temperature values
        gas_caprosl(ig,:) = in_ngs/sum(1/cap,dim=2) !assume evenly spaced subgroup bins
        gas_caprosr(ig,:) = gas_caprosl(ig,:)
-      enddo
+      enddo !ig
 c
 c-- sanity check
-      if(count(gas_caprosl>gas_cap)>0) stop 'opacity_calc:'//
+      if(count(gas_caprosl-gas_cap > 1e-7*gas_cap)>0) then
+       do icg=1,gas_nr
+        write(6,*) icg
+        write(6,'(1p,20e12.4)') gas_cap(:,icg)
+        write(6,'(1p,20e12.4)') gas_caprosl(:,icg)
+       enddo
+c
+       stop 'opacity_calc:'//
      &  'gas_capros > cas_cap'
+      endif
 c
 c-- computing Planck opacity (rev 216)
       planckcheck = (.not.in_nobbopac.or..not.in_nobfopac.or.
