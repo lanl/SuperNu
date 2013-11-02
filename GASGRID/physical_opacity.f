@@ -14,7 +14,7 @@ c$    use omp_lib
 ************************************************************************
 * compute bound-free and bound-bound opacity.
 ************************************************************************
-      integer :: icg
+      integer :: icg, iig
       real*8 :: wlinv
 c-- timing
       real :: t0,t1
@@ -92,9 +92,26 @@ c
 c-- assume evenly spaced subgroup bins
        gas_cap(ig,:) = sum(cap,dim=2)/in_ngs !assume evenly spaced subgroup bins
 c-- todo: calculate gas_caprosl and gas_caprosr with cell-boundary temperature values
-       gas_caprosl(ig,:) = in_ngs/sum(1/cap,dim=2) !assume evenly spaced subgroup bins
-       gas_caprosr(ig,:) = gas_caprosl(ig,:)
+c       gas_caprosl(ig,:) = in_ngs/sum(1/cap,dim=2) !assume evenly spaced subgroup bins
+c       gas_caprosr(ig,:) = gas_caprosl(ig,:)
       enddo !ig
+c
+c-- calculate Planck function weighted Rosseland
+      do icg=1,gas_nr
+         do ig=1,gas_ng
+            do iig=1,in_ngs
+               x1 = pc_h*pc_c/(gas_wl(iig+1)*pc_kb*gas_temp(icg))
+               x2 = pc_h*pc_c/(gas_wl(iig)*pc_kb*gas_temp(icg))
+               gas_caprosl(ig,icg)=gas_caprosl(ig,icg)+
+     &              (15d0*specint(x1,x2,3)/pc_pi**4)/cap(icg,iig)
+            enddo
+            x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(icg))
+            x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(icg))
+            gas_caprosl(ig,icg)=(15d0*specint(x1,x2,3)/pc_pi**4)/
+     &           gas_caprosl(ig,icg)
+         enddo
+      enddo
+      gas_caprosr=gas_caprosl
 c
 c-- sanity check
       if(count(gas_caprosl-gas_cap > 1e-7*gas_cap)>0) then
