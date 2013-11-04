@@ -14,7 +14,7 @@ c$    use omp_lib
 ************************************************************************
 * compute bound-free and bound-bound opacity.
 ************************************************************************
-      integer :: icg, iig
+      integer :: ir, igs
       real*8 :: wlinv
 c-- timing
       real :: t0,t1
@@ -60,13 +60,13 @@ c-- thomson scattering
 c
 c-- ground level occupation number
       do iz=1,gas_nelem
-       forall(icg=1:gas_nr,ii=1:min(iz,ion_el(iz)%ni - 1))
-     &   grndlev(icg,ii,iz) = ion_grndlev(iz,icg)%oc(ii)/
-     &   ion_grndlev(iz,icg)%g(ii)
+       forall(ir=1:gas_nr,ii=1:min(iz,ion_el(iz)%ni - 1))
+     &   grndlev(ir,ii,iz) = ion_grndlev(iz,ir)%oc(ii)/
+     &   ion_grndlev(iz,ir)%g(ii)
       enddo !iz
       do iz=1,gas_nelem
-       forall(icg=1:gas_nr,ii=1:min(iz,ion_el(iz)%ni - 1))
-     &   grndlev2(icg,ii,iz) = ion_grndlev(iz,icg)%oc(ii)
+       forall(ir=1:gas_nr,ii=1:min(iz,ion_el(iz)%ni - 1))
+     &   grndlev2(ir,ii,iz) = ion_grndlev(iz,ir)%oc(ii)
       enddo !iz
 c
 c-- find the start point: set end before first line that falls into a group
@@ -95,52 +95,48 @@ c
 c-- assume evenly spaced subgroup bins
        gas_cap(ig,:) = sum(cap,dim=2)/in_ngs !assume evenly spaced subgroup bins
 c-- todo: calculate gas_caprosl and gas_caprosr with cell-boundary temperature values
-c       gas_caprosl(ig,:) = in_ngs/sum(1/cap,dim=2) !assume evenly spaced subgroup bins
-c       gas_caprosr(ig,:) = gas_caprosl(ig,:)
-      enddo !ig
+c      gas_caprosl(ig,:) = in_ngs/sum(1/cap,dim=2) !assume evenly spaced subgroup bins
+c      gas_caprosr(ig,:) = gas_caprosl(ig,:)
 c
 c-- calculate Planck function weighted Rosseland
-      do icg=1,gas_nr
-         do ig=1,gas_ng
-            do iig=1,in_ngs
-               x1 = pc_h*pc_c/(gas_wl(iig+1)*pc_kb*gas_temp(icg))
-               x2 = pc_h*pc_c/(gas_wl(iig)*pc_kb*gas_temp(icg))
-               gas_caprosl(ig,icg)=gas_caprosl(ig,icg)+
-     &              (15d0*specint(x1,x2,3)/pc_pi**4)/cap(icg,iig)
-            enddo
-            x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(icg))
-            x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(icg))
-            gas_caprosl(ig,icg)=(15d0*specint(x1,x2,3)/pc_pi**4)/
-     &           gas_caprosl(ig,icg)
-         enddo
-      enddo
-      gas_caprosr=gas_caprosl
+       do ir=1,gas_nr
+        do igs=1,in_ngs
+         x1 = pc_h*pc_c/(gas_wl(igs + 1)*pc_kb*gas_temp(ir))
+         x2 = pc_h*pc_c/(gas_wl(igs)*pc_kb*gas_temp(ir))
+         gas_caprosl(ig,ir) = gas_caprosl(ig,ir) +
+     &     (15d0*specint(x1,x2,3)/pc_pi**4)/cap(ir,igs)
+        enddo !igs
+        x1 = pc_h*pc_c/(gas_wl(ig + 1)*pc_kb*gas_temp(ir))
+        x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(ir))
+        gas_caprosl(ig,ir) = (15d0*specint(x1,x2,3)/pc_pi**4)/
+     &    gas_caprosl(ig,ir)
+       enddo !ir
+       gas_caprosr=gas_caprosl
+      enddo !ig
 c
 c-- sanity check
       if(count(gas_caprosl-gas_cap > 1e-7*gas_cap)>0) then
-       do icg=1,gas_nr
-        write(6,*) icg
-        write(6,'(1p,20e12.4)') gas_cap(:,icg)
-        write(6,'(1p,20e12.4)') gas_caprosl(:,icg)
+       do ir=1,gas_nr
+        write(6,*) ir
+        write(6,'(1p,20e12.4)') gas_cap(:,ir)
+        write(6,'(1p,20e12.4)') gas_caprosl(:,ir)
        enddo
-c
-       stop 'opacity_calc:'//
-     &  'gas_capros > cas_cap'
+       stop 'opacity_calc: gas_capros > cas_cap'
       endif
 c
 c-- computing Planck opacity (rev 216)
-      planckcheck = (.not.in_nobbopac.or..not.in_nobfopac.or.
-     & .not.in_noffopac)
+      planckcheck = (.not.in_nobbopac .or. .not.in_nobfopac .or.
+     &  .not.in_noffopac)
       if(planckcheck) then
-         gas_siggrey = 0d0
-         do icg=1,gas_nr
-            do ig=1,gas_ng
-               x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(icg))
-               x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(icg))
-               gas_siggrey(icg)=gas_siggrey(icg)+
-     &              15d0*gas_cap(ig,icg)*specint(x1,x2,3)/pc_pi**4
-            enddo
-         enddo
+       gas_siggrey = 0d0
+       do ir=1,gas_nr
+        do ig=1,gas_ng
+         x1 = pc_h*pc_c/(gas_wl(ig + 1)*pc_kb*gas_temp(ir))
+         x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(ir))
+         gas_siggrey(ir) = gas_siggrey(ir)+
+     &     15d0*gas_cap(ig,ir)*specint(x1,x2,3)/pc_pi**4
+        enddo
+       enddo
       endif
 c
       contains
@@ -185,20 +181,20 @@ c-- profile function
         phi = 1d0/dwl
 !       write(6,*) 'phi',phi
 c-- evaluate caphelp
-        do icg=1,gas_nr
-         if(.not.gas_vals2(icg)%opdirty) cycle !opacities are still valid
-         ocggrnd = grndlev(icg,ii,iz)
+        do ir=1,gas_nr
+         if(.not.gas_vals2(ir)%opdirty) cycle !opacities are still valid
+         ocggrnd = grndlev(ir,ii,iz)
 c-- oc high enough to be significant?
 *        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
          if(ocggrnd<=0d0) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
-         expfac = 1d0 - exp(-hckt(icg)*wlinv)
+         expfac = 1d0 - exp(-hckt(ir)*wlinv)
          caphelp = phi*bb_xs(i)%gxs*ocggrnd * wl0**2/pc_c *
-     &     exp(-bb_xs(i)%chilw*hckt(icg))*expfac
-!        if(caphelp==0.) write(6,*) 'cap0',cap(icg,igs),phi,
-!    &     bb_xs(i)%gxs,ocggrnd,exp(-bb_xs(i)%chilw*hckt(icg)),expfac
+     &     exp(-bb_xs(i)%chilw*hckt(ir))*expfac
+!        if(caphelp==0.) write(6,*) 'cap0',cap(ir,igs),phi,
+!    &     bb_xs(i)%gxs,ocggrnd,exp(-bb_xs(i)%chilw*hckt(ir)),expfac
          if(caphelp==0.) cycle
-         cap(icg,igs) = cap(icg,igs) + caphelp
-        enddo !icg
+         cap(ir,igs) = cap(ir,igs) + caphelp
+        enddo !ir
 c-- vectorized alternative is slower
 cslow   where(gas_vals2(:)%opdirty .and. grndlev(:,ii,iz)>1d-30)
 cslow    cap(:,igs) = cap(:,igs) +
@@ -230,10 +226,10 @@ c$omp& shared(cap)
           ie = iz - ii + 1
           xs = bfxs(iz,ie,en)
           if(xs==0d0) cycle
-          forall(icg=1:gas_nr)
-*         forall(icg=1:gas_nr,gas_vals2(icg)%opdirty)
-     &      cap(icg,igs) = cap(icg,igs) +
-     &      xs*pc_mbarn*grndlev2(icg,ii,iz)
+          forall(ir=1:gas_nr)
+*         forall(ir=1:gas_nr,gas_vals2(ir)%opdirty)
+     &      cap(ir,igs) = cap(ir,igs) +
+     &      xs*pc_mbarn*grndlev2(ir,ii,iz)
          enddo !ie
         enddo !iz
 !       write(6,*) 'wl done:',igs !DEBUG
@@ -261,11 +257,11 @@ c$omp& shared(cap)
         wl = wll + (igs-.5d0)*dwl !-- subgroup bin center value
         wlinv = 1d0/wl  !in cm
 c-- gcell loop
-        do icg=1,gas_nr
-         u = hckt(icg)*wlinv
+        do ir=1,gas_nr
+         u = hckt(ir)*wlinv
          iu = nint(10d0*(log10(u) + 4d0)) + 1
 c
-         help = c1*sqrt(hckt(icg))*(1d0 - exp(-u))*wl**3*hlparr(icg)
+         help = c1*sqrt(hckt(ir))*(1d0 - exp(-u))*wl**3*hlparr(ir)
          if(iu<1 .or. iu>ff_nu) then
           call warn('opacity_calc','ff: iu out of data limit')
           iu = min(iu,ff_nu)
@@ -274,7 +270,7 @@ c
 c-- element loop
          cap8 = 0d0
          do iz=1,gas_nelem
-          gg = iz**2*pc_rydberg*hckt(icg)
+          gg = iz**2*pc_rydberg*hckt(ir)
           igg = nint(5d0*(log10(gg) + 4d0)) + 1
 c-- gff is approximately constant in the low igg data-limit, do trivial extrapolation:
           igg = max(igg,1)
@@ -294,10 +290,10 @@ c-- asymptotic value
            endif
           endif
 c-- cross section
-          cap8 = cap8 + help*gff*iz**2*gas_vals2(icg)%natom1fr(iz)
+          cap8 = cap8 + help*gff*iz**2*gas_vals2(ir)%natom1fr(iz)
          enddo !iz
-         cap(icg,igs) = cap(icg,igs) + cap8
-        enddo !icg
+         cap(ir,igs) = cap(ir,igs) + cap8
+        enddo !ir
        enddo !igs
 c$omp end parallel do
 c
