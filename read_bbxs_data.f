@@ -81,7 +81,7 @@ c-- store counter globally
       bb_nline = nlinall
 c
 c-- sort lines - doesn't speed-up bb opacity.
-*     call sort_lines
+      call sort_lines
 c
       call time(t1)
       write(6,'(a,f8.2,a)') ' time used for bbxs reading:',t1-t0,'s'

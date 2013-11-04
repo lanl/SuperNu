@@ -20,6 +20,7 @@ c-- timing
       real :: t0,t1
 c-- helper arrays
       real*8 :: grndlev(gas_nr,ion_iionmax-1,gas_nelem)
+      real*8 :: grndlev2(gas_nr,ion_iionmax-1,gas_nelem)
       real*8 :: hckt(gas_nr)
       real*8 :: hlparr(gas_nr)
 c-- ffxs
@@ -58,13 +59,15 @@ c-- thomson scattering
       endif
 c
 c-- ground level occupation number
-      if(.not.in_nobbopac .or. .not.in_nobfopac) then
-       do iz=1,gas_nelem
-        forall(icg=1:gas_nr,ii=1:min(iz,ion_el(iz)%ni - 1))
-     &    grndlev(icg,ii,iz) = ion_grndlev(iz,icg)%oc(ii)/
-     &    ion_grndlev(iz,icg)%g(ii)
-       enddo !iz
-      endif !in_nobbopac
+      do iz=1,gas_nelem
+       forall(icg=1:gas_nr,ii=1:min(iz,ion_el(iz)%ni - 1))
+     &   grndlev(icg,ii,iz) = ion_grndlev(iz,icg)%oc(ii)/
+     &   ion_grndlev(iz,icg)%g(ii)
+      enddo !iz
+      do iz=1,gas_nelem
+       forall(icg=1:gas_nr,ii=1:min(iz,ion_el(iz)%ni - 1))
+     &   grndlev2(icg,ii,iz) = ion_grndlev(iz,icg)%oc(ii)
+      enddo !iz
 c
 c-- find the start point: set end before first line that falls into a group
       wlr = gas_wl(1)  !in cm
@@ -197,15 +200,10 @@ c-- bound-free
       if(.not. in_nobfopac) then
        call time(t0)!{{{
 c
-       do iz=1,gas_nelem
-        forall(icg=1:gas_nr,ii=1:min(iz,ion_el(iz)%ni - 1))
-     &    grndlev(icg,ii,iz) = ion_grndlev(iz,icg)%oc(ii)
-       enddo !iz
-c
 c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(wl,en,ie,xs)
-c$omp& firstprivate(grndlev)
+c$omp& firstprivate(grndlev2)
 c$omp& shared(cap)
        do igs=1,in_ngs
         wl = wll + (igs-.5d0)*dwl !-- subgroup bin center value
@@ -218,7 +216,7 @@ c$omp& shared(cap)
           forall(icg=1:gas_nr)
 *         forall(icg=1:gas_nr,gas_vals2(icg)%opdirty)
      &      cap(icg,igs) = cap(icg,igs) +
-     &      xs*pc_mbarn*grndlev(icg,ii,iz)
+     &      xs*pc_mbarn*grndlev2(icg,ii,iz)
          enddo !ie
         enddo !iz
 !       write(6,*) 'wl done:',igs !DEBUG
@@ -289,6 +287,6 @@ c
        call time(t1)
        call timereg(t_ff, t1-t0)!}}}
       endif !in_noffopac!}}}
-      end subroutine
+      end subroutine group_opacity
 c
       end subroutine physical_opacity

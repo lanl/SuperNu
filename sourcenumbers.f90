@@ -62,7 +62,7 @@ subroutine sourcenumbers
   do ir = 1, gas_nr
      do ig = 1, gas_ng
         ! changed from rev 244
-        gas_etot = gas_etot+gas_emitex(ig,ir)
+        gas_etot = gas_etot + gas_emitex(ig,ir)
         
      enddo
   enddo

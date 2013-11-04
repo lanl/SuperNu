@@ -50,23 +50,23 @@ c-- nuclear decay
 c================
 c-- Get ni56 and co56 abundances on begin and end of the time step.!{{{
 c-- The difference between these two has decayed.
-      if(gas_isvelocity.and.gas_opacanaltype=='none') then
-      call update_natomfr(tsp_texp)
-      forall(i=-2:-1) natom1fr(:,i) = gas_vals2(:)%natom1fr(i)
-      call update_natomfr(tsp_texp + tsp_dt)
-      forall(i=-2:-1) natom2fr(:,i) = gas_vals2(:)%natom1fr(i)
+      if(gas_isvelocity.and.gas_srctype=='none') then
+       call update_natomfr(tsp_texp)
+       forall(i=-2:-1) natom1fr(:,i) = gas_vals2(:)%natom1fr(i)
+       call update_natomfr(tsp_texp + tsp_dt)
+       forall(i=-2:-1) natom2fr(:,i) = gas_vals2(:)%natom1fr(i)
 c
 c-- update the abundances for the center time
-      !call update_natomfr(tsp_tcenter)
-      call update_natomfr(tsp_texp)
+       !call update_natomfr(tsp_tcenter)
+       call update_natomfr(tsp_texp)
 c
 c-- energy deposition
-      gas_vals2(:)%nisource =  !per average atom (mix of stable and unstable)
-     &  (natom1fr(:,gas_ini56) - natom2fr(:,gas_ini56)) *
-     &   (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
-     &  (natom1fr(:,gas_ico56) - natom2fr(:,gas_ico56))*pc_qhl_co56
+       gas_vals2(:)%nisource =  !per average atom (mix of stable and unstable)
+     &   (natom1fr(:,gas_ini56) - natom2fr(:,gas_ini56)) *
+     &    (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
+     &   (natom1fr(:,gas_ico56) - natom2fr(:,gas_ico56))*pc_qhl_co56
 c-- total, units=ergs
-      gas_vals2(:)%nisource = gas_vals2(:)%nisource * gas_vals2(:)%natom
+       gas_vals2(:)%nisource = gas_vals2(:)%nisource *gas_vals2(:)%natom
 !}}}
       endif
 c
@@ -203,9 +203,9 @@ c-- close file
 c
 c-- Calculating Fleck factor, leakage opacities
        call fleck_factor
-!-- Calculating emission probabilities for each group in each cell
+c-- Calculating emission probabilities for each group in each cell
        call emission_probability
-!-- Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
+c-- Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
        call leakage_opacity
 c
 c
@@ -225,20 +225,22 @@ c-- now the opacity weighting integral
        forall(ir=1:gas_nr)
      &  chiross(ir) = chiross(ir) /
      &    sum(dplanckdtemp(gas_wl,gas_temp(ir))*dwl/
-     &    (gas_cap(:,ir) + gas_sig(ir)))
+     &    (gas_caprosl(:,ir) + gas_sig(ir)))
        forall(ir=1:gas_nr)
      &  capplanck(ir) = sum(planck(gas_wl,gas_temp(ir))*
      &    gas_cap(:,ir)*dwl) / capplanck(ir)
 c-- Rosseland output
        write(7,*) 'mean opacities:'
-       write(7,'(a8,7a12)') 'ir',
-     &   'tau_Ross','mfp_Ross','chi Ross','cap_B','sig'
-       write(7,'(a8,7a12)') 'units:',
-     &   '[1]','[cm]',' [cm^-1]','[cm^-1]','[cm^-1]'
+       write(7,'(a8,3(3a11,1x))') 'ir','chi_Ross','cap_B','sig',
+     &   'cap_min','cap_max','cap_mean',
+     &   'capr_min','capr_max','capr_mean'
        do ir=1,gas_nr
-        write(7,'(i8,1p,7e12.4)') ir,
-     &    sum(chiross(ir:)),1d0/chiross(ir),chiross(ir),
-     &    capplanck(ir),gas_sig(ir)
+        write(7,'(i8,1p,3(3e11.4,1x))') ir,
+     &    chiross(ir),capplanck(ir),gas_sig(ir),
+     &    minval(gas_cap(:,ir)),maxval(gas_cap(:,ir)),
+     &     sum(gas_cap(:,ir))/gas_ng,
+     &    minval(gas_caprosl(:,ir)),maxval(gas_caprosl(:,ir)),
+     &     sum(gas_caprosl(:,ir))/gas_ng
        enddo
 c
 c-- timing output
