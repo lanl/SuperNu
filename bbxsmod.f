@@ -132,7 +132,7 @@ c     ---------------------
       integer :: i,is,it
       type(bb_xs_data) :: xs_src,xs_trg
       real*8 :: wl(bb_nline)
-      integer :: indx(bb_nline)
+      integer :: indx(bb_nline),indx_inv(bb_nline)
 c
 c-- initialize arrays
       wl = dble(bb_xs%wl0)
@@ -141,7 +141,7 @@ c
 c-- index sort
       call sorti(bb_nline,wl,indx)
 c-- reverse indx
-      forall(i=1:bb_nline) indx(indx(i)) = i
+      forall(i=1:bb_nline) indx_inv(indx(i)) = i
 c
 c-- sort the big structure: move an element to its final position,
 c-- shifting the value there to the temporary
@@ -150,20 +150,20 @@ c-- shifting the value there to the temporary
       xs_src = bb_xs(is) !save original data in target
       do
 c-- proceed to a new unsorted position if a closed subset was sorted
-       if(indx(is)==0) then
+       if(indx_inv(is)==0) then
         do i=i,bb_nline
-         if(indx(i)/=0) exit
+         if(indx_inv(i)/=0) exit
         enddo
         if(i>bb_nline) exit
         is = i             !source location
         xs_src = bb_xs(is) !save original data in target
        endif
 c-- step 1: save target
-       it = indx(is)       !target location
+       it = indx_inv(is)       !target location
        xs_trg = bb_xs(it)  !save original data in target
 c-- step 2: move old source to sorted position
        bb_xs(it) = xs_src  !move source to target
-       indx(is) = 0        !mark source position ready
+       indx_inv(is) = 0        !mark source position ready
 c-- step 3: rotate old target to new source
        is = it             !next source location
        xs_src = xs_trg     !rotate old target to new source
