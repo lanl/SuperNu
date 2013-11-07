@@ -6,6 +6,7 @@ program supernu
   use gasgridmod
   use particlemod
   use physconstmod
+  use gammaprofmod
 
   use inputstrmod
 
@@ -93,6 +94,10 @@ program supernu
    if(.not.in_nobfopac) call bfxs_read_data           !bound-free cross section data
 !-- read ffxs data
    if(.not.in_noffopac) call ffxs_read_data           !free-free cross section data
+!
+!-- read gamma deposition profiles
+   call read_gamma_profile(gas_nr)
+!
 !
    call time(t1)
    t_setup = t1-t0!}}}

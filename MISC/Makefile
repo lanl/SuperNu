@@ -14,7 +14,7 @@ all: misc.a
 Makefile.depend:
 	$(TOP)/depend.sh $(FILES) >Makefile.depend
 clean:
-	rm -f *.o *.mod *.MOD $(LIBRARY)
+	rm -f *.o *.mod *.MOD Makefile.depend $(LIBRARY)
 
 misc.a: $(FILES)
 
