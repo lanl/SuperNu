@@ -32,7 +32,7 @@ c-- ffxs
       real*8 :: cap8
 c-- bfxs
       integer :: ig,iz,ii,ie
-      real*8 :: en,xs,wl,wll,wlr
+      real*8 :: en,xs,wl,wll,wlr,kbt
       integer :: ilines,ilinee
 c-- bbxs
       integer :: i,iwl
@@ -77,10 +77,14 @@ c-- find the start point: set end before first line that falls into a group
        if(wl0 > wlr) exit
       enddo
 c
+c-- zero out
+      gas_caprosl = 0d0
+c
 c-- bb,bf,ff opacities - group by group
       do ig=1,gas_ng
 c-- right edge of the group
        wlr = gas_wl(ig+1)  !in cm
+       dwl = (wlr - gas_wl(ig))/in_ngs
 c-- bb loop start end end points
        ilines = ilinee + 1  !-- prevous end point is new starting point
        do ilinee=ilines,bb_nline-1
@@ -96,22 +100,24 @@ c-- assume evenly spaced subgroup bins
        gas_cap(ig,:) = sum(cap,dim=2)/in_ngs !assume evenly spaced subgroup bins
 c-- todo: calculate gas_caprosl and gas_caprosr with cell-boundary temperature values
 c      gas_caprosl(ig,:) = in_ngs/sum(1/cap,dim=2) !assume evenly spaced subgroup bins
-c      gas_caprosr(ig,:) = gas_caprosl(ig,:)
-c
 c-- calculate Planck function weighted Rosseland
        do ir=1,gas_nr
+        kbt = pc_kb*gas_temp(ir)
         do igs=1,in_ngs
-         x1 = pc_h*pc_c/(gas_wl(igs + 1)*pc_kb*gas_temp(ir))
-         x2 = pc_h*pc_c/(gas_wl(igs)*pc_kb*gas_temp(ir))
+         wll = (gas_wl(ig) + (igs-1)*dwl)
+         x1 = pc_h*pc_c/((wll + dwl)*kbt)
+         x2 = pc_h*pc_c/(wll*kbt)
          gas_caprosl(ig,ir) = gas_caprosl(ig,ir) +
      &     (15d0*specint(x1,x2,3)/pc_pi**4)/cap(ir,igs)
         enddo !igs
-        x1 = pc_h*pc_c/(gas_wl(ig + 1)*pc_kb*gas_temp(ir))
-        x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(ir))
+        x1 = pc_h*pc_c/(gas_wl(ig + 1)*kbt)
+        x2 = pc_h*pc_c/(gas_wl(ig)*kbt)
         gas_caprosl(ig,ir) = (15d0*specint(x1,x2,3)/pc_pi**4)/
      &    gas_caprosl(ig,ir)
        enddo !ir
-       gas_caprosr=gas_caprosl
+c
+c-- copy result to other side.  todo: evaluate right and left side individually
+       gas_caprosr(ig,:) = gas_caprosl(ig,:)
       enddo !ig
 c
 c-- sanity check
@@ -149,6 +155,7 @@ c     ----------------------------!{{{
 * Calculate bb,bf,ff opacity for one wl group using a refined wl subgrid
 ************************************************************************
       integer :: igs
+      real*8 :: dwl,wll
 c
 c-- left group-boundary wavelength
       wll = gas_wl(ig)  !in cm
