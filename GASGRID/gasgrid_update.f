@@ -76,8 +76,8 @@ c-- use gamma deposition profiles if data available
         write(6,'(a,2f5.2)') 'using gamma prof: t,int=',gamprf_time(i),
      &    sum(gamprf_prof(:,i))
        endif
-!}}}
       endif
+!}}}
 c
 c
 c
