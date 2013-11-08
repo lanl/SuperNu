@@ -117,7 +117,7 @@ c-- runtime parameter namelist
      & in_tfirst,in_tlast,in_nt,in_ntres,
      & in_grab_stdout,in_nomp,
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
-     & in_noffopac,in_nothmson,
+     & in_noffopac,in_nothmson,in_noplanckweighting,
      & in_opacdump,in_pdensdump,
      & in_sigcoefs,in_sigtpwrs,in_sigrpwrs,
      & in_sigcoef,in_sigtpwr,in_sigrpwr,
