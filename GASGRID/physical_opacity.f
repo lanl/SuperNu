@@ -99,22 +99,25 @@ c
 c-- assume evenly spaced subgroup bins
        gas_cap(ig,:) = sum(cap,dim=2)/in_ngs !assume evenly spaced subgroup bins
 c-- todo: calculate gas_caprosl and gas_caprosr with cell-boundary temperature values
-c      gas_caprosl(ig,:) = in_ngs/sum(1/cap,dim=2) !assume evenly spaced subgroup bins
+       if(in_noplanckweighting) then
+        gas_caprosl(ig,:) = in_ngs/sum(1/cap,dim=2) !assume evenly spaced subgroup bins
 c-- calculate Planck function weighted Rosseland
-       do ir=1,gas_nr
-        kbt = pc_kb*gas_temp(ir)
-        do igs=1,in_ngs
-         wll = (gas_wl(ig) + (igs-1)*dwl)
-         x1 = pc_h*pc_c/((wll + dwl)*kbt)
-         x2 = pc_h*pc_c/(wll*kbt)
-         gas_caprosl(ig,ir) = gas_caprosl(ig,ir) +
-     &     (15d0*specint(x1,x2,3)/pc_pi**4)/cap(ir,igs)
-        enddo !igs
-        x1 = pc_h*pc_c/(gas_wl(ig + 1)*kbt)
-        x2 = pc_h*pc_c/(gas_wl(ig)*kbt)
-        gas_caprosl(ig,ir) = (15d0*specint(x1,x2,3)/pc_pi**4)/
-     &    gas_caprosl(ig,ir)
-       enddo !ir
+       else
+        do ir=1,gas_nr
+         kbt = pc_kb*gas_temp(ir)
+         do igs=1,in_ngs
+          wll = (gas_wl(ig) + (igs-1)*dwl)
+          x1 = pc_h*pc_c/((wll + dwl)*kbt)
+          x2 = pc_h*pc_c/(wll*kbt)
+          gas_caprosl(ig,ir) = gas_caprosl(ig,ir) +
+     &      (15d0*specint(x1,x2,3)/pc_pi**4)/cap(ir,igs)
+         enddo !igs
+         x1 = pc_h*pc_c/(gas_wl(ig + 1)*kbt)
+         x2 = pc_h*pc_c/(gas_wl(ig)*kbt)
+         gas_caprosl(ig,ir) = (15d0*specint(x1,x2,3)/pc_pi**4)/
+     &     gas_caprosl(ig,ir)
+        enddo !ir
+       endif
 c
 c-- copy result to other side.  todo: evaluate right and left side individually
        gas_caprosr(ig,:) = gas_caprosl(ig,:)

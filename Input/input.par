@@ -88,5 +88,6 @@ in_nobbopac = f
 in_nobfopac = f
 in_noffopac = f
 in_nothmson = f
+in_noplackweighting = t
 
 &end

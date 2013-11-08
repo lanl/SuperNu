@@ -70,6 +70,7 @@ c
 c-- physical opacities
       real*8 :: in_opcapgam = .06d0   ![cm^2/g] extinction coefficient for gamma radiation
       real*8 :: in_epsline = 1d0      !line absorption fraction (the rest is scattering)
+      logical :: in_noplackweighting = .false. !disable planck weighting of rosseland opacities within group
 c-- test switches
       logical :: in_nobbopac = .false.    !turn off bound-bound opacity
       logical :: in_nobfopac = .false.    !turn off bound-bound opacity
