@@ -60,8 +60,10 @@ subroutine temperature_update
 !
 !-- summing comoving material energy
   gas_emat = 0d0
-  forall(ir=1:gas_nr) gas_emat=gas_emat+ &
-       gas_vals2(ir)%bcoef*gas_temp(ir)* &
-       gas_vals2(ir)%vol
+  do ir = 1, gas_nr
+     gas_emat=gas_emat+ &
+          gas_vals2(ir)%bcoef*gas_temp(ir)* &
+          gas_vals2(ir)%vol
+  enddo
 
 end subroutine temperature_update
