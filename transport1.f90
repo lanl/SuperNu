@@ -311,7 +311,8 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               prt_done = .true.
 !-- outbound luminosity tally
               gas_eright = gas_eright+E*elabfact
-              gas_luminos(g) = gas_luminos(g)+mu*E/tsp_dt
+              gas_luminos(g) = gas_luminos(g)+E/tsp_dt
+!              gas_luminos(g) = gas_luminos(g)+mu*E/tsp_dt
 !            else
 !               r1 = rand()
 !                 prt_tlyrand = prt_tlyrand+1
