@@ -62,12 +62,16 @@ module gasgridmod
   integer :: gas_nheav = 0 !outer cell bound of external heaviside ('heav') source
   real*8 :: gas_theav = 0d0 !duration of heaviside source
   real*8 :: gas_srcmax = 0d0 !peak strength (ergs*s^2/cm^3 if isvelocity, else ergs/cm^3/s) of external source
-
+!
 !-- energy conservation check quantities
   real*8 :: gas_emat = 0d0 !material energy
   real*8 :: gas_erad = 0d0 !census radiation energy
-  real*8 :: gas_eleft, gas_eright !energy escaped inward, outward, respectively
-  real*8 :: gas_eint, gas_etot, gas_esurf
+  real*8 :: gas_eleft= 0d0 !left (inward) leaked energy from domain
+  real*8 :: gas_eright=0d0 !right (outward) leaked energy from domain
+  real*8 :: gas_etot = 0d0 !total source energy added per time step
+  real*8 :: gas_evelo= 0d0 !total energy change to rad field from fluid
+!--
+  real*8 :: gas_esurf
 
   real*8, dimension(:), allocatable :: gas_rarr   !(gas_nr+1), left cell edge values
   real*8, dimension(:), allocatable :: gas_drarr  !(gas_nr)
