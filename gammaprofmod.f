@@ -8,8 +8,8 @@ c     -------------------
 * deposited in each of the bins.
 ************************************************************************
       integer :: gamprf_nt = 0
-      real*8,allocatable :: gamprf_time(:) !gamprf_nt
-      real*8,allocatable :: gamprf_prof(:,:) !gas_nr,gamprf_nt
+      real*8,allocatable :: gamprf_time(:) !(gamprf_nt)  !time in seconds
+      real*8,allocatable :: gamprf_prof(:,:) !(gas_nr,gamprf_nt)  !local deposition fraction
 c
       contains
 c

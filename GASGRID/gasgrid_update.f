@@ -52,8 +52,12 @@ c================
 c-- Get ni56 and co56 abundances on begin and end of the time step.!{{{
 c-- The difference between these two has decayed.
       if(gas_isvelocity.and.gas_srctype=='none') then
-       call update_natomfr(tsp_texp)
+c-- beginning of time step
+       help = tsp_texp
+       if(tsp_it==1) help = 0d0 !start accounting from day 0
+       call update_natomfr(help)
        forall(i=-2:-1) natom1fr(:,i) = gas_vals2(:)%natom1fr(i)
+c-- end of time step
        call update_natomfr(tsp_texp + tsp_dt)
        forall(i=-2:-1) natom2fr(:,i) = gas_vals2(:)%natom1fr(i)
 c
