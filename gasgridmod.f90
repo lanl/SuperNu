@@ -63,7 +63,11 @@ module gasgridmod
   real*8 :: gas_theav = 0d0 !duration of heaviside source
   real*8 :: gas_srcmax = 0d0 !peak strength (ergs*s^2/cm^3 if isvelocity, else ergs/cm^3/s) of external source
 
-  real*8 :: gas_emat = 0d0
+!-- energy conservation check quantities
+  real*8 :: gas_emat = 0d0 !material energy
+  real*8 :: gas_erad = 0d0 !census radiation energy
+  real*8 :: gas_eleft, gas_eright !energy escaped inward, outward, respectively
+  real*8 :: gas_eint, gas_etot, gas_esurf
 
   real*8, dimension(:), allocatable :: gas_rarr   !(gas_nr+1), left cell edge values
   real*8, dimension(:), allocatable :: gas_drarr  !(gas_nr)
@@ -120,8 +124,6 @@ module gasgridmod
        real*8 :: matsrc = 0d0
   end type gas_secondary
   type(gas_secondary),pointer :: gas_vals2(:)
-
-  real*8 :: gas_eleft, gas_eright, gas_erad, gas_eint, gas_etot, gas_esurf
 
   ! Picket-fence probabilities
   real*8 :: gas_ppick(2)

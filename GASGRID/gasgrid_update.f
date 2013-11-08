@@ -138,7 +138,6 @@ c
 c-- reset counters
 c=================
       gas_erad = 0.0   !Total radiation energy
-      gas_eint = 0.0   !Total internal energy
 
       gas_eraddens =0d0 !radiation density field
       gas_vals2%eraddens =0d0

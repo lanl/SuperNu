@@ -518,7 +518,17 @@ subroutine particle_advance
         !
      endif
      endif
-  
+!
+!-- summing comoving radiat
+     if(rtsrc==1) then
+        if(gas_isvelocity) then
+           gas_erad = gas_erad+esrc*(1d0-rsrc*musrc/pc_c)
+        else
+           gas_erad = gas_erad+esrc
+        endif
+     else
+        gas_erad = gas_erad+esrc
+     endif
   enddo
 
   call time(t1)
