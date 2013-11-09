@@ -73,7 +73,7 @@ subroutine boundary_source
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
 
-     prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
+     prt_particles(ivac)%tsrc = tsp_texp+r1*tsp_dt
 
      if(gas_isvelocity.and.gas_srctype=='manu') then
         prt_particles(ivac)%zsrc = gas_nr

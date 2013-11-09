@@ -152,7 +152,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   r1 = rand()
   prt_tlyrand = prt_tlyrand+1
   tau = abs(log(r1)/(pc_c*denom))
-  tcensus = tsp_time+tsp_dt-t
+  tcensus = tsp_texp+tsp_dt-t
   ddmct = min(tau,tcensus)
 !
 !-- redshift weight
@@ -349,7 +349,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            mu = max(r1,r2)
 !-- outbound luminosity tally
            if(gas_isvelocity) then
-              gas_eright = gas_eright+E*(1.0+gas_rarr(gas_nr+1)*mu/pc_c)
+              gas_eright = gas_eright+E
 !               gas_luminos(gminlump:gmaxlump)=gas_luminos(gminlump:gmaxlump)+(E/tsp_dt)* &
 !                    (mu+gas_rarr(gas_nr+1)/pc_c)/ &
 !                    (1.0+gas_rarr(gas_nr+1)*mu/pc_c)/real(gmaxlump-gminlump+1)

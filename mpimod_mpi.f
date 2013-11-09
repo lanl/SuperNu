@@ -171,7 +171,6 @@ c     ------------------------!{{{
 * Broadcast the data that changes with time/temperature.
 *-- scalars:
 *-- real
-* real*8 :: tsp_time
 * real*8 :: tsp_texp
 * real*8 :: tsp_dt
 * real*8 :: gas_esurf
@@ -256,18 +255,17 @@ c-- copy back
       deallocate(isndvec)
 c
 c-- real*8
-      n = 5
+      n = 4
       allocate(sndvec(n))
-      if(impi==impi0) sndvec = (/tsp_time,tsp_texp,tsp_dt,gas_esurf,
+      if(impi==impi0) sndvec = (/tsp_texp,tsp_dt,gas_esurf,
      & gas_etot/)
       call mpi_bcast(sndvec,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      tsp_time = sndvec(1)
-      tsp_texp = sndvec(2)
-      tsp_dt = sndvec(3)
-      gas_esurf = sndvec(4)
-      gas_etot = sndvec(5)
+      tsp_texp = sndvec(1)
+      tsp_dt = sndvec(2)
+      gas_esurf = sndvec(3)
+      gas_etot = sndvec(4)
       deallocate(sndvec)
 c
 c-- allocate all arrays. These are deallocated in dealloc_all.f

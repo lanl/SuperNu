@@ -116,7 +116,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   endif
 !
 !-- distance to census = dcen
-  dcen = abs(pc_c*(tsp_time+tsp_dt-t)/help)
+  dcen = abs(pc_c*(tsp_texp+tsp_dt-t)/help)
 !
 !-- distance to Doppler shift = ddop
   if(gas_isvelocity.and.g<gas_ng) then

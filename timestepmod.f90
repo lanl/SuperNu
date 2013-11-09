@@ -7,7 +7,6 @@ module timestepmod
   integer :: tsp_it  !current time step number
   real*8 :: tsp_texp
   real*8 :: tsp_tcenter
-  real*8 :: tsp_time
   real*8 :: tsp_dt
   real*8 :: tsp_alpha = 0d0
 
@@ -34,7 +33,6 @@ module timestepmod
     tsp_alpha = alpha
 
 !-- beginning of first (restart) time step
-    tsp_time = 0d0+(tsp_ntres-1)*dt
     tsp_texp = tfirst*pc_day+(tsp_ntres-1)*dt
     tsp_tcenter = tsp_texp + .5d0*tsp_dt+(tsp_ntres-1)*dt
 !
@@ -48,7 +46,6 @@ module timestepmod
 ! update the timestep variables
 !***********************************************************************
     tsp_dt = dt
-    tsp_time = tsp_time+tsp_dt
     tsp_texp = tsp_texp+tsp_dt
     tsp_tcenter = tsp_texp + .5*tsp_dt
   end subroutine timestep_update

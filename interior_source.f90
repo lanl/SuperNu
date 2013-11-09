@@ -82,11 +82,11 @@ subroutine interior_source
            prt_tlyrand = prt_tlyrand+1
            mu0 = 1d0-2d0*r1
 
-           !Calculating particle tsp_time
+           !Calculating particle time
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
 
-           prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
+           prt_particles(ivac)%tsrc = tsp_texp+r1*tsp_dt
 
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = exsumg(ir)/real(gas_nvolex(ir))
@@ -217,10 +217,10 @@ subroutine interior_source
            if(abs(mu0)<0.0000001d0) then
               mu0=0.0000001d0
            endif
-           !Calculating particle tsp_time
+           !Calculating particle time
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           prt_particles(ivac)%tsrc = tsp_time+r1*tsp_dt
+           prt_particles(ivac)%tsrc = tsp_texp+r1*tsp_dt
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = gas_emit(ir)/real(gas_nvol(ir))
 

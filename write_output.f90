@@ -9,7 +9,7 @@ subroutine write_output
   character(16), save :: pos='rewind'
 
   open(unit=4,file='output.tsp_time',status='unknown',position=pos)
-  write(4,*) tsp_time
+  write(4,*) tsp_texp
   close(4)
 
   open(unit=4,file='output.Lum',status='unknown',position=pos)

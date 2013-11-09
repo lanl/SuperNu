@@ -23,7 +23,7 @@ subroutine analytic_source
     return
   elseif(gas_srctype=='heav') then
      !Heaviside source (uniform source sphere)!{{{
-     if (tsp_time<=gas_theav*pc_day) then
+     if (tsp_texp<=(in_tfirst+gas_theav)*pc_day) then
         do ir = 1, min(gas_nheav,gas_nr)
            do ig = 1, gas_ng
               x3 = 1d0/gas_wl(ig+1) 
