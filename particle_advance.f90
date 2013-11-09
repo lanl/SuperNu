@@ -50,12 +50,12 @@ subroutine particle_advance
   if(showidfront) then
      do ir = 1, gas_nr-1
         if(gas_isvelocity.and.(gas_sig(ir)+gas_cap(1,ir))*gas_drarr(ir) &
-             *tsp_texp>=prt_tauddmc &
+             *tsp_t>=prt_tauddmc &
              .and. &
              (gas_sig(ir+1)+gas_cap(1,ir+1))*gas_drarr(ir+1) &
-             *tsp_texp<prt_tauddmc) then
-           write(*,*) ir, gas_cap(1,ir)*gas_drarr(ir)*tsp_texp, &
-                gas_cap(1,ir+1)*gas_drarr(ir+1)*tsp_texp
+             *tsp_t<prt_tauddmc) then
+           write(*,*) ir, gas_cap(1,ir)*gas_drarr(ir)*tsp_t, &
+                gas_cap(1,ir+1)*gas_drarr(ir+1)*tsp_t
         endif
      enddo
   endif
@@ -137,7 +137,7 @@ subroutine particle_advance
      ! Checking if particle conversions are required since prior time step
      if(.not.in_puretran) then
         if(gas_isvelocity) then
-           help = tsp_texp
+           help = tsp_t
         else
            help = 1d0
         endif
@@ -280,7 +280,7 @@ subroutine particle_advance
      if(isshift) then
      if ((gas_isvelocity).and.(rtsrc==1)) then
         rold = rsrc
-        rsrc = rsrc*tsp_texp/(tsp_texp+alph2*tsp_dt)
+        rsrc = rsrc*tsp_t/(tsp_t+alph2*tsp_dt)
         !
         if (rsrc < gas_rarr(zsrc)) then
            !
@@ -292,7 +292,7 @@ subroutine particle_advance
            elseif(.not.in_puretran.and.partstopper) then
               zfdiff = -1
               if(gas_isvelocity) then
-                 help = tsp_texp
+                 help = tsp_t
               else
                  help = 1d0
               endif
@@ -341,7 +341,7 @@ subroutine particle_advance
            else
               zsrc = zholder
               if((gas_sig(zsrc)+gas_cap(g,zsrc))*gas_drarr(zsrc) &
-                   *tsp_texp>=prt_tauddmc*gas_curvcent(zsrc)) then
+                   *tsp_t>=prt_tauddmc*gas_curvcent(zsrc)) then
                  rtsrc = 2
               endif
            endif
@@ -376,8 +376,8 @@ subroutine particle_advance
      ! Redshifting DDMC particle energy weights and wavelengths
 !      if(rtsrc == 2.and.gas_isvelocity) then
 ! !-- redshifting energy weight
-!         esrc = esrc*exp(-tsp_dt/tsp_texp)
-!         ebirth = ebirth*exp(-tsp_dt/tsp_texp)
+!         esrc = esrc*exp(-tsp_dt/tsp_t)
+!         ebirth = ebirth*exp(-tsp_dt/tsp_t)
 !         !
 ! !
 ! !-- find group
@@ -396,7 +396,7 @@ subroutine particle_advance
 ! !         r1 = rand()
 !           prt_tlyrand = prt_tlyrand+1
 ! !         wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
-! !         wlsrc = wlsrc*exp(tsp_dt/tsp_texp)
+! !         wlsrc = wlsrc*exp(tsp_dt/tsp_t)
 !         !
 !      endif
 
@@ -454,7 +454,7 @@ subroutine particle_advance
      if ((gas_isvelocity).and.(rtsrc==1)) then
         !
         rold = rsrc
-        rsrc = rsrc*(tsp_texp+alph2*tsp_dt)/(tsp_texp+tsp_dt)
+        rsrc = rsrc*(tsp_t+alph2*tsp_dt)/(tsp_t+tsp_dt)
         !
         if (rsrc < gas_rarr(zsrc)) then
            !
@@ -466,7 +466,7 @@ subroutine particle_advance
            elseif(.not.in_puretran.and.partstopper) then
               zfdiff = -1
               if(gas_isvelocity) then
-                 help = tsp_texp
+                 help = tsp_t
               else
                  help = 1d0
               endif

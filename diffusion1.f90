@@ -38,7 +38,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   alpeff= gas_fcoef(z)**(deleff/(1-deleff))
   !
   if(gas_isvelocity) then
-     help = tsp_texp
+     help = tsp_t
   else
      help = 1d0
   endif
@@ -133,7 +133,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !--currently scattering fully elastic, grey
      dopcoup = (gas_sig(z)/(caplump+gas_sig(z)))*&
           (gas_wl(gminlump)/(gas_wl(gmaxlump+1)-gas_wl(gminlump)))&
-          /(pc_c*tsp_texp)
+          /(pc_c*tsp_t)
   else
      dopcoup = 0d0
   endif
@@ -152,13 +152,13 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   r1 = rand()
   prt_tlyrand = prt_tlyrand+1
   tau = abs(log(r1)/(pc_c*denom))
-  tcensus = tsp_texp+tsp_dt-t
+  tcensus = tsp_t+tsp_dt-t
   ddmct = min(tau,tcensus)
 !
 !-- redshift weight
   if(gas_isvelocity) then
-     E=E*exp(-ddmct/tsp_texp)
-     E0=E0*exp(-ddmct/tsp_texp)
+     E=E*exp(-ddmct/tsp_t)
+     E0=E0*exp(-ddmct/tsp_t)
   endif
 !--
 !

@@ -60,7 +60,7 @@ subroutine initial_particles
                    mu0=0.0000001d0
              endif
              !calculating particle time
-             prt_particles(ipart)%tsrc = tsp_texp
+             prt_particles(ipart)%tsrc = tsp_t
              !calculating particle energy
              Ep0 = suminitg(iir)/real(gas_nvolinit(iir))
 

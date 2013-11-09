@@ -21,7 +21,7 @@ subroutine interior_source
   logical :: isnotvacnt !checks for available particle space to populate in cell
 
   if(gas_isvelocity) then
-     help = tsp_texp
+     help = tsp_t
   else
      help = 1d0
   endif
@@ -86,7 +86,7 @@ subroutine interior_source
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
 
-           prt_particles(ivac)%tsrc = tsp_texp+r1*tsp_dt
+           prt_particles(ivac)%tsrc = tsp_t+r1*tsp_dt
 
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = exsumg(ir)/real(gas_nvolex(ir))
@@ -220,7 +220,7 @@ subroutine interior_source
            !Calculating particle time
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           prt_particles(ivac)%tsrc = tsp_texp+r1*tsp_dt
+           prt_particles(ivac)%tsrc = tsp_t+r1*tsp_dt
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = gas_emit(ir)/real(gas_nvol(ir))
 

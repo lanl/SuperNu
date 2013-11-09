@@ -34,7 +34,7 @@ subroutine sourcenumbers
      gas_esurf = 0d0
   endif
   if(gas_isvelocity) then
-     gas_etot = gas_esurf*tsp_texp**2
+     gas_etot = gas_esurf*tsp_t**2
   else
      gas_etot = gas_esurf
   endif

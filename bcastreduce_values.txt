@@ -45,7 +45,7 @@ type(packet) :: particles(prt_npartmax)
 
 -timestepmod:
 real*8 :: tsp_time
-real*8 :: tsp_texp
+real*8 :: tsp_t
 real*8 :: tsp_dt
 
 -timingmod:

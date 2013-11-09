@@ -68,7 +68,7 @@ c--
 c
 c-- temperature
       if(in_srctype=='manu') then!{{{
-       call init_manutemp(tsp_texp)
+       call init_manutemp(tsp_t)
       elseif(in_consttemp==0d0) then
        call read_restart_file
       else

@@ -23,14 +23,14 @@ subroutine analytic_source
     return
   elseif(gas_srctype=='heav') then
      !Heaviside source (uniform source sphere)!{{{
-     if (tsp_texp<=(in_tfirst+gas_theav)*pc_day) then
+     if (tsp_t<=(in_tfirst+gas_theav)*pc_day) then
         do ir = 1, min(gas_nheav,gas_nr)
            do ig = 1, gas_ng
               x3 = 1d0/gas_wl(ig+1) 
               x4 = 1d0/gas_wl(ig)
               gas_emitex(ig,ir)=gas_srcmax*(x4-x3)/(x2-x1)
               if(gas_isvelocity) then
-                 gas_emitex(ig,ir)=gas_emitex(ig,ir)/tsp_texp**3
+                 gas_emitex(ig,ir)=gas_emitex(ig,ir)/tsp_t**3
               endif
            enddo
 !
@@ -75,10 +75,10 @@ subroutine analytic_source
      !!{{{
 !
 !-- radiation source
-     call generate_manuradsrc(in_totmass,in_sigcoef,tsp_texp,tsp_dt)
+     call generate_manuradsrc(in_totmass,in_sigcoef,tsp_t,tsp_dt)
 !
 !-- temperature source
-     call generate_manutempsrc(in_totmass,in_sigcoef,tsp_texp,tsp_dt)
+     call generate_manutempsrc(in_totmass,in_sigcoef,tsp_t,tsp_dt)
 !     
      !}}}
   else

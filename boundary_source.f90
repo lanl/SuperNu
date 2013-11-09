@@ -16,7 +16,7 @@ subroutine boundary_source
   Esurfpart = gas_esurf/real(prt_nsurf)
 
   if(gas_isvelocity) then
-     help = tsp_texp
+     help = tsp_t
   else
      help = 1d0
   endif
@@ -73,7 +73,7 @@ subroutine boundary_source
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
 
-     prt_particles(ivac)%tsrc = tsp_texp+r1*tsp_dt
+     prt_particles(ivac)%tsrc = tsp_t+r1*tsp_dt
 
      if(gas_isvelocity.and.gas_srctype=='manu') then
         prt_particles(ivac)%zsrc = gas_nr

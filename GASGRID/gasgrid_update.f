@@ -53,17 +53,17 @@ c-- Get ni56 and co56 abundances on begin and end of the time step.!{{{
 c-- The difference between these two has decayed.
       if(gas_isvelocity.and.gas_srctype=='none') then
 c-- beginning of time step
-       help = tsp_texp
+       help = tsp_t
        if(tsp_it==1) help = 0d0 !start accounting from day 0
        call update_natomfr(help)
        forall(i=-2:-1) natom1fr(:,i) = gas_vals2(:)%natom1fr(i)
 c-- end of time step
-       call update_natomfr(tsp_texp + tsp_dt)
+       call update_natomfr(tsp_t + tsp_dt)
        forall(i=-2:-1) natom2fr(:,i) = gas_vals2(:)%natom1fr(i)
 c
 c-- update the abundances for the center time
        !call update_natomfr(tsp_tcenter)
-       call update_natomfr(tsp_texp)
+       call update_natomfr(tsp_t)
 c
 c-- energy deposition
        gas_vals2(:)%nisource =  !per average atom (mix of stable and unstable)
@@ -88,7 +88,7 @@ c
 c-- update volume and density 
 c============================
       if(gas_isvelocity) then!{{{
-       help = gas_velout*tsp_texp
+       help = gas_velout*tsp_t
       else
        help = gas_l0+gas_lr
       endif

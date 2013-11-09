@@ -135,7 +135,7 @@ program supernu
 !=================
   do tsp_it = tsp_ntres, tsp_nt
     if(impi==impi0) then
-      write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_it,tsp_texp/pc_day
+      write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_it,tsp_t/pc_day
 !-- update all non-permanent variables
       call gasgrid_update
 !-- number of source prt_particles per cell

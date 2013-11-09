@@ -171,7 +171,7 @@ c     ------------------------!{{{
 * Broadcast the data that changes with time/temperature.
 *-- scalars:
 *-- real
-* real*8 :: tsp_texp
+* real*8 :: tsp_t
 * real*8 :: tsp_dt
 * real*8 :: gas_esurf
 * real*8 :: gas_etot
@@ -257,12 +257,12 @@ c
 c-- real*8
       n = 4
       allocate(sndvec(n))
-      if(impi==impi0) sndvec = (/tsp_texp,tsp_dt,gas_esurf,
+      if(impi==impi0) sndvec = (/tsp_t,tsp_dt,gas_esurf,
      & gas_etot/)
       call mpi_bcast(sndvec,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      tsp_texp = sndvec(1)
+      tsp_t = sndvec(1)
       tsp_dt = sndvec(2)
       gas_esurf = sndvec(3)
       gas_etot = sndvec(4)

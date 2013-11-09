@@ -45,7 +45,7 @@ subroutine analytic_initial
   elseif(gas_srctype=='strt') then
      return
   elseif(gas_srctype=='manu') then
-     call init_manuprofile(tsp_texp)
+     call init_manuprofile(tsp_t)
   else
      stop 'analytic_initial: invalid gas_srctype'
   endif

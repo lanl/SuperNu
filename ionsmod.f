@@ -40,23 +40,23 @@ c
 c
 c
 c
-      subroutine ion_alloc_grndlev(ncg)
+      subroutine ion_alloc_grndlev(nr)
 c     ---------------------------------!{{{
       implicit none
-      integer,intent(in) :: ncg
+      integer,intent(in) :: nr
 ************************************************************************
 * ion_grndlev stores the occupation number density and g value of the ground
 * states for all ions in all gas_vals cells.
 ************************************************************************
-      integer :: icg,iz,ni
+      integer :: ir,iz,ni
 c
-      allocate(ion_grndlev(nelem,ncg))
-      do icg=1,ncg
+      allocate(ion_grndlev(nelem,nr))
+      do ir=1,nr
        do iz=1,nelem
         ni = ion_el(iz)%ni
-        ion_grndlev(iz,icg)%ni = ni
-        allocate(ion_grndlev(iz,icg)%oc(ni))
-        allocate(ion_grndlev(iz,icg)%g(ni))
+        ion_grndlev(iz,ir)%ni = ni
+        allocate(ion_grndlev(iz,ir)%oc(ni))
+        allocate(ion_grndlev(iz,ir)%g(ni))
        enddo
       enddo!}}}
       end subroutine ion_alloc_grndlev
@@ -69,7 +69,7 @@ c     ----------------------!{{{
 ************************************************************************
 * deallocate the complex ion_el datastructure, and ion_grndlev
 ************************************************************************
-      integer :: iz,ii,icg
+      integer :: iz,ii,ir
 c
       do iz=1,nelem
        do ii=1,ion_el(iz)%ni
@@ -82,12 +82,12 @@ c
       enddo !iz
       deallocate(ion_el)
 c
-      do icg=1,ubound(ion_grndlev,dim=2)
+      do ir=1,ubound(ion_grndlev,dim=2)
        do iz=1,nelem
-        if(allocated(ion_grndlev(iz,icg)%oc))
-     &    deallocate(ion_grndlev(iz,icg)%oc)
-        if(allocated(ion_grndlev(iz,icg)%oc))
-     &    deallocate(ion_grndlev(iz,icg)%g)
+        if(allocated(ion_grndlev(iz,ir)%oc))
+     &    deallocate(ion_grndlev(iz,ir)%oc)
+        if(allocated(ion_grndlev(iz,ir)%oc))
+     &    deallocate(ion_grndlev(iz,ir)%g)
        enddo
       enddo
       deallocate(ion_grndlev)!}}}

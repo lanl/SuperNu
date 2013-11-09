@@ -30,8 +30,8 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 
   if(gas_isvelocity) then
      siglabfact = 1.0d0 - mu*r/pc_c
-     dcollabfact = tsp_texp*(1d0-mu*r/pc_c)
-     help = tsp_texp
+     dcollabfact = tsp_t*(1d0-mu*r/pc_c)
+     help = tsp_t
   else
      siglabfact = 1d0
      dcollabfact = 1d0
@@ -116,7 +116,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   endif
 !
 !-- distance to census = dcen
-  dcen = abs(pc_c*(tsp_texp+tsp_dt-t)/help)
+  dcen = abs(pc_c*(tsp_t+tsp_dt-t)/help)
 !
 !-- distance to Doppler shift = ddop
   if(gas_isvelocity.and.g<gas_ng) then
