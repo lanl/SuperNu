@@ -77,8 +77,8 @@ c-- use gamma deposition profiles if data available
         help = sum(gas_vals2%nisource)
         i = min(tsp_it,gamprf_nt)
         gas_vals2(:)%nisource = help * gamprf_prof(:,i)
-        write(6,'(a,2f5.2)') 'using gamma prof: t,int=',gamprf_time(i),
-     &    sum(gamprf_prof(:,i))
+        write(6,'(a,2f5.2)') 'using gamma prof: t,int=',
+     &    gamprf_time(i)/pc_day,sum(gamprf_prof(:,i))
        endif
       endif
 !}}}

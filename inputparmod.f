@@ -42,7 +42,8 @@ c-- random number generator
       integer :: in_seed = 1984117 !starting point of random number generator
 c
 c-- particles
-      integer :: in_ns = 0   !# source particles generated per time step
+      integer :: in_ns = 0    !# source particles generated per time step PER MPI RANK!
+      integer :: in_nps = 0   !# source particles generated per time step (total over all ranks)
       integer :: in_ninit = 0 !# initial particles at in_tfirst
       integer :: in_npartmax = 0 !total # particles allowed
       logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
@@ -113,7 +114,7 @@ c-- runtime parameter namelist
      & in_nr,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,in_ngs,
      & in_totmass,in_templ0,in_velout,in_v0,
      & in_consttemp,in_solidni56,
-     & in_seed,in_ns,in_ninit,in_npartmax,in_puretran,in_alpha,
+     & in_seed,in_ns,in_nps,in_ninit,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,in_ntres,
      & in_grab_stdout,in_nomp,
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
@@ -199,7 +200,8 @@ c
 c
       if(in_ngs<=0) stop 'in_ngs invalid'
 c
-      if(in_ns<=0) stop 'in_ns invalid'
+      if(in_ns/=0.eqv.in_nps/=0) stop 'in_ns and in_nps invalid'
+      if(in_ns<0 .or. in_nps<0) stop 'in_ns or in_nps < 0'
       if(in_ninit<0) stop 'in_ninit invalid'
       if(in_npartmax<=0) stop 'in_npartmax invalid'
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'

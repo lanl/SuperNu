@@ -44,7 +44,6 @@ real*8 :: gas_wl(gas_ng)
 type(packet) :: particles(prt_npartmax)
 
 -timestepmod:
-real*8 :: tsp_time
 real*8 :: tsp_t
 real*8 :: tsp_dt
 

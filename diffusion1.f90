@@ -165,7 +165,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !-- calculating energy depostion and density
   !
   if(.not.prt_isddmcanlog) then
-     gas_edep(z)=gas_edep(z)+E*(1d0-exp(-gas_fcoef(z) &
+     gas_edep(z)=gas_edep(z)+E*(1d0-exp(-gas_fcoef(z) &!{{{
           *caplump*pc_c*ddmct))
 !--
 !-- must use speclump...
@@ -188,7 +188,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         prt_done=.true.
         gas_edep(z)=gas_edep(z)+E
      endif
-!
+!!}}}
   else
      !
 
@@ -210,8 +210,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   if(prt_isddmcanlog) then
      denom=denom+gas_fcoef(z)*caplump
   endif
+
   if (ddmct == tau) then
-     r1 = rand()
+     r1 = rand()!{{{
      prt_tlyrand = prt_tlyrand+1
 !-- right leak probability
      PR = opacleakrlump/denom
@@ -232,7 +233,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !
 !-- left leakage sample
      if (0.0d0<=r1 .and. r1<PL) then
-
+!{{{
 !--
         if (z == 1) then
            if(gas_isshell) then
@@ -334,11 +335,10 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
               E0 = E0/(1.0-r*mu/pc_c)
               wl = wl*(1.0-r*mu/pc_c)
            endif
-        endif
-!
+        endif!}}}
 !-- right leakage sample
      elseif (PL<=r1 .and. r1<PL+PR) then
-!
+!!{{{
         if (z == gas_nr) then
            vacnt = .true.
            prt_done = .true.
@@ -457,18 +457,17 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
               E0 = E0/(1.0-r*mu/pc_c)
               wl = wl*(1.0-r*mu/pc_c)
            endif
-        endif
-!
+        endif!}}}
 !-- absorption sample
      elseif (PL+PR<=r1 .and. r1<PL+PR+PA) then
-        vacnt = .true.
+        vacnt = .true.!{{{
         prt_done = .true.
         gas_edep(z) = gas_edep(z)+E
 !
-!
+!!}}}
 !-- Doppler sample
      elseif(PL+PR+PA<=r1.and.r1<PL+PR+PA+PD) then
-!
+!!{{{
 !-- group shift
         if(gmaxlump<gas_ng) then
            g = gmaxlump+1
@@ -506,10 +505,10 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            endif
         endif
 !
-!
+!!}}}
 !-- fictitious scattering sample (physical scattering currently elastic)
      else
-        denom2 = 0d0
+        denom2 = 0d0!{{{
 !-- this may need to be changed for g95 compiler
         do ig = 1, gminlump-1
 !           if(ig.ne.g) then
@@ -567,8 +566,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            endif
         endif
      !else
-     !   stop 'diffusion1: invalid histogram sample'
-     endif
+     !   stop 'diffusion1: invalid histogram sample'!}}}
+     endif!}}}
   else
      !gas_eraddens(g,z)=gas_eraddens(g,z)+E*ddmct/tsp_dt
      prt_done = .true.

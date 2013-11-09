@@ -58,24 +58,24 @@ program supernu
    call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst,dt)
 !
 !-- particle init
+   if(in_ns==0) in_ns = in_nps/nmpi
    call particle_init(in_npartmax,in_ns,in_ninit,in_isimcanlog, &
         in_isddmcanlog,in_tauddmc,in_taulump,nmpi,in_norestart)
 !
 !-- rand() count and prt restarts
    if(tsp_ntres>1.and..not.in_norestart) then
 !-- read rand() count
-      call read_restart_randcount
+     call read_restart_randcount
 !-- read particle properties
-      call read_restart_particles
+     call read_restart_particles
    endif
 !
 !-- read input structure
    if(.not.in_noreadstruct.and.in_isvelocity) then
-    call read_inputstr(in_nr,gas_velout,in_isshell)
+     call read_inputstr(in_nr,gas_velout,in_isshell)
    else
 !== generate_inputstr development in progress
-    call generate_inputstr(gas_l0,gas_lr,gas_v0,gas_velout)
-!==
+     call generate_inputstr(gas_l0,gas_lr,gas_v0,gas_velout)
    endif
 !
 !-- SETUP GRIDS
@@ -98,13 +98,11 @@ program supernu
 !-- read gamma deposition profiles
    call read_gamma_profile(gas_nr)
 !
+!-- initial radiation energy
+   call initialnumbers
 !
    call time(t1)
    t_setup = t1-t0!}}}
-!
-!-- initial radiation energy
-   call initialnumbers
-!   
   endif !impi
 
   call bcast_permanent !MPI
@@ -121,11 +119,11 @@ program supernu
 !
 !-- reading restart rand() count
   if(tsp_ntres>1.and..not.in_norestart) then
-     call scatter_restart_data !MPI
+    call scatter_restart_data !MPI
 !-- mimicking end of tsp reset
-     prt_tlyrand = 0
+    prt_tlyrand = 0
   else
-     prt_tlyrand = 1
+    prt_tlyrand = 1
   endif
 !
 !-- instantiating initial particles (if any)
@@ -148,9 +146,9 @@ program supernu
 !-- Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
     allocate(prt_vacantarr(prt_nnew))
     call vacancies
-    !Calculating properties of prt_particles on domain boundary
+!-- Calculating properties of prt_particles on domain boundary
     call boundary_source
-    !Calculating properties of prt_particles emitted in domain interior
+!-- Calculating properties of prt_particles emitted in domain interior
     call interior_source
     
     deallocate(prt_vacantarr)
@@ -160,29 +158,34 @@ program supernu
 
 !-- collect particle results from all workers
     call reduce_tally !MPI
+!
+!-- print packet advance load-balancing info
+    if(impi==impi0) write(6,900) 'packets time(min|mean|max):',t_pckt_stat
+    if(impi==impi0) call timereg(t_pckt,sngl(t_pckt_stat(3)))  !register particle advance timing
+900 format(1x,a,3(f8.2,"s"))
 
 !-- collect data necessary for restart (tobe written by impi0)
     if(.not.in_norestart) then
-       call collect_restart_data !MPI
+      call collect_restart_data !MPI
     endif
 !
     if(impi==impi0) then
-       ! averaging reduced results
-       !if(nmpi>1) then
+      ! averaging reduced results
+      !if(nmpi>1) then
 !       write(*,*) prt_tlyrandarr(:)
 !-- dim==0
-          gas_erad = gas_erad/dble(nmpi)
-          gas_eright = gas_eright/dble(nmpi)
-          gas_eleft = gas_eleft/dble(nmpi)
+        gas_erad = gas_erad/dble(nmpi)
+        gas_eright = gas_eright/dble(nmpi)
+        gas_eleft = gas_eleft/dble(nmpi)
 !-- dim==1
-          gas_edep = gas_edep/dble(nmpi)
-          gas_luminos = gas_luminos/dble(nmpi)
+        gas_edep = gas_edep/dble(nmpi)
+        gas_luminos = gas_luminos/dble(nmpi)
 !-- dim==2
-          gas_eraddens = gas_eraddens/dble(nmpi)
-       !endif
-       !
+        gas_eraddens = gas_eraddens/dble(nmpi)
+      !endif
+      !
       call temperature_update
-      call timestep_update(dt) !Updating elapsed tsp_time and expansion tsp_time
+      call timestep_update(dt) !Update tsp_t
 
       call write_output
 !

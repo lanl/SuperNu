@@ -63,7 +63,7 @@ subroutine particle_advance
   call time(t0)
   ! Propagating all particles that are not considered vacant: loop
   do ipart = 1, prt_npartmax
-     ! Checking vacancy
+     ! Checking vacancy!{{{
      if (prt_particles(ipart)%isvacant) cycle
 
      ! Assigning pointers to corresponding particle properties
@@ -84,7 +84,7 @@ subroutine particle_advance
 
      ! Looking up group
      if(rtsrc==1) then
-        if(gas_isvelocity) then
+        if(gas_isvelocity) then!{{{
            g = binsrch(wlsrc/(1d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1)
         else
            g = binsrch(wlsrc,gas_wl,gas_ng+1)
@@ -112,9 +112,9 @@ subroutine particle_advance
               isvacant = .true.
            endif
         endif
-        !
+        !!}}}
      else
-        g = binsrch(wlsrc,gas_wl,gas_ng+1)
+        g = binsrch(wlsrc,gas_wl,gas_ng+1)!{{{
         !
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid bound
@@ -130,13 +130,13 @@ subroutine particle_advance
               isvacant = .true.
            endif
         endif
-        !
+        !!}}}
      endif
 
      
      ! Checking if particle conversions are required since prior time step
      if(.not.in_puretran) then
-        if(gas_isvelocity) then
+        if(gas_isvelocity) then!{{{
            help = tsp_t
         else
            help = 1d0
@@ -223,12 +223,12 @@ subroutine particle_advance
            rtsrc = 1
         else
            rtsrc = 2
-        endif
+        endif!}}}
      endif 
 !
 !-- looking up group
      if(rtsrc==1) then
-        if(gas_isvelocity) then
+        if(gas_isvelocity) then!{{{
            g = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1)
         else
            g = binsrch(wlsrc,gas_wl,gas_ng+1)
@@ -255,9 +255,9 @@ subroutine particle_advance
               isvacant = .true.
            endif
         endif
-        !
+        !!}}}
      else
-        g = binsrch(wlsrc,gas_wl,gas_ng+1)
+        g = binsrch(wlsrc,gas_wl,gas_ng+1)!{{{
         !
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid bound
@@ -273,13 +273,13 @@ subroutine particle_advance
               isvacant = .true.
            endif
         endif
-        !
+        !!}}}
      endif
 
 !-- First portion of operator split particle velocity position adjustment
      if(isshift) then
      if ((gas_isvelocity).and.(rtsrc==1)) then
-        rold = rsrc
+        rold = rsrc!{{{
         rsrc = rsrc*tsp_t/(tsp_t+alph2*tsp_dt)
         !
         if (rsrc < gas_rarr(zsrc)) then
@@ -346,7 +346,7 @@ subroutine particle_advance
               endif
            endif
            !
-        endif
+        endif!}}}
      endif
         !
      endif
@@ -358,7 +358,7 @@ subroutine particle_advance
      ! Advancing particle until census, absorption, or escape from domain
      prt_done = .false.
      do while (.not.prt_done)
-        !Calling either diffusion or transport depending on particle type (rtsrc)
+        !Calling either diffusion or transport depending on particle type (rtsrc)!{{{
         if (rtsrc == 1.or.in_puretran) then
            transps = transps + 1
            call transport1(zsrc,wlsrc,rsrc,musrc,tsrc, &
@@ -367,7 +367,7 @@ subroutine particle_advance
            difs = difs + 1
            call diffusion1(zsrc,wlsrc,rsrc,musrc,tsrc, &
                 esrc,ebirth,rtsrc,isvacant)
-        endif
+        endif!}}}
      enddo
 !-----------------------------------------------------------------------
      !---------------
@@ -402,7 +402,7 @@ subroutine particle_advance
 
      ! Looking up group
      if(rtsrc==1) then
-        if(gas_isvelocity) then
+        if(gas_isvelocity) then!{{{
            g = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1)
         else
            g = binsrch(wlsrc,gas_wl,gas_ng+1)
@@ -429,9 +429,9 @@ subroutine particle_advance
               isvacant = .true.
            endif
         endif
-        !
+        !!}}}
      else
-        g = binsrch(wlsrc,gas_wl,gas_ng+1)
+        g = binsrch(wlsrc,gas_wl,gas_ng+1)!{{{
         !
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid bound
@@ -447,12 +447,12 @@ subroutine particle_advance
               isvacant = .true.
            endif
         endif
-        !
+        !!}}}
      endif
      
      if(isshift) then
      if ((gas_isvelocity).and.(rtsrc==1)) then
-        !
+        !!{{{
         rold = rsrc
         rsrc = rsrc*(tsp_t+alph2*tsp_dt)/(tsp_t+tsp_dt)
         !
@@ -517,7 +517,7 @@ subroutine particle_advance
            endif
            !
         endif
-        !
+        !!}}}
      endif
      endif
 !
@@ -530,12 +530,12 @@ subroutine particle_advance
         endif
      else
         gas_erad = gas_erad+esrc
-     endif
-  enddo
+     endif!}}}
+  enddo !ipart
 
   call time(t1)
-  call timereg(t_pckt, t1-t0)  !register timing
-  write(6,*) transps, difs
+  t_pckt_stat = t1-t0  !register timing
+  write(6,*) transps, difs  !WARNING: this is written by all mpi nodes!
   !write(6,*) eleft, eright
 
 end subroutine particle_advance

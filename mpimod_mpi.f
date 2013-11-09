@@ -440,9 +440,8 @@ c!}}}
 c
 c
 c
-c
       subroutine scatter_restart_data
-c     -------------------------------
+c     -------------------------------!{{{
       use particlemod
 ************************************************************************
 * scatter restart data from master rank to subordinate ranks.
@@ -510,12 +509,13 @@ c-- deallocations
 
 
 
-c
+c!}}}
       end subroutine scatter_restart_data
 c
 c
+c
       subroutine collect_restart_data
-c     -------------------------------
+c     -------------------------------!{{{
       use particlemod
 ************************************************************************
 * send particle array info and number of rand calls to master rank.
@@ -579,7 +579,7 @@ c
 c-- deallocations
 
 
-c
+c!}}}
       end subroutine collect_restart_data    
 c
       end module mpimod
