@@ -18,7 +18,8 @@ subroutine particle_advance
   !total subroutine calls in program.
 !##################################################
 
-  integer :: ipart, difs, transps, g, zholder, zfdiff, ir, binsrch
+  integer*8 :: difs, transps
+  integer :: ipart, g, zholder, zfdiff, ir, binsrch
   real*8 :: r1, alph2, r2, x1, x2, xx0, bmax, help, P
   real*8 :: uul, uur, uumax, r0, r3, mu0, rold, dddd
   integer, pointer :: zsrc, rtsrc !, gsrc
