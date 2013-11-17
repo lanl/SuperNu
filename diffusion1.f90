@@ -129,7 +129,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !-------------------------------------------------------------
 !
 !--calculate doppler term
-  if(gas_isvelocity.and.g<gas_ng) then
+  if(gas_isvelocity.and.gmaxlump<gas_ng) then
 !--currently scattering fully elastic, grey
      dopcoup = (gas_sig(z)/(caplump+gas_sig(z)))*&
           (gas_wl(gminlump)/(gas_wl(gmaxlump+1)-gas_wl(gminlump)))&
