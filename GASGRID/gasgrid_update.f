@@ -175,7 +175,10 @@ c!{{{
 c-- simple physical group/grey opacities: Planck and Rosseland 
        call analytic_opacity
 c-- add physical opacities
-       call physical_opacity
+c-- rtw: must avoid reset in group_opacity routine
+       if(in_opacanaltype=='none') then
+          call physical_opacity
+       endif
        !write(*,*) gas_siggrey(1)
        !write(*,*) gas_cap(:,1)
        !gas_siggrey(:)=0.5*gas_cap(2,:)

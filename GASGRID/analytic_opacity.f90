@@ -24,8 +24,9 @@ subroutine analytic_opacity
   gas_cap = 0.
 !-- opacity of zero should contribute infinitely little to the rosseland
 !   opacity sum (calculated in convert_cap2capros).
-  gas_caprosl = huge(gas_cap)
-  gas_caprosr = huge(gas_cap)
+!-- rtw: no longer needed?
+!  gas_caprosl = huge(gas_cap)
+!  gas_caprosr = huge(gas_cap)
 
   gas_sig = 0d0
   gas_sigbl = 0d0

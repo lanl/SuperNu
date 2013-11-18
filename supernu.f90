@@ -96,7 +96,9 @@ program supernu
    if(.not.in_noffopac) call ffxs_read_data           !free-free cross section data
 !
 !-- read gamma deposition profiles
-   call read_gamma_profile(gas_nr)
+   if(in_isvelocity.and.in_srctype=='none') then
+      call read_gamma_profile(gas_nr)
+   endif
 !
 !-- initial radiation energy
    call initialnumbers
