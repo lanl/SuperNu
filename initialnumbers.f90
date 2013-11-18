@@ -22,11 +22,15 @@ subroutine initialnumbers
   gas_nvolinit = 0
   gas_evolinit = 0d0
   etotinit = 0d0
-
+!
+  gas_eext = 0d0
+!
   call analytic_initial
 
   etotinit = sum(gas_evolinit)
-  
+!
+  gas_eext = etotinit
+!
   do ir=1,gas_nr
      gas_nvolinit(ir)=nint(sum(gas_evolinit(:,ir))*prt_ninit/etotinit) !+50
   enddo

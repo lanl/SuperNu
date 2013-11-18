@@ -11,6 +11,8 @@ subroutine interior_source
 
 !##################################################
   !This subroutine instantiates new volume (cell) particle properties.
+  !Composed of external source particle loop (1st) and thermal source
+  !particle loop (2nd).
 !##################################################
 
   integer :: ir, ipart, ivac, ig, iig

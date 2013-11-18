@@ -184,7 +184,10 @@ program supernu
         gas_eraddens = gas_eraddens/dble(nmpi)
       !endif
       !
+!-- update temperature
       call temperature_update
+!-- check energy (particle weight) is accounted
+      call energy_check
       call timestep_update(dt) !Update tsp_t
 
       call write_output

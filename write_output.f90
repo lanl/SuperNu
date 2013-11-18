@@ -36,6 +36,10 @@ subroutine write_output
   enddo
   close(4)
 
+  open(unit=4,file='output.conserve',status='unknown',position=pos)
+  write(4,*) gas_eerror
+  close(4)
+
   pos='append'
 
 end subroutine write_output
