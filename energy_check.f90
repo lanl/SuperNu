@@ -13,6 +13,7 @@ subroutine energy_check
 !comoving quantities.
 !-----------------------------------------------------
 
+
   gas_eext = gas_eext-gas_eleft-gas_eright
   gas_eerror = (gas_eext-gas_evelo-gas_erad-gas_emat)/&
        (gas_eext-gas_evelo)

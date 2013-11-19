@@ -95,6 +95,9 @@ subroutine boundary_source
         !transport => lab frame quantities
            prt_particles(ivac)%esrc = Esurfpart*(1.0+r0*mu0/pc_c)
            prt_particles(ivac)%ebirth = Esurfpart*(1.0+r0*mu0/pc_c)
+!-- velocity effect accounting
+           gas_evelo = gas_evelo-Esurfpart*r0*mu0/pc_c
+!
         !(rev 120)
            prt_particles(ivac)%wlsrc = wl0/(1.0+r0*mu0/pc_c)
         !

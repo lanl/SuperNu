@@ -97,15 +97,18 @@ subroutine interior_source
                 help < prt_tauddmc*gas_curvcent(ir)) &
                 .or.(in_puretran)) then
               if(gas_isvelocity) then
-                 prt_particles(ivac)%Esrc = Ep0*(1.0+r0*mu0/pc_c)
-                 prt_particles(ivac)%Ebirth = Ep0*(1.0+r0*mu0/pc_c)
+                 prt_particles(ivac)%esrc = Ep0*(1.0+r0*mu0/pc_c)
+                 prt_particles(ivac)%ebirth = Ep0*(1.0+r0*mu0/pc_c)
+!-- velocity effect accouting
+                 gas_evelo = gas_evelo-Ep0*r0*mu0/pc_c
+!
               !(rev 120)
                  prt_particles(ivac)%wlsrc = wl0/(1.0+r0*mu0/pc_c)
               !
                  prt_particles(ivac)%musrc = (mu0+r0/pc_c)/(1.0+r0*mu0/pc_c)
               else
-                 prt_particles(ivac)%Esrc = Ep0
-                 prt_particles(ivac)%Ebirth = Ep0
+                 prt_particles(ivac)%esrc = Ep0
+                 prt_particles(ivac)%ebirth = Ep0
               !
                  prt_particles(ivac)%wlsrc = wl0
               !
@@ -113,8 +116,8 @@ subroutine interior_source
               endif
               prt_particles(ivac)%rtsrc = 1
            else
-              prt_particles(ivac)%Esrc = Ep0
-              prt_particles(ivac)%Ebirth = Ep0
+              prt_particles(ivac)%esrc = Ep0
+              prt_particles(ivac)%ebirth = Ep0
               !(rev 120)
               prt_particles(ivac)%wlsrc = wl0
               !
@@ -230,15 +233,18 @@ subroutine interior_source
                 help < prt_tauddmc*gas_curvcent(ir)) &
                 .or.(in_puretran)) then
               if(gas_isvelocity) then
-                 prt_particles(ivac)%Esrc = Ep0*(1.0+r0*mu0/pc_c)
-                 prt_particles(ivac)%Ebirth = Ep0*(1.0+r0*mu0/pc_c)
+                 prt_particles(ivac)%esrc = Ep0*(1.0+r0*mu0/pc_c)
+                 prt_particles(ivac)%ebirth = Ep0*(1.0+r0*mu0/pc_c)
+!-- velocity effect accouting
+                 gas_evelo = gas_evelo-Ep0*r0*mu0/pc_c
+!
               !(rev 120)
                  prt_particles(ivac)%wlsrc = wl0/(1.0+r0*mu0/pc_c)
               !
                  prt_particles(ivac)%musrc = (mu0+r0/pc_c)/(1.0+r0*mu0/pc_c)
               else
-                 prt_particles(ivac)%Esrc = Ep0
-                 prt_particles(ivac)%Ebirth = Ep0
+                 prt_particles(ivac)%esrc = Ep0
+                 prt_particles(ivac)%ebirth = Ep0
               !
                  prt_particles(ivac)%wlsrc = wl0
               !
@@ -246,8 +252,8 @@ subroutine interior_source
               endif
               prt_particles(ivac)%rtsrc = 1
            else
-              prt_particles(ivac)%Esrc = Ep0
-              prt_particles(ivac)%Ebirth = Ep0
+              prt_particles(ivac)%esrc = Ep0
+              prt_particles(ivac)%ebirth = Ep0
               !(rev 120)
               prt_particles(ivac)%wlsrc = wl0
               !
