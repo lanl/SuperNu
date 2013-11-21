@@ -500,7 +500,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      gas_numcensus(z) = gas_numcensus(z)+1
      gas_erad = gas_erad + E*elabfact
 !-- velocity effect accounting
-     gas_evelo= gas_evelo+E*(1d0-elabfact)
+!     gas_evelo= gas_evelo+E*(1d0-elabfact)
 !
   endif
 
