@@ -129,14 +129,14 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !-------------------------------------------------------------
 !
 !--calculate doppler term
-  if(gas_isvelocity.and.gmaxlump<gas_ng) then
-!--currently scattering fully elastic, grey
-     dopcoup = (gas_sig(z)/(caplump+gas_sig(z)))*&
-          (gas_wl(gminlump)/(gas_wl(gmaxlump+1)-gas_wl(gminlump)))&
-          /(pc_c*tsp_t)
-  else
-     dopcoup = 0d0
-  endif
+!   if(gas_isvelocity.and.gmaxlump<gas_ng) then
+! !--currently scattering fully elastic, grey
+!      dopcoup = &
+!           (gas_wl(gminlump)/(gas_wl(gmaxlump+1)-gas_wl(gminlump)))&
+!           /(pc_c*(tsp_t+tsp_dt))
+!   else
+  dopcoup = 0d0
+!   endif
 !
   !
   denom = opacleakllump+opacleakrlump !+gas_fcoef(z)*gas_cap(g,z)
@@ -155,15 +155,15 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   tcensus = tsp_t+tsp_dt-t
   ddmct = min(tau,tcensus)
 !
-!-- redshift weight
-  if(gas_isvelocity) then
-!-- velocity effects accounting
-     gas_evelo=gas_evelo+E*(1d0-exp(-ddmct/tsp_t))
-!
-     E=E*exp(-ddmct/tsp_t)
-     E0=E0*exp(-ddmct/tsp_t)
-  endif
-!--
+! !-- redshift weight
+!   if(gas_isvelocity) then
+! !-- velocity effects accounting
+!      gas_evelo=gas_evelo+E*(1d0-exp(-ddmct/tsp_t))
+! !
+!      E=E*exp(-ddmct/tsp_t)
+!      E0=E0*exp(-ddmct/tsp_t)
+!   endif
+! !--
 !
 !-- calculating energy depostion and density
   !

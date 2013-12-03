@@ -226,6 +226,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         gas_evelo=gas_evelo+E*(1d0-elabfact/(1d0-mu*r/pc_c))
 !
         E = E*elabfact/(1.0-mu*r/pc_c)
+        wl = wl*(1.0-mu*r/pc_c)/elabfact
      endif
      !
      !
@@ -253,7 +254,8 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            gas_evelo=gas_evelo+E*(1d0-elabfact/(1d0-mu*r/pc_c))
 !
            E = E*elabfact/(1.0-mu*r/pc_c)
-           wl = wl*(1.0-mu*r/pc_c)/elabfact
+!           wl = wl*(1.0-mu*r/pc_c)/elabfact
+           
         endif
 !
         denom2 = 0.0
