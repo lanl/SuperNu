@@ -399,7 +399,7 @@ subroutine particle_advance
         if(g<gas_ng) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           if(r1<gas_sig(z)/(gas_cap(g,z)+gas_sig(z))) then
+           if(r1<gas_sig(zsrc)/(gas_cap(g,zsrc)+gas_sig(zsrc))) then
               wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
               wlsrc = wlsrc*exp(tsp_dt/tsp_t)
            endif
