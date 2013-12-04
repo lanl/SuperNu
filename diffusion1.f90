@@ -201,7 +201,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
               else
                  gas_eraddens(ig,z)= &
                       gas_eraddens(ig,z)+&
-                      E*ddmct/tsp_dt &
+                      E*ddmct/tsp_dt* &
                       gas_siggrey(z)*gas_emitprob(ig,z)/&
                       gas_cap(ig,z)/speclump
               endif
@@ -225,7 +225,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         if(gas_cap(ig,z)*gas_drarr(z)*help>= &
              prt_taulump*gas_curvcent(z)) then
            gas_eraddens(ig,z)= &
-                gas_eraddens(ig,z)+E*ddmct/tsp_dt &
+                gas_eraddens(ig,z)+E*ddmct/tsp_dt* &
                 gas_siggrey(z)*gas_emitprob(ig,z)/&
                 gas_cap(ig,z)/speclump
         endif
