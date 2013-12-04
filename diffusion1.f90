@@ -70,52 +70,66 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   caplump = 0d0
 !
 !-- find lumping groups >= g
-  iig = g
-  do ig = g, gas_ng
-     if(gas_cap(ig,z)*gas_drarr(z) &
-          *help < prt_taulump*gas_curvcent(z) &
-          .or.ig-g > gas_epslump) then
-        exit
-     else
-        iig = ig
-     endif
-  enddo
-  gmaxlump = iig
+!   iig = g
+!   do ig = g, gas_ng
+!      if(gas_cap(ig,z)*gas_drarr(z) &
+!           *help < prt_taulump*gas_curvcent(z) &
+!           .or.ig-g > gas_epslump) then
+!         exit
+!      else
+!         iig = ig
+!      endif
+!   enddo
+!   gmaxlump = iig
+  gmaxlump = g+gas_epslump
+  if(gmaxlump>gas_ng) then
+     gmaxlump=gas_ng
+  endif
 !
 !-- find lumping groups <= g
-  iig = g
-  do ig = g, 1,-1
-     if(gas_cap(ig,z)*gas_drarr(z) &
-          *help < prt_taulump*gas_curvcent(z) &
-          .or.g-ig > gas_epslump) then
-        exit
-     else
-        iig = ig
-     endif
-  enddo
-  gminlump = iig
+!   iig = g
+!   do ig = g, 1,-1
+!      if(gas_cap(ig,z)*gas_drarr(z) &
+!           *help < prt_taulump*gas_curvcent(z) &
+!           .or.g-ig > gas_epslump) then
+!         exit
+!      else
+!         iig = ig
+!      endif
+!   enddo
+!   gminlump = iig
+  gminlump = g-gas_epslump
+  if(gminlump<1) then
+     gminlump=1
+  endif
 !
 !-- lumping
   do ig = gminlump, gmaxlump
-     specig = gas_siggrey(z)*gas_emitprob(ig,z)/&
-          gas_cap(ig,z)
-     speclump = speclump+specig
+     if(gas_cap(ig,z)*gas_drarr(z)*help>= &
+          prt_taulump*gas_curvcent(z)) then
+        specig = gas_siggrey(z)*gas_emitprob(ig,z)/&
+             gas_cap(ig,z)
+        speclump = speclump+specig
+     endif
   enddo
 !
   if(speclump>0d0) then
      do ig = gminlump, gmaxlump
-        specig = gas_siggrey(z)*gas_emitprob(ig,z)/&
-             gas_cap(ig,z)
+        if(gas_cap(ig,z)*gas_drarr(z)*help>= &
+             prt_taulump*gas_curvcent(z)) then
+           specig = gas_siggrey(z)*gas_emitprob(ig,z)/&
+                gas_cap(ig,z)
 !-- emission lump
-        emitlump = emitlump+gas_emitprob(ig,z)
+           emitlump = emitlump+gas_emitprob(ig,z)
 !-- Planck x-section lump
-        caplump = caplump+specig*gas_cap(ig,z)/speclump
+           caplump = caplump+specig*gas_cap(ig,z)/speclump
 !-- inward leakage lump
-        opacleakllump = opacleakllump+specig*&
-             gas_opacleakl(ig,z)/speclump
+           opacleakllump = opacleakllump+specig*&
+                gas_opacleakl(ig,z)/speclump
 !-- outward leakage lump
-        opacleakrlump = opacleakrlump+specig*&
-             gas_opacleakr(ig,z)/speclump
+           opacleakrlump = opacleakrlump+specig*&
+                gas_opacleakr(ig,z)/speclump
+        endif
      enddo
   else
      gminlump = g
@@ -124,7 +138,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      opacleakllump = gas_opacleakl(g,z)
      opacleakrlump = gas_opacleakr(g,z)
      caplump = gas_cap(g,z)
- endif
+  endif
 !
 !-------------------------------------------------------------
 !
@@ -172,19 +186,32 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
           *caplump*pc_c*ddmct))
 !--
 !-- must use speclump...
-     if(gas_fcoef(z)*caplump*gas_drarr(z)*help>1d-6) then
-        gas_eraddens(gminlump:gmaxlump,z)= &
-             gas_eraddens(gminlump:gmaxlump,z)+E* &
-             (1d0-exp(-gas_fcoef(z)*caplump*pc_c*ddmct))/ &
-             (gas_fcoef(z)*caplump*pc_c*tsp_dt) &
-             /real(gmaxlump-gminlump+1)
+     if(speclump>0d0) then
+        do ig = gminlump, gmaxlump
+           if(gas_cap(ig,z)*gas_drarr(z)*help>= &
+                prt_taulump*gas_curvcent(z)) then
+!
+              if(gas_fcoef(z)*caplump*gas_drarr(z)*help>1d-6) then
+                 gas_eraddens(ig,z)= &
+                      gas_eraddens(ig,z)+E* &
+                      (1d0-exp(-gas_fcoef(z)*caplump*pc_c*ddmct))/ &
+                      (gas_fcoef(z)*caplump*pc_c*tsp_dt)* &
+                      gas_siggrey(z)*gas_emitprob(ig,z)/&
+                      gas_cap(ig,z)/speclump
+              else
+                 gas_eraddens(ig,z)= &
+                      gas_eraddens(ig,z)+&
+                      E*ddmct/tsp_dt &
+                      gas_siggrey(z)*gas_emitprob(ig,z)/&
+                      gas_cap(ig,z)/speclump
+              endif
+!
+           endif
+        enddo
      else
-        gas_eraddens(gminlump:gmaxlump,z)= &
-             gas_eraddens(gminlump:gmaxlump,z)+E*ddmct/tsp_dt &
-             /real(gmaxlump-gminlump+1)
+        gas_eraddens(g,z)=gas_eraddens(g,z)+E*ddmct/tsp_dt
      endif
      E=E*exp(-gas_fcoef(z)*caplump*pc_c*ddmct)
-
 !--
      if(E/E0<0.001d0) then
         vacnt=.true.
@@ -194,10 +221,16 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !!}}}
   else
      !
-
-     gas_eraddens(gminlump:gmaxlump,z)= &
-          gas_eraddens(gminlump:gmaxlump,z)+E*ddmct/tsp_dt &
-          /real(gmaxlump-gminlump+1)
+     do ig = gminlump, gmaxlump
+        if(gas_cap(ig,z)*gas_drarr(z)*help>= &
+             prt_taulump*gas_curvcent(z)) then
+           gas_eraddens(ig,z)= &
+                gas_eraddens(ig,z)+E*ddmct/tsp_dt &
+                gas_siggrey(z)*gas_emitprob(ig,z)/&
+                gas_cap(ig,z)/speclump
+        endif
+     enddo
+!
   endif
   !
   t = t+ddmct
@@ -255,17 +288,23 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            prt_tlyrand = prt_tlyrand+1
            denom2 = 0d0
            do ig= gminlump, gmaxlump
-              iig = ig
-              specig = gas_siggrey(z)*gas_emitprob(ig,z)/&
-                   gas_cap(ig,z)
-              if((r1>=denom2).and. &
-                   (r1<denom2+specig* &
-                   gas_opacleakl(ig,z) &
-                   /(speclump*opacleakllump))) exit
+!
+              if(gas_cap(ig,z)*gas_drarr(z)*help>= &
+                   prt_taulump*gas_curvcent(z)) then
 
-              denom2 = denom2+specig* &
-                   gas_opacleakl(ig,z) &
-                   /(speclump*opacleakllump)
+                 iig = ig
+                 specig = gas_siggrey(z)*gas_emitprob(ig,z)/&
+                      gas_cap(ig,z)
+                 if((r1>=denom2).and. &
+                      (r1<denom2+specig* &
+                      gas_opacleakl(ig,z) &
+                      /(speclump*opacleakllump))) exit
+
+                 denom2 = denom2+specig* &
+                      gas_opacleakl(ig,z) &
+                      /(speclump*opacleakllump)
+
+              endif
 !
            enddo
            if((gas_sig(z-1)+gas_cap(iig,z-1))*gas_drarr(z-1) &
@@ -362,15 +401,26 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !               gas_luminos(gminlump:gmaxlump)=gas_luminos(gminlump:gmaxlump)+(E/tsp_dt)* &
 !                    (mu+gas_rarr(gas_nr+1)/pc_c)/ &
 !                    (1.0+gas_rarr(gas_nr+1)*mu/pc_c)/real(gmaxlump-gminlump+1)
-              gas_luminos(gminlump:gmaxlump)= &
-                   gas_luminos(gminlump:gmaxlump)+&
-                   (E/tsp_dt)* &
-                   (1.0+gas_rarr(gas_nr+1)*mu/pc_c) &
-                   /real(gmaxlump-gminlump+1)
+              if(speclump>0d0) then
+                 do ig=1, gas_ng
+                    gas_luminos(ig)= &
+                         gas_luminos(ig)+&
+                         (E/tsp_dt)* &
+                         (1.0+gas_rarr(gas_nr+1)*mu/pc_c)* &
+                         gas_siggrey(z)*gas_emitprob(ig,z)/&
+                         (gas_cap(ig,z)*speclump)
+                 enddo
+              else
+                 gas_luminos(g)=gas_luminos(g)+&
+                      (E/tsp_dt)* &
+                      (1.0+gas_rarr(gas_nr+1)*mu/pc_c)
+              endif
            else
+
               gas_eright = gas_eright+E
               gas_luminos(gminlump:gmaxlump)=gas_luminos(gminlump:gmaxlump)+ &
                    (E/tsp_dt)*mu/real(gmaxlump-gminlump+1)
+
            endif
 !
 !
@@ -381,17 +431,24 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            prt_tlyrand = prt_tlyrand+1
            denom2 = 0d0
            do ig= gminlump, gmaxlump
-              iig = ig
-              specig = gas_siggrey(z)*gas_emitprob(ig,z)/&
-                   gas_cap(ig,z)
-              if((r1>=denom2).and. &
-                   (r1<denom2+specig* &
-                   gas_opacleakr(ig,z) &
-                   /(speclump*opacleakrlump))) exit
 
-              denom2 = denom2+specig* &
-                   gas_opacleakr(ig,z) &
-                   /(speclump*opacleakrlump)
+              if(gas_cap(ig,z)*gas_drarr(z)*help>= &
+                   prt_taulump*gas_curvcent(z)) then
+
+                 iig = ig
+                 specig = gas_siggrey(z)*gas_emitprob(ig,z)/&
+                      gas_cap(ig,z)
+                 if((r1>=denom2).and. &
+                      (r1<denom2+specig* &
+                      gas_opacleakr(ig,z) &
+                      /(speclump*opacleakrlump))) exit
+
+                 denom2 = denom2+specig* &
+                      gas_opacleakr(ig,z) &
+                      /(speclump*opacleakrlump)
+
+              endif
+
            enddo
            if((gas_sig(z+1)+gas_cap(iig,z+1))*gas_drarr(z+1) &
                 *help >= prt_tauddmc*gas_curvcent(z+1)) then
@@ -528,21 +585,21 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      else
         denom2 = 0d0!{{{
 !-- this may need to be changed for g95 compiler
-        do ig = 1, gminlump-1
-!           if(ig.ne.g) then
-           denom2 = denom2+gas_emitprob(ig,z)
-!           endif
-        enddo
+        do ig = 1, gas_ng
+           if(gas_cap(ig,z)*gas_drarr(z)*help< &
+                prt_taulump*gas_curvcent(z)) then
 !
-        do ig = gmaxlump+1, gas_ng
-           denom2 = denom2+gas_emitprob(ig,z)
+              denom2 = denom2+gas_emitprob(ig,z)
+!
+           endif
         enddo
 !
         denom3 = 0d0
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
         do ig = 1, gas_ng
-           if(ig<gminlump.or.ig>gmaxlump) then
+           if(gas_cap(ig,z)*gas_drarr(z)*help< &
+                prt_taulump*gas_curvcent(z)) then
               iig = ig
               if((r1>=denom3).and.(r1<denom3+gas_emitprob(ig,z)/denom2)) exit
               denom3 = denom3+gas_emitprob(ig,z)/denom2

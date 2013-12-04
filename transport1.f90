@@ -120,9 +120,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !
 !-- distance to Doppler shift = ddop
   if(gas_isvelocity.and.g<gas_ng) then
-     ddop = pc_c*(gas_wl(g+1)-wl/(1d0-mu*r/pc_c))/gas_wl(g+1)
+!     ddop = pc_c*(gas_wl(g+1)-wl/(1d0-mu*r/pc_c))/gas_wl(g+1)
 !     write(*,*) pc_c*(wl/gas_wl(g+1)-1d0)+r*mu
-!     ddop = abs(pc_c*(1d0-wl/gas_wl(g+1))-r*mu)
+     ddop = abs(pc_c*(1d0-wl/gas_wl(g+1))-r*mu)
   else
      ddop = abs(pc_c*tsp_dt/help) !> dcen
   endif
