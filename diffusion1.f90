@@ -93,10 +93,10 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         glumps(glump)=ig
      endif
   enddo
-!   if(glump==0) then
-!      glump=1
-!      glumps(1)=g
-!   endif
+  if(glump==0) then
+     glump=1
+     glumps(1)=g
+  endif
 !-- find lumping groups >= g
   iig = g
   do ig = g, gas_ng
@@ -203,15 +203,21 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !--
 !-- must use speclump...
      if(gas_fcoef(z)*caplump*gas_drarr(z)*help>1d-6) then
-        gas_eraddens(gminlump:gmaxlump,z)= &
-             gas_eraddens(gminlump:gmaxlump,z)+E* &
-             (1d0-exp(-gas_fcoef(z)*caplump*pc_c*ddmct))/ &
-             (gas_fcoef(z)*caplump*pc_c*tsp_dt) &
-             /glump
+        do ig = 1, glump
+           iig=glumps(ig)
+           gas_eraddens(iig,z)= &
+                gas_eraddens(iig,z)+E* &
+                (1d0-exp(-gas_fcoef(z)*caplump*pc_c*ddmct))/ &
+                (gas_fcoef(z)*caplump*pc_c*tsp_dt) &
+                /glump
+        enddo
      else
-        gas_eraddens(gminlump:gmaxlump,z)= &
-             gas_eraddens(gminlump:gmaxlump,z)+E*ddmct/tsp_dt &
-             /glump
+        do ig = 1, glump
+           iig=glumps(ig)
+           gas_eraddens(iig,z)= &
+                gas_eraddens(iig,z)+E*ddmct/tsp_dt &
+                /glump
+        enddo
      endif
      E=E*exp(-gas_fcoef(z)*caplump*pc_c*ddmct)
 
@@ -224,10 +230,13 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !!}}}
   else
      !
-
-     gas_eraddens(gminlump:gmaxlump,z)= &
-          gas_eraddens(gminlump:gmaxlump,z)+E*ddmct/tsp_dt &
-          /real(gmaxlump-gminlump+1)
+     do ig = 1, glump
+        iig=glumps(ig)
+        gas_eraddens(iig,z)= &
+             gas_eraddens(iig,z)+E*ddmct/tsp_dt &
+             /glump
+     enddo
+!
   endif
   !
   t = t+ddmct
@@ -258,7 +267,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         PA = 0d0
      endif
 !-- group Doppler shift probability
-     if(gas_isvelocity.and.gmaxlump<gas_ng) then
+     if(gas_isvelocity.and.glumps(glump)<gas_ng) then
         PD = dopcoup/denom
      else
         PD = 0d0
