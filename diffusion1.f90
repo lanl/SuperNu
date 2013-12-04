@@ -34,7 +34,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   real*8 :: opacleakllump, opacleakrlump, caplump
   real*8 :: specig
 
-  integer :: glump
+  integer :: glump, gunlump
   integer :: glumps(gas_ng)
 
 !--------------------------------------------------------------
@@ -68,6 +68,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !-- lump testing ---------------------------------------------
 !
   glump = 0
+  gunlump = gas_ng
   glumps = 0
 !-- initializing lumped quantities
   speclump = 0d0
@@ -83,6 +84,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
           .and. g-ig <= gas_epslump) then
         glump=glump+1
         glumps(glump)=ig
+     else
+        glumps(gunlump)=ig
+        gunlump=gunlump-1
      endif
   enddo
   do ig = g, gas_ng
@@ -91,11 +95,18 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
           .and. ig-g <= gas_epslump) then
         glump=glump+1
         glumps(glump)=ig
+     else
+        glumps(gunlump)=ig
+        gunlump=gunlump-1
      endif
   enddo
   if(glump==0) then
      glump=1
      glumps(1)=g
+!
+     forall(ig=2:g) glumps(ig)=ig-1
+     forall(ig=g+1:gas_ng) glumps(ig)=ig
+!
   endif
 !-- find lumping groups >= g
   iig = g
@@ -154,7 +165,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      opacleakllump = gas_opacleakl(g,z)
      opacleakrlump = gas_opacleakr(g,z)
      caplump = gas_cap(g,z)
- endif
+  endif
 !
 !-------------------------------------------------------------
 !
@@ -209,14 +220,14 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
                 gas_eraddens(iig,z)+E* &
                 (1d0-exp(-gas_fcoef(z)*caplump*pc_c*ddmct))/ &
                 (gas_fcoef(z)*caplump*pc_c*tsp_dt) &
-                /glump
+                /real(glump)
         enddo
      else
         do ig = 1, glump
            iig=glumps(ig)
            gas_eraddens(iig,z)= &
                 gas_eraddens(iig,z)+E*ddmct/tsp_dt &
-                /glump
+                /real(glump)
         enddo
      endif
      E=E*exp(-gas_fcoef(z)*caplump*pc_c*ddmct)
@@ -234,7 +245,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         iig=glumps(ig)
         gas_eraddens(iig,z)= &
              gas_eraddens(iig,z)+E*ddmct/tsp_dt &
-             /glump
+             /real(glump)
      enddo
 !
   endif
@@ -293,23 +304,28 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
            denom2 = 0d0
-           do ig= gminlump, gmaxlump
-              iig = ig
-              specig = gas_siggrey(z)*gas_emitprob(ig,z)/&
-                   gas_cap(ig,z)
+           do ig= 1, glump
+              iig = glumps(ig)
+!              iig = ig
+              specig = gas_siggrey(z)*gas_emitprob(iig,z)/&
+                   gas_cap(iig,z)
               if((r1>=denom2).and. &
                    (r1<denom2+specig* &
-                   gas_opacleakl(ig,z) &
+                   gas_opacleakl(iig,z) &
                    /(speclump*opacleakllump))) exit
 
               denom2 = denom2+specig* &
-                   gas_opacleakl(ig,z) &
+                   gas_opacleakl(iig,z) &
                    /(speclump*opacleakllump)
 !
            enddo
            if((gas_sig(z-1)+gas_cap(iig,z-1))*gas_drarr(z-1) &
                 *help >= prt_tauddmc*gas_curvcent(z-1)) then
               z = z-1
+              r1 = rand()
+              prt_tlyrand = prt_tlyrand+1
+              wl = 1d0/(r1/gas_wl(iig+1)+(1d0-r1)/gas_wl(iig))
+              g = iig
            else
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
@@ -401,15 +417,21 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
 !               gas_luminos(gminlump:gmaxlump)=gas_luminos(gminlump:gmaxlump)+(E/tsp_dt)* &
 !                    (mu+gas_rarr(gas_nr+1)/pc_c)/ &
 !                    (1.0+gas_rarr(gas_nr+1)*mu/pc_c)/real(gmaxlump-gminlump+1)
-              gas_luminos(gminlump:gmaxlump)= &
-                   gas_luminos(gminlump:gmaxlump)+&
-                   (E/tsp_dt)* &
-                   (1.0+gas_rarr(gas_nr+1)*mu/pc_c) &
-                   /real(gmaxlump-gminlump+1)
+              do ig = 1, glump
+                 iig=glumps(ig)
+                 gas_luminos(iig)= &
+                      gas_luminos(iig)+&
+                      (E/tsp_dt)* &
+                      (1.0+gas_rarr(gas_nr+1)*mu/pc_c) &
+                      /real(glump)
+              enddo
            else
               gas_eright = gas_eright+E
-              gas_luminos(gminlump:gmaxlump)=gas_luminos(gminlump:gmaxlump)+ &
-                   (E/tsp_dt)*mu/real(gmaxlump-gminlump+1)
+              do ig = 1, glump
+                 iig=glumps(ig)
+                 gas_luminos(iig)=gas_luminos(iig)+&
+                      (E/tsp_dt)*mu/real(glump)
+              enddo
            endif
 !
 !
@@ -419,23 +441,26 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
            denom2 = 0d0
-           do ig= gminlump, gmaxlump
-              iig = ig
-              specig = gas_siggrey(z)*gas_emitprob(ig,z)/&
-                   gas_cap(ig,z)
+           do ig= 1, glump
+              iig = glumps(ig)
+              specig = gas_siggrey(z)*gas_emitprob(iig,z)/&
+                   gas_cap(iig,z)
               if((r1>=denom2).and. &
                    (r1<denom2+specig* &
-                   gas_opacleakr(ig,z) &
+                   gas_opacleakr(iig,z) &
                    /(speclump*opacleakrlump))) exit
 
               denom2 = denom2+specig* &
-                   gas_opacleakr(ig,z) &
+                   gas_opacleakr(iig,z) &
                    /(speclump*opacleakrlump)
            enddo
            if((gas_sig(z+1)+gas_cap(iig,z+1))*gas_drarr(z+1) &
                 *help >= prt_tauddmc*gas_curvcent(z+1)) then
 !
               z = z+1
+              r1 = rand()
+              prt_tlyrand = prt_tlyrand+1
+              wl = 1d0/(r1/gas_wl(iig+1)+(1d0-r1)/gas_wl(iig))
 !--
 !
            else
@@ -523,8 +548,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      elseif(PL+PR+PA<=r1.and.r1<PL+PR+PA+PD) then
 !!{{{
 !-- group shift
-        if(gmaxlump<gas_ng) then
-           g = gmaxlump+1
+        if(glumps(glump)<gas_ng) then
+           g = glumps(glump)+1
            !r1 = rand()
 !                 prt_tlyrand = prt_tlyrand+1
            !wl = 1d0/((1d0-r1)/gas_wl(g)+r1/gas_wl(g+1))
@@ -563,29 +588,40 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         endif
 !
 !!}}}
+!
 !-- fictitious scattering sample (physical scattering currently elastic)
+!
      else
         denom2 = 0d0!{{{
 !-- this may need to be changed for g95 compiler
-        do ig = 1, gminlump-1
-!           if(ig.ne.g) then
-           denom2 = denom2+gas_emitprob(ig,z)
-!           endif
-        enddo
-!
-        do ig = gmaxlump+1, gas_ng
-           denom2 = denom2+gas_emitprob(ig,z)
+!         do ig = 1, gminlump-1
+! !           if(ig.ne.g) then
+!            denom2 = denom2+gas_emitprob(ig,z)
+! !           endif
+!         enddo
+! !
+!         do ig = gmaxlump+1, gas_ng
+!            denom2 = denom2+gas_emitprob(ig,z)
+!         enddo
+        do ig = gas_ng,glump+1,-1
+           iig=glumps(ig)
+           denom2 = denom2+gas_emitprob(iig,z)
         enddo
 !
         denom3 = 0d0
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        do ig = 1, gas_ng
-           if(ig<gminlump.or.ig>gmaxlump) then
-              iig = ig
-              if((r1>=denom3).and.(r1<denom3+gas_emitprob(ig,z)/denom2)) exit
-              denom3 = denom3+gas_emitprob(ig,z)/denom2
-           endif
+!         do ig = 1, gas_ng
+!            if(ig<gminlump.or.ig>gmaxlump) then
+!               iig = ig
+!               if((r1>=denom3).and.(r1<denom3+gas_emitprob(ig,z)/denom2)) exit
+!               denom3 = denom3+gas_emitprob(ig,z)/denom2
+!            endif
+!         enddo
+        do ig = gas_ng,glump+1,-1
+           iig=glumps(ig)
+           if((r1>=denom3).and.(r1<denom3+gas_emitprob(iig,z)/denom2)) exit
+           denom3 = denom3+gas_emitprob(iig,z)/denom2
         enddo
 !
         !write(*,*) 'Scatter: ',g,'to ',iig
