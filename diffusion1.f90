@@ -93,10 +93,10 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
         glumps(glump)=ig
      endif
   enddo
-  if(glump==0) then
-     glump=1
-     glumps(1)=g
-  endif
+!   if(glump==0) then
+!      glump=1
+!      glumps(1)=g
+!   endif
 !-- find lumping groups >= g
   iig = g
   do ig = g, gas_ng
