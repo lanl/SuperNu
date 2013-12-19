@@ -123,11 +123,11 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      r1 = rand()
      prt_tlyrand=prt_tlyrand+1
 !     wl = r1*gas_wl(g)+(1d0-r1)*gas_wl(g+1) !uniform sample
-!     wl=1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))  !reciprocal sample
-!     wl=wl*(1d0-mu*r/pc_c)
-!     ddop = pc_c*(1d0-mu*r/pc_c)*(1d0-wl/(1d0-mu*r/pc_c)/gas_wl(g+1))
-     ddop = pc_c*(1d0-mu*r/pc_c)*(1d0-&
-          gas_wl(g)*log(gas_wl(g+1)/gas_wl(g))/(gas_wl(g+1)-gas_wl(g)))
+     wl=1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))  !reciprocal sample
+     wl=wl*(1d0-mu*r/pc_c)
+     ddop = pc_c*(1d0-mu*r/pc_c)*(1d0-wl/(1d0-mu*r/pc_c)/gas_wl(g+1))
+!     ddop = pc_c*(1d0-mu*r/pc_c)*(1d0-&
+!          gas_wl(g)*log(gas_wl(g+1)/gas_wl(g))/(gas_wl(g+1)-gas_wl(g)))
 !     write(*,*) pc_c*(wl/gas_wl(g+1)-1d0)+r*mu
 !     ddop = abs(pc_c*(1d0-wl/gas_wl(g+1))-r*mu)
   else
