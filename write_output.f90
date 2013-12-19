@@ -40,6 +40,12 @@ subroutine write_output
   write(4,*) gas_eerror
   close(4)
 
+  open(unit=4,file='output.siggrey',status='unknown',position=pos)
+  do ir = 1, gas_nr
+    write(4,'(es16.8)',advance='no') gas_siggrey(ir)
+  enddo
+  close(4)
+
   pos='append'
 
 end subroutine write_output

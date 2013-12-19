@@ -81,7 +81,6 @@ subroutine particle_advance
      ebirth => prt_particles(ipart)%ebirth
      isvacant => prt_particles(ipart)%isvacant
 
-
      ! Looking up group
      if(rtsrc==1) then
         if(gas_isvelocity) then!{{{
@@ -357,6 +356,8 @@ subroutine particle_advance
      !if(rtsrc==1) then
      !   write(*,*) g,zsrc,wlsrc,rsrc
      !endif
+!     if(ipart==52755) write(6,*) rtsrc, rsrc, musrc, tsrc, esrc
+!     write(*,*) ipart
 !-----------------------------------------------------------------------        
      ! Advancing particle until census, absorption, or escape from domain
      prt_done = .false.
@@ -365,17 +366,16 @@ subroutine particle_advance
         if (rtsrc == 1.or.in_puretran) then
            transps = transps + 1
            call transport1(zsrc,wlsrc,rsrc,musrc,tsrc, &
-                esrc,ebirth,rtsrc,isvacant)
+                esrc,ebirth,rtsrc,isvacant,ipart)
         else
            difs = difs + 1
            call diffusion1(zsrc,wlsrc,rsrc,musrc,tsrc, &
-                esrc,ebirth,rtsrc,isvacant)
+                esrc,ebirth,rtsrc,isvacant,ipart)
         endif!}}}
      enddo
 !-----------------------------------------------------------------------
      !---------------
      !------------
-
      ! Redshifting DDMC particle energy weights and wavelengths
      if(rtsrc == 2.and.gas_isvelocity) then
 !-- redshifting energy weight
@@ -399,10 +399,11 @@ subroutine particle_advance
         if(g<gas_ng) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           if(r1<gas_sig(zsrc)/(gas_cap(g,zsrc)+gas_sig(zsrc))) then
+!           if(r1<gas_sig(zsrc)/(gas_cap(g,zsrc)+gas_sig(zsrc))) then
               wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
+!           wlsrc = r1*gas_wl(g)+(1d0-r1)*gas_wl(g+1)
               wlsrc = wlsrc*exp(tsp_dt/tsp_t)
-           endif
+!           endif
         endif
         !
      endif

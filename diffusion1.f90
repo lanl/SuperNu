@@ -1,6 +1,6 @@
 !Pure diffusion routine
 
-subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
+subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 
   use gasgridmod
   use timestepmod
@@ -17,6 +17,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
   !is set to true, this routine is not used.
 !##################################################
   !
+  integer, intent(inout) :: partnum !ipart
   integer, intent(inout) :: z, hyparam !,g
   real*8, intent(inout) :: r, mu, t, E, E0, wl
   logical, intent(inout) :: vacnt
@@ -166,6 +167,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt)
      opacleakrlump = gas_opacleakr(g,z)
      caplump = gas_cap(g,z)
   endif
+!  if(partnum==52273) write(6,*) z,wl,r,mu,t,E,E0,hyparam
 !
 !-------------------------------------------------------------
 !

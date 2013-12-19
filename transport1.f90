@@ -120,9 +120,16 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !
 !-- distance to Doppler shift = ddop
   if(gas_isvelocity.and.g<gas_ng) then
-!     ddop = pc_c*(gas_wl(g+1)-wl/(1d0-mu*r/pc_c))/gas_wl(g+1)
+     r1 = rand()
+     prt_tlyrand=prt_tlyrand+1
+!     wl = r1*gas_wl(g)+(1d0-r1)*gas_wl(g+1) !uniform sample
+!     wl=1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))  !reciprocal sample
+!     wl=wl*(1d0-mu*r/pc_c)
+!     ddop = pc_c*(1d0-mu*r/pc_c)*(1d0-wl/(1d0-mu*r/pc_c)/gas_wl(g+1))
+     ddop = pc_c*(1d0-mu*r/pc_c)*(1d0-&
+          gas_wl(g)*log(gas_wl(g+1)/gas_wl(g))/(gas_wl(g+1)-gas_wl(g)))
 !     write(*,*) pc_c*(wl/gas_wl(g+1)-1d0)+r*mu
-     ddop = abs(pc_c*(1d0-wl/gas_wl(g+1))-r*mu)
+!     ddop = abs(pc_c*(1d0-wl/gas_wl(g+1))-r*mu)
   else
      ddop = abs(pc_c*tsp_dt/help) !> dcen
   endif
@@ -182,9 +189,13 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      if(g<gas_ng) then
         g = g+1
 !-- lab frame wavelength
-        wl = gas_wl(g)*(1d0-mu*r/pc_c)
+        wl = r1*gas_wl(g)+(1d0-r1)*gas_wl(g+1)
+        wl = wl*(1d0-mu*r/pc_c)
+!        wl = gas_wl(g)*(1d0-mu*r/pc_c)
      else
-        wl = gas_wl(gas_ng+1)*(1d0-mu*r/pc_c)
+        wl = r1*gas_wl(gas_ng)+(1d0-r1)*gas_wl(gas_ng+1)
+        wl = wl*(1d0-mu*r/pc_c)
+!        wl = gas_wl(gas_ng+1)*(1d0-mu*r/pc_c)
      endif
 !-- check if ddmc region
      if (((gas_sig(z)+gas_cap(g,z))*gas_drarr(z)* &
@@ -443,12 +454,12 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !-- velocity effect accounting
               gas_evelo=gas_evelo-E*2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c
 !
-              E0=E0*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
-              E = E*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
-               ! if(mu<0d0) then
-               !    E0 = E0*(1d0+2d0*(0.55d0/abs(mu)-1.3d0*abs(mu))*r/pc_c)
-               !    E = E*(1d0+2d0*(0.55d0/abs(mu)-1.3d0*abs(mu))*r/pc_c)
-               ! endif
+!              E0=E0*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
+!              E = E*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
+              if(mu<0d0) then
+                 E0 = E0*(1d0+2d0*(0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c)
+                 E = E*(1d0+2d0*(0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c)
+              endif
                
 !--
            endif
