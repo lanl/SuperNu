@@ -92,7 +92,7 @@ subroutine interior_source
 
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = exsumg(ir)/real(gas_nvolex(ir))
-           
+           gas_eext=gas_eext+Ep0
            if (((gas_sig(ir)+gas_cap(iig,ir))*gas_drarr(ir)* &
                 help < prt_tauddmc*gas_curvcent(ir)) &
                 .or.(in_puretran)) then

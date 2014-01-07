@@ -28,7 +28,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   real*8 :: ddmct, tau, tcensus, PR, PL, PA, PD
   !real*8, dimension(gas_ng) :: PDFg
   real*8 :: deleff=0.38
-  real*8 :: alpeff, dopcoup
+  real*8 :: alpeff
 !-- lumped quantities -----------------------------------------
   integer :: gminlump, gmaxlump
   real*8 :: emitlump, speclump
@@ -171,22 +171,10 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !
 !-------------------------------------------------------------
 !
-!--calculate doppler term
-!   if(gas_isvelocity.and.gmaxlump<gas_ng) then
-! !--currently scattering fully elastic, grey
-!      dopcoup = &
-!           (gas_wl(gminlump)/(gas_wl(gmaxlump+1)-gas_wl(gminlump)))&
-!           /(pc_c*(tsp_t+tsp_dt))
-!   else
-  dopcoup = 0d0
-!   endif
-!
   !
   denom = opacleakllump+opacleakrlump !+gas_fcoef(z)*gas_cap(g,z)
   denom = denom+(1d0-alpeff)*(1d0-emitlump)*&
        (1d0-gas_fcoef(z))*caplump
-!--add doppler term
-     denom=denom+dopcoup
 !--add analog term
   if(prt_isddmcanlog) then
      denom = denom+gas_fcoef(z)*caplump
@@ -197,16 +185,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   tau = abs(log(r1)/(pc_c*denom))
   tcensus = tsp_t+tsp_dt-t
   ddmct = min(tau,tcensus)
-!
-! !-- redshift weight
-!   if(gas_isvelocity) then
-! !-- velocity effects accounting
-!      gas_evelo=gas_evelo+E*(1d0-exp(-ddmct/tsp_t))
-! !
-!      E=E*exp(-ddmct/tsp_t)
-!      E0=E0*exp(-ddmct/tsp_t)
-!   endif
-! !--
 !
 !-- calculating energy depostion and density
   !
@@ -259,8 +237,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   denom = opacleakllump+opacleakrlump !+gas_fcoef(z)*gas_cap(g,z)
   denom = denom+(1d0-alpeff)*(1d0-emitlump)*&
        (1d0-gas_fcoef(z))*caplump
-!--add doppler term
-  denom=denom+dopcoup
 !--add analog term
   if(prt_isddmcanlog) then
      denom=denom+gas_fcoef(z)*caplump
@@ -278,12 +254,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
         PA = gas_fcoef(z)*caplump/denom
      else
         PA = 0d0
-     endif
-!-- group Doppler shift probability
-     if(gas_isvelocity.and.glumps(glump)<gas_ng) then
-        PD = dopcoup/denom
-     else
-        PD = 0d0
      endif
 !
 !-- left leakage sample
@@ -544,50 +514,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
         vacnt = .true.!{{{
         prt_done = .true.
         gas_edep(z) = gas_edep(z)+E
-!
-!!}}}
-!-- Doppler sample
-     elseif(PL+PR+PA<=r1.and.r1<PL+PR+PA+PD) then
-!!{{{
-!-- group shift
-        if(glumps(glump)<gas_ng) then
-           g = glumps(glump)+1
-           !r1 = rand()
-!                 prt_tlyrand = prt_tlyrand+1
-           !wl = 1d0/((1d0-r1)/gas_wl(g)+r1/gas_wl(g+1))
-           wl = gas_wl(g)
-        else
-           g = gas_ng
-           wl = gas_wl(gas_ng+1)
-        endif
-        if((gas_sig(z)+gas_cap(g,z))*gas_drarr(z) &
-             *help >= prt_tauddmc*gas_curvcent(z)) then
-           hyparam = 2
-!
-!--
-!
-        else
-           hyparam = 1
-!-- direction sampled isotropically           
-           r1 = rand()
-           prt_tlyrand = prt_tlyrand+1
-           mu = 1.0-2.0*r1
-!-- position sampled uniformly
-           r1 = rand()
-           prt_tlyrand = prt_tlyrand+1
-           r = (r1*gas_rarr(z+1)**3+(1.0-r1)*gas_rarr(z)**3)**(1.0/3.0)
-!
-!-- doppler and aberration corrections
-           if(gas_isvelocity) then
-              mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
-!-- velocity effects accounting
-              gas_evelo=gas_evelo+E*(1d0-1d0/(1d0-r*mu/pc_c))
-!
-              E = E/(1.0-r*mu/pc_c)
-              E0 = E0/(1.0-r*mu/pc_c)
-              wl = wl*(1.0-r*mu/pc_c)
-           endif
-        endif
 !
 !!}}}
 !

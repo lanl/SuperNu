@@ -39,7 +39,7 @@ subroutine sourcenumbers
      gas_etot = gas_esurf
   endif
 !
-  gas_eext=gas_eext+gas_etot
+!  gas_eext=gas_eext+gas_etot
 !
   ! Calculating gas_emitex from analytic distribution
   call analytic_source
@@ -65,7 +65,7 @@ subroutine sourcenumbers
      do ig = 1, gas_ng
         ! changed from rev 244
         gas_etot = gas_etot + gas_emitex(ig,ir)
-        gas_eext = gas_eext + gas_emitex(ig,ir)
+!        gas_eext = gas_eext + gas_emitex(ig,ir)
      enddo
   enddo
   

@@ -381,6 +381,7 @@ subroutine particle_advance
 !-- redshifting energy weight
         esrc = esrc*exp(-tsp_dt/tsp_t)
         ebirth = ebirth*exp(-tsp_dt/tsp_t)
+        gas_evelo=gas_evelo+esrc*(1d0-exp(-tsp_dt/tsp_t))
         !
 !
 !-- find group

@@ -142,7 +142,6 @@ c
 c-- reset counters
 c=================
       gas_erad = 0.0   !Total radiation energy
-!      gas_evelo = 0d0   !Doppler shift energy loss per dt
       gas_eraddens =0d0 !radiation density field
       gas_vals2%eraddens =0d0
 c
