@@ -13,6 +13,11 @@ subroutine boundary_source
   real*8, dimension(gas_ng) :: emitsurfprobg  !surface emission probabilities 
   !, Ryan W.: size will=# of groups in first cell
 
+!
+  gas_eleft = 0d0
+  gas_eright = 0d0
+!
+
   Esurfpart = gas_esurf/real(prt_nsurf)
 
   if(gas_isvelocity) then
@@ -91,6 +96,7 @@ subroutine boundary_source
      if (((gas_sig(z0)+gas_cap(iig,z0))*gas_drarr(z0)* &
           help < prt_tauddmc*gas_curvcent(z0)) &
           .or.(in_puretran.eqv..true.).or.P>1d0.or.P<0d0) then
+        gas_eext = gas_eext+Esurfpart
         if(gas_isvelocity) then
         !transport => lab frame quantities
            prt_particles(ivac)%esrc = Esurfpart*(1.0+r0*mu0/pc_c)
@@ -115,6 +121,10 @@ subroutine boundary_source
         !diffusion => comoving frame quantities (with diffuse reflection accounted)
         prt_particles(ivac)%esrc = P*Esurfpart
         prt_particles(ivac)%ebirth = P*Esurfpart
+!
+        gas_eext = gas_eext+prt_particles(ivac)%esrc
+        gas_eleft= gas_eleft+(1d0-P)*Esurfpart
+!
         !(rev 120)
         prt_particles(ivac)%wlsrc = wl0
         !

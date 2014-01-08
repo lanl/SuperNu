@@ -33,9 +33,8 @@ subroutine particle_advance
 
   gas_edep = 0.0
 !  gas_erad = 0.0 !rtw: redundant
-  gas_eright = 0.0
   gas_luminos = 0.0
-  gas_eleft = 0.0
+
 !
 !--(rev. 121)
   !gas_eraddens =0d0

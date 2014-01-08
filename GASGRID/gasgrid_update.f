@@ -136,6 +136,14 @@ c=============================================================
      &   gas_temp(ir)**gas_cvtpwr *
      &   gas_vals2(ir)%rho**gas_cvrpwr
       enddo!}}}
+
+c-- add initial thermal input to gas_eext
+      if(tsp_it==1) then
+       do ir=1,gas_nr
+        gas_eext = gas_eext+gas_vals2(ir)%bcoef*
+     &    gas_temp(ir)*gas_vals2(ir)%vol
+       enddo
+      endif
 c
 c
 c
