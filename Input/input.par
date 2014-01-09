@@ -3,7 +3,7 @@
 !-- misc
 in_nomp = 1
 in_grab_stdout = f
-in_puretran = f
+in_puretran = t
 in_seed = 1
 in_noreadstruct = t
 in_norestart = t
@@ -74,8 +74,8 @@ in_ns = 100000
 in_npartmax = 10000000
 
 !-- imc tally method
-in_isimcanlog = f
-in_isddmcanlog = f
+in_isimcanlog = t
+in_isddmcanlog = t
 in_depestimate = f
 !-- ddmc mfp per cell
 in_tauddmc = 5d0
