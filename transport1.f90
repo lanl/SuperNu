@@ -191,7 +191,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
           elabfact*d*dcollabfact/(pc_c*tsp_dt)
   endif
 
-  if(.not.vacnt.or..not.prt_done) then
+  if(.not.vacnt.and..not.prt_done) then
 
   !
   if(d == ddop) then !group shift
