@@ -123,7 +123,7 @@ subroutine boundary_source
         prt_particles(ivac)%ebirth = P*Esurfpart
 !
         gas_eext = gas_eext+prt_particles(ivac)%esrc
-        gas_eleft= gas_eleft+(1d0-P)*Esurfpart
+!        gas_eleft= gas_eleft+(1d0-P)*Esurfpart
 !
         !(rev 120)
         prt_particles(ivac)%wlsrc = wl0

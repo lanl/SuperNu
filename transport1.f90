@@ -168,20 +168,30 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
              elabfact*d*dcollabfact/(pc_c*tsp_dt)
      endif
      !--
-     E = E*exp(-gas_fcoef(z)*gas_cap(g,z)*d*dcollabfact)
-     if (E/E0<0.001d0) then
-        vacnt = .true.
-        prt_done = .true.
-        gas_edep(z) = gas_edep(z) + E*elabfact
+!     E = E*exp(-gas_fcoef(z)*gas_cap(g,z)*d*dcollabfact)
+     E = E*exp(-gas_fcoef(z)*gas_cap(g,z)*siglabfact*d*help)
+     if (E/E0<0.0001d0) then
+!        r1 = rand()
+!        prt_tlyrand = prt_tlyrand+1
+!        if(r1<0.5d0) then
+           vacnt = .true.
+           prt_done = .true.
+           gas_edep(z) = gas_edep(z) + E*elabfact
 !-- velocity effect accounting
-        gas_evelo=gas_evelo+E*(1d0-elabfact)
+           gas_evelo=gas_evelo+E*(1d0-elabfact)
 !
+!        else
+!           E = 2d0*E
+!           E0 = 2d0*E0
+!        endif
      endif
   else
      !
      gas_eraddens(g,z) = gas_eraddens(g,z)+E* &
           elabfact*d*dcollabfact/(pc_c*tsp_dt)
   endif
+
+  if(.not.vacnt.or..not.prt_done) then
 
   !
   if(d == ddop) then !group shift
@@ -508,5 +518,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !
   endif
 
+  endif
 
 end subroutine transport1
