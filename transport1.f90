@@ -462,13 +462,17 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               mu = (mu-r/pc_c)/(1.0-r*mu/pc_c)
 !-- amplification
 !-- velocity effect accounting
-              gas_evelo=gas_evelo-E*2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c
+!              gas_evelo=gas_evelo-E*2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c
 !
 !              E0=E0*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
 !              E = E*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
               if(mu<0d0) then
                  E0 = E0*(1d0+2d0*(0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c)
                  E = E*(1d0+2d0*(0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c)
+
+                 gas_evelo=gas_evelo-E*2d0* &
+                      (0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c
+
               endif
                
 !--

@@ -19,5 +19,7 @@ subroutine energy_check
   gas_eerror = (gas_eext-gas_evelo-gas_erad-gas_emat)/&
        gas_eext
 
+  write(*,*) gas_eext, gas_evelo, gas_erad, gas_emat
+
 
 end subroutine energy_check
