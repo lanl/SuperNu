@@ -589,7 +589,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
      !gas_eraddens(g,z)=gas_eraddens(g,z)+E*ddmct/tsp_dt
      prt_done = .true.
      gas_numcensus(z)=gas_numcensus(z)+1
-     gas_erad = gas_erad+E
+!     gas_erad = gas_erad+E
   endif
 
   endif

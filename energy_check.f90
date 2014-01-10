@@ -20,6 +20,7 @@ subroutine energy_check
        gas_eext
 
   write(*,*) gas_eext, gas_evelo, gas_erad, gas_emat
-
+  write(*,*) gas_eleft, gas_eright
+  write(*,*)
 
 end subroutine energy_check

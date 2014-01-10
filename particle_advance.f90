@@ -377,9 +377,9 @@ subroutine particle_advance
      ! Redshifting DDMC particle energy weights and wavelengths
      if(rtsrc == 2.and.gas_isvelocity) then
 !-- redshifting energy weight
+        gas_evelo=gas_evelo+esrc*(1d0-exp(-tsp_dt/tsp_t))
         esrc = esrc*exp(-tsp_dt/tsp_t)
         ebirth = ebirth*exp(-tsp_dt/tsp_t)
-        gas_evelo=gas_evelo+esrc*(1d0-exp(-tsp_dt/tsp_t))
         !
 !
 !-- find group
@@ -529,6 +529,17 @@ subroutine particle_advance
      endif
      endif
 !
+!-- radiation energy at census
+     if(gas_isvelocity) then
+        if(rtsrc==2) then
+           gas_erad = gas_erad + esrc
+        else
+           gas_erad = gas_erad + esrc*(1d0-musrc*rsrc/pc_c)
+        endif
+     else
+        gas_erad = gas_erad + esrc
+     endif
+
   enddo !ipart
 
   call time(t1)

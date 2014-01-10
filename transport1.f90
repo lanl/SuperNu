@@ -504,7 +504,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   elseif (d == dcen) then
      prt_done = .true.
      gas_numcensus(z) = gas_numcensus(z)+1
-     gas_erad = gas_erad + E*elabfact
+!     gas_erad = gas_erad + E*elabfact
 !
   endif
 

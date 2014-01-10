@@ -16,11 +16,11 @@ subroutine vacancies
 
   !Filling prt_vacantarr with particle index of vacant particles: loop
   do ipart=1,prt_npartmax
+     if (ivac == prt_nnew) exit
      if (prt_particles(ipart)%isvacant) then
         ivac = ivac+1
         prt_vacantarr(ivac) = ipart
      endif
-     if (ivac == prt_nnew) exit
   enddo
   if(ipart > prt_npartmax) write(6,*) 'Maximum number of prt_particles reached'
 
