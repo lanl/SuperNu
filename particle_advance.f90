@@ -175,8 +175,6 @@ subroutine particle_advance
 !                endif
               if(gas_isvelocity) then
                  musrc = (musrc + rsrc/pc_c)/(1.0 + rsrc*musrc/pc_c)
-!-- velocity effect accounting
-                 gas_evelo=gas_evelo+esrc*(1d0-1d0/(1.0 - musrc*rsrc/pc_c))
 !
                  esrc = esrc/(1.0 - musrc*rsrc/pc_c)
                  ebirth = ebirth/(1.0 - musrc*rsrc/pc_c)
@@ -348,6 +346,7 @@ subroutine particle_advance
            endif
            !
         endif!}}}
+        gas_evelo = gas_evelo+esrc*(rsrc-rold)*musrc/pc_c
      endif
         !
      endif
@@ -526,6 +525,7 @@ subroutine particle_advance
            !
         endif
         !!}}}
+        gas_evelo = gas_evelo+esrc*(rsrc-rold)*musrc/pc_c
      endif
      endif
 !

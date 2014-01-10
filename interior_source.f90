@@ -99,8 +99,6 @@ subroutine interior_source
               if(gas_isvelocity) then
                  prt_particles(ivac)%esrc = Ep0*(1.0+r0*mu0/pc_c)
                  prt_particles(ivac)%ebirth = Ep0*(1.0+r0*mu0/pc_c)
-!-- velocity effect accouting
-                 gas_evelo = gas_evelo-Ep0*r0*mu0/pc_c
 !
               !(rev 120)
                  prt_particles(ivac)%wlsrc = wl0/(1.0+r0*mu0/pc_c)
@@ -235,8 +233,6 @@ subroutine interior_source
               if(gas_isvelocity) then
                  prt_particles(ivac)%esrc = Ep0*(1.0+r0*mu0/pc_c)
                  prt_particles(ivac)%ebirth = Ep0*(1.0+r0*mu0/pc_c)
-!-- velocity effect accouting
-                 gas_evelo = gas_evelo-Ep0*r0*mu0/pc_c
 !
               !(rev 120)
                  prt_particles(ivac)%wlsrc = wl0/(1.0+r0*mu0/pc_c)

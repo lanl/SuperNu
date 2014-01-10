@@ -35,6 +35,7 @@ subroutine sourcenumbers
   endif
   if(gas_isvelocity) then
      gas_etot = gas_esurf*tsp_t**2
+     gas_esurf = gas_esurf*tsp_t**2
   else
      gas_etot = gas_esurf
   endif
@@ -87,6 +88,5 @@ subroutine sourcenumbers
      prt_nexsrc = prt_nexsrc + gas_nvolex(ir)
      prt_nnew = prt_nnew + gas_nvolex(ir)
   enddo
-  !write(*,*) gas_vals2(1)%nvolex
 
 end subroutine sourcenumbers

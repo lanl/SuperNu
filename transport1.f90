@@ -146,10 +146,12 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !  r = sqrt(r**2+d**2+2d0*d*r*mu)
   told = t
   t = t + help*d/pc_c
-!  muold = mu
+  muold = mu
   mu = (rold*mu+d)/r
+
+!-- transformation factor set
   if(gas_isvelocity) then
-     elabfact = 1.0d0 - mu*r/pc_c
+     elabfact = 1.0d0 - muold*rold/pc_c
   else
      elabfact = 1d0
   endif
@@ -170,6 +172,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      !--
 !     E = E*exp(-gas_fcoef(z)*gas_cap(g,z)*d*dcollabfact)
      E = E*exp(-gas_fcoef(z)*gas_cap(g,z)*siglabfact*d*help)
+
      if (E/E0<0.0001d0) then
 !        r1 = rand()
 !        prt_tlyrand = prt_tlyrand+1
@@ -177,8 +180,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            vacnt = .true.
            prt_done = .true.
            gas_edep(z) = gas_edep(z) + E*elabfact
-!-- velocity effect accounting
-           gas_evelo=gas_evelo+E*(1d0-elabfact)
 !
 !        else
 !           E = 2d0*E
@@ -189,6 +190,18 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      !
      gas_eraddens(g,z) = gas_eraddens(g,z)+E* &
           elabfact*d*dcollabfact/(pc_c*tsp_dt)
+  endif
+
+!-- redshift accouting
+  if(gas_isvelocity) then
+     gas_evelo = gas_evelo+(mu*r/pc_c-muold*rold/pc_c)*E
+  endif
+
+!-- transformation factor reset
+  if(gas_isvelocity) then
+     elabfact = 1.0d0 - mu*r/pc_c
+  else
+     elabfact = 1d0
   endif
 
   if(.not.vacnt.and..not.prt_done) then
@@ -213,8 +226,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
           .and.(in_puretran.eqv..false.)) then
         hyparam = 2
         if(gas_isvelocity) then
-!-- velocity effect accounting
-           gas_evelo=gas_evelo+E*r*mu/pc_c
 !
            E = E*(1.0-r*mu/pc_c)
            E0 = E0*(1.0-r*mu/pc_c)
@@ -234,8 +245,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      endif
      if(gas_isvelocity) then
         mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
-!-- velocity effect accounting
-        gas_evelo=gas_evelo+E*(1d0-elabfact/(1d0-mu*r/pc_c))
 !
         E = E*elabfact/(1.0-mu*r/pc_c)
         wl = wl*(1.0-mu*r/pc_c)/elabfact
@@ -250,8 +259,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         vacnt=.true.
         prt_done=.true.
         gas_edep(z) = gas_edep(z) + E*elabfact
-!-- velocity effect accounting
-        gas_evelo=gas_evelo+E*(1d0-elabfact)
 !
      else
         r1 = rand()
@@ -262,8 +269,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         endif
         if(gas_isvelocity) then
            mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
-!-- velocity effect accounting
-           gas_evelo=gas_evelo+E*(1d0-elabfact/(1d0-mu*r/pc_c))
 !
            E = E*elabfact/(1.0-mu*r/pc_c)
 !           wl = wl*(1.0-mu*r/pc_c)/elabfact
@@ -323,8 +328,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
              .and.(in_puretran.eqv..false.)) then
            hyparam = 2
            if(gas_isvelocity) then
-!-- velocity effect accounting
-              gas_evelo=gas_evelo+E*r*mu/pc_c
 !
               E = E*(1.0-r*mu/pc_c)
               E0 = E0*(1.0-r*mu/pc_c)
@@ -341,8 +344,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !           if(g/=1) then
               vacnt = .true.
               prt_done = .true.
-!-- velocity effect accounting
-              gas_evelo=gas_evelo+E*(1d0-elabfact)
 !-- outbound luminosity tally
               gas_eright = gas_eright+E*elabfact
               gas_luminos(g) = gas_luminos(g)+E/tsp_dt
@@ -378,8 +379,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            if (r1 < P) then
               hyparam = 2
               if(gas_isvelocity) then
-!-- velocity effect accounting
-                 gas_evelo=gas_evelo+E*(1d0-elabfact)
                  E = E*elabfact
                  E0 = E0*elabfact
                  wl = wl/(1.0-r*mu/pc_c)
@@ -405,8 +404,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            if(gas_isshell) then
               vacnt = .true.
               prt_done = .true.
-!-- velocity effect accounting
-              gas_evelo=gas_evelo+E*(1d0-elabfact)
 !
               gas_eleft = gas_eleft+E*elabfact
            else
@@ -431,8 +428,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
                  if (r1 < P) then
                     hyparam = 2
                     if(gas_isvelocity) then
-!-- velocity effect accounting
-                       gas_evelo=gas_evelo+E*(1d0-elabfact)
 !
                        E = E*elabfact
                        E0 = E0*elabfact
@@ -461,18 +456,13 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            if(gas_isvelocity) then
               mu = (mu-r/pc_c)/(1.0-r*mu/pc_c)
 !-- amplification
-!-- velocity effect accounting
-!              gas_evelo=gas_evelo-E*2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c
 !
 !              E0=E0*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
 !              E = E*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
               if(mu<0d0) then
+                 gas_evelo = gas_evelo-E*2d0*(0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c
                  E0 = E0*(1d0+2d0*(0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c)
                  E = E*(1d0+2d0*(0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c)
-
-                 gas_evelo=gas_evelo-E*2d0* &
-                      (0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c
-
               endif
                
 !--
@@ -490,8 +480,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            if (r1 < P) then
               hyparam = 2
               if(gas_isvelocity) then
-!-- velocity effect accounting
-                 gas_evelo=gas_evelo+E*(1d0-elabfact)
 !
                  E = E*elabfact
                  E0 = E0*elabfact
@@ -517,8 +505,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      prt_done = .true.
      gas_numcensus(z) = gas_numcensus(z)+1
      gas_erad = gas_erad + E*elabfact
-!-- velocity effect accounting
-!     gas_evelo= gas_evelo+E*(1d0-elabfact)
 !
   endif
 
