@@ -374,6 +374,9 @@ subroutine particle_advance
 !-----------------------------------------------------------------------
      !---------------
      !------------
+
+     if(.not.isvacant) then
+
      ! Redshifting DDMC particle energy weights and wavelengths
      if(rtsrc == 2.and.gas_isvelocity) then
 !-- redshifting energy weight
@@ -538,6 +541,8 @@ subroutine particle_advance
         endif
      else
         gas_erad = gas_erad + esrc
+     endif
+
      endif
 
   enddo !ipart

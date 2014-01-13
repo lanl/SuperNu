@@ -232,9 +232,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   !
   t = t+ddmct
 !
-
-  if(.not.vacnt.and..not.prt_done) then
-
 !
 !-- Recalculating histogram sum (rev. 120)
   denom = opacleakllump+opacleakrlump !+gas_fcoef(z)*gas_cap(g,z)
@@ -592,7 +589,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !     gas_erad = gas_erad+E
   endif
 
-  endif
 
 !-- temporarily deprecated ---------------------------------------------
 !

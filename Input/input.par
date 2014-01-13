@@ -19,7 +19,7 @@ in_alpha = 1d0
 in_nr = 20
 in_isvelocity = t
 in_isshell = t
-in_novolsrc = f
+in_novolsrc = t
 in_v0 = 0.45d8
 in_velout = 2.45d8
 !in_l0 = 100d7
@@ -34,7 +34,7 @@ in_solidni56 = t
 
 !-- external source type
 in_srctype = 'heav'
-in_srcmax = 6.53d32
+in_srcmax = 6.533d32
 !-- heaviside case
 in_theav = 1.3d-10
 in_nheav = 20
@@ -45,12 +45,12 @@ in_cvtpwr = 0d0
 in_cvrpwr = 1d0
 
 !-- power law scattering opacity values
-in_sigcoefs = 5d-3
+in_sigcoefs = 0d0
 in_sigtpwrs = 0d0
 in_sigrpwrs = 0d0
 
 !-- power law absorption opacity values
-in_sigcoef = 0d0
+in_sigcoef = 5d-3
 in_sigtpwr = 0d0
 in_sigrpwr = 0d0
 
@@ -70,12 +70,12 @@ in_wldex = 18
 
 !-- particle numbers
 in_ninit = 0
-in_ns = 400000
+in_ns = 100
 in_npartmax = 10000000
 
 !-- imc tally method
 in_isimcanlog = t
-in_isddmcanlog = f
+in_isddmcanlog = t
 in_depestimate = f
 !-- ddmc mfp per cell
 in_tauddmc = 3d0

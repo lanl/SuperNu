@@ -112,7 +112,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      prt_tlyrand = prt_tlyrand+1
      dthm = abs(log(r1)/(gas_sig(z)*dcollabfact))
   else
-     dthm = 3.0*db
+     dthm = abs(pc_c*tsp_dt/help) !> dcen
   endif
 !
 !-- distance to census = dcen
@@ -137,6 +137,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !-- minimum distance = d
 !  if(tsp_it==29) write(*,*) dcol,dthm,db,dcen,ddop
   d = min(dcol,dthm,db,dcen,ddop)
+!  if(tsp_it==4.and.trndx==5) write(*,*) r, gas_rarr(z+1), mu, d, db
 !
 !== END OF DISTANCE CALCULATIONS
 !
@@ -204,8 +205,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      elabfact = 1d0
   endif
 
-  if(.not.vacnt.and..not.prt_done) then
-
   !
   if(d == ddop) then !group shift
 !-- redshifting
@@ -247,6 +246,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         mu = (mu+r/pc_c)/(1.0+r*mu/pc_c)
 !
         E = E*elabfact/(1.0-mu*r/pc_c)
+!        E0 = E0*elabfact/(1.0-mu*r/pc_c)
         wl = wl*(1.0-mu*r/pc_c)/elabfact
      endif
      !
@@ -460,7 +460,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !              E0=E0*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
 !              E = E*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
               if(mu<0d0) then
-                 gas_evelo = gas_evelo-E*2d0*(0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c
+!                 gas_evelo = gas_evelo-E*2d0*(0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c
                  E0 = E0*(1d0+2d0*(0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c)
                  E = E*(1d0+2d0*(0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c)
               endif
@@ -508,6 +508,5 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !
   endif
 
-  endif
 
 end subroutine transport1
