@@ -80,6 +80,8 @@ subroutine particle_advance
      ebirth => prt_particles(ipart)%ebirth
      isvacant => prt_particles(ipart)%isvacant
 
+     prt_done=.false.
+
      ! Looking up group
      if(rtsrc==1) then
         if(gas_isvelocity) then!{{{
@@ -168,13 +170,10 @@ subroutine particle_advance
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               musrc = 1.0 - 2.0*r1
-!-- converting to lab frame (doppler and aberration)
-!                if(gas_isvelocity) then
-!                   esrc = (1d0+0.7d0*rsrc/pc_c)*esrc
-!                   ebirth = (1d0+0.7d0*rsrc/pc_c)*ebirth
-!                endif
               if(gas_isvelocity) then
                  musrc = (musrc + rsrc/pc_c)/(1.0 + rsrc*musrc/pc_c)
+!-- velocity effects accounting
+                 gas_evelo=gas_evelo+esrc*(1d0-1d0/(1.0 - musrc*rsrc/pc_c))
 !
                  esrc = esrc/(1.0 - musrc*rsrc/pc_c)
                  ebirth = ebirth/(1.0 - musrc*rsrc/pc_c)
@@ -288,6 +287,10 @@ subroutine particle_advance
            if(gas_isshell.and.zsrc==1) then
               prt_done = .true.
               isvacant = .true.
+              gas_eleft = gas_eleft+esrc*(1d0-musrc*rsrc/pc_c)
+!-- velocity effects accounting
+              gas_evelo = gas_evelo+esrc*musrc*rsrc/pc_c
+!
            elseif(.not.in_puretran.and.partstopper) then
               zfdiff = -1
               if(gas_isvelocity) then
@@ -339,14 +342,12 @@ subroutine particle_advance
               endif
            else
               zsrc = zholder
-              if((gas_sig(zsrc)+gas_cap(g,zsrc))*gas_drarr(zsrc) &
-                   *tsp_t>=prt_tauddmc*gas_curvcent(zsrc)) then
-                 rtsrc = 2
-              endif
            endif
            !
         endif!}}}
-        gas_evelo = gas_evelo+esrc*(rsrc-rold)*musrc/pc_c
+!        if(.not.isvacant) then
+!           gas_evelo = gas_evelo+esrc*(rsrc-rold)*musrc/pc_c
+!        endif
      endif
         !
      endif
@@ -358,8 +359,8 @@ subroutine particle_advance
 !     write(*,*) ipart
 !-----------------------------------------------------------------------        
      ! Advancing particle until census, absorption, or escape from domain
-     prt_done = .false.
-     do while (.not.prt_done)
+!     prt_done = .false.
+     do while ((.not.prt_done).and.(.not.isvacant))
         !Calling either diffusion or transport depending on particle type (rtsrc)!{{{
         if (rtsrc == 1.or.in_puretran) then
            transps = transps + 1
@@ -408,6 +409,8 @@ subroutine particle_advance
 !           endif
         endif
         !
+     endif
+
      endif
 
      ! Looking up group
@@ -471,8 +474,14 @@ subroutine particle_advance
            zholder = binsrch(rsrc,gas_rarr,gas_nr+1)
            !
            if(gas_isshell.and.zsrc==1) then
+              if(.not.isvacant) then
               prt_done = .true.
               isvacant = .true.
+              gas_eleft=gas_eleft+esrc*(1d0-musrc*rsrc/pc_c)
+!-- velocity effects accounting
+              gas_evelo=gas_evelo+esrc*musrc*rsrc/pc_c
+!
+              endif
            elseif(.not.in_puretran.and.partstopper) then
               zfdiff = -1
               if(gas_isvelocity) then
@@ -528,16 +537,23 @@ subroutine particle_advance
            !
         endif
         !!}}}
-        gas_evelo = gas_evelo+esrc*(rsrc-rold)*musrc/pc_c
+!        if(.not.isvacant) then
+!           gas_evelo = gas_evelo+esrc*(rsrc-rold)*musrc/pc_c
+!        endif
      endif
      endif
+
+     if(.not.isvacant) then
 !
 !-- radiation energy at census
      if(gas_isvelocity) then
         if(rtsrc==2) then
            gas_erad = gas_erad + esrc
         else
-           gas_erad = gas_erad + esrc*(1d0-musrc*rsrc/pc_c)
+           gas_erad = gas_erad + esrc !*(1d0-musrc*rsrc/pc_c)
+!-- velocity effects accounting
+!           gas_evelo=gas_evelo+esrc*musrc*rsrc/pc_c
+!
         endif
      else
         gas_erad = gas_erad + esrc

@@ -99,6 +99,8 @@ subroutine interior_source
               if(gas_isvelocity) then
                  prt_particles(ivac)%esrc = Ep0*(1.0+r0*mu0/pc_c)
                  prt_particles(ivac)%ebirth = Ep0*(1.0+r0*mu0/pc_c)
+!-- velocity effects accounting
+                 gas_evelo=gas_evelo-Ep0*r0*mu0/pc_c
 !
               !(rev 120)
                  prt_particles(ivac)%wlsrc = wl0/(1.0+r0*mu0/pc_c)
@@ -226,13 +228,15 @@ subroutine interior_source
            prt_particles(ivac)%tsrc = tsp_t+r1*tsp_dt
            !Calculating particle energy, lab frame direction and propagation type
            Ep0 = gas_emit(ir)/real(gas_nvol(ir))
-!           gas_eext=gas_eext+Ep0
+
            if (((gas_cap(iig,ir)+gas_sig(ir))*gas_drarr(ir)* &
                 help < prt_tauddmc*gas_curvcent(ir)) &
                 .or.(in_puretran)) then
               if(gas_isvelocity) then
                  prt_particles(ivac)%esrc = Ep0*(1.0+r0*mu0/pc_c)
                  prt_particles(ivac)%ebirth = Ep0*(1.0+r0*mu0/pc_c)
+!-- velocity effects accounting
+                 gas_evelo=gas_evelo-Ep0*r0*mu0/pc_c
 !
               !(rev 120)
                  prt_particles(ivac)%wlsrc = wl0/(1.0+r0*mu0/pc_c)
