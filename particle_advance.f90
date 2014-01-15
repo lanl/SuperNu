@@ -309,33 +309,6 @@ subroutine particle_advance
 !--
                  zsrc = zfdiff+1
                  rsrc = gas_rarr(zsrc)
-!                  mu0 = (musrc-rsrc/pc_c)/(1d0-rsrc*musrc/pc_c)
-!                  if(musrc>=0d0.and.mu0<0d0) then
-! !--
-!                     ebirth=ebirth*(1d0+2d0*(0.55d0/abs(mu0)-1.3d0*abs(mu0))*rsrc/pc_c)
-!                     esrc=esrc*(1d0+2d0*(0.55d0/abs(mu0)-1.3d0*abs(mu0))*rsrc/pc_c)
-! !--
-!                     r1 = rand()
-!                     prt_tlyrand = prt_tlyrand+1
-!                     P=gas_ppr(g,zsrc-1)*(1d0+1.5d0*abs(mu0))
-!                     if(r1<P) then
-!                        zsrc = zfdiff
-!                        rtsrc = 2
-!                        esrc = esrc*(1d0-rsrc*musrc/pc_c)
-!                        ebirth = ebirth*(1d0-rsrc*musrc/pc_c)
-!                        wlsrc = wlsrc/(1d0-rsrc*musrc/pc_c)
-!                     else
-!                        r1 = rand()
-!                        prt_tlyrand = prt_tlyrand+1
-!                        r2 = rand()
-!                        prt_tlyrand = prt_tlyrand+1
-!                        mu0 = max(r1,r2)
-!                        if(gas_isvelocity) then
-!                           musrc = (mu0+rsrc/pc_c)/(1.0+rsrc*mu0/pc_c)
-!                        endif
-!                     endif
-! !--
-!                  endif
 !--
               else
                  zsrc = zholder
@@ -345,21 +318,13 @@ subroutine particle_advance
            endif
            !
         endif!}}}
-!        if(.not.isvacant) then
-!           gas_evelo = gas_evelo+esrc*(rsrc-rold)*musrc/pc_c
-!        endif
      endif
         !
      endif
 
-     !if(rtsrc==1) then
-     !   write(*,*) g,zsrc,wlsrc,rsrc
-     !endif
-!     if(ipart==52755) write(6,*) rtsrc, rsrc, musrc, tsrc, esrc
 !     write(*,*) ipart
 !-----------------------------------------------------------------------        
      ! Advancing particle until census, absorption, or escape from domain
-!     prt_done = .false.
      do while ((.not.prt_done).and.(.not.isvacant))
         !Calling either diffusion or transport depending on particle type (rtsrc)!{{{
         if (rtsrc == 1.or.in_puretran) then
@@ -500,33 +465,6 @@ subroutine particle_advance
 !--
                  zsrc = zfdiff+1
                  rsrc = gas_rarr(zsrc)
-!                  mu0 = (musrc-rsrc/pc_c)/(1d0-rsrc*musrc/pc_c)
-!                  if(musrc>=0d0.and.mu0<0d0) then
-! !--
-!                     ebirth=ebirth*(1d0+2d0*(0.55d0/abs(mu0)-1.3d0*abs(mu0))*rsrc/pc_c)
-!                     esrc=esrc*(1d0+2d0*(0.55d0/abs(mu0)-1.3d0*abs(mu0))*rsrc/pc_c)
-! !--
-!                     r1 = rand()
-!                     prt_tlyrand = prt_tlyrand+1
-!                     P=gas_ppr(g,zsrc-1)*(1d0+1.5d0*abs(mu0))
-!                     if(r1<P) then
-!                        zsrc = zfdiff
-!                        rtsrc = 2
-!                        esrc = esrc*(1d0-rsrc*musrc/pc_c)
-!                        ebirth = ebirth*(1d0-rsrc*musrc/pc_c)
-!                        wlsrc = wlsrc/(1d0-rsrc*musrc/pc_c)
-!                     else
-!                        r1 = rand()
-!                        prt_tlyrand = prt_tlyrand+1
-!                        r2 = rand()
-!                        prt_tlyrand = prt_tlyrand+1
-!                        mu0 = max(r1,r2)
-!                        if(gas_isvelocity) then
-!                           musrc = (mu0+rsrc/pc_c)/(1.0+rsrc*mu0/pc_c)
-!                        endif
-!                     endif
-! !--
-!                 endif
 !--
               else
                  zsrc = zholder
@@ -537,9 +475,6 @@ subroutine particle_advance
            !
         endif
         !!}}}
-!        if(.not.isvacant) then
-!           gas_evelo = gas_evelo+esrc*(rsrc-rold)*musrc/pc_c
-!        endif
      endif
      endif
 

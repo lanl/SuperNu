@@ -137,7 +137,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !-- minimum distance = d
 !  if(tsp_it==29) write(*,*) dcol,dthm,db,dcen,ddop
   d = min(dcol,dthm,db,dcen,ddop)
-!  if(tsp_it==4.and.trndx==5) write(*,*) r, gas_rarr(z+1), mu, d, db
 !
 !== END OF DISTANCE CALCULATIONS
 !
@@ -179,11 +178,6 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      gas_eraddens(g,z) = gas_eraddens(g,z)+E* &
           elabfact*d*dcollabfact/(pc_c*tsp_dt)
   endif
-
-!-- redshift accouting
-!   if(gas_isvelocity) then
-!      gas_evelo = gas_evelo+(mu*r/pc_c-muold*rold/pc_c)*E
-!   endif
 
 !-- transformation factor reset
   if(gas_isvelocity) then
@@ -468,10 +462,10 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !              E = E*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r/pc_c)
               if(mu<0d0) then
 !-- velocity effects accounting
-                 gas_evelo = gas_evelo-E*2d0*(0.6d0/abs(mu)-1.2d0*abs(mu))*r/pc_c
+                 gas_evelo = gas_evelo-E*2d0*(0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c
 !
-                 E0 = E0*(1d0+2d0*(0.6d0/abs(mu)-1.2d0*abs(mu))*r/pc_c)
-                 E = E*(1d0+2d0*(0.6d0/abs(mu)-1.2d0*abs(mu))*r/pc_c)
+                 E0 = E0*(1d0+2d0*(0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c)
+                 E = E*(1d0+2d0*(0.55d0/abs(mu)-1.25d0*abs(mu))*r/pc_c)
               endif
                
 !--

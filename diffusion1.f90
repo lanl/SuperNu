@@ -109,31 +109,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
      forall(ig=g+1:gas_ng) glumps(ig)=ig
 !
   endif
-!-- find lumping groups >= g
-  iig = g
-  do ig = g, gas_ng
-     if(gas_cap(ig,z)*gas_drarr(z) &
-          *help < prt_taulump*gas_curvcent(z) &
-          .or.ig-g > gas_epslump) then
-        exit
-     else
-        iig = ig
-     endif
-  enddo
-  gmaxlump = iig
-!
-!-- find lumping groups <= g
-  iig = g
-  do ig = g, 1,-1
-     if(gas_cap(ig,z)*gas_drarr(z) &
-          *help < prt_taulump*gas_curvcent(z) &
-          .or.g-ig > gas_epslump) then
-        exit
-     else
-        iig = ig
-     endif
-  enddo
-  gminlump = iig
 !
 !-- lumping
   do ig = 1, glump
@@ -160,19 +135,16 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
              gas_opacleakr(iig,z)/speclump
      enddo
   else
-     gminlump = g
-     gmaxlump = g
      emitlump = gas_emitprob(g,z)
      opacleakllump = gas_opacleakl(g,z)
      opacleakrlump = gas_opacleakr(g,z)
      caplump = gas_cap(g,z)
   endif
-!  if(partnum==52273) write(6,*) z,wl,r,mu,t,E,E0,hyparam
 !
 !-------------------------------------------------------------
 !
   !
-  denom = opacleakllump+opacleakrlump !+gas_fcoef(z)*gas_cap(g,z)
+  denom = opacleakllump+opacleakrlump
   denom = denom+(1d0-alpeff)*(1d0-emitlump)*&
        (1d0-gas_fcoef(z))*caplump
 !--add analog term
