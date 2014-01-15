@@ -513,7 +513,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !
   endif
 
-  if (E/E0<0.0001d0) then
+  if (E/E0<0.0001d0.and..not.vacnt) then
 !        r1 = rand()
 !        prt_tlyrand = prt_tlyrand+1
 !        if(r1<0.5d0) then
