@@ -184,12 +184,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
      endif
      E=E*exp(-gas_fcoef(z)*caplump*pc_c*ddmct)
 
-!--
-     if(E/E0<0.0001d0) then
-        vacnt=.true.
-        prt_done=.true.
-        gas_edep(z)=gas_edep(z)+E
-     endif
 !!}}}
   else
      !
@@ -569,6 +563,13 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
      prt_done = .true.
      gas_numcensus(z)=gas_numcensus(z)+1
 !     gas_erad = gas_erad+E
+  endif
+
+!--
+  if(E/E0<0.0001d0.and..not.vacnt) then
+     vacnt=.true.
+     prt_done=.true.
+     gas_edep(z)=gas_edep(z)+E
   endif
 
 
