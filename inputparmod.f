@@ -52,6 +52,9 @@ c-- particles
       logical :: in_depestimate = .true. !use deposition estimator to update temperature
       real*8 :: in_tauddmc = 5d0 !number of mean free paths per cell required for DDMC
       real*8 :: in_taulump = 10d0 !# of mean free paths needed to lump DDMC groups
+c-- time dependence of in_tauddmc and in_taulump
+      character(4) :: in_tauvtime = 'unif' ! unif|incr = constant or limiting (s-curve) to more conservative constant
+c
       real*8 :: in_alpha = 1d0 !time centering control parameter [0,1]
 c-- lumping neighborhood
       integer :: in_epslump=0
@@ -128,7 +131,7 @@ c-- runtime parameter namelist
      & in_srctype, in_theav, in_nheav, in_srcmax,
      & in_isimcanlog, in_isddmcanlog,in_depestimate,
      & in_tauddmc, in_epslump, in_dentype, in_noreadstruct,
-     & in_norestart, in_taulump
+     & in_norestart, in_taulump, in_tauvtime
 c
       public
       private inputpars
