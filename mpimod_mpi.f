@@ -175,6 +175,7 @@ c     ------------------------!{{{
 * real*8 :: tsp_dt
 * real*8 :: gas_esurf
 * real*8 :: gas_etot
+* real*8 :: gas_eext
 *-- integer
 * integer :: prt_nnew
 * integer :: prt_nsurf
@@ -198,16 +199,6 @@ c     ------------------------!{{{
 * real*8 :: gas_cap(gas_ng,gas_nr)
 * real*8 :: gas_wl(gas_ng+1)
 *
-* Variables to be reduced
-*-- dim==0
-* real*8 :: gas_erad
-* real*8 :: gas_eright
-* real*8 :: gas_eleft
-*-- dim==1
-* integer :: gas_numcensus(gas_nr)
-* real*8 :: gas_edep(gas_nr)
-*-- dim==2
-* real*8 :: gas_eraddens(gas_ng,gas_nr)
 ************************************************************************
       integer :: n
       integer,allocatable :: isndvec(:)
@@ -215,17 +206,6 @@ c     ------------------------!{{{
       real*8,allocatable :: sndmat(:,:)
 
 c-- variables to be reduced -----------------------------------
-c-- dim==0
-      n = 3
-      allocate(sndvec(n))
-      if(impi==impi0) sndvec = (/gas_erad,gas_eright,gas_eleft/)
-      call mpi_bcast(sndvec,n,MPI_REAL8,impi0,MPI_COMM_WORLD,
-     &  ierr)
-c-- copy back
-      gas_erad = sndvec(1)
-      gas_eright = sndvec(2)
-      gas_eleft = sndvec(3)
-      deallocate(sndvec)
 c-- dim==1,2
       if(impi/=impi0 .and. tsp_it==tsp_ntres) then
          allocate(gas_numcensus(gas_nr))
@@ -237,8 +217,8 @@ c-- dim==1,2
 !     &  impi0,MPI_COMM_WORLD,ierr)
 !      call mpi_bcast(gas_numcensus,gas_nr,MPI_INTEGER,
 !     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_eraddens,gas_ng*gas_nr,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
+!      call mpi_bcast(gas_eraddens,gas_ng*gas_nr,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
 c--------------------------------------------------------------
 c
 c-- integer
@@ -267,6 +247,18 @@ c-- copy back
       gas_esurf = sndvec(3)
       gas_etot = sndvec(4)
       deallocate(sndvec)
+c
+c-- initial send of gas_eext
+      if(tsp_it==1) then
+         n=1
+         allocate(sndvec(n))
+         sndvec=(/gas_eext/)
+         call mpi_bcast(sndvec,n,MPI_REAL8,
+     &        impi0,MPI_COMM_WORLD,ierr)
+c-- copy back
+         gas_eext = sndvec(1)
+         deallocate(sndvec)
+      endif
 c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0 .and. tsp_it==tsp_ntres) then
@@ -378,11 +370,11 @@ c     -----------------------!{{{
 
 c
 c-- dim==0
-      n = 3
+      n = 5
       allocate(sndvec(n))
       allocate(rcvvec(n))
       !if(impi==impi0) 
-      sndvec = (/gas_erad,gas_eright,gas_eleft/)
+      sndvec = (/gas_erad,gas_eright,gas_eleft,gas_eext,gas_evelo/)
       call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -390,10 +382,13 @@ c-- copy back
        gas_erad = rcvvec(1)
        gas_eright = rcvvec(2)
        gas_eleft = rcvvec(3)
+       gas_eextav = rcvvec(4)
+       gas_eveloav = rcvvec(5)
       else
        gas_erad = 0d0
        gas_eright = 0d0
        gas_eleft = 0d0
+c-- rtw: can't copy back 0 to eext or evelo.
       endif !impi
       deallocate(sndvec)
       deallocate(rcvvec)

@@ -14,12 +14,10 @@ subroutine energy_check
 !-----------------------------------------------------
 
 
-  gas_eext = gas_eext-gas_eleft-gas_eright
+  gas_eerror = (gas_eextav-gas_eveloav-gas_erad-gas_emat)/&
+       gas_eextav
 
-  gas_eerror = (gas_eext-gas_evelo-gas_erad-gas_emat)/&
-       gas_eext
-
-  write(*,*) gas_eext, gas_evelo, gas_erad, gas_emat
+  write(*,*) gas_eextav, gas_eveloav, gas_erad, gas_emat
   write(*,*) gas_eleft, gas_eright
   write(*,*)
 

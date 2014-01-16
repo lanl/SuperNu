@@ -179,6 +179,8 @@ program supernu
         gas_erad = gas_erad/dble(nmpi)
         gas_eright = gas_eright/dble(nmpi)
         gas_eleft = gas_eleft/dble(nmpi)
+        gas_eextav = gas_eextav/dble(nmpi)
+        gas_eveloav = gas_eveloav/dble(nmpi)
 !-- dim==1
         gas_edep = gas_edep/dble(nmpi)
         gas_luminos = gas_luminos/dble(nmpi)

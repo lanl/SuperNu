@@ -32,12 +32,12 @@ subroutine particle_advance
   logical :: showidfront=.false.
 
   gas_edep = 0.0
-!  gas_erad = 0.0 !rtw: redundant
+  gas_erad = 0.0
   gas_luminos = 0.0
 
 !
 !--(rev. 121)
-  !gas_eraddens =0d0
+  gas_eraddens =0d0
 !--
   difs = 0
   transps = 0
@@ -502,5 +502,7 @@ subroutine particle_advance
   t_pckt_stat = t1-t0  !register timing
   write(6,*) transps, difs  !WARNING: this is written by all mpi nodes!
   !write(6,*) eleft, eright
+
+  gas_eext = gas_eext-gas_eleft-gas_eright
 
 end subroutine particle_advance

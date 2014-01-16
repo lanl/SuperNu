@@ -37,6 +37,9 @@ c     --------------------------
 * temperature correction.
 * - stub
 ************************************************************************
+      use gasgridmod
+      gas_eextav=gas_eext
+      gas_eveloav = gas_evelo
       end subroutine reduce_tally
 c
 c

@@ -72,6 +72,9 @@ module gasgridmod
   real*8 :: gas_etot = 0d0 !total source energy added per time step
   real*8 :: gas_evelo= 0d0 !total energy change to rad field from fluid
   real*8 :: gas_eerror= 0d0 !error in integral problem energy
+!-- average quantities used for energy check with MPI
+  real*8 :: gas_eextav = 0d0
+  real*8 :: gas_eveloav = 0d0
 !--
   real*8 :: gas_esurf
 
