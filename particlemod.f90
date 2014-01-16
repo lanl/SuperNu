@@ -34,17 +34,19 @@ module particlemod
 
   real*8 :: prt_tauddmc
   real*8 :: prt_taulump
+  character(4) :: prt_tauvtime ! unif|incr
 
   save
 
   contains
 
   subroutine particle_init(npartmax,ns,ninit,isimcanlog, &
-       isddmcanlog,tauddmc,taulump,nummespasint,norestart)
+       isddmcanlog,tauddmc,taulump,tauvtime,nummespasint,norestart)
 !--------------------------------------
     integer,intent(in) :: npartmax, ns, ninit, nummespasint
     logical,intent(in) :: isimcanlog, isddmcanlog,norestart
     real*8,intent(in) :: tauddmc, taulump
+    character(4),intent(in) :: tauvtime
 !***********************************************************************
 ! init particle module
 !***********************************************************************
@@ -57,6 +59,7 @@ module particlemod
     prt_isddmcanlog = isddmcanlog
     prt_tauddmc = tauddmc
     prt_taulump = taulump
+    prt_tauvtime = tauvtime
 !
 !-- allocate permanent storage (dealloc in dealloc_all.f)
     allocate(prt_particles(prt_npartmax))

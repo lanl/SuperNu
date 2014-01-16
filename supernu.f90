@@ -60,7 +60,8 @@ program supernu
 !-- particle init
    if(in_ns==0) in_ns = in_nps/nmpi
    call particle_init(in_npartmax,in_ns,in_ninit,in_isimcanlog, &
-        in_isddmcanlog,in_tauddmc,in_taulump,nmpi,in_norestart)
+        in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime,nmpi, &
+        in_norestart)
 !
 !-- rand() count and prt restarts
    if(tsp_ntres>1.and..not.in_norestart) then
@@ -141,6 +142,7 @@ program supernu
 !-- number of source prt_particles per cell
       call sourcenumbers
     endif !impi
+!-- updating prt_tauddmc and prt_taulump
 
 !-- broadcast to all workers
     call bcast_nonpermanent !MPI

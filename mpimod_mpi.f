@@ -55,9 +55,10 @@ c     --------------------------!{{{
 * integer :: gas_epslump
 *-- real*8
 * real*8 :: prt_tauddmc
-* real*8 :: prt_tauddmc
+* real*8 :: prt_taulump
 *-- character
 * character(4) :: gas_srctype
+* character(4) :: prt_tauvtime
 *
 ************************************************************************
       integer :: n
@@ -119,6 +120,8 @@ c-- character
       call mpi_bcast(gas_srctype,4,MPI_CHARACTER,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_opacanaltype,4,MPI_CHARACTER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(prt_tauvtime,4,MPI_CHARACTER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c
