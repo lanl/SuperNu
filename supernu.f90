@@ -143,7 +143,7 @@ program supernu
       call sourcenumbers
     endif !impi
 !-- updating prt_tauddmc and prt_taulump
-
+    call tau_update
 !-- broadcast to all workers
     call bcast_nonpermanent !MPI
 

@@ -2,7 +2,7 @@
 
 !-- misc
 in_nomp = 1
-in_grab_stdout = t
+in_grab_stdout = f
 in_puretran = f
 in_seed = 1
 in_noreadstruct = t
@@ -81,7 +81,7 @@ in_depestimate = f
 in_tauddmc = 3d0
 in_taulump = 3d0
 in_epslump = 0
-in_tauvtime = 'unif'
+in_tauvtime = 'incr'
 
 !-- opacity debug switches
 in_nobbopac = t
