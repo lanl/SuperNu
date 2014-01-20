@@ -135,6 +135,10 @@ program supernu
 !-- time step loop
 !=================
   do tsp_it = tsp_ntres, tsp_nt
+
+!-- updating prt_tauddmc and prt_taulump
+    call tau_update
+
     if(impi==impi0) then
       write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_it,tsp_t/pc_day
 !-- update all non-permanent variables
@@ -142,8 +146,7 @@ program supernu
 !-- number of source prt_particles per cell
       call sourcenumbers
     endif !impi
-!-- updating prt_tauddmc and prt_taulump
-    call tau_update
+
 !-- broadcast to all workers
     call bcast_nonpermanent !MPI
 
