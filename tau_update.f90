@@ -3,6 +3,7 @@ subroutine tau_update
   use inputparmod
   use particlemod
   use timestepmod
+  use physconstmod
   implicit none
 !-------------------------------------------------
 ! Update mfp thresholds for DDMC:
@@ -15,21 +16,20 @@ subroutine tau_update
 !-- constant thresholds
      return
   elseif(prt_tauvtime=='incr') then
-!-- linear increase in thresholds
-!      slp1=5d0*in_tauddmc/(tsp_nt*tsp_dt)
-!      slp2=5d0*in_taulump/(tsp_nt*tsp_dt)
+!-- linear increase in thresholds (max mfp thresh = 5)
+     slp1=0.667d0*in_tauddmc/(pc_day*(in_tlast-in_tfirst))
+     slp2=0.667d0*in_taulump/(pc_day*(in_tlast-in_tfirst))
 
-!      prt_tauddmc = in_tauddmc+(tsp_it-1)*tsp_dt*slp1
-!      prt_taulump = in_taulump+(tsp_it-1)*tsp_dt*slp2
+     prt_tauddmc = in_tauddmc+(tsp_t-pc_day*in_tfirst)*slp1
+     prt_taulump = in_taulump+(tsp_t-pc_day*in_tfirst)*slp2
 
 
-
-     if(tsp_it<=20) then
-        return
-     else
-        prt_tauddmc=15d0
-        prt_taulump=15d0
-     endif
+!      if(tsp_it<=20) then
+!         return
+!      else
+!         prt_tauddmc=15d0
+!         prt_taulump=15d0
+!      endif
 
   else
      stop 'tau_update: prt_tauvtime invalid'
