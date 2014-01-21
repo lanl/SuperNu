@@ -1,5 +1,6 @@
 subroutine sourcenumbers
 
+  use mpimod
   use gasgridmod
   use timestepmod
   use particlemod
@@ -54,9 +55,27 @@ subroutine sourcenumbers
      gas_emit(ir) = gas_emit(ir)+&
           tsp_dt*gas_vals2(ir)%vol*(1d0-gas_fcoef(ir))*&
           gas_vals2(ir)%matsrc
+!-- accounting for total material source energy:
+!-- gas_fcoef of matsrc goes directly in temperature equation
+!-- and remaining 1-gas_fcoef is thermal radiation.
+     if(tsp_it==1) then
+        gas_eext = gas_eext+tsp_dt*gas_vals2(ir)%vol*&
+             gas_vals2(ir)%matsrc
+     else
+!-- rtw: gas_eext is only broadcast for tsp_it==1
+        gas_eext = gas_eext+tsp_dt*gas_vals2(ir)%vol*&
+             gas_vals2(ir)%matsrc*dble(nmpi)
+     endif
 !
+!-- accounting for thermal decay radiation source energy
      if(.not.gas_novolsrc .and. gas_srctype=='none') then
         gas_emit(ir) = gas_emit(ir) + gas_vals2(ir)%nisource
+        if(tsp_it==1) then
+           gas_eext = gas_eext + gas_vals2(ir)%nisource
+        else
+!-- rtw: gas_eext is only broadcast for tsp_it==1
+           gas_eext = gas_eext + dble(nmpi)*gas_vals2(ir)%nisource
+        endif
      endif
      gas_etot = gas_etot + gas_emit(ir)
   enddo
