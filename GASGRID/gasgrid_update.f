@@ -187,6 +187,7 @@ c-- rtw: must avoid reset in group_opacity routine
        !write(*,*) gas_siggrey(1)
        !write(*,*) gas_cap(:,1)
        !gas_siggrey(:)=0.5*gas_cap(2,:)
+       if(tsp_it==1.and.in_isbdf2) gas_siggreyold=gas_siggrey
 c
 c-- write out opacities (additional gray opacity not included!)
 c--------------------------------------------------------------

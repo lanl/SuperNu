@@ -2,38 +2,38 @@
 
 !-- misc
 in_nomp = 1
-in_grab_stdout = f
+in_grab_stdout = t
 in_puretran = f
 in_seed = 1
-in_noreadstruct = t
+in_noreadstruct = f
 in_norestart = t
 
 !-- time step
 in_tfirst = 2d0
-in_tlast = 11d0
-in_nt = 192
+in_tlast = 62d0
+in_nt = 240
 in_ntres = 0
 in_alpha = 1d0
 
 !-- gas grid settings
-in_nr = 50
+in_nr = 64
 in_isvelocity = t
 in_isshell = f
-in_novolsrc = t
+in_novolsrc = f
 !in_v0 = 0.45d8
-in_velout = 1d9
+!in_velout = 1d9
 !in_l0 = 100d7
 !in_lr = 5d7
-in_totmass = 1d33
+in_totmass = 0d0
 in_dentype = 'mass'
 in_templ0 =  0d0
 
 !-- flat structure
-in_consttemp = 11604505d0
-in_solidni56 = t
+in_consttemp = 60000d0
+in_solidni56 = f
 
 !-- external source type
-in_srctype = 'heav'
+in_srctype = 'none'
 in_srcmax = 4d24
 !-- heaviside case
 in_theav = 9d0
@@ -55,7 +55,7 @@ in_sigtpwr = 0d0
 in_sigrpwr = 1d0
 
 !-- group absorption opacity structure type
-in_opacanaltype = 'line'
+in_opacanaltype = 'none'
 
 !-- picket fence case
 in_suol = 'tstd'
@@ -66,7 +66,7 @@ in_ldisp1 = 1d0
 in_ldisp2 = 1d-4
 
 !-- group settings
-in_wldex = 17
+in_wldex = 20
 
 !-- particle numbers
 in_ninit = 0
@@ -80,14 +80,14 @@ in_depestimate = f
 !-- ddmc mfp per cell
 in_tauddmc = 3d0
 in_taulump = 3d0
-in_epslump = 0
-in_tauvtime = 'incr'
+in_epslump = 100
+in_tauvtime = 'unif'
 
 !-- opacity debug switches
-in_nobbopac = t
-in_nobfopac = t
-in_noffopac = t
-in_nothmson = t
+in_nobbopac = f
+in_nobfopac = f
+in_noffopac = f
+in_nothmson = f
 in_noplanckweighting = t
 
 &end

@@ -107,6 +107,9 @@ module gasgridmod
   real*8, allocatable :: gas_evolinit(:,:) !(gas_ng,gas_nr) amount of initial energy per cell per group
 !
   real*8, allocatable :: gas_temp(:)
+!-- rtw: attempting method upgrade to order 2 backward difference formula in time (rev. 365)
+!-- rtw: must store a temperature value from previous time step (only on rank 0)
+  real*8, allocatable :: gas_tempold(:)
 !---
 !
 !
@@ -230,6 +233,7 @@ module gasgridmod
 
     allocate(gas_temp(gas_nr))  !cell average temperature
     allocate(gas_tempb(gas_nr+1))  !cell boundary temperature
+    allocate(gas_tempold(gas_nr))  !temp used in BDF-2 update
     allocate(gas_rhob(gas_nr+1))   !cell boundary density
     
     allocate(gas_caprosl(gas_ng,gas_nr))  !left cell edge group Rosseland opacities

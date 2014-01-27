@@ -16,7 +16,7 @@ subroutine temperature_update
   real*8 :: dtemp, dtemp2
   real*8,parameter :: tauni = 8.8d0*86400.0d0
   real*8,parameter :: tauco = 111.3d0*86400.0d0
-  real*8 :: ddrr3, ddrr4
+  real*8 :: temphelp
 
   !calculating radiation energy density
   do ir = 1, gas_nr
@@ -52,7 +52,15 @@ subroutine temperature_update
 
      gas_temp(ir)=gas_temp(ir)+dtemp+dtemp2
      !gas_temp(ir)=gas_temp(ir)*1d0
+     if(in_isbdf2) then
+        temphelp = gas_tempold(ir)/3d0
+        gas_tempold(ir)=gas_temp(ir)
+        gas_temp(ir)=4d0*gas_tempold(ir)/3d0-temphelp
+     else
+        gas_tempold(ir)=gas_temp(ir)
+     endif
 
+     gas_siggreyold(ir)=gas_siggrey(ir)
      gas_vals2(ir)%ur = pc_acoef*gas_temp(ir)**4
      
   enddo
@@ -62,7 +70,7 @@ subroutine temperature_update
   gas_emat = 0d0
   do ir = 1, gas_nr
      gas_emat=gas_emat+ &
-          gas_vals2(ir)%bcoef*gas_temp(ir)* &
+          gas_vals2(ir)%bcoef*gas_tempold(ir)* &
           gas_vals2(ir)%vol
   enddo
 

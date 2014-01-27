@@ -65,6 +65,7 @@ c-- time step
       integer :: in_nt = -1   !# time steps
       integer :: in_ntres = -1   !restart time step number
       logical :: in_norestart = .true.
+      logical :: in_isbdf2 = .true. !second order time difference (rev. 365)
 c
 c-- group structure
       integer :: in_wldex = 1 !# if in_iswlread = t, selects group grid from formatted group grid file
