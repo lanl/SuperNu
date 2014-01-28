@@ -63,12 +63,12 @@ subroutine initial_particles
              prt_particles(ipart)%tsrc = tsp_t
              !calculating particle energy
              Ep0 = suminitg(iir)/real(gas_nvolinit(iir))
-             gas_eext=gas_eext+Ep0
+!             gas_eext=gas_eext+Ep0
              if(gas_isvelocity) then
                 prt_particles(ipart)%Esrc = Ep0*(1.0+r0*mu0/pc_c)
                 prt_particles(ipart)%Ebirth = Ep0*(1.0+r0*mu0/pc_c)
 !-- velocity effects accounting
-                 gas_evelo=gas_evelo-Ep0*r0*mu0/pc_c
+!                 gas_evelo=gas_evelo-Ep0*r0*mu0/pc_c
 !
                 prt_particles(ipart)%wlsrc = wl0/(1.0+r0*mu0/pc_c)
                 !
