@@ -32,6 +32,7 @@ c
 c-- temperature parameters
       real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
       real*8 :: in_consttemp = 0d0 !non-zero will not read temp from file. units: K
+      real*8 :: in_tempradinit=0d0 !initial radiation temperature
 c
 c-- analytic heat capacity terms
       real*8 :: in_cvcoef = 1d0 !power law heat capacity coefficient
@@ -108,6 +109,8 @@ c-- external source structure
       real*8 :: in_srcmax = 0d0 !peak source strength (ergs/cm^3/s)
 c-- disable all sources
       logical :: in_novolsrc = .true.  !switch to turn off any volume source (could be useful for debugs)
+c
+      character(4) :: in_inittype='none' !none|unif: initial radiation field type
 c
 c-- misc
       character(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file

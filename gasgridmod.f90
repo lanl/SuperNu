@@ -62,6 +62,8 @@ module gasgridmod
   integer :: gas_nheav = 0 !outer cell bound of external heaviside ('heav') source
   real*8 :: gas_theav = 0d0 !duration of heaviside source
   real*8 :: gas_srcmax = 0d0 !peak strength (ergs*s^2/cm^3 if isvelocity, else ergs/cm^3/s) of external source
+  character(4) :: gas_inittype = 'none' !analytic initial source
+  real*8 :: gas_tempradinit = 0d0 !initial radiation temperature
 !
 !-- energy conservation check quantities
   real*8 :: gas_eext = 0d0 !time-integrated input energy from external source
@@ -92,7 +94,8 @@ module gasgridmod
   real*8, allocatable :: gas_opacleakl(:,:), gas_opacleakr(:,:) !(gas_ng,gas_nr)
   
   real*8, allocatable :: gas_eraddens(:,:) !(gas_ng,gas_nr)
-
+!-- old Planck opacity for BDF-2 method
+  real*8, allocatable :: gas_siggreyold(:) !(gas_nr)
 !
 !-- outbound grouped luminosity
   real*8, allocatable :: gas_luminos(:) !(gas_ng)
@@ -164,6 +167,9 @@ module gasgridmod
     !inner edge radius (if in_isshell):
     !inner edge temp:
     gas_templ0 = in_templ0
+    !initial radiation temperature (may change to vector)
+    gas_tempradinit=in_tempradinit
+    gas_inittype=in_inittype
     !power law heat capacity input:
     gas_cvcoef = in_cvcoef
     gas_cvtpwr = in_cvtpwr

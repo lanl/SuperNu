@@ -8,7 +8,7 @@ subroutine analytic_initial
   implicit none
 
   integer :: ir, ig
-  real*8 :: x1, x2, x3, x4
+  real*8 :: specint
 
 !###############################################
 ! This subroutines attributes radiation energy to
@@ -18,6 +18,31 @@ subroutine analytic_initial
 !
   gas_evolinit = 0d0
 !
+!-- initial radiation energy
+  if(gas_inittype=='none') then
+     return
+  elseif(gas_inittype=='unif') then
+     if(.not.gas_isvelocity) then
+        do ig = 1, gas_ng
+           gas_evolinit(ig,:)=pc_acoef*gas_tempradinit**4&
+                *(1d0/gas_wl(ig)-1d0/gas_wl(ig+1))/&
+                (1d0/gas_wl(1)-1d0/gas_wl(gas_ng+1))&
+                *gas_vals2%volr*(gas_l0+gas_lr)**3
+        enddo
+     else
+        do ig = 1, gas_ng
+           gas_evolinit(ig,:)=pc_acoef*gas_tempradinit**4&
+                *(1d0/gas_wl(ig)-1d0/gas_wl(ig+1))/&
+                (1d0/gas_wl(1)-1d0/gas_wl(gas_ng+1))&
+                *gas_vals2%volr*(tsp_t*gas_velout)**3
+        enddo
+     endif
+  else
+     stop 'analytic_initial: invalid gas_inittype'
+  endif
+!--
+!
+!-- source specific initial conditions (overrides gas_inittyp)
 !-- currently only supplying nonzero for gas_srctype=manu
   if(gas_srctype=='none') then
      if(gas_opacanaltype=='pick') then
