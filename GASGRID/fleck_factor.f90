@@ -37,7 +37,7 @@ subroutine fleck_factor
         elseif(tsp_it>1) then
            beta = (pc_acoef/gas_vals2(ir)%bcoef)*&
                 (4d0*gas_temp(ir)**3+(gas_temp(ir)**4) &
-                *log(gas_cap(ir)/gas_capold(ir))/ &
+                *log(gas_siggrey(ir)/gas_siggreyold(ir))/ &
                 (gas_temp(ir)-gas_temphist(ir,tsp_it-1)))
         else
            beta = 4.0*gas_vals2(ir)%ur/Um

@@ -206,6 +206,9 @@ module gasgridmod
     allocate(gas_curvcent(gas_nr))  ! gas_curvcent*tauddmc=mean fee path threshold for IMC-DDMC heuristic
     allocate(gas_edep(gas_nr))  !energy absorbed by material
     allocate(gas_siggrey(gas_nr)) !Planck opacity (gray)
+!-- rtw: using old gas_siggrey in bdf2 Fleck factor calculation
+    allocate(gas_siggreyold(gas_nr)) !Planck opacity (gray)
+!
 !- Ryan W.: using power law to calculate gas_sig (similar to Planck opacity)
     allocate(gas_sig(gas_nr))    !grey scattering opacity
 !----------------------------------------------------------------

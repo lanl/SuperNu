@@ -135,7 +135,8 @@ c-- runtime parameter namelist
      & in_srctype, in_theav, in_nheav, in_srcmax,
      & in_isimcanlog, in_isddmcanlog,in_depestimate,
      & in_tauddmc, in_epslump, in_dentype, in_noreadstruct,
-     & in_norestart, in_taulump, in_tauvtime
+     & in_norestart, in_taulump, in_tauvtime,
+     & in_inittype, in_tempradinit, in_isbdf2
 c
       public
       private inputpars
