@@ -55,7 +55,7 @@ program supernu
 !-- constant time step, may be coded to loop if time step is not uniform
    t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
    dt = t_elapsed/in_nt
-   call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst,dt)
+   call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst,dt,in_isbdf2)
 !
 !-- particle init
    if(in_ns==0) in_ns = in_nps/nmpi
@@ -81,7 +81,7 @@ program supernu
 !
 !-- SETUP GRIDS
    call read_wlgrid(ng)
-   call gasgrid_init(in_nt,ng)
+   call gasgrid_init(tsp_nt,ng)
    call gasgrid_setup
 !
 
@@ -135,7 +135,12 @@ program supernu
 !-- time step loop
 !=================
   do tsp_it = tsp_ntres, tsp_nt
-
+!-- BDF-2 particle reset
+      if(in_isbdf2.and.tsp_it==2) then
+         prt_particles%isvacant=.true.
+         call initial_particles
+      endif
+!
 !-- updating prt_tauddmc and prt_taulump
     call tau_update
 
@@ -197,7 +202,7 @@ program supernu
       call temperature_update
 !-- check energy (particle weight) is accounted
       call energy_check
-      call timestep_update(dt) !Update tsp_t
+      call timestep_update(dt,in_isbdf2) !Update tsp_t
 
       call write_output
 !

@@ -27,7 +27,7 @@ subroutine temperature_update
              gas_eraddens(ig,ir)
      enddo
   enddo
-  !write(*,*) gas_eraddens(:,5), gas_temp(5), gas_vals2(5)%bcoef, gas_nvol(5)
+
   !calculating deposition estimate
   if(gas_depestimate) then
      gas_edep = 0d0
@@ -50,14 +50,14 @@ subroutine temperature_update
      dtemp2 = (gas_fcoef(ir)/gas_vals2(ir)%bcoef)*tsp_dt* &
           gas_vals2(ir)%matsrc
 
-     gas_temp(ir)=gas_temp(ir)+dtemp+dtemp2
-     !gas_temp(ir)=gas_temp(ir)*1d0
-     if(.not.in_isbdf2.or.tsp_it==1) then
-        gas_tempold(ir)=gas_temp(ir)
-     else
+     gas_temp(ir)=gas_tempold(ir)+dtemp+dtemp2
+
+     if(in_isbdf2.and.tsp_it>1) then
         temphelp = gas_tempold(ir)/3d0
         gas_tempold(ir)=gas_temp(ir)
         gas_temp(ir)=4d0*gas_tempold(ir)/3d0-temphelp
+     elseif(.not.in_isbdf2) then
+        gas_tempold(ir)=gas_temp(ir)
      endif
 
      gas_siggreyold(ir)=gas_siggrey(ir)
@@ -70,7 +70,7 @@ subroutine temperature_update
   gas_emat = 0d0
   do ir = 1, gas_nr
      gas_emat=gas_emat+ &
-          gas_vals2(ir)%bcoef*gas_tempold(ir)* &
+          gas_vals2(ir)%bcoef*gas_temp(ir)* &
           gas_vals2(ir)%vol
   enddo
 

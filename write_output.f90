@@ -1,5 +1,6 @@
 subroutine write_output
 
+  use inputparmod
   use timingmod
   use timestepmod
   use gasgridmod
@@ -8,6 +9,8 @@ subroutine write_output
 
   integer :: ir, ig, j
   character(16), save :: pos='rewind'
+
+  if(.not.in_isbdf2.or.(in_isbdf2.and.tsp_it>1)) then
 
   open(unit=4,file='output.tsp_time',status='unknown',position=pos)
   write(4,*) tsp_t
@@ -21,7 +24,7 @@ subroutine write_output
 
   open(unit=4,file='output.temp',status='unknown',position=pos)
   do ir = 1, gas_nr
-    write(4,'(es16.8)',advance='no') gas_temp(ir)
+    write(4,'(es16.8)',advance='no') gas_tempold(ir)
   enddo
   close(4)
 
@@ -54,5 +57,7 @@ subroutine write_output
   close(4)
 
   pos='append'
+
+  endif
 
 end subroutine write_output
