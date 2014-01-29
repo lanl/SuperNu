@@ -52,12 +52,12 @@ subroutine temperature_update
 
      gas_temp(ir)=gas_temp(ir)+dtemp+dtemp2
      !gas_temp(ir)=gas_temp(ir)*1d0
-     if(in_isbdf2) then
+     if(.not.in_isbdf2.or.tsp_it==1) then
+        gas_tempold(ir)=gas_temp(ir)
+     else
         temphelp = gas_tempold(ir)/3d0
         gas_tempold(ir)=gas_temp(ir)
         gas_temp(ir)=4d0*gas_tempold(ir)/3d0-temphelp
-     else
-        gas_tempold(ir)=gas_temp(ir)
      endif
 
      gas_siggreyold(ir)=gas_siggrey(ir)
