@@ -149,7 +149,10 @@ c
 c
 c-- reset counters
 c=================
-      gas_vals2%eraddens =0d0
+c
+c-- rtw: may no longer reset counters here
+c
+c      gas_vals2%eraddens =0d0
 c
 !     return !DEBUG
 c
@@ -177,6 +180,19 @@ c-- gamma opacity
 c!}}}
       else calc_opac !tsp_it
 c!{{{
+c
+c-- BDF-2 and modified IMC require 2 opacity points to
+c compute the tempurature derivative in the fleck factor
+       if(tsp_it==1) then
+          gas_temp=0.99d0*gas_temp
+          call analytic_opacity
+          if(in_opacanaltype=='none') then
+             call physical_opacity
+          endif
+          gas_siggreyold=gas_siggrey
+          gas_temp=gas_temp/0.99d0
+       endif
+c
 c-- simple physical group/grey opacities: Planck and Rosseland 
        call analytic_opacity
 c-- add physical opacities
@@ -187,7 +203,6 @@ c-- rtw: must avoid reset in group_opacity routine
        !write(*,*) gas_siggrey(1)
        !write(*,*) gas_cap(:,1)
        !gas_siggrey(:)=0.5*gas_cap(2,:)
-       if(tsp_it==1.and.in_isbdf2) gas_siggreyold=gas_siggrey
 c
 c-- write out opacities (additional gray opacity not included!)
 c--------------------------------------------------------------

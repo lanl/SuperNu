@@ -14,7 +14,7 @@ in_tlast = 2.157407d-15
 in_nt = 10
 in_ntres = 0
 in_alpha = 1d0
-in_isbdf2=t
+in_isbdf2=f
 
 !-- gas grid settings
 in_nr = 1
@@ -78,7 +78,7 @@ in_npartmax = 10000000
 
 !-- imc tally method
 in_isimcanlog = f
-in_isddmcanlog = f
+in_isddmcanlog = t
 in_depestimate = f
 !-- ddmc mfp per cell
 in_tauddmc = 3d0
