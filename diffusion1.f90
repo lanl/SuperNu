@@ -566,10 +566,17 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   endif
 
 !--
-  if(E/E0<0.0001d0.and..not.vacnt) then
-     vacnt=.true.
-     prt_done=.true.
-     gas_edep(z)=gas_edep(z)+E
+  if(E/E0<1d-6.and..not.vacnt) then
+     r1 = rand()
+     prt_tlyrand=prt_tlyrand+1
+     if(r1<0.5d0) then
+        vacnt=.true.
+        prt_done=.true.
+        gas_edep(z)=gas_edep(z)+E
+     else
+        E=2d0*E
+        E0=2d0*E0
+     endif
   endif
 
 

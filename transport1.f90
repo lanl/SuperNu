@@ -513,20 +513,20 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !
   endif
 
-  if (E/E0<0.0001d0.and..not.vacnt) then
-!        r1 = rand()
-!        prt_tlyrand = prt_tlyrand+1
-!        if(r1<0.5d0) then
-     vacnt = .true.
-     prt_done = .true.
-     gas_edep(z) = gas_edep(z) + E*elabfact
+  if (E/E0<1d-6.and..not.vacnt) then
+     r1 = rand()
+     prt_tlyrand = prt_tlyrand+1
+     if(r1<0.5d0) then
+        vacnt = .true.
+        prt_done = .true.
+        gas_edep(z) = gas_edep(z) + E*elabfact
 !-- velocity effects accounting
-     gas_evelo=gas_evelo+E*(1d0-elabfact)
+        gas_evelo=gas_evelo+E*(1d0-elabfact)
 !
-!        else
-!           E = 2d0*E
-!           E0 = 2d0*E0
-!        endif
+     else
+        E = 2d0*E
+        E0 = 2d0*E0
+     endif
   endif
 
 end subroutine transport1
