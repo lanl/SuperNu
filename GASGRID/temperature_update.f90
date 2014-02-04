@@ -60,7 +60,6 @@ subroutine temperature_update
         gas_tempold(ir)=gas_temp(ir)
      endif
 
-     gas_siggreyold(ir)=gas_siggrey(ir)
      gas_vals2(ir)%ur = pc_acoef*gas_temp(ir)**4
      
   enddo

@@ -22,6 +22,7 @@ c     -----------------------
       logical :: do_output
       integer :: i,j,ir
       real*8 :: help
+      real*8 :: dtempfrac = 0.99d0
       real*8 :: dwl(gas_ng)
       real*8 :: natom1fr(gas_nr,-2:-1) !todo: memory storage order?
       real*8 :: natom2fr(gas_nr,-2:-1)
@@ -157,17 +158,17 @@ c
 !     return !DEBUG
 c
 c
-c-- solve LTE EOS
-c================
-      if(gas_isvelocity) then
-         do_output = (in_pdensdump=='each' .or. !{{{
-     &        (in_pdensdump=='one' .and. tsp_it==1))
-c
-            call eos_update(do_output)
-            if(tsp_it==1) write(6,'(1x,a27,2(f8.2,"s"))')
-     &           'eos timing                :',t_eos !}}}
-      endif
-c     
+C$$$c-- solve LTE EOS
+C$$$c================
+C$$$      if(gas_isvelocity) then
+C$$$         do_output = (in_pdensdump=='each' .or. !{{{
+C$$$     &        (in_pdensdump=='one' .and. tsp_it==1))
+C$$$c
+C$$$            call eos_update(do_output)
+C$$$            if(tsp_it==1) write(6,'(1x,a27,2(f8.2,"s"))')
+C$$$     &           'eos timing                :',t_eos !}}}
+C$$$      endif
+C$$$c
 c
 c
 c-- opacity per rcell unit
@@ -183,15 +184,32 @@ c!{{{
 c
 c-- BDF-2 and modified IMC require 2 opacity points to
 c compute the tempurature derivative in the fleck factor
-       if(tsp_it==1) then
-          gas_temp=0.99d0*gas_temp
-          call analytic_opacity
-          if(in_opacanaltype=='none') then
-             call physical_opacity
-          endif
-          gas_siggreyold=gas_siggrey
-          gas_temp=gas_temp/0.99d0
-       endif
+         gas_temp=dtempfrac*gas_temp
+         if(gas_isvelocity) then
+            do_output = (in_pdensdump=='each' .or. !{{{
+     &           (in_pdensdump=='one' .and. tsp_it==1))
+c
+               call eos_update(do_output)
+         endif
+         call analytic_opacity
+         if(in_opacanaltype=='none') then
+            call physical_opacity
+         endif
+c
+         gas_siggreyold=gas_siggrey
+         gas_temp=gas_temp/dtempfrac
+c
+c-- solve LTE EOS
+c================
+      if(gas_isvelocity) then
+         do_output = (in_pdensdump=='each' .or. !{{{
+     &        (in_pdensdump=='one' .and. tsp_it==1))
+c
+            call eos_update(do_output)
+            if(tsp_it==1) write(6,'(1x,a27,2(f8.2,"s"))')
+     &           'eos timing                :',t_eos !}}}
+      endif
+c
 c
 c-- simple physical group/grey opacities: Planck and Rosseland 
        call analytic_opacity
@@ -238,7 +256,7 @@ c-- close file
        endif !do_output !}}}
 c
 c-- Calculating Fleck factor, leakage opacities
-       call fleck_factor
+       call fleck_factor(dtempfrac)
 c-- Calculating emission probabilities for each group in each cell
        call emission_probability
 c-- Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities

@@ -13,8 +13,8 @@ in_tfirst = 1d-15
 in_tlast = 2.157407d-15
 in_nt = 10
 in_ntres = 0
-in_alpha = 1d0
-in_isbdf2=f
+in_alpha = 0.5d0
+in_isbdf2=t
 
 !-- gas grid settings
 in_nr = 1

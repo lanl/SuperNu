@@ -1,4 +1,4 @@
-subroutine fleck_factor
+subroutine fleck_factor(dtempfrac)
 
   use inputparmod
   use gasgridmod
@@ -9,7 +9,7 @@ subroutine fleck_factor
   !-----------------------
   !This subroutine computes the Fleck factor
   !-----------------------
-
+  real*8, intent(in) :: dtempfrac
   integer :: ir
   real*8 :: Um, beta, beta2, dlogsig
 
@@ -38,20 +38,15 @@ subroutine fleck_factor
 !
 !           dlogsig=-5d0/gas_temp(ir)
 
-           if(tsp_it==1) then
-              dlogsig = log(gas_siggrey(ir)/gas_siggreyold(ir))/(gas_temp(ir)-0.99d0*gas_temp(ir))
-              beta2 = min((pc_acoef*in_tempradinit**4-gas_vals2(ir)%ur)*dlogsig/gas_vals2(ir)%bcoef,0d0)
-           else
-              dlogsig = log(gas_siggrey(ir)/gas_siggreyold(ir))/(gas_temp(ir)-gas_temphist(ir,tsp_it-1))
-              beta2 = min((gas_vals2(ir)%eraddens-gas_vals2(ir)%ur)*dlogsig/gas_vals2(ir)%bcoef,0d0)
-           endif
+           dlogsig = log(gas_siggrey(ir)/gas_siggreyold(ir))/(gas_temp(ir)-dtempfrac*gas_temp(ir))
+           beta2 = min((pc_acoef*in_tempradinit**4-gas_vals2(ir)%ur)*dlogsig/gas_vals2(ir)%bcoef,0d0)
+
+
            beta = 4.0*gas_vals2(ir)%ur/Um-beta2
-!
-!        else
-!           beta = 4.0*gas_vals2(ir)%ur/Um
+
         endif
         gas_fcoef(ir) = 1.0/(1.0+tsp_alpha*beta*pc_c*tsp_dt*gas_siggrey(ir))
-        write(*,*) gas_fcoef(ir)
+     
      enddo
 !  endif
 
