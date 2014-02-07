@@ -54,7 +54,7 @@ TESTS := $(addprefix $(TESTDIR),$(TESTS))
 # TARGETS
 ########################################################################
 # Utility targets (ignore corresponding file names)
-.PHONY: all clean $(SUBDIRS) $(SUBCLEAN) prepare_run check run runmpi $(TESTS)
+.PHONY: all clean $(SUBDIRS) $(SUBCLEAN) prepare_run check run runmpi ready_run $(TESTS)
 
 all: $(MODULES)
 	$(MAKE) $(SUBDIRS)
@@ -72,6 +72,9 @@ prepare_run:
 	cd $(RUNDIR) && ln -s $(CURDIR)/Data/* .
 	cd $(RUNDIR) && ln -s $(CURDIR)/Input/* .
 	cd $(RUNDIR) && ln -s $(CURDIR)/supernu .
+
+ready_run: RUNDIR := $(CURDIR)/Run
+ready_run: all prepare_run
 
 run: RUNDIR := $(CURDIR)/Run
 run: all prepare_run
