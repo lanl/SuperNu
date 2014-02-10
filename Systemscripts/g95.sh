@@ -10,6 +10,8 @@ for a in $@; do
  if [[ $a == 'ompOff' ]]; then omp=''
  elif [[ $a == 'mpi' ]]; then
   FC='mpif90'
+ elif [[ $a == 'mpiftn' ]]; then
+  FC="ftn"
  elif [[ $a == 'optOff' ]]; then optimize="-O0"
  elif [[ $a == 'debug' ]]; then
   optimize=""

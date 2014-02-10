@@ -12,6 +12,8 @@ for a in $@; do
   omp=''
  elif [[ $a == 'mpi' ]]; then
   FC="mpif90"
+ elif [[ $a == 'mpiftn' ]]; then
+  FC="ftn"
  elif [[ $a == 'optOff' ]]; then
   optimize="-O0"
  elif [[ $a == 'debug' ]]; then
