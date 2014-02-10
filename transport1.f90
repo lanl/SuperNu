@@ -524,6 +524,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         gas_evelo=gas_evelo+E*(1d0-elabfact)
 !
      else
+!-- weight addition accounted for in external source
+        gas_eext=gas_eext+E
+!
         E = 2d0*E
         E0 = 2d0*E0
      endif

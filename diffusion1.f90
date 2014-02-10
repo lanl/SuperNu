@@ -574,10 +574,15 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
         prt_done=.true.
         gas_edep(z)=gas_edep(z)+E
      else
+!-- weight addition accounted for in external source
+        gas_eext=gas_eext+E
+!
         E=2d0*E
         E0=2d0*E0
      endif
   endif
+
+end subroutine diffusion1
 
 
 !-- temporarily deprecated ---------------------------------------------
@@ -624,4 +629,4 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !            enddo
 !            r = r0
 
-end subroutine diffusion1
+

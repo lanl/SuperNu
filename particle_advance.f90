@@ -178,37 +178,6 @@ subroutine particle_advance
                  esrc = esrc/(1.0 - musrc*rsrc/pc_c)
                  ebirth = ebirth/(1.0 - musrc*rsrc/pc_c)
               endif
-              !wlsrc = 0.5d0*(gas_wl(g)+gas_wl(g+1))
-              !r1 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-              !wlsrc=gas_wl(g)*(1d0-r1)+gas_wl(g+1)*r1
-              !
-!               r1 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-!               if(r1<gas_cap(g,zsrc)/(gas_cap(g,zsrc)+gas_sig(zsrc))) then
-!                  x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(zsrc))
-!                  x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_temp(zsrc))
-!                  if (x2<pc_plkpk) then
-!                     bmax = x2**3/(exp(x2)-1d0)
-!                  elseif (x1>pc_plkpk) then
-!                     bmax = x1**3/(exp(x1)-1d0)
-!                  else
-!                     bmax = pc_plkpk
-!                  endif
-!                  r1 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-!                  r2 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-!                  xx0 = (1d0-r1)*x1+r1*x2
-!                  do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
-!                     r1 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-!                     r2 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-!                     xx0 = (1d0-r1)*x1+r1*x2
-!                  enddo
-!                  wlsrc = pc_h*pc_c/(xx0*pc_kb*gas_temp(zsrc))
-!               else
                  r1 = rand()
                  prt_tlyrand = prt_tlyrand+1
                  wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
@@ -506,3 +475,36 @@ subroutine particle_advance
   gas_eext = gas_eext-gas_eleft-gas_eright
 
 end subroutine particle_advance
+
+
+              !wlsrc = 0.5d0*(gas_wl(g)+gas_wl(g+1))
+              !r1 = rand()
+!           prt_tlyrand = prt_tlyrand+1
+              !wlsrc=gas_wl(g)*(1d0-r1)+gas_wl(g+1)*r1
+              !
+!               r1 = rand()
+!           prt_tlyrand = prt_tlyrand+1
+!               if(r1<gas_cap(g,zsrc)/(gas_cap(g,zsrc)+gas_sig(zsrc))) then
+!                  x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(zsrc))
+!                  x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_temp(zsrc))
+!                  if (x2<pc_plkpk) then
+!                     bmax = x2**3/(exp(x2)-1d0)
+!                  elseif (x1>pc_plkpk) then
+!                     bmax = x1**3/(exp(x1)-1d0)
+!                  else
+!                     bmax = pc_plkpk
+!                  endif
+!                  r1 = rand()
+!           prt_tlyrand = prt_tlyrand+1
+!                  r2 = rand()
+!           prt_tlyrand = prt_tlyrand+1
+!                  xx0 = (1d0-r1)*x1+r1*x2
+!                  do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
+!                     r1 = rand()
+!           prt_tlyrand = prt_tlyrand+1
+!                     r2 = rand()
+!           prt_tlyrand = prt_tlyrand+1
+!                     xx0 = (1d0-r1)*x1+r1*x2
+!                  enddo
+!                  wlsrc = pc_h*pc_c/(xx0*pc_kb*gas_temp(zsrc))
+!               else
