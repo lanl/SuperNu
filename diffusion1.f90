@@ -17,7 +17,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   !is set to true, this routine is not used.
 !##################################################
   !
-  integer, intent(inout) :: partnum !ipart
+  integer, intent(in) :: partnum !ipart
   integer, intent(inout) :: z, hyparam !,g
   real*8, intent(inout) :: r, mu, t, E, E0, wl
   logical, intent(inout) :: vacnt

@@ -17,7 +17,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !##################################################
   !
   integer, intent(inout) :: z, hyparam !,g
-  integer, intent(inout) :: trndx
+  integer, intent(in) :: trndx
   real*8, intent(inout) :: r, mu, t, E, E0, wl
   logical, intent(inout) :: vacnt
   !
