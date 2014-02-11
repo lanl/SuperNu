@@ -174,7 +174,7 @@ program supernu
 !-- print packet advance load-balancing info
     if(impi==impi0) write(6,900) 'packets time(min|mean|max):',t_pckt_stat
     if(impi==impi0) call timereg(t_pckt,sngl(t_pckt_stat(3)))  !register particle advance timing
-900 format(1x,a,3(f8.2,"s"))
+900 format(1x,a,3(f9.2,"s"))
 
 !-- collect data necessary for restart (tobe written by impi0)
     if(.not.in_norestart) then
