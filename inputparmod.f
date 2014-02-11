@@ -33,6 +33,7 @@ c-- temperature parameters
       real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
       real*8 :: in_consttemp = 0d0 !non-zero will not read temp from file. units: K
       real*8 :: in_tempradinit=0d0 !initial radiation temperature
+      character(4) :: in_tradinittype='unif' !prof|unif: initial radiation field type
 c
 c-- analytic heat capacity terms
       real*8 :: in_cvcoef = 1d0 !power law heat capacity coefficient
@@ -110,8 +111,6 @@ c-- external source structure
 c-- disable all sources
       logical :: in_novolsrc = .true.  !switch to turn off any volume source (could be useful for debugs)
 c
-      character(4) :: in_inittype='none' !none|unif: initial radiation field type
-c
 c-- misc
       character(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
       character(4) :: in_pdensdump = 'off'   !off|one|each: write partial densities to file
@@ -136,7 +135,7 @@ c-- runtime parameter namelist
      & in_isimcanlog, in_isddmcanlog,in_depestimate,
      & in_tauddmc, in_epslump, in_dentype, in_noreadstruct,
      & in_norestart, in_taulump, in_tauvtime,
-     & in_inittype, in_tempradinit, in_isbdf2
+     & in_tradinittype, in_tempradinit, in_isbdf2
 c
       public
       private inputpars
@@ -217,7 +216,16 @@ c
       if(in_taulump<in_tauddmc) stop 'in_taulump<in_tauddmc'
 c
       if(in_totmass<=0d0 .and. in_noreadstruct) stop 'in_totmass <= 0'
+c
+c-- temp init
       if(in_consttemp<0d0) stop 'in_consttemp < 0'
+      if(in_templ0<0d0) stop 'in_templ0 < 0'
+      if(in_tempradinit<0d0) stop 'in_tempradinit < 0'
+      if(in_tradinittype=='unif') then
+      elseif(in_tradinittype=='prof') then
+      else
+       stop 'in_tradinittype unknown'
+      endif
 c
       if(in_nt<1) stop 'in_nt invalid'
       if(in_tfirst<=0d0) stop 'in_tfirst invalid'

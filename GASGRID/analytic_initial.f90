@@ -1,14 +1,16 @@
 subroutine analytic_initial
 
   use gasgridmod
+  use inputparmod
   use physconstmod
   use timestepmod
-  use inputparmod
   use manufacmod
+  use profiledatamod
   implicit none
 
   integer :: ir, ig
   real*8 :: specint
+  real*8 :: trad(gas_nr)
 
 !###############################################
 ! This subroutines attributes radiation energy to
@@ -19,26 +21,32 @@ subroutine analytic_initial
   gas_evolinit = 0d0
 !
 !-- initial radiation energy
-  if(gas_inittype=='none') then
-     return
-  elseif(gas_inittype=='unif') then
-     if(.not.gas_isvelocity) then
-        do ig = 1, gas_ng
-           gas_evolinit(ig,:)=pc_acoef*gas_tempradinit**4&
-                *(1d0/gas_wl(ig)-1d0/gas_wl(ig+1))/&
-                (1d0/gas_wl(1)-1d0/gas_wl(gas_ng+1))&
-                *gas_vals2%volr*(gas_l0+gas_lr)**3
-        enddo
-     else
-        do ig = 1, gas_ng
-           gas_evolinit(ig,:)=pc_acoef*gas_tempradinit**4&
-                *(1d0/gas_wl(ig)-1d0/gas_wl(ig+1))/&
-                (1d0/gas_wl(1)-1d0/gas_wl(gas_ng+1))&
-                *gas_vals2%volr*(tsp_t*gas_velout)**3
-        enddo
-     endif
+  if(in_tradinittype=='prof') then
+    if(prof_nttrad==0) stop 'analytic_initial: no trad profile data'
+    trad = trad_profile(tsp_t)
+    write(6,*) 'debug'
+    write(6,'(1p,8e12.4)') trad
+  elseif(in_tradinittype=='unif') then
+    trad = in_tempradinit
   else
-     stop 'analytic_initial: invalid gas_inittype'
+    stop 'analytic_initial: invalid in_tradinittype'
+  endif
+!
+!-- map radiation temperature to gas_evolinit
+  if(.not.gas_isvelocity) then
+    do ig = 1, gas_ng
+      gas_evolinit(ig,:)=pc_acoef*trad**4&
+        *(1d0/gas_wl(ig)-1d0/gas_wl(ig+1))/&
+        (1d0/gas_wl(1)-1d0/gas_wl(gas_ng+1))&
+        *gas_vals2%volr*(gas_l0+gas_lr)**3
+    enddo
+  else
+    do ig = 1, gas_ng
+      gas_evolinit(ig,:)=pc_acoef*trad**4&
+        *(1d0/gas_wl(ig)-1d0/gas_wl(ig+1))/&
+        (1d0/gas_wl(1)-1d0/gas_wl(gas_ng+1))&
+        *gas_vals2%volr*(tsp_t*gas_velout)**3
+    enddo
   endif
 !--
 !

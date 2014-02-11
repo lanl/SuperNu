@@ -25,7 +25,7 @@ in_dentype = 'mass'
 in_templ0 =  0d0
 
 !-- flat structures
-in_inittype='none'
+in_tradinittype='prof'
 in_tempradinit = 0d0
 in_consttemp = 5d4
 in_solidni56 = f

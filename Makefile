@@ -20,7 +20,7 @@ include Makefile.inc
 
 PROGRAMS := supernu
 
-MODULES := gammaprofmod.o \
+MODULES := profiledatamod.o \
   elemdatamod.o physconstmod.o mpimod.o \
   miscmod.o \
   ionsmod.o ffxsmod.o bfxsmod.o bbxsmod.o \
@@ -118,7 +118,7 @@ manufacmod.o manufacmod.mod: manufacmod.f gasgridmod.o inputparmod.o miscmod.o p
 miscmod.o miscmod.mod: miscmod.f MISC/lcase.f MISC/warn.f 
 mpimod.o mpimod.mod: mpimod.f gasgridmod.o inputparmod.o particlemod.o timestepmod.o timingmod.o
 timestepmod.o timestepmod.mod: timestepmod.f90 physconstmod.o 
-gammaprofmod.o gammaprofmod.mod: gammaprofmod.f
+profiledatamod.o profiledatamod.mod: profiledatamod.f
 
 
 #

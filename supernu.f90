@@ -6,7 +6,7 @@ program supernu
   use gasgridmod
   use particlemod
   use physconstmod
-  use gammaprofmod
+  use profiledatamod
 
   use inputstrmod
 
@@ -98,8 +98,10 @@ program supernu
 !
 !-- read gamma deposition profiles
    if(in_isvelocity.and.in_srctype=='none') then
-      call read_gamma_profile(gas_nr)
+     call read_gamma_profiles(gas_nr)
    endif
+!-- read gamma deposition profiles
+   if(in_tradinittype=='prof') call read_trad_profiles(gas_nr)
 !
 !-- initial radiation energy
    call initialnumbers

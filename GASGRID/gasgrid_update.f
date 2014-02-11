@@ -8,7 +8,7 @@ c     -----------------------
       use gasgridmod
       use inputparmod
       use timingmod
-      use gammaprofmod
+      use profiledatamod
       implicit none
 ************************************************************************
 * Update the part of the gas grid that depends on time and temperature.
@@ -74,9 +74,9 @@ c-- energy deposition
 c-- total, units=ergs
        gas_vals2(:)%nisource = gas_vals2(:)%nisource *gas_vals2(:)%natom
 c-- use gamma deposition profiles if data available
-       if(gamprf_nt>0) then
+       if(prof_ntgam>0) then
         help = sum(gas_vals2%nisource)
-        gas_vals2(:)%nisource = help * interp_gamma_profile(tsp_t)
+        gas_vals2(:)%nisource = help * gamma_profile(tsp_t)
        endif
       endif
 !}}}
