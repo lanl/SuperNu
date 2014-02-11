@@ -1,0 +1,91 @@
+&inputpars
+
+!-- misc
+in_nomp = 1
+in_grab_stdout = f
+in_puretran = f
+in_seed = 1
+in_noreadstruct = f
+in_norestart = t
+
+!-- time step
+in_tfirst = 2d0
+in_tlast = 4d0
+in_nt = 3
+in_ntres = 0
+in_alpha = 1d0
+in_isbdf2 = f
+
+!-- gas grid settings
+in_nr = 64
+in_isvelocity = t
+in_isshell = f
+in_novolsrc = f
+in_dentype = 'mass'
+in_templ0 =  0d0
+
+!-- flat structures
+in_inittype='none'
+in_tempradinit = 0d0
+in_consttemp = 5d4
+in_solidni56 = f
+
+!-- external source type
+in_srctype = 'none'
+in_srcmax = 4d24
+!-- heaviside case
+in_theav = 9d0
+in_nheav = 40
+
+!-- power law heat capacity values
+in_cvcoef = 2d7
+in_cvtpwr = 0d0
+in_cvrpwr = 1d0
+
+!-- power law scattering opacity values
+in_sigcoefs = 0d0
+in_sigtpwrs = 0d0
+in_sigrpwrs = 0d0
+
+!-- power law absorption opacity values
+in_sigcoef = 0d0
+in_sigtpwr = 0d0
+in_sigrpwr = 0d0
+
+!-- group absorption opacity structure type
+in_opacanaltype = 'none'
+
+!-- picket fence case
+in_suol = 'tstd'
+in_suolpick1 = 0.5d0
+
+!-- line case (disparity)
+in_ldisp1 = 1d0
+in_ldisp2 = 1d-4
+
+!-- group settings
+in_wldex = 7
+
+!-- particle numbers
+in_ninit = 0
+in_nps = 1000
+in_npartmax = 10000000
+
+!-- imc tally method
+in_isimcanlog = f
+in_isddmcanlog = f
+in_depestimate = f
+!-- ddmc mfp per cell
+in_tauddmc = 3d0
+in_taulump = 10d0
+in_epslump = 0
+in_tauvtime = 'unif'
+
+!-- opacity debug switches
+in_nobbopac = f
+in_nobfopac = f
+in_noffopac = f
+in_nothmson = f
+in_noplanckweighting = t
+
+&end
