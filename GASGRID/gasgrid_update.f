@@ -55,7 +55,6 @@ c-- The difference between these two has decayed.
       if(gas_isvelocity.and.gas_srctype=='none') then
 c-- beginning of time step
        help = tsp_t
-       if(tsp_it==1) help = 0d0 !start accounting from day 0
        call update_natomfr(help)
        forall(i=-2:-1) natom1fr(:,i) = gas_vals2(:)%natom1fr(i)
 c-- end of time step
