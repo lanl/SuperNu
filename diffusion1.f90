@@ -80,7 +80,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !
 !-- find lumpable groups
   do ig = 1, g-1
-     if(gas_cap(ig,z)*gas_drarr(z) &
+     if((gas_sig(z)+gas_cap(ig,z))*gas_drarr(z) &
           *help >= prt_taulump*gas_curvcent(z) &
           .and. g-ig <= gas_epslump) then
         glump=glump+1
@@ -91,7 +91,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
      endif
   enddo
   do ig = g, gas_ng
-     if(gas_cap(ig,z)*gas_drarr(z) &
+     if((gas_sig(z)+gas_cap(ig,z))*gas_drarr(z) &
           *help >= prt_taulump*gas_curvcent(z) &
           .and. ig-g <= gas_epslump) then
         glump=glump+1
