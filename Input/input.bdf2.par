@@ -72,8 +72,8 @@ in_ldisp2 = 1d-4
 in_wldex = 18
 
 !-- particle numbers
-in_ninit = 100000
-in_ns = 100000
+in_ns0 = 100000
+in_ns  = 100000
 in_npartmax = 10000000
 
 !-- imc tally method
