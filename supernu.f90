@@ -26,7 +26,7 @@ program supernu
 !***********************************************************************
   real*8 :: help, dt
   real*8 :: t_elapsed
-  integer :: ierr, ihelp, ng
+  integer :: ierr, ihelp, ng, ns
   logical :: lmpi0 = .false. !master rank flag
   real :: t0,t1  !timing
 !
@@ -58,8 +58,8 @@ program supernu
    call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst,dt,in_isbdf2)
 !
 !-- particle init
-   if(in_ns==0) in_ns = in_nps/nmpi
-   call particle_init(in_npartmax,in_ns,in_ninit,in_isimcanlog, &
+   ns = in_ns/nmpi
+   call particle_init(in_npartmax,ns,in_ns0,in_isimcanlog, &
         in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime,nmpi, &
         in_norestart)
 !
