@@ -469,7 +469,7 @@ subroutine particle_advance
 
   call time(t1)
   t_pckt_stat = t1-t0  !register timing
-  write(6,*) transps, difs  !WARNING: this is written by all mpi nodes!
+  write(6,*) impi, transps, difs  !WARNING: this is written by all mpi nodes!
   !write(6,*) eleft, eright
 
   gas_eext = gas_eext-gas_eleft-gas_eright
