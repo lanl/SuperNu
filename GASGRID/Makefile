@@ -1,7 +1,7 @@
 TOP := $(CURDIR)/..
 
 include $(TOP)/Makefile.compiler
-include $(TOP)/Makefile.inc
+include $(TOP)/Makefile.include
 
 FILES = eos_update.o \
   gasgrid_setup.o gasgrid_update.o \

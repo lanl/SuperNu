@@ -16,7 +16,7 @@
 TOP := $(CURDIR)
 
 include Makefile.compiler
-include Makefile.inc
+include Makefile.include
 
 PROGRAMS := supernu
 
@@ -62,7 +62,7 @@ all: $(MODULES)
 	@echo "MAKE SUCCESSFUL: $(shell date)"
 
 clean: $(SUBCLEAN)
-	rm -f *.o *.a *.mod version.inc Makefile.depend $(PROGRAMS)
+	rm -f *.o *.a *.mod version.inc Makefile.dependmod Makefile.depend $(PROGRAMS)
 $(SUBCLEAN): %.clean:
 	$(MAKE) -C $* clean
 
@@ -93,6 +93,8 @@ check: all $(TESTS)
 ########################################################################
 #
 #-- automatic Makefile generation rule
+Makefile.dependmod:
+	$(TOP)/dependmodule.sh $(MODULES) >Makefile.dependmod
 Makefile.depend:
 	$(TOP)/depend.sh $(FILES) >Makefile.depend
 Makefile.compiler:
@@ -107,18 +109,18 @@ supernu: supernu.o $(MODULES) $(FILES) $(LIBRARIES)
 $(SUBDIRS):
 	$(MAKE) -C $@
 
-#
-#-- modules
-bbxsmod.o bbxsmod.mod: bbxsmod.f elemdatamod.o miscmod.o 
-gasgridmod.o gasgridmod.mod: gasgridmod.f90 inputparmod.o 
-inputparmod.o inputparmod.mod: inputparmod.f miscmod.o physconstmod.o 
-inputstrmod.o inputstrmod.mod: inputstrmod.f elemdatamod.o gasgridmod.o inputparmod.o miscmod.o physconstmod.o 
-ionsmod.o ionsmod.mod: ionsmod.f miscmod.o physconstmod.o 
-manufacmod.o manufacmod.mod: manufacmod.f gasgridmod.o inputparmod.o miscmod.o physconstmod.o 
-miscmod.o miscmod.mod: miscmod.f MISC/lcase.f MISC/warn.f 
-mpimod.o mpimod.mod: mpimod.f gasgridmod.o inputparmod.o particlemod.o timestepmod.o timingmod.o
-timestepmod.o timestepmod.mod: timestepmod.f90 physconstmod.o 
-profiledatamod.o profiledatamod.mod: profiledatamod.f
+##
+##-- modules
+#bbxsmod.o bbxsmod.mod: bbxsmod.f elemdatamod.o miscmod.o 
+#gasgridmod.o gasgridmod.mod: gasgridmod.f90 inputparmod.o 
+#inputparmod.o inputparmod.mod: inputparmod.f miscmod.o physconstmod.o 
+#inputstrmod.o inputstrmod.mod: inputstrmod.f elemdatamod.o gasgridmod.o inputparmod.o miscmod.o physconstmod.o 
+#ionsmod.o ionsmod.mod: ionsmod.f miscmod.o physconstmod.o 
+#manufacmod.o manufacmod.mod: manufacmod.f gasgridmod.o inputparmod.o miscmod.o physconstmod.o 
+#miscmod.o miscmod.mod: miscmod.f MISC/lcase.f MISC/warn.f 
+#mpimod.o mpimod.mod: mpimod.f gasgridmod.o inputparmod.o particlemod.o timestepmod.o timingmod.o
+#timestepmod.o timestepmod.mod: timestepmod.f90 physconstmod.o 
+#profiledatamod.o profiledatamod.mod: profiledatamod.f
 
 
 #
@@ -141,4 +143,5 @@ $(TESTS):
 
 #
 #-- object dependencies
+include Makefile.dependmod
 include Makefile.depend

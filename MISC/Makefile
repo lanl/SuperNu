@@ -1,7 +1,7 @@
 TOP := $(CURDIR)/..
 
 include ../Makefile.compiler
-include ../Makefile.inc
+include ../Makefile.include
 
 FILES = locate.o sorti.o memstats.o
 #-- the following routines are included in miscmod.f in order to avoid
