@@ -7,6 +7,7 @@ c     ------------------------
       use gasgridmod
       use manufacmod
       use miscmod, only:warn
+      use profiledatamod
       implicit none
 ************************************************************************
 * Initialize the gas grid, the part that is constant with time and
@@ -71,6 +72,9 @@ c-- temperature
        call init_manutemp(tsp_t)
       elseif(in_consttemp==0d0) then
        call read_restart_file
+      elseif(in_consttemp<0d0) then
+       gas_temp = trad_profile(tsp_t)
+       write(6,*) 'Trad applied to initial gas temp'
       else
        gas_temp = in_consttemp
       endif!}}}

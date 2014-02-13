@@ -27,7 +27,7 @@ in_templ0 =  0d0
 !-- flat structures
 in_tradinittype='prof'
 in_tempradinit = 0d0
-in_consttemp = 5d4
+in_consttemp = -1d0
 in_solidni56 = f
 
 !-- external source type
@@ -87,5 +87,8 @@ in_nobfopac = f
 in_noffopac = f
 in_nothmson = f
 in_noplanckweighting = t
+
+!-- additional output
+in_pdensdump = 'one'
 
 &end

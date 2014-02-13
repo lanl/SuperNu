@@ -79,6 +79,13 @@ program supernu
      call generate_inputstr(gas_l0,gas_lr,gas_v0,gas_velout)
    endif
 !
+!-- read gamma deposition profiles
+   if(in_isvelocity.and.in_srctype=='none') then
+     call read_gamma_profiles(in_nr)
+   endif
+!-- read gamma deposition profiles
+   if(in_tradinittype=='prof') call read_trad_profiles(in_nr)
+!
 !-- SETUP GRIDS
    call read_wlgrid(ng)
    call gasgrid_init(tsp_nt,ng)
@@ -95,13 +102,6 @@ program supernu
    if(.not.in_nobfopac) call bfxs_read_data           !bound-free cross section data
 !-- read ffxs data
    if(.not.in_noffopac) call ffxs_read_data           !free-free cross section data
-!
-!-- read gamma deposition profiles
-   if(in_isvelocity.and.in_srctype=='none') then
-     call read_gamma_profiles(gas_nr)
-   endif
-!-- read gamma deposition profiles
-   if(in_tradinittype=='prof') call read_trad_profiles(gas_nr)
 !
 !-- initial radiation energy
    call initialnumbers

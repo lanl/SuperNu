@@ -9,7 +9,7 @@ c     --------------------------------
 ************************************************************************
 * Solve the eos for given temperatures.
 ************************************************************************
-      integer :: i,niter,iion,nion
+      integer :: i,niter,iion,nion,istat
       integer :: ir,iz,ii
       real :: t0,t1
       real*8 :: ndens
@@ -57,26 +57,41 @@ c
 c
 c-- print partial densities
       if(do_output) then
-       write(8,*)!{{{
-       write(8,*) 'partial densities:',tsp_it
+       open(4,file='output.pdens',status='unknown',position='append',
+     &   iostat=istat)
+       if(istat/=0) stop 'eos_update: error opening output file'
+c
+c-- write header
+       write(4,*) '# partial densities',tsp_it
+       write(4,*) '# nr, nelem'
+       write(4,*) gas_nr,gas_nelem
+       write(4,*) '# nion'
+       write(4,'(40i12)') (ion_el(iz)%ni,iz=1,gas_nelem)
+       write(4,*) '# ions'
+       do iz=1,gas_nelem
+        write(4,'(40i12)') (iz*100+i,i=1,ion_grndlev(iz,1)%ni)
+       enddo
+c
 c-- electron density
-       write(8,'(2a12)') 'nelec','elec_dens' ![atom^-1],[cm^-3]
+       write(4,'(2a12)') '# nelec','elec_dens' ![atom^-1],[cm^-3]
        do ir=1,gas_nr
-        write(8,'(1p,2e12.4)') gas_vals2(ir)%nelec,
+        write(4,'(1p,2e12.4)') gas_vals2(ir)%nelec,
      &    gas_vals2(ir)%nelec*gas_vals2(ir)%natom/gas_vals2(ir)%vol
        enddo
+c
 c-- partial densities
        nion = 0
-       write(8,*)
        do iz=1,gas_nelem
-        write(8,'(40i12)') (iz*100+i,i=1,ion_grndlev(iz,1)%ni)
+        write(4,'("#",40i12)') (iz*100+i,i=1,ion_grndlev(iz,1)%ni)
         do ir=1,gas_nr
-         write(8,'(1p,40e12.4)') (pdens(nion+i,ir),
+         write(4,'(1p,40e12.4)') (pdens(nion+i,ir)*
+     &     gas_vals2(ir)%natom1fr(iz),
      &     i=1,ion_grndlev(iz,1)%ni)
         enddo !ir
-        write(8,*)
         nion = nion + ion_grndlev(iz,1)%ni
-       enddo !iz!}}}
+       enddo !iz
+c
+       close(4)
       endif !do_output
 c
       end subroutine eos_update

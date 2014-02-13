@@ -216,7 +216,8 @@ c
       if(in_totmass<=0d0 .and. in_noreadstruct) stop 'in_totmass <= 0'
 c
 c-- temp init
-      if(in_consttemp<0d0) stop 'in_consttemp < 0'
+*allow negative consttemp for now to use the trad profile temperature
+*     if(in_consttemp<0d0) stop 'in_consttemp < 0'
       if(in_templ0<0d0) stop 'in_templ0 < 0'
       if(in_tempradinit<0d0) stop 'in_tempradinit < 0'
       if(in_tradinittype=='unif') then

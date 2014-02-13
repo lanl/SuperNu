@@ -180,31 +180,31 @@ c!{{{
 c
 c-- BDF-2 and modified IMC require 2 opacity points to
 c compute the tempurature derivative in the fleck factor
-         gas_temp=dtempfrac*gas_temp
-         if(gas_isvelocity) then
-            do_output = (in_pdensdump=='each' .or. !{{{
-     &           (in_pdensdump=='one' .and. tsp_it==1))
+       gas_temp=dtempfrac*gas_temp
+       if(gas_isvelocity) then
+        do_output = (in_pdensdump=='each' .or.
+     &    (in_pdensdump=='one' .and. tsp_it==1))
+        call eos_update(do_output)
+       endif
 c
-               call eos_update(do_output)
-         endif
-         call analytic_opacity
-         if(in_opacanaltype=='none') then
-            call physical_opacity
-         endif
+       call analytic_opacity
+       if(in_opacanaltype=='none') then
+        call physical_opacity
+       endif
 c
-         gas_siggreyold=gas_siggrey
-         gas_temp=gas_temp/dtempfrac
+       gas_siggreyold=gas_siggrey
+       gas_temp=gas_temp/dtempfrac
 c
 c-- solve LTE EOS
 c================
-      if(gas_isvelocity) then
-         do_output = (in_pdensdump=='each' .or. !{{{
-     &        (in_pdensdump=='one' .and. tsp_it==1))
+       if(gas_isvelocity) then
+        do_output = (in_pdensdump=='each' .or. !{{{
+     &    (in_pdensdump=='one' .and. tsp_it==1))
 c
-            call eos_update(do_output)
-            if(tsp_it==1) write(6,'(1x,a27,2(f8.2,"s"))')
-     &           'eos timing                :',t_eos !}}}
-      endif
+        call eos_update(do_output)
+        if(tsp_it==1) write(6,'(1x,a27,2(f8.2,"s"))')
+     &    'eos timing                :',t_eos !}}}
+       endif
 c
 c
 c-- simple physical group/grey opacities: Planck and Rosseland 
@@ -212,7 +212,7 @@ c-- simple physical group/grey opacities: Planck and Rosseland
 c-- add physical opacities
 c-- rtw: must avoid reset in group_opacity routine
        if(in_opacanaltype=='none') then
-          call physical_opacity
+        call physical_opacity
        endif
        !write(*,*) gas_siggrey(1)
        !write(*,*) gas_cap(:,1)

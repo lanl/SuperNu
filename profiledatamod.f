@@ -34,6 +34,9 @@ c
       real*8 :: help
       integer :: it
 c
+c-- data sanity test
+      if(prof_ntgam==0) stop 'tgam_profile: data not loaded'
+c
 c-- previous time slice in input data
       it = locate(timegamvec,prof_ntgam,t)
 c
@@ -95,6 +98,9 @@ c     ---------------------------------------------!{{{
 c
       real*8 :: help
       integer :: it
+c
+c-- data sanity test
+      if(prof_nttrad==0) stop 'trad_profile: data not loaded'
 c
 c-- previous time slice in input data
       it = locate(timetradvec,prof_nttrad,t)

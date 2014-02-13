@@ -24,8 +24,7 @@ subroutine analytic_initial
   if(in_tradinittype=='prof') then
     if(prof_nttrad==0) stop 'analytic_initial: no trad profile data'
     trad = trad_profile(tsp_t)
-    write(6,*) 'debug'
-    write(6,'(1p,8e12.4)') trad
+    write(6,*) 'Trad applied to initial particles'
   elseif(in_tradinittype=='unif') then
     trad = in_tempradinit
   else
