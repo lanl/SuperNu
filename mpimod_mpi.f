@@ -449,7 +449,7 @@ c     -------------------------------!{{{
 ************************************************************************
 c-- helper variables
       integer :: isq
-      real :: help
+      real :: hlp
 c
 c-- scattering part vacancy
       call mpi_scatter(prt_tlyvacant,prt_npartmax,MPI_LOGICAL,
@@ -502,7 +502,7 @@ c-- scattering rand() count
 c
 c-- iterating to correct rand() count
       do isq = 1, prt_tlyrand-1
-         help = rand()
+         hlp = rand()
       enddo
 c
 c-- deallocations

@@ -18,14 +18,14 @@ subroutine particle_advance
   !total subroutine calls in program.
 !##################################################
 
-  integer*8 :: difs, transps
+  integer*8 :: nddmc, nimc, npckt
   integer :: ipart, g, zholder, zfdiff, ir, binsrch
   real*8 :: r1, alph2, r2, x1, x2, xx0, bmax, help, P
   real*8 :: uul, uur, uumax, r0, r3, mu0, rold, dddd
   integer, pointer :: zsrc, rtsrc !, gsrc
   real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
   logical, pointer :: isvacant
-  real :: t0,t1  !timing
+  real*8 :: t0,t1  !timing
 
   logical :: isshift=.true.
   logical :: partstopper=.true.
@@ -39,8 +39,6 @@ subroutine particle_advance
 !--(rev. 121)
   gas_eraddens =0d0
 !--
-  difs = 0
-  transps = 0
   gas_numcensus(1:gas_nr) = 0
 !-- advection split parameter
   alph2 = 0.5d0  !>=0,<=1
@@ -61,9 +59,13 @@ subroutine particle_advance
   
   call time(t0)
   ! Propagating all particles that are not considered vacant: loop
+  npckt = 0
+  nddmc = 0
+  nimc = 0
   do ipart = 1, prt_npartmax
      ! Checking vacancy!{{{
      if (prt_particles(ipart)%isvacant) cycle
+     npckt = npckt + 1
 
      ! Assigning pointers to corresponding particle properties
      zsrc => prt_particles(ipart)%zsrc
@@ -297,11 +299,11 @@ subroutine particle_advance
      do while ((.not.prt_done).and.(.not.isvacant))
         !Calling either diffusion or transport depending on particle type (rtsrc)!{{{
         if (rtsrc == 1.or.in_puretran) then
-           transps = transps + 1
+           nimc = nimc + 1
            call transport1(zsrc,wlsrc,rsrc,musrc,tsrc, &
                 esrc,ebirth,rtsrc,isvacant,ipart)
         else
-           difs = difs + 1
+           nddmc = nddmc + 1
            call diffusion1(zsrc,wlsrc,rsrc,musrc,tsrc, &
                 esrc,ebirth,rtsrc,isvacant,ipart)
         endif!}}}
@@ -469,7 +471,13 @@ subroutine particle_advance
 
   call time(t1)
   t_pckt_stat = t1-t0  !register timing
-  write(6,*) impi, transps, difs  !WARNING: this is written by all mpi nodes!
+  call timereg(t_pckt, t1-t0)
+  call timereg(t_pcktnpckt, dble(npckt))
+  call timereg(t_pcktnddmc, dble(nddmc))
+  call timereg(t_pcktnimc, dble(nimc))
+  npckt = 0
+  nddmc = 0
+  nimc = 0
   !write(6,*) eleft, eright
 
   gas_eext = gas_eext-gas_eleft-gas_eright

@@ -13,7 +13,7 @@ c     --------------------------------
       real,parameter :: fconst = sngl(pc_pi*pc_e**2/(pc_me*pc_c))
       integer :: nlinall,ilinall
       integer :: i,iz,ii,istat,llw,lhg
-      real :: t0,t1
+      real*8 :: t0,t1
 c
 c-- quick exit
       if(nelem==0) then

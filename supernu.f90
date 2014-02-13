@@ -28,12 +28,15 @@ program supernu
   real*8 :: t_elapsed
   integer :: ierr, ihelp, ng, ns
   logical :: lmpi0 = .false. !master rank flag
-  real :: t0,t1  !timing
+  real*8 :: t0,t1  !timing
 !
 !-- mpi initialization
   call mpi_init(ierr) !MPI
   call mpi_comm_rank(MPI_COMM_WORLD,impi,ierr) !MPI
   call mpi_comm_size(MPI_COMM_WORLD,nmpi,ierr) !MPI
+!
+!-- initialize timing module
+  call timing_init
 !
 !--
 !-- SETUP SIMULATION:
@@ -174,8 +177,8 @@ program supernu
     call reduce_tally !MPI
 !
 !-- print packet advance load-balancing info
-    if(impi==impi0) write(6,900) 'packets time(min|mean|max):',t_pckt_stat
-    if(impi==impi0) call timereg(t_pckt,sngl(t_pckt_stat(3)))  !register particle advance timing
+    !if(impi==impi0) write(6,900) 'packets time(min|mean|max):',t_pckt_stat
+    if(impi==impi0) call timereg(t_pckt_allrank,t_pckt_stat(3))  !register particle advance timing
 900 format(1x,a,3(f9.2,"s"))
 
 !-- collect data necessary for restart (tobe written by impi0)
@@ -223,7 +226,10 @@ program supernu
 !-- reset rand counters
     prt_tlyrand = 0
 !
-  enddo
+!-- write timestep timing to file
+    call timing_timestep(impi,tsp_it)
+!
+  enddo !tsp_it
 !
 !
 !--
@@ -233,7 +239,7 @@ program supernu
 !-- Print timing output.
   if(lmpi0) then
    call time(t1)
-   t_all = dble(t1 - t0)
+   t_all = t1 - t0
    call print_timing                 !print timing results
    write(6,*)
    write(6,*) 'SuperNu finished'

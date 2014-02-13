@@ -31,7 +31,7 @@ c-- gamma opacity
 c-- distribute packets
       real*8 :: chiross(gas_nr),capplanck(gas_nr)
 c-- timing
-      real :: t0,t1
+      real*8 :: t0,t1
 c
 c-- begin
 c

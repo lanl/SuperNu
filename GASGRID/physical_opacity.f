@@ -17,7 +17,7 @@ c$    use omp_lib
       integer :: ir, igs
       real*8 :: wlinv
 c-- timing
-      real :: t0,t1
+      real*8 :: t0,t1,tbb,tbf,tff
 c-- helper arrays
       real*8 :: grndlev(gas_nr,ion_iionmax-1,gas_nelem)
       real*8 :: grndlev2(gas_nr,ion_iionmax-1,gas_nelem)
@@ -52,6 +52,8 @@ c
 c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_temp)
 c
+      call time(t0)
+c
 c-- thomson scattering
       if(.not.in_nothmson) then
          gas_sig = cthomson*gas_vals2(:)%nelec*
@@ -83,6 +85,9 @@ c-- zero out
       gas_caprosl = 0d0
 c
 c-- bb,bf,ff opacities - group by group
+      tbb = 0d0
+      tbf = 0d0
+      tff = 0d0
       do ig=1,gas_ng
 c-- right edge of the group
        wlr = gas_wl(ig+1)  !in cm
@@ -150,6 +155,13 @@ c-- computing Planck opacity (rev 216)
        enddo
       endif
 c
+      call time(t1)
+c-- register timing
+      call timereg(t_opac,t1-t0)
+      call timereg(t_bb,tbb)
+      call timereg(t_bf,tbf)
+      call timereg(t_ff,tff)
+c
       contains
 c
       subroutine group_opacity(ig)
@@ -161,6 +173,7 @@ c     ----------------------------!{{{
 ************************************************************************
       integer :: igs
       real*8 :: dwl,wll
+      real*8 :: t0,t1,t2,t3
 c
 c-- left group-boundary wavelength
       wll = gas_wl(ig)  !in cm
@@ -171,10 +184,9 @@ c-- reset
       cap = 0d0
 c
 c-- bound-bound
+      call time(t0)
       if(.not. in_nobbopac) then
-       call time(t0)!{{{
-c
-      igs = 1
+      igs = 1!{{{
 c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(iz,ii,wl0,wlinv,phi,caphelp,expfac,ocggrnd)
@@ -214,18 +226,14 @@ cslow&     phi*bb_xs(i)%gxs*grndlev(:,ii,iz)*
 cslow&     exp(-bb_xs(i)%chilw*hckt(:))*(1d0 - exp(-wlinv*hckt(:)))
 cslow   endwhere
        enddo !i
-c$omp end parallel do
-c
-       call time(t1)
-       call timereg(t_bb, t1-t0)!}}}
+c$omp end parallel do !}}}
       endif !in_nobbopac
 c
 c
 c-- bound-free
+      call time(t1)
       if(.not. in_nobfopac) then
-       call time(t0)!{{{
-c
-c$omp parallel do
+c$omp parallel do!{{{
 c$omp& schedule(static)
 c$omp& private(wl,en,ie,xs)
 c$omp& firstprivate(grndlev2)
@@ -247,18 +255,14 @@ c$omp& shared(cap)
 !       write(6,*) 'wl done:',igs !DEBUG
 !       write(6,*) cap(:,igs) !DEBUG
        enddo !igs
-c$omp end parallel do
-c
-       call time(t1)
-       call timereg(t_bf, t1-t0)!}}}
+c$omp end parallel do!}}}
       endif !in_nobfopac
 c
 c
 c-- free-free
+      call time(t2)
       if(.not. in_noffopac) then
-       call time(t0)!{{{
-c
-c-- simple variant: nearest data grid point
+c-- simple variant: nearest data grid point!{{{
        hlparr = (gas_vals2%natom/gas_vals2%vol)**2*gas_vals2%nelec
 c$omp parallel do
 c$omp& schedule(static)
@@ -307,11 +311,13 @@ c-- cross section
          cap(ir,igs) = cap(ir,igs) + cap8
         enddo !ir
        enddo !igs
-c$omp end parallel do
-c
-       call time(t1)
-       call timereg(t_ff, t1-t0)!}}}
+c$omp end parallel do!}}}
       endif !in_noffopac!}}}
+c
+      call time(t3)
+      t_bb = t_bb + (t1-t0)
+      t_bf = t_bf + (t2-t1)
+      t_ff = t_ff + (t3-t2)
       end subroutine group_opacity
 c
       end subroutine physical_opacity

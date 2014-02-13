@@ -11,7 +11,7 @@ c     --------------------------------
 ************************************************************************
       integer :: i,niter,iion,nion,istat
       integer :: ir,iz,ii
-      real :: t0,t1
+      real*8 :: t0,t1
       real*8 :: ndens
       real*8 :: pdens(ion_nion,gas_nr)
 c
