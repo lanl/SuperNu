@@ -64,6 +64,8 @@ in_ldisp1 = 1d0
 in_ldisp2 = 1d-4
 
 !-- group settings
+in_ng = 10
+in_ngs = 0
 in_wldex = 7
 
 !-- particle numbers

@@ -189,7 +189,7 @@ c compute the tempurature derivative in the fleck factor
 c
        call analytic_opacity
        if(in_opacanaltype=='none') then
-        if(in_ngs==1) then
+        if(in_ngs==0) then
          call physical_opacity
         else
          call physical_opacity_subgrid
@@ -216,7 +216,7 @@ c-- simple physical group/grey opacities: Planck and Rosseland
 c-- add physical opacities
 c-- rtw: must avoid reset in group_opacity routine
        if(in_opacanaltype=='none') then
-        if(in_ngs==1) then
+        if(in_ngs==0) then
          call physical_opacity
         else
          call physical_opacity_subgrid

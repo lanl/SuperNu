@@ -90,7 +90,7 @@ program supernu
    if(in_tradinittype=='prof') call read_trad_profiles(in_nr)
 !
 !-- SETUP GRIDS
-   call read_wlgrid(ng)
+   call wlgrid_setup(ng)
    call gasgrid_init(tsp_nt,ng)
    call gasgrid_setup
 !

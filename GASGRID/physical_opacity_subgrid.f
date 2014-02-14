@@ -1,4 +1,4 @@
-      subroutine physical_opacity
+      subroutine physical_opacity_subgrid
 c     ---------------------------
 c$    use omp_lib
       use physconstmod
@@ -320,4 +320,4 @@ c
       t_ff = t_ff + (t3-t2)
       end subroutine group_opacity
 c
-      end subroutine physical_opacity
+      end subroutine physical_opacity_subgrid

@@ -16,7 +16,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   !analogous IMC transport routine through the advance. If puretran
   !is set to true, this routine is not used.
 !##################################################
-  real*8 :: cinv = 1d0/pc_c
+  real*8,parameter :: cinv = 1d0/pc_c
   !
   integer, intent(in) :: partnum !ipart
   integer, intent(inout) :: z, hyparam !,g

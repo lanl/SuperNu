@@ -15,7 +15,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   !the puretran boolean is set to false, this routine couples to the
   !analogous DDMC diffusion routine through the advance.
 !##################################################
-  real*8 :: cinv = 1d0/pc_c
+  real*8,parameter :: cinv = 1d0/pc_c
   !
   integer, intent(inout) :: z, hyparam !,g
   integer, intent(in) :: trndx

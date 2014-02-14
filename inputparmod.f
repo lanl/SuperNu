@@ -9,10 +9,10 @@ c-- write stdout to file
       character(80) :: in_comment = "" !why did I run this simulation?
       logical :: in_grab_stdout = .false. !write stdout to file
 c-- parallelization
-      integer :: in_nomp = 1       !# openmp threads
+      integer :: in_nomp = 1       !number of openmp threads
 c
 c-- gas grid
-      integer :: in_nr = 0 !# spatial grid in spherical geom
+      integer :: in_nr = 0   !number of spatial grid in spherical geom
       real*8 :: in_lr = 0d0  !spatial length of the domain
 c
 c-- do read input structure file instead of specifying the stucture with input parameters
@@ -45,15 +45,15 @@ c-- random number generator
       integer :: in_seed = 1984117 !starting point of random number generator
 c
 c-- particles
-      integer :: in_ns = 0    !# source particles generated per time step (total over all ranks)
-      integer :: in_ns0 = 0   !# initial particles at in_tfirst
-      integer :: in_npartmax = 0 !total # particles allowed PER MPI RANK
+      integer :: in_ns = 0    !number of source particles generated per time step (total over all ranks)
+      integer :: in_ns0 = 0   !number of initial particles at in_tfirst
+      integer :: in_npartmax = 0 !total number of particles allowed PER MPI RANK
       logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
       logical :: in_isimcanlog = .false. !use analog IMC tally if true
       logical :: in_isddmcanlog = .true. !use analog DDMC tally if true
       logical :: in_depestimate = .true. !use deposition estimator to update temperature
       real*8 :: in_tauddmc = 5d0 !number of mean free paths per cell required for DDMC
-      real*8 :: in_taulump = 10d0 !# of mean free paths needed to lump DDMC groups
+      real*8 :: in_taulump = 10d0 !number of of mean free paths needed to lump DDMC groups
 c-- time dependence of in_tauddmc and in_taulump
       character(4) :: in_tauvtime = 'unif' ! unif|incr = constant or limiting (s-curve) to more conservative constant
 c
@@ -64,14 +64,18 @@ c
 c-- time step
       real*8 :: in_tfirst = 0d0 !first point in time evolution
       real*8 :: in_tlast = 0d0  !last point in time evolution
-      integer :: in_nt = -1   !# time steps
+      integer :: in_nt = -1   !number of time steps
       integer :: in_ntres = -1   !restart time step number
       logical :: in_norestart = .true.
       logical :: in_isbdf2 = .true. !second order time difference (rev. 365)
 c
+c
 c-- group structure
-      integer :: in_wldex = 1 !# if in_iswlread = t, selects group grid from formatted group grid file
-      integer :: in_ngs = 1 !# subgroups per opacity group
+      integer :: in_ng = -1      !number of groups: 0 uses in_wldex
+      integer :: in_ngs = 0      !number of subgroups per opacity group: 0 uses non-subgridded physical_opacities
+      integer :: in_wldex = 1    !if in_iswlread = t, selects group grid from formatted group grid file
+      real*8  :: in_wlmin =   100e-8 !lower wavelength boundary [cm]
+      real*8  :: in_wlmax = 32000e-8 !upper wavelength boundary [cm]
 c
 c
 c-- physical opacities
@@ -117,7 +121,8 @@ c-- misc
 c     
 c-- runtime parameter namelist
       namelist /inputpars/
-     & in_nr,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,in_ngs,
+     & in_nr,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
+     & in_ng,in_ngs,in_wldex,in_wlmin,in_wlmax,
      & in_totmass,in_templ0,in_velout,in_v0,
      & in_consttemp,in_solidni56,
      & in_seed,in_ns,in_ns0,in_npartmax,in_puretran,in_alpha,
@@ -129,7 +134,7 @@ c-- runtime parameter namelist
      & in_sigcoefs,in_sigtpwrs,in_sigrpwrs,
      & in_sigcoef,in_sigtpwr,in_sigrpwr,
      & in_cvcoef,in_cvtpwr,in_cvrpwr,
-     & in_wldex,in_opacanaltype,in_suol,
+     & in_opacanaltype,in_suol,
      & in_suolpick1, in_ldisp1, in_ldisp2,
      & in_srctype, in_theav, in_nheav, in_srcmax,
      & in_isimcanlog, in_isddmcanlog,in_depestimate,
@@ -206,7 +211,14 @@ c
        if(in_velout>0d0) stop 'static grid: use in_lr, not in_velout'
       endif
 c
-      if(in_ngs<=0) stop 'in_ngs invalid'
+      if(in_ng==0) then
+       if(in_wldex<1) stop 'in_wldex invalid'
+      elseif(in_ng<0) then
+       stop 'in_ng invalid'
+      endif
+      if(in_ngs<0) stop 'in_ngs invalid'
+      if(in_wlmin<0) stop 'in_wlmin invalid'
+      if(in_wlmax<=in_wlmin) stop 'in_wlmax invalid'
 c
       if(in_ns<=0) stop 'in_ns <= 0'
       if(in_ns0<0) stop 'in_ns0 < 0'

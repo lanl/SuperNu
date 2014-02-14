@@ -217,9 +217,11 @@ c!}}}
 c
       call time(t3)
 c
-      if(any(cap==0d0)) call warn('opacity_calc','some cap==0')
+      if(any(cap<=0d0)) call warn('opacity_calc','some cap<=0')
+      if(any(cap/=cap)) call warn('opacity_calc','some cap==NaN')
+      if(any(cap>huge(help))) call warn('opacity_calc','some cap==inf')
 c
-      gas_cap = gas_cap + transpose(cap)
+      gas_cap = transpose(cap)
 c
 c-- rosseland opacities
       gas_caprosl = gas_cap
