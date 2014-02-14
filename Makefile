@@ -37,7 +37,7 @@ FILES := sourcenumbers.o vacancies.o boundary_source.o interior_source.o particl
 
 LIBRARIES := GASGRID/gasgrid.a MISC/misc.a
 SUBDIRS := $(dir $(LIBRARIES))
-SUBCLEAN = $(addsuffix .clean,$(SUBDIRS))
+SUBCLEAN = $(addsuffix .clean, $(SUBDIRS))
 
 VERSIONPY := $(wildcard version.py)
 
@@ -59,6 +59,7 @@ TESTS := $(addprefix $(TESTDIR),$(TESTS))
 all: $(MODULES)
 	$(MAKE) $(SUBDIRS)
 	$(MAKE) $(PROGRAMS)
+	hg --cwd $(dir $(realpath supernu.f90)) diff >hgdiff.txt
 	@echo "MAKE SUCCESSFUL: $(shell date)"
 
 clean: $(SUBCLEAN)

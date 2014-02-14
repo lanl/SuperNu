@@ -115,8 +115,7 @@ c     ------------------------
       write(6,*) 'timing results:'
       write(6,*) '============================'
       write(6,1) 'EOS               :',t_eos(i)
-      write(6,1) 'opacity (bb|bf|ff):',t_bb(i)+t_bf(i)+t_ff(i),
-     &                                 t_bb(i),t_bf(i),t_ff(i)
+      write(6,1) 'opacity (bb|bf|ff):',t_opac(i),t_bb(i),t_bf(i),t_ff(i)
       write(6,*) '----------------------------'
       write(6,1) 'setup             :',t_setup
       write(6,1) 'gas-grid update   :',t_gasupd(i)
