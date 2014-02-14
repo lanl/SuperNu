@@ -116,8 +116,6 @@ module gasgridmod
 !
 !
   type gas_secondary
-    sequence
-    
     real*8 :: eraddens
     real*8 :: ur, rho, bcoef, nisource
        !real*8 :: temp       !gcell temperature
@@ -132,6 +130,7 @@ module gasgridmod
        real*8 :: nelec=1d0  !gcell # electrons per atom
 !-- opacity invalidity flag
        logical :: opdirty=.true. !opacity needs recalculation
+       logical :: dummy=.true. !opacity needs recalculation
 !-- energy reservoir
        real*8 :: engdep     !energy deposited by gamma rays
 !-- material energy (temperature) source (may be manufactured), rev>244

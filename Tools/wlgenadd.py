@@ -14,7 +14,7 @@ print lnum
 
 # construct grid
 ## set min, max values and number of bins
-ng = 40
+ng = 500
 wlmin = 1e-5
 wlmax = 32e-5
 wlgrid = []

@@ -12,7 +12,7 @@ c-- one-time events
       real*8 :: t_setup
       real*8 :: t_all
 c
-      integer,private,parameter :: mreg = 20
+      integer,private,parameter :: mreg = 11
       real*8,target :: registers(3,mreg)
 c
 c-- global-flow time registers:
