@@ -6,6 +6,7 @@ c     ------------------
 * input parameters
 ************************************************************************
 c-- write stdout to file
+      character(80) :: in_comment = "" !why did I run this simulation?
       logical :: in_grab_stdout = .false. !write stdout to file
 c-- parallelization
       integer :: in_nomp = 1       !# openmp threads
@@ -134,7 +135,8 @@ c-- runtime parameter namelist
      & in_isimcanlog, in_isddmcanlog,in_depestimate,
      & in_tauddmc, in_epslump, in_dentype, in_noreadstruct,
      & in_norestart, in_taulump, in_tauvtime,
-     & in_tradinittype, in_tempradinit, in_isbdf2
+     & in_tradinittype, in_tempradinit, in_isbdf2,
+     & in_comment
 c
       public
       private inputpars

@@ -1,6 +1,7 @@
       subroutine banner
 c     -----------------
       use mpimod
+      use inputparmod
       implicit none
 ************************************************************************
 * Print banner, start date/time, and code revision.
@@ -51,6 +52,8 @@ c     write(6,*) "compiler flags  : ", compiler_flags
 c
       write(6,*) 'simulation date : ', t_startdate//" / "//t_starttime
       write(6,*) 'processor name  : ', trim(pname)
+      write(6,*)
+      write(6,*) '#: ',in_comment
       write(6,*)
 c
       end subroutine banner
