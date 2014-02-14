@@ -189,7 +189,11 @@ c compute the tempurature derivative in the fleck factor
 c
        call analytic_opacity
        if(in_opacanaltype=='none') then
-        call physical_opacity
+        if(in_ngs==1) then
+         call physical_opacity
+        else
+         call physical_opacity_subgrid
+        endif
        endif
 c
        gas_siggreyold=gas_siggrey
@@ -212,7 +216,11 @@ c-- simple physical group/grey opacities: Planck and Rosseland
 c-- add physical opacities
 c-- rtw: must avoid reset in group_opacity routine
        if(in_opacanaltype=='none') then
-        call physical_opacity
+        if(in_ngs==1) then
+         call physical_opacity
+        else
+         call physical_opacity_subgrid
+        endif
        endif
        !write(*,*) gas_siggrey(1)
        !write(*,*) gas_cap(:,1)

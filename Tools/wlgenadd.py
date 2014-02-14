@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
 # open input.wlgrid file
 f = open('input.wlgrid','r+')
@@ -14,8 +14,8 @@ print lnum
 
 # construct grid
 ## set min, max values and number of bins
-ng = 500
-wlmin = 1e-5
+ng = 10
+wlmin = 1e-6
 wlmax = 32e-5
 wlgrid = []
 for i in xrange(ng+1):
