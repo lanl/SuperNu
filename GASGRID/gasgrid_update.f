@@ -143,28 +143,8 @@ c-- add initial thermal input to gas_eext
       endif
 c
 c
-c
-c-- reset counters
-c=================
-c
-c-- rtw: may no longer reset counters here
-c
-c      gas_vals2%eraddens =0d0
-c
 !     return !DEBUG
 c
-c
-C$$$c-- solve LTE EOS
-C$$$c================
-C$$$      if(gas_isvelocity) then
-C$$$         do_output = (in_pdensdump=='each' .or. !{{{
-C$$$     &        (in_pdensdump=='one' .and. tsp_it==1))
-C$$$c
-C$$$            call eos_update(do_output)
-C$$$            if(tsp_it==1) write(6,'(1x,a27,2(f8.2,"s"))')
-C$$$     &           'eos timing                :',t_eos !}}}
-C$$$      endif
-C$$$c
 c
 c
 c-- opacity per rcell unit
@@ -178,26 +158,27 @@ c!}}}
       else calc_opac !tsp_it
 c!{{{
 c
-c-- BDF-2 and modified IMC require 2 opacity points to
-c compute the tempurature derivative in the fleck factor
+c-- compute the starting tempurature derivative in the fleck factor
+      if(tsp_it==1) then
        gas_temp=dtempfrac*gas_temp
-       if(gas_isvelocity) then
-        do_output = (in_pdensdump=='each' .or.
-     &    (in_pdensdump=='one' .and. tsp_it==1))
-        call eos_update(do_output)
-       endif
+         if(gas_isvelocity) then
+          do_output = (in_pdensdump=='each' .or.
+     &      (in_pdensdump=='one' .and. tsp_it==1))
+          call eos_update(do_output)
+         endif
 c
-       call analytic_opacity
-       if(in_opacanaltype=='none') then
-        if(in_ngs==0) then
-         call physical_opacity
-        else
-         call physical_opacity_subgrid
-        endif
-       endif
+         call analytic_opacity
+         if(in_opacanaltype=='none') then
+            if(in_ngs==0) then
+               call physical_opacity
+            else
+               call physical_opacity_subgrid
+            endif
+         endif
 c
-       gas_siggreyold=gas_siggrey
-       gas_temp=gas_temp/dtempfrac
+         gas_siggreyold=gas_siggrey
+         gas_temp=gas_temp/dtempfrac
+      endif
 c
 c-- solve LTE EOS
 c================

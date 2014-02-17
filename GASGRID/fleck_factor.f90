@@ -21,10 +21,11 @@ subroutine fleck_factor(dtempfrac)
      elseif(gas_siggrey(ir)<=0d0.or.gas_siggreyold(ir)<=0d0) then
         beta = 4.0*gas_vals2(ir)%ur/Um
      else
-        dlogsig = log(gas_siggrey(ir)/gas_siggreyold(ir))/(gas_temp(ir)-dtempfrac*gas_temp(ir))
         if(tsp_it==1) then
+           dlogsig = log(gas_siggrey(ir)/gas_siggreyold(ir))/(gas_temp(ir)-dtempfrac*gas_temp(ir))
            beta2 = min((pc_acoef*in_tempradinit**4-gas_vals2(ir)%ur)*dlogsig/gas_vals2(ir)%bcoef,0d0)
         else
+           dlogsig = log(gas_siggrey(ir)/gas_siggreyold(ir))/(gas_temp(ir)-gas_temphist(ir,tsp_it-1))
            beta2 = min((gas_vals2(ir)%eraddens-gas_vals2(ir)%ur)*dlogsig/gas_vals2(ir)%bcoef,0d0)
         endif
 

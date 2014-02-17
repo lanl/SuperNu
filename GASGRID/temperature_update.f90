@@ -40,8 +40,7 @@ subroutine temperature_update
      enddo
   endif
 
-  !calculating temperature
-!  if(tsp_it/=1) then
+!-- calculating temperature
   do ir = 1, gas_nr
      dtemp = gas_edep(ir)/gas_vals2(ir)%vol !new
      !write(6,*) gas_edep(ir), gas_vals2(ir)%vol
@@ -61,9 +60,11 @@ subroutine temperature_update
      endif
 
      gas_vals2(ir)%ur = pc_acoef*gas_temp(ir)**4
-     
+
   enddo
-!  endif
+
+!-- reset gas_siggreyold (used in fleck_factor)
+     gas_siggreyold=gas_siggrey
 !
 !-- summing comoving material energy
   gas_emat = 0d0
