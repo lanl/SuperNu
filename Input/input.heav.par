@@ -22,6 +22,7 @@ in_novolsrc = f
 in_velout = 1d9
 in_totmass = 1d33
 in_templ0 = 0d0
+in_dentype = 'mass'
 
 !-- flat structures
 in_tradinittype='unif'
@@ -67,7 +68,6 @@ in_ng = 10
 in_ngs = 0
 in_wlmin = 1.2398d-9
 in_wlmax = 1.2398d-3
-!in_wldex = 17
 
 !-- particle numbers
 in_ns0 = 0
