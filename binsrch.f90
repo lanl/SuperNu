@@ -12,8 +12,23 @@ function binsrch(lamp,wl,ng,ngin)
   real*8, intent(in) :: wl(ng) !array
   !
   integer :: imin, imax, imid
+!
+  logical,save :: first=.true.
+  real*8,save :: wlhelp1,wlhelp2
 
-  if(ngin==0) then
+!-- create helper quantities
+  if(first) then
+    first = .false.
+    if(wl(1) <= 0d0) stop 'binsrch: wl(1) <= 0d0'
+    wlhelp1 = log(wl(1))
+    wlhelp2 = 1d0/log(wl(ng)/wl(1))
+  endif
+
+  if(ngin/=0) then
+!-- logarithmic wavelength groups
+    !binsrch = floor(1d0+(ng-1) * log(lamp/wl(1)) / log(wl(ng)/wl(1)))
+    binsrch = floor(1d0 + (ng-1d0)*(log(lamp) - wlhelp1)*wlhelp2)
+  else
 !-- initialize binary indexes and key
      imin = 1
      imax = ng
@@ -44,10 +59,6 @@ function binsrch(lamp,wl,ng,ngin)
 
      if(imid/=imin) stop 'binsrch: no index'
      binsrch = imid
-!
-  else
-!-- logarithmic wavelength groups
-     binsrch=floor(1d0+(ng-1)*log(lamp/wl(1))/log(wl(ng)/wl(1)))
   endif
 
 end function binsrch
