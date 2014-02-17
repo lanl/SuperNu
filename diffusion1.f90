@@ -58,7 +58,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   endif
   !
   ! Calculating current group (rev 206)
-  g = binsrch(wl,gas_wl,gas_ng+1)
+  g = binsrch(wl,gas_wl,gas_ng+1,in_ng)
   !
   if(g>gas_ng.or.g<1) then
      !particle out of wlgrid bound

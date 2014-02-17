@@ -87,9 +87,9 @@ subroutine particle_advance
      ! Looking up group
      if(rtsrc==1) then
         if(gas_isvelocity) then!{{{
-           g = binsrch(wlsrc/(1d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1)
+           g = binsrch(wlsrc/(1d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1,in_ng)
         else
-           g = binsrch(wlsrc,gas_wl,gas_ng+1)
+           g = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
         endif
         !
         if(g>gas_ng.or.g<1) then
@@ -116,7 +116,7 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        g = binsrch(wlsrc,gas_wl,gas_ng+1)!{{{
+        g = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)!{{{
         !
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid bound
@@ -198,9 +198,9 @@ subroutine particle_advance
 !-- looking up group
      if(rtsrc==1) then
         if(gas_isvelocity) then!{{{
-           g = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1)
+           g = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1,in_ng)
         else
-           g = binsrch(wlsrc,gas_wl,gas_ng+1)
+           g = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
         endif
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid energy bound
@@ -226,7 +226,7 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        g = binsrch(wlsrc,gas_wl,gas_ng+1)!{{{
+        g = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)!{{{
         !
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid bound
@@ -253,7 +253,7 @@ subroutine particle_advance
         !
         if (rsrc < gas_rarr(zsrc)) then
            !
-           zholder = binsrch(rsrc,gas_rarr,gas_nr+1)
+           zholder = binsrch(rsrc,gas_rarr,gas_nr+1,0)
            !
            if(gas_isshell.and.zsrc==1) then
               prt_done = .true.
@@ -323,7 +323,7 @@ subroutine particle_advance
         !
 !
 !-- find group
-        g = binsrch(wlsrc,gas_wl,gas_ng+1)
+        g = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
         !
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid energy bound
@@ -352,9 +352,9 @@ subroutine particle_advance
      ! Looking up group
      if(rtsrc==1) then
         if(gas_isvelocity) then!{{{
-           g = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1)
+           g = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1,in_ng)
         else
-           g = binsrch(wlsrc,gas_wl,gas_ng+1)
+           g = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
         endif
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid energy bound
@@ -380,7 +380,7 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        g = binsrch(wlsrc,gas_wl,gas_ng+1)!{{{
+        g = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)!{{{
         !
         if(g>gas_ng.or.g<1) then
            !particle out of wlgrid bound
@@ -407,7 +407,7 @@ subroutine particle_advance
         !
         if (rsrc < gas_rarr(zsrc)) then
            !
-           zholder = binsrch(rsrc,gas_rarr,gas_nr+1)
+           zholder = binsrch(rsrc,gas_rarr,gas_nr+1,0)
            !
            if(gas_isshell.and.zsrc==1) then
               if(.not.isvacant) then

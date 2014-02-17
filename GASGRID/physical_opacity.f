@@ -87,7 +87,7 @@ c$omp& shared(cap)
         wl0 = bb_xs(i)%wl0*pc_ang  !in cm
         wlinv = 1d0/wl0  !in cm
 c-- iwl pointer
-        iwl = binsrch(wl0,gas_wl,gas_ng+1)  !todo: thread safe?
+        iwl = binsrch(wl0,gas_wl,gas_ng+1,in_ng)  !todo: thread safe?
 c--
         if(iwl<1) cycle
         if(iwl>gas_ng) cycle

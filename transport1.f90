@@ -50,9 +50,9 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !
 !-- calculating current group (rev. 120)
   if(gas_isvelocity) then
-     g = binsrch(wl/(1.0d0-r*mu*cinv),gas_wl,gas_ng+1)
+     g = binsrch(wl/(1.0d0-r*mu*cinv),gas_wl,gas_ng+1,in_ng)
   else
-     g = binsrch(wl,gas_wl,gas_ng+1)
+     g = binsrch(wl,gas_wl,gas_ng+1,in_ng)
   endif
   if(g>gas_ng.or.g<1) then
      !particle out of wlgrid energy bound
