@@ -64,7 +64,7 @@ subroutine temperature_update
   enddo
 
 !-- reset physical gas_siggreyold (used in fleck_factor, only approximate)
-  if(gas_isvelocity.and.in_opacanaltyp=='none') then
+  if(gas_isvelocity.and.in_opacanaltype=='none') then
      gas_siggreyold=gas_siggrey*(tsp_t/(tsp_t+tsp_dt))**3
   endif
 !
