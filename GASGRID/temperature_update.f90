@@ -63,8 +63,10 @@ subroutine temperature_update
 
   enddo
 
-!-- reset gas_siggreyold (used in fleck_factor)
-     gas_siggreyold=gas_siggrey
+!-- reset physical gas_siggreyold (used in fleck_factor, only approximate)
+  if(gas_isvelocity.and.in_opacanaltyp=='none') then
+     gas_siggreyold=gas_siggrey*(tsp_t/(tsp_t+tsp_dt))**3
+  endif
 !
 !-- summing comoving material energy
   gas_emat = 0d0

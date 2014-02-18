@@ -159,9 +159,10 @@ c!}}}
 c!{{{
 c
 c-- compute the starting tempurature derivative in the fleck factor
-      if(tsp_it==1) then
-       gas_temp=dtempfrac*gas_temp
-         if(gas_isvelocity) then
+      if(tsp_it==1.or.in_opacanaltype/='none') then
+         gas_temp=dtempfrac*gas_temp
+         if(gas_isvelocity .and. 
+     &        in_opacanaltype=='none') then
           do_output = (in_pdensdump=='each' .or.
      &      (in_pdensdump=='one' .and. tsp_it==1))
           call eos_update(do_output)
