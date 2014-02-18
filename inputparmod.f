@@ -67,7 +67,8 @@ c-- time step
       integer :: in_nt = -1   !number of time steps
       integer :: in_ntres = -1   !restart time step number
       logical :: in_norestart = .true.
-      logical :: in_isbdf2 = .true. !second order time difference (rev. 365)
+      logical :: in_isbdf2 = .false. !second order time difference (rev. 365)
+      logical :: in_ismodimc=.true. !Gentile-Fleck factor switch
 c
 c
 c-- group structure
@@ -140,7 +141,7 @@ c-- runtime parameter namelist
      & in_isimcanlog, in_isddmcanlog,in_depestimate,
      & in_tauddmc, in_epslump, in_dentype, in_noreadstruct,
      & in_norestart, in_taulump, in_tauvtime,
-     & in_tradinittype, in_tempradinit, in_isbdf2,
+     & in_tradinittype, in_tempradinit, in_isbdf2, in_ismodimc,
      & in_comment
 c
       public
