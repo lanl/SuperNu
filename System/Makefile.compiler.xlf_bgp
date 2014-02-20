@@ -1,0 +1,14 @@
+#==== xlf2003 (current version: 11.1 - 15/jun/2011) ====
+FC = mpixlf2003_r
+
+#-- opt or debug
+FCFLAGS = -qsmp=omp -O3 -qfloat=fltint:rsqrt -qnohot -qinitauto=fff00000 -qalign=4k -qcache=auto -qdpc=e -qmaxmem=16384 -qnozerosize -qsigtrap -qstrict -qtune=auto -qhalt=S -qnolm 
+#FCFLAGS = -C -g -qnoextchk -qflttrap=enab:ov:zero:inv
+
+#-- additional flags
+FCFLAGS += #-qarch=450 #-qarch=450d
+FCFLAGS_FF = -qfixed
+LDFLAGS =
+
+AR = ar
+RANLIB=ranlib

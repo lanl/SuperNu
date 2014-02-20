@@ -1,0 +1,15 @@
+#==== g95 (current version: 0.92 - 24/jun/2009) ====
+FC = g95
+#FC = mpif90
+#FC="ftn"
+
+#-- opt or debug
+FCFLAGS = -O3 
+#FCFLAGS = -g -O0 -Wall -fstatic -fbounds-check -ftrace=full -fpointer=invalid -fwrapv
+
+#FCFLAGS += -m64
+FCFLAGS_FF = -ffixed-form
+LDFLAGS =
+
+AR = ar
+RANLIB=ranlib

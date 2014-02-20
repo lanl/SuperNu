@@ -1,0 +1,15 @@
+#==== intel fortran compiler (current version: ifort 11.1 20091012) ====
+FC = ifort
+#FC = mpif90
+
+#-- opt or debug
+FCFLAGS = -O2
+#FCFLAGS = -O0 -g -check -debug -traceback
+
+#-- additional flags
+FCFLAGS += -msse3
+FCFLAGS += -m64 -openmp
+LDFLAGS = -openmp
+
+AR = ar
+RANLIB=ranlib
