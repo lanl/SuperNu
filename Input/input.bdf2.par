@@ -31,7 +31,6 @@ in_dentype = 'mass'
 in_templ0 =  0d0
 
 !-- flat structures
-in_inittype='unif'
 in_tempradinit=5802252.5d0
 in_consttemp = 4641820d0
 in_solidni56 = t
@@ -70,6 +69,8 @@ in_ldisp1 = 1d0
 in_ldisp2 = 1d-4
 
 !-- group settings
+in_ng = 0
+in_ngs = 0
 in_wldex = 18
 
 !-- particle numbers
