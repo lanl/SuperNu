@@ -49,9 +49,9 @@ in_sigtpwrs = 0d0
 in_sigrpwrs = 1d0
 
 !-- power law absorption opacity values
-in_sigcoef = 0d0
+in_sigcoef = 0.13d0
 in_sigtpwr = 0d0
-in_sigrpwr = 0d0
+in_sigrpwr = 1d0
 
 !-- group absorption opacity structure type
 in_opacanaltype = 'line'
@@ -82,7 +82,7 @@ in_depestimate = f
 !-- ddmc mfp per cell
 in_tauddmc = 3d0
 in_taulump = 3d0
-in_epslump = 0
+in_epslump = 10
 in_tauvtime = 'unif'
 
 !-- opacity debug switches

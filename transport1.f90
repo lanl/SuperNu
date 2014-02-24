@@ -1,5 +1,3 @@
-!Pure transport routine
-
 subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 
   use gasgridmod
