@@ -331,16 +331,34 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
            gas_eright = gas_eright+E
 !-- outbound luminosity tally
            if(gas_isvelocity) then
-              do ig = 1, glump
-                 r1 = rand()
-                 prt_tlyrand = prt_tlyrand+1
-                 r2 = rand()
-                 prt_tlyrand = prt_tlyrand+1
-                 mu = max(r1,r2)
-                 iig=glumps(ig)
+              r1 = rand()
+              prt_tlyrand = prt_tlyrand+1
+              r2 = rand()
+              prt_tlyrand = prt_tlyrand+1
+              mu = max(r1,r2)
+              if(speclump>0d0) then
+!                  r1 = rand()
+!                  prt_tlyrand = prt_tlyrand+1
+!                  denom2 = 0d0
+                 help = 1d0/opacleakrlump
+                 do ig = 1, glump
+                    iig=glumps(ig)
+                    specig = gas_siggrey(z)*gas_emitprob(iig,z)*capinv(iig)
+!                     if((r1>=denom2).and. &
+!                          (r1<denom2+specig*gas_opacleakr(iig,z)*speclump*help)) exit
+!                     denom2 = denom2+specig*gas_opacleakr(iig,z)*speclump*help
+                    gas_luminos(iig) = gas_luminos(iig)+&
+                         E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv)*specig*gas_opacleakr(iig,z)*speclump*help
+!                    gas_luminos(iig) = gas_luminos(iig)+&
+!                         E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv) * glumpinv
+                 enddo
+              else
+                 iig = g
                  gas_luminos(iig) = gas_luminos(iig)+&
-                      E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv) * glumpinv
-              enddo
+                      E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv)
+              endif
+!               gas_luminos(iig) = gas_luminos(iig)+&
+!                    E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv)
            else
               gas_eright = gas_eright+E
               do ig = 1, glump
