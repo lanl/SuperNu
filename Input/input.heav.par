@@ -10,11 +10,11 @@ in_norestart = t
 
 !-- time step
 in_tfirst = 2d0
-in_tlast = 5d0
+in_tlast = 3.5d0
 in_nt = 64
 in_alpha = 1d0
 in_isbdf2 = f
-in_ismodimc = t
+in_ismodimc = f
 
 !-- gas grid settings
 in_nr = 50
@@ -28,7 +28,7 @@ in_dentype = 'mass'
 !-- flat structures
 in_tradinittype='unif'
 in_tempradinit = 0d0
-in_consttemp = 11604505d0
+in_consttemp = 11604.505d0
 in_solidni56 = t
 
 !-- external source type
@@ -44,9 +44,9 @@ in_cvtpwr = 0d0
 in_cvrpwr = 1d0
 
 !-- power law scattering opacity values
-in_sigcoefs = 0.13d0
+in_sigcoefs = 0d0
 in_sigtpwrs = 0d0
-in_sigrpwrs = 1d0
+in_sigrpwrs = 0d0
 
 !-- power law absorption opacity values
 in_sigcoef = 0.13d0
@@ -62,7 +62,7 @@ in_suolpick1 = 0.5d0
 
 !-- line case (disparity)
 in_ldisp1 = 1d0
-in_ldisp2 = 1d-4
+in_ldisp2 = 0d0
 
 !-- group settings
 in_ng = 10
@@ -82,7 +82,7 @@ in_depestimate = f
 !-- ddmc mfp per cell
 in_tauddmc = 3d0
 in_taulump = 3d0
-in_epslump = 5
+in_epslump = 0
 in_tauvtime = 'unif'
 
 !-- opacity debug switches

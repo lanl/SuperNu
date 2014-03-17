@@ -129,10 +129,11 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   if(gas_isvelocity.and.g<gas_ng) then
      r1 = rand()
      prt_tlyrand=prt_tlyrand+1
+     ddop = pc_c*tsp_t*(gas_wl(g+1)-gas_wl(g))*abs(log(r1))/(3d0*gas_wl(g)*dcollabfact)
 !     wl = r1*gas_wl(g)+(1d0-r1)*gas_wl(g+1) !uniform sample
-     wl=1d0/(r1/gas_wl(g+1) + (1d0-r1)/gas_wl(g))  !reciprocal sample
-     wl=wl*(1d0-mu*r*cinv)
-     ddop = pc_c*(1d0-mu*r*cinv)*(1d0-wl/(1d0-mu*r*cinv*gas_wl(g+1)))
+!     wl=1d0/(r1/gas_wl(g+1) + (1d0-r1)/gas_wl(g))  !reciprocal sample
+!     wl=wl*(1d0-mu*r*cinv)
+!     ddop = pc_c*(1d0-mu*r*cinv)*(1d0-wl/(1d0-mu*r*cinv*gas_wl(g+1)))
 !     ddop = pc_c*(1d0-mu*r*cinv)*(1d0-&
 !          gas_wl(g)*log(gas_wl(g+1)/gas_wl(g))/(gas_wl(g+1)-gas_wl(g)))
 !     write(*,*) pc_c*(wl/gas_wl(g+1)-1d0)+r*mu
