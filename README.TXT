@@ -21,13 +21,12 @@ SETUP TIPS
 ==========
 In order to create multiple builds (e.g. serial and MPI) from a single source, use lndir in the following way:
 
-# mkdir -p supernu/src
-# mkdir -p supernu/bin
-# mkdir -p supernu/bin-mpi
 # hg clone https://drrossum@bitbucket.org/drrossum/supernu supernu/src
+# mkdir supernu/bin
+# mkdir supernu/bin-mpi
 # cd supernu/bin
 # lndir ../src
-# cd supernu/bin-mpi
+# cd ../bin-mpi
 # lndir ../src
 
 
