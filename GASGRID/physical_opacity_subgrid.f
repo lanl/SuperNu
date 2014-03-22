@@ -103,9 +103,11 @@ c
 c
        if(any(cap==0d0)) call warn('opacity_calc','some cap==0')
 c
+c-- planck average
+       gas_cap(ig,:) = sum(cap,dim=2)/in_ngs !assume evenly spaced subgroup bins
+c
 c-- todo: calculate gas_caprosl and gas_caprosr with cell-boundary temperature values
        if(in_noplanckweighting) then
-c-- assume evenly spaced subgroup bins
         gas_caprosl(ig,:) = in_ngs/sum(1d0/cap,dim=2) !assume evenly spaced subgroup bins
 c-- calculate Planck function weighted Rosseland
        else
@@ -125,17 +127,13 @@ c-- calculate Planck function weighted Rosseland
         enddo !ir
        endif
 c
+c-- combine planck and rosseland averages
+       help = in_opacmixrossel
+       gas_cap(ig,:) = (1d0-help)*gas_cap(ig,:) + help*gas_caprosl(ig,:)
+       gas_caprosl(ig,:) = gas_cap(ig,:)
+c
 c-- copy result to other side.  todo: evaluate right and left side individually
        gas_caprosr(ig,:) = gas_caprosl(ig,:)
-c
-c-- use planck or rosseland mean
-       if(.not. in_lopacrossel) then
-        gas_cap(ig,:) = sum(cap,dim=2)/in_ngs !assume evenly spaced subgroup bins
-        gas_caprosr(ig,:) = gas_cap(ig,:)
-        gas_caprosl(ig,:) = gas_cap(ig,:)
-       else
-        gas_cap(ig,:) = gas_caprosl(ig,:)
-       endif
       enddo !ig
 c
 c-- sanity check

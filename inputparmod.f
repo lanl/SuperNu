@@ -83,7 +83,7 @@ c-- physical opacities
       real*8 :: in_opcapgam = .06d0   ![cm^2/g] extinction coefficient for gamma radiation
       real*8 :: in_epsline = 1d0      !line absorption fraction (the rest is scattering)
       logical :: in_noplanckweighting = .false. !disable planck weighting of rosseland opacities within group
-      logical :: in_lopacrossel = .false. !use rosseland mean in subgridded opacity calculation
+      real*8 :: in_opacmixrossel = 1d0 !mix rosseland with planck average, 1=pure rosseland
 c-- test switches
       logical :: in_nobbopac = .false.    !turn off bound-bound opacity
       logical :: in_nobfopac = .false.    !turn off bound-bound opacity
@@ -131,7 +131,7 @@ c-- runtime parameter namelist
      & in_tfirst,in_tlast,in_nt,in_ntres,
      & in_grab_stdout,in_nomp,
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
-     & in_noffopac,in_nothmson,in_noplanckweighting,in_lopacrossel,
+     & in_noffopac,in_nothmson,in_noplanckweighting,in_opacmixrossel,
      & in_opacdump,in_pdensdump,
      & in_sigcoefs,in_sigtpwrs,in_sigrpwrs,
      & in_sigcoef,in_sigtpwr,in_sigrpwr,
@@ -303,6 +303,10 @@ c
      &   "in_opacdump=='all' will generate a big data file!")
       else
        stop 'in_opacdump invalid'
+      endif
+c
+      if(in_opacmixrossel<0d0 .or. in_opacmixrossel>1d0) then
+       stop 'in_opacmixrossel invalid'
       endif
 c
       if(trim(in_pdensdump)=='off') then
