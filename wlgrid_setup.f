@@ -23,7 +23,7 @@ c
       contains
 c
       subroutine read_wlgrid(ng)
-c     --------------------------
+c     --------------------------!{{{
       use gasgridmod
       use inputparmod
       implicit none
@@ -83,7 +83,7 @@ c
       write(6,*)
       write(6,*) 'wavelength grid in [cm]'
 c      write(6,*) gas_wl
-c
+c!}}}
       end subroutine read_wlgrid
 c
       end subroutine wlgrid_setup

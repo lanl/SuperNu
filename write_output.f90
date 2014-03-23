@@ -12,6 +12,15 @@ subroutine write_output
 
   if(.not.in_isbdf2.or.(in_isbdf2.and.tsp_it>1)) then
 
+  if(tsp_it==1) then
+   open(unit=4,file='output.wlgrid',status='unknown',position=pos)
+!-- header: dimension
+   write(4,*) "#",size(gas_wl)
+!-- body
+   write(4,*) gas_wl
+   close(4)
+  endif
+
   open(unit=4,file='output.tsp_time',status='unknown',position=pos)
   write(4,*) tsp_t
   close(4)
