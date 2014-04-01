@@ -198,6 +198,17 @@ program supernu
         gas_eveloav = gas_eveloav/dble(nmpi)
 !-- dim==1
         gas_edep = gas_edep/dble(nmpi)
+        do ig = 1, gas_ng
+           if(gas_lumnum(ig)>1) then
+              gas_lumdev(ig) = &
+                   ((gas_lumdev(ig)/gas_lumnum(ig)- &
+                   (gas_luminos(ig)/gas_lumnum(ig))**2) &
+                   *(gas_lumnum(ig)/dble(gas_lumnum(ig)-1)))**(0.5)
+           else
+              gas_lumdev(ig) = 0d0
+           endif
+        enddo
+        gas_lumdev = gas_lumdev/dble(nmpi)
         gas_luminos = gas_luminos/dble(nmpi)
 !-- dim==2
         gas_eraddens = gas_eraddens/dble(nmpi)
