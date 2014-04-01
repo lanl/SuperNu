@@ -189,7 +189,7 @@ program supernu
     if(impi==impi0) then
       ! averaging reduced results
       !if(nmpi>1) then
-!       write(*,*) prt_tlyrandarr(:)
+!       write(*,*) (gas_luminos(2)/gas_lumnum(2))**2, gas_lumdev(2)/gas_lumnum(2)
 !-- dim==0
         gas_erad = gas_erad/dble(nmpi)
         gas_eright = gas_eright/dble(nmpi)

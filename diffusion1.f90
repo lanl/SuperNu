@@ -372,7 +372,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
                  gas_luminos(iig)=gas_luminos(iig)+&
                       (E*dtinv) * glumpinv
                  gas_lumdev(iig) = gas_lumdev(iig)+&
-                      (E*dtinv)**2
+                      (E*dtinv*glumpinv)**2
                  gas_lumnum(iig) = gas_lumnum(iig)+1
               enddo
            endif
