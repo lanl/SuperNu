@@ -33,7 +33,9 @@ subroutine write_output
 
   open(unit=4,file='output.devLum',status='unknown',position=pos)
   do ig = 1, gas_ng
-     write(4,'(es16.8)',advance='no') gas_lumdev(ig)
+     if(gas_luminos(ig)>0d0) then
+        write(4,'(es16.8)',advance='no') gas_lumdev(ig)/gas_luminos(ig)
+     endif
   enddo
   close(4)
 

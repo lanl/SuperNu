@@ -26,7 +26,7 @@ program supernu
 !***********************************************************************
   real*8 :: help, dt
   real*8 :: t_elapsed
-  integer :: ierr, ihelp, ng, ns
+  integer :: ierr, ihelp, ng, ns, ig
   logical :: lmpi0 = .false. !master rank flag
   real*8 :: t0,t1  !timing
 !
@@ -200,7 +200,7 @@ program supernu
         gas_edep = gas_edep/dble(nmpi)
         do ig = 1, gas_ng
            if(gas_lumnum(ig)>1) then
-              gas_lumdev(ig) = &
+              gas_lumdev(ig) = gas_lumnum(ig)* &
                    ((gas_lumdev(ig)/gas_lumnum(ig)- &
                    (gas_luminos(ig)/gas_lumnum(ig))**2) &
                    *(gas_lumnum(ig)/dble(gas_lumnum(ig)-1)))**(0.5)
