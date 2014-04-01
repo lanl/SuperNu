@@ -98,6 +98,10 @@ module gasgridmod
 !
 !-- outbound grouped luminosity
   real*8, allocatable :: gas_luminos(:) !(gas_ng)
+!-- sampled devation of group luminosity
+  real*8, allocatable :: gas_lumdev(:) !(gas_ng)
+!-- number of escaped particles per group
+  integer, allocatable :: gas_lumnum(:) !(gas_ng)
 !
 !---
   integer, allocatable :: gas_nvol(:) !(gas_nr) number of thermal source particles generated per cell
@@ -215,6 +219,8 @@ module gasgridmod
     allocate(gas_ppr(gas_ng,gas_nr))  !can potentially be removed
     allocate(gas_eraddens(gas_ng,gas_nr))  !radiation energy density in tsp_dt per group
     allocate(gas_luminos(gas_ng))  !outbound grouped luminosity array
+    allocate(gas_lumdev(gas_ng))
+    allocate(gas_lumnum(gas_ng))
 !-Ryan W: gas_wl being allocated in gasgrid_setup now--
     !allocate(gas_wl(gas_ng)) !wavelength grid
 !------------------------------------------------------

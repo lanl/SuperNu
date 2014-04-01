@@ -31,6 +31,16 @@ subroutine write_output
   enddo
   close(4)
 
+  open(unit=4,file='output.devLum',status='unknown',position=pos)
+  do ig = 1, gas_ng
+     if(gas_lumnum(ig)>1) then
+        write(4,'(es16.8)',advance='no') ((gas_lumdev(ig)-gas_luminos(ig)**2)/(gas_lumnum(ig)-1))**(0.5)
+     else
+        write(4,'(es16.8)',advance='no') 0d0
+     endif
+  enddo
+  close(4)
+
   open(unit=4,file='output.temp',status='unknown',position=pos)
   do ir = 1, gas_nr
     write(4,'(es16.8)',advance='no') gas_tempold(ir)

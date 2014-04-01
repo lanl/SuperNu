@@ -349,6 +349,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !                     denom2 = denom2+specig*gas_opacleakr(iig,z)*speclump*help
                     gas_luminos(iig) = gas_luminos(iig)+&
                          E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv)*specig*gas_opacleakr(iig,z)*speclump*help
+                    gas_lumdev(iig) = gas_lumdev(iig)+&
+                         (E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv)*specig*gas_opacleakr(iig,z)*speclump*help)**2
+                    gas_lumnum(iig) = gas_lumnum(iig)+1
 !                    gas_luminos(iig) = gas_luminos(iig)+&
 !                         E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv) * glumpinv
                  enddo
@@ -356,6 +359,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
                  iig = g
                  gas_luminos(iig) = gas_luminos(iig)+&
                       E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv)
+                 gas_lumdev(iig) = gas_lumdev(iig)+&
+                      (E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv))**2
+                 gas_lumnum(iig) = gas_lumnum(iig)+1
               endif
 !               gas_luminos(iig) = gas_luminos(iig)+&
 !                    E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv)
@@ -365,6 +371,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
                  iig=glumps(ig)
                  gas_luminos(iig)=gas_luminos(iig)+&
                       (E*dtinv) * glumpinv
+                 gas_lumdev(iig) = gas_lumdev(iig)+&
+                      (E*dtinv)**2
+                 gas_lumnum(iig) = gas_lumnum(iig)+1
               enddo
            endif
 !

@@ -355,6 +355,8 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !
               gas_eright = gas_eright+E*elabfact
               gas_luminos(g) = gas_luminos(g)+E*dtinv
+              gas_lumdev(g) = gas_lumdev(g)+(E*dtinv)**2
+              gas_lumnum(g) = gas_lumnum(g)+1
 !              gas_luminos(g) = gas_luminos(g)+mu*E*dtinv
 !            else
 !               r1 = rand()
