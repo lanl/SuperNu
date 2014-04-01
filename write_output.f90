@@ -35,6 +35,8 @@ subroutine write_output
   do ig = 1, gas_ng
      if(gas_luminos(ig)>0d0) then
         write(4,'(es16.8)',advance='no') gas_lumdev(ig)/gas_luminos(ig)
+     else
+        write(4,'(es16.8)',advance='no') 0d0
      endif
   enddo
   close(4)
