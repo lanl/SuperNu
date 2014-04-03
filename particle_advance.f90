@@ -338,8 +338,8 @@ subroutine particle_advance
         !
         !
         if(g<gas_ng) then
-           if((gas_sig(ir)+gas_cap(g+1,ir))*gas_drarr(ir) &
-                *tsp_t>=prt_tauddmc*gas_curvcent(ir)) then
+           if((gas_sig(zsrc)+gas_cap(g+1,zsrc))*gas_drarr(zsrc) &
+                *tsp_t>=prt_tauddmc*gas_curvcent(zsrc)) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
