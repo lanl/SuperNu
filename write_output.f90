@@ -75,17 +75,17 @@ subroutine write_output
   enddo
   close(4)
 
-  open(unit=4,file='output.opac1',status='unknown',position='rewind')
+  open(unit=4,file='output.opac1',status='unknown',position=pos)
   do ig = 1, gas_ng
      write(4,'(es16.8)',advance='no') gas_cap(ig,gas_nr/4+1)
   enddo
   close(4)
-  open(unit=4,file='output.opac2',status='unknown',position='rewind')
+  open(unit=4,file='output.opac2',status='unknown',position=pos)
   do ig = 1, gas_ng
      write(4,'(es16.8)',advance='no') gas_cap(ig,gas_nr/2+1)
   enddo
   close(4)
-  open(unit=4,file='output.opac3',status='unknown',position='rewind')
+  open(unit=4,file='output.opac3',status='unknown',position=pos)
   do ig = 1, gas_ng
      write(4,'(es16.8)',advance='no') gas_cap(ig,3*gas_nr/4+1)
   enddo
