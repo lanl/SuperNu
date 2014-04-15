@@ -337,24 +337,40 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
               prt_tlyrand = prt_tlyrand+1
               mu = max(r1,r2)
               if(speclump>0d0) then
-!                  r1 = rand()
-!                  prt_tlyrand = prt_tlyrand+1
-!                  denom2 = 0d0
+                 r1 = rand()
+                 prt_tlyrand = prt_tlyrand+1
+                 denom2 = 0d0
                  help = 1d0/opacleakrlump
                  do ig = 1, glump
                     iig=glumps(ig)
                     specig = gas_siggrey(z)*gas_emitprob(iig,z)*capinv(iig)
-!                     if((r1>=denom2).and. &
-!                          (r1<denom2+specig*gas_opacleakr(iig,z)*speclump*help)) exit
-!                     denom2 = denom2+specig*gas_opacleakr(iig,z)*speclump*help
-                    gas_luminos(iig) = gas_luminos(iig)+&
-                         E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv)*specig*gas_opacleakr(iig,z)*speclump*help
-                    gas_lumdev(iig) = gas_lumdev(iig)+&
-                         (E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv)*specig*gas_opacleakr(iig,z)*speclump*help)**2
-                    gas_lumnum(iig) = gas_lumnum(iig)+1
+                    if((r1>=denom2).and. &
+                         (r1<denom2+specig*gas_opacleakr(iig,z)*speclump*help)) exit
+                    denom2 = denom2+specig*gas_opacleakr(iig,z)*speclump*help
 !                    gas_luminos(iig) = gas_luminos(iig)+&
 !                         E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv) * glumpinv
                  enddo
+                 r1 = rand()
+                 prt_tlyrand = prt_tlyrand+1
+                 wl=1d0/(r1/gas_wl(iig+1) + (1d0-r1)/gas_wl(iig))
+!-- changing from comoving frame to observer frame
+                 wl = wl/(1d0+mu*gas_rarr(gas_nr+1)*cinv)
+!-- obtaining spectrum (lab) group
+                 iig = binsrch(wl,gas_wl,gas_ng+1,in_ng)
+                 if(iig>gas_ng.or.iig<1) then
+                    if(iig>gas_ng) then
+                       iig=gas_ng
+                       wl=gas_wl(gas_ng+1)
+                    else
+                       iig=1
+                       wl=gas_wl(1)
+                    endif
+                 endif
+                 gas_luminos(iig) = gas_luminos(iig)+&
+                      E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv)
+                 gas_lumdev(iig) = gas_lumdev(iig)+&
+                      (E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv))**2
+                 gas_lumnum(iig) = gas_lumnum(iig)+1
               else
                  iig = g
                  gas_luminos(iig) = gas_luminos(iig)+&

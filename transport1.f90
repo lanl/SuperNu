@@ -351,6 +351,21 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !           if(g/=1) then
               vacnt = .true.
               prt_done = .true.
+!
+!-- retrieve lab frame group
+              g = binsrch(wl,gas_wl,gas_ng+1,in_ng)
+!
+!-- check group bounds
+              if(g>gas_ng.or.g<1) then
+                 if(g>gas_ng) then
+                    g=gas_ng
+                    wl=gas_wl(gas_ng+1)
+                 else
+                    g=1
+                    wl=gas_wl(1)
+                 endif
+              endif
+!
 !-- outbound luminosity tally
 !-- velocity effects accounting
               gas_evelo = gas_evelo+E*(1d0-elabfact)
