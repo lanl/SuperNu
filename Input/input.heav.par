@@ -10,8 +10,8 @@ in_norestart = t
 
 !-- time step
 in_tfirst = 2d0
-in_tlast = 3.5d0
-in_nt = 64
+in_tlast = 5d0
+in_nt = 128
 in_alpha = 1d0
 in_isbdf2 = f
 in_ismodimc = f
@@ -28,7 +28,7 @@ in_dentype = 'mass'
 !-- flat structures
 in_tradinittype='unif'
 in_tempradinit = 0d0
-in_consttemp = 11604.505d0
+in_consttemp = 11604505d0
 in_solidni56 = t
 
 !-- external source type
@@ -62,7 +62,7 @@ in_suolpick1 = 0.5d0
 
 !-- line case (disparity)
 in_ldisp1 = 1d0
-in_ldisp2 = 0d0
+in_ldisp2 = 1d-4
 
 !-- group settings
 in_ng = 10
@@ -82,7 +82,7 @@ in_depestimate = f
 !-- ddmc mfp per cell
 in_tauddmc = 3d0
 in_taulump = 3d0
-in_epslump = 0
+in_epslump = 10
 in_tauvtime = 'unif'
 
 !-- opacity debug switches

@@ -29,7 +29,7 @@ subroutine particle_advance
 
   logical :: isshift=.true.
   logical :: partstopper=.true.
-  logical :: showidfront=.false.
+  logical :: showidfront=.true.
 
   gas_edep = 0.0
   gas_erad = 0.0
@@ -338,12 +338,18 @@ subroutine particle_advance
         !
         !
         if(g<gas_ng) then
-           if((gas_sig(zsrc)+gas_cap(g+1,zsrc))*gas_drarr(zsrc) &
-                *tsp_t>=prt_tauddmc*gas_curvcent(zsrc)) then
+           r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
+           x1 = gas_cap(g,zsrc)
+           x2 = gas_wl(g)/(pc_c*tsp_t*(gas_wl(g+1)-gas_wl(g)))
+           if(r1<x2/(x1+x2)) then
+!            if((gas_sig(zsrc)+gas_cap(g+1,zsrc))*gas_drarr(zsrc) &
+!                 *tsp_t>=prt_tauddmc*gas_curvcent(zsrc)) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
               wlsrc = wlsrc*exp(tsp_dt/tsp_t)
+!            endif
            endif
         endif
         !
