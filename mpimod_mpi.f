@@ -87,11 +87,11 @@ c-- copy back
       deallocate(lsndvec)
 c
 c-- integer
-      n = 9
+      n = 10
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/gas_nr,gas_ng,
      &  prt_npartmax,in_nomp,tsp_nt,tsp_ntres,in_seed,prt_ninitnew,
-     &     gas_epslump/)
+     &     gas_epslump,in_ng/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -104,6 +104,7 @@ c-- copy back
       in_seed = isndvec(7)
       prt_ninitnew = isndvec(8)
       gas_epslump = isndvec(9)
+      in_ng = isndvec(10)
       deallocate(isndvec)
 c
 c-- real*8
