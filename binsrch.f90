@@ -24,7 +24,7 @@ function binsrch(lamp,wl,ng,ngin)
     wlhelp2 = 1d0/log(wl(ng)/wl(1))
   endif
 
-  if(ngin/=0) then
+  if(ngin>0) then
 !-- logarithmic wavelength groups
     !binsrch = floor(1d0+(ng-1) * log(lamp/wl(1)) / log(wl(ng)/wl(1)))
     binsrch = floor(1d0 + (ng-1d0)*(log(lamp) - wlhelp1)*wlhelp2)
