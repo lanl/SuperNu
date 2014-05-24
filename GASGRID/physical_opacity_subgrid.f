@@ -10,6 +10,7 @@ c$    use omp_lib
       use gasgridmod
       use miscmod
       use timingmod
+      use timestepmod, only:tsp_it
       implicit none
 ************************************************************************
 * compute bound-free and bound-bound opacity.
