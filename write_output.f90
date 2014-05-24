@@ -8,7 +8,7 @@ subroutine write_output
   implicit none
 
   integer :: ir, ig, j
-  character(16), save :: pos='rewind'
+  character(16), save :: pos='rewind', fstat='replace'
 
   if(.not.in_isbdf2.or.(in_isbdf2.and.tsp_it>1)) then
 
@@ -23,6 +23,10 @@ subroutine write_output
 
   open(unit=4,file='output.tsp_time',status='unknown',position=pos)
   write(4,*) tsp_t
+  close(4)
+
+  open(unit=4,file='output.LumNum',status=fstat,position='append',recl=gas_ng*16)
+  write(4,'(10000i16)') gas_lumnum
   close(4)
 
   open(unit=4,file='output.Lum',status='unknown',position=pos)
@@ -92,6 +96,7 @@ subroutine write_output
   close(4)
 
   pos='append'
+  fstat='old'
 
   endif
 

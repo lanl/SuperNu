@@ -23,6 +23,7 @@ c
       subroutine read_inputstr(nr,velout,isshell)
 c     -----------------------------------
       use physconstmod
+      use gasgridmod, only:gas_ini56,gas_ico56
       use miscmod
       implicit none
       logical,intent(in) :: isshell
@@ -90,9 +91,9 @@ c-- output
       write(6,*)
       write(6,*) 'input structure:'
       write(6,*) '================'
-      write(6,*) 'mass  :', sum(str_mass)/pc_msun
-      help = sum(str_massfr(str_nabund,:)*str_mass)
-      write(6,*) 'm_ni56:', help/pc_msun
+      write(6,*) 'mass  :', sum(str_mass)/pc_msun, 'Msun'
+      help = sum(str_massfr(gas_ini56,:)*str_mass)
+      write(6,*) 'm_ni56:', help/pc_msun, 'Msun'
 c
       end subroutine read_inputstr
 c

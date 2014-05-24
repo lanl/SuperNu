@@ -38,6 +38,7 @@ c-- conversion factors
       real*8,parameter :: pc_day = 24d0*60d0**2
       real*8,parameter :: pc_year = 31556925.9747d0 !sec
       real*8,parameter :: pc_ev = 1.60217653d-12 !erg
+      real*8,parameter :: pc_kev = 1.60217653d-9 !erg
       real*8,parameter :: pc_km = 1d5 !cm
       real*8,parameter :: pc_ang = 1d-8 !cm
       real*8,parameter :: pc_mbarn = 1d-18 !cm^2 (Mega barn)
@@ -51,10 +52,10 @@ cbad  real*8,parameter :: pc_thl_co56 = 6.67613d6 !sec, 77.27 days
 c-- nuclear decay gamma emission, 1MeV=1.602176d-6 erg
 c     real*8,parameter :: pc_qhl_ni56 = 3.421d-6 !ergs, 2135 keV, total decay energy
 c     real*8,parameter :: pc_qhl_co56 = 7.316d-6 !ergs, 4566 keV
-      real*8,parameter :: pc_qhl_ni56 = 2.756d-6 !ergs, 1720 keV, total gamma ray production
-      real*8,parameter :: pc_qhl_co56 = 5.815d-6 !ergs, 3440 + .19*2*511 kev !direct gamma's plus positron annihilation
+      real*8,parameter :: pc_qhl_ni56 = 1720d0*pc_kev                   !total gamma ray production
+      real*8,parameter :: pc_qhl_co56 = (3440d0 + .19d0*2*511d0)*pc_kev !direct gamma's plus positron annihilation
 c-- average kinetic energy of co56->fe56 emergent positron
-      real*8,parameter :: pc_q_poskin = 0.035d-6 !ergs, .19*116 kev
+      real*8,parameter :: pc_q_poskin = .19d0*116*pc_kev
 c-- gamma ray gray absorption cross section
       real*8,parameter :: pc_capgam = .06d0 !cm^2/g
 c

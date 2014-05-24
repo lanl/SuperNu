@@ -75,6 +75,7 @@ c-- total, units=ergs
 c-- use gamma deposition profiles if data available
        if(prof_ntgam>0) then
         help = sum(gas_vals2%nisource)
+!       write(6,*) 'ni56 source:',help
         gas_vals2(:)%nisource = help * gamma_profile(tsp_t)
        endif
       endif
