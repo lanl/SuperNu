@@ -35,7 +35,7 @@ c-- bfxs
       real*8 :: en,xs,wl,wll,wlr,kbt
       integer :: ilines,ilinee
 c-- bbxs
-      integer :: i,iwl
+      integer :: i,j,iwl
       real*8 :: phi,ocggrnd,expfac,wl0,dwl
       real*8 :: caphelp
 c-- temporary cap array in the right order
@@ -84,7 +84,7 @@ c
 c-- zero out
       gas_caprosl = 0d0
 c
-c-- allocate gas_cap
+c-- allocate cap
       if(in_ngs==0) then
        stop 'in_ngs==0 in phys_opac_subgrid'
       elseif(in_ngs>0) then
@@ -93,13 +93,17 @@ c-- fixed subgroup number
       else
 c-- find biggest subgroup number for any of the groups
        i = 0
+       j = 0
        do ig=1,gas_ng
         ngs = nint((gas_wl(ig+1)/gas_wl(ig) - 1d0) * abs(in_ngs))  !in_ngs stores lambda/(Delta lambda) as negative number
+        j = j + ngs
         if(ngs>i) i = ngs
        enddo !ig
        ngs = max(i,1)
       endif
-      allocate(gas_cap(gas_nr,ngs))
+c-- print info in first time step
+      if(tsp_it==1) write(6,*) 'ngs max|total:',i,j
+      allocate(cap(gas_nr,ngs))
 c
 c-- bb,bf,ff opacities - group by group
       tbb = 0d0
@@ -183,7 +187,7 @@ c-- computing Planck opacity (rev 216)
        enddo
       endif
 c
-      deallocate(gas_cap)
+      deallocate(cap)
 c
       call time(t1)
 c-- register timing
