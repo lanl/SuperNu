@@ -73,7 +73,9 @@ c
 c
 c-- group structure
       integer :: in_ng = -1      !number of groups: 0 uses in_wldex
-      integer :: in_ngs = 0      !number of subgroups per opacity group: 0 uses non-subgridded physical_opacities
+      integer :: in_ngs = 0      !>0 number of subgroups per opacity group
+                                 ! 0 non-subgridded physical_opacities
+                                 !<0 target subgrid resolution for automatic subgridding -> lambda/(Delta lambda) = abs(in_ngs)
       integer :: in_wldex = 1    !if in_iswlread = t, selects group grid from formatted group grid file
       real*8  :: in_wlmin =   100e-8 !lower wavelength boundary [cm]
       real*8  :: in_wlmax = 32000e-8 !upper wavelength boundary [cm]
@@ -218,7 +220,6 @@ c
       elseif(in_ng<0) then
        stop 'in_ng invalid'
       endif
-      if(in_ngs<0) stop 'in_ngs invalid'
       if(in_wlmin<0) stop 'in_wlmin invalid'
       if(in_wlmax<=in_wlmin) stop 'in_wlmax invalid'
 c

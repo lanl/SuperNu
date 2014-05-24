@@ -14,7 +14,7 @@ c$    use omp_lib
 ************************************************************************
 * compute bound-free and bound-bound opacity.
 ************************************************************************
-      integer :: ir, igs
+      integer :: ir,igs,ngs
       real*8 :: wlinv
 c-- timing
       real*8 :: t0,t1,tbb,tbf,tff
@@ -39,7 +39,7 @@ c-- bbxs
       real*8 :: phi,ocggrnd,expfac,wl0,dwl
       real*8 :: caphelp
 c-- temporary cap array in the right order
-      real*8 :: cap(gas_nr,in_ngs)
+      real*8,allocatable :: cap(:,:)  !(gas_nr,ngs)
 c-- special functions
       integer :: binsrch
       real*8 :: specint, x1, x2
@@ -84,14 +84,36 @@ c
 c-- zero out
       gas_caprosl = 0d0
 c
+c-- allocate gas_cap
+      if(in_ngs==0) then
+       stop 'in_ngs==0 in phys_opac_subgrid'
+      elseif(in_ngs>0) then
+c-- fixed subgroup number
+       ngs = in_ngs
+      else
+c-- find biggest subgroup number for any of the groups
+       i = 0
+       do ig=1,gas_ng
+        ngs = nint((gas_wl(ig+1)/gas_wl(ig) - 1d0) * abs(in_ngs))  !in_ngs stores lambda/(Delta lambda) as negative number
+        if(ngs>i) i = ngs
+       enddo !ig
+       ngs = max(i,1)
+      endif
+      allocate(gas_cap(gas_nr,ngs))
+c
 c-- bb,bf,ff opacities - group by group
       tbb = 0d0
       tbf = 0d0
       tff = 0d0
       do ig=1,gas_ng
+c-- variable ngs
+       if(in_ngs<0) then
+        ngs = nint((gas_wl(ig+1)/gas_wl(ig) - 1d0) * abs(in_ngs)) !in_ngs stores lambda/(Delta lambda) as negative number
+        ngs = max(ngs,1)
+       endif
 c-- right edge of the group
        wlr = gas_wl(ig+1)  !in cm
-       dwl = (wlr - gas_wl(ig))/in_ngs
+       dwl = (wlr - gas_wl(ig))/ngs
 c-- bb loop start end end points
        ilines = ilinee + 1  !-- prevous end point is new starting point
        do ilinee=ilines,bb_nline-1
@@ -101,19 +123,19 @@ c-- bb loop start end end points
 c
        call group_opacity(ig)
 c
-       if(any(cap==0d0)) call warn('opacity_calc','some cap==0')
+       if(any(cap(:,:ngs)==0d0)) call warn('opacity_calc','some cap==0')
 c
 c-- planck average
-       gas_cap(ig,:) = sum(cap,dim=2)/in_ngs !assume evenly spaced subgroup bins
+       gas_cap(ig,:) = sum(cap(:,:ngs),dim=2)/ngs !assume evenly spaced subgroup bins
 c
 c-- todo: calculate gas_caprosl and gas_caprosr with cell-boundary temperature values
        if(in_noplanckweighting) then
-        gas_caprosl(ig,:) = in_ngs/sum(1d0/cap,dim=2) !assume evenly spaced subgroup bins
+        gas_caprosl(ig,:) = ngs/sum(1d0/cap(:,:ngs),dim=2) !assume evenly spaced subgroup bins
 c-- calculate Planck function weighted Rosseland
        else
         do ir=1,gas_nr
          kbt = pc_kb*gas_temp(ir)
-         do igs=1,in_ngs
+         do igs=1,ngs
           wll = (gas_wl(ig) + (igs-1)*dwl)
           x1 = pc_h*pc_c/((wll + dwl)*kbt)
           x2 = pc_h*pc_c/(wll*kbt)
@@ -161,6 +183,8 @@ c-- computing Planck opacity (rev 216)
        enddo
       endif
 c
+      deallocate(gas_cap)
+c
       call time(t1)
 c-- register timing
       call timereg(t_opac,t1-t0)
@@ -184,7 +208,7 @@ c
 c-- left group-boundary wavelength
       wll = gas_wl(ig)  !in cm
 c-- subgroup width
-      dwl = (gas_wl(ig+1) - wll)/in_ngs
+      dwl = (gas_wl(ig+1) - wll)/ngs
 c
 c-- reset
       cap = 0d0
@@ -204,7 +228,7 @@ c$omp& shared(cap)
         wl0 = bb_xs(i)%wl0*pc_ang  !in cm
         wlinv = 1d0/wl0  !in cm
 c-- igs pointer
-        do igs=igs,in_ngs-1
+        do igs=igs,ngs-1
          if(wl0 <= wll+igs*dwl) exit
         enddo
 c-- profile function
@@ -244,7 +268,7 @@ c$omp& schedule(static)
 c$omp& private(wl,en,ie,xs)
 c$omp& firstprivate(grndlev2)
 c$omp& shared(cap)
-       do igs=1,in_ngs
+       do igs=1,ngs
         wl = wll + (igs-.5d0)*dwl !-- subgroup bin center value
         en = pc_h*pc_c/(pc_ev*wl) !photon energy in eV
         do iz=1,gas_nelem
@@ -275,7 +299,7 @@ c$omp& schedule(static)
 c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy)
 c$omp& firstprivate(hckt,hlparr)
 c$omp& shared(cap)
-       do igs=1,in_ngs
+       do igs=1,ngs
         wl = wll + (igs-.5d0)*dwl !-- subgroup bin center value
         wlinv = 1d0/wl  !in cm
 c-- gcell loop
