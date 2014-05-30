@@ -64,7 +64,7 @@ c
 c-- time step
       real*8 :: in_tfirst = 0d0 !first point in time evolution
       real*8 :: in_tlast = 0d0  !last point in time evolution
-      integer :: in_nt = -1   !number of time steps
+      integer :: in_nt = 0      !number of time steps.  <0 means read timeline from input.tsp_time
       integer :: in_ntres = -1   !restart time step number
       logical :: in_norestart = .true.
       logical :: in_isbdf2 = .false. !second order time difference (rev. 365)
@@ -243,8 +243,8 @@ c-- temp init
        stop 'in_tradinittype unknown'
       endif
 c
-      if(in_nt<1) stop 'in_nt invalid'
-      if(in_tfirst<=0d0) stop 'in_tfirst invalid'
+      if(in_nt==0) stop 'in_nt invalid'
+      if(in_tfirst<0d0) stop 'in_tfirst invalid'
       if(in_tlast<in_tfirst) stop 'in_tlast invalid'
 c
       if(in_nr<=0) stop 'in_nr invalid'

@@ -55,10 +55,10 @@ program supernu
    call parse_inputpars(nmpi)
 !
 !-- time step init
+   call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst,in_isbdf2)
 !-- constant time step, may be coded to loop if time step is not uniform
    t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
    dt = t_elapsed/in_nt
-   call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst,dt,in_isbdf2)
 !
 !-- particle init
    ns = in_ns/nmpi
@@ -140,6 +140,8 @@ program supernu
 !-- time step loop
 !=================
   do tsp_it = tsp_ntres, tsp_nt
+!-- Update tsp_t etc
+      call timestep_update(dt,in_isbdf2)
 !-- BDF-2 particle reset
       if(in_isbdf2.and.tsp_it==2) then
          prt_particles%isvacant=.true.
@@ -218,8 +220,6 @@ program supernu
       call temperature_update
 !-- check energy (particle weight) is accounted
       call energy_check
-      call timestep_update(dt,in_isbdf2) !Update tsp_t
-
       call write_output
 !
 !-- restart writers
