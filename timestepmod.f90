@@ -41,7 +41,7 @@ module timestepmod
 
 !-- beginning of first (restart) time step
     tsp_t = tfirst*pc_day+(tsp_ntres-1)*tsp_dt
-    tsp_tcenter = tsp_t + .5d0*tsp_dt+(tsp_ntres-1)*tsp_dt
+    tsp_tcenter = tsp_t + .5d0*tsp_dt
 !
   end subroutine timestep_init
 
