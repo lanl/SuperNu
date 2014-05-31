@@ -41,7 +41,14 @@ subroutine temperature_update
   endif
 
 !-- calculating temperature
-  do ir = 1, gas_nr
+  if(allocated(gas_temppreset)) then
+!-- apply read-in temperature profile
+   gas_temp = gas_temppreset(:,tsp_it)
+   gas_tempold = gas_temp
+   if(in_isbdf2) stop 'isbdf2 not supported with gas_temppreset'
+  else
+!-- calculate temp correction
+   do ir = 1, gas_nr
      dtemp = gas_edep(ir)/gas_vals2(ir)%vol !new
      !write(6,*) gas_edep(ir), gas_vals2(ir)%vol
      dtemp = (dtemp - tsp_dt*gas_fcoef(ir)*gas_siggrey(ir)*pc_c*gas_vals2(ir)%ur)/gas_vals2(ir)%bcoef
@@ -58,10 +65,10 @@ subroutine temperature_update
      elseif(.not.in_isbdf2) then
         gas_tempold(ir)=gas_temp(ir)
      endif
+   enddo
+  endif
 
-     gas_vals2(ir)%ur = pc_acoef*gas_temp(ir)**4
-
-  enddo
+  gas_vals2%ur = pc_acoef*gas_temp**4
 
 !-- reset physical gas_siggreyold (used in fleck_factor, only approximate)
   if(gas_isvelocity.and.in_opacanaltype=='none') then

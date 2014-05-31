@@ -27,6 +27,7 @@ module gasgridmod
 !
 !-- temperature structure history
   real*8,allocatable :: gas_temphist(:,:) !(gas_nr,tim_nt)
+  real*8,allocatable :: gas_temppreset(:,:) !(gas_nr,tim_nt)
 
   real*8 :: gas_lr = 0
   real*8 :: gas_l0 = 0  !innermost static radius
@@ -147,6 +148,8 @@ module gasgridmod
 
   integer, dimension(:), allocatable :: gas_numcensus !(gas_nr)
 
+  private read_temp_preset
+
   save
 
   contains
@@ -156,8 +159,9 @@ module gasgridmod
 !-------------------------------------------------------
     use inputparmod
     implicit none
-!
     integer,intent(in) :: nt,ng
+!
+    logical :: lex
 !
     gas_nr = in_nr
     gas_ng = ng
@@ -248,7 +252,31 @@ module gasgridmod
     
     allocate(gas_caprosl(gas_ng,gas_nr))  !left cell edge group Rosseland opacities
     allocate(gas_caprosr(gas_ng,gas_nr)) !right ||   ||    ||     ||        ||
-
+!
+!-- read preset temperature profiles
+    inquire(file='input.temp',exist=lex)
+    if(lex) call read_temp_preset
   end subroutine gasgrid_init
+
+
+  subroutine read_temp_preset
+!-----------------------------!{{{
+    use timestepmod
+    integer :: istat
+!
+    open(4,file='input.temp',status='old',iostat=istat)
+    if(istat/=0) stop 'rd_temp_preset: no file: input.temp'
+!-- alloc and read
+    allocate(gas_temppreset(gas_nr,tsp_nt))
+    read(4,*,iostat=istat) gas_temppreset
+    if(istat/=0) stop 'rd_temp_preset: file too short: input.temp'
+!-- check EOF
+    read(4,*,iostat=istat)
+    if(istat==0) stop 'rd_temp_preset: file too long: input.temp'
+    close(4)
+    write(6,*) 'rd_temp_preset: custom temp profiles read successfully'
+!}}}
+  end subroutine read_temp_preset
+
 
 end module gasgridmod
