@@ -245,7 +245,7 @@ c-- Planck opacity
           x1 = pc_h*pc_c/(gas_wl(ig + 1)*pc_kb*gas_temp(ir))
           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(ir))
           gas_siggrey(ir) = gas_siggrey(ir)+
-     &      15d0*gas_cap(ig,ir)*specint(x1,x2,3)/pc_pi4
+     &      15d0*gas_cap(ig,ir)*specint(x1,x2,3)/pc_pi**4
          enddo
         enddo
        endif
