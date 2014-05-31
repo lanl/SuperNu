@@ -75,7 +75,7 @@ module timestepmod
     if(tsp_it==tsp_ntres) then
 !-- first time step is exception
        tsp_t = tsp_t + (tsp_ntres-1)*tsp_dt
-       tsp_tcenter = tsp_t + .5d0*tsp_dt + (tsp_ntres-1)*tsp_dt
+       tsp_tcenter = tsp_t + .5d0*tsp_dt
     else
        if(isbdf2 .and. tsp_it==2) return !don't update todo: is this correct????
        tsp_t = tsp_t + tsp_dt
