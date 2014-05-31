@@ -101,7 +101,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         prt_tlyrand = prt_tlyrand+1
         dcol = abs(log(r1)/(gas_cap(g,z)*dcollabfact))
      else
-        dcol = abs(pc_c*tsp_dt*thelpinv) !> dcen
+        dcol = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
      endif
   else
      if((1.0d0-gas_fcoef(z))*gas_cap(g,z)>0.0d0) then
@@ -109,7 +109,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         prt_tlyrand = prt_tlyrand+1
         dcol = abs(log(r1)/((1.0d0-gas_fcoef(z))*gas_cap(g,z)*dcollabfact))
      else
-        dcol = abs(pc_c*tsp_dt*thelpinv) !> dcen
+        dcol = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
      endif
   endif
 !
@@ -119,7 +119,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      prt_tlyrand = prt_tlyrand+1
      dthm = abs(log(r1)/(gas_sig(z)*dcollabfact))
   else
-     dthm = abs(pc_c*tsp_dt*thelpinv) !> dcen
+     dthm = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
   endif
 !
 !-- distance to census = dcen
@@ -139,7 +139,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !     write(*,*) pc_c*(wl/gas_wl(g+1)-1d0)+r*mu
       ddop = abs(pc_c*(1d0-wl/gas_wl(g+1))-r*mu)
   else
-     ddop = abs(pc_c*tsp_dt*thelpinv) !> dcen
+     ddop = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
   endif
 !
 !-- minimum distance = d
