@@ -14,7 +14,7 @@ c     ------------------------
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
       integer :: i,j,ir
-      real*8 :: help,rrcenter,uudd
+      real*8 :: help
       real*8 :: help2
 c
 c--
@@ -155,11 +155,11 @@ c-- convert to natoms
      &    (elem_data(j)%m*pc_amu)
        enddo !j
 c-- special care for ni56 and co56
-       help = elem_data(26)%m*pc_amu
-!      help = elem_data(28)%m*pc_amu !phoenix compatible
+!      help = elem_data(26)%m*pc_amu
+       help = elem_data(28)%m*pc_amu !phoenix compatible
        gas_vals2(i)%natom1fr(gas_ini56) =
      &   gas_vals2(i)%natom1fr(gas_ini56)/help
-!      help = elem_data(27)%m*pc_amu !phoenix compatible
+       help = elem_data(27)%m*pc_amu !phoenix compatible
        gas_vals2(i)%natom1fr(gas_ico56) =
      &   gas_vals2(i)%natom1fr(gas_ico56)/help
 c-- store initial fe/co/ni
