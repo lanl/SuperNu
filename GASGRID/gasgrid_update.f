@@ -164,9 +164,7 @@ c-- compute the starting tempurature derivative in the fleck factor
          gas_temp=dtempfrac*gas_temp
          if(gas_isvelocity .and. 
      &        in_opacanaltype=='none') then
-          do_output = (in_pdensdump=='each' .or.
-     &      (in_pdensdump=='one' .and. tsp_it==1))
-          call eos_update(do_output)
+          call eos_update(.false.)
          endif
 c
          call analytic_opacity
@@ -214,29 +212,19 @@ c--------------------------------------------------------------
        if(trim(in_opacdump)=='off') then !{{{
 c-- do nothing
        else
-c-- open file descriptor
-        if(tsp_it==1) then
-         open(4,file='opacdump',action='write',status='replace')
-c-- write wl-grid
-         write(4,'(a,3i8)') '#',gas_ng,gas_nr
-         write(4,'(a,3i8,1p,2e12.4)') '#',tsp_it,tsp_it,0, 0., 0.
-         write(4,'(1p,10e12.4)') gas_wl
-        elseif(trim(in_opacdump)=='each') then
-         open(4,file='opacdump',action='write',status='replace')
-        elseif(trim(in_opacdump)=='all') then
-         open(4,file='opacdump',action='write',status='old',
-     &     position='append')
-        endif
+        open(4,file='output.opac',status='unknown',position='append')
        endif !off
 c
 c-- write opacity grid
        inquire(4,opened=do_output)
        if(do_output) then
+c-- header
+        if(tsp_it==1) write(4,'("#",3i8)') gas_ng,gas_nr,tsp_nt
+        write(4,'("#",3i8)') tsp_it
+c-- body
         do ir=1,gas_nr
-c-- convert from opacity in redona's rcell units to opacity per cm
-         write(4,'(a,3i8,1p,2e12.4)') '#',tsp_it,tsp_it,ir,
-     &     gas_temp(ir),gas_sig
-         write(4,'(1p,10e12.4)') (gas_cap(j,ir),j=1,gas_ng)
+         write(4,'(1p,9999e12.4)') gas_temp(ir),gas_sig(ir),
+     &     (gas_cap(j,ir),j=1,gas_ng)
         enddo
 c-- close file
         close(4)

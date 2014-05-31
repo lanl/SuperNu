@@ -21,7 +21,7 @@ subroutine analytic_opacity
   real*8 :: specint !debye type function integrator
 
   gas_siggrey = 0d0
-  gas_cap = 0.
+  gas_cap = 0d0
 !-- opacity of zero should contribute infinitely little to the rosseland
 !   opacity sum (calculated in convert_cap2capros).
 !-- rtw: no longer needed?
