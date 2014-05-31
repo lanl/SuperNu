@@ -63,8 +63,6 @@ c-- thomson scattering
       if(.not.in_nothmson) then
        gas_sig = cthomson*gas_vals2(:)%nelec*
      &   gas_vals2(:)%natom/gas_vals2(:)%volcrp
-       gas_sigbl = gas_sig
-       gas_sigbr = gas_sig
       endif
 c
 c-- bound-bound
@@ -217,30 +215,20 @@ c!}}}
 c
       call time(t3)
 c
-      if(any(cap<=0d0)) call warn('opacity_calc','some cap<=0')
-      if(any(cap/=cap)) call warn('opacity_calc','some cap==NaN')
-      if(any(cap>huge(help))) call warn('opacity_calc','some cap==inf')
-c
       gas_cap = transpose(cap)
 c
-c-- rosseland opacities
-      gas_caprosl = gas_cap
-      gas_caprosr = gas_cap
-c
-c-- computing Planck opacity (rev 216)
-      planckcheck = (.not.in_nobbopac .or. .not.in_nobfopac .or.
-     &  .not.in_noffopac)
-      if(planckcheck) then
-       gas_siggrey = 0d0
-       do ir=1,gas_nr
-        do ig=1,gas_ng
-         x1 = pc_h*pc_c/(gas_wl(ig + 1)*pc_kb*gas_temp(ir))
-         x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(ir))
-         gas_siggrey(ir) = gas_siggrey(ir)+
-     &     15d0*gas_cap(ig,ir)*specint(x1,x2,3)/pc_pi**4
-        enddo
-       enddo
-      endif
+c-- sanity check
+      i = 0
+      do ir=1,gas_nr
+       do ig=1,gas_ng
+        if(gas_cap(ig,ir)<=0d0) i = ior(i,1)
+        if(gas_cap(ig,ir)/=gas_cap(ig,ir)) i = ior(i,2)
+        if(gas_cap(ig,ir)>huge(help)) i = ior(i,4)
+       enddo !ig
+      enddo !ir
+      if(i==iand(i,1)) call warn('opacity_calc','some cap<=0')
+      if(i==iand(i,2)) call warn('opacity_calc','some cap==NaN')
+      if(i==iand(i,4)) call warn('opacity_calc','some cap==inf')
 c
       call time(t4)
 c-- register timing

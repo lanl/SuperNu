@@ -161,7 +161,7 @@ module gasgridmod
     implicit none
     integer,intent(in) :: nt,ng
 !
-    logical :: lex
+    logical :: lexist
 !
     gas_nr = in_nr
     gas_ng = ng
@@ -254,8 +254,8 @@ module gasgridmod
     allocate(gas_caprosr(gas_ng,gas_nr)) !right ||   ||    ||     ||        ||
 !
 !-- read preset temperature profiles
-    inquire(file='input.temp',exist=lex)
-    if(lex) call read_temp_preset
+    inquire(file='input.temp',exist=lexist)
+    if(lexist) call read_temp_preset
   end subroutine gasgrid_init
 
 

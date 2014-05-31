@@ -19,9 +19,10 @@ c     -----------------------
 * - LTE EOS: ionization balance and electron density
 * - opacities
 ************************************************************************
-      logical :: do_output
-      integer :: i,j,ir
-      real*8 :: help
+      logical :: do_output,lexist,planckcheck
+      integer :: i,j,ir,ig,it,istat
+      real*8 :: help,x1,x2
+      real*8,external :: specint
       real*8 :: dtempfrac = 0.99d0
       real*8 :: dwl(gas_ng)
       real*8 :: natom1fr(gas_nr,-2:-1) !todo: memory storage order?
@@ -148,8 +149,8 @@ c
 c
 c
 c
-c-- opacity per rcell unit
-c========================
+c-- opacity
+c==========
       calc_opac: if(tsp_it==0) then
 c!{{{
 c-- gamma opacity
@@ -160,25 +161,24 @@ c!}}}
 c!{{{
 c
 c-- compute the starting tempurature derivative in the fleck factor
-      if(tsp_it==1.or.in_opacanaltype/='none') then
-         gas_temp=dtempfrac*gas_temp
-         if(gas_isvelocity .and. 
-     &        in_opacanaltype=='none') then
-          call eos_update(.false.)
-         endif
+       if(tsp_it==1.or.in_opacanaltype/='none') then
+        gas_temp=dtempfrac*gas_temp
+        if(gas_isvelocity .and. in_opacanaltype=='none') then
+         call eos_update(.false.)
+        endif
 c
-         call analytic_opacity
-         if(in_opacanaltype=='none') then
-            if(in_ngs==0) then
-               call physical_opacity
-            else
-               call physical_opacity_subgrid
-            endif
+        call analytic_opacity
+        if(in_opacanaltype=='none') then
+         if(in_ngs==0) then
+          call physical_opacity
+         else
+          call physical_opacity_subgrid
          endif
+        endif
 c
-         gas_siggreyold=gas_siggrey
-         gas_temp=gas_temp/dtempfrac
-      endif
+        gas_siggreyold=gas_siggrey
+        gas_temp=gas_temp/dtempfrac
+       endif
 c
 c-- solve LTE EOS
 c================
@@ -197,18 +197,63 @@ c-- simple physical group/grey opacities: Planck and Rosseland
 c-- add physical opacities
 c-- rtw: must avoid reset in group_opacity routine
        if(in_opacanaltype=='none') then
-        if(in_ngs==0) then
+c-- test existence of input.opac file
+        inquire(file='input.opac',exist=lexist)
+        if(lexist) then
+c-- read in opacities
+         open(4,file='input.opac',status='old',iostat=istat)!{{{
+         if(istat/=0) stop 'read_opac: no file: input.opac'
+c-- read header
+         read(4,*,iostat=istat)
+         if(istat/=0) stop 'read_opac: file empty: input.opac'
+c-- read each cell individually
+         do it=1,tsp_it
+c-- skip delimiter
+          read(4,*,iostat=istat)
+          if(istat/=0) stop 'read_opac: delimiter error: input.opac'
+c-- read data
+          do ir=1,gas_nr
+           read(4,*,iostat=istat) help,gas_sig(ir),gas_cap(:,ir)
+           if(istat/=0) stop 'read_opac: body error: input.opac'
+          enddo !ir
+         enddo !it
+         write(6,*) 'read_opac: read successfully'
+!}}}
+        elseif(in_ngs==0) then
+c-- calculate opacities
          call physical_opacity
         else
          call physical_opacity_subgrid
         endif
        endif
+c
+c-- copy results into misc arrays
+       gas_sigbl = gas_sig
+       gas_sigbr = gas_sig
+       gas_caprosl = gas_cap
+       gas_caprosr = gas_cap
+c
+c-- Planck opacity
+       planckcheck = (.not.in_nobbopac .or. .not.in_nobfopac .or.
+     &   .not.in_noffopac)
+!Ryan, why is this conditional (drr 14/05/31)?
+       if(planckcheck) then
+        gas_siggrey = 0d0
+        do ir=1,gas_nr
+         do ig=1,gas_ng
+          x1 = pc_h*pc_c/(gas_wl(ig + 1)*pc_kb*gas_temp(ir))
+          x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(ir))
+          gas_siggrey(ir) = gas_siggrey(ir)+
+     &      15d0*gas_cap(ig,ir)*specint(x1,x2,3)/pc_pi4
+         enddo
+        enddo
+       endif
        !write(*,*) gas_siggrey(1)
        !write(*,*) gas_cap(:,1)
        !gas_siggrey(:)=0.5*gas_cap(2,:)
 c
-c-- write out opacities (additional gray opacity not included!)
-c--------------------------------------------------------------
+c-- write out opacities
+c----------------------
        if(trim(in_opacdump)=='off') then !{{{
 c-- do nothing
        else

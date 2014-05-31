@@ -57,10 +57,8 @@ c
 c
 c-- thomson scattering
       if(.not.in_nothmson) then
-         gas_sig = cthomson*gas_vals2(:)%nelec*
-     &        gas_vals2(:)%natom/gas_vals2(:)%volcrp
-         gas_sigbl=gas_sig
-         gas_sigbr=gas_sig
+       gas_sig = cthomson*gas_vals2(:)%nelec*
+     &   gas_vals2(:)%natom/gas_vals2(:)%volcrp
       endif
 c
 c-- ground level occupation number
@@ -157,36 +155,20 @@ c
 c-- combine planck and rosseland averages
        help = in_opacmixrossel
        gas_cap(ig,:) = (1d0-help)*gas_cap(ig,:) + help*gas_caprosl(ig,:)
-       gas_caprosl(ig,:) = gas_cap(ig,:)
-c
-c-- copy result to other side.  todo: evaluate right and left side individually
-       gas_caprosr(ig,:) = gas_caprosl(ig,:)
       enddo !ig
 c
 c-- sanity check
-      if(count(gas_caprosl-gas_cap > 1e-7*gas_cap)>0) then
-       do ir=1,gas_nr
-        write(6,*) ir
-        write(6,'(1p,20e12.4)') gas_cap(:,ir)
-        write(6,'(1p,20e12.4)') gas_caprosl(:,ir)
-       enddo
-       stop 'opacity_calc: gas_capros > cas_cap'
-      endif
-c
-c-- computing Planck opacity (rev 216)
-      planckcheck = (.not.in_nobbopac .or. .not.in_nobfopac .or.
-     &  .not.in_noffopac)
-      if(planckcheck) then
-       gas_siggrey = 0d0
-       do ir=1,gas_nr
-        do ig=1,gas_ng
-         x1 = pc_h*pc_c/(gas_wl(ig + 1)*pc_kb*gas_temp(ir))
-         x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(ir))
-         gas_siggrey(ir) = gas_siggrey(ir)+
-     &     15d0*gas_cap(ig,ir)*specint(x1,x2,3)/pc_pi**4
-        enddo
-       enddo
-      endif
+      i = 0
+      do ir=1,gas_nr
+       do ig=1,gas_ng
+        if(gas_cap(ig,ir)<=0d0) i = ior(i,1)
+        if(gas_cap(ig,ir)/=gas_cap(ig,ir)) i = ior(i,2)
+        if(gas_cap(ig,ir)>huge(help)) i = ior(i,4)
+       enddo !ig
+      enddo !ir
+      if(i==iand(i,1)) call warn('opacity_calc','some cap<=0')
+      if(i==iand(i,2)) call warn('opacity_calc','some cap==NaN')
+      if(i==iand(i,4)) call warn('opacity_calc','some cap==inf')
 c
       deallocate(cap)
 c
