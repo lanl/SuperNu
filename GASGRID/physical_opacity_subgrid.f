@@ -166,9 +166,9 @@ c-- sanity check
         if(gas_cap(ig,ir)>huge(help)) i = ior(i,4)
        enddo !ig
       enddo !ir
-      if(i==iand(i,1)) call warn('opacity_calc','some cap<=0')
-      if(i==iand(i,2)) call warn('opacity_calc','some cap==NaN')
-      if(i==iand(i,4)) call warn('opacity_calc','some cap==inf')
+      if(i/=iand(i,1)) call warn('opacity_calc','some cap<=0')
+      if(i/=iand(i,2)) call warn('opacity_calc','some cap==NaN')
+      if(i/=iand(i,4)) call warn('opacity_calc','some cap==inf')
 c
       deallocate(cap)
 c

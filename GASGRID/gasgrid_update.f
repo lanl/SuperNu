@@ -217,6 +217,7 @@ c-- read data
            if(istat/=0) stop 'read_opac: body error: input.opac'
           enddo !ir
          enddo !it
+         close(4)
          write(6,*) 'read_opac: read successfully'
 !}}}
         elseif(in_ngs==0) then
