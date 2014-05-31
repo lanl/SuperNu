@@ -11,7 +11,7 @@ module timestepmod
   real*8 :: tsp_dt
   real*8 :: tsp_alpha = 0d0
 
-  private read_timesteps
+  private read_timestep_preset
 
   save
 
@@ -32,7 +32,7 @@ module timestepmod
 !
 !-- read timestep configuration from file
     if(nt<0) then
-       call read_timesteps(tsp_nt)
+       call read_timestep_preset(tsp_nt)
        tsp_t = tsp_tpreset(1)
     else
 !-- configured by input parameters
@@ -84,7 +84,7 @@ module timestepmod
   end subroutine timestep_update
 
 
-  subroutine read_timesteps(nt)
+  subroutine read_timestep_preset(nt)
     implicit none!{{{
     integer,intent(out) :: nt
 !***********************************************************************
@@ -93,7 +93,7 @@ module timestepmod
     integer :: istat
 !
     open(4,file='input.tsp_time',status='old',iostat=istat)
-    if(istat/=0) stop 'read_timesteps: file missing: input.tsp_time'
+    if(istat/=0) stop 'rd_tsp_preset: file missing: input.tsp_time'
 !
 !-- count lines
     nt = 0
@@ -105,19 +105,23 @@ module timestepmod
     rewind(4)
 !
 !-- allocate
-    if(nt<1) stop 'read_timesteps: file error1: input.tsp_time'
+    if(nt<2) stop 'rd_tsp_preset: file too short: input.tsp_time'
     allocate(tsp_tpreset(nt))
+!-- last time step is only for tsp_dt purpose
+    nt = nt - 1
 !
 !-- read lines
     read(4,*,iostat=istat) tsp_tpreset
-    if(istat/=0) stop 'read_timesteps: file error2: input.tsp_time'
+    if(istat/=0) stop 'rd_tsp_preset: file error: input.tsp_time'
 !
 !-- make sure no remaining data
     read(4,*,iostat=istat)
-    if(istat==0) stop 'read_timesteps: file error3: input.tsp_time'
+    if(istat==0) stop 'rd_tsp_preset: file too long: input.tsp_time'
 !
     close(4)
+!
+    write(6,*) 'rd_tsp_preset: custom timesteps read successfully',nt
 !!}}}
-  end subroutine read_timesteps
+  end subroutine read_timestep_preset
 
 end module timestepmod
