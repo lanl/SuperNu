@@ -14,7 +14,6 @@ in_tlast = 4d0
 in_nt = 3
 in_ntres = 0
 in_alpha = 1d0
-in_isbdf2 = f
 in_ismodimc=t
 
 !-- gas grid settings

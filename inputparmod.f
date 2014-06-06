@@ -67,7 +67,6 @@ c-- time step
       integer :: in_nt = 0      !number of time steps.  <0 means read timeline from input.tsp_time
       integer :: in_ntres = -1   !restart time step number
       logical :: in_norestart = .true.
-      logical :: in_isbdf2 = .false. !second order time difference (rev. 365)
       logical :: in_ismodimc=.true. !Gentile-Fleck factor switch
 c
 c
@@ -144,7 +143,7 @@ c-- runtime parameter namelist
      & in_isimcanlog, in_isddmcanlog,in_depestimate,
      & in_tauddmc, in_epslump, in_dentype, in_noreadstruct,
      & in_norestart, in_taulump, in_tauvtime,
-     & in_tradinittype, in_tempradinit, in_isbdf2, in_ismodimc,
+     & in_tradinittype, in_tempradinit, in_ismodimc,
      & in_comment
 c
       public

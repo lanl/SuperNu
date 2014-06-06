@@ -18,12 +18,11 @@ module timestepmod
   contains
 
 
-  subroutine timestep_init(nt, ntres, alpha, tfirst, isbdf2)
+  subroutine timestep_init(nt, ntres, alpha, tfirst)
 !------------------------------------------------!{{{
     use physconstmod
     integer,intent(in) :: nt, ntres
     real*8,intent(in) :: alpha, tfirst
-    logical,intent(in) :: isbdf2
 !***********************************************************************
 ! set the timestep constants
 !***********************************************************************
@@ -36,25 +35,18 @@ module timestepmod
        tsp_t = tsp_tpreset(1)
     else
 !-- configured by input parameters
-       if(isbdf2) then
-          tsp_nt = nt+1
-       else
-          tsp_nt = nt
-       endif
+       tsp_nt = nt
        tsp_t = tfirst*pc_day
     endif
 !!}}}
   end subroutine timestep_init
 
 
-  subroutine timestep_update(dt, isbdf2)
+  subroutine timestep_update(dt)
     implicit none!{{{
     real*8,intent(in) :: dt
-    logical,intent(in) :: isbdf2
 !***********************************************************************
 ! update the timestep variables
-!
-! WARNING: this version possibly breaks isdbf2.  Ryan, please verify.
 !***********************************************************************
 !-- preset time step sizes
     if(allocated(tsp_tpreset)) then
@@ -65,11 +57,7 @@ module timestepmod
     endif
 !
 !-- update time step size
-    if(isbdf2 .and. tsp_it==1) then
-       tsp_dt = dt/2d0
-    else
-       tsp_dt = dt
-    endif
+    tsp_dt = dt
 !
 !-- update time
     if(tsp_it==tsp_ntres) then
@@ -77,10 +65,10 @@ module timestepmod
        tsp_t = tsp_t + (tsp_ntres-1)*tsp_dt
        tsp_tcenter = tsp_t + .5d0*tsp_dt
     else
-       if(isbdf2 .and. tsp_it==2) return !don't update todo: is this correct????
        tsp_t = tsp_t + tsp_dt
        tsp_tcenter = tsp_t + .5*tsp_dt
-    endif!}}}
+    endif
+!}}}
   end subroutine timestep_update
 
 

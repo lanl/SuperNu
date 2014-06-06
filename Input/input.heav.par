@@ -13,7 +13,6 @@ in_tfirst = 2d0
 in_tlast = 5d0
 in_nt = 128
 in_alpha = 1d0
-in_isbdf2 = f
 in_ismodimc = f
 
 !-- gas grid settings

@@ -13,7 +13,6 @@ subroutine write_output
 !
   reclen = gas_ng*12
 
-  if(.not.in_isbdf2.or.(in_isbdf2.and.tsp_it>1)) then
 
   if(tsp_it==1) then
    open(unit=4,file='output.wlgrid',status='unknown',position=pos)
@@ -48,7 +47,7 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.temp',status=fstat,position='append',recl=reclen)
-  write(4,'(1p,10000e12.4)') gas_tempold
+  write(4,'(1p,10000e12.4)') gas_temp
   close(4)
 
   open(unit=4,file='output.gas_fcoef',status='unknown',position=pos)
@@ -98,6 +97,5 @@ subroutine write_output
   pos='append'
   fstat='old'
 
-  endif
 
 end subroutine write_output

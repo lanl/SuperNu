@@ -44,8 +44,6 @@ subroutine temperature_update
   if(allocated(gas_temppreset)) then
 !-- apply read-in temperature profile
    gas_temp = gas_temppreset(:,tsp_it)
-   gas_tempold = gas_temp
-   if(in_isbdf2) stop 'isbdf2 not supported with gas_temppreset'
   else
 !-- calculate temp correction
    do ir = 1, gas_nr
@@ -56,15 +54,8 @@ subroutine temperature_update
      dtemp2 = (gas_fcoef(ir)/gas_vals2(ir)%bcoef)*tsp_dt* &
           gas_vals2(ir)%matsrc
 
-     gas_temp(ir)=gas_tempold(ir)+dtemp+dtemp2
+     gas_temp(ir)=gas_temp(ir)+dtemp+dtemp2
 
-     if(in_isbdf2.and.tsp_it>1) then
-        temphelp = gas_tempold(ir)/3d0
-        gas_tempold(ir)=gas_temp(ir)
-        gas_temp(ir)=4d0*gas_tempold(ir)/3d0-temphelp
-     elseif(.not.in_isbdf2) then
-        gas_tempold(ir)=gas_temp(ir)
-     endif
    enddo
   endif
 

@@ -55,7 +55,7 @@ program supernu
    call parse_inputpars(nmpi)
 !
 !-- time step init
-   call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst,in_isbdf2)
+   call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst)
 !-- constant time step, may be coded to loop if time step is not uniform
    t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
    dt = t_elapsed/in_nt
@@ -141,12 +141,7 @@ program supernu
 !=================
   do tsp_it = tsp_ntres, tsp_nt
 !-- Update tsp_t etc
-    if(impi==impi0) call timestep_update(dt,in_isbdf2)
-!-- BDF-2 particle reset
-      if(in_isbdf2.and.tsp_it==2) then
-         prt_particles%isvacant=.true.
-         call initial_particles
-      endif
+    if(impi==impi0) call timestep_update(dt)
 !
 !-- updating prt_tauddmc and prt_taulump
     call tau_update

@@ -78,8 +78,6 @@ c-- temperature
       else
        gas_temp = in_consttemp
       endif!}}}
-c-- BDF-2
-      gas_tempold=gas_temp
 c
 c
 c-- temp and ur
