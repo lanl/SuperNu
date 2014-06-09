@@ -8,11 +8,11 @@ subroutine write_output
   implicit none
 
   integer :: ir, ig, j
-  integer :: reclen
+  integer :: reclen, reclen2
   character(16), save :: pos='rewind', fstat='replace'
 !
   reclen = gas_ng*12
-
+  reclen2 = gas_nr*12
 
   if(tsp_it==1) then
    open(unit=4,file='output.wlgrid',status='unknown',position=pos)
@@ -46,7 +46,7 @@ subroutine write_output
   enddo
   close(4)
 
-  open(unit=4,file='output.temp',status=fstat,position='append',recl=reclen)
+  open(unit=4,file='output.temp',status=fstat,position='append',recl=reclen2)
   write(4,'(1p,10000e12.4)') gas_temp
   close(4)
 
