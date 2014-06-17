@@ -149,7 +149,7 @@ subroutine particle_advance
              *help<prt_tauddmc*gas_curvcent(zsrc)) then
            !write(*,*) 'here', g, wlsrc, esrc
            if (rtsrc == 2) then
-              gas_methodswap(zsrc)=gas_methodwap(zsrc)+1
+              gas_methodswap(zsrc)=gas_methodswap(zsrc)+1
 !-- sampling position uniformly
 !              r1 =  rand()
 !           prt_tlyrand = prt_tlyrand+1
@@ -195,7 +195,7 @@ subroutine particle_advance
            rtsrc = 1
         else
            if(rtsrc==1) then
-              gas_methodswap(zsrc)=gas_methodwap(zsrc)+1
+              gas_methodswap(zsrc)=gas_methodswap(zsrc)+1
            endif
            rtsrc = 2
         endif!}}}
