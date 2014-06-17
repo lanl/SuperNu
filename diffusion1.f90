@@ -288,6 +288,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !
 !-- method changed to IMC
               hyparam = 1
+              gas_methodswap(z)=gas_methodswap(z)+1
 !
 !-- location set right bound of left cell
               r = gas_rarr(z)
@@ -430,6 +431,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !
 !-- method changed to IMC
               hyparam = 1
+              gas_methodswap(z)=gas_methodswap(z)+1
 !
 !-- location set left bound of right cell
               r = gas_rarr(z+1)
@@ -493,6 +495,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
            hyparam = 2
         else
            hyparam = 1
+           gas_methodswap(z)=gas_methodswap(z)+1
 !-- direction sampled isotropically           
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1

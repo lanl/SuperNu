@@ -116,6 +116,7 @@ module gasgridmod
   real*8, allocatable :: gas_temp(:)
 !---
 !
+  integer, allocatable :: gas_methodswap(:) ! number of IMC-DDMC method changes per cell per time step (gas_nr)
 !
   type gas_secondary
     real*8 :: eraddens
@@ -248,6 +249,7 @@ module gasgridmod
     
     allocate(gas_caprosl(gas_ng,gas_nr))  !left cell edge group Rosseland opacities
     allocate(gas_caprosr(gas_ng,gas_nr)) !right ||   ||    ||     ||        ||
+    allocate(gas_methodswap(gas_nr))
 !
 !-- read preset temperature profiles
     inquire(file='input.temp',exist=lexist)

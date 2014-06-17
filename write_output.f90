@@ -31,6 +31,10 @@ subroutine write_output
   write(4,'(10000i12)') gas_lumnum
   close(4)
 
+  open(unit=4,file='output.methodswap',status=fstat,position='append',recl=reclen2)
+  write(4,'(10000i12)') gas_methodswap
+  close(4)
+
   open(unit=4,file='output.Lum',status=fstat,position='append',recl=reclen)
   where(gas_luminos<1d-99) gas_luminos = 1d-99  !prevent non-universal number representation, e.g. 1.1234-123
   write(4,'(1p,10000e12.4)') gas_luminos

@@ -24,7 +24,7 @@ c-- bbxsmod
       if(impi==impi0) deallocate(gas_caprosl,gas_caprosr)
 c-- gasgridmod
       deallocate(gas_numcensus,gas_rarr,gas_drarr)
-      deallocate(gas_edep,gas_temp,gas_tempb)
+      deallocate(gas_edep,gas_temp,gas_tempb,gas_methodswap)
       if(impi==impi0) deallocate(gas_rhob)
       deallocate(gas_cap)
       deallocate(gas_emitprob,gas_opacleakl,gas_opacleakr)

@@ -189,6 +189,7 @@ c     ------------------------!{{{
 *--
 *
 *-- arrays:
+*-- real
 * real*8 :: gas_temp(gas_nr)
 * real*8 :: gas_nvol(gas_nr)
 * real*8 :: gas_nvolex(gas_nr)
@@ -204,6 +205,8 @@ c     ------------------------!{{{
 * real*8 :: gas_opacleakr(gas_ng,gas_nr)
 * real*8 :: gas_cap(gas_ng,gas_nr)
 * real*8 :: gas_wl(gas_ng+1)
+*-- integer
+* integer :: gas_methodswap(gas_nr)
 *
 ************************************************************************
       integer :: n
@@ -220,6 +223,7 @@ c-- dim==1,2
          allocate(gas_luminos(gas_ng))
          allocate(gas_lumdev(gas_ng))
          allocate(gas_lumnum(gas_ng))
+         allocate(gas_methodswap(gas_nr))
       endif
 !      call mpi_bcast(gas_edep,gas_nr,MPI_REAL8,
 !     &  impi0,MPI_COMM_WORLD,ierr)
@@ -431,6 +435,12 @@ c
       call mpi_reduce(sndvec,gas_lumdev,gas_ng,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
       deallocate(sndvec)
+c
+      allocate(isndvec(gas_nr))
+      isndvec = gas_methodswap
+      call mpi_reduce(isndvec,gas_methodswap,gas_nr,MPI_INTEGER,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      deallocate(isndvec)
 c
 c-- dim==2
       allocate(sndmat(gas_ng,gas_nr))

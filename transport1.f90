@@ -219,6 +219,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
           thelp >= prt_tauddmc*gas_curvcent(z)) &
           .and.(in_puretran.eqv..false.)) then
         hyparam = 2
+        gas_methodswap(z)=gas_methodswap(z)+1
         if(gas_isvelocity) then
 !-- velocity effects accounting
            gas_evelo=gas_evelo+E*r*mu*cinv
@@ -332,6 +333,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
              thelp >= prt_tauddmc*gas_curvcent(z)) &
              .and.(in_puretran.eqv..false.)) then
            hyparam = 2
+           gas_methodswap(z)=gas_methodswap(z)+1
            if(gas_isvelocity) then
 !-- velocity effects accounting
               gas_evelo = gas_evelo+E*r*mu*cinv
@@ -405,6 +407,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !--
            if (r1 < P) then
               hyparam = 2
+              gas_methodswap(z)=gas_methodswap(z)+1
               if(gas_isvelocity) then
 !-- velocity effects accounting
                  gas_evelo=gas_evelo+E*(1d0-elabfact)
@@ -459,6 +462,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !--
                  if (r1 < P) then
                     hyparam = 2
+                    gas_methodswap(z)=gas_methodswap(z)+1
                     if(gas_isvelocity) then
 !-- velocity effects accounting
                        gas_evelo=gas_evelo+E*(1d0-elabfact)
@@ -516,6 +520,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !--
            if (r1 < P) then
               hyparam = 2
+              gas_methodswap(z)=gas_methodswap(z)+1
               if(gas_isvelocity) then
 !-- velocity effects accounting
                  gas_evelo = gas_evelo+E*(1d0-elabfact)
