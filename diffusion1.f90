@@ -304,7 +304,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !
 !-- doppler and aberration corrections
               if(gas_isvelocity) then
-                 mu = (mu+r*cinv)/(1.0-r*mu*cinv)
+                 mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
                  help = 1d0/(1.0-r*mu*cinv)
                  gas_evelo=gas_evelo+E*(1d0 - help)
@@ -447,7 +447,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !
 !-- doppler and aberration corrections
               if(gas_isvelocity) then
-                 mu = (mu+r*cinv)/(1.0-r*mu*cinv)
+                 mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
                  help = 1d0/(1.0-r*mu*cinv)
                  gas_evelo=gas_evelo+E*(1d0 - help)
@@ -508,7 +508,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
            if(gas_isvelocity) then
               mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
-              help = 1d0/(1.0+r*mu*cinv)
+              help = 1d0/(1.0-r*mu*cinv)
               gas_evelo=gas_evelo+E*(1d0 - help)
 !
               E = E*help

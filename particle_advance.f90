@@ -151,25 +151,25 @@ subroutine particle_advance
            if (rtsrc == 2) then
               gas_methodswap(zsrc)=gas_methodswap(zsrc)+1
 !-- sampling position uniformly
-!              r1 =  rand()
-!           prt_tlyrand = prt_tlyrand+1
-!              rsrc = (r1*gas_rarr(zsrc+1)**3 + (1.0-r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
+              r1 =  rand()
+              prt_tlyrand = prt_tlyrand+1
+              rsrc = (r1*gas_rarr(zsrc+1)**3 + (1.0-r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
 !-- sampling position from source tilt
-              r1 = 0d0
-              r2 = 1d0
-              uul = gas_tempb(zsrc)**4
-              uur = gas_tempb(zsrc+1)**4
-              uumax = max(uul,uur)
-              do while (r2 > r1)
-                 r3 = rand()
-                 prt_tlyrand = prt_tlyrand+1
-                 r0 = (r3*gas_rarr(zsrc+1)**3+(1.0-r3)*gas_rarr(zsrc)**3)**(1.0/3.0)
-                 r3 = (r0-gas_rarr(zsrc))/gas_drarr(zsrc)
-                 r1 = (r3*uur+(1d0-r3)*uul)/uumax
-                 r2 = rand()
-                 prt_tlyrand = prt_tlyrand+1
-              enddo
-              rsrc = r0
+!               r1 = 0d0
+!               r2 = 1d0
+!               uul = gas_tempb(zsrc)**4
+!               uur = gas_tempb(zsrc+1)**4
+!               uumax = max(uul,uur)
+!               do while (r2 > r1)
+!                  r3 = rand()
+!                  prt_tlyrand = prt_tlyrand+1
+!                  r0 = (r3*gas_rarr(zsrc+1)**3+(1.0-r3)*gas_rarr(zsrc)**3)**(1.0/3.0)
+!                  r3 = (r0-gas_rarr(zsrc))/gas_drarr(zsrc)
+!                  r1 = (r3*uur+(1d0-r3)*uul)/uumax
+!                  r2 = rand()
+!                  prt_tlyrand = prt_tlyrand+1
+!               enddo
+!               rsrc = r0
 !
 !-- sampling angle isotropically
               r1 = rand()
