@@ -414,7 +414,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !
                  E = E*elabfact
                  E0 = E0*elabfact
-                 wl = wl/(1.0-r*mu*cinv)
+                 wl = wl/elabfact
               endif
               z = z+1
            else
@@ -469,7 +469,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !
                        E = E*elabfact
                        E0 = E0*elabfact
-                       wl = wl/(1.0-r*mu*cinv)
+                       wl = wl/elabfact
                     endif
                     z = z+1
                  else
@@ -527,7 +527,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !
                  E = E*elabfact
                  E0 = E0*elabfact
-                 wl = wl/(1.0-r*mu*cinv)
+                 wl = wl/elabfact
               endif
               z = z-1
            else
