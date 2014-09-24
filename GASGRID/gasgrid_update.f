@@ -223,19 +223,15 @@ c-- read data
         elseif(in_ngs==0) then
 c-- calculate opacities
          call physical_opacity
-c-- copy results into misc arrays
-         gas_sigbl = gas_sig
-         gas_sigbr = gas_sig
-         gas_caprosl = gas_cap
-         gas_caprosr = gas_cap
         else
          call physical_opacity_subgrid
-c-- copy results into misc arrays
-         gas_sigbl = gas_sig
-         gas_sigbr = gas_sig
-         gas_caprosl = gas_cap
-         gas_caprosr = gas_cap
         endif
+c
+c-- copy results into misc arrays
+        gas_sigbl = gas_sig
+        gas_sigbr = gas_sig
+        gas_caprosl = gas_cap
+        gas_caprosr = gas_cap
        endif
 c
 c-- Planck opacity
