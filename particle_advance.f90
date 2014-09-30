@@ -195,6 +195,12 @@ subroutine particle_advance
            rtsrc = 1
         else
            if(rtsrc==1) then
+              if(gas_isvelocity) then
+                 gas_evelo = gas_evelo+esrc*musrc*rsrc/pc_c
+                 esrc = esrc*(1.0 - musrc*rsrc/pc_c)
+                 ebirth = ebirth*(1.0 - musrc*rsrc/pc_c)
+                 wlsrc = wlsrc/(1.0 - musrc*rsrc/pc_c)
+              endif
               gas_methodswap(zsrc)=gas_methodswap(zsrc)+1
            endif
            rtsrc = 2
