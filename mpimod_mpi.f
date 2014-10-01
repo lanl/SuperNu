@@ -16,7 +16,7 @@ c
       subroutine bcast_permanent
 c     --------------------------!{{{
       use inputparmod
-      use gasgridmod
+      use gasgridmod,nx=>gas_nx,ny=>gas_ny,nz=>gas_nz
       use particlemod
       use timestepmod
       implicit none
@@ -27,11 +27,15 @@ c     --------------------------!{{{
 *
 * arrays:
 * -------
-* integer :: gas_nvolinit(gas_nr)
-* real*8 :: gas_rarr(gas_nr+1)
-* real*8 :: gas_drarr(gas_nr)
-* real*8 :: gas_curvcent(gas_nr)
-* real*8 :: gas_evolinit(gas_ng,gas_nr)
+* integer :: gas_nvolinit(nx,ny,nz)
+* real*8 :: gas_xarr(nx+1)
+* real*8 :: gas_yarr(ny+1)
+* real*8 :: gas_zarr(nz+1)
+* real*8 :: gas_dxarr(nx)
+* real*8 :: gas_dyarr(ny)
+* real*8 :: gas_dzarr(nz)
+* real*8 :: gas_curvcent(nx)
+* real*8 :: gas_evolinit(gas_ng,nx,ny,nz)
 * real*8 :: gas_wl(gas_ng+1)
 *
 * scalars:
@@ -39,12 +43,13 @@ c     --------------------------!{{{
 *-- logical
 * logical :: in_isvelocity
 * logical :: in_puretran
-* logical :: gas_isshell
 * logical :: prt_isimcanlog
 * logical :: prt_isddmcanlog
 * logical :: in_norestart
 *-- integer
-* integer :: gas_nr
+* integer :: gas_nx
+* integer :: gas_ny
+* integer :: gas_nz
 * integer :: gas_ng
 * integer :: prt_npartmax
 * integer :: in_nomp
@@ -71,40 +76,41 @@ c     --------------------------!{{{
 c
 c-- broadcast constants
 c-- logical
-      n = 6
+      n = 5
       allocate(lsndvec(n))
       if(impi==impi0) lsndvec = (/gas_isvelocity,in_puretran,
-     &  gas_isshell,prt_isimcanlog,prt_isddmcanlog,in_norestart/)
+     &  prt_isimcanlog,prt_isddmcanlog,in_norestart/)
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       gas_isvelocity = lsndvec(1)
       in_puretran = lsndvec(2)
-      gas_isshell = lsndvec(3)
-      prt_isimcanlog = lsndvec(4)
-      prt_isddmcanlog = lsndvec(5)
-      in_norestart = lsndvec(6)
+      prt_isimcanlog = lsndvec(3)
+      prt_isddmcanlog = lsndvec(4)
+      in_norestart = lsndvec(5)
       deallocate(lsndvec)
 c
 c-- integer
-      n = 10
+      n = 12
       allocate(isndvec(n))
-      if(impi==impi0) isndvec = (/gas_nr,gas_ng,
+      if(impi==impi0) isndvec = (/gas_nx,gas_ny,gas_nz,gas_ng,
      &  prt_npartmax,in_nomp,tsp_nt,tsp_ntres,in_seed,prt_ninitnew,
      &     gas_epslump,in_ng/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      gas_nr = isndvec(1)
-      gas_ng = isndvec(2)
-      prt_npartmax = isndvec(3)
-      in_nomp = isndvec(4)
-      tsp_nt = isndvec(5)
-      tsp_ntres = isndvec(6)
-      in_seed = isndvec(7)
-      prt_ninitnew = isndvec(8)
-      gas_epslump = isndvec(9)
-      in_ng = isndvec(10)
+      gas_nx = isndvec(1)
+      gas_ny = isndvec(2)
+      gas_nz = isndvec(3)
+      gas_ng = isndvec(4)
+      prt_npartmax = isndvec(5)
+      in_nomp = isndvec(6)
+      tsp_nt = isndvec(7)
+      tsp_ntres = isndvec(8)
+      in_seed = isndvec(9)
+      prt_ninitnew = isndvec(10)
+      gas_epslump = isndvec(11)
+      in_ng = isndvec(12)
       deallocate(isndvec)
 c
 c-- real*8
@@ -133,11 +139,15 @@ c
 c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0) then
-       allocate(gas_nvolinit(gas_nr))
-       allocate(gas_rarr(gas_nr+1))
-       allocate(gas_drarr(gas_nr))
-       allocate(gas_curvcent(gas_nr))
-       allocate(gas_evolinit(gas_ng,gas_nr))
+       allocate(gas_nvolinit(nx,ny,nz))
+       allocate(gas_xarr(nx+1))
+       allocate(gas_yarr(ny+1))
+       allocate(gas_zarr(nz+1))
+       allocate(gas_dxarr(nx))
+       allocate(gas_dyarr(ny))
+       allocate(gas_dxarr(nz))
+       allocate(gas_curvcent(nx))
+       allocate(gas_evolinit(nx,ny,nz))
        allocate(gas_wl(gas_ng+1))
        !prt_done = .false.
 c-- allocating particle array for helper ranks
@@ -150,15 +160,23 @@ c--
       !endif
 c
 c-- broadcast data
-      call mpi_bcast(gas_nvolinit,gas_nr,MPI_INTEGER,
+      call mpi_bcast(gas_nvolinit,nx*ny*nz,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_rarr,gas_nr+1,MPI_REAL8,
+      call mpi_bcast(gas_xarr,nx+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_drarr,gas_nr,MPI_REAL8,
+      call mpi_bcast(gas_yarr,ny+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_curvcent,gas_nr,MPI_REAL8,
+      call mpi_bcast(gas_zarr,nz+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_evolinit,gas_nr*gas_ng,MPI_REAL8,
+      call mpi_bcast(gas_dxarr,nx,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_dyarr,ny,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_dzarr,nz,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_curvcent,nx,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_evolinit,nx*ny*nz,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_wl,gas_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -169,7 +187,7 @@ c
 c
       subroutine bcast_nonpermanent
 c     ------------------------!{{{
-      use gasgridmod
+      use gasgridmod,nx=>gas_nx,ny=>gas_ny,nz=>gas_nz
       use particlemod
       use timestepmod
       implicit none
@@ -190,23 +208,22 @@ c     ------------------------!{{{
 *
 *-- arrays:
 *-- real
-* real*8 :: gas_temp(gas_nr)
-* real*8 :: gas_nvol(gas_nr)
-* real*8 :: gas_nvolex(gas_nr)
-* real*8 :: gas_emit(gas_nr)
-* real*8 :: gas_emitex(gas_ng,gas_nr)
-* real*8 :: gas_tempb(gas_nr+1)
-* real*8 :: gas_fcoef(gas_nr)
-* real*8 :: gas_sig(gas_nr)
-* real*8 :: gas_emitprob(gas_ng,gas_nr)
-* real*8 :: gas_ppl(gas_ng,gas_nr)
-* real*8 :: gas_ppr(gas_ng,gas_nr)
-* real*8 :: gas_opacleakl(gas_ng,gas_nr)
-* real*8 :: gas_opacleakr(gas_ng,gas_nr)
-* real*8 :: gas_cap(gas_ng,gas_nr)
+* real*8 :: gas_temp(nx,ny,nz)
+* real*8 :: gas_nvol(nx,ny,nz)
+* real*8 :: gas_nvolex(nx,ny,nz)
+* real*8 :: gas_emit(nx,ny,nz)
+* real*8 :: gas_emitex(nx,ny,nz)
+* real*8 :: gas_fcoef(nx,ny,nz)
+* real*8 :: gas_sig(nx,ny,nz)
+* real*8 :: gas_emitprob(gas_ng,nx,ny,nz)
+* real*8 :: gas_ppl(gas_ng,nx,ny,nz)
+* real*8 :: gas_ppr(gas_ng,nx,ny,nz)
+* real*8 :: gas_opacleakl(gas_ng,nx,ny,nz)
+* real*8 :: gas_opacleakr(gas_ng,nx,ny,nz)
+* real*8 :: gas_cap(gas_ng,nx,ny,nz)
 * real*8 :: gas_wl(gas_ng+1)
 *-- integer
-* integer :: gas_methodswap(gas_nr)
+* integer :: gas_methodswap(nx,ny,nz)
 *
 ************************************************************************
       integer :: n
@@ -217,19 +234,19 @@ c     ------------------------!{{{
 c-- variables to be reduced -----------------------------------
 c-- dim==1,2
       if(impi/=impi0 .and. tsp_it==tsp_ntres) then
-         allocate(gas_numcensus(gas_nr))
-         allocate(gas_edep(gas_nr))
-         allocate(gas_eraddens(gas_ng,gas_nr))
+         allocate(gas_numcensus(nx,ny,nz))
+         allocate(gas_edep(nx,ny,nz))
+         allocate(gas_eraddens(gas_ng,nx,ny,nz))
          allocate(gas_luminos(gas_ng))
          allocate(gas_lumdev(gas_ng))
          allocate(gas_lumnum(gas_ng))
-         allocate(gas_methodswap(gas_nr))
+         allocate(gas_methodswap(nx,ny,nz))
       endif
-!      call mpi_bcast(gas_edep,gas_nr,MPI_REAL8,
+!      call mpi_bcast(gas_edep,nx*ny*nz,MPI_REAL8,
 !     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(gas_numcensus,gas_nr,MPI_INTEGER,
+!      call mpi_bcast(gas_numcensus,nx*ny*nz,MPI_INTEGER,
 !     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(gas_eraddens,gas_ng*gas_nr,MPI_REAL8,
+!      call mpi_bcast(gas_eraddens,nx*ny*nz,MPI_REAL8,
 !     &  impi0,MPI_COMM_WORLD,ierr)
 c--------------------------------------------------------------
 c
@@ -274,22 +291,21 @@ c-- copy back
 c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0 .and. tsp_it==tsp_ntres) then
-       allocate(gas_temp(gas_nr))
-       allocate(gas_nvol(gas_nr))
-       allocate(gas_nvolex(gas_nr))
-       allocate(gas_emit(gas_nr))
-       allocate(gas_emitex(gas_ng,gas_nr))
+       allocate(gas_temp(nx,ny,nz))
+       allocate(gas_nvol(nx,ny,nz))
+       allocate(gas_nvolex(nx,ny,nz))
+       allocate(gas_emit(nx,ny,nz))
+       allocate(gas_emitex(nx,ny,nz))
 c
-       allocate(gas_tempb(gas_nr+1))
-       allocate(gas_fcoef(gas_nr))
-       allocate(gas_sig(gas_nr))
-       allocate(gas_siggrey(gas_nr))
-       allocate(gas_emitprob(gas_ng,gas_nr))
-       allocate(gas_ppl(gas_ng,gas_nr))
-       allocate(gas_ppr(gas_ng,gas_nr))
-       allocate(gas_opacleakl(gas_ng,gas_nr))
-       allocate(gas_opacleakr(gas_ng,gas_nr))
-       allocate(gas_cap(gas_ng,gas_nr))
+       allocate(gas_fcoef(nx,ny,nz))
+       allocate(gas_sig(nx,ny,nz))
+       allocate(gas_siggrey(nx,ny,nz))
+       allocate(gas_emitprob(gas_ng,nx,ny,nz))
+       allocate(gas_ppl(gas_ng,nx,ny,nz))
+       allocate(gas_ppr(gas_ng,nx,ny,nz))
+       allocate(gas_opacleakl(gas_ng,nx,ny,nz))
+       allocate(gas_opacleakr(gas_ng,nx,ny,nz))
+       allocate(gas_cap(gas_ng,nx,ny,nz))
 !       allocate(gas_wl(gas_ng+1))
 c
       endif
@@ -315,37 +331,35 @@ C$$$      call mpi_bcast(prt_particles%wlsrc,prt_npartmax,
 C$$$     &  MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
 c--
 c
-      call mpi_bcast(gas_temp,gas_nr,MPI_REAL8,
+      call mpi_bcast(gas_temp,nx*ny*nz,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_nvol,gas_nr,MPI_INTEGER,
+      call mpi_bcast(gas_nvol,nx*ny*nz,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_nvolex,gas_nr,MPI_INTEGER,
+      call mpi_bcast(gas_nvolex,nx*ny*nz,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_emit,gas_nr,MPI_REAL8,
+      call mpi_bcast(gas_emit,nx*ny*nz,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_emitex,gas_nr*gas_ng,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      call mpi_bcast(gas_siggrey,gas_nr,MPI_REAL8,
+      call mpi_bcast(gas_emitex,nx*ny*nz*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      call mpi_bcast(gas_tempb,gas_nr+1,MPI_REAL8,
+      call mpi_bcast(gas_siggrey,nx*ny*nz,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_fcoef,gas_nr,MPI_REAL8,
+c
+      call mpi_bcast(gas_fcoef,nx*ny*nz,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_sig,gas_nr,MPI_REAL8,
+      call mpi_bcast(gas_sig,nx*ny*nz,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_emitprob,gas_nr*gas_ng,MPI_REAL8,
+      call mpi_bcast(gas_emitprob,nx*ny*nz*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_ppl,gas_nr*gas_ng,MPI_REAL8,
+      call mpi_bcast(gas_ppl,nx*ny*nz*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_ppr,gas_nr*gas_ng,MPI_REAL8,
+      call mpi_bcast(gas_ppr,nx*ny*nz*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_opacleakl,gas_nr*gas_ng,MPI_REAL8,
+      call mpi_bcast(gas_opacleakl,nx*ny*nz*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_opacleakr,gas_nr*gas_ng,MPI_REAL8,
+      call mpi_bcast(gas_opacleakr,nx*ny*nz*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_cap,gas_nr*gas_ng,MPI_REAL8,
+      call mpi_bcast(gas_cap,nx*ny*nz*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_wl,gas_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -356,7 +370,7 @@ c
 c
       subroutine reduce_tally
 c     -----------------------!{{{
-      use gasgridmod
+      use gasgridmod,nx=>gas_nx,ny=>gas_ny,nz=>gas_nz
       use timingmod
       implicit none
 ************************************************************************
@@ -369,15 +383,18 @@ c     -----------------------!{{{
 * real*8 :: gas_eright
 * real*8 :: gas_eleft
 *-- dim==1
-* integer :: gas_numcensus(gas_nr)
-* real*8 :: gas_edep(gas_nr)
+* integer :: gas_numcensus(nx,ny,nz)
+* real*8 :: gas_edep(nx,ny,nz)
 *-- dim==2
-* real*8 :: gas_eraddens(gas_ng,gas_nr)
+* real*8 :: gas_eraddens(nx,ny,nz)
 ************************************************************************
       integer :: n
       integer,allocatable :: isndvec(:),ircvvec(:)
       real*8,allocatable :: sndvec(:),rcvvec(:)
       real*8,allocatable :: sndmat(:,:),rcvmat(:,:)
+      integer,allocatable :: isndvec3d(:,:,:),ircvvec3d(:,:,:)
+      real*8,allocatable :: sndvec3d(:,:,:),rcvvec3d(:,:,:)
+      real*8,allocatable :: sndmat3d(:,:,:,:),rcvmat3d(:,:,:,:)
       real*8 :: help
 
 c
@@ -406,11 +423,11 @@ c-- rtw: can't copy back 0 to eext or evelo.
       deallocate(rcvvec)
 c
 c-- dim==1
-      allocate(isndvec(gas_nr))
-      isndvec = gas_numcensus
-      call mpi_reduce(isndvec,gas_numcensus,gas_nr,MPI_INTEGER,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      deallocate(isndvec)
+      allocate(isndvec3d(nx,ny,nz))
+      isndvec3d = gas_numcensus
+      call mpi_reduce(isndved3d,gas_numcensus,nx*ny*nz,
+     &  MPI_INTEGER,MPI_SUM,impi0,MPI_COMM_WORLD,ierr)
+      deallocate(isndvec3d)
 c
       allocate(isndvec(gas_ng))
       isndvec = gas_lumnum
@@ -418,11 +435,11 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
       deallocate(isndvec)
 c
-      allocate(sndvec(gas_nr))
-      sndvec = gas_edep
-      call mpi_reduce(sndvec,gas_edep,gas_nr,MPI_REAL8,MPI_SUM,
+      allocate(sndvec3d(nx,ny,nz))
+      sndvec3d = gas_edep
+      call mpi_reduce(sndvec3d,gas_edep,nx*ny*nz,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      deallocate(sndvec)
+      deallocate(sndvec3d)
 c
       allocate(sndvec(gas_ng))
       sndvec = gas_luminos
@@ -436,19 +453,19 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
       deallocate(sndvec)
 c
-      allocate(isndvec(gas_nr))
-      isndvec = gas_methodswap
-      call mpi_reduce(isndvec,gas_methodswap,gas_nr,MPI_INTEGER,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      deallocate(isndvec)
+      allocate(isndvec3d(nx,ny,nz))
+      isndvec3d = gas_methodswap
+      call mpi_reduce(isndvec3d,gas_methodswap,nx*ny*nz,
+     &  MPI_INTEGER,MPI_SUM,impi0,MPI_COMM_WORLD,ierr)
+      deallocate(isndvec3d)
 c
 c-- dim==2
-      allocate(sndmat(gas_ng,gas_nr))
-      n = gas_ng*gas_nr
-      sndmat = gas_eraddens
-      call mpi_reduce(sndmat,gas_eraddens,n,MPI_REAL8,MPI_SUM,
+      allocate(sndmat3d(gas_ng,nx,ny,nz))
+      n = gas_ng*nx*ny*nz
+      sndmat3d = gas_eraddens
+      call mpi_reduce(sndmat3d,gas_eraddens,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      deallocate(sndmat)
+      deallocate(sndmat3d)
 c
 c-- timing statistics
       help = t_pckt_stat(1)

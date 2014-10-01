@@ -12,26 +12,27 @@ c-- parallelization
       integer :: in_nomp = 1       !number of openmp threads
 c
 c-- gas grid
-      integer :: in_nr = 0   !number of spatial grid in spherical geom
-      real*8 :: in_lr = 0d0  !spatial length of the domain
+      integer :: in_nx = 0   !number of x-direction cells
+      integer :: in_ny = 0   !number of y-direction cells
+      integer :: in_nz = 0   !number of z-direction cells
+
+      real*8 :: in_lx = 0d0  !spatial length of x-direction
+      real*8 :: in_ly = 0d0  !spatial length of y-direction
+      real*8 :: in_lz = 0d0  !spatial length of z-direction
 c
 c-- do read input structure file instead of specifying the stucture with input parameters
 c==================
       logical :: in_noreadstruct = .false.
 c-- special grid
       logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
-      logical :: in_isshell = .false.  !switch to change domain topology from solid sphere to shell
-      real*8 :: in_l0 = 0d0  !innermost radius of the domain, used if in_isshell
 c-- specify the atmospheric stratification
       real*8 :: in_velout = 0d0  !cm/s, velocity of outer bound
-      real*8 :: in_v0 = 0d0 !velocity of inner bound (analogous to in_l0), used if in_isshell
       real*8 :: in_totmass = 0d0  !g
       character(4) :: in_dentype = 'unif' ! unif|mass: 'unif' for uniform density, 'mass' for equal mass accross cells
       logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
 c============
 c
 c-- temperature parameters
-      real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
       real*8 :: in_consttemp = 0d0 !non-zero will not read temp from file. units: K
       real*8 :: in_tempradinit=0d0 !initial radiation temperature
       character(4) :: in_tradinittype='unif' !prof|unif: initial radiation field type
@@ -124,9 +125,10 @@ c-- misc
 c     
 c-- runtime parameter namelist
       namelist /inputpars/
-     & in_nr,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
+     & in_nx,in_ny,in_nz,in_isvelocity,in_novolsrc,
+     & in_lx,in_ly,in_lz,
      & in_ng,in_ngs,in_wldex,in_wlmin,in_wlmax,
-     & in_totmass,in_templ0,in_velout,in_v0,
+     & in_totmass,in_velout,
      & in_consttemp,in_solidni56,
      & in_seed,in_ns,in_ns0,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,in_ntres,
@@ -202,16 +204,22 @@ c-- check input parameter validity
       if(in_nomp<0) stop 'in_nomp invalid'!{{{
       if(in_nomp==0 .and. nmpi>1) stop 'no in_nomp==0 in mpi mode'
 c
-      if(in_nr<=0) stop 'in_nr invalid'
+      if(in_nx<=0) stop 'in_nx invalid'
+      if(in_ny<=0) stop 'in_ny invalid'
+      if(in_nz<=0) stop 'in_nz invalid'
 c
       if(in_isvelocity) then
-       if(in_lr>0d0) stop 'vel grid: use in_velout, not in_lr'
+       if(in_lx>0d0) stop 'vel grid: use in_velout, not in_lx'
+       if(in_ly>0d0) stop 'vel grid: use in_velout, not in_ly'
+       if(in_lz>0d0) stop 'vel grid: use in_velout, not in_lz'
        if(in_velout<=0d0 .and. in_noreadstruct) stop
-     &   'vel grid: use in_velout, not in_lr'
+     &   'vel grid: use in_velout, not in_lx,in_ly,in_lz'
       else
-       if(in_lr<=0d0) stop 'static grid: use in_lr, not in_velout'
-       if(in_l0<0d0) stop 'static grid: in_l0 invalid'
-       if(in_velout>0d0) stop 'static grid: use in_lr, not in_velout'
+       if(in_lx<=0d0) stop 'static grid: use in_lx, not in_velout'
+       if(in_ly<=0d0) stop 'static grid: use in_ly, not in_velout'
+       if(in_lz<=0d0) stop 'static grid: use in_lz, not in_velout'
+       if(in_velout>0d0) 
+     &      stop 'static grid: use in_lx,in_ly,in_lz, not in_velout'
       endif
 c
       if(in_ng==0) then
@@ -234,7 +242,6 @@ c
 c-- temp init
 *allow negative consttemp for now to use the trad profile temperature
 *     if(in_consttemp<0d0) stop 'in_consttemp < 0'
-      if(in_templ0<0d0) stop 'in_templ0 < 0'
       if(in_tempradinit<0d0) stop 'in_tempradinit < 0'
       if(in_tradinittype=='unif') then
       elseif(in_tradinittype=='prof') then
@@ -250,10 +257,7 @@ c
 c
 c-- special grid
       if(.not.in_noreadstruct) then
-       if(in_isshell) stop 'isshell incomp. with struct'
-       if(in_l0/=0d0) stop 'l0 incomp. with struct'
        if(in_velout/=0d0) stop 'velout incomp. with struct'
-       if(in_v0/=0d0) stop 'v0 incomp. with struct'
        if(in_totmass/=0d0) stop 'totmass incomp. with struct'
       endif
 c

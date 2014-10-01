@@ -17,12 +17,12 @@ in_alpha = 1d0
 in_ismodimc=t
 
 !-- gas grid settings
-in_nr = 64
+in_nx = 64
+in_ny = 1
+in_nz = 1
 in_isvelocity = t
-in_isshell = f
 in_novolsrc = f
 in_dentype = 'mass'
-in_templ0 =  0d0
 
 !-- flat structures
 in_tradinittype='prof'

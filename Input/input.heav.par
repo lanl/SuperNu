@@ -16,12 +16,13 @@ in_alpha = 1d0
 in_ismodimc = f
 
 !-- gas grid settings
-in_nr = 50
+in_nx = 50
+in_ny = 1
+in_nz = 1
 in_isvelocity = t
 in_novolsrc = f
 in_velout = 1d9
 in_totmass = 1d33
-in_templ0 = 0d0
 in_dentype = 'mass'
 
 !-- flat structures
