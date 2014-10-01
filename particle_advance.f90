@@ -19,17 +19,17 @@ subroutine particle_advance
 !##################################################
 
   integer*8 :: nddmc, nimc, npckt
-  integer :: ipart, g, zholder, zfdiff, ir, binsrch
-  real*8 :: r1, alph2, r2, x1, x2, xx0, bmax, help, P
-  real*8 :: uul, uur, uumax, r0, r3, mu0, rold, dddd
+  integer :: ipart, ig, zholder, ir
+  integer,external :: binsrch
+  real*8 :: r1, r2, x1, x2, xx0, bmax, help
+  real*8 :: uul, uur, uumax, r0, r3
   integer, pointer :: zsrc, rtsrc !, gsrc
   real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
   logical, pointer :: isvacant
   real*8 :: t0,t1  !timing
 
-  logical :: isshift=.true.
-  logical :: partstopper=.true.
-  logical :: showidfront=.true.
+  logical,parameter :: isshift=.true.
+  logical,parameter :: showidfront=.true.
 
   gas_edep = 0.0
   gas_erad = 0.0
@@ -42,9 +42,6 @@ subroutine particle_advance
   gas_eraddens =0d0
 !--
   gas_numcensus(1:gas_nr) = 0
-!-- advection split parameter
-  alph2 = 0.5d0  !>=0,<=1
-!--
 
   if(showidfront) then
      do ir = 1, gas_nr-1
@@ -89,22 +86,22 @@ subroutine particle_advance
      ! Looking up group
      if(rtsrc==1) then
         if(gas_isvelocity) then!{{{
-           g = binsrch(wlsrc/(1d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1,in_ng)
+           ig = binsrch(wlsrc/(1d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1,in_ng)
         else
-           g = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
+           ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
         endif
         !
-        if(g>gas_ng.or.g<1) then
+        if(ig>gas_ng.or.ig<1) then
            !particle out of wlgrid energy bound
-           if(g>gas_ng) then
-              g=gas_ng
+           if(ig>gas_ng) then
+              ig=gas_ng
               if(gas_isvelocity) then
                  wlsrc=gas_wl(gas_ng+1)*(1.0d0-rsrc*musrc/pc_c)
               else
                  wlsrc=gas_wl(gas_ng+1)
               endif
-           elseif(g<1) then
-              g=1
+           elseif(ig<1) then
+              ig=1
               if(gas_isvelocity) then
                  wlsrc=gas_wl(1)*(1.0d0-rsrc*musrc/pc_c)
               else
@@ -118,15 +115,15 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        g = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)!{{{
+        ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)!{{{
         !
-        if(g>gas_ng.or.g<1) then
+        if(ig>gas_ng.or.ig<1) then
            !particle out of wlgrid bound
-           if(g>gas_ng) then
-              g=gas_ng
+           if(ig>gas_ng) then
+              ig=gas_ng
               wlsrc=gas_wl(gas_ng+1)
-           elseif(g<1) then
-              g=1
+           elseif(ig<1) then
+              ig=1
               wlsrc=gas_wl(1)
            else
               write(*,*) 'domain leak!!'
@@ -145,9 +142,9 @@ subroutine particle_advance
         else
            help = 1d0
         endif
-        if ((gas_sig(zsrc)+gas_cap(g,zsrc))*gas_drarr(zsrc) &
+        if ((gas_sig(zsrc)+gas_cap(ig,zsrc))*gas_drarr(zsrc) &
              *help<prt_tauddmc*gas_curvcent(zsrc)) then
-           !write(*,*) 'here', g, wlsrc, esrc
+           !write(*,*) 'here', ig, wlsrc, esrc
            if (rtsrc == 2) then
               gas_methodswap(zsrc)=gas_methodswap(zsrc)+1
 !-- sampling position uniformly
@@ -185,7 +182,7 @@ subroutine particle_advance
               endif
                  r1 = rand()
                  prt_tlyrand = prt_tlyrand+1
-                 wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
+                 wlsrc = 1d0/(r1/gas_wl(ig+1)+(1d0-r1)/gas_wl(ig))
 !              endif
               !
               if(gas_isvelocity) then
@@ -210,21 +207,21 @@ subroutine particle_advance
 !-- looking up group
      if(rtsrc==1) then
         if(gas_isvelocity) then!{{{
-           g = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1,in_ng)
+           ig = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1,in_ng)
         else
-           g = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
+           ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
         endif
-        if(g>gas_ng.or.g<1) then
+        if(ig>gas_ng.or.ig<1) then
            !particle out of wlgrid energy bound
-           if(g>gas_ng) then
-              g=gas_ng
+           if(ig>gas_ng) then
+              ig=gas_ng
               if(gas_isvelocity) then
                  wlsrc=gas_wl(gas_ng+1)*(1.0d0-rsrc*musrc/pc_c)
               else
                  wlsrc=gas_wl(gas_ng+1)
               endif
-           elseif(g<1) then
-              g=1
+           elseif(ig<1) then
+              ig=1
               if(gas_isvelocity) then
                  wlsrc=gas_wl(1)*(1.0d0-rsrc*musrc/pc_c)
               else
@@ -238,15 +235,15 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        g = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)!{{{
+        ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)!{{{
         !
-        if(g>gas_ng.or.g<1) then
+        if(ig>gas_ng.or.ig<1) then
            !particle out of wlgrid bound
-           if(g>gas_ng) then
-              g=gas_ng
+           if(ig>gas_ng) then
+              ig=gas_ng
               wlsrc=gas_wl(gas_ng+1)
-           elseif(g<1) then
-              g=1
+           elseif(ig<1) then
+              ig=1
               wlsrc=gas_wl(1)
            else
               write(*,*) 'domain leak!!'
@@ -260,47 +257,7 @@ subroutine particle_advance
 !-- First portion of operator split particle velocity position adjustment
      if(isshift) then
      if ((gas_isvelocity).and.(rtsrc==1)) then
-        rold = rsrc!{{{
-        rsrc = rsrc*tsp_t/(tsp_t+alph2*tsp_dt)
-        !
-        if (rsrc < gas_rarr(zsrc)) then
-           !
-           zholder = binsrch(rsrc,gas_rarr,gas_nr+1,0)
-           !
-           if(gas_isshell.and.zsrc==1) then
-              prt_done = .true.
-              isvacant = .true.
-              gas_eleft = gas_eleft+esrc*(1d0-musrc*rsrc/pc_c)
-!-- velocity effects accounting
-              gas_evelo = gas_evelo+esrc*musrc*rsrc/pc_c
-!
-           elseif(.not.in_puretran.and.partstopper) then
-              zfdiff = -1
-              if(gas_isvelocity) then
-                 help = tsp_t
-              else
-                 help = 1d0
-              endif
-              do ir = zsrc-1,zholder,-1
-                 if((gas_sig(ir)+gas_cap(g,ir))*gas_drarr(ir) &
-                      *help>=prt_tauddmc*gas_curvcent(ir)) then
-                    zfdiff = ir
-                    exit
-                 endif
-              enddo
-              if(zfdiff.ne.-1) then
-!--
-                 zsrc = zfdiff+1
-                 rsrc = gas_rarr(zsrc)
-!--
-              else
-                 zsrc = zholder
-              endif
-           else
-              zsrc = zholder
-           endif
-           !
-        endif!}}}
+       call advection1(.true.,isvacant,ig,zsrc,rsrc,musrc,esrc)
      endif
         !
      endif
@@ -328,41 +285,41 @@ subroutine particle_advance
 
      ! Redshifting DDMC particle energy weights and wavelengths
      if(rtsrc == 2.and.gas_isvelocity) then
-!-- redshifting energy weight
+!-- redshifting energy weight!{{{
         gas_evelo=gas_evelo+esrc*(1d0-exp(-tsp_dt/tsp_t))
         esrc = esrc*exp(-tsp_dt/tsp_t)
         ebirth = ebirth*exp(-tsp_dt/tsp_t)
         !
 !
 !-- find group
-        g = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
+        ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
         !
-        if(g>gas_ng.or.g<1) then
+        if(ig>gas_ng.or.ig<1) then
            !particle out of wlgrid energy bound
-           if(g>gas_ng) then
-              g=gas_ng
+           if(ig>gas_ng) then
+              ig=gas_ng
            else
-              g=1
+              ig=1
            endif
         endif
         !
         !
-        if(g<gas_ng) then
+        if(ig<gas_ng) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           x1 = gas_cap(g,zsrc)
-           x2 = gas_wl(g)/(pc_c*tsp_t*(gas_wl(g+1)-gas_wl(g)))
+           x1 = gas_cap(ig,zsrc)
+           x2 = gas_wl(ig)/(pc_c*tsp_t*(gas_wl(ig+1)-gas_wl(ig)))
            if(r1<x2/(x1+x2)) then
-!            if((gas_sig(zsrc)+gas_cap(g+1,zsrc))*gas_drarr(zsrc) &
+!            if((gas_sig(zsrc)+gas_cap(ig+1,zsrc))*gas_drarr(zsrc) &
 !                 *tsp_t>=prt_tauddmc*gas_curvcent(zsrc)) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
-              wlsrc = 1d0/(r1/gas_wl(g+1)+(1d0-r1)/gas_wl(g))
+              wlsrc = 1d0/(r1/gas_wl(ig+1)+(1d0-r1)/gas_wl(ig))
               wlsrc = wlsrc*exp(tsp_dt/tsp_t)
 !            endif
            endif
         endif
-        !
+        !!}}}
      endif
 
      endif
@@ -370,21 +327,21 @@ subroutine particle_advance
      ! Looking up group
      if(rtsrc==1) then
         if(gas_isvelocity) then!{{{
-           g = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1,in_ng)
+           ig = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1,in_ng)
         else
-           g = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
+           ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
         endif
-        if(g>gas_ng.or.g<1) then
+        if(ig>gas_ng.or.ig<1) then
            !particle out of wlgrid energy bound
-           if(g>gas_ng) then
-              g=gas_ng
+           if(ig>gas_ng) then
+              ig=gas_ng
               if(gas_isvelocity) then
                  wlsrc=gas_wl(gas_ng+1)*(1.0d0-rsrc*musrc/pc_c)
               else
                  wlsrc=gas_wl(gas_ng+1)
               endif
-           elseif(g<1) then
-              g=1
+           elseif(ig<1) then
+              ig=1
               if(gas_isvelocity) then
                  wlsrc=gas_wl(1)*(1.0d0-rsrc*musrc/pc_c)
               else
@@ -398,15 +355,15 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        g = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)!{{{
+        ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)!{{{
         !
-        if(g>gas_ng.or.g<1) then
+        if(ig>gas_ng.or.ig<1) then
            !particle out of wlgrid bound
-           if(g>gas_ng) then
-              g=gas_ng
+           if(ig>gas_ng) then
+              ig=gas_ng
               wlsrc=gas_wl(gas_ng+1)
-           elseif(g<1) then
-              g=1
+           elseif(ig<1) then
+              ig=1
               wlsrc=gas_wl(1)
            else
               write(*,*) 'domain leak!!'
@@ -419,51 +376,7 @@ subroutine particle_advance
      
      if(isshift) then
      if ((gas_isvelocity).and.(rtsrc==1)) then
-        !!{{{
-        rold = rsrc
-        rsrc = rsrc*(tsp_t+alph2*tsp_dt)/(tsp_t+tsp_dt)
-        !
-        if (rsrc < gas_rarr(zsrc)) then
-           !
-           zholder = binsrch(rsrc,gas_rarr,gas_nr+1,0)
-           !
-           if(gas_isshell.and.zsrc==1) then
-              if(.not.isvacant) then
-              prt_done = .true.
-              isvacant = .true.
-              gas_eleft=gas_eleft+esrc*(1d0-musrc*rsrc/pc_c)
-!-- velocity effects accounting
-              gas_evelo=gas_evelo+esrc*musrc*rsrc/pc_c
-!
-              endif
-           elseif(.not.in_puretran.and.partstopper) then
-              zfdiff = -1
-              if(gas_isvelocity) then
-                 help = tsp_t
-              else
-                 help = 1d0
-              endif
-              do ir = zsrc-1,zholder,-1                 
-                 if((gas_sig(ir)+gas_cap(g,ir))*gas_drarr(ir) &
-                      *help>=prt_tauddmc*gas_curvcent(ir)) then
-                    zfdiff = ir
-                    exit
-                 endif
-              enddo
-              if(zfdiff.ne.-1) then
-!--
-                 zsrc = zfdiff+1
-                 rsrc = gas_rarr(zsrc)
-!--
-              else
-                 zsrc = zholder
-              endif
-           else
-              zsrc = zholder
-           endif
-           !
-        endif
-        !!}}}
+       call advection1(.false.,isvacant,ig,zsrc,rsrc,musrc,esrc)
      endif
      endif
 
@@ -503,16 +416,16 @@ subroutine particle_advance
 end subroutine particle_advance
 
 
-              !wlsrc = 0.5d0*(gas_wl(g)+gas_wl(g+1))
+              !wlsrc = 0.5d0*(gas_wl(ig)+gas_wl(ig+1))
               !r1 = rand()
 !           prt_tlyrand = prt_tlyrand+1
-              !wlsrc=gas_wl(g)*(1d0-r1)+gas_wl(g+1)*r1
+              !wlsrc=gas_wl(ig)*(1d0-r1)+gas_wl(ig+1)*r1
               !
 !               r1 = rand()
 !           prt_tlyrand = prt_tlyrand+1
-!               if(r1<gas_cap(g,zsrc)/(gas_cap(g,zsrc)+gas_sig(zsrc))) then
-!                  x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(zsrc))
-!                  x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_temp(zsrc))
+!               if(r1<gas_cap(ig,zsrc)/(gas_cap(ig,zsrc)+gas_sig(zsrc))) then
+!                  x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(zsrc))
+!                  x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(zsrc))
 !                  if (x2<pc_plkpk) then
 !                     bmax = x2**3/(exp(x2)-1d0)
 !                  elseif (x1>pc_plkpk) then

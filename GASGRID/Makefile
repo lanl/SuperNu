@@ -3,6 +3,7 @@ TOP := $(CURDIR)/..
 include $(TOP)/Makefile.compiler
 include $(TOP)/Makefile.include
 
+LIBRARY = gasgrid.a
 FILES = eos_update.o \
   gasgrid_setup.o gasgrid_update.o \
   temperature_update.o analytic_source.o \
@@ -12,12 +13,12 @@ FILES = eos_update.o \
 
 .PHONY: all clean
 
-all: gasgrid.a
+all: $(LIBRARY)
 Makefile.depend:
 	$(TOP)/depend.sh $(FILES) >Makefile.depend
 clean:
 	rm -f *.o *.mod *.MOD Makefile.depend $(LIBRARY)
 
-gasgrid.a: $(FILES)
+$(LIBRARY): $(FILES)
 
 include Makefile.depend

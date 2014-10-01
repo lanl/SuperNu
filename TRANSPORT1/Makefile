@@ -1,13 +1,10 @@
 TOP := $(CURDIR)/..
 
-include ../Makefile.compiler
-include ../Makefile.include
+include $(TOP)/Makefile.compiler
+include $(TOP)/Makefile.include
 
-LIBRARY = misc.a
-FILES = locate.o sorti.o memstats.o
-#-- the following routines are included in miscmod.f in order to avoid
-#-- explicit interfaces:
-# warn.o lcase.o
+LIBRARY = transport1.a
+FILES = diffusion1.o transport1.o advection1.o
 
 .PHONY: all clean
 
