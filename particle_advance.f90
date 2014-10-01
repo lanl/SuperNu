@@ -19,7 +19,7 @@ subroutine particle_advance
 !##################################################
 
   integer*8 :: nddmc, nimc, npckt
-  integer :: ipart, ig, zholder, ir
+  integer :: ipart, ig, zholder, ir,irl,irr
   integer,external :: binsrch
   real*8 :: r1, r2, x1, x2, xx0, bmax, help
   real*8 :: uul, uur, uumax, r0, r3
@@ -154,8 +154,10 @@ subroutine particle_advance
 !-- sampling position from source tilt
 !               r1 = 0d0
 !               r2 = 1d0
-!               uul = gas_tempb(zsrc)**4
-!               uur = gas_tempb(zsrc+1)**4
+!               irl = max(zsrc-1,1)  !-- left neighbor
+!               irr = min(zsrc+1,gas_nr)  !-- right neighbor
+!               uul = .5d0*(gas_temp(irl)**4 + gas_temp(zsrc)**4)
+!               uur = .5d0*(gas_temp(irr)**4 + gas_temp(zsrc)**4)
 !               uumax = max(uul,uur)
 !               do while (r2 > r1)
 !                  r3 = rand()
