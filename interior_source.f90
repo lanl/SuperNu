@@ -15,7 +15,7 @@ subroutine interior_source
   !particle loop (2nd).
 !##################################################
 
-  integer :: ir, ipart, ivac, ig, iig
+  integer :: ir,irl,irr, ipart, ivac, ig, iig
   integer, dimension(gas_nr) :: irused
   real*8 :: r1, r2, r3, r4, uul, uur, uumax, mu0, r0, Ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, xx0, bmax, help
@@ -199,11 +199,13 @@ subroutine interior_source
 !            wl0 = pc_h*pc_c/(xx0*pc_kb*gas_temp(ir))
 
            !Calculating radial position
-            r1 = 0d0
-            r2 = 1d0
-            uul = gas_tempb(ir)**4
-            uur = gas_tempb(ir+1)**4
-            uumax = max(uul,uur)
+           r1 = 0d0
+           r2 = 1d0
+           irl = max(ir-1,1)  !-- left neighbor
+           irr = min(ir+1,gas_nr)  !-- right neighbor
+           uul = .5d0*(gas_temp(irl)**4 + gas_temp(ir)**4)
+           uur = .5d0*(gas_temp(irr)**4 + gas_temp(ir)**4)
+           uumax = max(uul,uur)
            do while (r2 > r1)
               r3 = rand()
               prt_tlyrand = prt_tlyrand+1

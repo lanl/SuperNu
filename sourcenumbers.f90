@@ -30,7 +30,7 @@ subroutine sourcenumbers
   gas_etot = 0d0
   if(gas_isshell) then
      gas_esurf = 0.25*tsp_dt*pc_c*pc_acoef* &
-          (4.0*pc_pi*gas_rarr(1)**2)*gas_tempb(1)**4
+          (4.0*pc_pi*gas_rarr(1)**2)*gas_temp(1)**4
   else
      gas_esurf = 0d0
   endif
