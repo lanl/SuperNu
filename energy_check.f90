@@ -4,7 +4,6 @@ subroutine energy_check
   use timestepmod
   use physconstmod
   use manufacmod
-  use inputparmod
   implicit none
 
 !-----------------------------------------------------

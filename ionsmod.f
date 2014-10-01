@@ -259,7 +259,7 @@ c
 c-- normalize n_i
        nsum = sum(ion_el(iz)%i(:nion)%n)
        if(nsum/=nsum .or. nsum>huge(nsum) .or. nsum<tiny(nsum)) then !verify nsum
-        write(6,*) 'nsum=',nsum
+        write(6,*) 'nsum=',nsum, iz, nion
         write(6,*) 'sahac,sahac2',sahac,sahac2
         write(6,*) 'n'
         write(6,*) (ion_el(iz)%i(ii)%n,ii=1,nion)
