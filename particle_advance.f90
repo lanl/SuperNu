@@ -29,7 +29,6 @@ subroutine particle_advance
   real*8 :: t0,t1  !timing
 
   logical,parameter :: isshift=.true.
-  logical,parameter :: showidfront=.true.
 
   gas_edep = 0.0
   gas_erad = 0.0
@@ -41,20 +40,7 @@ subroutine particle_advance
 !--(rev. 121)
   gas_eraddens =0d0
 !--
-  gas_numcensus(1:gas_nr) = 0
-
-  if(showidfront) then
-     do ir = 1, gas_nr-1
-        if(gas_isvelocity.and.(gas_sig(ir)+gas_cap(1,ir))*gas_drarr(ir) &
-             *tsp_t>=prt_tauddmc &
-             .and. &
-             (gas_sig(ir+1)+gas_cap(1,ir+1))*gas_drarr(ir+1) &
-             *tsp_t<prt_tauddmc) then
-           write(*,*) ir, gas_cap(1,ir)*gas_drarr(ir)*tsp_t, &
-                gas_cap(1,ir+1)*gas_drarr(ir+1)*tsp_t
-        endif
-     enddo
-  endif
+  gas_numcensus = 0
   
   call time(t0)
   ! Propagating all particles that are not considered vacant: loop
@@ -150,7 +136,8 @@ subroutine particle_advance
 !-- sampling position uniformly
               r1 =  rand()
               prt_tlyrand = prt_tlyrand+1
-              rsrc = (r1*gas_rarr(zsrc+1)**3 + (1.0-r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
+              rsrc = (r1*gas_rarr(zsrc+1)**3 + &
+                   (1.0-r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
 !-- sampling position from source tilt
 !               r1 = 0d0
 !               r2 = 1d0
@@ -313,7 +300,7 @@ subroutine particle_advance
            x2 = gas_wl(ig)/(pc_c*tsp_t*(gas_wl(ig+1)-gas_wl(ig)))
            if(r1<x2/(x1+x2)) then
 !            if((gas_sig(zsrc)+gas_cap(ig+1,zsrc))*gas_drarr(zsrc) &
-!                 *tsp_t>=prt_tauddmc*gas_curvcent(zsrc)) then
+!                 *tsp_t>=prt_tauddmc) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               wlsrc = 1d0/(r1/gas_wl(ig+1)+(1d0-r1)/gas_wl(ig))

@@ -15,8 +15,6 @@ subroutine sourcenumbers
 !##################################################
 
   integer :: ir, ig
-  real*8 :: exsumg
-  real*8 :: ddrr3, ddrr4
   ! gas_esurf for any new prt_particles from a surface source
   ! prt_nsurf = number of surface prt_particles
   ! prt_nnew = total number of new prt_particles~=prt_ns
@@ -28,12 +26,8 @@ subroutine sourcenumbers
   gas_emitex = 0d0
   
   gas_etot = 0d0
-  if(gas_isshell) then
-     gas_esurf = 0.25*tsp_dt*pc_c*pc_acoef* &
-          (4.0*pc_pi*gas_rarr(1)**2)*gas_temp(1)**4
-  else
-     gas_esurf = 0d0
-  endif
+  gas_esurf = 0d0
+
   if(gas_isvelocity) then
      gas_etot = gas_esurf*tsp_t**2
      gas_esurf = gas_esurf*tsp_t**2
@@ -81,13 +75,7 @@ subroutine sourcenumbers
   enddo
   
   ! Adding external energy to gas_etot
-  do ir = 1, gas_nr
-     do ig = 1, gas_ng
-        ! changed from rev 244
-        gas_etot = gas_etot + gas_emitex(ig,ir)
-!        gas_eext = gas_eext + gas_emitex(ig,ir)
-     enddo
-  enddo
+  gas_etot = gas_etot + sum(gas_emitex)
   
   ! Calculating number of domain inner boundary particles (if any)
   prt_nsurf = nint(gas_esurf*prt_ns/gas_etot)
@@ -103,11 +91,7 @@ subroutine sourcenumbers
      endif
      prt_nnew = prt_nnew + gas_nvol(ir)
      !external source volume numbers
-     exsumg = 0d0
-     do ig=1,gas_ng
-        exsumg=exsumg+gas_emitex(ig,ir)
-     enddo
-     gas_nvolex(ir)=nint(exsumg*prt_ns/gas_etot)
+     gas_nvolex(ir)=nint(gas_emitex(ir)*prt_ns/gas_etot)
      prt_nexsrc = prt_nexsrc + gas_nvolex(ir)
      prt_nnew = prt_nnew + gas_nvolex(ir)
   enddo

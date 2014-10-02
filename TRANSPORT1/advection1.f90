@@ -34,14 +34,7 @@ subroutine advection1(pretrans,isvacant,ig,zsrc,rsrc,musrc,esrc)
 !
     zholder = binsrch(rsrc,gas_rarr,gas_nr+1,0)
 !
-    if(gas_isshell.and.zsrc==1) then
-       prt_done = .true.
-       isvacant = .true.
-       gas_eleft = gas_eleft+esrc*(1d0-musrc*rsrc/pc_c)
-!-- velocity effects accounting
-       gas_evelo = gas_evelo+esrc*musrc*rsrc/pc_c
-!
-    elseif(.not.in_puretran.and.partstopper) then
+    if(.not.in_puretran.and.partstopper) then
        zfdiff = -1
        if(gas_isvelocity) then
           help = tsp_t

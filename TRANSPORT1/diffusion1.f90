@@ -23,7 +23,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   real*8, intent(inout) :: r, mu, t, E, E0, wl
   logical, intent(inout) :: vacnt
   !
-  integer :: ig, iig, g, binsrch
+  integer :: ig, iig, g
+  integer,external :: binsrch
   real*8 :: r1, r2, thelp, x1, x2, r3, uur, uul, uumax, r0
   real*8 :: denom, denom2, denom3, xx0, bmax
   real*8 :: ddmct, tau, tcensus, PR, PL, PA, PD
@@ -77,10 +78,10 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   glumps = 0
 !
 !-- find lumpable groups
-  if(gas_cap(g,z)*gas_drarr(z)*thelp>=prt_taulump*gas_curvcent(z)) then
+  if(gas_cap(g,z)*gas_drarr(z)*thelp>=prt_taulump) then
      do ig = 1, g-1
         if(gas_cap(ig,z)*gas_drarr(z) &
-             *thelp >= prt_taulump*gas_curvcent(z) &
+             *thelp >= prt_taulump&
              .and. g-ig <= gas_epslump) then
            glump=glump+1
            glumps(glump)=ig
@@ -91,7 +92,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
      enddo
      do ig = g, gas_ng
         if(gas_cap(ig,z)*gas_drarr(z) &
-             *thelp >= prt_taulump*gas_curvcent(z) &
+             *thelp >= prt_taulump&
              .and. ig-g <= gas_epslump) then
            glump=glump+1
            glumps(glump)=ig
@@ -170,31 +171,20 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !-- calculating energy depostion and density
   !
   if(prt_isddmcanlog) then
-     do ig = 1, glump
-        iig=glumps(ig)
-        gas_eraddens(iig,z)= &
-             gas_eraddens(iig,z)+E*ddmct*dtinv * glumpinv
-     enddo
+     gas_eraddens(z) = gas_eraddens(z)+E*ddmct*dtinv
   else
-     gas_edep(z)=gas_edep(z)+E*(1d0-exp(-gas_fcoef(z) &!{{{
+     gas_edep(z) = gas_edep(z)+E*(1d0-exp(-gas_fcoef(z) &!{{{
           *caplump*pc_c*ddmct))
 !--
 !-- must use speclump...
      if(gas_fcoef(z)*caplump*gas_drarr(z)*thelp>1d-6) then
         help = 1d0/(gas_fcoef(z)*caplump)
-        do ig = 1, glump
-           iig=glumps(ig)
-           gas_eraddens(iig,z)= &
-                gas_eraddens(iig,z)+E* &
-                (1d0-exp(-gas_fcoef(z)*caplump*pc_c*ddmct))* &
-                help*cinv*dtinv * glumpinv
-        enddo
+        gas_eraddens(z)= &
+             gas_eraddens(z)+E* &
+             (1d0-exp(-gas_fcoef(z)*caplump*pc_c*ddmct))* &
+             help*cinv*dtinv
      else
-        do ig = 1, glump
-           iig=glumps(ig)
-           gas_eraddens(iig,z)= &
-                gas_eraddens(iig,z)+E*ddmct*dtinv * glumpinv
-        enddo
+        gas_eraddens(z) = gas_eraddens(z)+E*ddmct*dtinv
      endif
      E=E*exp(-gas_fcoef(z)*caplump*pc_c*ddmct)
 
@@ -245,14 +235,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !{{{
 !-- checking if at inner bound
         if (z == 1) then
-           if(gas_isshell) then
-              vacnt = .true.
-              prt_done = .true.
-              gas_eleft = gas_eleft+E
-           else
-              stop 'Non-physical left leakage'
-           endif
-
+           stop 'diffusion1: non-physical inward leakage'
+        endif
 
 !-- sample adjacent group (assumes aligned g bounds)
         else
@@ -275,7 +259,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 
 
            if((gas_sig(z-1)+gas_cap(iig,z-1))*gas_drarr(z-1) &
-                *thelp >= prt_tauddmc*gas_curvcent(z-1)) then
+                *thelp >= prt_tauddmc) then
               z = z-1
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
@@ -416,7 +400,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 
 
            if((gas_sig(z+1)+gas_cap(iig,z+1))*gas_drarr(z+1) &
-                *thelp >= prt_tauddmc*gas_curvcent(z+1)) then
+                *thelp >= prt_tauddmc) then
 !
               z = z+1
               r1 = rand()
@@ -491,7 +475,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
         wl = 1d0/((1d0-r1)/gas_wl(g) + r1/gas_wl(g+1))
 
         if ((gas_sig(z)+gas_cap(g,z))*gas_drarr(z) &
-             *thelp >= prt_tauddmc*gas_curvcent(z)) then
+             *thelp >= prt_tauddmc) then
            hyparam = 2
         else
            hyparam = 1

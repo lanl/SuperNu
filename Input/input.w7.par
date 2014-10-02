@@ -19,16 +19,13 @@ in_ismodimc=t
 !-- gas grid settings
 in_nr = 64
 in_isvelocity = t
-in_isshell = f
 in_novolsrc = f
 in_dentype = 'mass'
-in_templ0 =  0d0
 
 !-- flat structures
 in_tradinittype='prof'
 in_tempradinit = 0d0
 in_consttemp = -1d0
-in_solidni56 = f
 
 !-- external source type
 in_srctype = 'none'

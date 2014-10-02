@@ -20,13 +20,12 @@ c
 c
       contains
 c
-      subroutine read_inputstr(nr,velout,isshell)
+      subroutine read_inputstr(nr,velout)
 c     -----------------------------------
       use physconstmod
       use gasgridmod, only:gas_ini56,gas_ico56
       use miscmod
       implicit none
-      logical,intent(in) :: isshell
       integer,intent(in) :: nr
       real*8,intent(out) :: velout
 ************************************************************************
@@ -48,9 +47,6 @@ c-- read dimensions
       if(ierr/=0) stop 'read_inputstr: input.str format err: dimensions'
 c-- verify dimension
       if(nr_r/=nr) stop 'read_inputstr: incompatible nr dimension'
-c
-c-- verify not shell
-      if(isshell) stop 'read_inpitstr: in_isshell must be false'
 c
 c-- allocate arrays
       allocate(str_velright(nr))
@@ -159,10 +155,10 @@ c
 c
 c-- use input.par variables to populate mass and grid arrays
 c-- WARNING: size (nr+1) allocated for str_velright in generate_inputstr
-      subroutine generate_inputstr(l0,lr,v0,velout)
+      subroutine generate_inputstr(lr,velout)
       use inputparmod
       implicit none
-      real*8,intent(out) :: l0,lr,v0,velout
+      real*8,intent(out) :: lr,velout
 ************************************************************************
 * generate stratification from input.par variables
 * if in_noreadstruct==.true.
@@ -172,10 +168,6 @@ c-- WARNING: size (nr+1) allocated for str_velright in generate_inputstr
       real*8 :: help, help2, dr
 c
 c-- verifications (input.par)
-      if((in_v0<0d0.or.in_v0>=in_velout).and.in_isvelocity)
-     &  stop 'generate_inputstr: invalid in_velout'
-      if(in_l0<0d0.and..not.in_isvelocity)
-     &  stop 'generate_inputstr: invalid in_l0'
       if(in_velout<=0d0.and.in_isvelocity)
      &  stop 'generate_inputstr: invalid in_velout'
       if(in_lr<=0.and..not.in_isvelocity)
@@ -190,29 +182,16 @@ c-- allocate arrays
       allocate(str_mass(in_nr))
 c
 c-- local copies
-      v0 = in_v0
       velout = in_velout
-      l0 = in_l0
       lr = in_lr
 c
 c-- create unit sphere radii rout
       if(in_isvelocity) then
-       if(in_isshell) then
-        help = in_v0/in_velout
-       else
-        help = 0d0
-       endif
        help2 = in_velout
       else
-       if(in_isshell) then
-        help = in_l0/(in_l0+in_lr)
-        help2 = in_l0+in_lr
-       else
-        help = 0d0
-        help2 = in_lr
-       endif
+       help2 = in_lr
       endif
-      dr = (1d0-help)/real(in_nr)
+      dr = 1d0/real(in_nr)
       forall(ir=1:in_nr+1) rout(ir) = help+(ir-1)*dr
 c
 c-- outer shells

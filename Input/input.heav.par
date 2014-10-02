@@ -21,14 +21,12 @@ in_isvelocity = t
 in_novolsrc = f
 in_velout = 1d9
 in_totmass = 1d33
-in_templ0 = 0d0
 in_dentype = 'mass'
 
 !-- flat structures
 in_tradinittype='unif'
 in_tempradinit = 0d0
 in_consttemp = 11604505d0
-in_solidni56 = t
 
 !-- external source type
 in_srctype = 'heav'
