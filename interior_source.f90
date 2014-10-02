@@ -128,7 +128,7 @@ subroutine interior_source
            
            !source tally
            !if(prt_particles(ivac)%rtsrc==2) then
-           !   gas_eraddens(iig,ir)=gas_eraddens(iig,ir)+Ep0
+           !   gas_eraddens(ir)=gas_eraddens(ir)+Ep0
            !endif
         else
            ir = ir+1

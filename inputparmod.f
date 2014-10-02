@@ -46,7 +46,6 @@ c-- particles
       logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
       logical :: in_isimcanlog = .false. !use analog IMC tally if true
       logical :: in_isddmcanlog = .true. !use analog DDMC tally if true
-      logical :: in_depestimate = .true. !use deposition estimator to update temperature
       real*8 :: in_tauddmc = 5d0 !number of mean free paths per cell required for DDMC
       real*8 :: in_taulump = 10d0 !number of of mean free paths needed to lump DDMC groups
 c-- time dependence of in_tauddmc and in_taulump
@@ -135,7 +134,7 @@ c-- runtime parameter namelist
      & in_opacanaltype,in_suol,
      & in_suolpick1, in_ldisp1, in_ldisp2,
      & in_srctype, in_theav, in_nheav, in_srcmax,
-     & in_isimcanlog, in_isddmcanlog,in_depestimate,
+     & in_isimcanlog, in_isddmcanlog,
      & in_tauddmc, in_epslump, in_dentype, in_noreadstruct,
      & in_norestart, in_taulump, in_tauvtime,
      & in_tradinittype, in_tempradinit, in_ismodimc,

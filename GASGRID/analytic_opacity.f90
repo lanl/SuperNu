@@ -183,7 +183,7 @@ subroutine analytic_opacity
         gas_siggrey(ir) = gas_sigcoef*gas_temp(ir)**gas_sigtpwr * &
            gas_vals2(ir)%rho**gas_sigrpwr
         sigll = gas_sigcoef*templ**gas_sigtpwr*rhol**gas_sigrpwr
-        sigrr = gas_sigcoef*templr**gas_sigtpwr*rhor**gas_sigrpwr
+        sigrr = gas_sigcoef*tempr**gas_sigtpwr*rhor**gas_sigrpwr
         !
         !set odd group magnitudes (low)
         do ig = 1, gas_ng, 2

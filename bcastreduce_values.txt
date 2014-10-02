@@ -59,6 +59,6 @@ real*8 :: gas_eright
 real*8 :: gas_eleft
 real*8 :: gas_numcensus(gas_nr)
 real*8 :: gas_edep(gas_nr)
-real*8 :: gas_eraddens(gas_ng,gas_nr)
+real*8 :: gas_eraddens(gas_nr)
 
 ============================================

@@ -79,6 +79,9 @@ c-- adopt partial masses from input file
         if(j>gas_nelem) j = 0 !divert to container
         gas_vals2(:)%mass0fr(j) = str_massfr(i,:)
        enddo
+      else
+       stop 'gg_setup: no input.str and no solidni56!'
+      endif
 c
 c-- convert mass fractions to # atoms
       call massfr2natomfr

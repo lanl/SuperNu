@@ -236,7 +236,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !-- checking if at inner bound
         if (z == 1) then
            stop 'diffusion1: non-physical inward leakage'
-        endif
 
 !-- sample adjacent group (assumes aligned g bounds)
         else

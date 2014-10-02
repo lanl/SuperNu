@@ -212,7 +212,7 @@ c-- dim==1,2
       if(impi/=impi0 .and. tsp_it==tsp_ntres) then
          allocate(gas_numcensus(gas_nr))
          allocate(gas_edep(gas_nr))
-         allocate(gas_eraddens(gas_ng,gas_nr))
+         allocate(gas_eraddens(gas_nr))
          allocate(gas_luminos(gas_ng))
          allocate(gas_lumdev(gas_ng))
          allocate(gas_lumnum(gas_ng))
@@ -222,7 +222,7 @@ c-- dim==1,2
 !     &  impi0,MPI_COMM_WORLD,ierr)
 !      call mpi_bcast(gas_numcensus,gas_nr,MPI_INTEGER,
 !     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(gas_eraddens,gas_ng*gas_nr,MPI_REAL8,
+!      call mpi_bcast(gas_eraddens,gas_nr,MPI_REAL8,
 !     &  impi0,MPI_COMM_WORLD,ierr)
 c--------------------------------------------------------------
 c

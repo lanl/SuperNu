@@ -31,7 +31,6 @@ module gasgridmod
   real*8 :: gas_lr = 0
   logical :: gas_isvelocity = .false.
   logical :: gas_novolsrc = .false. !no external volume source (e.g. radioactivity)
-  logical :: gas_depestimate = .true. !if true uses deposition estimator to update temperature
 !-(rev. 121)
   real*8 :: gas_sigcoefs=0  !analytic scattering opacity power law coefficient
   real*8 :: gas_sigtpwrs=0  !analytic scattering opacity power law temperature exponent
@@ -159,7 +158,6 @@ module gasgridmod
     !
     gas_isvelocity = in_isvelocity
     gas_novolsrc = in_novolsrc
-    gas_depestimate = in_depestimate
     !power law heat capacity input:
     gas_cvcoef = in_cvcoef
     gas_cvtpwr = in_cvtpwr
