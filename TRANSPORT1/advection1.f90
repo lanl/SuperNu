@@ -43,7 +43,7 @@ subroutine advection1(pretrans,isvacant,ig,zsrc,rsrc,musrc,esrc)
        endif
        do ir = zsrc-1,zholder,-1
           if((gas_sig(ir)+gas_cap(ig,ir))*gas_drarr(ir) &
-               *help>=prt_tauddmc*gas_curvcent(ir)) then
+               *help>=prt_tauddmc) then
              zfdiff = ir
              exit
           endif

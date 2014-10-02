@@ -25,18 +25,7 @@ subroutine analytic_source
      !Heaviside source (uniform source sphere)!{{{
      if (tsp_t<=(in_tfirst+gas_theav)*pc_day) then
         do ir = 1, min(gas_nheav,gas_nr)
-           gas_emitex(ir) = gas_srcmax
-!
-           gas_emitex(ir) = gas_emitex(ir)* &
-                gas_vals2(ir)%vol*tsp_dt
-!
-        enddo
-        do ir = gas_nheav+1, gas_nr
-              gas_emitex(ir)=0d0
-        enddo
-     else
-        do ir = 1, min(gas_nheav,gas_nr)
-              gas_emitex(ir)=0d0
+           gas_emitex(ir) = gas_srcmax * gas_vals2(ir)%vol*tsp_dt
         enddo
      endif
 !-- no temp source for heav (matsrc=0.0)
@@ -48,10 +37,7 @@ subroutine analytic_source
         srcren = gas_srcmax*(gas_rarr(gas_nr+1)- &
              0.5d0*(gas_rarr(ir)+gas_rarr(ir+1)))/ & 
              (gas_rarr(gas_nr+1)-gas_rarr(1))
-        gas_emitex(ir)=srcren
-!
-        gas_emitex(ir) = gas_emitex(ir)* &
-                gas_vals2(ir)%vol*tsp_dt
+        gas_emitex(ir) = srcren * gas_vals2(ir)%vol*tsp_dt
 !
 !-- no temp source for strt (matsrc=0.0)
 !--

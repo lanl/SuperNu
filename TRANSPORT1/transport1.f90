@@ -208,7 +208,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      endif
 !-- check if ddmc region
      if (((gas_sig(z)+gas_cap(g,z))*gas_drarr(z)* &
-          thelp >= prt_tauddmc*gas_curvcent(z)) &
+          thelp >= prt_tauddmc) &
           .and.(in_puretran.eqv..false.)) then
         hyparam = 2
         gas_methodswap(z)=gas_methodswap(z)+1
@@ -370,7 +370,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            gas_lumnum(g) = gas_lumnum(g)+1
         ! Checking if DDMC region right
         elseif (((gas_sig(z+1)+gas_cap(g,z+1))*gas_drarr(z+1) &
-             *thelp >= prt_tauddmc*gas_curvcent(z+1)) &
+             *thelp >= prt_tauddmc) &
                  .and.(in_puretran.eqv..false.)) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
@@ -409,7 +409,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      else
         if (z==1) then
            if (((gas_sig(z+1)+gas_cap(g,z+1))*gas_drarr(z+1) &
-                *thelp >= prt_tauddmc*gas_curvcent(z+1)) &
+                *thelp >= prt_tauddmc) &
                 .and.(in_puretran.eqv..false.)) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
@@ -443,7 +443,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               z = z+1
            endif
         elseif (((gas_sig(z-1)+gas_cap(g,z-1))*gas_drarr(z-1) &
-             *thelp >= prt_tauddmc*gas_curvcent(z-1)) &
+             *thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1

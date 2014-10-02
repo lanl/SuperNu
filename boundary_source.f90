@@ -94,7 +94,7 @@ subroutine boundary_source
      r0 = prt_particles(ivac)%rsrc
      
      if (((gas_sig(z0)+gas_cap(iig,z0))*gas_drarr(z0)* &
-          help < prt_tauddmc*gas_curvcent(z0)) &
+          help < prt_tauddmc) &
           .or.(in_puretran.eqv..true.).or.P>1d0.or.P<0d0) then
         gas_eext = gas_eext+Esurfpart
         if(gas_isvelocity) then

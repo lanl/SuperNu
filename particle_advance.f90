@@ -129,7 +129,7 @@ subroutine particle_advance
            help = 1d0
         endif
         if ((gas_sig(zsrc)+gas_cap(ig,zsrc))*gas_drarr(zsrc) &
-             *help<prt_tauddmc*gas_curvcent(zsrc)) then
+             *help<prt_tauddmc) then
            !write(*,*) 'here', ig, wlsrc, esrc
            if (rtsrc == 2) then
               gas_methodswap(zsrc)=gas_methodswap(zsrc)+1

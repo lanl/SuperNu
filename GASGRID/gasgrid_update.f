@@ -87,7 +87,7 @@ c============================
       if(gas_isvelocity) then!{{{
        help = gas_velout*tsp_t
       else
-       help = gas_l0+gas_lr
+       help = gas_lr
       endif
       !gas_vals2%vol = gas_vals2%volr*(gas_velout*tsp_tcenter)**3 !volume in cm^3
       gas_vals2%vol = gas_vals2%volr*help**3 !volume in cm^3

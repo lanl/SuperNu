@@ -8,10 +8,8 @@ Permanent input values (bcast_persistent):
 -gasgridmod:
 integer :: gas_nr
 integer :: gas_ng
-logical :: gas_isshell
 real*8 :: gas_rarr(gas_nr+1)
 real*8 :: gas_drarr(gas_nr)
-real*8 :: gas_curvcent(gas_nr)
 
 -particlesmod:
 integer :: prt_npartmax

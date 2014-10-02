@@ -42,7 +42,7 @@ c-- scale gas cell volumes to unit sphere depending on expanding or static
       if(gas_isvelocity) then
        help = gas_velout
       else
-       help = gas_lr+gas_l0
+       help = gas_lr
       endif
 c
 c-- volume of unit-radius sphere shells

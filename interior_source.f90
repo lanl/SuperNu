@@ -89,7 +89,7 @@ subroutine interior_source
            Ep0 = exsumg(ir)/real(gas_nvolex(ir))
            gas_eext=gas_eext+Ep0
            if (((gas_sig(ir)+gas_cap(iig,ir))*gas_drarr(ir)* &
-                help < prt_tauddmc*gas_curvcent(ir)) &
+                help < prt_tauddmc) &
                 .or.(in_puretran)) then
               if(gas_isvelocity) then
                  prt_particles(ivac)%esrc = Ep0*(1.0+r0*mu0/pc_c)
@@ -227,7 +227,7 @@ subroutine interior_source
            Ep0 = gas_emit(ir)/real(gas_nvol(ir))
 
            if (((gas_cap(iig,ir)+gas_sig(ir))*gas_drarr(ir)* &
-                help < prt_tauddmc*gas_curvcent(ir)) &
+                help < prt_tauddmc) &
                 .or.(in_puretran)) then
               if(gas_isvelocity) then
                  prt_particles(ivac)%esrc = Ep0*(1.0+r0*mu0/pc_c)

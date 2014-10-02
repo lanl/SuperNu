@@ -30,7 +30,7 @@ c     --------------------------!{{{
 * integer :: gas_nvolinit(gas_nr)
 * real*8 :: gas_rarr(gas_nr+1)
 * real*8 :: gas_drarr(gas_nr)
-* real*8 :: gas_evolinit(gas_ng,gas_nr)
+* real*8 :: gas_evolinit(gas_nr)
 * real*8 :: gas_wl(gas_ng+1)
 *
 * scalars:
@@ -38,7 +38,6 @@ c     --------------------------!{{{
 *-- logical
 * logical :: in_isvelocity
 * logical :: in_puretran
-* logical :: gas_isshell
 * logical :: prt_isimcanlog
 * logical :: prt_isddmcanlog
 * logical :: in_norestart
@@ -134,7 +133,7 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(gas_nvolinit(gas_nr))
        allocate(gas_rarr(gas_nr+1))
        allocate(gas_drarr(gas_nr))
-       allocate(gas_evolinit(gas_ng,gas_nr))
+       allocate(gas_evolinit(gas_nr))
        allocate(gas_wl(gas_ng+1))
        !prt_done = .false.
 c-- allocating particle array for helper ranks
@@ -153,7 +152,7 @@ c-- broadcast data
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_drarr,gas_nr,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_evolinit,gas_nr*gas_ng,MPI_REAL8,
+      call mpi_bcast(gas_evolinit,gas_nr,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_wl,gas_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -189,8 +188,7 @@ c     ------------------------!{{{
 * real*8 :: gas_nvol(gas_nr)
 * real*8 :: gas_nvolex(gas_nr)
 * real*8 :: gas_emit(gas_nr)
-* real*8 :: gas_emitex(gas_ng,gas_nr)
-* real*8 :: gas_tempb(gas_nr+1)
+* real*8 :: gas_emitex(gas_nr)
 * real*8 :: gas_fcoef(gas_nr)
 * real*8 :: gas_sig(gas_nr)
 * real*8 :: gas_emitprob(gas_ng,gas_nr)
