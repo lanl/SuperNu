@@ -140,7 +140,7 @@ subroutine leakage_opacity
            if(gas_isvelocity) then
               help = help*tsp_t
            endif
-           if(help < prt_tauddmc*gas_curvcent(ir-1)) then
+           if(help < prt_tauddmc) then
         !   
               gas_opacleakl(ig,ir)=1.5*gas_ppl(ig,ir)*gas_rarr(ir)**2
               gas_opacleakl(ig,ir)=gas_opacleakl(ig,ir)/ &
@@ -180,7 +180,7 @@ subroutine leakage_opacity
            if(gas_isvelocity) then
               help = help*tsp_t
            endif
-           if(help < prt_tauddmc*gas_curvcent(ir+1)) then
+           if(help < prt_tauddmc) then
         !   
               gas_opacleakr(ig,ir)=1.5*gas_ppr(ig,ir)*gas_rarr(ir+1)**2
               gas_opacleakr(ig,ir)=gas_opacleakr(ig,ir)/ &

@@ -30,9 +30,6 @@ subroutine interior_source
 
   ir = 1
   irused(1:gas_nr) = 0
-  exsumg(1:gas_nr) = 0d0
-  exsumg = sum(gas_emitex,1)
-  !write(*,*) exsumg(10), gas_emitex(1,10),gas_emitex(2,10)
   !Volume particle instantiation: loop
   !Loop run over the number of new particles that aren't surface source
   !particles.
@@ -54,10 +51,8 @@ subroutine interior_source
               x3=1d0/gas_wl(ig+1)
               x4=1d0/gas_wl(ig)
               iig = ig
-              !if(r1>=denom2.and.r1<denom2+(x4-x3)/(x2-x1)) exit
-              !denom2 = denom2+(x4-x3)/(x2-x1)
-              if(r1>=denom2.and.r1<denom2+gas_emitex(ig,ir)/exsumg(ir)) exit
-              denom2 = denom2+gas_emitex(ig,ir)/exsumg(ir)
+              if(r1>=denom2.and.r1<denom2+(x4-x3)/(x2-x1)) exit
+              denom2 = denom2+(x4-x3)/(x2-x1)
            enddo
            
            !Ryan W.: particle group removed (rev. 120)

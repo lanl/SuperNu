@@ -23,9 +23,7 @@ subroutine emission_probability
      enddo
   else
      if(gas_ng==1) then
-        do ir = 1, gas_nr
-           gas_emitprob(1,ir) = 1d0
-        enddo
+        gas_emitprob = 1d0
      else
         do ir = 1, gas_nr
            do ig = 1, gas_ng
