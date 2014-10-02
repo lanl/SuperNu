@@ -28,7 +28,6 @@ in_dentype = 'mass'
 in_tradinittype='prof'
 in_tempradinit = 0d0
 in_consttemp = -1d0
-in_solidni56 = f
 
 !-- external source type
 in_srctype = 'none'

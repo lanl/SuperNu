@@ -29,7 +29,6 @@ in_dentype = 'mass'
 in_tradinittype='unif'
 in_tempradinit = 0d0
 in_consttemp = 11604505d0
-in_solidni56 = t
 
 !-- external source type
 in_srctype = 'heav'

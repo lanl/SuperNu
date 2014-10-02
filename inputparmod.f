@@ -29,7 +29,6 @@ c-- specify the atmospheric stratification
       real*8 :: in_velout = 0d0  !cm/s, velocity of outer bound
       real*8 :: in_totmass = 0d0  !g
       character(4) :: in_dentype = 'unif' ! unif|mass: 'unif' for uniform density, 'mass' for equal mass accross cells
-      logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
 c============
 c
 c-- temperature parameters
@@ -129,7 +128,7 @@ c-- runtime parameter namelist
      & in_lx,in_ly,in_lz,
      & in_ng,in_ngs,in_wldex,in_wlmin,in_wlmax,
      & in_totmass,in_velout,
-     & in_consttemp,in_solidni56,
+     & in_consttemp,
      & in_seed,in_ns,in_ns0,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,in_ntres,
      & in_grab_stdout,in_nomp,

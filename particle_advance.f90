@@ -29,7 +29,6 @@ subroutine particle_advance
   real*8 :: t0,t1  !timing
 
   logical,parameter :: isshift=.true.
-  logical,parameter :: showidfront=.true.
 
   gas_edep = 0.0
   gas_erad = 0.0
@@ -41,20 +40,7 @@ subroutine particle_advance
 !--(rev. 121)
   gas_eraddens =0d0
 !--
-  gas_numcensus(1:gas_nr) = 0
-
-  if(showidfront) then
-     do ir = 1, gas_nr-1
-        if(gas_isvelocity.and.(gas_sig(ir)+gas_cap(1,ir))*gas_drarr(ir) &
-             *tsp_t>=prt_tauddmc &
-             .and. &
-             (gas_sig(ir+1)+gas_cap(1,ir+1))*gas_drarr(ir+1) &
-             *tsp_t<prt_tauddmc) then
-           write(*,*) ir, gas_cap(1,ir)*gas_drarr(ir)*tsp_t, &
-                gas_cap(1,ir+1)*gas_drarr(ir+1)*tsp_t
-        endif
-     enddo
-  endif
+  gas_numcensus = 0
   
   call time(t0)
   ! Propagating all particles that are not considered vacant: loop
@@ -142,28 +128,29 @@ subroutine particle_advance
         else
            help = 1d0
         endif
-        if ((gas_sig(zsrc)+gas_cap(ig,zsrc))*gas_drarr(zsrc) &
-             *help<prt_tauddmc*gas_curvcent(zsrc)) then
+        if ((gas_sig(zsrc,1,1)+gas_cap(ig,zsrc,1,1))*gas_dxarr(zsrc) &
+             *help<prt_tauddmc) then
            !write(*,*) 'here', ig, wlsrc, esrc
            if (rtsrc == 2) then
-              gas_methodswap(zsrc)=gas_methodswap(zsrc)+1
+              gas_methodswap(zsrc,1,1)=gas_methodswap(zsrc,1,1)+1
 !-- sampling position uniformly
               r1 =  rand()
               prt_tlyrand = prt_tlyrand+1
-              rsrc = (r1*gas_rarr(zsrc+1)**3 + (1.0-r1)*gas_rarr(zsrc)**3)**(1.0/3.0)
+              rsrc = (r1*gas_xarr(zsrc+1)**3 + &
+                   (1.0-r1)*gas_xarr(zsrc)**3)**(1.0/3.0)
 !-- sampling position from source tilt
 !               r1 = 0d0
 !               r2 = 1d0
 !               irl = max(zsrc-1,1)  !-- left neighbor
-!               irr = min(zsrc+1,gas_nr)  !-- right neighbor
+!               irr = min(zsrc+1,gas_nx)  !-- right neighbor
 !               uul = .5d0*(gas_temp(irl)**4 + gas_temp(zsrc)**4)
 !               uur = .5d0*(gas_temp(irr)**4 + gas_temp(zsrc)**4)
 !               uumax = max(uul,uur)
 !               do while (r2 > r1)
 !                  r3 = rand()
 !                  prt_tlyrand = prt_tlyrand+1
-!                  r0 = (r3*gas_rarr(zsrc+1)**3+(1.0-r3)*gas_rarr(zsrc)**3)**(1.0/3.0)
-!                  r3 = (r0-gas_rarr(zsrc))/gas_drarr(zsrc)
+!                  r0 = (r3*gas_xarr(zsrc+1)**3+(1.0-r3)*gas_xarr(zsrc)**3)**(1.0/3.0)
+!                  r3 = (r0-gas_xarr(zsrc))/gas_dxarr(zsrc)
 !                  r1 = (r3*uur+(1d0-r3)*uul)/uumax
 !                  r2 = rand()
 !                  prt_tlyrand = prt_tlyrand+1
@@ -200,7 +187,7 @@ subroutine particle_advance
                  ebirth = ebirth*(1.0 - musrc*rsrc/pc_c)
                  wlsrc = wlsrc/(1.0 - musrc*rsrc/pc_c)
               endif
-              gas_methodswap(zsrc)=gas_methodswap(zsrc)+1
+              gas_methodswap(zsrc,1,1)=gas_methodswap(zsrc,1,1)+1
            endif
            rtsrc = 2
         endif!}}}
@@ -309,11 +296,11 @@ subroutine particle_advance
         if(ig<gas_ng) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           x1 = gas_cap(ig,zsrc)
+           x1 = gas_cap(ig,zsrc,1,1)
            x2 = gas_wl(ig)/(pc_c*tsp_t*(gas_wl(ig+1)-gas_wl(ig)))
            if(r1<x2/(x1+x2)) then
-!            if((gas_sig(zsrc)+gas_cap(ig+1,zsrc))*gas_drarr(zsrc) &
-!                 *tsp_t>=prt_tauddmc*gas_curvcent(zsrc)) then
+!            if((gas_sig(zsrc,1,1)+gas_cap(ig+1,zsrc,1,1))*gas_dxarr(zsrc) &
+!                 *tsp_t>=prt_tauddmc) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               wlsrc = 1d0/(r1/gas_wl(ig+1)+(1d0-r1)/gas_wl(ig))
