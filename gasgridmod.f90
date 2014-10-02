@@ -7,7 +7,9 @@ module gasgridmod
   integer,parameter :: gas_nelem=30
   integer,parameter :: gas_ini56=-1, gas_ico56=-2 !positions in mass0fr and natom1fr arrays
 
-  integer :: gas_nr = 0
+  integer :: gas_nx = 0
+  integer :: gas_ny = 0
+  integer :: gas_nz = 0
   integer :: gas_ng = 0
 
 !--lumping index
@@ -17,20 +19,19 @@ module gasgridmod
   real*8 :: gas_v0 = 0d0 !inner boundary velocity (if in_isshell)
 
   real*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
-  real*8,allocatable :: gas_cap(:,:) !(gas_ng,gas_nr) Line+Cont extinction coeff
-  real*8,allocatable :: gas_sig(:) !(gas_nr) scattering coefficient
+  real*8,allocatable :: gas_cap(:,:,:,:) !(gas_ng,gas_nx,gas_ny,gas_nz) Line+Cont extinction coeff
+  real*8,allocatable :: gas_sig(:,:,:) !(gas_nx,gas_ny,gas_nz) scattering coefficient
 !-(rev. 121): edge scattering coefficient (a secondary quantity)
-  real*8,allocatable :: gas_sigbl(:) !(gas_nr), left
-  real*8,allocatable :: gas_sigbr(:) !(gas_nr), right
+  real*8,allocatable :: gas_sigbl(:,:,:) !(gas_nx,gas_ny,gas_nz), left
+  real*8,allocatable :: gas_sigbr(:,:,:) !(gas_nx,gas_ny,gas_nz), right
 !---------------------------------------------------------------
-  real*8,allocatable :: gas_capgam(:) !(gas_nr) Gamma ray gray opacity
+  real*8,allocatable :: gas_capgam(:,:,:) !(gas_nx,gas_ny,gas_nz) Gamma ray gray opacity
 !
 !-- temperature structure history
-  real*8,allocatable :: gas_temphist(:,:) !(gas_nr,tim_nt)
-  real*8,allocatable :: gas_temppreset(:,:) !(gas_nr,tim_nt)
+  real*8,allocatable :: gas_temphist(:,:,:,:) !(gas_nx,gas_ny,gas_nz,tim_nt)
+  real*8,allocatable :: gas_temppreset(:,:,:,:) !(gas_nx,gas_ny,gas_nz,tim_nt)
 
-  real*8 :: gas_lr = 0
-  real*8 :: gas_l0 = 0  !innermost static radius
+  real*8 :: gas_lx = 0
   logical :: gas_isvelocity = .false.
   logical :: gas_isshell = .false.  !domain is shell, innermost radius not zero
   logical :: gas_novolsrc = .false. !no external volume source (e.g. radioactivity)
@@ -80,43 +81,46 @@ module gasgridmod
 !--
   real*8 :: gas_esurf
 
-  real*8, dimension(:), allocatable :: gas_rarr   !(gas_nr+1), left cell edge values
-  real*8, dimension(:), allocatable :: gas_drarr  !(gas_nr)
-  real*8, dimension(:), allocatable :: gas_curvcent !(gas_nr), multiplied by tauddmc for mfp threshold
-  real*8, dimension(:), allocatable :: gas_edep, gas_siggrey, gas_fcoef !(gas_nr)
-  real*8, dimension(:), allocatable :: gas_tempb  !(gas_nr+1), interpolated temperatures (keV)
-  real*8, dimension(:), allocatable :: gas_rhob   !(gas_nr+1), interpolated densities
-  real*8, allocatable :: gas_emitprob(:,:)           !(gas_ng,gas_nr)
-  real*8, allocatable :: gas_ppl(:,:), gas_ppr(:,:)  !(gas_ng,gas_nr)
+  real*8,allocatable :: gas_xarr(:)   !(gas_nx+1), left cell edge values
+  real*8,allocatable :: gas_yarr(:)   !(gas_ny+1), left cell edge values
+  real*8,allocatable :: gas_zarr(:)   !(gas_nz+1), left cell edge values
+  real*8,allocatable :: gas_dxarr(:)  !(gas_nx)
+  real*8,allocatable :: gas_dyarr(:)  !(gas_ny)
+  real*8,allocatable :: gas_dzarr(:)  !(gas_nz)
+  real*8,allocatable :: gas_edep(:,:,:)   !(gas_nx,gas_ny,gas_nz)
+  real*8,allocatable :: gas_siggrey(:,:,:)!(gas_nx,gas_ny,gas_nz)
+  real*8,allocatable :: gas_fcoef(:,:,:)  !(gas_nx,gas_ny,gas_nz)
+  real*8,allocatable :: gas_emitprob(:,:,:,:)           !(gas_ng,gas_nx,gas_ny,gas_nz)
+  real*8,allocatable :: gas_ppl(:,:,:,:), gas_ppr(:,:,:,:)  !(gas_ng,gas_nx,gas_ny,gas_nz)
 !-- temporary array used to compute leakage opacities
-  real*8, allocatable :: gas_caprosl(:,:), gas_caprosr(:,:)  !(gas_ng,gas_nr)
+  real*8,allocatable :: gas_caprosl(:,:,:,:), gas_caprosr(:,:,:,:)  !(gas_ng,gas_nx,gas_ny,gas_nz)
 !-- leakage opacities
-  real*8, allocatable :: gas_opacleakl(:,:), gas_opacleakr(:,:) !(gas_ng,gas_nr)
+  real*8,allocatable :: gas_opacleakl(:,:,:,:), gas_opacleakr(:,:,:,:) !(gas_ng,gas_nx,gas_ny,gas_nz)
   
-  real*8, allocatable :: gas_eraddens(:,:) !(gas_ng,gas_nr)
+  real*8,allocatable :: gas_eraddens(:,:,:,:) !(gas_ng,gas_nx,gas_ny,gas_nz)
 !-- old Planck opacity for BDF-2 method
-  real*8, allocatable :: gas_siggreyold(:) !(gas_nr)
+  real*8,allocatable :: gas_siggreyold(:,:,:) !(gas_nx,gas_ny,gas_nz)
 !
 !-- outbound grouped luminosity
-  real*8, allocatable :: gas_luminos(:) !(gas_ng)
+  real*8,allocatable :: gas_luminos(:) !(gas_ng)
 !-- sampled devation of group luminosity
-  real*8, allocatable :: gas_lumdev(:) !(gas_ng)
+  real*8,allocatable :: gas_lumdev(:) !(gas_ng)
 !-- number of escaped particles per group
-  integer, allocatable :: gas_lumnum(:) !(gas_ng)
+  integer,allocatable :: gas_lumnum(:) !(gas_ng)
 !
 !---
-  integer, allocatable :: gas_nvol(:) !(gas_nr) number of thermal source particles generated per cell
-  integer, allocatable :: gas_nvolex(:) !(gas_nr) number of external source particles generated per cell
-  integer, allocatable :: gas_nvolinit(:) !(gas_nr) number of initial (t=tfirst) particles per cell
+  integer,allocatable :: gas_nvol(:,:,:) !(gas_nx,gas_ny,gas_nz) number of thermal source particles generated per cell
+  integer,allocatable :: gas_nvolex(:,:,:) !(gas_nx,gas_ny,gas_nz) number of external source particles generated per cell
+  integer,allocatable :: gas_nvolinit(:,:,:) !(gas_nx,gas_ny,gas_nz) number of initial (t=tfirst) particles per cell
 !  
-  real*8, allocatable :: gas_emit(:) !(gas_nr) amount of fictitious thermal energy emitted per cell in a time step
-  real*8, allocatable :: gas_emitex(:,:) !(gas_ng,gas_nr) amount of external energy emitted per cell per group in a time step
-  real*8, allocatable :: gas_evolinit(:,:) !(gas_ng,gas_nr) amount of initial energy per cell per group
+  real*8,allocatable :: gas_emit(:,:,:) !(gas_nx,gas_ny,gas_nz) amount of fictitious thermal energy emitted per cell in a time step
+  real*8,allocatable :: gas_emitex(:,:,:) !(gas_nx,gas_ny,gas_nz) amount of external energy emitted per cell per group in a time step
+  real*8,allocatable :: gas_evolinit(:,:,:) !(gas_nx,gas_ny,gas_nz) amount of initial energy per cell per group
 !
-  real*8, allocatable :: gas_temp(:)
+  real*8,allocatable :: gas_temp(:,:,:) !(gas_nx,gas_ny,gas_nz)
 !---
 !
-  integer, allocatable :: gas_methodswap(:) ! number of IMC-DDMC method changes per cell per time step (gas_nr)
+  integer,allocatable :: gas_methodswap(:,:,:) !(gas_nx,gas_ny,gas_nz) number of IMC-DDMC method changes per cell per time step
 !
   type gas_secondary
     real*8 :: eraddens
@@ -139,12 +143,12 @@ module gasgridmod
 !-- material energy (temperature) source (may be manufactured), rev>244
        real*8 :: matsrc = 0d0
   end type gas_secondary
-  type(gas_secondary),pointer :: gas_vals2(:)
+  type(gas_secondary),pointer :: gas_vals2(:,:,:) !(gas_nx,gas_ny,gas_nz)
 
   ! Picket-fence probabilities
   real*8 :: gas_ppick(2)
 
-  integer, dimension(:), allocatable :: gas_numcensus !(gas_nr)
+  integer,allocatable :: gas_numcensus(:,:,:) !(gas_nx,gas_ny,gas_nz)
 
   private read_temp_preset
 
@@ -161,16 +165,14 @@ module gasgridmod
 !
     logical :: lexist
 !
-    gas_nr = in_nr
+    gas_nx = in_nx
+    gas_ny = in_ny
+    gas_nz = in_nz
     gas_ng = ng
     !
     gas_isvelocity = in_isvelocity
-    gas_isshell = in_isshell
     gas_novolsrc = in_novolsrc
     gas_depestimate = in_depestimate
-    !inner edge radius (if in_isshell):
-    !inner edge temp:
-    gas_templ0 = in_templ0
     !power law heat capacity input:
     gas_cvcoef = in_cvcoef
     gas_cvtpwr = in_cvtpwr
@@ -201,55 +203,56 @@ module gasgridmod
     gas_epslump = in_epslump
 
 !-- primary
-    allocate(gas_numcensus(gas_nr))  !# census prt_particles per cell
-    allocate(gas_rarr(gas_nr+1)) !zone edge radii
-    allocate(gas_drarr(gas_nr))  !radial zone length
-    allocate(gas_curvcent(gas_nr))  ! gas_curvcent*tauddmc=mean fee path threshold for IMC-DDMC heuristic
-    allocate(gas_edep(gas_nr))  !energy absorbed by material
-    allocate(gas_siggrey(gas_nr)) !Planck opacity (gray)
+    allocate(gas_xarr(gas_nx+1)) !zone edge x position
+    allocate(gas_yarr(gas_ny+1)) !zone edge y position
+    allocate(gas_zarr(gas_nz+1)) !zone edge z position
+    allocate(gas_dxarr(gas_nx))  !radial zone length
+    allocate(gas_dyarr(gas_ny))  !radial zone length
+    allocate(gas_dzarr(gas_nz))  !radial zone length
+    allocate(gas_edep(gas_nx,gas_ny,gas_nz))   !energy absorbed by material
+    allocate(gas_siggrey(gas_nx,gas_ny,gas_nz)) !Planck opacity (gray)
 !-- rtw: using old gas_siggrey in bdf2 Fleck factor calculation
-    allocate(gas_siggreyold(gas_nr)) !Planck opacity (gray)
+    allocate(gas_siggreyold(gas_nx,gas_ny,gas_nz)) !Planck opacity (gray)
 !
 !- Ryan W.: using power law to calculate gas_sig (similar to Planck opacity)
-    allocate(gas_sig(gas_nr))    !grey scattering opacity
+    allocate(gas_sig(gas_nx,gas_ny,gas_nz))    !grey scattering opacity
 !----------------------------------------------------------------
-    allocate(gas_fcoef(gas_nr))  !Fleck factor
-    allocate(gas_emitprob(gas_ng,gas_nr))  !Probability of emission in a given zone and group
-    allocate(gas_opacleakl(gas_ng,gas_nr))
-    allocate(gas_opacleakr(gas_ng,gas_nr))
-    allocate(gas_ppl(gas_ng,gas_nr))  !can potentially be removed
-    allocate(gas_ppr(gas_ng,gas_nr))  !can potentially be removed
-    allocate(gas_eraddens(gas_ng,gas_nr))  !radiation energy density in tsp_dt per group
+    allocate(gas_fcoef(gas_nx,gas_ny,gas_nz))  !Fleck factor
+    allocate(gas_emitprob(gas_ng,gas_nx,gas_ny,gas_nz))  !Probability of emission in a given zone and group
+    allocate(gas_opacleakl(gas_ng,gas_nx,gas_ny,gas_nz))
+    allocate(gas_opacleakr(gas_ng,gas_nx,gas_ny,gas_nz))
+    allocate(gas_ppl(gas_ng,gas_nx,gas_ny,gas_nz))  !can potentially be removed
+    allocate(gas_ppr(gas_ng,gas_nx,gas_ny,gas_nz))  !can potentially be removed
+    allocate(gas_eraddens(gas_ng,gas_nx,gas_ny,gas_nz))  !radiation energy density in tsp_dt per group
     allocate(gas_luminos(gas_ng))  !outbound grouped luminosity array
     allocate(gas_lumdev(gas_ng))
     allocate(gas_lumnum(gas_ng))
 !-Ryan W: gas_wl being allocated in gasgrid_setup now--
     !allocate(gas_wl(gas_ng)) !wavelength grid
 !------------------------------------------------------
-    allocate(gas_cap(gas_ng,gas_nr)) !Line+Cont extinction coeff
+    allocate(gas_cap(gas_ng,gas_nx,gas_ny,gas_nz)) !Line+Cont extinction coeff
 !--Ryan W: values below were formerly secondary (rev 183)
-    allocate(gas_nvol(gas_nr))
-    allocate(gas_nvolex(gas_nr))
-    allocate(gas_nvolinit(gas_nr))
-    allocate(gas_emit(gas_nr))
-    allocate(gas_emitex(gas_ng,gas_nr))
-    allocate(gas_evolinit(gas_ng,gas_nr))
+    allocate(gas_nvol(gas_nx,gas_ny,gas_nz))
+    allocate(gas_nvolex(gas_nx,gas_ny,gas_nz))
+    allocate(gas_nvolinit(gas_nx,gas_ny,gas_nz))
+    allocate(gas_emit(gas_nx,gas_ny,gas_nz))
+    allocate(gas_emitex(gas_nx,gas_ny,gas_nz))
+    allocate(gas_evolinit(gas_nx,gas_ny,gas_nz))
 !-- secondary
-    allocate(gas_vals2(gas_nr))
-    allocate(gas_capgam(gas_nr))
+    allocate(gas_vals2(gas_nx,gas_ny,gas_nz))
+    allocate(gas_capgam(gas_nx,gas_ny,gas_nz))
 !--Ryan W: added edge scattering opacities for leakage coefficients (rev. 121)
-    allocate(gas_sigbl(gas_nr))
-    allocate(gas_sigbr(gas_nr))
+    allocate(gas_sigbl(gas_nx,gas_ny,gas_nz))
+    allocate(gas_sigbr(gas_nx,gas_ny,gas_nz))
 !------------------------------------
-    allocate(gas_temphist(gas_nr,nt))
+    allocate(gas_temphist(gas_nx,gas_ny,gas_nz,nt))
 
-    allocate(gas_temp(gas_nr))  !cell average temperature
-    allocate(gas_tempb(gas_nr+1))  !cell boundary temperature
-    allocate(gas_rhob(gas_nr+1))   !cell boundary density
+    allocate(gas_temp(gas_nx,gas_ny,gas_nz))  !cell average temperature
     
-    allocate(gas_caprosl(gas_ng,gas_nr))  !left cell edge group Rosseland opacities
-    allocate(gas_caprosr(gas_ng,gas_nr)) !right ||   ||    ||     ||        ||
-    allocate(gas_methodswap(gas_nr))
+    allocate(gas_caprosl(gas_ng,gas_nx,gas_ny,gas_nz))  !left cell edge group Rosseland opacities
+    allocate(gas_caprosr(gas_ng,gas_nx,gas_ny,gas_nz)) !right ||   ||    ||     ||        ||
+    allocate(gas_methodswap(gas_nx,gas_ny,gas_nz))
+    allocate(gas_numcensus(gas_nx,gas_ny,gas_nz))  !# census prt_particles per cell
 !
 !-- read preset temperature profiles
     inquire(file='input.temp',exist=lexist)
@@ -265,7 +268,7 @@ module gasgridmod
     open(4,file='input.temp',status='old',iostat=istat)
     if(istat/=0) stop 'rd_temp_preset: no file: input.temp'
 !-- alloc and read
-    allocate(gas_temppreset(gas_nr,tsp_nt))
+    allocate(gas_temppreset(gas_nx,gas_ny,gas_nz,tsp_nt))
     read(4,*,iostat=istat) gas_temppreset
     if(istat/=0) stop 'rd_temp_preset: file too short: input.temp'
 !-- check EOF

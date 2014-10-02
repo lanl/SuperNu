@@ -29,8 +29,8 @@ c--
 c
 c----
 c-- agnostic grid setup (rev. 200) ----------------------------------
-      gas_rarr = str_velleft
-      forall(ir=1:gas_nr) gas_drarr(ir)=gas_rarr(ir+1)-gas_rarr(ir)
+      gas_xarr = str_velleft  !TODO: str_velleft -> 3D
+      gas_dxarr(:) = gas_xarr(2:)-gas_xarr(:gas_nx)
 c--------------------------------------------------------------------
 c
 c-- agnostic mass setup (rev. 200) ----------------------------------
@@ -46,20 +46,10 @@ c-- scale gas cell volumes to unit sphere depending on expanding or static
       endif
 c
 c-- volume of unit-radius sphere shells
-      forall(ir=1:gas_nr) gas_vals2(ir)%volr = 
-     &  pc_pi4/3d0*(gas_rarr(ir+1)**3 - gas_rarr(ir)**3)/help**3  !volume in outer radius units
-c
-c
-c-- IMC-DDMC heuristic coefficient for spherical geometry (rev 146)
-c==================================================================
-      do ir = 1, gas_nr!{{{
-       help2=gas_rarr(ir+1)**2+gas_rarr(ir)*gas_rarr(ir+1)
-       help2=help2+gas_rarr(ir)**2
-       help2 = sqrt(1d0/help2)
-       gas_curvcent(ir) = sqrt((gas_rarr(ir+1)**2+gas_rarr(ir)**2))
-!       gas_curvcent(ir) = help2*gas_curvcent(ir)
-       gas_curvcent(ir) = 1d0
-      enddo!}}}
+!TODO: multiple geometries
+      if(gas_ny>1 .or. gas_nz>1) stop 'gasgrid_setup: 1D volume only'
+      forall(i=1:gas_nx) gas_vals2(i,1,1)%volr = 
+     &  pc_pi4/3d0*(gas_xarr(i+1)**3 - gas_xarr(i)**3)/help**3  !volume in outer radius units
 c
 c
 c--
@@ -93,9 +83,6 @@ c-- adopt partial masses from input file
        enddo
 c
 c-- set flat composition if selected
-      elseif(in_solidni56) then
-       gas_vals2%mass0fr(28) = 1d0 !stable+unstable Ni abundance
-       gas_vals2(1:nint(4d0*gas_nr/5d0))%mass0fr(-1) = 1d0 !Ni56 core
       else
        stop 'gg_setup: no input.str and no solidni56!'
       endif
@@ -106,10 +93,10 @@ c
 c-- output
 C$$$      write(6,*) 'mass fractions'
 C$$$      write(6,'(1p,33i12)') (i,i=-2,30)
-C$$$      write(6,'(1p,33e12.4)') (gas_vals2(i)%mass0fr,i=1,gas_nr)
+C$$$      write(6,'(1p,33e12.4)') (gas_vals2(i)%mass0fr,i=1,gas_nx)
 C$$$      write(6,*) 'number fractions'
 C$$$      write(6,'(1p,33i12)') (i,i=-2,30)
-C$$$      write(6,'(1p,33e12.4)') (gas_vals2(i)%natom1fr,i=1,gas_nr)
+C$$$      write(6,'(1p,33e12.4)') (gas_vals2(i)%natom1fr,i=1,gas_nx)
 c
       end subroutine gasgrid_setup
 c
@@ -127,55 +114,62 @@ c     -------------------------
       integer :: i,j
       real*8 :: help
 c
-      do i=1,gas_nr
+      do k=1,gas_nz
+      do j=1,gas_ny
+      do i=1,gas_nx
 c!{{{
 c-- sanity test
-       if(all(gas_vals2(i)%mass0fr(1:)==0d0)) stop 'massfr2natomfr: '//
-     &   'all mass fractions zero'
-       if(any(gas_vals2(i)%mass0fr(1:)<0d0)) stop 'massfr2natomfr: '//
-     &   'negative mass fractions'
+       if(all(gas_vals2(i,j,k)%mass0fr(1:)==0d0)) stop
+     &    'massfr2natomfr: all mass fractions zero'
+       if(any(gas_vals2(i,j,k)%mass0fr(1:)<0d0)) stop
+     &    'massfr2natomfr: negative mass fractions'
 c
 c-- renormalize (the container fraction (unused elements) is taken out)
-       gas_vals2(i)%mass0fr(:) = gas_vals2(i)%mass0fr(:)/
-     &   sum(gas_vals2(i)%mass0fr(1:))
+       gas_vals2(i,j,k)%mass0fr(:) = gas_vals2(i,j,k)%mass0fr(:)/
+     &   sum(gas_vals2(i,j,k)%mass0fr(1:))
 c
 c-- partial mass
-       gas_vals2(i)%natom1fr = gas_vals2(i)%mass0fr*gas_vals2(i)%mass
+       gas_vals2(i,j,k)%natom1fr = gas_vals2(i,j,k)%mass0fr*
+     &   gas_vals2(i,j,k)%mass
 c-- only stable nickel and cobalt
-       gas_vals2(i)%natom1fr(28) = gas_vals2(i)%natom1fr(28) -
-     &   gas_vals2(i)%natom1fr(gas_ini56)
-       gas_vals2(i)%natom1fr(27) = gas_vals2(i)%natom1fr(27) -
-     &   gas_vals2(i)%natom1fr(gas_ico56)
+       gas_vals2(i,j,k)%natom1fr(28) = gas_vals2(i,j,k)%natom1fr(28) -
+     &   gas_vals2(i,j,k)%natom1fr(gas_ini56)
+       gas_vals2(i,j,k)%natom1fr(27) = gas_vals2(i,j,k)%natom1fr(27) -
+     &   gas_vals2(i,j,k)%natom1fr(gas_ico56)
 c
 c-- convert to natoms
        do j=1,gas_nelem
-        gas_vals2(i)%natom1fr(j) = gas_vals2(i)%natom1fr(j)/
+        gas_vals2(i,j,k)%natom1fr(j) = gas_vals2(i,j,k)%natom1fr(j)/
      &    (elem_data(j)%m*pc_amu)
        enddo !j
 c-- special care for ni56 and co56
 !      help = elem_data(26)%m*pc_amu
        help = elem_data(28)%m*pc_amu !phoenix compatible
-       gas_vals2(i)%natom1fr(gas_ini56) =
-     &   gas_vals2(i)%natom1fr(gas_ini56)/help
+       gas_vals2(i,j,k)%natom1fr(gas_ini56) =
+     &   gas_vals2(i,j,k)%natom1fr(gas_ini56)/help
        help = elem_data(27)%m*pc_amu !phoenix compatible
-       gas_vals2(i)%natom1fr(gas_ico56) =
-     &   gas_vals2(i)%natom1fr(gas_ico56)/help
+       gas_vals2(i,j,k)%natom1fr(gas_ico56) =
+     &   gas_vals2(i,j,k)%natom1fr(gas_ico56)/help
 c-- store initial fe/co/ni
-       gas_vals2(i)%natom0fr(-2:-1) = gas_vals2(i)%natom1fr(-2:-1) !unstable
-       gas_vals2(i)%natom0fr(0:2) = gas_vals2(i)%natom1fr(26:28) !stable
+       gas_vals2(i,j,k)%natom0fr(-2:-1)=gas_vals2(i,j,k)%natom1fr(-2:-1)!unstable
+       gas_vals2(i,j,k)%natom0fr(0:2) = gas_vals2(i,j,k)%natom1fr(26:28)!stable
 c-- add unstable to stable again
-       gas_vals2(i)%natom1fr(28) = gas_vals2(i)%natom1fr(28) +
-     &   gas_vals2(i)%natom1fr(gas_ini56)
-       gas_vals2(i)%natom1fr(27) = gas_vals2(i)%natom1fr(27) +
-     &   gas_vals2(i)%natom1fr(gas_ico56)
+       gas_vals2(i,j,k)%natom1fr(28) = gas_vals2(i,j,k)%natom1fr(28) +
+     &   gas_vals2(i,j,k)%natom1fr(gas_ini56)
+       gas_vals2(i,j,k)%natom1fr(27) = gas_vals2(i,j,k)%natom1fr(27) +
+     &   gas_vals2(i,j,k)%natom1fr(gas_ico56)
 c
 c-- total natom
-       gas_vals2(i)%natom = sum(gas_vals2(i)%natom1fr(1:))
+       gas_vals2(i,j,k)%natom = sum(gas_vals2(i,j,k)%natom1fr(1:))
 c
 c-- convert natoms to natom fractions
-       gas_vals2(i)%natom1fr = gas_vals2(i)%natom1fr/gas_vals2(i)%natom
-       gas_vals2(i)%natom0fr = gas_vals2(i)%natom0fr/gas_vals2(i)%natom
+       gas_vals2(i,j,k)%natom1fr = gas_vals2(i,j,k)%natom1fr/
+     &   gas_vals2(i,j,k)%natom
+       gas_vals2(i,j,k)%natom0fr = gas_vals2(i,j,k)%natom0fr/
+     &   gas_vals2(i,j,k)%natom
 c!}}}
       enddo !i
+      enddo !j
+      enddo !k
 c
       end subroutine massfr2natomfr

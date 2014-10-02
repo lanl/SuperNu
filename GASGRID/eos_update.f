@@ -10,32 +10,34 @@ c     --------------------------------
 * Solve the eos for given temperatures.
 ************************************************************************
       integer :: i,niter,iion,nion,istat
-      integer :: ir,iz,ii
+      integer :: j,k,iz,ii
       real*8 :: t0,t1
       real*8 :: ndens
-      real*8 :: pdens(ion_nion,gas_nr)
+      real*8 :: pdens(ion_nion,gas_nx,gas_ny,gas_nz)
 c
 c-- loop over all gas_vals cells
       call time(t0)
-      do ir=1,gas_nr
-       ndens = gas_vals2(ir)%natom/gas_vals2(ir)%vol !atom number density
-       call ion_solve_eos(gas_vals2(ir)%natom1fr(1:),
-     &   gas_temp(ir),ndens,gas_vals2(ir)%nelec,niter)
+      do k=1,gas_nz
+      do j=1,gas_ny
+      do i=1,gas_nx
+       ndens = gas_vals2(i,j,k)%natom/gas_vals2(i,j,k)%vol !atom number density
+       call ion_solve_eos(gas_vals2(i,j,k)%natom1fr(1:),
+     &   gas_temp(i,j,k),ndens,gas_vals2(i,j,k)%nelec,niter)
 c
 c-- debug output
 !      write(6,*) ir,niter !DEBUG
 c-- mark gcell to need new opacities
-       if(niter>1) gas_vals2(ir)%opdirty = .true.
+       if(niter>1) gas_vals2(i,j,k)%opdirty = .true.
 c
 c-- store occupation numbers of each ion's ground states
        do iz=1,gas_nelem
-        do ii=1,ion_grndlev(iz,ir)%ni
-         ion_grndlev(iz,ir)%g(ii) = ion_el(iz)%i(ii)%glev(1)
-         ion_grndlev(iz,ir)%oc(ii) =
-     &     gas_vals2(ir)%natom*gas_vals2(ir)%natom1fr(iz)*
+        do ii=1,ion_grndlev(iz,i,j,k)%ni
+         ion_grndlev(iz,i,j,k)%g(ii) = ion_el(iz)%i(ii)%glev(1)
+         ion_grndlev(iz,i,j,k)%oc(ii) =
+     &     gas_vals2(i,j,k)%natom*gas_vals2(i,j,k)%natom1fr(iz)*
      &     ion_el(iz)%i(ii)%glev(1) * ion_el(iz)%i(ii)%n /
-     &     (ion_el(iz)%i(ii)%q * gas_vals2(ir)%volcrp) !number density, not number
-         !write(6,*) iz,ii,ion_grndlev(iz,ir)%oc(ii) !ion_el(iz)%i(ii)%nlev,ion_el(iz)%i(ii)%glev(1) !DEBUG
+     &     (ion_el(iz)%i(ii)%q * gas_vals2(i,j,k)%volcrp) !number density, not number
+         !write(6,*) iz,ii,ion_grndlev(iz,i,j,k)%oc(ii) !ion_el(iz)%i(ii)%nlev,ion_el(iz)%i(ii)%glev(1) !DEBUG
         enddo !ii
        enddo !iz
 c
@@ -43,14 +45,16 @@ c-- store partial densities
        if(do_output) then
         iion = 0!{{{
         do iz=1,gas_nelem
-         do ii=1,ion_grndlev(iz,ir)%ni
+         do ii=1,ion_grndlev(iz,i,j,k)%ni
           iion = iion + 1
-          pdens(iion,ir) = ion_el(iz)%i(ii)%n
+          pdens(iion,i,j,k) = ion_el(iz)%i(ii)%n
          enddo
         enddo!}}}
        endif
 c
-      enddo !ir
+      enddo !ix
+      enddo !iy
+      enddo !iz
       call time(t1)
       call timereg(t_eos, t1-t0)
 c
@@ -64,7 +68,7 @@ c
 c-- write header
        write(4,*) '# partial densities',tsp_it
        write(4,*) '# nr, nelem'
-       write(4,*) gas_nr,gas_nelem
+       write(4,*) gas_nx,gas_ny,gas_nz,gas_nelem
        write(4,*) '# nion'
        write(4,'(40i12)') (ion_el(iz)%ni,iz=1,gas_nelem)
        write(4,*) '# ions'
@@ -74,20 +78,28 @@ c-- write header
 c
 c-- electron density
        write(4,'(2a12)') '# nelec','elec_dens' ![atom^-1],[cm^-3]
-       do ir=1,gas_nr
-        write(4,'(1p,2e12.4)') gas_vals2(ir)%nelec,
-     &    gas_vals2(ir)%nelec*gas_vals2(ir)%natom/gas_vals2(ir)%vol
-       enddo
+       do k=1,gas_nz
+       do j=1,gas_ny
+       do i=1,gas_nx
+        write(4,'(1p,2e12.4)') gas_vals2(i,j,k)%nelec,
+     &    gas_vals2(i,j,k)%nelec*gas_vals2(i,j,k)%natom/gas_vals2(i,j,k)%vol
+       enddo !i
+       enddo !j
+       enddo !k
 c
 c-- partial densities
        nion = 0
        do iz=1,gas_nelem
         write(4,'("#",40i12)') (iz*100+i,i=1,ion_grndlev(iz,1)%ni)
-        do ir=1,gas_nr
-         write(4,'(1p,40e12.4)') (pdens(nion+i,ir)*
-     &     gas_vals2(ir)%natom1fr(iz),
+        do k=1,gas_nz
+        do j=1,gas_ny
+        do i=1,gas_nx
+         write(4,'(1p,40e12.4)') (pdens(nion+i,i,j,k)*
+     &     gas_vals2(i,j,k)%natom1fr(iz),
      &     i=1,ion_grndlev(iz,1)%ni)
-        enddo !ir
+        enddo !i
+        enddo !j
+        enddo !k
         nion = nion + ion_grndlev(iz,1)%ni
        enddo !iz
 c

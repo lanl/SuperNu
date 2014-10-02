@@ -29,8 +29,6 @@ c     -----------------------
       real*8 :: natom2fr(gas_nr,-2:-1)
 c-- gamma opacity
       real*8,parameter :: ye=.5d0 !todo: compute this value
-c-- distribute packets
-      real*8 :: chiross(gas_nr),capplanck(gas_nr)
 c-- timing
       real*8 :: t0,t1
 c
@@ -57,10 +55,10 @@ c-- The difference between these two has decayed.
 c-- beginning of time step
        help = tsp_t
        call update_natomfr(help)
-       forall(i=-2:-1) natom1fr(:,i) = gas_vals2(:)%natom1fr(i)
+       forall(l=-2:-1) natom1fr(:,l) = gas_vals2(:)%natom1fr(l)
 c-- end of time step
        call update_natomfr(tsp_t + tsp_dt)
-       forall(i=-2:-1) natom2fr(:,i) = gas_vals2(:)%natom1fr(i)
+       forall(l=-2:-1) natom2fr(:,l) = gas_vals2(:)%natom1fr(l)
 c
 c-- update the abundances for the center time
        !call update_natomfr(tsp_tcenter)
@@ -104,44 +102,13 @@ c
 c
 c-- update interpolated density and temperatures at cell edges
 c=============================================================
-!Interpolating cell boundary temperatures (in keV currently): loop!{{{
-      if(gas_isshell) then
-       gas_tempb(1) = gas_templ0
-      else
-       gas_tempb(1) = gas_temp(1)
-      endif
-!gas_tempb(1) = 1.0
-      do ir=2,gas_nr
-       gas_tempb(ir) = (gas_temp(ir)**4 +
-     &   gas_temp(ir-1)**4)/2.0
-       gas_tempb(ir) = gas_tempb(ir)**0.25
-      enddo
-      gas_tempb(gas_nr+1) = gas_temp(gas_nr)
-!Interpolating cell boundary densities (in g/cm^3): loop
-      gas_rhob(1) = gas_vals2(1)%rho
-      do ir = 2, gas_nr
-       !gas_rhob(ir)=(gas_vals2(ir)%rho*gas_vals2(ir)%vol+ &
-       !     gas_vals2(ir-1)%rho*gas_vals2(ir-1)%vol)/ &
-       !     (gas_vals2(ir)%vol+gas_vals2(ir-1)%vol)
-       !gas_rhob(ir) = (gas_vals2(ir)%rho*gas_vals2(ir-1)%rho)**0.5d0
-         gas_rhob(ir)=1d0/(.5d0/gas_vals2(ir-1)%rho+
-     & .5d0/gas_vals2(ir)%rho)
-      enddo
-      gas_rhob(gas_nr+1) = gas_vals2(gas_nr)%rho
-
 !Calculating power law heat capacity
-      do ir=1,gas_nr
-       gas_vals2(ir)%bcoef = gas_cvcoef *
-     &   gas_temp(ir)**gas_cvtpwr *
-     &   gas_vals2(ir)%rho**gas_cvrpwr
-      enddo!}}}
+      gas_vals2%bcoef = gas_cvcoef * gas_temp**gas_cvtpwr *
+     &  gas_vals2%rho**gas_cvrpwr
 
 c-- add initial thermal input to gas_eext
       if(tsp_it==1) then
-       do ir=1,gas_nr
-        gas_eext = gas_eext+gas_vals2(ir)%bcoef*
-     &    gas_temp(ir)*gas_vals2(ir)%vol
-       enddo
+       gas_eext = sum(gas_vals2%bcoef*gas_temp*gas_vals2%vol)
       endif
 c
 c
@@ -282,41 +249,6 @@ c-- Calculating emission probabilities for each group in each cell
        call emission_probability
 c-- Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
        call leakage_opacity
-c
-c
-c-- Rosseland opacity
-c-- normalization integral first
-       dwl = gas_wl(2:) - gas_wl(:gas_ng)
-       forall(ir=1:gas_nr)
-     &  chiross(ir) = sum(dplanckdtemp(gas_wl,gas_temp(ir))*dwl)
-       forall(ir=1:gas_nr)
-     &  capplanck(ir) = sum(planck(gas_wl,gas_temp(ir))*dwl)
-c-- check against analytic solution
-c      write(7,'(1p,10e12.4)') (chiross(ir),ir=1,gas_nr)
-c      write(7,'(1p,10e12.4)') (4/pi*sb*gas_temp(ir)**3,ir=1,gas_nr)
-c      write(7,'(1p,10e12.4)') (capplanck(ir),ir=1,gas_nr)
-c      write(7,'(1p,10e12.4)') (sb/pi*gas_temp(ir)**4,ir=1,gas_nr)
-c-- now the opacity weighting integral
-       forall(ir=1:gas_nr)
-     &  chiross(ir) = chiross(ir) /
-     &    sum(dplanckdtemp(gas_wl,gas_temp(ir))*dwl/
-     &    (gas_caprosl(:,ir) + gas_sig(ir)))
-       forall(ir=1:gas_nr)
-     &  capplanck(ir) = sum(planck(gas_wl,gas_temp(ir))*
-     &    gas_cap(:,ir)*dwl) / capplanck(ir)
-c-- Rosseland output
-       write(7,*) 'mean opacities:'
-       write(7,'(a8,3(3a11,1x))') 'ir','chi_Ross','cap_B','sig',
-     &   'cap_min','cap_max','cap_mean',
-     &   'capr_min','capr_max','capr_mean'
-       do ir=1,gas_nr
-        write(7,'(i8,1p,3(3e11.4,1x))') ir,
-     &    chiross(ir),capplanck(ir),gas_sig(ir),
-     &    minval(gas_cap(:,ir)),maxval(gas_cap(:,ir)),
-     &     sum(gas_cap(:,ir))/gas_ng,
-     &    minval(gas_caprosl(:,ir)),maxval(gas_caprosl(:,ir)),
-     &     sum(gas_caprosl(:,ir))/gas_ng
-       enddo
 c
 c-- timing output
        if(tsp_it==1 .and. tsp_it==1)
