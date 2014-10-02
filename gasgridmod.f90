@@ -16,7 +16,6 @@ module gasgridmod
   integer :: gas_epslump
 !
   real*8 :: gas_velout = 0d0 !outer boundary velocity
-  real*8 :: gas_v0 = 0d0 !inner boundary velocity (if in_isshell)
 
   real*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
   real*8,allocatable :: gas_cap(:,:,:,:) !(gas_ng,gas_nx,gas_ny,gas_nz) Line+Cont extinction coeff
@@ -33,10 +32,7 @@ module gasgridmod
 
   real*8 :: gas_lx = 0
   logical :: gas_isvelocity = .false.
-  logical :: gas_isshell = .false.  !domain is shell, innermost radius not zero
   logical :: gas_novolsrc = .false. !no external volume source (e.g. radioactivity)
-  logical :: gas_depestimate = .true. !if true uses deposition estimator to update temperature
-  real*8 :: gas_templ0=0 !surface temperature at innermost radius
 !-(rev. 121)
   real*8 :: gas_sigcoefs=0  !analytic scattering opacity power law coefficient
   real*8 :: gas_sigtpwrs=0  !analytic scattering opacity power law temperature exponent
@@ -97,7 +93,7 @@ module gasgridmod
 !-- leakage opacities
   real*8,allocatable :: gas_opacleakl(:,:,:,:), gas_opacleakr(:,:,:,:) !(gas_ng,gas_nx,gas_ny,gas_nz)
   
-  real*8,allocatable :: gas_eraddens(:,:,:,:) !(gas_ng,gas_nx,gas_ny,gas_nz)
+  real*8,allocatable :: gas_eraddens(:,:,:) !(gas_nx,gas_ny,gas_nz)
 !-- old Planck opacity for BDF-2 method
   real*8,allocatable :: gas_siggreyold(:,:,:) !(gas_nx,gas_ny,gas_nz)
 !
@@ -172,7 +168,6 @@ module gasgridmod
     !
     gas_isvelocity = in_isvelocity
     gas_novolsrc = in_novolsrc
-    gas_depestimate = in_depestimate
     !power law heat capacity input:
     gas_cvcoef = in_cvcoef
     gas_cvtpwr = in_cvtpwr
@@ -223,7 +218,7 @@ module gasgridmod
     allocate(gas_opacleakr(gas_ng,gas_nx,gas_ny,gas_nz))
     allocate(gas_ppl(gas_ng,gas_nx,gas_ny,gas_nz))  !can potentially be removed
     allocate(gas_ppr(gas_ng,gas_nx,gas_ny,gas_nz))  !can potentially be removed
-    allocate(gas_eraddens(gas_ng,gas_nx,gas_ny,gas_nz))  !radiation energy density in tsp_dt per group
+    allocate(gas_eraddens(gas_nx,gas_ny,gas_nz))  !radiation energy density in tsp_dt per group
     allocate(gas_luminos(gas_ng))  !outbound grouped luminosity array
     allocate(gas_lumdev(gas_ng))
     allocate(gas_lumnum(gas_ng))

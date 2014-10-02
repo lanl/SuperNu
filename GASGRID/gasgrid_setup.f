@@ -42,7 +42,7 @@ c-- scale gas cell volumes to unit sphere depending on expanding or static
       if(gas_isvelocity) then
        help = gas_velout
       else
-       help = gas_lr+gas_l0
+       help = gas_lr
       endif
 c
 c-- volume of unit-radius sphere shells
@@ -81,8 +81,6 @@ c-- adopt partial masses from input file
         if(j>gas_nelem) j = 0 !divert to container
         gas_vals2(:)%mass0fr(j) = str_massfr(i,:)
        enddo
-c
-c-- set flat composition if selected
       else
        stop 'gg_setup: no input.str and no solidni56!'
       endif

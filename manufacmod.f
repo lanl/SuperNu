@@ -59,7 +59,6 @@ c     ------------------------------
 * per group in ergs with manufactured parameters
 ************************************************************************
       integer :: ir, ig
-      real*8 :: x1,x2,x3,x4,xx3,xx4 !,alf
 c
 c-- verify applicable input pars
       call check_manufacpars
@@ -71,24 +70,18 @@ c-- implement/modify velocity dependent manufactured radiation source
          select case (gas_opacanaltype)
          case ('grey')
 c-- grey solution
-            x1 = 1d0/gas_wl(gas_ng+1)
-            x2 = 1d0/gas_wl(1)
             do ir = 1, gas_nr
-               do ig = 1, gas_ng
-                  x3 = 1d0/gas_wl(ig+1)
-                  x4 = 1d0/gas_wl(ig)
-                  gas_emitex(ig,ir)= (1d0/dt)*(
-     &                 log((texp+dt)/texp)
-     &                 *(4d0*man_aa11/pc_c)+
-     &                 (3d0*totmass*sigcoef/
-     &                 (8d0*pc_pi*gas_velout))*
-     &                 ((gas_velout*texp)**(-2d0)-
-     &                 (gas_velout*(texp+dt))**(-2d0))*
-     &                 (man_aa11-pc_acoef*pc_c*man_temp0**4)
-     &                 )*(x4-x3)/(x2-x1)
-               enddo
+               gas_emitex(ir)= (1d0/dt)*(
+     &            log((texp+dt)/texp)
+     &            *(4d0*man_aa11/pc_c)+
+     &            (3d0*totmass*sigcoef/
+     &            (8d0*pc_pi*gas_velout))*
+     &            ((gas_velout*texp)**(-2d0)-
+     &            (gas_velout*(texp+dt))**(-2d0))*
+     &            (man_aa11-pc_acoef*pc_c*man_temp0**4)
+     &            )
 !     
-               gas_emitex(:,ir) = gas_emitex(:,ir)*
+               gas_emitex(ir) = gas_emitex(ir)*
      &              gas_vals2(ir)%vol*dt
 !     
             enddo
@@ -99,49 +92,7 @@ c--
             stop 'generate_manuradsrc: gas_opacanaltype=pick'
          case ('line')
 c-- line solution
-            if(gas_ng/=2)
-     &           stop 'generate_manuradsrc: gas_opacanaltype=line'
-            if(gas_ldisp1/gas_ldisp2>=1d-3)
-     &           stop 'generate_manuradsrc: gas_ldisp1/gas_ldisp2>=1d-3'
-c
-            !alf=0.5d0
-            do ir = 1, gas_nr           
-!-- thin lines
-               do ig = 1, gas_ng, 2
-                  x3 = 1d0/gas_wl(ig+1)
-                  x4 = 1d0/gas_wl(ig)
-!-- calculating manufactured source
-!     xx3 = x3*pc_h*pc_c/(pc_kb*man_temp0)
-!     xx4 = x4*pc_h*pc_c/(pc_kb*man_temp0)              
-!     bspeced = 15d0*specint(xx3,xx4,3)/pc_pi**4
-!     
-                  gas_emitex(ig,ir)=(1d0/dt)*
-     &                 log((texp+dt)/texp)*
-     &                 (man_aa11/pc_c)*
-     &                 (2d0+0.5d0*x3/(x4-x3))
-                  !write(*,*) alf*x3/(x4-x3)
-!
-!     gas_emitex(ig,ir)=0d0
-               enddo
-!
-!-- thick lines
-               do ig = 2, gas_ng, 2
-                  x3 = 1d0/gas_wl(ig)
-                  x4 = 1d0/gas_wl(ig-1)
-                  xx3 = x3*pc_h*pc_c/(pc_kb*man_temp0)
-                  gas_emitex(ig,ir)=(1d0/dt)*
-     &                 log((texp+dt)/texp)*(man_aa11/pc_c)*
-     &                 (2d0-0.5d0*x3/(x4-x3))
-                  !write(6,*) alf*x3/(x4-x3)
-               enddo
-!     
-!
-               gas_emitex(:,ir) = gas_emitex(:,ir)*
-     &              gas_vals2(ir)%vol*dt
-!     
-!     
-            enddo
-c     
+            stop 'generate_manuradsrc: gas_opacanaltype=line'
          case default
             stop 'gas_opacanaltype unknown'
          end select
@@ -221,7 +172,7 @@ c     ---------------------------
 * in ergs with manufactured parameters
 ************************************************************************
       integer :: ir, ig
-      real*8 :: x1,x2,x3,x4,xx3,xx4,help
+      real*8 :: help
 c
 c-- verify applicable input pars
       call check_manufacpars
@@ -234,19 +185,7 @@ c-- implement/modify velocity dependent manufactured initial profile
          select case (gas_opacanaltype)
          case ('grey')
 c-- grey solution
-            x1 = 1d0/gas_wl(gas_ng+1)
-            x2 = 1d0/gas_wl(1)
-            do ir = 1, gas_nr
-               do ig = 1, gas_ng
-                  x3 = 1d0/gas_wl(ig+1)
-                  x4 = 1d0/gas_wl(ig)
-                  gas_evolinit(ig,ir)=(man_aa11/pc_c)*(x4-x3)/(x2-x1)
-               enddo
-!
-               gas_evolinit(:,ir) = gas_evolinit(:,ir)*
-     &              gas_vals2(ir)%volr*help**3
-!     
-            enddo
+           gas_evolinit = (man_aa11/pc_c) * gas_vals2%volr*help**3
 c
          case ('mono')
             stop 'init_manuprofile: gas_opacanaltype=mono'
@@ -254,19 +193,7 @@ c
             stop 'init_manuprofile: gas_opacanaltype=pick'
          case ('line')
 c-- line solution
-            if(gas_ng/=2)
-     &           stop 'init_manuprofile: gas_opacanaltype=line'
-            if(gas_ldisp1/gas_ldisp2>=1d-3)
-     &           stop 'init_manuprofile: gas_ldisp1/gas_ldisp2>=1d-3'
-c-- g=1
-            gas_evolinit(1,:)=0.5d0*man_aa11/pc_c
-c
-c-- g=2
-            gas_evolinit(2,:)=0.5d0*man_aa11/pc_c
-!
-            forall(ir=1:gas_nr) gas_evolinit(:,ir)=
-     &           gas_evolinit(:,ir)*gas_vals2(ir)%volr*help**3
-!           
+           stop 'init_manuprofile: gas_opacanaltype=line ! implemented'
          case default
             stop 'gas_opacanaltype unknown'
          end select

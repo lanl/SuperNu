@@ -19,26 +19,9 @@ subroutine temperature_update
   real*8 :: temphelp
 
   !calculating radiation energy density
-  do ir = 1, gas_nr
-     gas_vals2(ir)%eraddens = 0d0
-     do ig = 1, gas_ng
-        gas_eraddens(ig,ir)=gas_eraddens(ig,ir)/gas_vals2(ir)%vol
-        gas_vals2(ir)%eraddens = gas_vals2(ir)%eraddens+ &
-             gas_eraddens(ig,ir)
-     enddo
-  enddo
-
-  !calculating deposition estimate
-  if(gas_depestimate) then
-     gas_edep = 0d0
-     do ir = 1, gas_nr
-        do ig=1,gas_ng
-           gas_edep(ir) = gas_edep(ir)+ &
-             pc_c*tsp_dt*gas_fcoef(ir)*gas_cap(ig,ir)* &
-             gas_eraddens(ig,ir)*gas_vals2(ir)%vol
-        enddo
-     enddo
-  endif
+  gas_vals2%eraddens = 0d0
+  gas_eraddens=gas_eraddens/gas_vals2%vol
+  gas_vals2%eraddens = gas_eraddens
 
 !-- calculating temperature
   if(allocated(gas_temppreset)) then

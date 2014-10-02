@@ -20,18 +20,13 @@ c==================
       logical :: in_noreadstruct = .false.
 c-- special grid
       logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
-      logical :: in_isshell = .false.  !switch to change domain topology from solid sphere to shell
-      real*8 :: in_l0 = 0d0  !innermost radius of the domain, used if in_isshell
 c-- specify the atmospheric stratification
       real*8 :: in_velout = 0d0  !cm/s, velocity of outer bound
-      real*8 :: in_v0 = 0d0 !velocity of inner bound (analogous to in_l0), used if in_isshell
       real*8 :: in_totmass = 0d0  !g
       character(4) :: in_dentype = 'unif' ! unif|mass: 'unif' for uniform density, 'mass' for equal mass accross cells
-      logical :: in_solidni56 = .false.  !pure nickel56 atmosphere
 c============
 c
 c-- temperature parameters
-      real*8 :: in_templ0 = 0d0 !inner bound temperature in keV
       real*8 :: in_consttemp = 0d0 !non-zero will not read temp from file. units: K
       real*8 :: in_tempradinit=0d0 !initial radiation temperature
       character(4) :: in_tradinittype='unif' !prof|unif: initial radiation field type
@@ -51,7 +46,6 @@ c-- particles
       logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
       logical :: in_isimcanlog = .false. !use analog IMC tally if true
       logical :: in_isddmcanlog = .true. !use analog DDMC tally if true
-      logical :: in_depestimate = .true. !use deposition estimator to update temperature
       real*8 :: in_tauddmc = 5d0 !number of mean free paths per cell required for DDMC
       real*8 :: in_taulump = 10d0 !number of of mean free paths needed to lump DDMC groups
 c-- time dependence of in_tauddmc and in_taulump
@@ -124,10 +118,10 @@ c-- misc
 c     
 c-- runtime parameter namelist
       namelist /inputpars/
-     & in_nr,in_isvelocity,in_isshell,in_novolsrc,in_lr,in_l0,
+     & in_nr,in_isvelocity,in_novolsrc,in_lr,
      & in_ng,in_ngs,in_wldex,in_wlmin,in_wlmax,
-     & in_totmass,in_templ0,in_velout,in_v0,
-     & in_consttemp,in_solidni56,
+     & in_totmass,in_velout,
+     & in_consttemp,
      & in_seed,in_ns,in_ns0,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,in_ntres,
      & in_grab_stdout,in_nomp,
@@ -140,7 +134,7 @@ c-- runtime parameter namelist
      & in_opacanaltype,in_suol,
      & in_suolpick1, in_ldisp1, in_ldisp2,
      & in_srctype, in_theav, in_nheav, in_srcmax,
-     & in_isimcanlog, in_isddmcanlog,in_depestimate,
+     & in_isimcanlog, in_isddmcanlog,
      & in_tauddmc, in_epslump, in_dentype, in_noreadstruct,
      & in_norestart, in_taulump, in_tauvtime,
      & in_tradinittype, in_tempradinit, in_ismodimc,
@@ -210,7 +204,6 @@ c
      &   'vel grid: use in_velout, not in_lr'
       else
        if(in_lr<=0d0) stop 'static grid: use in_lr, not in_velout'
-       if(in_l0<0d0) stop 'static grid: in_l0 invalid'
        if(in_velout>0d0) stop 'static grid: use in_lr, not in_velout'
       endif
 c
@@ -234,7 +227,6 @@ c
 c-- temp init
 *allow negative consttemp for now to use the trad profile temperature
 *     if(in_consttemp<0d0) stop 'in_consttemp < 0'
-      if(in_templ0<0d0) stop 'in_templ0 < 0'
       if(in_tempradinit<0d0) stop 'in_tempradinit < 0'
       if(in_tradinittype=='unif') then
       elseif(in_tradinittype=='prof') then
@@ -250,10 +242,7 @@ c
 c
 c-- special grid
       if(.not.in_noreadstruct) then
-       if(in_isshell) stop 'isshell incomp. with struct'
-       if(in_l0/=0d0) stop 'l0 incomp. with struct'
        if(in_velout/=0d0) stop 'velout incomp. with struct'
-       if(in_v0/=0d0) stop 'v0 incomp. with struct'
        if(in_totmass/=0d0) stop 'totmass incomp. with struct'
       endif
 c

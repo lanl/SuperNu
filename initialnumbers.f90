@@ -32,7 +32,7 @@ subroutine initialnumbers
   gas_eext = etotinit
 !
   do ir=1,gas_nr
-     gas_nvolinit(ir)=nint(sum(gas_evolinit(:,ir))*prt_ninit/etotinit) !+50
+     gas_nvolinit(ir)=nint(gas_evolinit(ir)*prt_ninit/etotinit) !+50
   enddo
 
   prt_ninitnew = sum(gas_nvolinit)

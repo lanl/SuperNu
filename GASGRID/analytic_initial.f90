@@ -32,11 +32,11 @@ subroutine analytic_initial
 !
 !-- map radiation temperature to gas_evolinit
   if(.not.gas_isvelocity) then
-     gas_evolinit(:,:,:)=pc_acoef*trad**4 * &
-       gas_vals2%volr*(gas_lx)**3
+    gas_evolinit = pc_acoef*trad**4 * &
+      gas_vals2%volr*(gas_lr)**3
   else
-     gas_evolinit(:,:,:)=pc_acoef*trad**4 * &
-       gas_vals2%volr*(tsp_t*gas_velout)**3
+    gas_evolinit = pc_acoef*trad**4 * &
+      gas_vals2%volr*(tsp_t*gas_velout)**3
   endif
 !--
 !
