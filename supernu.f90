@@ -76,18 +76,18 @@ program supernu
 !
 !-- read input structure
    if(.not.in_noreadstruct.and.in_isvelocity) then
-     call read_inputstr(in_nr,gas_velout)
+     call read_inputstr(in_nx,in_ny,in_nz,gas_velout)
    else
 !== generate_inputstr development in progress
-     call generate_inputstr(gas_lr,gas_velout)
+     call generate_inputstr(gas_lx,gas_ly,gas_lz,gas_velout)
    endif
 !
 !-- read gamma deposition profiles
    if(in_isvelocity.and.in_srctype=='none') then
-     call read_gamma_profiles(in_nr)
+     call read_gamma_profiles(in_nx,in_ny,in_nz)
    endif
 !-- read gamma deposition profiles
-   if(in_tradinittype=='prof') call read_trad_profiles(in_nr)
+   if(in_tradinittype=='prof') call read_trad_profiles(in_nx,in_ny,in_nz)
 !
 !-- SETUP GRIDS
    call wlgrid_setup(ng)
@@ -98,7 +98,7 @@ program supernu
 !-- READ DATA
 !-- read ion and level data
    call ion_read_data(gas_nelem)  !ion and level data
-   call ion_alloc_grndlev(gas_nr)  !ground state occupation numbers
+   call ion_alloc_grndlev(gas_nx,gas_ny,gas_nz)  !ground state occupation numbers
 !-- read bbxs data
    if(.not.in_nobbopac) call read_bbxs_data(gas_nelem)!bound-bound cross section data
 !-- read bfxs data

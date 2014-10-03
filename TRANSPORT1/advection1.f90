@@ -30,9 +30,9 @@ subroutine advection1(pretrans,isvacant,ig,zsrc,rsrc,musrc,esrc)
     rsrc = rsrc*(tsp_t + alph2*tsp_dt)/(tsp_t+tsp_dt)
   endif
 !
-  if (rsrc < gas_rarr(zsrc)) then
+  if (rsrc < gas_xarr(zsrc)) then
 !
-    zholder = binsrch(rsrc,gas_rarr,gas_nr+1,0)
+    zholder = binsrch(rsrc,gas_xarr,gas_nr+1,0)
 !
     if(.not.in_puretran.and.partstopper) then
        zfdiff = -1
@@ -42,7 +42,7 @@ subroutine advection1(pretrans,isvacant,ig,zsrc,rsrc,musrc,esrc)
           help = 1d0
        endif
        do ir = zsrc-1,zholder,-1
-          if((gas_sig(ir)+gas_cap(ig,ir))*gas_drarr(ir) &
+          if((gas_sig(ir,1,1)+gas_cap(ig,ir,1,1))*gas_dxarr(ir) &
                *help>=prt_tauddmc) then
              zfdiff = ir
              exit
@@ -51,7 +51,7 @@ subroutine advection1(pretrans,isvacant,ig,zsrc,rsrc,musrc,esrc)
        if(zfdiff.ne.-1) then
 !--
           zsrc = zfdiff+1
-          rsrc = gas_rarr(zsrc)
+          rsrc = gas_xarr(zsrc)
 !--
        else
           zsrc = zholder
