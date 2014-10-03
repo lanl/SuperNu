@@ -9,7 +9,7 @@ subroutine boundary_source
 
   integer :: ipart, ivac, ig, iig, z0
   real*8 :: r1, r2, P, mu0, r0, Esurfpart, wl0
-  real*8 :: denom2, x1, x2, specint, help
+  real*8 :: denom2, x1, x2, specint, thelp, mfphelp
   real*8, dimension(gas_ng) :: emitsurfprobg  !surface emission probabilities 
   !, Ryan W.: size will=# of groups in first cell
 
@@ -21,9 +21,9 @@ subroutine boundary_source
   Esurfpart = gas_esurf/real(prt_nsurf)
 
   if(gas_isvelocity) then
-     help = tsp_t
+     thelp = tsp_t
   else
-     help = 1d0
+     thelp = 1d0
   endif
   !Calculating grouped thermal emission probabilities
   if(gas_opacanaltype=='pick') then
@@ -73,7 +73,8 @@ subroutine boundary_source
         prt_particles(ivac)%musrc = 0.0000001
      endif
      mu0 = prt_particles(ivac)%musrc
-     P = gas_ppl(iig,1)*(1.0+1.5*prt_particles(ivac)%musrc)
+     mfphelp = (gas_cap(iig,1)+gas_sig(1))*gas_drarr(1)*thelp
+     P = 4d0*(1.0+1.5*prt_particles(ivac)%musrc)/(3d0*mfphelp+6d0*pc_dext)
 
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
@@ -94,7 +95,7 @@ subroutine boundary_source
      r0 = prt_particles(ivac)%rsrc
      
      if (((gas_sig(z0)+gas_cap(iig,z0))*gas_drarr(z0)* &
-          help < prt_tauddmc) &
+          thelp < prt_tauddmc) &
           .or.(in_puretran.eqv..true.).or.P>1d0.or.P<0d0) then
         gas_eext = gas_eext+Esurfpart
         if(gas_isvelocity) then

@@ -192,10 +192,7 @@ c     ------------------------!{{{
 * real*8 :: gas_fcoef(gas_nr)
 * real*8 :: gas_sig(gas_nr)
 * real*8 :: gas_emitprob(gas_ng,gas_nr)
-* real*8 :: gas_ppl(gas_ng,gas_nr)
-* real*8 :: gas_ppr(gas_ng,gas_nr)
-* real*8 :: gas_opacleakl(gas_ng,gas_nr)
-* real*8 :: gas_opacleakr(gas_ng,gas_nr)
+* real*8 :: gas_opacleak(2,gas_nr)
 * real*8 :: gas_cap(gas_ng,gas_nr)
 * real*8 :: gas_wl(gas_ng+1)
 *-- integer
@@ -277,10 +274,7 @@ c
        allocate(gas_sig(gas_nr))
        allocate(gas_siggrey(gas_nr))
        allocate(gas_emitprob(gas_ng,gas_nr))
-       allocate(gas_ppl(gas_ng,gas_nr))
-       allocate(gas_ppr(gas_ng,gas_nr))
-       allocate(gas_opacleakl(gas_ng,gas_nr))
-       allocate(gas_opacleakr(gas_ng,gas_nr))
+       allocate(gas_opacleak(2,gas_nr))
        allocate(gas_cap(gas_ng,gas_nr))
 !       allocate(gas_wl(gas_ng+1))
 c
@@ -327,13 +321,7 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_emitprob,gas_nr*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_ppl,gas_nr*gas_ng,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_ppr,gas_nr*gas_ng,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_opacleakl,gas_nr*gas_ng,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_opacleakr,gas_nr*gas_ng,MPI_REAL8,
+      call mpi_bcast(gas_opacleak,gas_nr*2,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_cap,gas_nr*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
