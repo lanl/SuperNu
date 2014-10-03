@@ -151,8 +151,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !-- inward
      if(z==1) then
         opacleakllump = 0d0
-     elseif(gas_cap(g,z-1)+ &
-          gas_sig(z-1))*gas_drarr(z-1)*thelp<prt_tauddmc)) then
+     elseif((gas_cap(g,z-1)+ &
+          gas_sig(z-1))*gas_drarr(z-1)*thelp<prt_tauddmc) then
 !-- DDMC interface
         mfphelp = (gas_cap(g,z)+gas_sig(z))*gas_drarr(z)*thelp
         ppl = 4d0/(3d0*mfphelp+6d0*pc_dext)

@@ -78,7 +78,7 @@ module gasgridmod
   real*8, dimension(:), allocatable :: gas_edep, gas_siggrey, gas_fcoef !(gas_nr)
   real*8, allocatable :: gas_emitprob(:,:)           !(gas_ng,gas_nr)
 !-- leakage opacities
-  real*8, allocatable :: gas_opacleak(2,:) !(2,gas_nr)
+  real*8, allocatable :: gas_opacleak(:,:) !(2,gas_nr)
   
   real*8, allocatable :: gas_eraddens(:) !(gas_nr)
 !-- old Planck opacity for BDF-2 method
