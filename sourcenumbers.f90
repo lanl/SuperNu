@@ -15,8 +15,6 @@ subroutine sourcenumbers
 !##################################################
 
   integer :: ir, ig
-  real*8 :: exsumg
-  real*8 :: ddrr3, ddrr4
   ! gas_esurf for any new prt_particles from a surface source
   ! prt_nsurf = number of surface prt_particles
   ! prt_nnew = total number of new prt_particles~=prt_ns
@@ -77,9 +75,7 @@ subroutine sourcenumbers
   enddo
   
   ! Adding external energy to gas_etot
-  do ir = 1, gas_nx
-     gas_etot = gas_etot + gas_emitex(ir,1,1)
-  enddo
+  gas_etot = gas_etot + sum(gas_emitex)
   
   ! Calculating number of domain inner boundary particles (if any)
   prt_nsurf = nint(gas_esurf*prt_ns/gas_etot)

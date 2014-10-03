@@ -30,7 +30,7 @@ c
 c----
 c-- agnostic grid setup (rev. 200) ----------------------------------
       gas_rarr = str_velleft
-      forall(ir=1:gas_nr) gas_drarr(ir)=gas_rarr(ir+1)-gas_rarr(ir)
+      gas_drarr(:) = gas_rarr(2:)-gas_rarr(:gas_nr)
 c--------------------------------------------------------------------
 c
 c-- agnostic mass setup (rev. 200) ----------------------------------
@@ -42,24 +42,12 @@ c-- scale gas cell volumes to unit sphere depending on expanding or static
       if(gas_isvelocity) then
        help = gas_velout
       else
-       help = gas_lr+gas_l0
+       help = gas_lr
       endif
 c
 c-- volume of unit-radius sphere shells
       forall(ir=1:gas_nr) gas_vals2(ir)%volr = 
      &  pc_pi4/3d0*(gas_rarr(ir+1)**3 - gas_rarr(ir)**3)/help**3  !volume in outer radius units
-c
-c
-c-- IMC-DDMC heuristic coefficient for spherical geometry (rev 146)
-c==================================================================
-      do ir = 1, gas_nr!{{{
-       help2=gas_rarr(ir+1)**2+gas_rarr(ir)*gas_rarr(ir+1)
-       help2=help2+gas_rarr(ir)**2
-       help2 = sqrt(1d0/help2)
-       gas_curvcent(ir) = sqrt((gas_rarr(ir+1)**2+gas_rarr(ir)**2))
-!       gas_curvcent(ir) = help2*gas_curvcent(ir)
-       gas_curvcent(ir) = 1d0
-      enddo!}}}
 c
 c
 c--
@@ -91,11 +79,6 @@ c-- adopt partial masses from input file
         if(j>gas_nelem) j = 0 !divert to container
         gas_vals2(:)%mass0fr(j) = str_massfr(i,:)
        enddo
-c
-c-- set flat composition if selected
-      elseif(in_solidni56) then
-       gas_vals2%mass0fr(28) = 1d0 !stable+unstable Ni abundance
-       gas_vals2(1:nint(4d0*gas_nr/5d0))%mass0fr(-1) = 1d0 !Ni56 core
       else
        stop 'gg_setup: no input.str and no solidni56!'
       endif

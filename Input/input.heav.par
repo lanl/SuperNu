@@ -77,7 +77,6 @@ in_npartmax = 10000000
 !-- imc tally method
 in_isimcanlog = f
 in_isddmcanlog = f
-in_depestimate = f
 !-- ddmc mfp per cell
 in_tauddmc = 3d0
 in_taulump = 3d0

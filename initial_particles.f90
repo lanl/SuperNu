@@ -19,14 +19,15 @@ subroutine initial_particles
     real*8 :: r1,r2,r3
     real*8 :: x1,x2,x3,x4
     real*8 :: einittot, ninittot
-    real*8, dimension(gas_nr) :: suminitg
     logical :: isnotvacnt
+
+!-- helper quantities
+    x1=1d0/gas_wl(gas_ng+1)
+    x2=1d0/gas_wl(1)
 
     !insantiating initial particles
     iir = 1
     iirused(1:gas_nr) = 0
-    suminitg(1:gas_nr) = 0d0
-    suminitg = sum(gas_evolinit,1)
     do ipart = 1, prt_ninitnew
        isnotvacnt=.false.
        do while(.not.isnotvacnt)
@@ -39,8 +40,8 @@ subroutine initial_particles
                 x3 = 1d0/gas_wl(ig+1)
                 x4 = 1d0/gas_wl(ig)
                 iig = ig
-                if(r1>=denom2.and.r1<denom2+gas_evolinit(ig,iir)/suminitg(iir)) exit
-                denom2 = denom2+gas_evolinit(ig,iir)
+                if(r1>=denom2.and.r1<denom2 + (x4-x3)/(x2-x1)) exit
+                denom2 = denom2 + (x4-x3)/(x2-x1)
              enddo
              !calculating wavelegth unformly
              r1 = rand()
@@ -62,7 +63,7 @@ subroutine initial_particles
              !calculating particle time
              prt_particles(ipart)%tsrc = tsp_t
              !calculating particle energy
-             Ep0 = suminitg(iir)/real(gas_nvolinit(iir))
+             Ep0 = gas_evolinit(iir)/real(gas_nvolinit(iir))
 !             gas_eext=gas_eext+Ep0
              if(gas_isvelocity) then
                 prt_particles(ipart)%Esrc = Ep0*(1.0+r0*mu0/pc_c)

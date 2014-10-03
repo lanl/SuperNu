@@ -34,8 +34,7 @@ c     --------------------------!{{{
 * real*8 :: gas_dxarr(nx)
 * real*8 :: gas_dyarr(ny)
 * real*8 :: gas_dzarr(nz)
-* real*8 :: gas_curvcent(nx)
-* real*8 :: gas_evolinit(gas_ng,nx,ny,nz)
+* real*8 :: gas_evolinit(nx,ny,nz)
 * real*8 :: gas_wl(gas_ng+1)
 *
 * scalars:
@@ -146,7 +145,6 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(gas_dxarr(nx))
        allocate(gas_dyarr(ny))
        allocate(gas_dxarr(nz))
-       allocate(gas_curvcent(nx))
        allocate(gas_evolinit(nx,ny,nz))
        allocate(gas_wl(gas_ng+1))
        !prt_done = .false.
@@ -166,15 +164,7 @@ c-- broadcast data
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_yarr,ny+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_zarr,nz+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_dxarr,nx,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_dyarr,ny,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_dzarr,nz,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_curvcent,nx,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_evolinit,nx*ny*nz,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -236,7 +226,7 @@ c-- dim==1,2
       if(impi/=impi0 .and. tsp_it==tsp_ntres) then
          allocate(gas_numcensus(nx,ny,nz))
          allocate(gas_edep(nx,ny,nz))
-         allocate(gas_eraddens(gas_ng,nx,ny,nz))
+         allocate(gas_eraddens(nx,ny,nz))
          allocate(gas_luminos(gas_ng))
          allocate(gas_lumdev(gas_ng))
          allocate(gas_lumnum(gas_ng))
@@ -339,7 +329,7 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_emit,nx*ny*nz,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_emitex,nx*ny*nz*gas_ng,MPI_REAL8,
+      call mpi_bcast(gas_emitex,nx*ny*nz,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
       call mpi_bcast(gas_siggrey,nx*ny*nz,MPI_REAL8,
@@ -383,18 +373,19 @@ c     -----------------------!{{{
 * real*8 :: gas_eright
 * real*8 :: gas_eleft
 *-- dim==1
+* integer :: gas_lumnum(ng)
+* real*8 :: gas_luminos(ng)
+* real*8 :: gas_lumdev(ng)
+*-- dim==3
 * integer :: gas_numcensus(nx,ny,nz)
 * real*8 :: gas_edep(nx,ny,nz)
-*-- dim==2
 * real*8 :: gas_eraddens(nx,ny,nz)
 ************************************************************************
       integer :: n
-      integer,allocatable :: isndvec(:),ircvvec(:)
+      integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:),rcvvec(:)
-      real*8,allocatable :: sndmat(:,:),rcvmat(:,:)
-      integer,allocatable :: isndvec3d(:,:,:),ircvvec3d(:,:,:)
-      real*8,allocatable :: sndvec3d(:,:,:),rcvvec3d(:,:,:)
-      real*8,allocatable :: sndmat3d(:,:,:,:),rcvmat3d(:,:,:,:)
+      integer :: isndvec3(nx,ny,nz)
+      real*8 :: sndvec3(nx,ny,nz)
       real*8 :: help
 
 c
@@ -423,23 +414,11 @@ c-- rtw: can't copy back 0 to eext or evelo.
       deallocate(rcvvec)
 c
 c-- dim==1
-      allocate(isndvec3d(nx,ny,nz))
-      isndvec3d = gas_numcensus
-      call mpi_reduce(isndved3d,gas_numcensus,nx*ny*nz,
-     &  MPI_INTEGER,MPI_SUM,impi0,MPI_COMM_WORLD,ierr)
-      deallocate(isndvec3d)
-c
       allocate(isndvec(gas_ng))
       isndvec = gas_lumnum
       call mpi_reduce(isndvec,gas_lumnum,gas_ng,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
       deallocate(isndvec)
-c
-      allocate(sndvec3d(nx,ny,nz))
-      sndvec3d = gas_edep
-      call mpi_reduce(sndvec3d,gas_edep,nx*ny*nz,MPI_REAL8,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      deallocate(sndvec3d)
 c
       allocate(sndvec(gas_ng))
       sndvec = gas_luminos
@@ -453,19 +432,23 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
       deallocate(sndvec)
 c
-      allocate(isndvec3d(nx,ny,nz))
-      isndvec3d = gas_methodswap
-      call mpi_reduce(isndvec3d,gas_methodswap,nx*ny*nz,
+c-- dim==3
+      isndvec3 = gas_numcensus
+      call mpi_reduce(isndved3d,gas_numcensus,nx*ny*nz,
      &  MPI_INTEGER,MPI_SUM,impi0,MPI_COMM_WORLD,ierr)
-      deallocate(isndvec3d)
 c
-c-- dim==2
-      allocate(sndmat3d(gas_ng,nx,ny,nz))
-      n = gas_ng*nx*ny*nz
-      sndmat3d = gas_eraddens
-      call mpi_reduce(sndmat3d,gas_eraddens,n,MPI_REAL8,MPI_SUM,
+      sndvec3 = gas_edep
+      call mpi_reduce(sndvec3,gas_edep,nx*ny*nz,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      deallocate(sndmat3d)
+c
+      isndvec3 = gas_methodswap
+      call mpi_reduce(isndvec3,gas_methodswap,nx*ny*nz,
+     &  MPI_INTEGER,MPI_SUM,impi0,MPI_COMM_WORLD,ierr)
+c
+      n = nx*ny*nz
+      sndvec3 = gas_eraddens
+      call mpi_reduce(sndvec3,gas_eraddens,n,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- timing statistics
       help = t_pckt_stat(1)

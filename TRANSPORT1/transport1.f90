@@ -162,7 +162,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
              *gas_cap(g,z,1,1)*siglabfact*d*thelp))*elabfact
      !--
      if(gas_fcoef(z,1,1)*gas_cap(g,z,1,1)*gas_dxarr(z)*thelp>1d-6) then     
-        gas_eraddens(g,z,1,1) = gas_eraddens(g,z,1,1)+E* &
+        gas_eraddens(z,1,1) = gas_eraddens(z,1,1)+E* &
              (1.0d0-exp(-gas_fcoef(z,1,1)*siglabfact*gas_cap(g,z,1,1)*d*thelp))* &
              elabfact/(gas_fcoef(z,1,1)*siglabfact*gas_cap(g,z,1,1)*pc_c*tsp_dt)
      else
@@ -283,7 +283,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         enddo
         g = iig
         !(rev 121): calculating radiation energy tally per group
-        !gas_eraddens(g,z)=gas_eraddens(g,z)+E*elabfact
+        !gas_eraddens(z)=gas_eraddens(z)+E*elabfact
         !-------------------------------------------------------
         ! sampling comoving wavelength in group
         r1 = rand()

@@ -171,10 +171,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !-- calculating energy depostion and density
   !
   if(prt_isddmcanlog) then
-     gas_eraddens(iig,z,1,1)= &
-          gas_eraddens(z,1,1)+E*ddmct*dtinv
+     gas_eraddens(iig,z,1,1)= gas_eraddens(z,1,1)+E*ddmct*dtinv
   else
-     gas_edep(z,1,1)=gas_edep(z,1,1)+E*(1d0-exp(-gas_fcoef(z,1,1) &!{{{
+     gas_edep(z,1,1) = gas_edep(z,1,1)+E*(1d0-exp(-gas_fcoef(z,1,1) &!{{{
           *caplump*pc_c*ddmct))
 !--
      if(gas_fcoef(z,1,1)*caplump*gas_dxarr(z)*thelp>1d-6) then
@@ -183,10 +182,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
              gas_eraddens(z,1,1)+E* &
              (1d0-exp(-gas_fcoef(z,1,1)*caplump*pc_c*ddmct))* &
              help*cinv*dtinv
-        enddo
      else
-        gas_eraddens(z,1,1)= &
-             gas_eraddens(z,1,1)+E*ddmct*dtinv
+        gas_eraddens(z,1,1) = gas_eraddens(z,1,1)+E*ddmct*dtinv
      endif
      E=E*exp(-gas_fcoef(z,1,1)*caplump*pc_c*ddmct)
 !!}}}
@@ -237,7 +234,6 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !-- checking if at inner bound
         if (z == 1) then
            stop 'diffusion1: non-physical inward leakage'
-        endif
 
 !-- sample adjacent group (assumes aligned g bounds)
         else
