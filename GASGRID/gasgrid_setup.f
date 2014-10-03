@@ -79,8 +79,11 @@ c-- adopt partial masses from input file
         if(j>gas_nelem) j = 0 !divert to container
         gas_vals2(:)%mass0fr(j) = str_massfr(i,:)
        enddo
+      elseif(.not.in_novolsrc) then
+        gas_vals2%mass0fr(28) = 1d0 !stable+unstable Ni abundance
+        gas_vals2(1:nint(4d0*gas_nr/5d0))%mass0fr(-1) = 1d0 !Ni56 core
       else
-       stop 'gg_setup: no input.str and no solidni56!'
+       stop 'gg_setup: no input.str and in_novolsrc=true!'
       endif
 c
 c-- convert mass fractions to # atoms

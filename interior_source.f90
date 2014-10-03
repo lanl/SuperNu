@@ -19,7 +19,6 @@ subroutine interior_source
   integer, dimension(gas_nr) :: irused
   real*8 :: r1, r2, r3, r4, uul, uur, uumax, mu0, r0, Ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, xx0, bmax, help
-  real*8, dimension(gas_nr) :: exsumg
   logical :: isnotvacnt !checks for available particle space to populate in cell
 
   if(gas_isvelocity) then
@@ -86,7 +85,7 @@ subroutine interior_source
            prt_particles(ivac)%tsrc = tsp_t+r1*tsp_dt
 
            !Calculating particle energy, lab frame direction and propagation type
-           Ep0 = exsumg(ir)/real(gas_nvolex(ir))
+           Ep0 = gas_emitex(ir)/real(gas_nvolex(ir))
            gas_eext=gas_eext+Ep0
            if (((gas_sig(ir)+gas_cap(iig,ir))*gas_drarr(ir)* &
                 help < prt_tauddmc) &

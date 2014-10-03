@@ -9,15 +9,19 @@ subroutine analytic_source
 
   integer :: ir, ig
   real*8 :: x1, x2, x3, x4, srcren
-  real*8 :: specint
-  !
-  real*8 :: xx3, xx4
-  real*8 :: aleff1 = 0.5d0
+  real*8 :: thelp
 
   x1 = 1d0/gas_wl(gas_ng+1)
   x2 = 1d0/gas_wl(1)
 
   gas_emitex = 0d0
+
+!-- setting source helper
+  if(gas_isvelocity) then
+     thelp = tsp_t
+  else
+     thelp = 1d0
+  endif
 
   if(gas_srctype=='none') then
     return
@@ -25,7 +29,8 @@ subroutine analytic_source
      !Heaviside source (uniform source sphere)!{{{
      if (tsp_t<=(in_tfirst+gas_theav)*pc_day) then
         do ir = 1, min(gas_nheav,gas_nr)
-           gas_emitex(ir) = gas_srcmax * gas_vals2(ir)%vol*tsp_dt
+           gas_emitex(ir) = gas_srcmax * &
+                gas_vals2(ir)%vol*tsp_dt/thelp**3
         enddo
      endif
 !-- no temp source for heav (matsrc=0.0)
