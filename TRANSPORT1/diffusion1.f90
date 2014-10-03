@@ -24,6 +24,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   logical, intent(inout) :: vacnt
   !
   integer :: ig, iig, g
+  logical :: lhelp
   integer,external :: binsrch
   real*8 :: r1, r2, thelp, x1, x2, r3, uur, uul, uumax, r0
   real*8 :: denom, denom2, denom3, xx0, bmax
@@ -165,9 +166,16 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
         opacleakllump=2.0d0*(thelp*gas_rarr(z))**2/ &
              (mfphelp*thelp**3*(gas_rarr(z+1)**3-gas_rarr(z)**3))
      endif
+!
 !-- outward
-     if(z==gas_nr.or.(z<gas_nr.and.(gas_cap(g,z+1)+ &
-          gas_sig(z+1))*gas_drarr(z+1)*thelp<prt_tauddmc)) then
+     if(z==gas_nr) then
+        lhelp = .true.
+     else
+        lhelp = (gas_cap(g,z+1)+ &
+           gas_sig(z+1))*gas_drarr(z+1)*thelp<prt_tauddmc
+     endif
+!
+     if(lhelp) then
 !-- DDMC interface
         mfphelp = (gas_cap(g,z)+gas_sig(z))*gas_drarr(z)*thelp
         ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
@@ -175,10 +183,10 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
              (thelp**3*(gas_rarr(z+1)**3-gas_rarr(z)**3))
      else
 !-- DDMC interior
-        help = ((gas_sig(z)+gas_cap(g,z))*gas_drarr(z)+&
+        mfphelp = ((gas_sig(z)+gas_cap(g,z))*gas_drarr(z)+&
              (gas_sig(z+1)+gas_cap(g,z+1))*gas_drarr(z+1))*thelp
         opacleakrlump=2.0d0*(thelp*gas_rarr(z+1))**2/ &
-             (thelp**3*(gas_rarr(z+1)**3-gas_rarr(z)**3))
+             (mfphelp*thelp**3*(gas_rarr(z+1)**3-gas_rarr(z)**3))
      endif
   endif
 !
@@ -375,7 +383,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
                     specig = gas_siggrey(z)*gas_emitprob(iig,z)*capinv(iig)
 !-- calculating resolved leakage opacities
                     mfphelp = (gas_cap(iig,z)+gas_sig(z))*gas_drarr(z)*thelp
-                    ppl = 4d0/(3d0*mfphelp+6d0*pc_dext)
+                    ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
                     resopacleakr = 1.5d0*ppr*(thelp*gas_rarr(z+1))**2/ &
                          (thelp**3*(gas_rarr(z+1)**3-gas_rarr(z)**3))
                     if((r1>=denom2).and. &

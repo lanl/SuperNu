@@ -28,7 +28,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   real*8 :: bmax, x1, x2, xx0, ddop1, ddop2
   real*8 :: dtinv
   real*8 :: help
-  real*8 :: ppl, ppr, mfphelp
+  real*8 :: ppl, ppr
 
 !--------------------------------------------------------------
 !
@@ -378,7 +378,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            if(gas_isvelocity) then
               mu = (mu-r*cinv)/(1.0-r*mu*cinv)
            endif
-           mfphelp = (gas_cap(g,z+1)+gas_sig(z+1))*gas_drarr(z+1)*thelp
+           help = (gas_cap(g,z+1)+gas_sig(z+1))*gas_drarr(z+1)*thelp
            ppl = 4d0/(3d0*help+6d0*pc_dext)
            P = ppl*(1.0+1.5*abs(mu))
 !--
@@ -419,7 +419,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               if(gas_isvelocity) then
                  mu = (mu-r*cinv)/(1.0-r*mu*cinv)
               endif
-              mfphelp = (gas_cap(g,z+1)+gas_sig(z+1))*gas_drarr(z+1)*thelp
+              help = (gas_cap(g,z+1)+gas_sig(z+1))*gas_drarr(z+1)*thelp
               ppl = 4d0/(3d0*help+6d0*pc_dext)
               P = ppl*(1.0+1.5*abs(mu))
               if (r1 < P) then
@@ -468,7 +468,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               endif
 !--
            endif
-           mfphelp = (gas_cap(g,z-1)+gas_sig(z-1))*gas_drarr(z-1)*thelp
+           help = (gas_cap(g,z-1)+gas_sig(z-1))*gas_drarr(z-1)*thelp
            ppr = 4d0/(3d0*help+6d0*pc_dext)
            P = ppr*(1.0+1.5*abs(mu))
 !--
