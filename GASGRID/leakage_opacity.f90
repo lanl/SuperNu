@@ -11,13 +11,14 @@ subroutine leakage_opacity
   !DDMC lumped leakage opacities.
 !##################################################
   logical :: missive = .false.
+  logical :: lhelp
   integer :: ir, ig
   real*8 :: help
   real*8 :: thelp, ppl, ppr, specval, speclump
 !
 !-- checking ddmc threshold=lump threshold
   if(prt_taulump/=prt_tauddmc) stop 'leakage_opacity: taulump/=tauddmc'
-  if(gas_epslump/=gas_ng) stop 'leakage_opacity: epslump/=ng'
+  if(gas_epslump<gas_ng) stop 'leakage_opacity: epslump<ng'
 !
 !-- setting vel-space helper
   if(gas_isvelocity) then
@@ -48,9 +49,16 @@ subroutine leakage_opacity
            specval = gas_siggrey(ir)*gas_emitprob(ig,ir)/&
                 gas_cap(ig,ir)
 !
+!-- case differentiation
+           if(ir==1) then
+              lhelp = .true.
+           else
+              lhelp = (gas_cap(ig,ir-1)+ &
+                 gas_sig(ir-1))*gas_drarr(ir-1)*thelp<prt_tauddmc
+           endif
+!
 !-- calculating inward leakage opacity
-           if(ir==1.or.(ir>1.and.(gas_cap(ig,ir-1)+ &
-                gas_sig(ir-1))*gas_drarr(ir-1)*thelp<prt_tauddmc)) then
+           if(lhelp) then
 !-- DDMC interface
               help = (gas_cap(ig,ir)+gas_sig(ir))*gas_drarr(ir)*thelp
               ppl = 4d0/(3d0*help+6d0*pc_dext)
@@ -66,9 +74,16 @@ subroutine leakage_opacity
                    (help*3d0*gas_vals2(ir)%vol/pc_pi4)
            endif
 !
+!-- case differentation
+           if(ir==gas_nr) then
+              lhelp = .true.
+           else
+              lhelp = (gas_cap(ig,ir+1)+ &
+                 gas_sig(ir+1))*gas_drarr(ir+1)*thelp<prt_tauddmc
+           endif
+!
 !-- calculating outward leakage opacity
-           if(ir==gas_nr.or.(ir<gas_nr.and.(gas_cap(ig,ir+1)+ &
-                gas_sig(ir+1))*gas_drarr(ir+1)*thelp<prt_tauddmc)) then
+           if(lhelp) then
 !-- DDMC interface
               help = (gas_cap(ig,ir)+gas_sig(ir))*gas_drarr(ir)*thelp
               ppr = 4d0/(3d0*help+6d0*pc_dext)

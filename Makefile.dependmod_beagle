@@ -9,7 +9,7 @@ bfxsmod.o bfxsmod.mod: bfxsmod.f
 bbxsmod.o bbxsmod.mod: bbxsmod.f elemdatamod.o miscmod.o 
 inputparmod.o inputparmod.mod: inputparmod.f miscmod.o physconstmod.o 
 timestepmod.o timestepmod.mod: timestepmod.f90 physconstmod.o 
-gasgridmod.o gasgridmod.mod: gasgridmod.f90 inputparmod.o 
+gasgridmod.o gasgridmod.mod: gasgridmod.f90 inputparmod.o timestepmod.o 
 inputstrmod.o inputstrmod.mod: inputstrmod.f elemdatamod.o gasgridmod.o inputparmod.o miscmod.o physconstmod.o 
 particlemod.o particlemod.mod: particlemod.f90  
 timingmod.o timingmod.mod: timingmod.f  
