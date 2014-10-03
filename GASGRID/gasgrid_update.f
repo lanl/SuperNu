@@ -194,11 +194,6 @@ c-- calculate opacities
          call physical_opacity_subgrid
         endif
 c
-c-- copy results into misc arrays
-        gas_sigbl = gas_sig
-        gas_sigbr = gas_sig
-        gas_caprosl = gas_cap
-        gas_caprosr = gas_cap
        endif
 c
 c-- Planck opacity

@@ -23,15 +23,7 @@ subroutine analytic_opacity
 
   gas_siggrey = 0d0
   gas_cap = 0d0
-!-- opacity of zero should contribute infinitely little to the rosseland
-!   opacity sum (calculated in convert_cap2capros).
-!-- rtw: no longer needed?
-!  gas_caprosl = huge(gas_cap)
-!  gas_caprosr = huge(gas_cap)
-
   gas_sig = 0d0
-  gas_sigbl = 0d0
-  gas_sigbr = 0d0
 
   !Calculating grouped Planck and Rosseland opacities
   if(gas_opacanaltype=='none') then
@@ -41,73 +33,36 @@ subroutine analytic_opacity
      ! sigmaP_g, sigmaR_g = sigmaP for all g 
      ! Input wavelength grid not used
      do ir = 1, gas_nr
-!-- edge temperatures
-        irl = max(ir-1,1)  !-- left neighbor
-        irr = min(ir+1,gas_nr)  !-- right neighbor
-        templ = (.5d0*gas_temp(irl)**4 + .5d0*gas_temp(ir)**4)**.25
-        tempr = (.5d0*gas_temp(irr)**4 + .5d0*gas_temp(ir)**4)**.25
-!
-        gas_siggrey(ir) = gas_sigcoef*gas_temp(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-        sigll = gas_siggrey(ir)*(templ/gas_temp(ir))**gas_sigtpwr
-        sigrr = gas_siggrey(ir)*(tempr/gas_temp(ir))**gas_sigtpwr
-        do ig = 1, gas_ng
-           gas_cap(ig,ir) = gas_siggrey(ir)
-           gas_caprosl(ig,ir) = sigll
-           gas_caprosr(ig,ir) = sigrr
-        enddo
+        gas_siggrey(ir) = gas_sigcoef*gas_temp(ir)**gas_sigtpwr* &
+             gas_vals2(ir)%rho**gas_sigrpwr
+        gas_cap(:,ir) = gas_siggrey(ir)
      enddo!}}}
   elseif(gas_opacanaltype=='mono') then
      ! sigmaP = A*T^B*rho^C*f(T)!{{{
      ! sigmaP_g = sigmaP*func_P(T,g), sigmaR_g=sigmaP*func_R(T,g)
-     ! func_P(T,g) and func_R(T,g) are functions proportional to integral_g(1/nu^3)
+     ! func_P(T,g) and func_R(T,g) are functions proportional to
+     ! integral_g(1/nu^3)
      !
      do ir = 1, gas_nr
-!-- edge temperatures
-        irl = max(ir-1,1)  !-- left neighbor
-        irr = min(ir+1,gas_nr)  !-- right neighbor
-        templ = (.5d0*gas_temp(irl)**4 + .5d0*gas_temp(ir)**4)**.25
-        tempr = (.5d0*gas_temp(irr)**4 + .5d0*gas_temp(ir)**4)**.25
-!
-        gas_siggrey(ir) = gas_sigcoef*gas_temp(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-        sigll = gas_siggrey(ir)*(templ/gas_temp(ir))**gas_sigtpwr
-        sigrr = gas_siggrey(ir)*(tempr/gas_temp(ir))**gas_sigtpwr
+        gas_siggrey(ir) = gas_sigcoef*gas_temp(ir)**gas_sigtpwr* &
+             gas_vals2(ir)%rho**gas_sigrpwr
         do ig = 1, gas_ng
            !
-           !group (Planck) opacities:
+           !group opacities:
 
             x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb)
             x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb)
 
-!           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3)
-!           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3)
-           gas_cap(ig,ir) = 0.5d0*gas_siggrey(ir)*(x1+x2)/(x1*x2)**2
+            gas_cap(ig,ir) = 0.5d0*gas_siggrey(ir)*(x1+x2)/(x1*x2)**2
            !
-           !group left (Rosseland) opacities:
-
-            x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb)
-            x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb)
-
-!           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3)
-!           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3)
-           gas_caprosl(ig,ir) = 0.5d0*sigll*(x1+x2)/(x1*x2)**2
-           !
-           !group right (Rosseland) opacities:
-
-            x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb)
-            x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb)
-
-!           x1 = (pc_h*pc_c/(pc_ev*gas_wl(ig+1)))/(1d3)
-!           x2 = (pc_h*pc_c/(pc_ev*gas_wl(ig)))/(1d3)
-           gas_caprosr(ig,ir) = 0.5d0*sigrr*(x1+x2)/(x1*x2)**2
            !
         enddo
-!        x1 = (pc_h*pc_c/(pc_ev*gas_wl(gas_ng+1)))/(1d3)
-!        x2 = (pc_h*pc_c/(pc_ev*gas_wl(1)))/(1d3)
         gas_siggrey(ir) = 0d0
         do ig = 1, gas_ng
            x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(ir))
            x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(ir))
-           gas_siggrey(ir) = gas_siggrey(ir)+15d0*gas_cap(ig,ir)*specint(x1,x2,3)/pc_pi**4
+           gas_siggrey(ir) = gas_siggrey(ir)+15d0*gas_cap(ig,ir)* &
+                specint(x1,x2,3)/pc_pi**4
         enddo
      enddo!}}}
   elseif(gas_opacanaltype=='pick') then
@@ -116,53 +71,21 @@ subroutine analytic_opacity
      ! Su&Olson picket-fence distributions (tests: A,B,C (Su and Olson 1999))
      ! Input wavelength grid not used
      do ir = 1, gas_nr
-!-- edge temperatures
-        irl = max(ir-1,1)  !-- left neighbor
-        irr = min(ir+1,gas_nr)  !-- right neighbor
-        templ = (.5d0*gas_temp(irl)**4 + .5d0*gas_temp(ir)**4)**.25
-        tempr = (.5d0*gas_temp(irr)**4 + .5d0*gas_temp(ir)**4)**.25
-!
-        gas_siggrey(ir) = gas_sigcoef*gas_temp(ir)**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-        sigll = gas_sigcoef*templ**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-        sigrr = gas_sigcoef*tempr**gas_sigtpwr*gas_vals2(ir)%rho**gas_sigrpwr
-     
+        gas_siggrey(ir) = gas_sigcoef*gas_temp(ir)**gas_sigtpwr* &
+             gas_vals2(ir)%rho**gas_sigrpwr     
         if(gas_suol=='tsta') then    !Case: A
-
            gas_cap(1,ir) = gas_siggrey(ir)
            gas_cap(2,ir) = gas_siggrey(ir)
-           gas_caprosl(1,ir) = sigll
-           gas_caprosl(2,ir) = sigll
-           gas_caprosr(1,ir) = sigrr
-           gas_caprosr(2,ir) = sigrr
-
         elseif(gas_suol=='tstb') then  !Case: B
-
            gas_cap(1,ir) = 2d0*gas_siggrey(ir)/11d0
            gas_cap(2,ir) = 20d0*gas_siggrey(ir)/11d0
-           gas_caprosl(1,ir) = 2d0*sigll/11d0
-           gas_caprosl(2,ir) = 20d0*sigll/11d0
-           gas_caprosr(1,ir) = 2d0*sigrr/11d0
-           gas_caprosr(2,ir) = 20d0*sigrr/11d0
-
         elseif(gas_suol=='tstc') then  !Case: C
-
            gas_cap(1,ir) = 2d0*gas_siggrey(ir)/101d0
            gas_cap(2,ir) = 200d0*gas_siggrey(ir)/101d0
-           gas_caprosl(1,ir) = 2d0*sigll/101d0
-           gas_caprosl(2,ir) = 200d0*sigll/101d0
-           gas_caprosr(1,ir) = 2d0*sigrr/101d0
-           gas_caprosr(2,ir) = 200d0*sigrr/101d0
-
 !-- added evacuated picket test
         elseif(gas_suol=='tstd') then !Case: D (not in SuOlson)
-
            gas_cap(1,ir) = 0d0
            gas_cap(2,ir) = 2d0*gas_siggrey(ir)
-           gas_caprosl(1,ir) = 0d0
-           gas_caprosl(2,ir) = 2d0*sigll
-           gas_caprosr(1,ir) = 0d0
-           gas_caprosr(2,ir) = 2d0*sigrr
-
         else
            stop 'analytic_opacity: gas_suol invalid'
         endif!}}}
@@ -172,30 +95,16 @@ subroutine analytic_opacity
      ! sigmaP = A*T^B*rho^C
      ! sigmaP_g = sigmaP*func_P(g), sigmaR_g = sigmaP
      do ir = 1, gas_nr
-!-- edge temperatures
-        irl = max(ir-1,1)  !-- left neighbor
-        irr = min(ir+1,gas_nr)  !-- right neighbor
-        templ = (.5d0*gas_temp(irl)**4 + .5d0*gas_temp(ir)**4)**.25
-        tempr = (.5d0*gas_temp(irr)**4 + .5d0*gas_temp(ir)**4)**.25
-        rhol = 2d0/(1d0/gas_vals2(irl)%rho + 1d0/gas_vals2(ir)%rho)  !-- edge value
-        rhor = 2d0/(1d0/gas_vals2(irr)%rho + 1d0/gas_vals2(ir)%rho)  !-- edge value
-!
         gas_siggrey(ir) = gas_sigcoef*gas_temp(ir)**gas_sigtpwr * &
            gas_vals2(ir)%rho**gas_sigrpwr
-        sigll = gas_sigcoef*templ**gas_sigtpwr*rhol**gas_sigrpwr
-        sigrr = gas_sigcoef*tempr**gas_sigtpwr*rhor**gas_sigrpwr
         !
         !set odd group magnitudes (low)
         do ig = 1, gas_ng, 2
            gas_cap(ig,ir) = gas_siggrey(ir)*gas_ldisp1
-           gas_caprosl(ig,ir) = sigll*gas_ldisp1
-           gas_caprosr(ig,ir) = sigrr*gas_ldisp1
         enddo
         !set even group magnitudes (high)
         do ig = 2, gas_ng, 2
            gas_cap(ig,ir) = gas_siggrey(ir)*gas_ldisp2
-           gas_caprosl(ig,ir) = sigll*gas_ldisp2
-           gas_caprosr(ig,ir) = sigrr*gas_ldisp2
         enddo
         !
         !calculate Planck, Rosseland opacities
@@ -213,16 +122,7 @@ subroutine analytic_opacity
   endif
 
   !Calculating grey scattering opacity
-  do ir = 1, gas_nr
-!-- edge temperatures
-     irl = max(ir-1,1)  !-- left neighbor
-     irr = min(ir+1,gas_nr)  !-- right neighbor
-     templ = (.5d0*gas_temp(irl)**4 + .5d0*gas_temp(ir)**4)**.25
-     tempr = (.5d0*gas_temp(irr)**4 + .5d0*gas_temp(ir)**4)**.25
-!
-     gas_sig(ir) = gas_sigcoefs*gas_temp(ir)**gas_sigtpwrs*gas_vals2(ir)%rho**gas_sigrpwrs
-     gas_sigbl(ir) = gas_sigcoefs*templ**gas_sigtpwrs*gas_vals2(ir)%rho**gas_sigrpwrs
-     gas_sigbr(ir) = gas_sigcoefs*tempr**gas_sigtpwrs*gas_vals2(ir)%rho**gas_sigrpwrs
-  enddo
+  gas_sig = gas_sigcoefs*gas_temp**gas_sigtpwrs* &
+       gas_vals2%rho**gas_sigrpwrs
 
 end subroutine analytic_opacity

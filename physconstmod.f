@@ -34,6 +34,9 @@ c
       real*8,parameter :: pc_hsun = 3.826d33/(pc_pi4*pc_pi4) !erg/s/cm^2/sr
       real*8,parameter :: pc_msun = 1.989d33 !g
 c
+c-- extrapolation distance from asymptotic diffusion-limit B.C.
+      real*8,parameter :: pc_dext = 0.7104d0
+c
 c-- conversion factors
       real*8,parameter :: pc_day = 24d0*60d0**2
       real*8,parameter :: pc_year = 31556925.9747d0 !sec

@@ -19,8 +19,6 @@ module gasgridmod
   real*8,allocatable :: gas_cap(:,:) !(gas_ng,gas_nr) Line+Cont extinction coeff
   real*8,allocatable :: gas_sig(:) !(gas_nr) scattering coefficient
 !-(rev. 121): edge scattering coefficient (a secondary quantity)
-  real*8,allocatable :: gas_sigbl(:) !(gas_nr), left
-  real*8,allocatable :: gas_sigbr(:) !(gas_nr), right
 !---------------------------------------------------------------
   real*8,allocatable :: gas_capgam(:) !(gas_nr) Gamma ray gray opacity
 !
@@ -79,13 +77,10 @@ module gasgridmod
   real*8, dimension(:), allocatable :: gas_drarr  !(gas_nr)
   real*8, dimension(:), allocatable :: gas_edep, gas_siggrey, gas_fcoef !(gas_nr)
   real*8, allocatable :: gas_emitprob(:,:)           !(gas_ng,gas_nr)
-  real*8, allocatable :: gas_ppl(:,:), gas_ppr(:,:)  !(gas_ng,gas_nr)
-!-- temporary array used to compute leakage opacities
-  real*8, allocatable :: gas_caprosl(:,:), gas_caprosr(:,:)  !(gas_ng,gas_nr)
 !-- leakage opacities
-  real*8, allocatable :: gas_opacleakl(:,:), gas_opacleakr(:,:) !(gas_ng,gas_nr)
+  real*8, allocatable :: gas_opacleak(2,:) !(2,gas_nr)
   
-  real*8, allocatable :: gas_eraddens(:) !(gas_ng,gas_nr)
+  real*8, allocatable :: gas_eraddens(:) !(gas_nr)
 !-- old Planck opacity for BDF-2 method
   real*8, allocatable :: gas_siggreyold(:) !(gas_nr)
 !
@@ -201,10 +196,7 @@ module gasgridmod
 !----------------------------------------------------------------
     allocate(gas_fcoef(gas_nr))  !Fleck factor
     allocate(gas_emitprob(gas_ng,gas_nr))  !Probability of emission in a given zone and group
-    allocate(gas_opacleakl(gas_ng,gas_nr))
-    allocate(gas_opacleakr(gas_ng,gas_nr))
-    allocate(gas_ppl(gas_ng,gas_nr))  !can potentially be removed
-    allocate(gas_ppr(gas_ng,gas_nr))  !can potentially be removed
+    allocate(gas_opacleak(2,gas_nr))
     allocate(gas_eraddens(gas_nr))  !radiation energy density in tsp_dt per group
     allocate(gas_luminos(gas_ng))  !outbound grouped luminosity array
     allocate(gas_lumdev(gas_ng))
@@ -223,16 +215,10 @@ module gasgridmod
 !-- secondary
     allocate(gas_vals2(gas_nr))
     allocate(gas_capgam(gas_nr))
-!--Ryan W: added edge scattering opacities for leakage coefficients (rev. 121)
-    allocate(gas_sigbl(gas_nr))
-    allocate(gas_sigbr(gas_nr))
 !------------------------------------
     allocate(gas_temphist(gas_nr,nt))
 
     allocate(gas_temp(gas_nr))  !cell average temperature
-    
-    allocate(gas_caprosl(gas_ng,gas_nr))  !left cell edge group Rosseland opacities
-    allocate(gas_caprosr(gas_ng,gas_nr)) !right ||   ||    ||     ||        ||
     allocate(gas_methodswap(gas_nr))
 !
 !-- read preset temperature profiles

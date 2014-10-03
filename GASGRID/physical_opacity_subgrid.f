@@ -41,6 +41,8 @@ c-- bbxs
       real*8 :: caphelp
 c-- temporary cap array in the right order
       real*8,allocatable :: cap(:,:)  !(gas_nr,ngs)
+c-- temperary capros array for opacity mixing
+      real*8 :: caprosl(gas_ng,gas_nr)
 c-- special functions
       integer :: binsrch
       real*8 :: specint, x1, x2
@@ -81,7 +83,7 @@ c-- find the start point: set end before first line that falls into a group
       enddo
 c
 c-- zero out
-      gas_caprosl = 0d0
+      caprosl = 0d0
 c
 c-- allocate cap
       if(in_ngs==0) then
@@ -131,9 +133,9 @@ c
 c-- planck average
        gas_cap(ig,:) = sum(cap(:,:ngs),dim=2)/ngs !assume evenly spaced subgroup bins
 c
-c-- todo: calculate gas_caprosl and gas_caprosr with cell-boundary temperature values
+c
        if(in_noplanckweighting) then
-        gas_caprosl(ig,:) = ngs/sum(1d0/cap(:,:ngs),dim=2) !assume evenly spaced subgroup bins
+        caprosl(ig,:) = ngs/sum(1d0/cap(:,:ngs),dim=2) !assume evenly spaced subgroup bins
 c-- calculate Planck function weighted Rosseland
        else
         do ir=1,gas_nr
@@ -142,19 +144,19 @@ c-- calculate Planck function weighted Rosseland
           wll = (gas_wl(ig) + (igs-1)*dwl)
           x1 = pc_h*pc_c/((wll + dwl)*kbt)
           x2 = pc_h*pc_c/(wll*kbt)
-          gas_caprosl(ig,ir) = gas_caprosl(ig,ir) +
+          caprosl(ig,ir) = caprosl(ig,ir) +
      &      (15d0*specint(x1,x2,3)/pc_pi**4)/cap(ir,igs)
          enddo !igs
          x1 = pc_h*pc_c/(gas_wl(ig + 1)*kbt)
          x2 = pc_h*pc_c/(gas_wl(ig)*kbt)
-         gas_caprosl(ig,ir) = (15d0*specint(x1,x2,3)/pc_pi**4)/
-     &     gas_caprosl(ig,ir)
+         caprosl(ig,ir) = (15d0*specint(x1,x2,3)/pc_pi**4)/
+     &     caprosl(ig,ir)
         enddo !ir
        endif
 c
 c-- combine planck and rosseland averages
        help = in_opacmixrossel
-       gas_cap(ig,:) = (1d0-help)*gas_cap(ig,:) + help*gas_caprosl(ig,:)
+       gas_cap(ig,:) = (1d0-help)*gas_cap(ig,:) + help*caprosl(ig,:)
       enddo !ig
 c
 c-- sanity check
