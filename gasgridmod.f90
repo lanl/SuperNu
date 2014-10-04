@@ -12,8 +12,6 @@ module gasgridmod
   integer :: gas_nz = 0
   integer :: gas_ng = 0
 
-!--lumping index
-  integer :: gas_epslump
 !
   real*8 :: gas_velout = 0d0 !outer boundary velocity
 
@@ -188,8 +186,6 @@ module gasgridmod
     gas_theav = in_theav
     gas_nheav = in_nheav
     gas_srcmax = in_srcmax
-    !lumping index
-    gas_epslump = in_epslump
 
 !-- primary
     allocate(gas_xarr(gas_nx+1)) !zone edge x position

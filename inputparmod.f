@@ -57,8 +57,6 @@ c-- time dependence of in_tauddmc and in_taulump
       character(4) :: in_tauvtime = 'unif' ! unif|incr = constant or limiting (s-curve) to more conservative constant
 c
       real*8 :: in_alpha = 1d0 !time centering control parameter [0,1]
-c-- lumping neighborhood
-      integer :: in_epslump=0
 c
 c-- time step
       real*8 :: in_tfirst = 0d0 !first point in time evolution
@@ -141,7 +139,7 @@ c-- runtime parameter namelist
      & in_suolpick1, in_ldisp1, in_ldisp2,
      & in_srctype, in_theav, in_nheav, in_srcmax,
      & in_isimcanlog, in_isddmcanlog,
-     & in_tauddmc, in_epslump, in_dentype, in_noreadstruct,
+     & in_tauddmc, in_dentype, in_noreadstruct,
      & in_norestart, in_taulump, in_tauvtime,
      & in_tradinittype, in_tempradinit, in_ismodimc,
      & in_comment
@@ -232,7 +230,6 @@ c
       if(in_ns0<0) stop 'in_ns0 < 0'
       if(in_npartmax<=in_ns+in_ns0) stop 'in_npartmax invalid'
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
-      if(in_epslump<0) stop 'in_epslump invalid'
       if(in_taulump<in_tauddmc) stop 'in_taulump<in_tauddmc'
 c
       if(in_totmass<=0d0 .and. in_noreadstruct) stop 'in_totmass <= 0'
