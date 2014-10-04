@@ -73,7 +73,7 @@ subroutine boundary_source
         prt_particles(ivac)%musrc = 0.0000001
      endif
      mu0 = prt_particles(ivac)%musrc
-     mfphelp = (gas_cap(iig,1)+gas_sig(1))*gas_drarr(1)*thelp
+     mfphelp = (gas_cap(iig,1,1,1)+gas_sig(1,1,1))*gas_dxarr(1)*thelp
      P = 4d0*(1.0+1.5*prt_particles(ivac)%musrc)/(3d0*mfphelp+6d0*pc_dext)
 
      r1 = rand()
@@ -82,7 +82,7 @@ subroutine boundary_source
      prt_particles(ivac)%tsrc = tsp_t+r1*tsp_dt
 
      if(gas_isvelocity.and.gas_srctype=='manu') then
-        prt_particles(ivac)%zsrc = gas_nr
+        prt_particles(ivac)%zsrc = gas_nx
         mu0 = -mu0
         prt_particles(ivac)%musrc = mu0
      else
@@ -91,10 +91,10 @@ subroutine boundary_source
      z0 = prt_particles(ivac)%zsrc
      
 
-     prt_particles(ivac)%rsrc = gas_rarr(1)
+     prt_particles(ivac)%rsrc = gas_xarr(1)
      r0 = prt_particles(ivac)%rsrc
      
-     if (((gas_sig(z0)+gas_cap(iig,z0))*gas_drarr(z0)* &
+     if (((gas_sig(z0,1,1)+gas_cap(iig,z0,1,1))*gas_dxarr(z0)* &
           thelp < prt_tauddmc) &
           .or.(in_puretran.eqv..true.).or.P>1d0.or.P<0d0) then
         gas_eext = gas_eext+Esurfpart

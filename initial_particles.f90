@@ -13,7 +13,7 @@ subroutine initial_particles
 !##################################################
 !
     integer :: ig, iir, iig, ipart
-    integer, dimension(gas_nr) :: iirused
+    integer, dimension(gas_nx) :: iirused
     real*8 :: wl0, mu0, Ep0, r0
     real*8 :: help, denom2
     real*8 :: r1,r2,r3
@@ -27,11 +27,11 @@ subroutine initial_particles
 
     !insantiating initial particles
     iir = 1
-    iirused(1:gas_nr) = 0
+    iirused = 0
     do ipart = 1, prt_ninitnew
        isnotvacnt=.false.
        do while(.not.isnotvacnt)
-          if(iirused(iir)<gas_nvolinit(iir)) then
+          if(iirused(iir)<gas_nvolinit(iir,1,1)) then
              iirused(iir)=iirused(iir)+1
              denom2 = 0d0
              r1=rand()
@@ -50,8 +50,8 @@ subroutine initial_particles
              !calculating radial position
              r3 = rand()
              prt_tlyrand = prt_tlyrand+1
-             prt_particles(ipart)%rsrc = (r3*gas_rarr(iir+1)**3 + &
-                  (1.0-r3)*gas_rarr(iir)**3)**(1.0/3.0)
+             prt_particles(ipart)%rsrc = (r3*gas_xarr(iir+1)**3 + &
+                  (1.0-r3)*gas_xarr(iir)**3)**(1.0/3.0)
              r0 = prt_particles(ipart)%rsrc
              !calculating direction cosine (comoving)
              r1 = rand()
@@ -63,7 +63,7 @@ subroutine initial_particles
              !calculating particle time
              prt_particles(ipart)%tsrc = tsp_t
              !calculating particle energy
-             Ep0 = gas_evolinit(iir)/real(gas_nvolinit(iir))
+             Ep0 = gas_evolinit(iir,1,1)/real(gas_nvolinit(iir,1,1))
 !             gas_eext=gas_eext+Ep0
              if(gas_isvelocity) then
                 prt_particles(ipart)%Esrc = Ep0*(1.0+r0*mu0/pc_c)

@@ -6,10 +6,14 @@ reduced by MPI.
 Permanent input values (bcast_persistent):
 
 -gasgridmod:
-integer :: gas_nr
+integer :: gas_nx
+integer :: gas_ny
+integer :: gas_nz
 integer :: gas_ng
-real*8 :: gas_rarr(gas_nr+1)
-real*8 :: gas_drarr(gas_nr)
+real*8 :: gas_xarr(gas_nx+1)
+real*8 :: gas_yarr(gas_ny+1)
+real*8 :: gas_zarr(gas_nz+1)
+real*8 :: gas_dxarr(gas_nx)
 
 -particlesmod:
 integer :: prt_npartmax
