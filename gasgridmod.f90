@@ -85,7 +85,7 @@ module gasgridmod
   real*8,allocatable :: gas_fcoef(:,:,:)  !(gas_nx,gas_ny,gas_nz)
   real*8,allocatable :: gas_emitprob(:,:,:,:)           !(gas_ng,gas_nx,gas_ny,gas_nz)
 !-- leakage opacities
-  real*8,allocatable :: gas_opacleak(:,:,:,:) !(2,gas_nx,gas_ny,gas_nz)
+  real*8,allocatable :: gas_opacleak(:,:,:,:) !(6,gas_nx,gas_ny,gas_nz)
   
   real*8,allocatable :: gas_eraddens(:,:,:) !(gas_nx,gas_ny,gas_nz)
 !-- old Planck opacity for BDF-2 method
@@ -203,7 +203,7 @@ module gasgridmod
 !----------------------------------------------------------------
     allocate(gas_fcoef(gas_nx,gas_ny,gas_nz))  !Fleck factor
     allocate(gas_emitprob(gas_ng,gas_nx,gas_ny,gas_nz))  !Probability of emission in a given zone and group
-    allocate(gas_opacleak(gas_ng,gas_nx,gas_ny,gas_nz))
+    allocate(gas_opacleak(6,gas_nx,gas_ny,gas_nz))
     allocate(gas_eraddens(gas_nx,gas_ny,gas_nz))  !radiation energy density in tsp_dt per group
     allocate(gas_luminos(gas_ng))  !outbound grouped luminosity array
     allocate(gas_lumdev(gas_ng))

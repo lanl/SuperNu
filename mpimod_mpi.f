@@ -208,7 +208,7 @@ c     ------------------------!{{{
 * real*8 :: gas_fcoef(nx,ny,nz)
 * real*8 :: gas_sig(nx,ny,nz)
 * real*8 :: gas_emitprob(gas_ng,nx,ny,nz)
-* real*8 :: gas_opacleak(2,nx,ny,nz)
+* real*8 :: gas_opacleak(6,nx,ny,nz)
 * real*8 :: gas_cap(gas_ng,nx,ny,nz)
 * real*8 :: gas_wl(gas_ng+1)
 *-- integer
@@ -289,7 +289,7 @@ c
        allocate(gas_sig(nx,ny,nz))
        allocate(gas_siggrey(nx,ny,nz))
        allocate(gas_emitprob(gas_ng,nx,ny,nz))
-       allocate(gas_opacleak(2,nx,ny,nz))
+       allocate(gas_opacleak(6,nx,ny,nz))
        allocate(gas_cap(gas_ng,nx,ny,nz))
 !       allocate(gas_wl(gas_ng+1))
 c
@@ -336,7 +336,7 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_emitprob,nx*ny*nz*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_opacleak,2*nx*ny*nz,MPI_REAL8,
+      call mpi_bcast(gas_opacleak,6*nx*ny*nz,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_cap,nx*ny*nz*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)

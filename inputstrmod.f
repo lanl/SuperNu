@@ -31,7 +31,7 @@ c     -----------------------------------!{{{
 ************************************************************************
 * Read the input structure file
 ************************************************************************
-      integer :: ierr,nr_r,ini56
+      integer :: ierr,nx_r,ini56
       character(2) :: dmy
       character(8) :: labl(2)
       real*8,allocatable :: raw(:,:)
@@ -43,10 +43,10 @@ c-- open file
 c
 c-- read dimensions
       read(4,*)
-      read(4,*,iostat=ierr) dmy,nr_r,str_nabund
+      read(4,*,iostat=ierr) dmy,nx_r,str_nabund
       if(ierr/=0) stop 'read_inputstr: input.str format err: dimensions'
 c-- verify dimension
-      if(nr_r/=nx) stop 'read_inputstr: incompatible nx dimension'
+      if(nx_r/=nx) stop 'read_inputstr: incompatible nx dimension'
 c
 c-- allocate arrays
       allocate(str_velright(nx))
