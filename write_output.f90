@@ -12,7 +12,7 @@ subroutine write_output
   character(16), save :: pos='rewind', fstat='replace'
 !
   reclen = gas_ng*12
-  reclen2 = gas_nr*12
+  reclen2 = gas_nx*12
 
   if(tsp_it==1) then
    open(unit=4,file='output.wlgrid',status='unknown',position=pos)
@@ -55,14 +55,14 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.gas_fcoef',status='unknown',position=pos)
-  do ir = 1, gas_nr
-    write(4,'(es16.8)',advance='no') gas_fcoef(ir)
+  do ir = 1, gas_nx
+    write(4,'(es16.8)',advance='no') gas_fcoef(ir,1,1)
   enddo
   close(4)
 
   open(unit=4,file='output.eraddens',status='unknown',position=pos)
-  do ir = 1, gas_nr
-    write(4,'(es16.8)',advance='no') gas_vals2(ir)%eraddens
+  do ir = 1, gas_nx
+    write(4,'(es16.8)',advance='no') gas_vals2(ir,1,1)%eraddens
   enddo
   close(4)
 
@@ -71,8 +71,8 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.siggrey',status='unknown',position=pos)
-  do ir = 1, gas_nr
-    write(4,'(es16.8)',advance='no') gas_siggrey(ir)
+  do ir = 1, gas_nx
+    write(4,'(es16.8)',advance='no') gas_siggrey(ir,1,1)
   enddo
   close(4)
 
@@ -84,17 +84,17 @@ subroutine write_output
 
   open(unit=4,file='output.opac1',status='unknown',position=pos)
   do ig = 1, gas_ng
-     write(4,'(es16.8)',advance='no') gas_cap(ig,gas_nr/4+1)
+     write(4,'(es16.8)',advance='no') gas_cap(ig,gas_nx/4+1,1,1)
   enddo
   close(4)
   open(unit=4,file='output.opac2',status='unknown',position=pos)
   do ig = 1, gas_ng
-     write(4,'(es16.8)',advance='no') gas_cap(ig,gas_nr/2+1)
+     write(4,'(es16.8)',advance='no') gas_cap(ig,gas_nx/2+1,1,1)
   enddo
   close(4)
   open(unit=4,file='output.opac3',status='unknown',position=pos)
   do ig = 1, gas_ng
-     write(4,'(es16.8)',advance='no') gas_cap(ig,3*gas_nr/4+1)
+     write(4,'(es16.8)',advance='no') gas_cap(ig,3*gas_nx/4+1,1,1)
   enddo
   close(4)
 

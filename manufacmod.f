@@ -70,8 +70,8 @@ c-- implement/modify velocity dependent manufactured radiation source
          select case (gas_opacanaltype)
          case ('grey')
 c-- grey solution
-            do ir = 1, gas_nr
-               gas_emitex(ir)= (1d0/dt)*(
+            do ir = 1, gas_nx
+               gas_emitex(ir,1,1)= (1d0/dt)*(
      &            log((texp+dt)/texp)
      &            *(4d0*man_aa11/pc_c)+
      &            (3d0*totmass*sigcoef/
@@ -81,8 +81,8 @@ c-- grey solution
      &            (man_aa11-pc_acoef*pc_c*man_temp0**4)
      &            )
 !     
-               gas_emitex(ir) = gas_emitex(ir)*
-     &              gas_vals2(ir)%vol*dt
+               gas_emitex(ir,1,1) = gas_emitex(ir,1,1)*
+     &              gas_vals2(ir,1,1)%vol*dt
 !     
             enddo
 c--

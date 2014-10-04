@@ -32,7 +32,7 @@ subroutine advection1(pretrans,isvacant,ig,zsrc,rsrc,musrc,esrc)
 !
   if (rsrc < gas_xarr(zsrc)) then
 !
-    zholder = binsrch(rsrc,gas_xarr,gas_nr+1,0)
+    zholder = binsrch(rsrc,gas_xarr,gas_nx+1,0)
 !
     if(.not.in_puretran.and.partstopper) then
        zfdiff = -1

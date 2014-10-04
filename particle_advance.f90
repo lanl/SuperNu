@@ -412,9 +412,9 @@ end subroutine particle_advance
               !
 !               r1 = rand()
 !           prt_tlyrand = prt_tlyrand+1
-!               if(r1<gas_cap(ig,zsrc)/(gas_cap(ig,zsrc)+gas_sig(zsrc))) then
-!                  x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(zsrc))
-!                  x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(zsrc))
+!               if(r1<gas_cap(ig,zsrc,1,1)/(gas_cap(ig,zsrc,1,1)+gas_sig(zsrc,1,1))) then
+!                  x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(zsrc,1,1))
+!                  x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(zsrc,1,1))
 !                  if (x2<pc_plkpk) then
 !                     bmax = x2**3/(exp(x2)-1d0)
 !                  elseif (x1>pc_plkpk) then
@@ -434,5 +434,5 @@ end subroutine particle_advance
 !           prt_tlyrand = prt_tlyrand+1
 !                     xx0 = (1d0-r1)*x1+r1*x2
 !                  enddo
-!                  wlsrc = pc_h*pc_c/(xx0*pc_kb*gas_temp(zsrc))
+!                  wlsrc = pc_h*pc_c/(xx0*pc_kb*gas_temp(zsrc,1,1))
 !               else

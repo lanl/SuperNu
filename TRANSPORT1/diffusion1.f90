@@ -140,8 +140,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
         caplump = caplump+specig*gas_cap(iig,z,1,1)*speclump
      enddo
 !-- leakage opacities
-     opacleakllump = gas_opacleak(1,z)
-     opacleakrlump = gas_opacleak(2,z)
+     opacleakllump = gas_opacleak(1,z,1,1)
+     opacleakrlump = gas_opacleak(2,z,1,1)
   else
 !
 !-- calculating unlumped values
@@ -151,7 +151,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
      if(z==1) then
         opacleakllump = 0d0
      elseif((gas_cap(g,z-1,1,1)+ &
-          gas_sig(z-1))*gas_dxarr(z-1)*thelp<prt_tauddmc) then
+          gas_sig(z-1,1,1))*gas_dxarr(z-1)*thelp<prt_tauddmc) then
 !-- DDMC interface
         mfphelp = (gas_cap(g,z,1,1)+gas_sig(z,1,1))*gas_dxarr(z)*thelp
         ppl = 4d0/(3d0*mfphelp+6d0*pc_dext)
@@ -166,7 +166,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
      endif
 !
 !-- outward
-     if(z==gas_nr) then
+     if(z==gas_nx) then
         lhelp = .true.
      else
         lhelp = (gas_cap(g,z+1,1,1)+ &
@@ -521,7 +521,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !         denom2 = 0d0!{{{
 !         do ig = gas_ng,glump+1,-1
 !            iig=glumps(ig)
-!            denom2 = denom2+gas_emitprob(iig,z)
+!            denom2 = denom2+gas_emitprob(iig,z,1,1)
 !         enddo
 
         denom2 = 1d0-emitlump
