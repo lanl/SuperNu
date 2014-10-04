@@ -2,16 +2,16 @@
 c     --------------
       implicit none
 c
-      integer,private :: i
+      integer,private :: l
       integer,private :: ll(7),ninn(30),ntot(30)
       real,private :: ph1(6,7,30,30),ph2(7,30,30)
 c
-      data (ll(i),i=1,7) /0,0,1,0,1,2,0/
+      data (ll(l),l=1,7) /0,0,1,0,1,2,0/
 c
-      data (ninn(i),i=1,30) /0,0,1,1,1,1,1,1,1,1,3,3,
+      data (ninn(l),l=1,30) /0,0,1,1,1,1,1,1,1,1,3,3,
      & 3,3,3,3,3,3,5,5,5,5,5,5,5,5,5,5,5,5/
 c
-      data (ntot(i),i=1,30) /1,1,2,2,3,3,3,3,3,3,4,4,
+      data (ntot(l),l=1,30) /1,1,2,2,3,3,3,3,3,3,4,4,
      & 5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,7,7/
 c
 c-- block data
@@ -45,17 +45,17 @@ c-- read
       close(4)
 c-- parse
       ph1 = 0.
-      do i=1,1699
-       ns = nint(ph1d(1,i))
-       ne = nint(ph1d(2,i))
-       nz = nint(ph1d(3,i))
-       ph1(:,ns,nz,ne) = ph1d(4:,i)
+      do l=1,1699
+       ns = nint(ph1d(1,l))
+       ne = nint(ph1d(2,l))
+       nz = nint(ph1d(3,l))
+       ph1(:,ns,nz,ne) = ph1d(4:,l)
       enddo
       ph2 = 0.
-      do i=1,465
-       ne = nint(ph2d(1,i))
-       nz = nint(ph2d(2,i))
-       ph2(:,nz,ne) = ph2d(3:,i)
+      do l=1,465
+       ne = nint(ph2d(1,l))
+       nz = nint(ph2d(2,l))
+       ph2(:,nz,ne) = ph2d(3:,l)
       enddo
       return
 99    stop 'read error in file: bf_verner.dat'
@@ -163,7 +163,7 @@ c
 !* The include inflates the executable.
 !************************************************************************
 !      real :: ph1(6,7,30,30),ph2(7,30,30) !local
-!      integer :: i,ns,ne,nz,nout
+!      integer :: l,ns,ne,nz,nout
 !c
 !      include 'bf_verner.blk'
 !c

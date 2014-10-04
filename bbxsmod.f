@@ -50,7 +50,7 @@ c     use physconstmod
       character(80) :: word
       character(8) :: fname
 c-- level id
-      integer :: i,lidmax,istat2
+      integer :: l,lidmax,istat2
       integer,allocatable :: lid(:)
       integer(1) :: byte
 c
@@ -97,14 +97,14 @@ c-- construct reverse level pointer
       lidmax = maxval(bbxs_level(:)%id)
       allocate(lid(lidmax))
       lid = 0
-      do i=1,bb_nlevel
-       lid(bbxs_level(i)%id) = i
-      enddo !i
+      do l=1,bb_nlevel
+       lid(bbxs_level(l)%id) = l
+      enddo !l
 c-- fix level id
-      do i=1,bb_nline
-       bbxs_line(i)%lev1 = lid(bbxs_line(i)%lev1)
-       bbxs_line(i)%lev2 = lid(bbxs_line(i)%lev2)
-      enddo !i
+      do l=1,bb_nline
+       bbxs_line(l)%lev1 = lid(bbxs_line(l)%lev1)
+       bbxs_line(l)%lev2 = lid(bbxs_line(l)%lev2)
+      enddo !l
       deallocate(lid)
 c
 67    continue
@@ -129,33 +129,33 @@ c     ---------------------
 * So far, this doesn't seem to speed-up filling the gas_cap array
 * significantly.
 ************************************************************************
-      integer :: i,is,it
+      integer :: l,is,it
       type(bb_xs_data) :: xs_src,xs_trg
       real*8 :: wl(bb_nline)
       integer :: indx(bb_nline),indx_inv(bb_nline)
 c
 c-- initialize arrays
       wl = dble(bb_xs%wl0)
-      forall(i=1:bb_nline) indx(i) = i
+      forall(l=1:bb_nline) indx(l) = l
 c
 c-- index sort
       call sorti(bb_nline,wl,indx)
 c-- reverse indx
-      forall(i=1:bb_nline) indx_inv(indx(i)) = i
+      forall(l=1:bb_nline) indx_inv(indx(l)) = l
 c
 c-- sort the big structure: move an element to its final position,
 c-- shifting the value there to the temporary
-      i = 2
+      l = 2
       is = 1
       xs_src = bb_xs(is) !save original data in target
       do
 c-- proceed to a new unsorted position if a closed subset was sorted
        if(indx_inv(is)==0) then
-        do i=i,bb_nline
-         if(indx_inv(i)/=0) exit
+        do l=l,bb_nline
+         if(indx_inv(l)/=0) exit
         enddo
-        if(i>bb_nline) exit
-        is = i             !source location
+        if(l>bb_nline) exit
+        is = l             !source location
         xs_src = bb_xs(is) !save original data in target
        endif
 c-- step 1: save target

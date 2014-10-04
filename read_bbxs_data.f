@@ -12,7 +12,7 @@ c     --------------------------------
 ************************************************************************
       real,parameter :: fconst = sngl(pc_pi*pc_e**2/(pc_me*pc_c))
       integer :: nlinall,ilinall
-      integer :: i,iz,ii,istat,llw,lhg
+      integer :: l,iz,ii,istat,llw,lhg
       real*8 :: t0,t1
 c
 c-- quick exit
@@ -48,28 +48,28 @@ c
         if(istat/=0) cycle
 c
 c-- store data in permanent array
-        do i=1,bb_nline
+        do l=1,bb_nline
          ilinall = ilinall + 1
-         llw = bbxs_line(i)%lev1
-         lhg = bbxs_line(i)%lev2
+         llw = bbxs_line(l)%lev1
+         lhg = bbxs_line(l)%lev2
 c-- line center wavelength
          bb_xs(ilinall)%wl0 = 1e8/(abs(bbxs_level(lhg)%chi) - !in ang
      &     abs(bbxs_level(llw)%chi))
 c-- flip low<->high levels
          if(bb_xs(ilinall)%wl0 < 0.) then
           llw = lhg
-          lhg = bbxs_line(i)%lev1
+          lhg = bbxs_line(l)%lev1
           bb_xs(ilinall)%wl0 = -bb_xs(ilinall)%wl0
          endif
 c-- g*xs
          bb_xs(ilinall)%gxs = fconst*bbxs_level(llw)%g*
-     &     10.**bbxs_line(i)%f          !fconst = pi*e**2/(m_e*c)
+     &     10.**bbxs_line(l)%f          !fconst = pi*e**2/(m_e*c)
 c-- exp(chi)
          bb_xs(ilinall)%chilw = abs(bbxs_level(llw)%chi)
 c-- ion code
          bb_xs(ilinall)%iz = iz
          bb_xs(ilinall)%ii = ii
-        enddo !i
+        enddo !l
 c-- ready with raw data
         deallocate(bbxs_level,bbxs_line)
        enddo !ii

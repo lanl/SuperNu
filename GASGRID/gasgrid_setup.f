@@ -13,7 +13,7 @@ c     ------------------------
 * Initialize the gas grid, the part that is constant with time and
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
-      integer :: i,j,ir
+      integer :: l,i,j,k,ir
       real*8 :: help
       real*8 :: help2
 c
@@ -77,10 +77,10 @@ c
 c-- adopt partial masses from input file
       if(.not.in_noreadstruct) then
        if(.not.allocated(str_massfr)) stop 'no input.str read'
-       do i=1,str_nabund
-        j = str_iabund(i)
+       do l=1,str_nabund
+        j = str_iabund(l)
         if(j>gas_nelem) j = 0 !divert to container
-        gas_vals2(:)%mass0fr(j) = str_massfr(i,:)
+        gas_vals2(:)%mass0fr(j) = str_massfr(l,:)
        enddo
       elseif(.not.in_novolsrc) then
         gas_vals2%mass0fr(28) = 1d0 !stable+unstable Ni abundance
@@ -94,11 +94,11 @@ c-- convert mass fractions to # atoms
 c
 c-- output
 C$$$      write(6,*) 'mass fractions'
-C$$$      write(6,'(1p,33i12)') (i,i=-2,30)
-C$$$      write(6,'(1p,33e12.4)') (gas_vals2(i)%mass0fr,i=1,gas_nx)
+C$$$      write(6,'(1p,33i12)') (l,l=-2,30)
+C$$$      write(6,'(1p,33e12.4)') (gas_vals2(l)%mass0fr,l=1,gas_nx)
 C$$$      write(6,*) 'number fractions'
-C$$$      write(6,'(1p,33i12)') (i,i=-2,30)
-C$$$      write(6,'(1p,33e12.4)') (gas_vals2(i)%natom1fr,i=1,gas_nx)
+C$$$      write(6,'(1p,33i12)') (l,l=-2,30)
+C$$$      write(6,'(1p,33e12.4)') (gas_vals2(l)%natom1fr,l=1,gas_nx)
 c
       end subroutine gasgrid_setup
 c
@@ -113,7 +113,7 @@ c     -------------------------
 ************************************************************************
 * convert mass fractions to natom fractions, and mass to natom.
 ************************************************************************
-      integer :: i,j
+      integer :: i,j,k
       real*8 :: help
 c
       do k=1,gas_nz

@@ -127,7 +127,7 @@ c     --------------------------------------------------------
 ************************************************************************
       integer,parameter :: nconv=40 !max number of convergence iterations
       real*8,parameter :: acc=1d-8 !accuracy requirment for convergence
-      integer :: i,ii,iz,iprev
+      integer :: i,ii,iz,iprev,ihelp
       real*8 :: kti,sahac,sahac2 !constants
       real*8 :: help
 c
@@ -187,9 +187,9 @@ c-- check for convergence
        endif
 c
 c-- save results: replace the value on the same side of zero
-       i = maxloc(err*nec%err(:),dim=1) !equal signs yield positive number
-       nec%nel(i) = nelec
-       nec%err(i) = err
+       ihelp = maxloc(err*nec%err(:),dim=1) !equal signs yield positive number
+       nec%nel(ihelp) = nelec
+       nec%err(ihelp) = err
 c
 c-- check bracket
        if(iconv==2) then
@@ -205,15 +205,15 @@ c-- overshoot
         nelec = max(.33d0*nelec_new,nelec) !limit
        else
 c-- newton raphson, but not aways perfect, as it may repeatedly minimize one side, instead of close bracket
-        i = maxloc(abs(nec%err(:)),dim=1) !sides are flipping, newton-raphson works
+        ihelp = maxloc(abs(nec%err(:)),dim=1) !sides are flipping, newton-raphson works
         help = abs(nec%err(1)/nec%err(2))
-        if((iconv==2 .or. i/=iprev) .and.
+        if((iconv==2 .or. ihelp/=iprev) .and.
      &    help<1d5 .and. help>1d-5) then !bigger error is to too big
          ynew = 0d0 !perfect newton raphson
         else !sides are not flipping, depart from perfect newton-raphson
-         ynew = .001d0*nec%err(i) !minimize the bigger gap irrespective of the smaller
+         ynew = .001d0*nec%err(ihelp) !minimize the bigger gap irrespective of the smaller
         endif
-        iprev = i !remember which side was reduced
+        iprev = ihelp !remember which side was reduced
         dxdy = (nec%nel(2) - nec%nel(1))/(nec%err(2) - nec%err(1))
         nelec = nec%nel(1) - dxdy*(nec%err(1) - ynew)
 c-- check new value
@@ -233,8 +233,8 @@ c       nelec = max(1d-5*nelec_new,nelec) !limit
 c
 c-- print ionization balance
 c     do iz=1,nelem
-c      i = ion_el(iz)%ni
-c      write(7,'(i3,1p,31e12.4)') iz,(ion_el(iz)%i(ii)%n,ii=1,i)
+c      ihelp = ion_el(iz)%ni
+c      write(7,'(i3,1p,31e12.4)') iz,(ion_el(iz)%i(ii)%n,ii=1,ihelp)
 c     enddo
 c
       contains
@@ -314,7 +314,7 @@ c     ----------------------------------
 ************************************************************************
       character(8),parameter :: fname='data.ion'
       real*8,parameter :: thres = 800d0 !compress levels with chi closer than this value
-      integer :: i,j,iz,ii,icod,nlevel,ilast
+      integer :: l,ll,iz,ii,icod,nlevel,ilast
       integer :: ilc,nlc   !number of compressed levels
       integer :: istat
       real*8 :: chisum,gsum,help
@@ -337,10 +337,10 @@ c-- allocate data structure
       do iz=1,nelem
        ion_el(iz)%ni = iz+1 !include the bare nucleus
        allocate(ion_el(iz)%i(iz+1))
-       forall(i=1:iz+1)
-        ion_el(iz)%i(i)%nlev = 0
-        ion_el(iz)%i(i)%e = 0d0
-        ion_el(iz)%i(i)%q = 0d0
+       forall(l=1:iz+1)
+        ion_el(iz)%i(l)%nlev = 0
+        ion_el(iz)%i(l)%e = 0d0
+        ion_el(iz)%i(l)%q = 0d0
        endforall
       enddo
 c
@@ -350,7 +350,7 @@ c-- open file
 c
 c
 c-- read ions one by one
-      do j=1,1000
+      do ll=1,1000
 c
 c-- read header
        read(4,*,iostat=istat) icod !ion code (HI = 0100)
@@ -375,17 +375,17 @@ c-- skip unused elements
        endif
 c
 c-- extract ionization energy from 'line'
-       i = index(line,'(Ky): ')
-       read(line(i+6:),*) help
+       l = index(line,'(Ky): ')
+       read(line(l+6:),*) help
        ion_el(iz)%i(ii)%e = pc_h*pc_c*help
 c
 c-- count number of compressed levels
        help = 0d0
        nlc = 1 !number of compressed levels !uncompressed (separate) ground level
-       do i=1,nlevel-1
-        if(rawlev(i)%chi<=help) cycle !level is too close to last cut: compress
+       do l=1,nlevel-1
+        if(rawlev(l)%chi<=help) cycle !level is too close to last cut: compress
         nlc = nlc+1
-        help = rawlev(i+1)%chi + thres
+        help = rawlev(l+1)%chi + thres
        enddo
 c
 c-- allocate compressed data
@@ -399,28 +399,28 @@ c-- store compressed data
        gsum = 0d0
        ilast = 0
        ilc = 0
-       do i=1,nlevel
-        if(i==nlevel) then
+       do l=1,nlevel
+        if(l==nlevel) then
          ilc = ilc + 1
-         ion_el(iz)%i(ii)%elev(ilc) = pc_h*pc_c*chisum/(i - ilast) !convert [cm^-1] to [erg]
+         ion_el(iz)%i(ii)%elev(ilc) = pc_h*pc_c*chisum/(l - ilast) !convert [cm^-1] to [erg]
          ion_el(iz)%i(ii)%glev(ilc) = gsum
-        elseif(rawlev(i)%chi>help) then !level is too close to last cut: compress
+        elseif(rawlev(l)%chi>help) then !level is too close to last cut: compress
          ilc = ilc + 1
-         ion_el(iz)%i(ii)%elev(ilc) = pc_h*pc_c*chisum/(i - ilast) !convert [cm^-1] to [erg]
+         ion_el(iz)%i(ii)%elev(ilc) = pc_h*pc_c*chisum/(l - ilast) !convert [cm^-1] to [erg]
          ion_el(iz)%i(ii)%glev(ilc) = gsum
          chisum = 0d0
          gsum = 0d0
-         ilast = i
-         help = rawlev(i+1)%chi + thres !next cut
+         ilast = l
+         help = rawlev(l+1)%chi + thres !next cut
         endif
-        chisum = chisum + rawlev(i)%chi
-        gsum = gsum + rawlev(i)%g
-       enddo !i
+        chisum = chisum + rawlev(l)%chi
+        gsum = gsum + rawlev(l)%g
+       enddo !l
 c-- sanity check
        if(ilc/=nlc) stop'read_ions_data: ilc/=nlc'
 c-- ion done
        deallocate(rawlev)
-      enddo !j
+      enddo !ll
 c
 c-- done
       close(4)
@@ -430,22 +430,22 @@ c-- remove empty ions
       ion_iionmax = 0
       ion_nion = 0
       do iz=1,nelem
-       do i=1,iz+1
-        if(ion_el(iz)%i(i)%nlev==0) exit !this is considered the bare nucleus. todo: does this make sense?
+       do l=1,iz+1
+        if(ion_el(iz)%i(l)%nlev==0) exit !this is considered the bare nucleus. todo: does this make sense?
        enddo
-       ion_el(iz)%ni = i !cut off empty ions
-       ion_iionmax = max(ion_iionmax,i)
-       ion_nion = ion_nion + i
+       ion_el(iz)%ni = l !cut off empty ions
+       ion_iionmax = max(ion_iionmax,l)
+       ion_nion = ion_nion + l
       enddo !iz
 c
 c-- asign a single state to the uppermost continuum
       do iz=1,nelem
-       i = ion_el(iz)%ni !last ionization stage
-       allocate(ion_el(iz)%i(i)%glev(1))
-       allocate(ion_el(iz)%i(i)%elev(1))
-       ion_el(iz)%i(i)%nlev = 1
-       ion_el(iz)%i(i)%glev(1) = 1
-       ion_el(iz)%i(i)%elev(1) = 0d0
+       l = ion_el(iz)%ni !last ionization stage
+       allocate(ion_el(iz)%i(l)%glev(1))
+       allocate(ion_el(iz)%i(l)%elev(1))
+       ion_el(iz)%i(l)%nlev = 1
+       ion_el(iz)%i(l)%glev(1) = 1
+       ion_el(iz)%i(l)%elev(1) = 0d0
       enddo
 c
 c
@@ -454,19 +454,19 @@ c-- output
       write(8,*) 'ion_read_data:'
       write(8,*) '---------------------------'
       write(8,*) '# compressed levels per ion'
-      write(8,'(3x,"|",31i5)') (i,i=1,ion_iionmax)
-      write(8,'(a3,"|",31a5)') '---',('-----',i=1,ion_iionmax)
+      write(8,'(3x,"|",31i5)') (l,l=1,ion_iionmax)
+      write(8,'(a3,"|",31a5)') '---',('-----',l=1,ion_iionmax)
       do iz=1,nelem
        write(8,'(i3,"|",91i5)') iz,
-     &   (ion_el(iz)%i(i)%nlev,i=1,ion_el(iz)%ni)
+     &   (ion_el(iz)%i(l)%nlev,l=1,ion_el(iz)%ni)
       enddo
       write(8,*)
       write(8,*) 'ionization energy per ion [eV]'
-      write(8,'(3x,"|",31i12)') (i,i=1,ion_iionmax)
-      write(8,'(a3,"|",31a12)') '---',('------------',i=1,ion_iionmax)
+      write(8,'(3x,"|",31i12)') (l,l=1,ion_iionmax)
+      write(8,'(a3,"|",31a12)') '---',('------------',l=1,ion_iionmax)
       do iz=1,nelem
        write(8,'(i3,"|",1p,91e12.4)') iz,
-     &   (ion_el(iz)%i(i)%e/pc_ev,i=1,ion_el(iz)%ni) !in eV units, because it's so common
+     &   (ion_el(iz)%i(l)%e/pc_ev,l=1,ion_el(iz)%ni) !in eV units, because it's so common
       enddo
 c
       end subroutine ion_read_data

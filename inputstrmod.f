@@ -111,7 +111,7 @@ c     ------------------------------
 * convert the abundlabl labels to element codes (atomic z number), which
 * also serve as indexing pointers to the gas_vals2%mass0fr array.
 ************************************************************************
-      integer :: i,j,iabund
+      integer :: l,j,iabund
       character(4) :: elname
 c
 c-- allocate element code array (pointer to gas_vals2%mass0fr)
@@ -121,13 +121,13 @@ c-- default
       ini56 = 0
 c
 c-- determine atomic z number
-      do i=1,str_nabund
+      do l=1,str_nabund
        iabund = 0
-       elname = lcase(trim(str_abundlabl(i)))
+       elname = lcase(trim(str_abundlabl(l)))
        if(elname=='ni56') then
 c-- special case
         iabund = gas_ini56
-        ini56 = i
+        ini56 = l
        elseif(elname=='co56') then
 c-- special case
         iabund = gas_ico56
@@ -146,7 +146,7 @@ c-- verify hit
        endif
 c
 c-- store element code (pointer to gas_vals2%mass0fr)
-       str_iabund(i) = iabund
+       str_iabund(l) = iabund
       enddo
 c
       end subroutine elnam2elcode
@@ -164,7 +164,7 @@ c-- WARNING: size (nx+1) allocated for str_velright in generate_inputstr
 * if in_noreadstruct==.true.
 ************************************************************************
       real*8,allocatable :: rout(:) !(nx+1)
-      integer :: ir, i,j,k
+      integer :: ir
       real*8 :: help, help2, dx, dy, dz
 c
 c-- verifications (input.par)

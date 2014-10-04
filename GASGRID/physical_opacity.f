@@ -14,7 +14,7 @@ c$    use omp_lib
 ************************************************************************
 * compute bound-free and bound-bound opacity.
 ************************************************************************
-      integer :: i,j,k
+      integer :: i,j,k,l
       real*8 :: wlinv
 c-- timing
       real*8 :: t0,t1,t2,t3,t4
@@ -33,7 +33,6 @@ c-- bfxs
       integer :: ig,iz,ii,ie
       real*8 :: en,xs,wl
 c-- bbxs
-      integer :: i
       real*8 :: phi,ocggrnd,expfac,wl0,dwl
       real*8 :: caphelp
 c-- temporary cap array in the right order

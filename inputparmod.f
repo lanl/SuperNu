@@ -13,8 +13,8 @@ c-- parallelization
 c
 c-- gas grid
       integer :: in_nx = 0   !number of x-direction cells
-      integer :: in_ny = 0   !number of y-direction cells
-      integer :: in_nz = 0   !number of z-direction cells
+      integer :: in_ny = 1   !number of y-direction cells
+      integer :: in_nz = 1   !number of z-direction cells
 
       real*8 :: in_lx = 0d0  !spatial length of x-direction
       real*8 :: in_ly = 0d0  !spatial length of y-direction
@@ -248,7 +248,9 @@ c
       if(in_tfirst<0d0) stop 'in_tfirst invalid'
       if(in_tlast<in_tfirst) stop 'in_tlast invalid'
 c
-      if(in_nr<=0) stop 'in_nr invalid'
+      if(in_nx<=0) stop 'in_nx invalid'
+      if(in_ny<=0) stop 'in_ny invalid'
+      if(in_nz<=0) stop 'in_nz invalid'
 c
 c-- special grid
       if(.not.in_noreadstruct) then

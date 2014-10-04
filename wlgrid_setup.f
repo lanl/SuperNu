@@ -8,7 +8,7 @@ c     ---------------------------
 * setup wavelength grid. Either read from file or use simple logarithmic
 * spacing
 ************************************************************************
-      integer :: i
+      integer :: ig
 c
 c-- read wavelength grid from file
       if(in_ng==0) then
@@ -16,8 +16,8 @@ c-- read wavelength grid from file
       else
        ng = in_ng
        allocate(gas_wl(ng+1))
-       forall(i=1:ng+1) gas_wl(i) =
-     &   in_wlmin*(in_wlmax/dble(in_wlmin))**((i-1d0)/ng)
+       forall(ig=1:ng+1) gas_wl(ig) =
+     &   in_wlmin*(in_wlmax/dble(in_wlmin))**((ig-1d0)/ng)
       endif
 c
       contains
@@ -43,18 +43,18 @@ c     --------------------------!{{{
 ************************************************************************
       real*8 :: help
       real*8,allocatable :: wlstore(:)
-      integer :: ngm,nrm,irr,i
+      integer :: ngm,nrm,irr,l,ig
 c
       open(4,file='input.wlgrid',status='old')
 c
 c-- strip header
-      do i=1,3
+      do l=1,3
        read(4,*)
       enddo
 c-- read dimensions
       read(4,*) nrm,ngm !not used
 c
-      do i=1,in_wldex-1
+      do l=1,in_wldex-1
        read(4,*)
       enddo
       read(4,*) irr, ng
@@ -62,7 +62,7 @@ c
       allocate(gas_wl(ng+1))
       allocate(wlstore(ng+3))
       rewind(4)
-      do i=1,in_wldex+3
+      do l=1,in_wldex+3
        read(4,*)
       enddo
       read(4,*) wlstore(:)
@@ -72,9 +72,9 @@ c
 c
 c-- check monotonicity
       help = 0d0
-      do i=1,ng+1
-       if(gas_wl(i)<=help) stop 'read_wlgrid: wlgrid not increasing'
-       help = gas_wl(i)
+      do ig=1,ng+1
+       if(gas_wl(ig)<=help) stop 'read_wlgrid: wlgrid not increasing'
+       help = gas_wl(ig)
       enddo
 c
       write(6,*)
