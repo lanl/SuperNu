@@ -76,7 +76,6 @@ in_isddmcanlog = f
 !-- ddmc mfp per cell
 in_tauddmc = 3d0
 in_taulump = 10d0
-in_epslump = 0
 in_tauvtime = 'unif'
 
 !-- opacity debug switches

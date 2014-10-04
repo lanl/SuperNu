@@ -16,10 +16,6 @@ subroutine leakage_opacity
   real*8 :: help
   real*8 :: thelp, ppl, ppr, specval, speclump
 !
-!-- checking ddmc threshold=lump threshold
-  if(prt_taulump/=prt_tauddmc) stop 'leakage_opacity: taulump/=tauddmc'
-  if(gas_epslump<gas_ng) stop 'leakage_opacity: epslump<ng'
-!
 !-- setting vel-space helper
   if(gas_isvelocity) then
      thelp = tsp_t

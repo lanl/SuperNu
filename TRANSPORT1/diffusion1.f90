@@ -83,8 +83,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   if(gas_cap(g,z)*gas_drarr(z)*thelp>=prt_taulump) then
      do ig = 1, g-1
         if(gas_cap(ig,z)*gas_drarr(z) &
-             *thelp >= prt_taulump&
-             .and. g-ig <= gas_epslump) then
+             *thelp >= prt_taulump) then
            glump=glump+1
            glumps(glump)=ig
         else
@@ -94,8 +93,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
      enddo
      do ig = g, gas_ng
         if(gas_cap(ig,z)*gas_drarr(z) &
-             *thelp >= prt_taulump&
-             .and. ig-g <= gas_epslump) then
+             *thelp >= prt_taulump) then
            glump=glump+1
            glumps(glump)=ig
         else
