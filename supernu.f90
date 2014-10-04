@@ -76,7 +76,7 @@ program supernu
 !
 !-- read input structure
    if(.not.in_noreadstruct.and.in_isvelocity) then
-     call read_inputstr(in_nx,in_ny,in_nz,gas_velout)
+     call read_inputstr(in_nx,gas_velout)
    else
 !== generate_inputstr development in progress
      call generate_inputstr(gas_lx,gas_ly,gas_lz,gas_velout)

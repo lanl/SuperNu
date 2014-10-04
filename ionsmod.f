@@ -127,7 +127,7 @@ c     --------------------------------------------------------
 ************************************************************************
       integer,parameter :: nconv=40 !max number of convergence iterations
       real*8,parameter :: acc=1d-8 !accuracy requirment for convergence
-      integer :: i,ii,iz,iprev,ihelp
+      integer :: ii,iz,iprev,ihelp
       real*8 :: kti,sahac,sahac2 !constants
       real*8 :: help
 c

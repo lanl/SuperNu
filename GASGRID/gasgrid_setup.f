@@ -34,7 +34,8 @@ c-- agnostic grid setup (rev. 200) ----------------------------------
 c--------------------------------------------------------------------
 c
 c-- agnostic mass setup (rev. 200) ----------------------------------
-      gas_vals2%mass = str_mass
+      if(gas_ny>1) stop 'gg_setup: str_mass 1D'
+      gas_vals2(:,1,1)%mass = str_mass
 c--------------------------------------------------------------------
 c----
 c
@@ -42,12 +43,13 @@ c-- scale gas cell volumes to unit sphere depending on expanding or static
       if(gas_isvelocity) then
        help = gas_velout
       else
-       help = gas_lr
+       if(gas_ny>1) stop "gg_setup: help: no 2D"
+       help = gas_lx
       endif
 c
 c-- volume of unit-radius sphere shells
 !TODO: multiple geometries
-      if(gas_ny>1 .or. gas_nz>1) stop 'gasgrid_setup: 1D volume only'
+      if(gas_ny>1) stop 'gasgrid_setup: 1D volume only'
       forall(i=1:gas_nx) gas_vals2(i,1,1)%volr = 
      &  pc_pi4/3d0*(gas_xarr(i+1)**3 - gas_xarr(i)**3)/help**3  !volume in outer radius units
 c
@@ -77,14 +79,16 @@ c
 c-- adopt partial masses from input file
       if(.not.in_noreadstruct) then
        if(.not.allocated(str_massfr)) stop 'no input.str read'
+       if(gas_ny>1) stop 'gg_setup: str_massfr: no 2D'
        do l=1,str_nabund
         j = str_iabund(l)
         if(j>gas_nelem) j = 0 !divert to container
-        gas_vals2(:)%mass0fr(j) = str_massfr(l,:)
+        gas_vals2(:,1,1)%mass0fr(j) = str_massfr(l,:)
        enddo
       elseif(.not.in_novolsrc) then
+       if(gas_ny>1) stop 'gg_setup: str_massfr: no 2D'
         gas_vals2%mass0fr(28) = 1d0 !stable+unstable Ni abundance
-        gas_vals2(1:nint(4d0*gas_nx/5d0))%mass0fr(-1) = 1d0 !Ni56 core
+        gas_vals2(1:nint(4d0*gas_nx/5d0),1,1)%mass0fr(-1) = 1d0 !Ni56 core
       else
        stop 'gg_setup: no input.str and in_novolsrc=true!'
       endif
@@ -113,7 +117,7 @@ c     -------------------------
 ************************************************************************
 * convert mass fractions to natom fractions, and mass to natom.
 ************************************************************************
-      integer :: i,j,k
+      integer :: i,j,k,l
       real*8 :: help
 c
       do k=1,gas_nz
@@ -140,9 +144,9 @@ c-- only stable nickel and cobalt
      &   gas_vals2(i,j,k)%natom1fr(gas_ico56)
 c
 c-- convert to natoms
-       do j=1,gas_nelem
-        gas_vals2(i,j,k)%natom1fr(j) = gas_vals2(i,j,k)%natom1fr(j)/
-     &    (elem_data(j)%m*pc_amu)
+       do l=1,gas_nelem
+        gas_vals2(i,j,k)%natom1fr(l) = gas_vals2(i,j,k)%natom1fr(l)/
+     &    (elem_data(l)%m*pc_amu)
        enddo !j
 c-- special care for ni56 and co56
 !      help = elem_data(26)%m*pc_amu

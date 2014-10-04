@@ -49,7 +49,7 @@ c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
 c-- warn once
-      logical :: warn
+      logical :: lwarn
 c
 c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_temp)
@@ -57,12 +57,12 @@ c
       call time(t0)
 c
 c-- warn once
-      warn = .true.
+      lwarn = .true.
 c
 c-- thomson scattering
       if(.not.in_nothmson) then
-       gas_sig = cthomson*gas_vals2(:)%nelec*
-     &   gas_vals2(:)%natom/gas_vals2(:)%volcrp
+       gas_sig = cthomson*gas_vals2%nelec*
+     &   gas_vals2%natom/gas_vals2%volcrp
       endif
 c
 c-- ground level occupation number
@@ -149,7 +149,7 @@ c-- planck average
 c
 c
        if(in_noplanckweighting) then
-        capros(ig,:,:,:) = ngs/sum(1d0/cap(:,::,:ngs),dim=4) !assume evenly spaced subgroup bins
+        capros(ig,:,:,:) = ngs/sum(1d0/cap(:,:,:,:ngs),dim=4) !assume evenly spaced subgroup bins
 c-- calculate Planck function weighted Rosseland
        else
         do k=1,nz
@@ -306,7 +306,7 @@ c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy)
 c$omp& firstprivate(hckt,hlparr)
-c$omp& shared(cap,warn)
+c$omp& shared(cap,lwarn)
        do igs=1,ngs
         wl = wll + (igs-.5d0)*dwl !-- subgroup bin center value
         wlinv = 1d0/wl  !in cm
@@ -319,8 +319,8 @@ c-- gcell loop
 c
          help = c1*sqrt(hckt(i,j,k))*(1d0 - exp(-u))*wl**3*hlparr(i,j,k)
          if(iu<1 .or. iu>ff_nu) then
-          if(warn) then
-           warn = .false.
+          if(lwarn) then
+           lwarn = .false.
            call warn('opacity_calc','ff: iu out of data limit')
           endif
           iu = min(iu,ff_nu)

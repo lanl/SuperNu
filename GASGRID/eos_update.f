@@ -9,7 +9,7 @@ c     --------------------------------
 ************************************************************************
 * Solve the eos for given temperatures.
 ************************************************************************
-      integer :: i,j,k,niter,iion,nion,istat
+      integer :: i,j,k,l,niter,iion,nion,istat
       integer :: iz,ii
       real*8 :: t0,t1
       real*8 :: ndens
@@ -68,7 +68,7 @@ c-- write header
        write(4,'(40i12)') (ion_el(iz)%ni,iz=1,gas_nelem)
        write(4,*) '# ions'
        do iz=1,gas_nelem
-        write(4,'(40i12)') (iz*100+i,i=1,ion_grndlev(iz,1)%ni)
+        write(4,'(40i12)') (iz*100+l,l=1,ion_grndlev(iz,1,1,1)%ni)
        enddo
 c
 c-- electron density
@@ -77,7 +77,8 @@ c-- electron density
        do j=1,gas_ny
        do i=1,gas_nx
         write(4,'(1p,2e12.4)') gas_vals2(i,j,k)%nelec,
-     &    gas_vals2(i,j,k)%nelec*gas_vals2(i,j,k)%natom/gas_vals2(i,j,k)%vol
+     &    gas_vals2(i,j,k)%nelec*gas_vals2(i,j,k)%natom/
+     &    gas_vals2(i,j,k)%vol
        enddo !i
        enddo !j
        enddo !k
@@ -85,17 +86,17 @@ c
 c-- partial densities
        nion = 0
        do iz=1,gas_nelem
-        write(4,'("#",40i12)') (iz*100+i,i=1,ion_grndlev(iz,1)%ni)
+        write(4,'("#",40i12)') (iz*100+i,i=1,ion_grndlev(iz,1,1,1)%ni)
         do k=1,gas_nz
         do j=1,gas_ny
         do i=1,gas_nx
-         write(4,'(1p,40e12.4)') (pdens(nion+i,i,j,k)*
+         write(4,'(1p,40e12.4)') (pdens(nion+l,i,j,k)*
      &     gas_vals2(i,j,k)%natom1fr(iz),
-     &     i=1,ion_grndlev(iz,1)%ni)
+     &     l=1,ion_grndlev(iz,1,1,1)%ni)
         enddo !i
         enddo !j
         enddo !k
-        nion = nion + ion_grndlev(iz,1)%ni
+        nion = nion + ion_grndlev(iz,1,1,1)%ni
        enddo !iz
 c
        close(4)

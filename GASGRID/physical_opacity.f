@@ -36,7 +36,7 @@ c-- bbxs
       real*8 :: phi,ocggrnd,expfac,wl0,dwl
       real*8 :: caphelp
 c-- temporary cap array in the right order
-      real*8 :: cap(nx,ny,nz,ng)
+      real*8 :: cap(nx,ny,nz,gas_ng)
 c-- special functions
       integer :: binsrch
       real*8 :: specint, x1, x2
@@ -44,7 +44,7 @@ c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
 c-- warn once
-      logical :: warn
+      logical :: lwarn
 !c
 !c-- constants
 !old  wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
@@ -60,8 +60,8 @@ c
 c
 c-- thomson scattering
       if(.not.in_nothmson) then
-       gas_sig = cthomson*gas_vals2(:)%nelec*
-     &   gas_vals2(:)%natom/gas_vals2(:)%volcrp
+       gas_sig = cthomson*gas_vals2%nelec*
+     &   gas_vals2%natom/gas_vals2%volcrp
       endif
 c
 c-- bound-bound
@@ -72,7 +72,7 @@ c-- bound-bound
         do j=1,ny
         do i=1,nx
         forall(ii=1:min(iz,ion_el(iz)%ni - 1))
-     &    grndlev(ir,ii,iz) = ion_grndlev(iz,i,j,k)%oc(ii)/
+     &    grndlev(i,j,k,ii,iz) = ion_grndlev(iz,i,j,k)%oc(ii)/
      &    ion_grndlev(iz,i,j,k)%g(ii)
         enddo !i
         enddo !j
@@ -169,12 +169,12 @@ c-- free-free
 c!{{{
 c-- simple variant: nearest data grid point
        hlparr = (gas_vals2%natom/gas_vals2%vol)**2*gas_vals2%nelec
+       lwarn = .true.
 c$omp parallel do
 c$omp& schedule(static)
-c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy,warn)
-c$omp& firstprivate(hckt,hlparr)
+c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy)
+c$omp& firstprivate(hckt,hlparr,lwarn)
 c$omp& shared(cap)
-       warn = .true.
        do ig=1,gas_ng
         wl = gas_wl(ig)  !in cm
         wlinv = 1d0/wl  !in cm
@@ -187,8 +187,8 @@ c-- gcell loop
 c
          help = c1*sqrt(hckt(i,j,k))*(1d0 - exp(-u))*wl**3*hlparr(i,j,k)
          if(iu<1 .or. iu>ff_nu) then
-          if(warn) then
-           warned = .false.
+          if(lwarn) then
+           lwarn = .false.
            call warn('opacity_calc','ff: iu out of data limit')
           endif
           iu = min(iu,ff_nu)

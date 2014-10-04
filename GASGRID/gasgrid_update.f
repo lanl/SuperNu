@@ -20,7 +20,7 @@ c     -----------------------
 * - opacities
 ************************************************************************
       logical :: do_output,lexist,planckcheck
-      integer :: i,j,k,ig,it,istat
+      integer :: i,j,k,l,ig,it,istat
       real*8 :: help,x1,x2
       real*8,external :: specint
       real*8 :: dtempfrac = 0.99d0
@@ -78,7 +78,7 @@ c-- use gamma deposition profiles if data available
         help = sum(gas_vals2%nisource)
 !       write(6,*) 'ni56 source:',help
         if(gas_ny>1 .or. gas_nz>1) stop 'gg_update: gam_prof: no 2D/3D'
-        gas_vals2(1,:,:)%nisource = help * gamma_profile(tsp_t)
+        gas_vals2(:,1,1)%nisource = help * gamma_profile(tsp_t)
        endif
       endif
 !}}}
@@ -90,7 +90,8 @@ c============================
       if(gas_isvelocity) then!{{{
        help = gas_velout*tsp_t
       else
-       help = gas_lr
+       if(gas_ny>1) stop 'gg_update: help: no 2D'
+       help = gas_lx
       endif
       !gas_vals2%vol = gas_vals2%volr*(gas_velout*tsp_tcenter)**3 !volume in cm^3
       gas_vals2%vol = gas_vals2%volr*help**3 !volume in cm^3
@@ -100,7 +101,7 @@ c-- density
       gas_vals2%rho = gas_vals2%mass/gas_vals2%vol
 c
 c-- keep track of temperature evolution
-      gas_temphist(:,tsp_it) = gas_temp!}}}
+      gas_temphist(:,:,:,tsp_it) = gas_temp!}}}
 c
 c
 c-- update interpolated density and temperatures at cell edges
@@ -184,7 +185,7 @@ c-- skip delimiter
 c-- read data
           if(gas_ny>1 .or. gas_nz>1) stop 'read_opac: no 2D/3D'
           do i=1,gas_nx
-           read(4,*,iostat=istat) help,gas_sig(i),gas_cap(:,i)
+           read(4,*,iostat=istat) help,gas_sig(i,1,1),gas_cap(:,i,1,1)
            if(istat/=0) stop 'read_opac: body error: input.opac'
           enddo !i
          enddo !it

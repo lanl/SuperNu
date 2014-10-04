@@ -12,6 +12,10 @@ module gasgridmod
   integer :: gas_nz = 0
   integer :: gas_ng = 0
 
+  real*8 :: gas_lx = 0
+  real*8 :: gas_ly = 0
+  real*8 :: gas_lz = 0
+
 !
   real*8 :: gas_velout = 0d0 !outer boundary velocity
 
@@ -24,8 +28,6 @@ module gasgridmod
 !-- temperature structure history
   real*8,allocatable :: gas_temphist(:,:,:,:) !(gas_nx,gas_ny,gas_nz,tim_nt)
   real*8,allocatable :: gas_temppreset(:,:,:,:) !(gas_nx,gas_ny,gas_nz,tim_nt)
-
-  real*8 :: gas_lx = 0
   logical :: gas_isvelocity = .false.
   logical :: gas_novolsrc = .false. !no external volume source (e.g. radioactivity)
 !-(rev. 121)
@@ -83,7 +85,7 @@ module gasgridmod
   real*8,allocatable :: gas_fcoef(:,:,:)  !(gas_nx,gas_ny,gas_nz)
   real*8,allocatable :: gas_emitprob(:,:,:,:)           !(gas_ng,gas_nx,gas_ny,gas_nz)
 !-- leakage opacities
-  real*8,allocatable :: gas_opacleakl(:,:,:,:), gas_opacleakr(:,:,:,:) !(2,gas_nx,gas_ny,gas_nz)
+  real*8,allocatable :: gas_opacleak(:,:,:,:) !(2,gas_nx,gas_ny,gas_nz)
   
   real*8,allocatable :: gas_eraddens(:,:,:) !(gas_nx,gas_ny,gas_nz)
 !-- old Planck opacity for BDF-2 method

@@ -20,13 +20,13 @@ c
 c
       contains
 c
-      subroutine read_inputstr(nx,ny,nz,velout)
+      subroutine read_inputstr(nx,velout)
 c     -----------------------------------
       use physconstmod
       use gasgridmod, only:gas_ini56,gas_ico56
       use miscmod
       implicit none
-      integer,intent(in) :: nx,ny,nz
+      integer,intent(in) :: nx
       real*8,intent(out) :: velout
 ************************************************************************
 * Read the input structure file

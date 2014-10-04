@@ -53,7 +53,7 @@ subroutine leakage_opacity
               lhelp = .true.
            else
               lhelp = (gas_cap(ig,i-1,j,k)+ &
-                 gas_sig(i-1,j,k))*gas_dxarr(i-1,j,k)*thelp<prt_tauddmc
+                 gas_sig(i-1,j,k))*gas_dxarr(i-1)*thelp<prt_tauddmc
            endif
 !
            if(lhelp) then
@@ -86,7 +86,7 @@ subroutine leakage_opacity
               help = (gas_cap(ig,i,j,k)+gas_sig(i,j,k))*gas_dxarr(i)*thelp
               ppr = 4d0/(3d0*help+6d0*pc_dext)
               gas_opacleak(2,i,j,k)=gas_opacleak(2,i,j,k)+(specval/speclump)*&
-                   1.5d0*ppr*(thelp*gas_xarr(i+1,j,k))**2/ &
+                   1.5d0*ppr*(thelp*gas_xarr(i+1))**2/ &
                    (3d0*gas_vals2(i,j,k)%vol/pc_pi4)
            else
 !-- DDMC interior

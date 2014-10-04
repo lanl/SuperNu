@@ -378,7 +378,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
                     iig=glumps(ig)
                     specig = gas_siggrey(z,1,1)*gas_emitprob(iig,z,1,1)*capinv(iig)
 !-- calculating resolved leakage opacities
-                    mfphelp = (gas_cap(iig,z,1,1)+gas_sig(z,1,1))*gas_dxarr(z,1,1)*thelp
+                    mfphelp = (gas_cap(iig,z,1,1)+gas_sig(z,1,1))*gas_dxarr(z)*thelp
                     ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
                     resopacleakr = 1.5d0*ppr*(thelp*gas_xarr(z+1))**2/ &
                          (thelp**3*(gas_xarr(z+1)**3-gas_xarr(z)**3))
