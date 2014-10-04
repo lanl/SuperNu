@@ -34,8 +34,8 @@ subroutine boundary_source
      enddo
   else
      do ig = 1, gas_ng
-        x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(1))
-        x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(1))
+        x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(1,1,1))
+        x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(1,1,1))
         emitsurfprobg(ig) = 15d0*specint(x1,x2,3)/pc_pi**4 
      enddo
   endif

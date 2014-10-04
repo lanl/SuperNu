@@ -14,6 +14,8 @@ real*8 :: gas_xarr(gas_nx+1)
 real*8 :: gas_yarr(gas_ny+1)
 real*8 :: gas_zarr(gas_nz+1)
 real*8 :: gas_dxarr(gas_nx)
+real*8 :: gas_dyarr(gas_ny)
+real*8 :: gas_dzarr(gas_nz)
 
 -particlesmod:
 integer :: prt_npartmax
@@ -31,15 +33,12 @@ logical :: in_puretran
 Nonpermanent input values (bcast_nonpersistent):
 
 -gasgridmod:
-real*8 :: gas_temp(gas_nr)
-real*8 :: gas_fcoef(gas_nr)
-real*8 :: gas_sig(gas_nr)
-real*8 :: gas_emitprob(gas_ng,gas_nr)
-real*8 :: gas_ppl(gas_ng,gas_nr)
-real*8 :: gas_ppr(gas_ng,gas_nr)
-real*8 :: gas_opacleakl(gas_ng,gas_nr)
-real*8 :: gas_opacleakr(gas_ng,gas_nr)
-real*8 :: gas_cap(gas_ng,gas_nr)
+real*8 :: gas_temp(gas_nx,gas_ny,gas_nz)
+real*8 :: gas_fcoef(gas_nx,gas_ny,gas_nz)
+real*8 :: gas_sig(gas_nx,gas_ny,gas_nz)
+real*8 :: gas_emitprob(gas_ng,gas_nx,gas_ny,gas_nz)
+real*8 :: gas_opacleak(6,gas_nx,gas_ny,gas_nz)
+real*8 :: gas_cap(gas_ng,gas_nx,gas_ny,gas_nz)
 real*8 :: gas_wl(gas_ng)
 
 -particlemod:
@@ -61,8 +60,8 @@ Tallied output values
 real*8 :: gas_erad
 real*8 :: gas_eright
 real*8 :: gas_eleft
-real*8 :: gas_numcensus(gas_nr)
-real*8 :: gas_edep(gas_nr)
-real*8 :: gas_eraddens(gas_nr)
+real*8 :: gas_numcensus(gas_nx,gas_ny,gas_nz)
+real*8 :: gas_edep(gas_nx,gas_ny,gas_nz)
+real*8 :: gas_eraddens(gas_nx,gas_ny,gas_nz)
 
 ============================================
