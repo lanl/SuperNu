@@ -20,13 +20,13 @@ c     -----------------------
 * - opacities
 ************************************************************************
       logical :: do_output,lexist,planckcheck
-      integer :: i,j,ir,ig,it,istat
+      integer :: i,j,k,ig,it,istat
       real*8 :: help,x1,x2
       real*8,external :: specint
       real*8 :: dtempfrac = 0.99d0
       real*8 :: dwl(gas_ng)
-      real*8 :: natom1fr(gas_nr,-2:-1) !todo: memory storage order?
-      real*8 :: natom2fr(gas_nr,-2:-1)
+      real*8 :: natom1fr(gas_nx,gas_ny,gas_nz,-2:-1) !todo: memory storage order?
+      real*8 :: natom2fr(gas_nx,gas_ny,gas_nz,-2:-1)
 c-- gamma opacity
       real*8,parameter :: ye=.5d0 !todo: compute this value
 c-- timing
@@ -179,10 +179,11 @@ c-- skip delimiter
           read(4,*,iostat=istat)
           if(istat/=0) stop 'read_opac: delimiter error: input.opac'
 c-- read data
-          do ir=1,gas_nr
-           read(4,*,iostat=istat) help,gas_sig(ir),gas_cap(:,ir)
+          if(gas_ny>1 .or. gas_nz>1) stop 'read_opac: no 2D/3D'
+          do i=1,gas_nx
+           read(4,*,iostat=istat) help,gas_sig(i),gas_cap(:,i)
            if(istat/=0) stop 'read_opac: body error: input.opac'
-          enddo !ir
+          enddo !i
          enddo !it
          close(4)
          write(6,*) 'read_opac: read successfully'
@@ -202,14 +203,18 @@ c-- Planck opacity
 !Ryan, why is this conditional (drr 14/05/31)?
        if(planckcheck) then
         gas_siggrey = 0d0
-        do ir=1,gas_nr
+        do k=1,gas_nz
+        do j=1,gas_ny
+        do i=1,gas_nx
          do ig=1,gas_ng
-          x1 = pc_h*pc_c/(gas_wl(ig + 1)*pc_kb*gas_temp(ir))
-          x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(ir))
-          gas_siggrey(ir) = gas_siggrey(ir)+
-     &      15d0*gas_cap(ig,ir)*specint(x1,x2,3)/pc_pi**4
+          x1 = pc_h*pc_c/(gas_wl(ig + 1)*pc_kb*gas_temp(i,j,k))
+          x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i,j,k))
+          gas_siggrey(i,j,k) = gas_siggrey(i,j,k)+
+     &      15d0*gas_cap(ig,i,j,k)*specint(x1,x2,3)/pc_pi**4
          enddo
-        enddo
+        enddo !i
+        enddo !j
+        enddo !k
        endif
        !write(*,*) gas_siggrey(1)
        !write(*,*) gas_cap(:,1)
@@ -227,12 +232,13 @@ c-- write opacity grid
        inquire(4,opened=do_output)
        if(do_output) then
 c-- header
-        if(tsp_it==1) write(4,'("#",3i8)') gas_ng,gas_nr,tsp_nt
+        if(gas_ny>1 .or. gas_nz>1) stop 'output.opac: no 2D/3D'
+        if(tsp_it==1) write(4,'("#",3i8)') gas_ng,gas_nx,tsp_nt
         write(4,'("#",3i8)') tsp_it
 c-- body
-        do ir=1,gas_nr
-         write(4,'(1p,9999e12.4)') gas_temp(ir),gas_sig(ir),
-     &     (gas_cap(j,ir),j=1,gas_ng)
+        do i=1,gas_nx
+         write(4,'(1p,9999e12.4)') gas_temp(i,1,1),gas_sig(i,1,1),
+     &     (gas_cap(j,i,1,1),j=1,gas_ng)
         enddo
 c-- close file
         close(4)
@@ -250,41 +256,6 @@ c-- timing output
      &   write(6,'(1x,a27,3(f8.2,"s"))') 'opacity timing: bb|bf|ff  :',
      &   t_bb(1),t_bf(1),t_ff(1) !}}}
       endif calc_opac !tsp_it
-c
-c
-c
-c-- output
-c=========
-c-- to stdout!{{{
-c
-c-- energy depots
-      if(tsp_it==1) then
-       write(6,'(1x,a,1p,e12.4)') 'energy deposition (Lagr)  :',
-     &   sum(gas_vals2(:)%nisource)
-      endif !tsp_it
-c-- totals
-      write(7,*)
-      write(7,'(1x,a,1p,e12.4)') 'energy deposition (Lagr)  :',
-     &  sum(gas_vals2(:)%nisource)
-c-- arrays
-*     write(7,'(a6,4a12)')'ir','edep/vol','enostor/vol','rho',
-      write(7,'(a6,4a12)')'ir','edep/dt','rho',
-     &  'nelec','volcrp/vol'
-      do i=1,gas_nr,10
-       write(7,'(i6,1p,4e12.4)') (j,
-     &  gas_vals2(j)%nisource/tsp_dt,
-     &  gas_vals2(j)%mass/gas_vals2(j)%vol,
-     &  gas_vals2(j)%nelec,gas_vals2(j)%volcrp/gas_vals2(j)%vol,
-     &  j=i,min(i+9,gas_nr))
-      enddo
-!c
-!c-- scattering coefficients
-!      if(tsp_it>0) then
-!       write(7,*)
-!       write(7,*) 'sig'
-!       write(7,'(1p,10e12.4)') gas_sig
-!      endif!}}}
-c
 c
       call time(t1)
       call timereg(t_gasupd,t1-t0)

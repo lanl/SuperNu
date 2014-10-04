@@ -49,13 +49,16 @@ c-- special functions
 c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
-c-- planck opacity addition condition
-      logical :: planckcheck
+c-- warn once
+      logical :: warn
 c
 c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_temp)
 c
       call time(t0)
+c
+c-- warn once
+      warn = .true.
 c
 c-- thomson scattering
       if(.not.in_nothmson) then
@@ -225,7 +228,6 @@ c-- profile function
 !       write(6,*) 'phi',phi
 c-- evaluate caphelp
         do ir=1,gas_nr
-         if(.not.gas_vals2(ir)%opdirty) cycle !opacities are still valid
          ocggrnd = grndlev(ir,ii,iz)
 c-- oc high enough to be significant?
 *        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
@@ -238,12 +240,6 @@ c-- oc high enough to be significant?
          if(caphelp==0.) cycle
          cap(ir,igs) = cap(ir,igs) + caphelp
         enddo !ir
-c-- vectorized alternative is slower
-cslow   where(gas_vals2(:)%opdirty .and. grndlev(:,ii,iz)>1d-30)
-cslow    cap(:,igs) = cap(:,igs) +
-cslow&     phi*bb_xs(i)%gxs*grndlev(:,ii,iz)*
-cslow&     exp(-bb_xs(i)%chilw*hckt(:))*(1d0 - exp(-wlinv*hckt(:)))
-cslow   endwhere
        enddo !i
 c$omp end parallel do !}}}
       endif !in_nobbopac
@@ -266,7 +262,6 @@ c$omp& shared(cap)
           xs = bfxs(iz,ie,en)
           if(xs==0d0) cycle
           forall(ir=1:gas_nr)
-*         forall(ir=1:gas_nr,gas_vals2(ir)%opdirty)
      &      cap(ir,igs) = cap(ir,igs) +
      &      xs*pc_mbarn*grndlev2(ir,ii,iz)
          enddo !ie
@@ -287,7 +282,7 @@ c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy)
 c$omp& firstprivate(hckt,hlparr)
-c$omp& shared(cap)
+c$omp& shared(cap,warn)
        do igs=1,ngs
         wl = wll + (igs-.5d0)*dwl !-- subgroup bin center value
         wlinv = 1d0/wl  !in cm
@@ -298,7 +293,10 @@ c-- gcell loop
 c
          help = c1*sqrt(hckt(ir))*(1d0 - exp(-u))*wl**3*hlparr(ir)
          if(iu<1 .or. iu>ff_nu) then
-          call warn('opacity_calc','ff: iu out of data limit')
+          if(warn) then
+           warn = .false.
+           call warn('opacity_calc','ff: iu out of data limit')
+          endif
           iu = min(iu,ff_nu)
           iu = max(iu,1)
          endif

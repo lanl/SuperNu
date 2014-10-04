@@ -12,7 +12,7 @@ subroutine temperature_update
   !it updates material temperature and the approximate amount
   !of gamma ray energy introduced in the time step.
 !##################################################
-  integer :: ir, ig
+  integer :: i,j,k, ig
   real*8 :: dtemp, dtemp2
   real*8,parameter :: tauni = 8.8d0*86400.0d0
   real*8,parameter :: tauco = 111.3d0*86400.0d0
@@ -26,20 +26,24 @@ subroutine temperature_update
 !-- calculating temperature
   if(allocated(gas_temppreset)) then
 !-- apply read-in temperature profile
-   gas_temp = gas_temppreset(:,tsp_it)
+   gas_temp = gas_temppreset(:,:,:,tsp_it)
   else
 !-- calculate temp correction
-   do ir = 1, gas_nr
-     dtemp = gas_edep(ir)/gas_vals2(ir)%vol !new
-     !write(6,*) gas_edep(ir), gas_vals2(ir)%vol
-     dtemp = (dtemp - tsp_dt*gas_fcoef(ir)*gas_siggrey(ir)*pc_c*gas_vals2(ir)%ur)/gas_vals2(ir)%bcoef
+   do k=1,gas_nz
+   do j=1,gas_ny
+   do i=1,gas_nx
+     dtemp = gas_edep(i,j,k)/gas_vals2(i,j,k)%vol !new
+     !write(6,*) gas_edep(i,j,k), gas_vals2(i,j,k)%vol
+     dtemp = (dtemp - tsp_dt*gas_fcoef(i,j,k)*gas_siggrey(i,j,k)*pc_c*gas_vals2(i,j,k)%ur)/gas_vals2(i,j,k)%bcoef
      
-     dtemp2 = (gas_fcoef(ir)/gas_vals2(ir)%bcoef)*tsp_dt* &
-          gas_vals2(ir)%matsrc
+     dtemp2 = (gas_fcoef(i,j,k)/gas_vals2(i,j,k)%bcoef)*tsp_dt* &
+          gas_vals2(i,j,k)%matsrc
 
-     gas_temp(ir)=gas_temp(ir)+dtemp+dtemp2
+     gas_temp(i,j,k)=gas_temp(i,j,k)+dtemp+dtemp2
 
-   enddo
+   enddo !i
+   enddo !j
+   enddo !k
   endif
 
   gas_vals2%ur = pc_acoef*gas_temp**4
@@ -51,10 +55,14 @@ subroutine temperature_update
 !
 !-- summing comoving material energy
   gas_emat = 0d0
-  do ir = 1, gas_nr
+  do k=1,gas_nz
+  do j=1,gas_ny
+  do i=1,gas_nx
      gas_emat=gas_emat+ &
-          gas_vals2(ir)%bcoef*gas_temp(ir)* &
-          gas_vals2(ir)%vol
-  enddo
+          gas_vals2(i,j,k)%bcoef*gas_temp(i,j,k)* &
+          gas_vals2(i,j,k)%vol
+  enddo !i
+  enddo !j
+  enddo !k
 
 end subroutine temperature_update

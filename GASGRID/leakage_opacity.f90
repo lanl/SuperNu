@@ -12,7 +12,7 @@ subroutine leakage_opacity
 !##################################################
   logical :: missive = .false.
   logical :: lhelp
-  integer :: ir, ig
+  integer :: i,j,k, ig
   real*8 :: help
   real*8 :: thelp, ppl, ppr, specval, speclump
 !
@@ -25,78 +25,82 @@ subroutine leakage_opacity
 !
 !-- calculating leakage opacities
   gas_opacleak = 0d0
-  do ir = 1, gas_nr
+  do k = 1, gas_nz
+  do j = 1, gas_ny
+  do i = 1, gas_nx
 !
 !-- initializing Planck integral
      speclump = 0d0
      do ig = 1, gas_ng
 !-- finding lumpable groups
-        if(gas_cap(ig,ir)*gas_drarr(ir)*thelp>=prt_taulump) then
+        if(gas_cap(ig,i,j,k)*gas_dxarr(i)*thelp>=prt_taulump) then
 !-- summing lumpable Planck function integrals
-           speclump = speclump + gas_siggrey(ir)*gas_emitprob(ig,ir)/&
-                gas_cap(ig,ir)
+           speclump = speclump + gas_siggrey(i,j,k)*gas_emitprob(ig,i,j,k)/&
+                gas_cap(ig,i,j,k)
         endif
-     enddo
+     enddo !ig
 !-- lumping opacity
      do ig = 1, gas_ng
-        if(gas_cap(ig,ir)*gas_drarr(ir)*thelp>=prt_taulump) then
+        if(gas_cap(ig,i,j,k)*gas_dxarr(i)*thelp>=prt_taulump) then
 !
 !-- obtaining spectral weight
-           specval = gas_siggrey(ir)*gas_emitprob(ig,ir)/&
-                gas_cap(ig,ir)
+           specval = gas_siggrey(i,j,k)*gas_emitprob(ig,i,j,k)/&
+                gas_cap(ig,i,j,k)
 !
-!-- case differentiation
-           if(ir==1) then
+!
+!-- calculating left leakage opacity
+           if(i==1) then
               lhelp = .true.
            else
-              lhelp = (gas_cap(ig,ir-1)+ &
-                 gas_sig(ir-1))*gas_drarr(ir-1)*thelp<prt_tauddmc
+              lhelp = (gas_cap(ig,i-1,j,k)+ &
+                 gas_sig(i-1,j,k))*gas_dxarr(i-1,j,k)*thelp<prt_tauddmc
            endif
 !
-!-- calculating inward leakage opacity
            if(lhelp) then
 !-- DDMC interface
-              help = (gas_cap(ig,ir)+gas_sig(ir))*gas_drarr(ir)*thelp
+              help = (gas_cap(ig,i,j,k)+gas_sig(i,j,k))*gas_dxarr(i)*thelp
               ppl = 4d0/(3d0*help+6d0*pc_dext)
-              gas_opacleak(1,ir)=gas_opacleak(1,ir)+(specval/speclump)*&
-                   1.5d0*ppl*(thelp*gas_rarr(ir))**2/ &
-                   (3d0*gas_vals2(ir)%vol/pc_pi4)
+              gas_opacleak(1,i,j,k)=gas_opacleak(1,i,j,k)+(specval/speclump)*&
+                   1.5d0*ppl*(thelp*gas_xarr(i))**2/ &
+                   (3d0*gas_vals2(i,j,k)%vol/pc_pi4)
            else
 !-- DDMC interior
-              help = ((gas_sig(ir)+gas_cap(ig,ir))*gas_drarr(ir)+&
-                   (gas_sig(ir-1)+gas_cap(ig,ir-1))*gas_drarr(ir-1))*thelp
-              gas_opacleak(1,ir)=gas_opacleak(1,ir)+(specval/speclump)*&
-                   2.0d0*(thelp*gas_rarr(ir))**2/ &
-                   (help*3d0*gas_vals2(ir)%vol/pc_pi4)
+              help = ((gas_sig(i,j,k)+gas_cap(ig,i,j,k))*gas_dxarr(i)+&
+                   (gas_sig(i-1,j,k)+gas_cap(ig,i-1,j,k))*gas_dxarr(i-1))*thelp
+              gas_opacleak(1,i,j,k)=gas_opacleak(1,i,j,k)+(specval/speclump)*&
+                   2.0d0*(thelp*gas_xarr(i))**2/ &
+                   (help*3d0*gas_vals2(i,j,k)%vol/pc_pi4)
            endif
 !
-!-- case differentation
-           if(ir==gas_nr) then
+!
+!-- calculating right leakage opacity
+           if(i==gas_nx) then
               lhelp = .true.
            else
-              lhelp = (gas_cap(ig,ir+1)+ &
-                 gas_sig(ir+1))*gas_drarr(ir+1)*thelp<prt_tauddmc
+              lhelp = (gas_cap(ig,i+1,j,k)+ &
+                 gas_sig(i+1,j,k))*gas_dxarr(i+1)*thelp<prt_tauddmc
            endif
 !
-!-- calculating outward leakage opacity
            if(lhelp) then
 !-- DDMC interface
-              help = (gas_cap(ig,ir)+gas_sig(ir))*gas_drarr(ir)*thelp
+              help = (gas_cap(ig,i,j,k)+gas_sig(i,j,k))*gas_dxarr(i)*thelp
               ppr = 4d0/(3d0*help+6d0*pc_dext)
-              gas_opacleak(2,ir)=gas_opacleak(2,ir)+(specval/speclump)*&
-                   1.5d0*ppr*(thelp*gas_rarr(ir+1))**2/ &
-                   (3d0*gas_vals2(ir)%vol/pc_pi4)
+              gas_opacleak(2,i,j,k)=gas_opacleak(2,i,j,k)+(specval/speclump)*&
+                   1.5d0*ppr*(thelp*gas_xarr(i+1,j,k))**2/ &
+                   (3d0*gas_vals2(i,j,k)%vol/pc_pi4)
            else
 !-- DDMC interior
-              help = ((gas_sig(ir)+gas_cap(ig,ir))*gas_drarr(ir)+&
-                   (gas_sig(ir+1)+gas_cap(ig,ir+1))*gas_drarr(ir+1))*thelp
-              gas_opacleak(2,ir)=gas_opacleak(2,ir)+(specval/speclump)*&
-                   2.0d0*(thelp*gas_rarr(ir+1))**2/ &
-                   (help*3d0*gas_vals2(ir)%vol/pc_pi4)
+              help = ((gas_sig(i,j,k)+gas_cap(ig,i,j,k))*gas_dxarr(i)+&
+                   (gas_sig(i+1,j,k)+gas_cap(ig,i+1,j,k))*gas_dxarr(i+1))*thelp
+              gas_opacleak(2,i,j,k)=gas_opacleak(2,i,j,k)+(specval/speclump)*&
+                   2.0d0*(thelp*gas_xarr(i+1))**2/ &
+                   (help*3d0*gas_vals2(i,j,k)%vol/pc_pi4)
            endif
         endif
-     enddo
-  enddo
+     enddo !ig
+  enddo !i
+  enddo !j
+  enddo !k
   
 
 end subroutine leakage_opacity

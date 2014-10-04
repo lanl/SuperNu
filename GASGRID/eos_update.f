@@ -9,8 +9,8 @@ c     --------------------------------
 ************************************************************************
 * Solve the eos for given temperatures.
 ************************************************************************
-      integer :: i,niter,iion,nion,istat
-      integer :: j,k,iz,ii
+      integer :: i,j,k,niter,iion,nion,istat
+      integer :: iz,ii
       real*8 :: t0,t1
       real*8 :: ndens
       real*8 :: pdens(ion_nion,gas_nx,gas_ny,gas_nz)
@@ -23,11 +23,6 @@ c-- loop over all gas_vals cells
        ndens = gas_vals2(i,j,k)%natom/gas_vals2(i,j,k)%vol !atom number density
        call ion_solve_eos(gas_vals2(i,j,k)%natom1fr(1:),
      &   gas_temp(i,j,k),ndens,gas_vals2(i,j,k)%nelec,niter)
-c
-c-- debug output
-!      write(6,*) ir,niter !DEBUG
-c-- mark gcell to need new opacities
-       if(niter>1) gas_vals2(i,j,k)%opdirty = .true.
 c
 c-- store occupation numbers of each ion's ground states
        do iz=1,gas_nelem

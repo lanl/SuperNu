@@ -44,8 +44,8 @@ c-- special functions
 c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
-c-- planck opacity addition condition
-      logical :: planckcheck
+c-- warn once
+      logical :: warn
 !c
 !c-- constants
 !old  wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
@@ -96,11 +96,10 @@ c-- profile function
 !       write(6,*) 'phi',phi
 c-- evaluate caphelp
         do ir=1,gas_nr
-         if(.not.gas_vals2(ir)%opdirty) cycle !opacities are still valid
          ocggrnd = grndlev(ir,ii,iz)
 c-- oc high enough to be significant?
 *        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
-         if(ocggrnd<=0d0) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
+         if(ocggrnd<=0d0) cycle
          expfac = 1d0 - exp(-hckt(ir)*wlinv)
          caphelp = phi*bb_xs(i)%gxs*ocggrnd*
      &     exp(-bb_xs(i)%chilw*hckt(ir))*expfac
@@ -109,12 +108,6 @@ c-- oc high enough to be significant?
          if(caphelp==0.) cycle
          cap(ir,iwl) = cap(ir,iwl) + caphelp
         enddo !ir
-c-- vectorized alternative is slower
-cslow   where(gas_vals2(:)%opdirty .and. grndlev(:,ii,iz)>1d-30)
-cslow    cap(:,iwl) = cap(:,iwl) +
-cslow&     phi*bb_xs(i)%gxs*grndlev(:,ii,iz)*
-cslow&     exp(-bb_xs(i)%chilw*hckt(:))*(1d0 - exp(-wlinv*hckt(:)))
-cslow   endwhere
        enddo !i
 c$omp end parallel do!}}}
       endif !in_nobbopac
@@ -143,7 +136,6 @@ c$omp& shared(cap)
           xs = bfxs(iz,ie,en)
           if(xs==0d0) cycle
           forall(ir=1:gas_nr)
-*         forall(ir=1:gas_nr,gas_vals2(ir)%opdirty)
      &      cap(ir,ig) = cap(ir,ig) +
      &      xs*pc_mbarn*grndlev(ir,ii,iz)
          enddo !ie
@@ -164,9 +156,10 @@ c-- simple variant: nearest data grid point
        hlparr = (gas_vals2%natom/gas_vals2%vol)**2*gas_vals2%nelec
 c$omp parallel do
 c$omp& schedule(static)
-c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy)
+c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy,warn)
 c$omp& firstprivate(hckt,hlparr)
 c$omp& shared(cap)
+       warn = .true.
        do ig=1,gas_ng
         wl = gas_wl(ig)  !in cm
         wlinv = 1d0/wl  !in cm
@@ -177,7 +170,10 @@ c-- gcell loop
 c
          help = c1*sqrt(hckt(ir))*(1d0 - exp(-u))*wl**3*hlparr(ir)
          if(iu<1 .or. iu>ff_nu) then
-          call warn('opacity_calc','ff: iu out of data limit')
+          if(warn) then
+           warned = .false.
+           call warn('opacity_calc','ff: iu out of data limit')
+          endif
           iu = min(iu,ff_nu)
           iu = max(iu,1)
          endif

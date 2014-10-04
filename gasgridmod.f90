@@ -123,9 +123,6 @@ module gasgridmod
        real*8 :: natom1fr(-2:gas_nelem) = 0d0 !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
        real*8 :: natom0fr(-2:2) = 0d0     !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
        real*8 :: nelec=1d0  !gcell # electrons per atom
-!-- opacity invalidity flag
-       logical :: opdirty=.true. !opacity needs recalculation
-       logical :: dummy=.true. !opacity needs recalculation
 !-- energy reservoir
        real*8 :: engdep     !energy deposited by gamma rays
 !-- material energy (temperature) source (may be manufactured), rev>244
