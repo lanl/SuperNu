@@ -55,10 +55,10 @@ c-- The difference between these two has decayed.
 c-- beginning of time step
        help = tsp_t
        call update_natomfr(help)
-       forall(i=-2:-1) natom1fr(:,i) = gas_vals2(:)%natom1fr(i)
+       forall(l=-2:-1) natom1fr(:,l) = gas_vals2(:)%natom1fr(l)
 c-- end of time step
        call update_natomfr(tsp_t + tsp_dt)
-       forall(i=-2:-1) natom2fr(:,i) = gas_vals2(:)%natom1fr(i)
+       forall(l=-2:-1) natom2fr(:,l) = gas_vals2(:)%natom1fr(l)
 c
 c-- update the abundances for the center time
        !call update_natomfr(tsp_tcenter)

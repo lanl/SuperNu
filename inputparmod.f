@@ -12,8 +12,13 @@ c-- parallelization
       integer :: in_nomp = 1       !number of openmp threads
 c
 c-- gas grid
-      integer :: in_nr = 0   !number of spatial grid in spherical geom
-      real*8 :: in_lr = 0d0  !spatial length of the domain
+      integer :: in_nx = 0   !number of x-direction cells
+      integer :: in_ny = 0   !number of y-direction cells
+      integer :: in_nz = 0   !number of z-direction cells
+
+      real*8 :: in_lx = 0d0  !spatial length of x-direction
+      real*8 :: in_ly = 0d0  !spatial length of y-direction
+      real*8 :: in_lz = 0d0  !spatial length of z-direction
 c
 c-- do read input structure file instead of specifying the stucture with input parameters
 c==================
@@ -118,7 +123,8 @@ c-- misc
 c     
 c-- runtime parameter namelist
       namelist /inputpars/
-     & in_nr,in_isvelocity,in_novolsrc,in_lr,
+     & in_nx,in_ny,in_nz,in_isvelocity,in_novolsrc,
+     & in_lx,in_ly,in_lz,
      & in_ng,in_ngs,in_wldex,in_wlmin,in_wlmax,
      & in_totmass,in_velout,
      & in_consttemp,
@@ -196,15 +202,22 @@ c-- check input parameter validity
       if(in_nomp<0) stop 'in_nomp invalid'!{{{
       if(in_nomp==0 .and. nmpi>1) stop 'no in_nomp==0 in mpi mode'
 c
-      if(in_nr<=0) stop 'in_nr invalid'
+      if(in_nx<=0) stop 'in_nx invalid'
+      if(in_ny<=0) stop 'in_ny invalid'
+      if(in_nz<=0) stop 'in_nz invalid'
 c
       if(in_isvelocity) then
-       if(in_lr>0d0) stop 'vel grid: use in_velout, not in_lr'
+       if(in_lx>0d0) stop 'vel grid: use in_velout, not in_lx'
+       if(in_ly>0d0) stop 'vel grid: use in_velout, not in_ly'
+       if(in_lz>0d0) stop 'vel grid: use in_velout, not in_lz'
        if(in_velout<=0d0 .and. in_noreadstruct) stop
-     &   'vel grid: use in_velout, not in_lr'
+     &   'vel grid: use in_velout, not in_lx,in_ly,in_lz'
       else
-       if(in_lr<=0d0) stop 'static grid: use in_lr, not in_velout'
-       if(in_velout>0d0) stop 'static grid: use in_lr, not in_velout'
+       if(in_lx<=0d0) stop 'static grid: use in_lx, not in_velout'
+       if(in_ly<=0d0) stop 'static grid: use in_ly, not in_velout'
+       if(in_lz<=0d0) stop 'static grid: use in_lz, not in_velout'
+       if(in_velout>0d0) 
+     &      stop 'static grid: use in_lx,in_ly,in_lz, not in_velout'
       endif
 c
       if(in_ng==0) then

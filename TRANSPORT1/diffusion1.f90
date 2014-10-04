@@ -46,7 +46,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !
 !-- shortcut
   dtinv = 1d0/tsp_dt
-  capinv = 1d0/gas_cap(:,z)
+  capinv = 1d0/gas_cap(:,z,1,1)
 
 !
 !-- set expansion helper
@@ -80,10 +80,10 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   glumps = 0
 !
 !-- find lumpable groups
-  if(gas_cap(g,z)*gas_drarr(z)*thelp>=prt_taulump) then
+  if(gas_cap(g,z,1,1)*gas_dxarr(z)*thelp>=prt_taulump) then
      do ig = 1, g-1
-        if(gas_cap(ig,z)*gas_drarr(z) &
-             *thelp >= prt_taulump&
+        if(gas_cap(ig,z,1,1)*gas_dxarr(z) &
+             *thelp >= prt_taulump &
              .and. g-ig <= gas_epslump) then
            glump=glump+1
            glumps(glump)=ig
@@ -93,8 +93,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
         endif
      enddo
      do ig = g, gas_ng
-        if(gas_cap(ig,z)*gas_drarr(z) &
-             *thelp >= prt_taulump&
+        if(gas_cap(ig,z,1,1)*gas_dxarr(z) &
+             *thelp >= prt_taulump &
              .and. ig-g <= gas_epslump) then
            glump=glump+1
            glumps(glump)=ig
@@ -119,7 +119,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   speclump = 0d0
   do ig = 1, glump
      iig = glumps(ig)
-     specig = gas_siggrey(z)*gas_emitprob(iig,z)*capinv(iig)
+     specig = gas_siggrey(z,1,1)*gas_emitprob(iig,z,1,1)*capinv(iig)
      speclump = speclump+specig
   enddo
   if(speclump>0d0.and.glump>1) then
@@ -135,11 +135,11 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !-- calculating lumped values
      do ig = 1, glump
         iig = glumps(ig)
-        specig = gas_siggrey(z)*gas_emitprob(iig,z)*capinv(iig)
+        specig = gas_siggrey(z,1,1)*gas_emitprob(iig,z,1,1)*capinv(iig)
 !-- emission lump
-        emitlump = emitlump+gas_emitprob(iig,z)
+        emitlump = emitlump+gas_emitprob(iig,z,1,1)
 !-- Planck x-section lump
-        caplump = caplump+specig*gas_cap(iig,z)*speclump
+=======
      enddo
 !-- leakage opacities
      opacleakllump = gas_opacleak(1,z)
@@ -147,46 +147,46 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   else
 !
 !-- calculating unlumped values
-     emitlump = gas_emitprob(g,z)
-     caplump = gas_cap(g,z)
+     emitlump = gas_emitprob(g,z,1,1)
+     caplump = gas_cap(g,z,1,1)
 !-- inward
      if(z==1) then
         opacleakllump = 0d0
-     elseif((gas_cap(g,z-1)+ &
-          gas_sig(z-1))*gas_drarr(z-1)*thelp<prt_tauddmc) then
+     elseif((gas_cap(g,z-1,1,1)+ &
+          gas_sig(z-1))*gas_dxarr(z-1)*thelp<prt_tauddmc) then
 !-- DDMC interface
-        mfphelp = (gas_cap(g,z)+gas_sig(z))*gas_drarr(z)*thelp
+        mfphelp = (gas_cap(g,z,1,1)+gas_sig(z,1,1))*gas_dxarr(z)*thelp
         ppl = 4d0/(3d0*mfphelp+6d0*pc_dext)
-        opacleakllump= 1.5d0*ppl*(thelp*gas_rarr(z))**2/ &
-             (thelp**3*(gas_rarr(z+1)**3-gas_rarr(z)**3))
+        opacleakllump= 1.5d0*ppl*(thelp*gas_xarr(z))**2/ &
+             (thelp**3*(gas_xarr(z+1)**3-gas_xarr(z)**3))
      else
 !-- DDMC interior
-        mfphelp = ((gas_sig(z)+gas_cap(g,z))*gas_drarr(z)+&
-             (gas_sig(z-1)+gas_cap(g,z-1))*gas_drarr(z-1))*thelp
-        opacleakllump=2.0d0*(thelp*gas_rarr(z))**2/ &
-             (mfphelp*thelp**3*(gas_rarr(z+1)**3-gas_rarr(z)**3))
+        mfphelp = ((gas_sig(z,1,1)+gas_cap(g,z,1,1))*gas_dxarr(z)+&
+             (gas_sig(z-1,1,1)+gas_cap(g,z-1,1,1))*gas_dxarr(z-1))*thelp
+        opacleakllump=2.0d0*(thelp*gas_xarr(z))**2/ &
+             (mfphelp*thelp**3*(gas_xarr(z+1)**3-gas_xarr(z)**3))
      endif
 !
 !-- outward
      if(z==gas_nr) then
         lhelp = .true.
      else
-        lhelp = (gas_cap(g,z+1)+ &
-           gas_sig(z+1))*gas_drarr(z+1)*thelp<prt_tauddmc
+        lhelp = (gas_cap(g,z+1,1,1)+ &
+           gas_sig(z+1,1,1))*gas_dxarr(z+1)*thelp<prt_tauddmc
      endif
 !
      if(lhelp) then
 !-- DDMC interface
-        mfphelp = (gas_cap(g,z)+gas_sig(z))*gas_drarr(z)*thelp
+        mfphelp = (gas_cap(g,z,1,1)+gas_sig(z,1,1))*gas_dxarr(z)*thelp
         ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
-        opacleakrlump=1.5d0*ppr*(thelp*gas_rarr(z+1))**2/ &
-             (thelp**3*(gas_rarr(z+1)**3-gas_rarr(z)**3))
+        opacleakrlump=1.5d0*ppr*(thelp*gas_xarr(z+1))**2/ &
+             (thelp**3*(gas_xarr(z+1)**3-gas_xarr(z)**3))
      else
 !-- DDMC interior
-        mfphelp = ((gas_sig(z)+gas_cap(g,z))*gas_drarr(z)+&
-             (gas_sig(z+1)+gas_cap(g,z+1))*gas_drarr(z+1))*thelp
-        opacleakrlump=2.0d0*(thelp*gas_rarr(z+1))**2/ &
-             (mfphelp*thelp**3*(gas_rarr(z+1)**3-gas_rarr(z)**3))
+        mfphelp = ((gas_sig(z,1,1)+gas_cap(g,z,1,1))*gas_dxarr(z)+&
+             (gas_sig(z+1,1,1)+gas_cap(g,z+1,1,1))*gas_dxarr(z+1))*thelp
+        opacleakrlump=2.0d0*(thelp*gas_xarr(z+1))**2/ &
+             (mfphelp*thelp**3*(gas_xarr(z+1)**3-gas_xarr(z)**3))
      endif
   endif
 !
@@ -195,9 +195,9 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 
 !-- calculate time to census or event
   denom = opacleakllump+opacleakrlump+&
-       (1d0-alpeff)*(1d0-emitlump)*(1d0-gas_fcoef(z))*caplump
+       (1d0-alpeff)*(1d0-emitlump)*(1d0-gas_fcoef(z,1,1))*caplump
   if(prt_isddmcanlog) then
-     denom = denom+gas_fcoef(z)*caplump
+     denom = denom+gas_fcoef(z,1,1)*caplump
   endif
 
   r1 = rand()
@@ -209,23 +209,21 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !-- calculating energy depostion and density
   !
   if(prt_isddmcanlog) then
-     gas_eraddens(z) = gas_eraddens(z)+E*ddmct*dtinv
+     gas_eraddens(z,1,1)= gas_eraddens(z,1,1)+E*ddmct*dtinv
   else
-     gas_edep(z) = gas_edep(z)+E*(1d0-exp(-gas_fcoef(z) &!{{{
+     gas_edep(z,1,1) = gas_edep(z,1,1)+E*(1d0-exp(-gas_fcoef(z,1,1) &!{{{
           *caplump*pc_c*ddmct))
 !--
-!-- must use speclump...
-     if(gas_fcoef(z)*caplump*gas_drarr(z)*thelp>1d-6) then
-        help = 1d0/(gas_fcoef(z)*caplump)
-        gas_eraddens(z)= &
-             gas_eraddens(z)+E* &
-             (1d0-exp(-gas_fcoef(z)*caplump*pc_c*ddmct))* &
+     if(gas_fcoef(z,1,1)*caplump*gas_dxarr(z)*thelp>1d-6) then
+        help = 1d0/(gas_fcoef(z,1,1)*caplump)
+        gas_eraddens(z,1,1)= &
+             gas_eraddens(z,1,1)+E* &
+             (1d0-exp(-gas_fcoef(z,1,1)*caplump*pc_c*ddmct))* &
              help*cinv*dtinv
      else
-        gas_eraddens(z) = gas_eraddens(z)+E*ddmct*dtinv
+        gas_eraddens(z,1,1) = gas_eraddens(z,1,1)+E*ddmct*dtinv
      endif
-     E=E*exp(-gas_fcoef(z)*caplump*pc_c*ddmct)
-
+     E=E*exp(-gas_fcoef(z,1,1)*caplump*pc_c*ddmct)
 !!}}}
   endif
 
@@ -240,7 +238,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !-- check for census
   if (ddmct /= tau) then
      prt_done = .true.
-     gas_numcensus(z)=gas_numcensus(z)+1
+     gas_numcensus(z,1,1)=gas_numcensus(z,1,1)+1
 
 
 !-- otherwise, perform event
@@ -256,7 +254,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 
 !-- absorption probability
      if(prt_isddmcanlog) then
-        PA = gas_fcoef(z)*caplump*help
+        PA = gas_fcoef(z,1,1)*caplump*help
      else
         PA = 0d0
      endif
@@ -265,7 +263,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
      if(r1>=0d0 .and. r1<PA) then
         vacnt = .true.
         prt_done = .true.
-        gas_edep(z) = gas_edep(z)+E
+        gas_edep(z,1,1) = gas_edep(z,1,1)+E
 
 
 !-- left leakage sample
@@ -285,21 +283,21 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
               help = 1d0/opacleakllump
               do ig= 1, glump
                  iig = glumps(ig)
-                 specig = gas_siggrey(z)*gas_emitprob(iig,z)*capinv(iig)
+                 specig = gas_siggrey(z,1,1)*gas_emitprob(iig,z,1,1)*capinv(iig)
 !-- calculating resolved leakage opacities
-                 if((gas_cap(iig,z-1)+ &
-                      gas_sig(z-1))*gas_drarr(z-1)*thelp<prt_tauddmc) then
+                 if((gas_cap(iig,z-1,1,1)+ &
+                      gas_sig(z-1,1,1))*gas_dxarr(z-1)*thelp<prt_tauddmc) then
 !-- DDMC interface
-                    mfphelp = (gas_cap(iig,z)+gas_sig(z))*gas_drarr(z)*thelp
+                    mfphelp = (gas_cap(iig,z,1,1)+gas_sig(z,1,1))*gas_dxarr(z)*thelp
                     ppl = 4d0/(3d0*mfphelp+6d0*pc_dext)
-                    resopacleakl = 1.5d0*ppl*(thelp*gas_rarr(z))**2/ &
-                         (thelp**3*(gas_rarr(z+1)**3-gas_rarr(z)**3))
+                    resopacleakl = 1.5d0*ppl*(thelp*gas_xarr(z))**2/ &
+                         (thelp**3*(gas_xarr(z+1)**3-gas_xarr(z)**3))
                  else
 !-- IMC interface
-                    mfphelp = ((gas_sig(z)+gas_cap(iig,z))*gas_drarr(z)+&
-                         (gas_sig(z-1)+gas_cap(iig,z-1))*gas_drarr(z-1))*thelp
-                    resopacleakl = 2.0d0*(thelp*gas_rarr(z))**2/ &
-                         (mfphelp*thelp**3*(gas_rarr(z+1)**3-gas_rarr(z)**3))
+                    mfphelp = ((gas_sig(z,1,1)+gas_cap(iig,z,1,1))*gas_dxarr(z)+&
+                         (gas_sig(z-1,1,1)+gas_cap(iig,z-1,1,1))*gas_dxarr(z-1))*thelp
+                    resopacleakl = 2.0d0*(thelp*gas_xarr(z))**2/ &
+                         (mfphelp*thelp**3*(gas_xarr(z+1)**3-gas_xarr(z)**3))
                  endif
                  if((r1>=denom2).and. &
                       (r1<denom2+specig*resopacleakl*speclump*help)) exit
@@ -310,7 +308,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
            endif
 
 
-           if((gas_sig(z-1)+gas_cap(iig,z-1))*gas_drarr(z-1) &
+           if((gas_sig(z-1,1,1)+gas_cap(iig,z-1,1,1))*gas_dxarr(z-1) &
                 *thelp >= prt_tauddmc) then
               z = z-1
               r1 = rand()
@@ -324,10 +322,10 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !
 !-- method changed to IMC
               hyparam = 1
-              gas_methodswap(z)=gas_methodswap(z)+1
+              gas_methodswap(z,1,1)=gas_methodswap(z,1,1)+1
 !
 !-- location set right bound of left cell
-              r = gas_rarr(z)
+              r = gas_xarr(z)
 !-- current particle cell set to 1 left
               z = z-1
 !
@@ -362,7 +360,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
      elseif (r1>=PA+PL .and. r1<PA+PL+PR) then
 !!{{{
 !-- checking if at outer bound
-        if (z == gas_nr) then
+        if (z == gas_nx) then
            vacnt = .true.
            prt_done = .true.
            gas_eright = gas_eright+E
@@ -380,23 +378,23 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
                  help = 1d0/opacleakrlump
                  do ig = 1, glump
                     iig=glumps(ig)
-                    specig = gas_siggrey(z)*gas_emitprob(iig,z)*capinv(iig)
+                    specig = gas_siggrey(z,1,1)*gas_emitprob(iig,z,1,1)*capinv(iig)
 !-- calculating resolved leakage opacities
-                    mfphelp = (gas_cap(iig,z)+gas_sig(z))*gas_drarr(z)*thelp
+                    mfphelp = (gas_cap(iig,z,1,1)+gas_sig(z,1,1))*gas_dxarr(z,1,1)*thelp
                     ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
-                    resopacleakr = 1.5d0*ppr*(thelp*gas_rarr(z+1))**2/ &
-                         (thelp**3*(gas_rarr(z+1)**3-gas_rarr(z)**3))
+                    resopacleakr = 1.5d0*ppr*(thelp*gas_xarr(z+1))**2/ &
+                         (thelp**3*(gas_xarr(z+1)**3-gas_xarr(z)**3))
                     if((r1>=denom2).and. &
                          (r1<denom2+specig*resopacleakr*speclump*help)) exit
                     denom2 = denom2+specig*resopacleakr*speclump*help
 !                    gas_luminos(iig) = gas_luminos(iig)+&
-!                         E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv) * glumpinv
+!                         E*dtinv*(1.0+gas_xarr(gas_nx+1)*mu*cinv) * glumpinv
                  enddo
                  r1 = rand()
                  prt_tlyrand = prt_tlyrand+1
                  wl=1d0/(r1/gas_wl(iig+1) + (1d0-r1)/gas_wl(iig))
 !-- changing from comoving frame to observer frame
-                 wl = wl/(1d0+mu*gas_rarr(gas_nr+1)*cinv)
+                 wl = wl/(1d0+mu*gas_xarr(gas_nx+1)*cinv)
 !-- obtaining spectrum (lab) group
                  iig = binsrch(wl,gas_wl,gas_ng+1,in_ng)
                  if(iig>gas_ng.or.iig<1) then
@@ -409,20 +407,20 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
                     endif
                  endif
                  gas_luminos(iig) = gas_luminos(iig)+&
-                      E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv)
+                      E*dtinv*(1.0+gas_xarr(gas_nx+1)*mu*cinv)
                  gas_lumdev(iig) = gas_lumdev(iig)+&
-                      (E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv))**2
+                      (E*dtinv*(1.0+gas_xarr(gas_nx+1)*mu*cinv))**2
                  gas_lumnum(iig) = gas_lumnum(iig)+1
               else
                  iig = g
                  gas_luminos(iig) = gas_luminos(iig)+&
-                      E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv)
+                      E*dtinv*(1.0+gas_xarr(gas_nx+1)*mu*cinv)
                  gas_lumdev(iig) = gas_lumdev(iig)+&
-                      (E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv))**2
+                      (E*dtinv*(1.0+gas_xarr(gas_nx+1)*mu*cinv))**2
                  gas_lumnum(iig) = gas_lumnum(iig)+1
               endif
 !               gas_luminos(iig) = gas_luminos(iig)+&
-!                    E*dtinv*(1.0+gas_rarr(gas_nr+1)*mu*cinv)
+!                    E*dtinv*(1.0+gas_xarr(gas_nx+1)*mu*cinv)
            else
               gas_eright = gas_eright+E
               do ig = 1, glump
@@ -446,21 +444,21 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
               help = 1d0/opacleakrlump
               do ig= 1, glump
                  iig = glumps(ig)
-                 specig = gas_siggrey(z)*gas_emitprob(iig,z)*capinv(iig)
+                 specig = gas_siggrey(z,1,1)*gas_emitprob(iig,z,1,1)*capinv(iig)
 !-- calculating resolved leakage opacities
-                 if((gas_cap(iig,z+1)+ &
-                      gas_sig(z+1))*gas_drarr(z+1)*thelp<prt_tauddmc) then
+                 if((gas_cap(iig,z+1,1,1)+ &
+                      gas_sig(z+1,1,1))*gas_dxarr(z+1)*thelp<prt_tauddmc) then
 !-- DDMC interface
-                    mfphelp = (gas_cap(iig,z)+gas_sig(z))*gas_drarr(z)*thelp
+                    mfphelp = (gas_cap(iig,z,1,1)+gas_sig(z,1,1))*gas_dxarr(z)*thelp
                     ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
-                    resopacleakr = 1.5d0*ppr*(thelp*gas_rarr(z+1))**2/ &
-                         (thelp**3*(gas_rarr(z+1)**3-gas_rarr(z)**3))
+                    resopacleakr = 1.5d0*ppr*(thelp*gas_xarr(z+1))**2/ &
+                         (thelp**3*(gas_xarr(z+1)**3-gas_xarr(z)**3))
                  else
 !-- IMC interface
-                    mfphelp = ((gas_sig(z)+gas_cap(iig,z))*gas_drarr(z)+&
-                         (gas_sig(z+1)+gas_cap(iig,z+1))*gas_drarr(z+1))*thelp
-                    resopacleakr = 2.0d0*(thelp*gas_rarr(z+1))**2/ &
-                         (mfphelp*thelp**3*(gas_rarr(z+1)**3-gas_rarr(z)**3))
+                    mfphelp = ((gas_sig(z,1,1)+gas_cap(iig,z,1,1))*gas_dxarr(z)+&
+                         (gas_sig(z+1,1,1)+gas_cap(iig,z+1,1,1))*gas_dxarr(z+1))*thelp
+                    resopacleakr = 2.0d0*(thelp*gas_xarr(z+1))**2/ &
+                         (mfphelp*thelp**3*(gas_xarr(z+1)**3-gas_xarr(z)**3))
                  endif
                  if((r1>=denom2).and. &
                       (r1<denom2+specig*resopacleakr*speclump*help)) exit
@@ -471,7 +469,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
            endif
 
 
-           if((gas_sig(z+1)+gas_cap(iig,z+1))*gas_drarr(z+1) &
+           if((gas_sig(z+1,1,1)+gas_cap(iig,z+1,1,1))*gas_dxarr(z+1) &
                 *thelp >= prt_tauddmc) then
 !
               z = z+1
@@ -487,10 +485,10 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !
 !-- method changed to IMC
               hyparam = 1
-              gas_methodswap(z)=gas_methodswap(z)+1
+              gas_methodswap(z,1,1)=gas_methodswap(z,1,1)+1
 !
 !-- location set left bound of right cell
-              r = gas_rarr(z+1)
+              r = gas_xarr(z+1)
 !-- current particle cell set 1 right
               z = z+1
 !
@@ -537,8 +535,8 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 
         do ig = gas_ng,glump+1,-1
            iig=glumps(ig)
-           if((r1>=denom3).and.(r1<denom3+gas_emitprob(iig,z)*help)) exit
-           denom3 = denom3+gas_emitprob(iig,z)*help
+           if((r1>=denom3).and.(r1<denom3+gas_emitprob(iig,z,1,1)*help)) exit
+           denom3 = denom3+gas_emitprob(iig,z,1,1)*help
         enddo
 !
         g = iig
@@ -546,12 +544,12 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
         prt_tlyrand = prt_tlyrand+1
         wl = 1d0/((1d0-r1)/gas_wl(g) + r1/gas_wl(g+1))
 
-        if ((gas_sig(z)+gas_cap(g,z))*gas_drarr(z) &
+        if ((gas_sig(z,1,1)+gas_cap(g,z,1,1))*gas_dxarr(z) &
              *thelp >= prt_tauddmc) then
            hyparam = 2
         else
            hyparam = 1
-           gas_methodswap(z)=gas_methodswap(z)+1
+           gas_methodswap(z,1,1)=gas_methodswap(z,1,1)+1
 !-- direction sampled isotropically           
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
@@ -559,7 +557,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
 !-- position sampled uniformly
             r1 = rand()
             prt_tlyrand = prt_tlyrand+1
-            r = (r1*gas_rarr(z+1)**3+(1.0-r1)*gas_rarr(z)**3)**(1.0/3.0)
+            r = (r1*gas_xarr(z+1)**3+(1.0-r1)*gas_xarr(z)**3)**(1.0/3.0)
 !-- doppler and aberration corrections
            if(gas_isvelocity) then
               mu = (mu+r*cinv)/(1.0+r*mu*cinv)
@@ -584,7 +582,7 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
      if(r1<0.5d0) then
         vacnt=.true.
         prt_done=.true.
-        gas_edep(z)=gas_edep(z)+E
+        gas_edep(z,1,1)=gas_edep(z,1,1)+E
      else
 !-- weight addition accounted for in external source
         gas_eext=gas_eext+E

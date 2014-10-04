@@ -9,7 +9,7 @@ subroutine analytic_initial
   implicit none
 
   integer :: ig
-  real*8 :: trad(gas_nr)
+  real*8 :: trad(gas_nx,gas_ny,gas_nz)
 
 !###############################################
 ! This subroutines attributes radiation energy to
