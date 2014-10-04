@@ -84,10 +84,14 @@ program supernu
 !
 !-- read gamma deposition profiles
    if(in_isvelocity.and.in_srctype=='none') then
-     call read_gamma_profiles(in_nx,in_ny,in_nz)
+     if(in_ny>1 .or. in_nz>1) stop 'supernu: read_gam_prof: no 2D/3D'
+     call read_gamma_profiles(in_nx)
    endif
 !-- read gamma deposition profiles
-   if(in_tradinittype=='prof') call read_trad_profiles(in_nx,in_ny,in_nz)
+   if(in_tradinittype=='prof') then
+     if(in_ny>1 .or. in_nz>1) stop 'supernu: read_trad_prof: no 2D/3D'
+     call read_trad_profiles(in_nx)
+   endif
 !
 !-- SETUP GRIDS
    call wlgrid_setup(ng)

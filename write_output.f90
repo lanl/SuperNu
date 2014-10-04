@@ -7,7 +7,7 @@ subroutine write_output
   use particlemod
   implicit none
 
-  integer :: ir, ig, j
+  integer :: i, ig, j
   integer :: reclen, reclen2
   character(16), save :: pos='rewind', fstat='replace'
 !
@@ -55,14 +55,14 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.gas_fcoef',status='unknown',position=pos)
-  do ir = 1, gas_nx
-    write(4,'(es16.8)',advance='no') gas_fcoef(ir,1,1)
+  do i = 1, gas_nx
+    write(4,'(es16.8)',advance='no') gas_fcoef(i,1,1)
   enddo
   close(4)
 
   open(unit=4,file='output.eraddens',status='unknown',position=pos)
-  do ir = 1, gas_nx
-    write(4,'(es16.8)',advance='no') gas_vals2(ir,1,1)%eraddens
+  do i = 1, gas_nx
+    write(4,'(es16.8)',advance='no') gas_vals2(i,1,1)%eraddens
   enddo
   close(4)
 
@@ -71,8 +71,8 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.siggrey',status='unknown',position=pos)
-  do ir = 1, gas_nx
-    write(4,'(es16.8)',advance='no') gas_siggrey(ir,1,1)
+  do i = 1, gas_nx
+    write(4,'(es16.8)',advance='no') gas_siggrey(i,1,1)
   enddo
   close(4)
 

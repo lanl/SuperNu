@@ -63,7 +63,8 @@ c-- temperature
       elseif(in_consttemp==0d0) then
        call read_restart_file
       elseif(in_consttemp<0d0) then
-       gas_temp = trad_profile(tsp_t)
+       if(gas_ny>1 .or. gas_nz>1) stop 'gg_setup: trad_prof no 2D/3D'
+       gas_temp(:,1,1) = trad_profile(tsp_t)
        write(6,*) 'Trad applied to initial gas temp'
       else
        gas_temp = in_consttemp

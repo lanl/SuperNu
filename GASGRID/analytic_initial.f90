@@ -22,7 +22,8 @@ subroutine analytic_initial
 !-- initial radiation energy
   if(in_tradinittype=='prof') then
     if(prof_nttrad==0) stop 'analytic_initial: no trad profile data'
-    trad = trad_profile(tsp_t)
+    if(gas_ny>1 .or. gas_nz>1) stop 'analytic_initial: no 2D/3D'
+    trad(:,1,1) = trad_profile(tsp_t)
     write(6,*) 'Trad applied to initial particles'
   elseif(in_tradinittype=='unif') then
     trad = in_tempradinit

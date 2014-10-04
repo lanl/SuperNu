@@ -55,27 +55,30 @@ c-- The difference between these two has decayed.
 c-- beginning of time step
        help = tsp_t
        call update_natomfr(help)
-       forall(l=-2:-1) natom1fr(:,l) = gas_vals2(:)%natom1fr(l)
+       forall(l=-2:-1) natom1fr(:,:,:,l) = gas_vals2%natom1fr(l)
 c-- end of time step
        call update_natomfr(tsp_t + tsp_dt)
-       forall(l=-2:-1) natom2fr(:,l) = gas_vals2(:)%natom1fr(l)
+       forall(l=-2:-1) natom2fr(:,:,:,l) = gas_vals2%natom1fr(l)
 c
 c-- update the abundances for the center time
        !call update_natomfr(tsp_tcenter)
        call update_natomfr(tsp_t)
 c
 c-- energy deposition
-       gas_vals2(:)%nisource =  !per average atom (mix of stable and unstable)
-     &   (natom1fr(:,gas_ini56) - natom2fr(:,gas_ini56)) *
-     &    (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
-     &   (natom1fr(:,gas_ico56) - natom2fr(:,gas_ico56))*pc_qhl_co56
+       gas_vals2%nisource =  !per average atom (mix of stable and unstable)
+     &   (natom1fr(:,:,:,gas_ini56) - natom2fr(:,:,:,gas_ini56)) *
+     &     (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
+     &   (natom1fr(:,:,:,gas_ico56) - natom2fr(:,:,:,gas_ico56)) *
+     &     pc_qhl_co56
 c-- total, units=ergs
-       gas_vals2(:)%nisource = gas_vals2(:)%nisource *gas_vals2(:)%natom
+       gas_vals2%nisource = gas_vals2%nisource *
+     &   gas_vals2%natom
 c-- use gamma deposition profiles if data available
        if(prof_ntgam>0) then
         help = sum(gas_vals2%nisource)
 !       write(6,*) 'ni56 source:',help
-        gas_vals2(:)%nisource = help * gamma_profile(tsp_t)
+        if(gas_ny>1 .or. gas_nz>1) stop 'gg_update: gam_prof: no 2D/3D'
+        gas_vals2(1,:,:)%nisource = help * gamma_profile(tsp_t)
        endif
       endif
 !}}}
@@ -122,7 +125,7 @@ c==========
 c!{{{
 c-- gamma opacity
        gas_capgam = in_opcapgam*ye*
-     &   gas_vals2(:)%mass/gas_vals2(:)%volcrp
+     &   gas_vals2%mass/gas_vals2%volcrp
 c!}}}
       else calc_opac !tsp_it
 c!{{{
@@ -283,27 +286,27 @@ c-- update Fe
       help = 1d0 + (pc_thl_co56*expco - pc_thl_ni56*expni)/
      &  (pc_thl_ni56 - pc_thl_co56)
       if(help.lt.0) stop 'update_natomfr: Ni->Fe < 0'
-      gas_vals2(:)%natom1fr(26) = gas_vals2(:)%natom0fr(gas_ini56)*help+!initial Ni56
-     &  gas_vals2(:)%natom0fr(gas_ico56)*(1d0-expco) +                  !initial Co56
-     &  gas_vals2(:)%natom0fr(0)                                        !initial Fe (stable)
+      gas_vals2%natom1fr(26) = gas_vals2%natom0fr(gas_ini56)*help+!initial Ni56
+     &  gas_vals2%natom0fr(gas_ico56)*(1d0-expco) +                  !initial Co56
+     &  gas_vals2%natom0fr(0)                                        !initial Fe (stable)
 c
 c-- update Co56 and Co
       help = pc_thl_co56*(expni - expco)/(pc_thl_ni56 - pc_thl_co56)
       if(help.lt.0) stop 'update_natomfr: Ni->Co < 0'
 c-- Co56
-      gas_vals2(:)%natom1fr(gas_ico56) =
-     &  gas_vals2(:)%natom0fr(gas_ini56)*help +  !initial Ni56
-     &  gas_vals2(:)%natom0fr(gas_ico56)*expco   !initial Co56
+      gas_vals2%natom1fr(gas_ico56) =
+     &  gas_vals2%natom0fr(gas_ini56)*help +  !initial Ni56
+     &  gas_vals2%natom0fr(gas_ico56)*expco   !initial Co56
 c-- Co
-      gas_vals2(:)%natom1fr(27) = gas_vals2(:)%natom1fr(gas_ico56) +  !unstable
-     &  gas_vals2(:)%natom0fr(1)                                      !initial Co (stable)
+      gas_vals2%natom1fr(27) = gas_vals2%natom1fr(gas_ico56) +  !unstable
+     &  gas_vals2%natom0fr(1)                                      !initial Co (stable)
 c
 c-- update Ni56 and Ni
 c-- Ni56
-      gas_vals2(:)%natom1fr(gas_ini56) =
-     &  gas_vals2(:)%natom0fr(gas_ini56)*expni  !initial Ni56
+      gas_vals2%natom1fr(gas_ini56) =
+     &  gas_vals2%natom0fr(gas_ini56)*expni  !initial Ni56
 c-- Ni
-      gas_vals2(:)%natom1fr(28) = gas_vals2(:)%natom1fr(gas_ini56) + !unstable
-     &  gas_vals2(:)%natom0fr(2)                              !initial Ni (stable)
+      gas_vals2%natom1fr(28) = gas_vals2%natom1fr(gas_ini56) + !unstable
+     &  gas_vals2%natom0fr(2)                              !initial Ni (stable)
 c!}}}
       end subroutine update_natomfr

@@ -11,11 +11,11 @@ c     -------------------
 c-- gamma profiles
       integer :: prof_ntgam=0
       real*8,allocatable,private :: timegamvec(:) !(prof_ntgam)  !time in seconds
-      real*8,allocatable,private :: profgamvec(:,:) !(gas_nr,prof_ntgam)  !local deposition fraction
+      real*8,allocatable,private :: profgamvec(:,:) !(gas_nx,prof_ntgam)  !local deposition fraction
 c-- trad profiles
       integer :: prof_nttrad=0
       real*8,allocatable,private :: timetradvec(:) !(prof_nttrad)  !time in seconds
-      real*8,allocatable,private :: proftradvec(:,:) !(gas_nr,prof_nttrad)  !local deposition fraction
+      real*8,allocatable,private :: proftradvec(:,:) !(gas_nx,prof_nttrad)  !local deposition fraction
 c
       contains
 c
