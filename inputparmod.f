@@ -121,7 +121,8 @@ c-- misc
 c     
 c-- runtime parameter namelist
       namelist /inputpars/
-     & in_nx,in_ny,in_nz,in_isvelocity,in_novolsrc,
+     & in_nx,in_ny,in_nz,
+     & in_isvelocity,in_novolsrc,
      & in_lx,in_ly,in_lz,
      & in_ng,in_ngs,in_wldex,in_wlmin,in_wlmax,
      & in_totmass,in_velout,

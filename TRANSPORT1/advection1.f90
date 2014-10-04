@@ -5,8 +5,8 @@ subroutine advection1(pretrans,ig,zsrc,rsrc)
   use inputparmod
   implicit none
   logical,intent(in) :: pretrans
-  integer,intent(inout) :: zsrc
   integer,intent(in) :: ig
+  integer,intent(inout) :: zsrc
   real*8,intent(inout) :: rsrc
 !-----------------------------------------------------------------------
 ! This routine computes the advection of IMC particles through the

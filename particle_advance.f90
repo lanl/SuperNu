@@ -21,10 +21,10 @@ subroutine particle_advance
   integer*8 :: nddmc, nimc, npckt
   integer :: ipart, ig
   integer,external :: binsrch
-  real*8 :: r1, r2, x1, x2, help
+  real*8 :: r1, x1, x2, help
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
-! real*8 :: uul, uur, uumax, r0, r3
+! real*8 :: uul, uur, uumax, r0,r2,r3
   integer, pointer :: zsrc, rtsrc !, gsrc
   real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
   logical, pointer :: isvacant
@@ -50,7 +50,7 @@ subroutine particle_advance
   nddmc = 0
   nimc = 0
   do ipart = 1, prt_npartmax
-     ! Checking vacancy!{{{
+     ! Checking vacancy
      if (prt_particles(ipart)%isvacant) cycle
      npckt = npckt + 1
 

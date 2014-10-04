@@ -69,8 +69,6 @@ c     --------------------------!{{{
       logical,allocatable :: lsndvec(:)
       integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:)
-      character*4,allocatable :: csndvec(:)
-      
 c
 c-- broadcast constants
 c-- logical
@@ -91,15 +89,15 @@ c
 c-- integer
       n = 11
       allocate(isndvec(n))
-      if(impi==impi0) isndvec = (/gas_nx,gas_ny,gas_nz,gas_ng,
+      if(impi==impi0) isndvec = (/nx,ny,nz,gas_ng,
      &  prt_npartmax,in_nomp,tsp_nt,tsp_ntres,in_seed,prt_ninitnew,
      &     in_ng/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      gas_nx = isndvec(1)
-      gas_ny = isndvec(2)
-      gas_nz = isndvec(3)
+      nx = isndvec(1)
+      ny = isndvec(2)
+      nz = isndvec(3)
       gas_ng = isndvec(4)
       prt_npartmax = isndvec(5)
       in_nomp = isndvec(6)
@@ -142,7 +140,7 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(gas_zarr(nz+1))
        allocate(gas_dxarr(nx))
        allocate(gas_dyarr(ny))
-       allocate(gas_dxarr(nz))
+       allocate(gas_dzarr(nz))
        allocate(gas_evolinit(nx,ny,nz))
        allocate(gas_wl(gas_ng+1))
        !prt_done = .false.
@@ -161,6 +159,12 @@ c-- broadcast data
       call mpi_bcast(gas_xarr,nx+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_yarr,ny+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_zarr,nz+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_dxarr,nx,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_dyarr,ny,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_dzarr,nz,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -214,7 +218,6 @@ c     ------------------------!{{{
       integer :: n
       integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:)
-      real*8,allocatable :: sndmat(:,:)
 
 c-- variables to be reduced -----------------------------------
 c-- dim==1,2
@@ -410,9 +413,7 @@ c
       sndvec = gas_luminos
       call mpi_reduce(sndvec,gas_luminos,gas_ng,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      deallocate(sndvec)
 c
-      allocate(sndvec(gas_ng))
       sndvec = gas_lumdev
       call mpi_reduce(sndvec,gas_lumdev,gas_ng,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -420,7 +421,7 @@ c
 c
 c-- dim==3
       isndvec3 = gas_numcensus
-      call mpi_reduce(isndved3d,gas_numcensus,nx*ny*nz,
+      call mpi_reduce(isndvec3,gas_numcensus,nx*ny*nz,
      &  MPI_INTEGER,MPI_SUM,impi0,MPI_COMM_WORLD,ierr)
 c
       sndvec3 = gas_edep
