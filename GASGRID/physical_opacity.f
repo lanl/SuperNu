@@ -229,7 +229,8 @@ c!}}}
 c
       call time(t3)
 c
-      gas_cap = reshape(cap, [gas_ng,nx,ny,nz], order=[4,1,2,3])
+      gas_cap = reshape(transpose(reshape(cap,[nx*ny*nz,gas_ng])),
+     &  [gas_ng,nx,ny,nz])
 c
 c-- sanity check
       l = 0
