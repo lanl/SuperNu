@@ -10,7 +10,6 @@ subroutine leakage_opacity
   !This subroutine computes
   !DDMC lumped leakage opacities.
 !##################################################
-  logical :: missive = .false.
   logical :: lhelp
   integer :: i,j,k, ig
   real*8 :: help

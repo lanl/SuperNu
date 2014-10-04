@@ -13,9 +13,8 @@ c     ------------------------
 * Initialize the gas grid, the part that is constant with time and
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
-      integer :: l,i,j,k,ir
+      integer :: l,ll,i
       real*8 :: help
-      real*8 :: help2
 c
 c--
       write(6,*)
@@ -61,7 +60,7 @@ c--
 c
 c-- temperature
       if(in_srctype=='manu') then!{{{
-       call init_manutemp(tsp_t)
+       call init_manutemp
       elseif(in_consttemp==0d0) then
        call read_restart_file
       elseif(in_consttemp<0d0) then
@@ -81,9 +80,9 @@ c-- adopt partial masses from input file
        if(.not.allocated(str_massfr)) stop 'no input.str read'
        if(gas_ny>1) stop 'gg_setup: str_massfr: no 2D'
        do l=1,str_nabund
-        j = str_iabund(l)
-        if(j>gas_nelem) j = 0 !divert to container
-        gas_vals2(:,1,1)%mass0fr(j) = str_massfr(l,:)
+        ll = str_iabund(l)
+        if(ll>gas_nelem) ll = 0 !divert to container
+        gas_vals2(:,1,1)%mass0fr(ll) = str_massfr(l,:)
        enddo
       elseif(.not.in_novolsrc) then
        if(gas_ny>1) stop 'gg_setup: str_massfr: no 2D'

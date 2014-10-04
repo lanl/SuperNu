@@ -6,26 +6,25 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   use particlemod
   use inputparmod
   implicit none
-
-!##################################################
-  !This subroutine passes particle parameters as input and modifies
-  !them through one IMC transport event (Fleck&Cummings, 1971).  If
-  !the puretran boolean is set to false, this routine couples to the
-  !analogous DDMC diffusion routine through the advance.
-!##################################################
-  real*8,parameter :: cinv = 1d0/pc_c
-  !
+!
   integer, intent(inout) :: z, hyparam !,g
   integer, intent(in) :: trndx
   real*8, intent(inout) :: r, mu, t, E, E0, wl
   logical, intent(inout) :: vacnt
-  !
+!##################################################
+!This subroutine passes particle parameters as input and modifies
+!them through one IMC transport event (Fleck&Cummings, 1971).  If
+!the puretran boolean is set to false, this routine couples to the
+!analogous DDMC diffusion routine through the advance.
+!##################################################
+  real*8,parameter :: cinv = 1d0/pc_c
+!
   integer :: ig, iig, g, binsrch
-  real*8 :: r1, r2, thelp,thelpinv, mu0, wl0, vdiff, rdop1, rdop2
+  real*8 :: r1, r2, thelp,thelpinv
   real*8 :: db, dcol, dcen, dthm, ddop, d
   real*8 :: siglabfact, dcollabfact, elabfact
-  real*8 :: rold, P, denom2, told, zholder, muold
-  real*8 :: bmax, x1, x2, xx0, ddop1, ddop2
+  real*8 :: rold, P, denom2, told, muold
+! real*8 :: x1, x2, xx0
   real*8 :: dtinv
   real*8 :: help
   real*8 :: ppl, ppr

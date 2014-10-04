@@ -1,15 +1,13 @@
-subroutine advection1(pretrans,isvacant,ig,zsrc,rsrc,musrc,esrc)
+subroutine advection1(pretrans,ig,zsrc,rsrc)
   use timestepmod
   use gasgridmod
   use particlemod
   use inputparmod
   implicit none
   logical,intent(in) :: pretrans
-  logical,intent(inout) :: isvacant
   integer,intent(inout) :: zsrc
   integer,intent(in) :: ig
   real*8,intent(inout) :: rsrc
-  real*8,intent(in) :: musrc,esrc
 !-----------------------------------------------------------------------
 ! This routine computes the advection of IMC particles through the
 ! velocity grid.  It is geometry dependent

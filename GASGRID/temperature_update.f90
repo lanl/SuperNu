@@ -12,11 +12,10 @@ subroutine temperature_update
   !it updates material temperature and the approximate amount
   !of gamma ray energy introduced in the time step.
 !##################################################
-  integer :: i,j,k, ig
+  integer :: i,j,k
   real*8 :: dtemp, dtemp2
   real*8,parameter :: tauni = 8.8d0*86400.0d0
   real*8,parameter :: tauco = 111.3d0*86400.0d0
-  real*8 :: temphelp
 
   !calculating radiation energy density
   gas_vals2%eraddens = 0d0

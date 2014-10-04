@@ -17,8 +17,9 @@ subroutine interior_source
 
   integer :: ir,irl,irr, ipart, ivac, ig, iig
   integer, dimension(gas_nx) :: irused
-  real*8 :: r1, r2, r3, r4, uul, uur, uumax, mu0, r0, Ep0, wl0
-  real*8 :: denom2,x1,x2,x3,x4, xx0, bmax, help
+  real*8 :: r1, r2, r3, uul, uur, uumax, mu0, r0, Ep0, wl0
+  real*8 :: denom2,x1,x2,x3,x4, help
+! real*8 :: bmax, xx0
   logical :: isnotvacnt !checks for available particle space to populate in cell
 
   if(gas_isvelocity) then

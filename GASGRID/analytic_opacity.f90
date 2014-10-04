@@ -15,11 +15,9 @@ subroutine analytic_opacity
   !Since revision 121, calculates grey scattering opacity, gas_sig
 !#####################################
 
-  integer :: ir, ig, irl,irr
-  real*8 :: rhol,rhor,templ,tempr !edge values
-  real*8 :: sigll, sigrr    !dummy variables
+  integer :: ir, ig
   real*8 :: x1, x2  !unitless energy group bounds
-  real*8 :: specint !debye type function integrator
+  real*8,external :: specint !debye type function integrator
 
   gas_siggrey = 0d0
   gas_cap = 0d0

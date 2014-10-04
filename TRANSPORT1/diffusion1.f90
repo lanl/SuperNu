@@ -6,7 +6,11 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   use particlemod
   use inputparmod
   implicit none
-
+!
+  integer, intent(in) :: partnum !ipart
+  integer, intent(inout) :: z, hyparam !,g
+  real*8, intent(inout) :: r, mu, t, E, E0, wl
+  logical, intent(inout) :: vacnt
 !##################################################
   !This subroutine passes particle parameters as input and modifies
   !them through one DDMC diffusion event (Densmore, 2007).  If
@@ -17,19 +21,13 @@ subroutine diffusion1(z,wl,r,mu,t,E,E0,hyparam,vacnt,partnum)
   real*8,parameter :: cinv = 1d0/pc_c
   real*8,parameter :: deleff=0.38d0
   real*8,parameter :: alpeff=0d0
-  !
-  integer, intent(in) :: partnum !ipart
-  integer, intent(inout) :: z, hyparam !,g
-  real*8, intent(inout) :: r, mu, t, E, E0, wl
-  logical, intent(inout) :: vacnt
-  !
+!
   integer :: ig, iig, g
   logical :: lhelp
   integer,external :: binsrch
-  real*8 :: r1, r2, thelp, x1, x2, r3, uur, uul, uumax, r0
-  real*8 :: denom, denom2, denom3, xx0, bmax
-  real*8 :: ddmct, tau, tcensus, PR, PL, PA, PD
-  !real*8, dimension(gas_ng) :: PDFg
+  real*8 :: r1, r2, thelp
+  real*8 :: denom, denom2, denom3
+  real*8 :: ddmct, tau, tcensus, PR, PL, PA
 !-- lumped quantities -----------------------------------------
 
   real*8 :: emitlump, speclump

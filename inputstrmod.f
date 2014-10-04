@@ -21,7 +21,7 @@ c
       contains
 c
       subroutine read_inputstr(nx,velout)
-c     -----------------------------------
+c     -----------------------------------!{{{
       use physconstmod
       use gasgridmod, only:gas_ini56,gas_ico56
       use miscmod
@@ -95,13 +95,13 @@ c-- ni56 mass
        help = 0d0
       endif
       write(6,*) 'm_ni56:', help/pc_msun, 'Msun'
-c
+c!}}}
       end subroutine read_inputstr
 c
 c
 c
       subroutine elnam2elcode(ini56)
-c     ------------------------------
+c     ------------------------------!{{{
       use miscmod, only:lcase
       use gasgridmod, only:gas_ini56,gas_ico56
       use elemdatamod
@@ -148,7 +148,7 @@ c
 c-- store element code (pointer to gas_vals2%mass0fr)
        str_iabund(l) = iabund
       enddo
-c
+c!}}}
       end subroutine elnam2elcode
 c
 c
@@ -164,8 +164,8 @@ c-- WARNING: size (nx+1) allocated for str_velright in generate_inputstr
 * if in_noreadstruct==.true.
 ************************************************************************
       real*8,allocatable :: rout(:) !(nx+1)
-      integer :: ir
-      real*8 :: help, help2, dx, dy, dz
+      integer :: i
+      real*8 :: help, dx
 c
 c-- verifications (input.par)
       if(in_velout<=0d0.and.in_isvelocity)
@@ -193,15 +193,15 @@ c-- local copies
 c
 c-- create unit sphere radii rout
       if(in_isvelocity) then
-       help2 = in_velout
+       help = in_velout
       else
-       help2 = in_lx
+       help = in_lx
       endif
       dx = 1d0/real(in_nx)
-      forall(ir=1:in_nx+1) rout(ir) = help+(ir-1)*dx
+      forall(i=1:in_nx+1) rout(i) = help+(i-1)*dx
 c
 c-- outer shells
-      str_velleft = help2*rout
+      str_velleft = help*rout
       str_velright = str_velleft(2:)
 c
 c-- mass
@@ -209,7 +209,7 @@ c-- mass
        str_mass = in_totmass*(rout(2:)**3 - rout(:in_nx)**3)
        str_mass = str_mass/(1d0 - rout(1)**3)
       elseif(in_dentype=='mass') then
-       forall(ir=1:in_nx)str_mass(ir) = in_totmass/real(in_nx)
+       forall(i=1:in_nx)str_mass(i) = in_totmass/real(in_nx)
       else
        stop 'generate_inputstr: invalid in_dentype'
       endif

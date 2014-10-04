@@ -19,10 +19,12 @@ subroutine particle_advance
 !##################################################
 
   integer*8 :: nddmc, nimc, npckt
-  integer :: ipart, ig, zholder, ir,irl,irr
+  integer :: ipart, ig
   integer,external :: binsrch
-  real*8 :: r1, r2, x1, x2, xx0, bmax, help
-  real*8 :: uul, uur, uumax, r0, r3
+  real*8 :: r1, r2, x1, x2, help
+! integer :: irl,irr
+! real*8 :: xx0, bmax
+! real*8 :: uul, uur, uumax, r0, r3
   integer, pointer :: zsrc, rtsrc !, gsrc
   real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
   logical, pointer :: isvacant
@@ -246,7 +248,7 @@ subroutine particle_advance
 !-- First portion of operator split particle velocity position adjustment
      if(isshift) then
      if ((gas_isvelocity).and.(rtsrc==1)) then
-       call advection1(.true.,isvacant,ig,zsrc,rsrc,musrc,esrc)
+       call advection1(.true.,ig,zsrc,rsrc)
      endif
         !
      endif
@@ -365,7 +367,7 @@ subroutine particle_advance
      
      if(isshift) then
      if ((gas_isvelocity).and.(rtsrc==1)) then
-       call advection1(.false.,isvacant,ig,zsrc,rsrc,musrc,esrc)
+       call advection1(.false.,ig,zsrc,rsrc)
      endif
      endif
 

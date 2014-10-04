@@ -7,12 +7,9 @@ subroutine analytic_source
   use manufacmod
   implicit none
 
-  integer :: i, ig
-  real*8 :: x1, x2, x3, x4, srcren
+  integer :: i
+  real*8 :: srcren
   real*8 :: thelp
-
-  x1 = 1d0/gas_wl(gas_ng+1)
-  x2 = 1d0/gas_wl(1)
 
   gas_emitex = 0d0
 

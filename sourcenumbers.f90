@@ -9,15 +9,15 @@ subroutine sourcenumbers
   implicit none
 
 !##################################################
-  !This subroutine computes the distribution of source particles each
-  !time step.  A fraction of the source particle number prt_ns is given
-  !to each cell based on the amount of energy emitted by the cell.
+!This subroutine computes the distribution of source particles each
+!time step.  A fraction of the source particle number prt_ns is given
+!to each cell based on the amount of energy emitted by the cell.
 !##################################################
 
-  integer :: ir, ig
-  ! gas_esurf for any new prt_particles from a surface source
-  ! prt_nsurf = number of surface prt_particles
-  ! prt_nnew = total number of new prt_particles~=prt_ns
+  integer :: ir
+! gas_esurf for any new prt_particles from a surface source
+! prt_nsurf = number of surface prt_particles
+! prt_nnew = total number of new prt_particles~=prt_ns
 
   gas_nvol = 0
   gas_nvolex = 0

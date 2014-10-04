@@ -8,7 +8,6 @@ subroutine analytic_initial
   use profiledatamod
   implicit none
 
-  integer :: ig
   real*8 :: trad(gas_nx,gas_ny,gas_nz)
 
 !###############################################

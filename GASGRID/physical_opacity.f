@@ -39,7 +39,6 @@ c-- temporary cap array in the right order
       real*8 :: cap(nx,ny,nz,gas_ng)
 c-- special functions
       integer :: binsrch
-      real*8 :: specint, x1, x2
 c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)

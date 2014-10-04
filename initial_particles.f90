@@ -15,10 +15,9 @@ subroutine initial_particles
     integer :: ig, iir, iig, ipart
     integer, dimension(gas_nx) :: iirused
     real*8 :: wl0, mu0, Ep0, r0
-    real*8 :: help, denom2
+    real*8 :: denom2
     real*8 :: r1,r2,r3
     real*8 :: x1,x2,x3,x4
-    real*8 :: einittot, ninittot
     logical :: isnotvacnt
 
 !-- helper quantities
@@ -85,7 +84,7 @@ subroutine initial_particles
              endif
              prt_particles(ipart)%rtsrc = 1
 
-             !Setting ir = zone of particle
+             !Setting iir = zone of particle
              prt_particles(ipart)%zsrc = iir
              !Setting particle index to not vacant
              prt_particles(ipart)%isvacant = .false.

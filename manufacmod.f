@@ -48,7 +48,7 @@ c
 c
 c
       subroutine generate_manuradsrc(totmass,sigcoef,texp,dt)
-c     ------------------------------
+c     ------------------------------!{{{
       use miscmod, only:warn
       use physconstmod
       use gasgridmod
@@ -58,7 +58,7 @@ c     ------------------------------
 * calculate finite volume manufactured radiation source per cell
 * per group in ergs with manufactured parameters
 ************************************************************************
-      integer :: ir, ig
+      integer :: i
 c
 c-- verify applicable input pars
       call check_manufacpars
@@ -70,8 +70,8 @@ c-- implement/modify velocity dependent manufactured radiation source
          select case (gas_opacanaltype)
          case ('grey')
 c-- grey solution
-            do ir = 1, gas_nx
-               gas_emitex(ir,1,1)= (1d0/dt)*(
+            do i = 1, gas_nx
+               gas_emitex(i,1,1)= (1d0/dt)*(
      &            log((texp+dt)/texp)
      &            *(4d0*man_aa11/pc_c)+
      &            (3d0*totmass*sigcoef/
@@ -81,8 +81,8 @@ c-- grey solution
      &            (man_aa11-pc_acoef*pc_c*man_temp0**4)
      &            )
 !     
-               gas_emitex(ir,1,1) = gas_emitex(ir,1,1)*
-     &              gas_vals2(ir,1,1)%vol*dt
+               gas_emitex(i,1,1) = gas_emitex(i,1,1)*
+     &              gas_vals2(i,1,1)%vol*dt
 !     
             enddo
 c--
@@ -105,12 +105,12 @@ c-- implement/modify static manufactured radiation source
 c
 c
       endif
-c
+c!}}}
       end subroutine generate_manuradsrc
 c
 c
       subroutine generate_manutempsrc(totmass,sigcoef,texp,dt)
-c     -------------------------------
+c     -------------------------------!{{{
       use physconstmod
       use gasgridmod
       implicit none
@@ -119,7 +119,6 @@ c     -------------------------------
 * calculate finite volume manufactured temperature source
 * (gas_vals2%matsrc) in ergs/cm^3/s with manufactured parameters
 ************************************************************************
-      integer :: ir, ig
 c
 c-- verify applicable input pars
       call check_manufacpars
@@ -157,7 +156,7 @@ c-- implement/modify static manufactured temperature source
 c
 c
       endif
-c
+c!}}}
       end subroutine generate_manutempsrc
 c
 c
@@ -171,7 +170,6 @@ c     ---------------------------
 * calculate finite volume manufactured initial energy per cell per group
 * in ergs with manufactured parameters
 ************************************************************************
-      integer :: ir, ig
       real*8 :: help
 c
 c-- verify applicable input pars
@@ -210,12 +208,11 @@ c
       end subroutine init_manuprofile
 c
 c
-      subroutine init_manutemp(texp)
+      subroutine init_manutemp
 c     ---------------------------
       use physconstmod
       use gasgridmod      
       implicit none
-      real*8,intent(in) :: texp
 ************************************************************************
 * calculate initial temperature in Kelvin
 * with manufactured parameters
