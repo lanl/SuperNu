@@ -9,7 +9,7 @@ module particlemod
      integer :: zsrc, rtsrc !,gsrc
      logical :: isvacant,ldummy
   end type packet
-  type(packet), dimension(:), pointer :: prt_particles  !(prt_npartmax)
+  type(packet),allocatable,target :: prt_particles(:)  !(prt_npartmax)
 !
   integer :: prt_npartmax, prt_ns, prt_ninit
   integer :: prt_nsurf, prt_nexsrc, prt_nnew, prt_ninitnew

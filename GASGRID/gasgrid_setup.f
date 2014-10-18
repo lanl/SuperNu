@@ -29,8 +29,9 @@ c
 c----
 c-- agnostic grid setup (rev. 200) ----------------------------------
       gas_xarr = str_velleft  !TODO: str_velleft -> 3D
-      gas_dxarr(:) = gas_xarr(2:)-gas_xarr(:gas_nx)
-c--------------------------------------------------------------------
+!     gas_xarr = str_xleft
+!     gas_yarr = str_yleft
+!     gas_zarr = str_zleft
 c
 c-- agnostic mass setup (rev. 200) ----------------------------------
       if(gas_ny>1) stop 'gg_setup: str_mass 1D'

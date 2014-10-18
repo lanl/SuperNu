@@ -77,9 +77,6 @@ module gasgridmod
   real*8,allocatable :: gas_xarr(:)   !(gas_nx+1), left cell edge values
   real*8,allocatable :: gas_yarr(:)   !(gas_ny+1), left cell edge values
   real*8,allocatable :: gas_zarr(:)   !(gas_nz+1), left cell edge values
-  real*8,allocatable :: gas_dxarr(:)  !(gas_nx)
-  real*8,allocatable :: gas_dyarr(:)  !(gas_ny)
-  real*8,allocatable :: gas_dzarr(:)  !(gas_nz)
   real*8,allocatable :: gas_edep(:,:,:)   !(gas_nx,gas_ny,gas_nz)
   real*8,allocatable :: gas_siggrey(:,:,:)!(gas_nx,gas_ny,gas_nz)
   real*8,allocatable :: gas_fcoef(:,:,:)  !(gas_nx,gas_ny,gas_nz)
@@ -190,9 +187,6 @@ module gasgridmod
     allocate(gas_xarr(gas_nx+1)) !zone edge x position
     allocate(gas_yarr(gas_ny+1)) !zone edge y position
     allocate(gas_zarr(gas_nz+1)) !zone edge z position
-    allocate(gas_dxarr(gas_nx))  !radial zone length
-    allocate(gas_dyarr(gas_ny))  !radial zone length
-    allocate(gas_dzarr(gas_nz))  !radial zone length
     allocate(gas_edep(gas_nx,gas_ny,gas_nz))   !energy absorbed by material
     allocate(gas_siggrey(gas_nx,gas_ny,gas_nz)) !Planck opacity (gray)
 !-- rtw: using old gas_siggrey in bdf2 Fleck factor calculation

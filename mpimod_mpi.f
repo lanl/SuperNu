@@ -31,9 +31,6 @@ c     --------------------------!{{{
 * real*8 :: gas_xarr(nx+1)
 * real*8 :: gas_yarr(ny+1)
 * real*8 :: gas_zarr(nz+1)
-* real*8 :: gas_dxarr(nx)
-* real*8 :: gas_dyarr(ny)
-* real*8 :: gas_dzarr(nz)
 * real*8 :: gas_evolinit(nx,ny,nz)
 * real*8 :: gas_wl(gas_ng+1)
 *
@@ -138,9 +135,6 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(gas_xarr(nx+1))
        allocate(gas_yarr(ny+1))
        allocate(gas_zarr(nz+1))
-       allocate(gas_dxarr(nx))
-       allocate(gas_dyarr(ny))
-       allocate(gas_dzarr(nz))
        allocate(gas_evolinit(nx,ny,nz))
        allocate(gas_wl(gas_ng+1))
        !prt_done = .false.
@@ -161,12 +155,6 @@ c-- broadcast data
       call mpi_bcast(gas_yarr,ny+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_zarr,nz+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_dxarr,nx,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_dyarr,ny,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_dzarr,nz,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_evolinit,nx*ny*nz,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)

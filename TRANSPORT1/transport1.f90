@@ -1,4 +1,4 @@
-subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
+subroutine transport1(ptcl)
 
   use gasgridmod
   use timestepmod
@@ -7,10 +7,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   use inputparmod
   implicit none
 !
-  integer, intent(inout) :: z, hyparam !,g
-  integer, intent(in) :: trndx
-  real*8, intent(inout) :: r, mu, t, E, E0, wl
-  logical, intent(inout) :: vacnt
+  type(packet),target,intent(inout) :: ptcl
 !##################################################
 !This subroutine passes particle parameters as input and modifies
 !them through one IMC transport event (Fleck&Cummings, 1971).  If
@@ -29,7 +26,19 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   real*8 :: help
   real*8 :: ppl, ppr
 
-!--------------------------------------------------------------
+  integer,pointer :: z
+  real*8,pointer :: r, mu, E, E0, wl
+!-- statement function
+  integer :: l
+  real*8 :: dx
+  dx(l) = gas_xarr(l+1) - gas_xarr(l)
+
+  z => ptcl%zsrc
+  r => ptcl%rsrc
+  mu => ptcl%musrc
+  E => ptcl%esrc
+  E0 => ptcl%ebirth
+  wl => ptcl%wlsrc
 !
 !-- shortcut
   dtinv = 1d0/tsp_dt
@@ -71,7 +80,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
      else
         write(*,*) 'domain leak!!'
         prt_done = .true.
-        vacnt = .true.
+        ptcl%isvacant = .true.
      endif
   endif
 !
@@ -115,7 +124,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   endif
 !
 !-- distance to census = dcen
-  dcen = abs(pc_c*(tsp_t+tsp_dt-t)*thelpinv)
+  dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%tsrc)*thelpinv)
 !
 !-- distance to Doppler shift = ddop
    if(gas_isvelocity.and.g<gas_ng) then
@@ -144,8 +153,8 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
   rold = r
   r = sqrt((1.0d0-mu**2)*r**2+(d+r*mu)**2)
 !  r = sqrt(r**2+d**2+2d0*d*r*mu)
-  told = t
-  t = t + thelp*d*cinv
+  told = ptcl%tsrc
+  ptcl%tsrc = ptcl%tsrc + thelp*d*cinv
   muold = mu
   mu = (rold*mu+d)/r
 
@@ -161,7 +170,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         gas_edep(z,1,1)=gas_edep(z,1,1)+E*(1.0d0-exp(-gas_fcoef(z,1,1) &
              *gas_cap(g,z,1,1)*siglabfact*d*thelp))*elabfact
      !--
-     if(gas_fcoef(z,1,1)*gas_cap(g,z,1,1)*gas_dxarr(z)*thelp>1d-6) then     
+     if(gas_fcoef(z,1,1)*gas_cap(g,z,1,1)*dx(z)*thelp>1d-6) then     
         gas_eraddens(z,1,1) = gas_eraddens(z,1,1)+E* &
              (1.0d0-exp(-gas_fcoef(z,1,1)*siglabfact*gas_cap(g,z,1,1)*d*thelp))* &
              elabfact/(gas_fcoef(z,1,1)*siglabfact*gas_cap(g,z,1,1)*pc_c*tsp_dt)
@@ -188,7 +197,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 
   !
   if(d == ddop) then !group shift
-!     r1 = rand()
+!     r1 = rand()!{{{
 !     prt_tlyrand=prt_tlyrand+1
 !-- redshifting
      if(g<gas_ng) then
@@ -207,10 +216,10 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !        wl = gas_wl(gas_ng+1)*(1d0-mu*r*cinv)
      endif
 !-- check if ddmc region
-     if (((gas_sig(z,1,1)+gas_cap(g,z,1,1))*gas_dxarr(z)* &
+     if (((gas_sig(z,1,1)+gas_cap(g,z,1,1))*dx(z)* &
           thelp >= prt_tauddmc) &
           .and.(in_puretran.eqv..false.)) then
-        hyparam = 2
+        ptcl%rtsrc = 2
         gas_methodswap(z,1,1)=gas_methodswap(z,1,1)+1
         if(gas_isvelocity) then
 !-- velocity effects accounting
@@ -221,11 +230,11 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            wl = wl/(1.0-r*mu*cinv)
         endif
      else
-        hyparam = 1
+        ptcl%rtsrc = 1
      endif
-!
+!!}}}
   elseif (d == dthm) then  !physical scattering (Thomson-type)
-     !
+     !!{{{
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
      mu = 1.0-2.0*r1
@@ -243,13 +252,13 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         wl = wl*(1.0-mu*r*cinv)/elabfact
      endif
      !
-     !
+     !!}}}
   elseif (d == dcol) then  !fictitious scattering with implicit capture
-     !
+     !!{{{
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
      if(r1<=gas_fcoef(z,1,1).and.prt_isimcanlog) then
-        vacnt=.true.
+        ptcl%isvacant=.true.
         prt_done=.true.
         gas_edep(z,1,1) = gas_edep(z,1,1) + E*elabfact
 !-- velocity effects accounting
@@ -321,10 +330,10 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !-- converting comoving wavelength to lab frame wavelength
            wl = wl*(1.0-r*mu*cinv)
         endif
-        if (((gas_sig(z,1,1)+gas_cap(g,z,1,1))*gas_dxarr(z)* &
+        if (((gas_sig(z,1,1)+gas_cap(g,z,1,1))*dx(z)* &
              thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
-           hyparam = 2
+           ptcl%rtsrc = 2
            gas_methodswap(z,1,1)=gas_methodswap(z,1,1)+1
            if(gas_isvelocity) then
 !-- velocity effects accounting
@@ -335,15 +344,15 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               wl = wl/(1.0-r*mu*cinv)
            endif
         else
-           hyparam = 1
+           ptcl%rtsrc = 1
         endif
      endif
-     !
+     !!}}}
   elseif (d == db) then   !------boundary crossing ----
-     if (mu>=0.0d0) then
+     if (mu>=0.0d0) then!{{{
         if (z == gas_nx) then
 !           if(g/=1) then
-           vacnt = .true.
+           ptcl%isvacant = .true.
            prt_done = .true.
 !
 !-- retrieve lab frame group
@@ -369,7 +378,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            gas_lumdev(g) = gas_lumdev(g)+(E*dtinv)**2
            gas_lumnum(g) = gas_lumnum(g)+1
         ! Checking if DDMC region right
-        elseif (((gas_sig(z+1,1,1)+gas_cap(g,z+1,1,1))*gas_dxarr(z+1) &
+        elseif (((gas_sig(z+1,1,1)+gas_cap(g,z+1,1,1))*dx(z+1) &
              *thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()
@@ -377,12 +386,12 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            if(gas_isvelocity) then
               mu = (mu-r*cinv)/(1.0-r*mu*cinv)
            endif
-           help = (gas_cap(g,z+1,1,1)+gas_sig(z+1,1,1))*gas_dxarr(z+1)*thelp
+           help = (gas_cap(g,z+1,1,1)+gas_sig(z+1,1,1))*dx(z+1)*thelp
            ppl = 4d0/(3d0*help+6d0*pc_dext)
            P = ppl*(1.0+1.5*abs(mu))
 !--
            if (r1 < P) then
-              hyparam = 2
+              ptcl%rtsrc = 2
               gas_methodswap(z,1,1)=gas_methodswap(z,1,1)+1
               if(gas_isvelocity) then
 !-- velocity effects accounting
@@ -410,7 +419,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         endif
      else
         if (z==1) then
-           if (((gas_sig(z+1,1,1)+gas_cap(g,z+1,1,1))*gas_dxarr(z+1) &
+           if (((gas_sig(z+1,1,1)+gas_cap(g,z+1,1,1))*dx(z+1) &
                 *thelp >= prt_tauddmc) &
                 .and.(in_puretran.eqv..false.)) then
               r1 = rand()
@@ -418,11 +427,11 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               if(gas_isvelocity) then
                  mu = (mu-r*cinv)/(1.0-r*mu*cinv)
               endif
-              help = (gas_cap(g,z+1,1,1)+gas_sig(z+1,1,1))*gas_dxarr(z+1)*thelp
+              help = (gas_cap(g,z+1,1,1)+gas_sig(z+1,1,1))*dx(z+1)*thelp
               ppl = 4d0/(3d0*help+6d0*pc_dext)
               P = ppl*(1.0+1.5*abs(mu))
               if (r1 < P) then
-                 hyparam = 2
+                 ptcl%rtsrc = 2
                  gas_methodswap(z,1,1)=gas_methodswap(z,1,1)+1
                  if(gas_isvelocity) then
 !-- velocity effects accounting
@@ -446,7 +455,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
            else
               z = z+1
            endif
-        elseif (((gas_sig(z-1,1,1)+gas_cap(g,z-1,1,1))*gas_dxarr(z-1) &
+        elseif (((gas_sig(z-1,1,1)+gas_cap(g,z-1,1,1))*dx(z-1) &
              *thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()
@@ -467,12 +476,12 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
               endif
 !--
            endif
-           help = (gas_cap(g,z-1,1,1)+gas_sig(z-1,1,1))*gas_dxarr(z-1)*thelp
+           help = (gas_cap(g,z-1,1,1)+gas_sig(z-1,1,1))*dx(z-1)*thelp
            ppr = 4d0/(3d0*help+6d0*pc_dext)
            P = ppr*(1.0+1.5*abs(mu))
 !--
            if (r1 < P) then
-              hyparam = 2
+              ptcl%rtsrc = 2
               gas_methodswap(z,1,1)=gas_methodswap(z,1,1)+1
               if(gas_isvelocity) then
 !-- velocity effects accounting
@@ -497,7 +506,7 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
         else
            z = z-1
         endif
-     endif
+     endif!}}}
   elseif (d == dcen) then
      prt_done = .true.
      gas_numcensus(z,1,1) = gas_numcensus(z,1,1)+1
@@ -505,16 +514,15 @@ subroutine transport1(z,wl,r,mu,t,E,E0,hyparam,vacnt,trndx)
 !
   endif
 
-  if (E<1d-6*E0.and..not.vacnt) then
+  if (E<1d-6*E0.and..not.ptcl%isvacant) then
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
      if(r1<0.5d0) then
-        vacnt = .true.
+        ptcl%isvacant = .true.
         prt_done = .true.
         gas_edep(z,1,1) = gas_edep(z,1,1) + E*elabfact
 !-- velocity effects accounting
         gas_evelo=gas_evelo+E*(1d0-elabfact)
-!
      else
 !-- weight addition accounted for in external source
         gas_eext=gas_eext+E

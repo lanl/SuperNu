@@ -24,7 +24,6 @@ c-- bbxsmod
 c-- gasgridmod
       deallocate(gas_numcensus)
       deallocate(gas_xarr,gas_yarr,gas_zarr)
-      deallocate(gas_dxarr,gas_dyarr,gas_dzarr)
       deallocate(gas_edep,gas_temp,gas_methodswap)
       deallocate(gas_cap)
       deallocate(gas_emitprob,gas_opacleak)

@@ -16,7 +16,7 @@ subroutine initial_particles
     integer, dimension(gas_nx) :: iirused
     real*8 :: wl0, mu0, Ep0, r0
     real*8 :: denom2
-    real*8 :: r1,r2,r3
+    real*8 :: r1,r3
     real*8 :: x1,x2,x3,x4
     logical :: isnotvacnt
 

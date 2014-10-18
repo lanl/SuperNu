@@ -25,12 +25,17 @@ subroutine particle_advance
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
 ! real*8 :: uul, uur, uumax, r0,r2,r3
-  integer, pointer :: zsrc, rtsrc !, gsrc
-  real*8, pointer :: rsrc, musrc, tsrc, esrc, ebirth, wlsrc
-  logical, pointer :: isvacant
+  integer, pointer :: zsrc
+  real*8, pointer :: rsrc, musrc, esrc, wlsrc
   real*8 :: t0,t1  !timing
-
+!
+  type(packet),pointer :: ptcl
+!
   logical,parameter :: isshift=.true.
+!-- statement function
+  integer :: l
+  real*8 :: dx
+  dx(l) = gas_xarr(l+1) - gas_xarr(l)
 
   gas_edep = 0.0
   gas_erad = 0.0
@@ -50,29 +55,22 @@ subroutine particle_advance
   nddmc = 0
   nimc = 0
   do ipart = 1, prt_npartmax
+     ptcl => prt_particles(ipart)
      ! Checking vacancy
-     if (prt_particles(ipart)%isvacant) cycle
+     if (ptcl%isvacant) cycle
      npckt = npckt + 1
 
      ! Assigning pointers to corresponding particle properties
-     zsrc => prt_particles(ipart)%zsrc
-     !
-     !Ryan W.: Replacing particle group with particle wavelength (rev. 120)
-     wlsrc => prt_particles(ipart)%wlsrc
-     !gsrc => prt_particles(ipart)%gsrc
-     !
-     rtsrc => prt_particles(ipart)%rtsrc
-     rsrc => prt_particles(ipart)%rsrc
-     musrc => prt_particles(ipart)%musrc
-     tsrc => prt_particles(ipart)%tsrc
-     esrc => prt_particles(ipart)%esrc
-     ebirth => prt_particles(ipart)%ebirth
-     isvacant => prt_particles(ipart)%isvacant
+     zsrc => ptcl%zsrc
+     wlsrc => ptcl%wlsrc
+     rsrc => ptcl%rsrc
+     musrc => ptcl%musrc
+     esrc => ptcl%esrc
 
      prt_done=.false.
 
      ! Looking up group
-     if(rtsrc==1) then
+     if(ptcl%rtsrc==1) then
         if(gas_isvelocity) then!{{{
            ig = binsrch(wlsrc/(1d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1,in_ng)
         else
@@ -98,7 +96,7 @@ subroutine particle_advance
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
-              isvacant = .true.
+              ptcl%isvacant = .true.
            endif
         endif
         !!}}}
@@ -116,7 +114,7 @@ subroutine particle_advance
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
-              isvacant = .true.
+              ptcl%isvacant = .true.
            endif
         endif
         !!}}}
@@ -130,10 +128,10 @@ subroutine particle_advance
         else
            help = 1d0
         endif
-        if ((gas_sig(zsrc,1,1)+gas_cap(ig,zsrc,1,1))*gas_dxarr(zsrc) &
+        if ((gas_sig(zsrc,1,1)+gas_cap(ig,zsrc,1,1))*dx(zsrc) &
              *help<prt_tauddmc) then
            !write(*,*) 'here', ig, wlsrc, esrc
-           if (rtsrc == 2) then
+           if (ptcl%rtsrc == 2) then
               gas_methodswap(zsrc,1,1)=gas_methodswap(zsrc,1,1)+1
 !-- sampling position uniformly
               r1 =  rand()
@@ -152,7 +150,7 @@ subroutine particle_advance
 !                  r3 = rand()
 !                  prt_tlyrand = prt_tlyrand+1
 !                  r0 = (r3*gas_xarr(zsrc+1)**3+(1.0-r3)*gas_xarr(zsrc)**3)**(1.0/3.0)
-!                  r3 = (r0-gas_xarr(zsrc))/gas_dxarr(zsrc)
+!                  r3 = (r0-gas_xarr(zsrc))/dx(zsrc)
 !                  r1 = (r3*uur+(1d0-r3)*uul)/uumax
 !                  r2 = rand()
 !                  prt_tlyrand = prt_tlyrand+1
@@ -169,7 +167,7 @@ subroutine particle_advance
                  gas_evelo=gas_evelo+esrc*(1d0-1d0/(1.0 - musrc*rsrc/pc_c))
 !
                  esrc = esrc/(1.0 - musrc*rsrc/pc_c)
-                 ebirth = ebirth/(1.0 - musrc*rsrc/pc_c)
+                 ptcl%ebirth = ptcl%ebirth/(1.0 - musrc*rsrc/pc_c)
               endif
                  r1 = rand()
                  prt_tlyrand = prt_tlyrand+1
@@ -180,23 +178,23 @@ subroutine particle_advance
                  wlsrc = wlsrc*(1.0-musrc*rsrc/pc_c)
               endif
            endif
-           rtsrc = 1
+           ptcl%rtsrc = 1
         else
-           if(rtsrc==1) then
+           if(ptcl%rtsrc==1) then
               if(gas_isvelocity) then
                  gas_evelo = gas_evelo+esrc*musrc*rsrc/pc_c
                  esrc = esrc*(1.0 - musrc*rsrc/pc_c)
-                 ebirth = ebirth*(1.0 - musrc*rsrc/pc_c)
+                 ptcl%ebirth = ptcl%ebirth*(1.0 - musrc*rsrc/pc_c)
                  wlsrc = wlsrc/(1.0 - musrc*rsrc/pc_c)
               endif
               gas_methodswap(zsrc,1,1)=gas_methodswap(zsrc,1,1)+1
            endif
-           rtsrc = 2
+           ptcl%rtsrc = 2
         endif!}}}
      endif 
 !
 !-- looking up group
-     if(rtsrc==1) then
+     if(ptcl%rtsrc==1) then
         if(gas_isvelocity) then!{{{
            ig = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1,in_ng)
         else
@@ -221,7 +219,7 @@ subroutine particle_advance
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
-              isvacant = .true.
+              ptcl%isvacant = .true.
            endif
         endif
         !!}}}
@@ -239,7 +237,7 @@ subroutine particle_advance
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
-              isvacant = .true.
+              ptcl%isvacant = .true.
            endif
         endif
         !!}}}
@@ -247,7 +245,7 @@ subroutine particle_advance
 
 !-- First portion of operator split particle velocity position adjustment
      if(isshift) then
-     if ((gas_isvelocity).and.(rtsrc==1)) then
+     if ((gas_isvelocity).and.(ptcl%rtsrc==1)) then
        call advection1(.true.,ig,zsrc,rsrc)
      endif
         !
@@ -256,30 +254,28 @@ subroutine particle_advance
 !     write(*,*) ipart
 !-----------------------------------------------------------------------        
      ! Advancing particle until census, absorption, or escape from domain
-     do while ((.not.prt_done).and.(.not.isvacant))
-        !Calling either diffusion or transport depending on particle type (rtsrc)!{{{
-        if (rtsrc == 1.or.in_puretran) then
+     do while ((.not.prt_done).and.(.not.ptcl%isvacant))
+        !Calling either diffusion or transport depending on particle type (ptcl%rtsrc)
+        if (ptcl%rtsrc == 1.or.in_puretran) then
            nimc = nimc + 1
-           call transport1(zsrc,wlsrc,rsrc,musrc,tsrc, &
-                esrc,ebirth,rtsrc,isvacant,ipart)
+           call transport1(ptcl)
         else
            nddmc = nddmc + 1
-           call diffusion1(zsrc,wlsrc,rsrc,musrc,tsrc, &
-                esrc,ebirth,rtsrc,isvacant,ipart)
-        endif!}}}
+           call diffusion1(ipart,ptcl)
+        endif
      enddo
 !-----------------------------------------------------------------------
      !---------------
      !------------
 
-     if(.not.isvacant) then
+     if(.not.ptcl%isvacant) then
 
      ! Redshifting DDMC particle energy weights and wavelengths
-     if(rtsrc == 2.and.gas_isvelocity) then
+     if(ptcl%rtsrc == 2.and.gas_isvelocity) then
 !-- redshifting energy weight!{{{
         gas_evelo=gas_evelo+esrc*(1d0-exp(-tsp_dt/tsp_t))
         esrc = esrc*exp(-tsp_dt/tsp_t)
-        ebirth = ebirth*exp(-tsp_dt/tsp_t)
+        ptcl%ebirth = ptcl%ebirth*exp(-tsp_dt/tsp_t)
         !
 !
 !-- find group
@@ -301,7 +297,7 @@ subroutine particle_advance
            x1 = gas_cap(ig,zsrc,1,1)
            x2 = gas_wl(ig)/(pc_c*tsp_t*(gas_wl(ig+1)-gas_wl(ig)))
            if(r1<x2/(x1+x2)) then
-!            if((gas_sig(zsrc,1,1)+gas_cap(ig+1,zsrc,1,1))*gas_dxarr(zsrc) &
+!            if((gas_sig(zsrc,1,1)+gas_cap(ig+1,zsrc,1,1))*dx(zsrc) &
 !                 *tsp_t>=prt_tauddmc) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
@@ -316,7 +312,7 @@ subroutine particle_advance
      endif
 
      ! Looking up group
-     if(rtsrc==1) then
+     if(ptcl%rtsrc==1) then
         if(gas_isvelocity) then!{{{
            ig = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1,in_ng)
         else
@@ -341,7 +337,7 @@ subroutine particle_advance
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
-              isvacant = .true.
+              ptcl%isvacant = .true.
            endif
         endif
         !!}}}
@@ -359,23 +355,23 @@ subroutine particle_advance
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
-              isvacant = .true.
+              ptcl%isvacant = .true.
            endif
         endif
         !!}}}
      endif
      
      if(isshift) then
-     if ((gas_isvelocity).and.(rtsrc==1)) then
+     if ((gas_isvelocity).and.(ptcl%rtsrc==1)) then
        call advection1(.false.,ig,zsrc,rsrc)
      endif
      endif
 
-     if(.not.isvacant) then
+     if(.not.ptcl%isvacant) then
 !
 !-- radiation energy at census
      if(gas_isvelocity) then
-        if(rtsrc==2) then
+        if(ptcl%rtsrc==2) then
            gas_erad = gas_erad + esrc
         else
            gas_erad = gas_erad + esrc !*(1d0-musrc*rsrc/pc_c)

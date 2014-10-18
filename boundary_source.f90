@@ -12,6 +12,11 @@ subroutine boundary_source
   real*8 :: denom2, x1, x2, specint, thelp, mfphelp
   real*8, dimension(gas_ng) :: emitsurfprobg  !surface emission probabilities 
   !, Ryan W.: size will=# of groups in first cell
+!
+!-- statement function
+  integer :: l
+  real*8 :: dx
+  dx(l) = gas_xarr(l+1) - gas_xarr(l)
 
 !
   gas_eleft = 0d0
@@ -73,7 +78,7 @@ subroutine boundary_source
         prt_particles(ivac)%musrc = 0.0000001
      endif
      mu0 = prt_particles(ivac)%musrc
-     mfphelp = (gas_cap(iig,1,1,1)+gas_sig(1,1,1))*gas_dxarr(1)*thelp
+     mfphelp = (gas_cap(iig,1,1,1)+gas_sig(1,1,1))*dx(1)*thelp
      P = 4d0*(1.0+1.5*prt_particles(ivac)%musrc)/(3d0*mfphelp+6d0*pc_dext)
 
      r1 = rand()
@@ -93,8 +98,8 @@ subroutine boundary_source
 
      prt_particles(ivac)%rsrc = gas_xarr(1)
      r0 = prt_particles(ivac)%rsrc
-     
-     if (((gas_sig(z0,1,1)+gas_cap(iig,z0,1,1))*gas_dxarr(z0)* &
+
+     if (((gas_sig(z0,1,1)+gas_cap(iig,z0,1,1))*dx(z0)* &
           thelp < prt_tauddmc) &
           .or.(in_puretran.eqv..true.).or.P>1d0.or.P<0d0) then
         gas_eext = gas_eext+Esurfpart

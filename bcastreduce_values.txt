@@ -13,9 +13,6 @@ integer :: gas_ng
 real*8 :: gas_xarr(gas_nx+1)
 real*8 :: gas_yarr(gas_ny+1)
 real*8 :: gas_zarr(gas_nz+1)
-real*8 :: gas_dxarr(gas_nx)
-real*8 :: gas_dyarr(gas_ny)
-real*8 :: gas_dzarr(gas_nz)
 
 -particlesmod:
 integer :: prt_npartmax

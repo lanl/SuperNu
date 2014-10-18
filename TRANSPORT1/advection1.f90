@@ -20,6 +20,10 @@ subroutine advection1(pretrans,ig,zsrc,rsrc)
   integer :: zholder,zfdiff
   real*8 :: help
   integer :: ir
+!-- statement function
+  integer :: l
+  real*8 :: dx
+  dx(l) = gas_xarr(l+1) - gas_xarr(l)
 !
 !-- different values are used before and after transport
   if(pretrans) then
@@ -40,7 +44,7 @@ subroutine advection1(pretrans,ig,zsrc,rsrc)
           help = 1d0
        endif
        do ir = zsrc-1,zholder,-1
-          if((gas_sig(ir,1,1)+gas_cap(ig,ir,1,1))*gas_dxarr(ir) &
+          if((gas_sig(ir,1,1)+gas_cap(ig,ir,1,1))*dx(ir) &
                *help>=prt_tauddmc) then
              zfdiff = ir
              exit
