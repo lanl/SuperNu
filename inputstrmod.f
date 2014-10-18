@@ -142,8 +142,8 @@ c-- convert abundlabl to element codes
 c
 c-- output
       write(6,*)
-      write(6,*) 'input structure:'
-      write(6,*) '================'
+      write(6,*) 'input structure 1D:'
+      write(6,*) '==================='
       write(6,*) 'mass  :', sum(str_mass)/pc_msun, 'Msun'
 c-- ni56 mass
       if(ini56>0) then
@@ -167,9 +167,76 @@ c     -----------------------------------!{{{
 ************************************************************************
 * Read the input structure file
 ************************************************************************
-      velout = 0d0
-      stop 'read_inputstr3 is a stub'
-      write(6,*) ndim !use ndim so compiler doesn't complain
+      integer :: ierr,nx,ny,nx_r,ny_r,nz_r,ini56,j
+      character(2) :: dmy
+      character(8) :: labl(5)
+      real*8,allocatable :: raw(:,:)
+      real*8 :: help
+c
+c-- copy
+      nx = ndim(1)
+      ny = ndim(2)
+c
+c-- open file
+      open(4,file=fname,status='old',iostat=ierr)
+      if(ierr/=0) stop 'read_inputstr2: file missing: input.str'
+c
+c-- read dimensions
+      read(4,*)
+      read(4,*,iostat=ierr) dmy, nx_r,ny_r,nz_r,str_nabund
+      if(ierr/=0) stop 'read_inputstr2: input.str fmt err: dimensions'
+c-- verify dimension
+      if(nx_r/=nx) stop 'read_inputstr2: incompatible nx dimension'
+      if(ny_r/=ny) stop 'read_inputstr2: incompatible ny dimension'
+c
+c-- allocate arrays
+      allocate(str_xleft(nx+1))
+      allocate(str_yleft(ny+1))
+      allocate(str_mass(nx,ny,1))
+      allocate(str_massfr(str_nabund,nx,ny,1))
+      allocate(str_abundlabl(str_nabund))
+      allocate(raw(5+str_nabund,nx*ny))
+c
+c-- read labels
+      read(4,*,iostat=ierr) dmy, labl, str_abundlabl
+      if(ierr/=0) stop 'read_inputstr2: input.str fmt err: col labels'
+c
+c-- read body
+      read(4,*,iostat=ierr) raw
+      if(ierr/=0) stop 'read_inputstr2: input.str format err: body'
+c
+c-- transer data to final arrays
+      str_xleft(1) = raw(1,1)
+      str_xleft(2:) = raw(2,:nx)
+      str_yleft(1) = raw(3,1)
+      do j=1,ny
+       str_yleft(j+1) = raw(4,nx*(j-1)+1)
+      enddo
+      str_mass(:,:,1) = reshape(raw(5,:),[nx,ny])
+      str_massfr(:,:,:,1) = reshape(raw(6:,:),[str_nabund,nx,ny])
+c
+c-- close file
+      close(4)
+      deallocate(raw)
+c
+c-- result
+      velout = str_xleft(nx+1)
+c
+c-- convert abundlabl to element codes
+      call elnam2elcode(ini56)
+c
+c-- output
+      write(6,*)
+      write(6,*) 'input structure 2D:'
+      write(6,*) '==================='
+      write(6,*) 'mass  :', sum(str_mass)/pc_msun, 'Msun'
+c-- ni56 mass
+      if(ini56>0) then
+       help = sum(str_massfr(ini56,:,:,:)*str_mass)
+      else
+       help = 0d0
+      endif
+      write(6,*) 'm_ni56:', help/pc_msun, 'Msun'
 c!}}}
       end subroutine read_inputstr2
 c
