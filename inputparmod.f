@@ -11,7 +11,7 @@ c-- write stdout to file
 c-- parallelization
       integer :: in_nomp = 1       !number of openmp threads
 c
-c-- gas grid
+c-- grid geometry and dimensions
       integer :: in_igeom = 0 !geometry: 1=1Dsph, 2=2Dcyl, 3=3Dcar
       integer :: in_ndim(3) = [1, 1, 1] !number of x-direction cells
 

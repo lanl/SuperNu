@@ -28,14 +28,13 @@ c--
 c
 c----
 c-- agnostic grid setup (rev. 200) ----------------------------------
-      gas_xarr = str_velleft  !TODO: str_velleft -> 3D
-!     gas_xarr = str_xleft
-!     gas_yarr = str_yleft
-!     gas_zarr = str_zleft
+      gas_xarr = str_xleft
+      gas_yarr = str_yleft
+      gas_zarr = str_zleft
 c
 c-- agnostic mass setup (rev. 200) ----------------------------------
       if(gas_ny>1) stop 'gg_setup: str_mass 1D'
-      gas_vals2(:,1,1)%mass = str_mass
+      gas_vals2%mass = str_mass
 c--------------------------------------------------------------------
 c----
 c
@@ -83,7 +82,7 @@ c-- adopt partial masses from input file
        do l=1,str_nabund
         ll = str_iabund(l)
         if(ll>gas_nelem) ll = 0 !divert to container
-        gas_vals2(:,1,1)%mass0fr(ll) = str_massfr(l,:)
+        gas_vals2%mass0fr(ll) = str_massfr(l,:,:,:)
        enddo
       elseif(.not.in_novolsrc) then
        if(gas_ny>1) stop 'gg_setup: str_massfr: no 2D'

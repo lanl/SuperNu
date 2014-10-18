@@ -76,10 +76,10 @@ program supernu
 !
 !-- read input structure
    if(.not.in_noreadstruct.and.in_isvelocity) then
-     call read_inputstr(in_ndim,gas_velout)
+     call read_inputstr(in_igeom,in_ndim,gas_velout)
    else
 !== generate_inputstr development in progress
-     call generate_inputstr(gas_lx,gas_ly,gas_lz,gas_velout)
+     call generate_inputstr(in_igeom,gas_lx,gas_ly,gas_lz,gas_velout)
    endif
 !
 !-- read gamma deposition profiles

@@ -39,8 +39,7 @@ c-- particlemod
       if(impi==impi0.and..not.in_norestart) deallocate(prt_tlyrandarr)
       deallocate(prt_particles)
 c-- inputstrmod
-      if(impi==impi0) deallocate(str_velright)
-      if(impi==impi0) deallocate(str_velleft)
+      if(impi==impi0) deallocate(str_xleft)
       if(impi==impi0) deallocate(str_mass)
       if(allocated(str_massfr)) deallocate(str_massfr)
       if(allocated(str_abundlabl)) deallocate(str_abundlabl)
