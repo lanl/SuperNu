@@ -20,22 +20,25 @@ c
 c
       contains
 c
-      subroutine read_inputstr(nx,velout)
+      subroutine read_inputstr(ndim,velout)
 c     -----------------------------------!{{{
       use physconstmod
       use gasgridmod, only:gas_ini56,gas_ico56
       use miscmod
       implicit none
-      integer,intent(in) :: nx
+      integer,intent(in) :: ndim(3)
       real*8,intent(out) :: velout
 ************************************************************************
 * Read the input structure file
 ************************************************************************
-      integer :: ierr,nx_r,ini56
+      integer :: ierr,nx,nx_r,ini56
       character(2) :: dmy
       character(8) :: labl(2)
       real*8,allocatable :: raw(:,:)
       real*8 :: help
+c
+c-- copy
+      nx = ndim(1)
 c
 c-- open file
       open(4,file=fname,status='old',iostat=ierr)
@@ -164,8 +167,11 @@ c-- WARNING: size (nx+1) allocated for str_velright in generate_inputstr
 * if in_noreadstruct==.true.
 ************************************************************************
       real*8,allocatable :: rout(:) !(nx+1)
-      integer :: i
+      integer :: i,nx
       real*8 :: help, dx
+c
+c-- 1D size
+      nx = in_ndim(1)
 c
 c-- verifications (input.par)
       if(in_velout<=0d0.and.in_isvelocity)
@@ -180,10 +186,10 @@ c-- verifications (input.par)
      &  stop 'generate_inputstr: invalid in_totmass'
 c
 c-- allocate arrays
-      allocate(rout(in_nx+1))
-      allocate(str_velright(in_nx))
-      allocate(str_velleft(in_nx+1))
-      allocate(str_mass(in_nx))
+      allocate(rout(nx+1))
+      allocate(str_velright(nx))
+      allocate(str_velleft(nx+1))
+      allocate(str_mass(nx))
 c
 c-- local copies
       velout = in_velout
@@ -197,8 +203,8 @@ c-- create unit sphere radii rout
       else
        help = in_lx
       endif
-      dx = 1d0/real(in_nx)
-      forall(i=1:in_nx+1) rout(i) = help+(i-1)*dx
+      dx = 1d0/real(nx)
+      forall(i=1:nx+1) rout(i) = help+(i-1)*dx
 c
 c-- outer shells
       str_velleft = help*rout
@@ -206,10 +212,10 @@ c-- outer shells
 c
 c-- mass
       if(in_dentype=='unif') then
-       str_mass = in_totmass*(rout(2:)**3 - rout(:in_nx)**3)
+       str_mass = in_totmass*(rout(2:)**3 - rout(:nx)**3)
        str_mass = str_mass/(1d0 - rout(1)**3)
       elseif(in_dentype=='mass') then
-       forall(i=1:in_nx)str_mass(i) = in_totmass/real(in_nx)
+       forall(i=1:nx)str_mass(i) = in_totmass/real(nx)
       else
        stop 'generate_inputstr: invalid in_dentype'
       endif

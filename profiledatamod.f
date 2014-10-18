@@ -54,10 +54,10 @@ c-- debug output
 c!}}}
       end function gamma_profile
 c
-      subroutine read_gamma_profiles(nrin)
+      subroutine read_gamma_profiles(ndim)
 c     -----------------------------------!{{{
       implicit none
-      integer,intent(in) :: nrin
+      integer,intent(in) :: ndim(3)
 c
       integer :: istat
 c
@@ -80,7 +80,7 @@ c-- read data
       close(4)
 c
 c-- verify number of zones
-      if(nr/=nrin) stop 'read_gamprf: incompatible dims: nr/=nr'
+      if(nr/=ndim(1)) stop 'read_gamprf: incompatible dims: nr/=nr'
 c!}}}
       end subroutine read_gamma_profiles
 c
@@ -120,10 +120,10 @@ c-- debug output
 c!}}}
       end function trad_profile
 c
-      subroutine read_trad_profiles(nrin)
+      subroutine read_trad_profiles(ndim)
 c     -----------------------------------!{{{
       implicit none
-      integer,intent(in) :: nrin
+      integer,intent(in) :: ndim(3)
 c
       integer :: istat
 c
@@ -146,7 +146,7 @@ c-- read data
       close(4)
 c
 c-- verify number of zones
-      if(nr/=nrin) stop 'read_tradprf: incompatible dims: nr/=nr'
+      if(nr/=ndim(1)) stop 'read_tradprf: incompatible dims: nr/=nr'
 c!}}}
       end subroutine read_trad_profiles
 c

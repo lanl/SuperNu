@@ -76,7 +76,7 @@ program supernu
 !
 !-- read input structure
    if(.not.in_noreadstruct.and.in_isvelocity) then
-     call read_inputstr(in_nx,gas_velout)
+     call read_inputstr(in_ndim,gas_velout)
    else
 !== generate_inputstr development in progress
      call generate_inputstr(gas_lx,gas_ly,gas_lz,gas_velout)
@@ -84,13 +84,13 @@ program supernu
 !
 !-- read gamma deposition profiles
    if(in_isvelocity.and.in_srctype=='none') then
-     if(in_ny>1 .or. in_nz>1) stop 'supernu: read_gam_prof: no 2D/3D'
-     call read_gamma_profiles(in_nx)
+     if(in_igeom>1) stop 'supernu: read_gam_prof: no 2D/3D'
+     call read_gamma_profiles(in_ndim)
    endif
 !-- read gamma deposition profiles
    if(in_tradinittype=='prof') then
-     if(in_ny>1 .or. in_nz>1) stop 'supernu: read_trad_prof: no 2D/3D'
-     call read_trad_profiles(in_nx)
+     if(in_igeom>1) stop 'supernu: read_trad_prof: no 2D/3D'
+     call read_trad_profiles(in_ndim)
    endif
 !
 !-- SETUP GRIDS

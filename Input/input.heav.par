@@ -15,10 +15,9 @@ in_nt = 128
 in_alpha = 1d0
 in_ismodimc = f
 
-!-- gas grid settings
-in_nx = 50
-in_ny = 1
-in_nz = 1
+!-- grid settings
+in_igeom = 1
+in_ndim = 50, 1, 1
 in_isvelocity = t
 in_novolsrc = f
 in_velout = 1d9

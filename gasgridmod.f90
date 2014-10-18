@@ -149,9 +149,9 @@ module gasgridmod
 !
     logical :: lexist
 !
-    gas_nx = in_nx
-    gas_ny = in_ny
-    gas_nz = in_nz
+    gas_nx = in_ndim(1)
+    gas_ny = in_ndim(2)
+    gas_nz = in_ndim(3)
     gas_ng = ng
     !
     gas_isvelocity = in_isvelocity

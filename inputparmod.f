@@ -12,9 +12,8 @@ c-- parallelization
       integer :: in_nomp = 1       !number of openmp threads
 c
 c-- gas grid
-      integer :: in_nx = 0   !number of x-direction cells
-      integer :: in_ny = 1   !number of y-direction cells
-      integer :: in_nz = 1   !number of z-direction cells
+      integer :: in_igeom = 0 !geometry: 1=1Dsph, 2=2Dcyl, 3=3Dcar
+      integer :: in_ndim(3) = [1, 1, 1] !number of x-direction cells
 
       real*8 :: in_lx = 0d0  !spatial length of x-direction
       real*8 :: in_ly = 0d0  !spatial length of y-direction
@@ -121,7 +120,7 @@ c-- misc
 c     
 c-- runtime parameter namelist
       namelist /inputpars/
-     & in_nx,in_ny,in_nz,
+     & in_igeom,in_ndim,
      & in_isvelocity,in_novolsrc,
      & in_lx,in_ly,in_lz,
      & in_ng,in_ngs,in_wldex,in_wlmin,in_wlmax,
@@ -201,9 +200,17 @@ c-- check input parameter validity
       if(in_nomp<0) stop 'in_nomp invalid'!{{{
       if(in_nomp==0 .and. nmpi>1) stop 'no in_nomp==0 in mpi mode'
 c
-      if(in_nx<=0) stop 'in_nx invalid'
-      if(in_ny<=0) stop 'in_ny invalid'
-      if(in_nz<=0) stop 'in_nz invalid'
+      if(any(in_ndim<1)) stop 'in_ndim invalid'
+      select case(in_igeom)
+      case(:0)
+       stop 'in_igeom invalid'
+      case(1)
+       if(in_ndim(2)>1 .or. in_ndim(3)>1) stop 'in_ndim invalid'
+      case(2)
+       if(in_ndim(3)>1) stop 'in_ndim invalid'
+      case(4:)
+       stop 'in_igeom invalid'
+      endselect
 c
       if(in_isvelocity) then
        if(in_lx>0d0) stop 'vel grid: use in_velout, not in_lx'
@@ -248,10 +255,6 @@ c
       if(in_nt==0) stop 'in_nt invalid'
       if(in_tfirst<0d0) stop 'in_tfirst invalid'
       if(in_tlast<in_tfirst) stop 'in_tlast invalid'
-c
-      if(in_nx<=0) stop 'in_nx invalid'
-      if(in_ny<=0) stop 'in_ny invalid'
-      if(in_nz<=0) stop 'in_nz invalid'
 c
 c-- special grid
       if(.not.in_noreadstruct) then
