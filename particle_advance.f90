@@ -261,7 +261,7 @@ subroutine particle_advance
            call transport1(ptcl)
         else
            nddmc = nddmc + 1
-           call diffusion1(ipart,ptcl)
+           call diffusion1(ptcl)
         endif
      enddo
 !-----------------------------------------------------------------------
