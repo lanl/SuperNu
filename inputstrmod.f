@@ -301,7 +301,7 @@ c-- create unit sphere radii rout
        help = in_lx
       endif
       dx = 1d0/real(nx)
-      forall(i=1:nx+1) rout(i) = help+(i-1)*dx
+      forall(i=1:nx+1) rout(i) = (i-1)*dx
 c
 c-- outer shells
       str_xleft = help*rout
