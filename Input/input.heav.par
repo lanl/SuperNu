@@ -5,7 +5,7 @@ in_nomp = 1
 in_grab_stdout = f
 in_puretran = f
 in_seed = 1
-in_noreadstruct = f
+in_noreadstruct = t
 in_norestart = t
 
 !-- time step
@@ -16,12 +16,13 @@ in_alpha = 1d0
 in_ismodimc = f
 
 !-- grid settings
-in_igeom = 2
-in_ndim = 32, 64, 1
+in_igeom = 1
+in_ndim = 50, 1, 1
 in_isvelocity = t
 in_novolsrc = f
-in_velout = 0d0
-in_totmass = 0d0
+in_velout = 1d9
+in_totmass = 1d33
+in_templ0 = 0d0
 in_dentype = 'mass'
 
 !-- flat structures
@@ -76,6 +77,7 @@ in_npartmax = 10000000
 !-- imc tally method
 in_isimcanlog = f
 in_isddmcanlog = f
+in_depestimate = f
 !-- ddmc mfp per cell
 in_tauddmc = 3d0
 in_taulump = 3d0

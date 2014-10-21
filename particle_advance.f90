@@ -21,7 +21,7 @@ subroutine particle_advance
   integer*8 :: nddmc, nimc, npckt
   integer :: ipart, ig
   integer,external :: binsrch
-  real*8 :: r1, x1, x2, help
+  real*8 :: r1, x1, x2, help, elabfact
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
 ! real*8 :: uul, uur, uumax, r0,r2,r3
@@ -246,7 +246,7 @@ subroutine particle_advance
 !-- First portion of operator split particle velocity position adjustment
      if(isshift) then
      if ((gas_isvelocity).and.(ptcl%rtsrc==1)) then
-       call advection1(.true.,ig,zsrc,rsrc)
+        call advection1(.true.,ig,zsrc,rsrc)
      endif
         !
      endif
@@ -265,28 +265,28 @@ subroutine particle_advance
         endif
 
 !-- transformation factor
-        if(isvelocity .and. rtsrc==1) then
+        if(gas_isvelocity .and. ptcl%rtsrc==1) then
            elabfact = 1.0d0 - musrc*rsrc/pc_c
         else
            elabfact = 1d0
         endif
 
 !-- Russian roulette for termination of exhausted particles
-        if (esrc<1d-6*ebirth.and..not.ptcl%isvacant) then
+        if (esrc<1d-6*ptcl%ebirth .and. .not.ptcl%isvacant) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
            if(r1<0.5d0) then
               ptcl%isvacant = .true.
               prt_done = .true.
-              gas_edep(z,1,1) = gas_edep(z,1,1) + esrc*elabfact
+              gas_edep(zsrc,1,1) = gas_edep(zsrc,1,1) + esrc*elabfact
 !-- velocity effects accounting
-              if(rtsrc==1) gas_evelo=gas_evelo+esrc*(1d0-elabfact)
+              if(ptcl%rtsrc==1) gas_evelo = gas_evelo + esrc*(1d0-elabfact)
            else
 !-- weight addition accounted for in external source
-              gas_eext=gas_eext+esrc
+              gas_eext = gas_eext + esrc
 !
               esrc = 2d0*esrc
-              ebirth = 2d0*ebirth
+              ptcl%ebirth = 2d0*ptcl%ebirth
            endif
         endif
      enddo

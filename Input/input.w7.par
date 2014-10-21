@@ -11,22 +11,18 @@ in_norestart = t
 !-- time step
 in_tfirst = 2d0
 in_tlast = 4d0
-in_nt = 3
-in_ntres = 0
+in_nt = 8
 in_alpha = 1d0
-in_ismodimc=t
 
 !-- grid settings
-in_igeom = 1
-in_ndim = 64, 1, 1
+in_igeom = 2
+in_ndim = 32, 64, 1
 in_isvelocity = t
 in_novolsrc = f
 in_dentype = 'mass'
 
 !-- flat structures
 in_tradinittype='prof'
-in_tempradinit = 0d0
-in_consttemp = -1d0
 
 !-- external source type
 in_srctype = 'none'
@@ -40,16 +36,6 @@ in_cvcoef = 2d7
 in_cvtpwr = 0d0
 in_cvrpwr = 1d0
 
-!-- power law scattering opacity values
-in_sigcoefs = 0d0
-in_sigtpwrs = 0d0
-in_sigrpwrs = 0d0
-
-!-- power law absorption opacity values
-in_sigcoef = 0d0
-in_sigtpwr = 0d0
-in_sigrpwr = 0d0
-
 !-- group absorption opacity structure type
 in_opacanaltype = 'none'
 
@@ -62,12 +48,11 @@ in_ldisp1 = 1d0
 in_ldisp2 = 1d-4
 
 !-- group settings
-in_ng = 10
+in_ng = 250
 in_ngs = 0
-in_wldex = 7
 
 !-- particle numbers
-in_ns0 = 0
+in_ns0 = 1000
 in_ns  = 1000
 in_npartmax = 10000000
 
@@ -76,8 +61,7 @@ in_isimcanlog = f
 in_isddmcanlog = f
 !-- ddmc mfp per cell
 in_tauddmc = 3d0
-in_taulump = 10d0
-in_tauvtime = 'unif'
+in_taulump = 3d0
 
 !-- opacity debug switches
 in_nobbopac = f
@@ -85,8 +69,5 @@ in_nobfopac = f
 in_noffopac = f
 in_nothmson = f
 in_noplanckweighting = t
-
-!-- additional output
-in_pdensdump = 'one'
 
 /
