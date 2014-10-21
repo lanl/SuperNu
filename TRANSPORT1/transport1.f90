@@ -514,22 +514,4 @@ subroutine transport1(ptcl)
 !
   endif
 
-  if (E<1d-6*E0.and..not.ptcl%isvacant) then
-     r1 = rand()
-     prt_tlyrand = prt_tlyrand+1
-     if(r1<0.5d0) then
-        ptcl%isvacant = .true.
-        prt_done = .true.
-        gas_edep(z,1,1) = gas_edep(z,1,1) + E*elabfact
-!-- velocity effects accounting
-        gas_evelo=gas_evelo+E*(1d0-elabfact)
-     else
-!-- weight addition accounted for in external source
-        gas_eext=gas_eext+E
-!
-        E = 2d0*E
-        E0 = 2d0*E0
-     endif
-  endif
-
 end subroutine transport1

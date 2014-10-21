@@ -263,10 +263,35 @@ subroutine particle_advance
            nddmc = nddmc + 1
            call diffusion1(ptcl)
         endif
+
+!-- transformation factor
+        if(isvelocity .and. rtsrc==1) then
+           elabfact = 1.0d0 - musrc*rsrc/pc_c
+        else
+           elabfact = 1d0
+        endif
+
+!-- Russian roulette for termination of exhausted particles
+        if (esrc<1d-6*ebirth.and..not.ptcl%isvacant) then
+           r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
+           if(r1<0.5d0) then
+              ptcl%isvacant = .true.
+              prt_done = .true.
+              gas_edep(z,1,1) = gas_edep(z,1,1) + esrc*elabfact
+!-- velocity effects accounting
+              if(rtsrc==1) gas_evelo=gas_evelo+esrc*(1d0-elabfact)
+           else
+!-- weight addition accounted for in external source
+              gas_eext=gas_eext+esrc
+!
+              esrc = 2d0*esrc
+              ebirth = 2d0*ebirth
+           endif
+        endif
      enddo
 !-----------------------------------------------------------------------
-     !---------------
-     !------------
+
 
      if(.not.ptcl%isvacant) then
 
