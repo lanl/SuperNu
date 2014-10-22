@@ -29,7 +29,6 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
   real*8 :: dcen,dcol,dthm,db,dbr,dbz,ddop,d
   real*8 :: rold, zold, omold, ppl, ppr, help
   real*8 :: r1, r2, denom2
-
 !
 !-- shortcut
   dtinv = 1d0/tsp_dt
@@ -37,7 +36,7 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 !-- setting vel-grid helper variables
   if(in_isvelocity) then
 !-- calculating initial transformation factors
-     dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
+     dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
      elabfact = 1d0 - dirdotu*cinv
      thelp = tsp_t
   else
@@ -53,7 +52,13 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
   g = binsrch(wl/elabfact,gas_wl,gas_ng+1,in_ng)
 !-- checking group bounds
   if(g>gas_ng.or.g<1) then
-     stop 'particle_advance: particle group invalid'
+     if(g==gas_ng+1) then
+        g = gas_ng
+     elseif(g==0) then
+        g = 1
+     else
+        stop 'transport2 (1): particle group invalid'
+     endif
   endif
 !
 !-- calculating distance to census:
@@ -61,7 +66,7 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 !
 !-- calculating distance to boundary:
 !-- to r-bound
-  if(xi==1d0) then
+  if(abs(xi)==1d0) then
 !-- making greater than dcen
      dbr = 2d0*pc_c*tsp_dt*thelpinv
   else
@@ -87,8 +92,13 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 !-- to z-bound
   if(xi>0d0) then
      dbz = (gas_zarr(zz+1)-z)/xi
+     if(dbz<0d0) then
+        write(*,*) zz, gas_zarr(zz+1), z, xi
+        stop 'upward dbz'
+     endif
   elseif(xi<0d0) then
      dbz = (gas_zarr(zz)-z)/xi
+     if(dbz<0d0) stop 'downward dbz'
   else
 !-- making greater than dcen
      dbz = 2d0*pc_c*tsp_dt*thelpinv
@@ -114,7 +124,7 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 !-- calculating dcol for analog MC
      r1 = rand()
      dcol = -log(r1)*thelpinv/(elabfact*gas_cap(g,zr,zz))
-  elseif(gas_fcoef(zr,zz)<=1d0.and.gas_fcoef(zr,zz)>=0d0) then
+  elseif(gas_fcoef(zr,zz)<1d0.and.gas_fcoef(zr,zz)>=0d0) then
      r1 = rand()
      dcol = -log(r1)*thelpinv/&
           (elabfact*(1d0-gas_fcoef(zr,zz))*gas_cap(g,zr,zz))
@@ -126,6 +136,9 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 !-- calculating distance to Doppler shift
   if(in_isvelocity.and.g<gas_ng) then
      ddop = pc_c*(elabfact-wl/gas_wl(g+1))
+     if(ddop<0d0) then
+        ddop = 2d0*pc_c*tsp_dt*thelpinv
+     endif
   else
 !-- making greater than dcen
      ddop = 2d0*pc_c*tsp_dt*thelpinv
@@ -133,7 +146,10 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 !
 !-- finding minimum distance
   d = min(dcen,db,dthm,dcol,ddop)
-
+  if(any((/dcen,dbz,dbr,dthm,dcol,ddop/)<0d0)) then
+     write(*,*) dcen,dbz,dbr,dthm,dcol,ddop
+     stop 'transport2: negative distance'
+  endif
 !
 !-- using min distance to stream particle to event location
   rold = r
@@ -163,12 +179,13 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 !
 !-- updating transformation factors
   if(in_isvelocity) then
-     dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
+     dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
      elabfact = 1d0 - dirdotu*cinv
   else
      dirdotu = 0d0
      elabfact = 1d0
   endif
+
 !
 !-- tallying energy densities
   if(prt_isimcanlog) then
@@ -192,9 +209,13 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
      gas_edep(zr,zz)=gas_edep(zr,zz)+ep* &
           (1d0-exp(-gas_fcoef(zr,zz)*gas_cap(g,zr,zz)* &
           elabfact*d*thelp))*elabfact
+     if(gas_edep(zr,zz)/=gas_edep(zr,zz)) then
+        stop 'transport2: invalid energy deposition'
+     endif
 !-- reducing particle energy
      ep = ep*exp(-gas_fcoef(zr,zz)*gas_cap(g,zr,zz)*elabfact*d*thelp)
   endif
+
 !
 !-- checking which event occurs from min distance
 
@@ -216,12 +237,17 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 !-- checking velocity dependence
      if(in_isvelocity) then
 !-- calculating transformation factors
-        dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
-        azidotu = atan2(sqrt(1d0-xi**2)*sin(om)+r*sin(om)/pc_c, &
-             sqrt(1d0-xi**2)*cos(om)+r*cos(om)/pc_c)
+        dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
+        azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
+             sqrt(1d0-xi**2)*cos(om)+r/pc_c)
 !-- transforming to lab:
 !-- z-cosine
         xi = (xi+z*cinv)/(1d0+dirdotu*cinv)
+        if(xi>1d0) then
+           xi = 1d0
+        elseif(xi<-1d0) then
+           xi = -1d0
+        endif
 !-- azimuthal direction angle
         if(azidotu<0d0) then
            om = azidotu+pc_pi2
@@ -229,7 +255,7 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
            om = azidotu
         endif
 !-- recalculating dirdotu
-        dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
+        dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
 !-- transforming to cmf, then to lab:
 !-- wavelength
         wl = wl*(1d0-dirdotu*cinv)/elabfact
@@ -261,12 +287,17 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 !-- checking velocity dependence
         if(in_isvelocity) then
 !-- calculating transformation factors
-           dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
-           azidotu = atan2(sqrt(1d0-xi**2)*sin(om)+r*sin(om)*cinv, &
-                sqrt(1d0-xi**2)*cos(om)+r*cos(om)*cinv)
+           dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
+           azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
+                sqrt(1d0-xi**2)*cos(om)+r*cinv)
 !-- transforming to lab:
 !-- z-cosine
            xi = (xi+z*cinv)/(1d0+dirdotu*cinv)
+           if(xi>1d0) then
+              xi = 1d0
+           elseif(xi<-1d0) then
+              xi = -1d0
+           endif
 !-- azimuthal direction angle
            if(azidotu<0d0) then
               om = azidotu+pc_pi2
@@ -274,7 +305,7 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
               om = azidotu
            endif
 !-- recalculating dirdotu
-           dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
+           dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
 !-- transforming to cmf, then to lab:
 !-- energy weight
            ep = ep*elabfact/(1d0-dirdotu*cinv)
@@ -342,6 +373,11 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 !-- transforming z-cosine to lab
            if(in_isvelocity) then
               xi = (xi-z*cinv)/elabfact
+              if(xi>1d0) then
+                 xi = 1d0
+              elseif(xi<-1d0) then
+                 xi = -1d0
+              endif
            endif
            help = (gas_cap(g,zr,zz+1)+gas_sig(zr,zz+1))*gas_dzarr(zz+1)*thelp
            ppl = 4d0/(3d0*help+6d0*pc_dext)
@@ -364,11 +400,16 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
               r1 = rand()
               om = pc_pi2*r1
               if(in_isvelocity) then
-                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
-                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om)+r*sin(om)*cinv, &
-                      sqrt(1d0-xi**2)*cos(om)+r*cos(om)*cinv)
+                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
+                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
+                      sqrt(1d0-xi**2)*cos(om)+r*cinv)
 !-- transforming z-axis direction cosine to lab
                  xi = (xi+z*cinv)/(1d0+dirdotu*cinv)
+                 if(xi>1d0) then
+                    xi = 1d0
+                 elseif(xi<-1d0) then
+                    xi = -1d0
+                 endif
 !-- transforming azimuthal angle to lab
                  if(azidotu<0d0) then
                     om = azidotu+pc_pi2
@@ -411,6 +452,11 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 !-- transforming z-cosine to lab
            if(in_isvelocity) then
               xi = (xi-z*cinv)/elabfact
+              if(xi>1d0) then
+                 xi = 1d0
+              elseif(xi<-1d0) then
+                 xi = -1d0
+              endif
            endif
            help = (gas_cap(g,zr,zz-1)+gas_sig(zr,zz-1))*gas_dzarr(zz-1)*thelp
            ppr = 4d0/(3d0*help+6d0*pc_dext)
@@ -433,11 +479,16 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
               r1 = rand()
               om = pc_pi2*r1
               if(in_isvelocity) then
-                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
-                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om)+r*sin(om)*cinv, &
-                      sqrt(1d0-xi**2)*cos(om)+r*cos(om)*cinv)
+                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
+                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
+                      sqrt(1d0-xi**2)*cos(om)+r*cinv)
 !-- transforming z-axis direction cosine to lab
                  xi = (xi+z*cinv)/(1d0+dirdotu*cinv)
+                 if(xi>1d0) then
+                    xi = 1d0
+                 elseif(xi<-1d0) then
+                    xi = -1d0
+                 endif
 !-- transforming azimuthal angle to lab
                  if(azidotu<0d0) then
                     om = azidotu+pc_pi2
@@ -483,14 +534,19 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
              .and..not.in_puretran) then
 !-- transforming r-cosine to cmf
            if(in_isvelocity) then
-              azidotu = atan2(sqrt(1d0-xi**2)*sin(om)-r*sin(om)*cinv, &
-                   sqrt(1d0-xi**2)*cos(om)-r*cos(om)*cinv)
+              azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
+                   sqrt(1d0-xi**2)*cos(om)-r*cinv)
               if(azidotu<0d0) then
                  om = azidotu+pc_pi2
               else
                  om = azidotu
               endif
               xi = (xi-z*cinv)/elabfact
+              if(xi>1d0) then
+                 xi = 1d0
+              elseif(xi<-1d0) then
+                 xi = -1d0
+              endif
            endif
 !-- r-cosine
            mu0 = sqrt(1d0-xi**2)*cos(om)
@@ -523,11 +579,16 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
                  om = pc_pi2-om
               endif
               if(in_isvelocity) then
-                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
-                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om)+r*sin(om)*cinv, &
-                      sqrt(1d0-xi**2)*cos(om)+r*cos(om)*cinv)
+                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
+                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
+                      sqrt(1d0-xi**2)*cos(om)+r*cinv)
 !-- transforming z-axis direction cosine to lab
                  xi = (xi+z*cinv)/(1d0+dirdotu*cinv)
+                 if(xi>1d0) then
+                    xi = 1d0
+                 elseif(xi<-1d0) then
+                    xi = -1d0
+                 endif
 !-- transforming azimuthal angle to lab
                  if(azidotu<0d0) then
                     om = azidotu+pc_pi2
@@ -539,7 +600,7 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
         else
 !-- IMC in outer cell
            zr = zr + 1
-           if(abs(r-gas_rarr(zr))<1d-11) then
+           if(abs(r-gas_rarr(zr))/gas_rarr(zr)<1d-10) then
               r = gas_rarr(zr)
            else
               write(*,*) db, rold, r, gas_rarr(zr)
@@ -557,14 +618,19 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
              .and..not.in_puretran) then
 !-- transforming r-cosine to cmf
            if(in_isvelocity) then
-              azidotu = atan2(sqrt(1d0-xi**2)*sin(om)-r*sin(om)*cinv, &
-                   sqrt(1d0-xi**2)*cos(om)-r*cos(om)*cinv)
+              azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
+                   sqrt(1d0-xi**2)*cos(om)-r*cinv)
               if(azidotu<0d0) then
                  om = azidotu+pc_pi2
               else
                  om = azidotu
               endif
               xi = (xi-z*cinv)/elabfact
+              if(xi>1d0) then
+                 xi = 1d0
+              elseif(xi<-1d0) then
+                 xi = -1d0
+              endif
            endif
 !-- r-cosine
            mu0 = sqrt(1d0-xi**2)*cos(om)
@@ -597,11 +663,16 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
                  om = pc_pi2-om
               endif
               if(in_isvelocity) then
-                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
-                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om)+r*sin(om)*cinv, &
-                      sqrt(1d0-xi**2)*cos(om)+r*cos(om)*cinv)
+                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
+                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
+                      sqrt(1d0-xi**2)*cos(om)+r*cinv)
 !-- transforming z-axis direction cosine to lab
                  xi = (xi+z*cinv)/(1d0+dirdotu*cinv)
+                 if(xi>1d0) then
+                    xi = 1d0
+                 elseif(xi<-1d0) then
+                    xi = -1d0
+                 endif
 !-- transforming azimuthal angle to lab
                  if(azidotu<0d0) then
                     om = azidotu+pc_pi2
@@ -613,10 +684,11 @@ subroutine transport2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
         else
 !-- IMC in inner cell
            zr = zr - 1
-           if(abs(r-gas_rarr(zr+1))<1d-11) then
+           if(abs(r-gas_rarr(zr+1))/gas_rarr(zr+1)<1d-10) then
               r = gas_rarr(zr+1)
            else
-              write(*,*) db, rold, r, gas_rarr(zr+1)
+              write(*,*) db, rold, r, gas_rarr(zr+1), sin(om)
+              write(*,*) zr, gas_rarr(zr+1)/rold
               stop 'transport2: inner db'
            endif
         endif

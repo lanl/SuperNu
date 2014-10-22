@@ -21,9 +21,6 @@ in_isvelocity = t
 in_novolsrc = f
 in_dentype = 'mass'
 
-!-- flat structures
-in_tradinittype='prof'
-
 !-- external source type
 in_srctype = 'none'
 in_srcmax = 4d24
