@@ -13,7 +13,7 @@ c-- one-time events
       real*8 :: t_all
 c
       integer,private,parameter :: mreg = 11
-      real*8,target :: registers(3,mreg)
+      real*8,private,target :: registers(3,mreg)
 c
 c-- global-flow time registers:
       real*8,pointer :: t_gasupd(:) !update gas grid
@@ -71,13 +71,14 @@ c     -------------------------!{{{
       end subroutine timereg
 c
 c
-      subroutine timing_timestep(impi,it)
+      subroutine timing_timestep(impi)
 c     -----------------------------------
       implicit none
-      integer,intent(in) :: impi,it
+      integer,intent(in) :: impi
 ************************************************************************
 * reset timestep timers and dump timing output (on master rank only).
 ************************************************************************
+      logical :: lexist
       integer :: istat
 c
 c-- add to total
@@ -85,10 +86,11 @@ c-- add to total
 c
 c-- write output on master rank only
       if(impi==0) then
+       inquire(file='output.timing',exist=lexist)
        open(4,file='output.timing',position='append',iostat=istat)
        if(istat/=0) stop 'timing_timestep: file open error'
 c-- header
-       if(it==1) then
+       if(.not.lexist) then
          write(4,'("#",30a12)') 't_gasupd','t_eos',
      &   't_opac','t_bb','t_bf','t_ff',
      &   't_p_allrank','t_pckt',

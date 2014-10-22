@@ -32,8 +32,7 @@ c============
 c
 c-- temperature parameters
       real*8 :: in_consttemp = 0d0 !non-zero will not read temp from file. units: K
-      real*8 :: in_tempradinit=0d0 !initial radiation temperature
-      character(4) :: in_tradinittype='unif' !prof|unif: initial radiation field type
+      real*8 :: in_tempradinit = 0d0 !initial radiation temperature.  Use gas_temp by default
 c
 c-- analytic heat capacity terms
       real*8 :: in_cvcoef = 1d0 !power law heat capacity coefficient
@@ -141,7 +140,7 @@ c-- runtime parameter namelist
      & in_isimcanlog, in_isddmcanlog,
      & in_tauddmc, in_dentype, in_noreadstruct,
      & in_norestart, in_taulump, in_tauvtime,
-     & in_tradinittype, in_tempradinit, in_ismodimc,
+     & in_tempradinit, in_ismodimc,
      & in_comment
 c
       public
@@ -243,14 +242,8 @@ c
       if(in_totmass<=0d0 .and. in_noreadstruct) stop 'in_totmass <= 0'
 c
 c-- temp init
-*allow negative consttemp for now to use the trad profile temperature
-*     if(in_consttemp<0d0) stop 'in_consttemp < 0'
+      if(in_consttemp<0d0) stop 'in_consttemp < 0'
       if(in_tempradinit<0d0) stop 'in_tempradinit < 0'
-      if(in_tradinittype=='unif') then
-      elseif(in_tradinittype=='prof') then
-      else
-       stop 'in_tradinittype unknown'
-      endif
 c
       if(in_nt==0) stop 'in_nt invalid'
       if(in_tfirst<0d0) stop 'in_tfirst invalid'

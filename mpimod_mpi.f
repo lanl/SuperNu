@@ -50,6 +50,7 @@ c     --------------------------!{{{
 * integer :: prt_npartmax
 * integer :: in_nomp
 * integer :: tsp_nt
+* integer :: in_ntres
 * integer :: tsp_ntres
 * integer :: in_seed
 * integer :: prt_ninitnew
@@ -84,11 +85,11 @@ c-- copy back
       deallocate(lsndvec)
 c
 c-- integer
-      n = 11
+      n = 12
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/nx,ny,nz,gas_ng,
-     &  prt_npartmax,in_nomp,tsp_nt,tsp_ntres,in_seed,prt_ninitnew,
-     &     in_ng/)
+     &  prt_npartmax,in_nomp,tsp_nt,in_ntres,tsp_ntres,in_seed,
+     &  prt_ninitnew,in_ng/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -99,10 +100,11 @@ c-- copy back
       prt_npartmax = isndvec(5)
       in_nomp = isndvec(6)
       tsp_nt = isndvec(7)
-      tsp_ntres = isndvec(8)
-      in_seed = isndvec(9)
-      prt_ninitnew = isndvec(10)
-      in_ng = isndvec(11)
+      in_ntres = isndvec(8)
+      tsp_ntres = isndvec(9)
+      in_seed = isndvec(10)
+      prt_ninitnew = isndvec(11)
+      in_ng = isndvec(12)
       deallocate(isndvec)
 c
 c-- real*8
@@ -198,7 +200,6 @@ c     ------------------------!{{{
 * real*8 :: gas_emitprob(gas_ng,nx,ny,nz)
 * real*8 :: gas_opacleak(6,nx,ny,nz)
 * real*8 :: gas_cap(gas_ng,nx,ny,nz)
-* real*8 :: gas_wl(gas_ng+1)
 *-- integer
 * integer :: gas_methodswap(nx,ny,nz)
 *
@@ -209,7 +210,7 @@ c     ------------------------!{{{
 
 c-- variables to be reduced -----------------------------------
 c-- dim==1,2
-      if(impi/=impi0 .and. tsp_it==tsp_ntres) then
+      if(impi/=impi0 .and. .not.allocated(gas_numcensus)) then
          allocate(gas_numcensus(nx,ny,nz))
          allocate(gas_edep(nx,ny,nz))
          allocate(gas_eraddens(nx,ny,nz))
@@ -255,18 +256,11 @@ c-- copy back
 c
 c-- initial send of gas_eext
       if(tsp_it==1) then
-         n=1
-         allocate(sndvec(n))
-         sndvec=(/gas_eext/)
-         call mpi_bcast(sndvec,n,MPI_REAL8,
-     &        impi0,MPI_COMM_WORLD,ierr)
-c-- copy back
-         gas_eext = sndvec(1)
-         deallocate(sndvec)
+         call mpi_bcast(gas_eext,1,MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
       endif
 c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
-      if(impi/=impi0 .and. tsp_it==tsp_ntres) then
+      if(impi/=impi0 .and. .not.allocated(gas_temp)) then
        allocate(gas_temp(nx,ny,nz))
        allocate(gas_nvol(nx,ny,nz))
        allocate(gas_nvolex(nx,ny,nz))
@@ -279,8 +273,6 @@ c
        allocate(gas_emitprob(gas_ng,nx,ny,nz))
        allocate(gas_opacleak(6,nx,ny,nz))
        allocate(gas_cap(gas_ng,nx,ny,nz))
-!       allocate(gas_wl(gas_ng+1))
-c
       endif
 c
 c-- broadcasting particle array
@@ -304,31 +296,30 @@ C$$$      call mpi_bcast(prt_particles%wlsrc,prt_npartmax,
 C$$$     &  MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
 c--
 c
-      call mpi_bcast(gas_temp,nx*ny*nz,MPI_REAL8,
+      n = nx*ny*nz
+      call mpi_bcast(gas_temp,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_nvol,nx*ny*nz,MPI_INTEGER,
+      call mpi_bcast(gas_nvol,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_nvolex,nx*ny*nz,MPI_INTEGER,
+      call mpi_bcast(gas_nvolex,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_emit,nx*ny*nz,MPI_REAL8,
+      call mpi_bcast(gas_emit,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_emitex,nx*ny*nz,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      call mpi_bcast(gas_siggrey,nx*ny*nz,MPI_REAL8,
+      call mpi_bcast(gas_emitex,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      call mpi_bcast(gas_fcoef,nx*ny*nz,MPI_REAL8,
+      call mpi_bcast(gas_siggrey,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_sig,nx*ny*nz,MPI_REAL8,
+c
+      call mpi_bcast(gas_fcoef,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_emitprob,nx*ny*nz*gas_ng,MPI_REAL8,
+      call mpi_bcast(gas_sig,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_opacleak,6*nx*ny*nz,MPI_REAL8,
+      call mpi_bcast(gas_emitprob,n*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_cap,nx*ny*nz*gas_ng,MPI_REAL8,
+      call mpi_bcast(gas_opacleak,6*n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_wl,gas_ng+1,MPI_REAL8,
+      call mpi_bcast(gas_cap,n*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c!}}}
       end subroutine bcast_nonpermanent
@@ -376,11 +367,11 @@ c-- dim==0
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       if(impi==0) then
-       gas_erad = rcvvec(1)
-       gas_eright = rcvvec(2)
-       gas_eleft = rcvvec(3)
-       gas_eextav = rcvvec(4)
-       gas_eveloav = rcvvec(5)
+       gas_erad = rcvvec(1)/dble(nmpi)
+       gas_eright = rcvvec(2)/dble(nmpi)
+       gas_eleft = rcvvec(3)/dble(nmpi)
+       gas_eextav = rcvvec(4)/dble(nmpi)
+       gas_eveloav = rcvvec(5)/dble(nmpi)
       else
        gas_erad = 0d0
        gas_eright = 0d0
@@ -401,10 +392,12 @@ c
       sndvec = gas_luminos
       call mpi_reduce(sndvec,gas_luminos,gas_ng,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
+      gas_luminos = gas_luminos/dble(nmpi)
 c
       sndvec = gas_lumdev
       call mpi_reduce(sndvec,gas_lumdev,gas_ng,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
+      gas_lumdev = gas_lumdev/dble(nmpi)
       deallocate(sndvec)
 c
 c-- dim==3
@@ -415,6 +408,7 @@ c
       sndvec3 = gas_edep
       call mpi_reduce(sndvec3,gas_edep,nx*ny*nz,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
+      gas_edep = gas_edep/dble(nmpi)
 c
       isndvec3 = gas_methodswap
       call mpi_reduce(isndvec3,gas_methodswap,nx*ny*nz,
@@ -424,6 +418,7 @@ c
       sndvec3 = gas_eraddens
       call mpi_reduce(sndvec3,gas_eraddens,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
+      gas_eraddens = gas_eraddens/dble(nmpi)
 c
 c-- timing statistics
       help = t_pckt_stat(1)

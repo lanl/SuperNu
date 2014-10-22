@@ -156,10 +156,6 @@ module gasgridmod
     !
     gas_isvelocity = in_isvelocity
     gas_novolsrc = in_novolsrc
-    !power law heat capacity input:
-    gas_cvcoef = in_cvcoef
-    gas_cvtpwr = in_cvtpwr
-    gas_cvrpwr = in_cvrpwr
     !power law scattering opacity input:
     gas_sigcoefs = in_sigcoefs
     gas_sigtpwrs = in_sigtpwrs

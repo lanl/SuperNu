@@ -8,13 +8,16 @@ subroutine write_output
   implicit none
 
   integer :: i, ig, j
+  logical :: lexist
   integer :: reclen, reclen2
   character(16), save :: pos='rewind', fstat='replace'
 !
   reclen = gas_ng*12
   reclen2 = gas_nx*12
 
-  if(tsp_it==1) then
+  inquire(file='output.wlgrid',exist=lexist)
+
+  if(.not.lexist) then
    open(unit=4,file='output.wlgrid',status='unknown',position=pos)
 !-- header: dimension
    write(4,*) "#",size(gas_wl)

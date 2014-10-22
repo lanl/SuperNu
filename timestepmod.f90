@@ -62,12 +62,11 @@ module timestepmod
 !-- update time
     if(tsp_it==tsp_ntres) then
 !-- first time step is exception
-       tsp_t = tsp_t + (tsp_ntres-1)*tsp_dt
-       tsp_tcenter = tsp_t + .5d0*tsp_dt
+       tsp_t = tsp_t + max(tsp_ntres-1,0)*tsp_dt
     else
        tsp_t = tsp_t + tsp_dt
-       tsp_tcenter = tsp_t + .5*tsp_dt
     endif
+    tsp_tcenter = tsp_t + .5*tsp_dt
 !}}}
   end subroutine timestep_update
 

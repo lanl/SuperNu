@@ -24,9 +24,9 @@ program supernu
 ! - fix gas_wl indexing BUG in physical_opacity
 !
 !***********************************************************************
-  real*8 :: help, dt
+  real*8 :: help,dt
   real*8 :: t_elapsed
-  integer :: ierr, ihelp, ng, ns, ig
+  integer :: ierr,ihelp,ng,ns,ig,it
   logical :: lmpi0 = .false. !master rank flag
   real*8 :: t0,t1  !timing
 !
@@ -87,11 +87,6 @@ program supernu
      if(in_igeom>1) stop 'supernu: read_gam_prof: no 2D/3D'
      call read_gamma_profiles(in_ndim)
    endif
-!-- read gamma deposition profiles
-   if(in_tradinittype=='prof') then
-     if(in_igeom>1) stop 'supernu: read_trad_prof: no 2D/3D'
-     call read_trad_profiles(in_ndim)
-   endif
 !
 !-- SETUP GRIDS
    call wlgrid_setup(ng)
@@ -143,7 +138,15 @@ program supernu
 !
 !-- time step loop
 !=================
-  do tsp_it = tsp_ntres, tsp_nt
+  do it=in_ntres,tsp_nt
+!-- allow negative and zero it for temperature initialization purposes
+    tsp_it = max(it,1)
+!
+!-- reset particle clocks
+    if(tsp_it<=tsp_ntres) then
+      where(.not.prt_particles%isvacant) prt_particles%tsrc = tsp_it
+    endif
+!
 !-- Update tsp_t etc
     if(impi==impi0) call timestep_update(dt)
 !
@@ -151,7 +154,7 @@ program supernu
     call tau_update
 
     if(impi==impi0) then
-      write(6,'(a,i5,f8.3,"d")') 'timestep:',tsp_it,tsp_t/pc_day
+      write(6,'(a,i5,f8.3,"d")') 'timestep:',it,tsp_t/pc_day
 !-- update all non-permanent variables
       call gasgrid_update
 !-- number of source prt_particles per cell
@@ -182,52 +185,25 @@ program supernu
     if(impi==impi0) call timereg(t_pckt_allrank,t_pckt_stat(3))  !register particle advance timing
 
 !-- collect data necessary for restart (tobe written by impi0)
-    if(.not.in_norestart) then
-      call collect_restart_data !MPI
-    endif
+    if(.not.in_norestart) call collect_restart_data !MPI
 !
     if(impi==impi0) then
-      ! averaging reduced results
-      !if(nmpi>1) then
-!       write(*,*) (gas_luminos(2)/gas_lumnum(2))**2, gas_lumdev(2)/gas_lumnum(2)
-!-- dim==0
-        gas_erad = gas_erad/dble(nmpi)
-        gas_eright = gas_eright/dble(nmpi)
-        gas_eleft = gas_eleft/dble(nmpi)
-        gas_eextav = gas_eextav/dble(nmpi)
-        gas_eveloav = gas_eveloav/dble(nmpi)
-!-- dim==1
-        gas_edep = gas_edep/dble(nmpi)
-        do ig = 1, gas_ng
-           if(gas_lumnum(ig)>1) then
-              gas_lumdev(ig) =  &
-                   ((gas_lumdev(ig)/gas_lumnum(ig)- &
-                   (gas_luminos(ig)/gas_lumnum(ig))**2) &
-                   *(gas_lumnum(ig)/dble(gas_lumnum(ig)-1)))**(0.5)
-           else
-              gas_lumdev(ig) = 0d0
-           endif
-        enddo
-        gas_lumdev = gas_lumdev/dble(nmpi)
-        gas_luminos = gas_luminos/dble(nmpi)
-!-- dim==2
-        gas_eraddens = gas_eraddens/dble(nmpi)
-      !endif
-      !
+!-- luminosity statistics
+      where(gas_lumnum>0) gas_lumdev = ( &
+         (gas_lumdev/gas_lumnum - (gas_luminos/gas_lumnum)**2) * &
+         gas_lumnum/dble(gas_lumnum - 1) )**.5d0
 !-- update temperature
       call temperature_update
 !-- check energy (particle weight) is accounted
       call energy_check
-      call write_output
+!-- write output
+      if(it>0) call write_output
 !
 !-- restart writers
-      if(.not.in_norestart) then
-!-- temp
-         call write_restart_file
-!-- rand() count
-         call write_restart_randcount
-!-- particle properties of current time step
-         call write_restart_particles
+      if(.not.in_norestart .and. it>0) then
+         call write_restart_file !-- temp
+         call write_restart_randcount !-- rand() count
+         call write_restart_particles !-- particle properties of current time step
       endif
 !
     endif !impi
@@ -236,7 +212,7 @@ program supernu
     prt_tlyrand = 0
 !
 !-- write timestep timing to file
-    call timing_timestep(impi,tsp_it)
+    if(it>0) call timing_timestep(impi)
 !
   enddo !tsp_it
 !

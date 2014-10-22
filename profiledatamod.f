@@ -12,10 +12,6 @@ c-- gamma profiles
       integer :: prof_ntgam=0
       real*8,allocatable,private :: timegamvec(:) !(prof_ntgam)  !time in seconds
       real*8,allocatable,private :: profgamvec(:,:) !(gas_nx,prof_ntgam)  !local deposition fraction
-c-- trad profiles
-      integer :: prof_nttrad=0
-      real*8,allocatable,private :: timetradvec(:) !(prof_nttrad)  !time in seconds
-      real*8,allocatable,private :: proftradvec(:,:) !(gas_nx,prof_nttrad)  !local deposition fraction
 c
       contains
 c
@@ -83,71 +79,5 @@ c-- verify number of zones
       if(nr/=ndim(1)) stop 'read_gamprf: incompatible dims: nr/=nr'
 c!}}}
       end subroutine read_gamma_profiles
-c
-c
-c
-      function trad_profile(t) result(prof)
-c     ---------------------------------------------!{{{
-      implicit none
-      real*8,intent(in) :: t
-      real*8 :: prof(nr)
-************************************************************************
-* interpolate the trad deposition data for the time requested
-************************************************************************
-      integer,external :: locate
-c
-      real*8 :: help
-      integer :: it
-c
-c-- data sanity test
-      if(prof_nttrad==0) stop 'trad_profile: data not loaded'
-c
-c-- previous time slice in input data
-      it = locate(timetradvec,prof_nttrad,t)
-c
-c-- linear interpolation
-      if(it == prof_nttrad) then
-c-- use latest profile in dataset
-       prof = proftradvec(:,it)
-      else
-       help = timetradvec(it)
-       help = (t - help)/(timetradvec(it+1) - help)
-       prof = (1d0 - help)*proftradvec(:,it) + help*proftradvec(:,it+1)
-       write(6,*) 'interp_trad_prof:',timetradvec(it),timetradvec(it+1),
-     &   t,help
-      endif
-c-- debug output
-c!}}}
-      end function trad_profile
-c
-      subroutine read_trad_profiles(ndim)
-c     -----------------------------------!{{{
-      implicit none
-      integer,intent(in) :: ndim(3)
-c
-      integer :: istat
-c
-c-- open input file
-      open(4,file='data.trad_profiles',status='old',iostat=istat)
-      if(istat/=0) stop 'read_tradprf: file io error'
-c-- read header
-      read(4,*) !header description
-      read(4,*) !header description
-      read(4,*,iostat=istat) prof_nttrad,nr
-      if(istat/=0) stop 'read_tradprf: header error'
-c-- allocate arrays
-      allocate(timetradvec(prof_nttrad))
-      allocate(proftradvec(nr,prof_nttrad))
-c-- read data
-      read(4,*,iostat=istat) timetradvec
-      if(istat/=0) stop 'read_tradprf: body error 1'
-      read(4,*,iostat=istat) proftradvec
-      if(istat/=0) stop 'read_tradprf: body error 2'
-      close(4)
-c
-c-- verify number of zones
-      if(nr/=ndim(1)) stop 'read_tradprf: incompatible dims: nr/=nr'
-c!}}}
-      end subroutine read_trad_profiles
 c
       end module profiledatamod

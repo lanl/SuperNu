@@ -53,20 +53,11 @@ c-- volume of unit-radius sphere shells
      &  pc_pi4/3d0*(gas_xarr(i+1)**3 - gas_xarr(i)**3)/help**3  !volume in outer radius units
 c
 c
-c--
-      write(6,*)
-      write(6,*) 'setup gas grid:'
-      write(6,*) '==========================='
-c
 c-- temperature
       if(in_srctype=='manu') then!{{{
        call init_manutemp
       elseif(in_consttemp==0d0) then
        call read_restart_file
-      elseif(in_consttemp<0d0) then
-       if(gas_ny>1 .or. gas_nz>1) stop 'gg_setup: trad_prof no 2D/3D'
-       gas_temp(:,1,1) = trad_profile(tsp_t)
-       write(6,*) 'Trad applied to initial gas temp'
       else
        gas_temp = in_consttemp
       endif!}}}

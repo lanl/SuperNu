@@ -19,16 +19,7 @@ subroutine analytic_initial
   gas_evolinit = 0d0
 !
 !-- initial radiation energy
-  if(in_tradinittype=='prof') then
-    if(prof_nttrad==0) stop 'analytic_initial: no trad profile data'
-    if(gas_ny>1 .or. gas_nz>1) stop 'analytic_initial: no 2D/3D'
-    trad(:,1,1) = trad_profile(tsp_t)
-    write(6,*) 'Trad applied to initial particles'
-  elseif(in_tradinittype=='unif') then
-    trad = in_tempradinit
-  else
-    stop 'analytic_initial: invalid in_tradinittype'
-  endif
+  trad = in_tempradinit
 !
 !-- map radiation temperature to gas_evolinit
   if(.not.gas_isvelocity) then
