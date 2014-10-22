@@ -378,11 +378,16 @@ subroutine diffusion2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 
 !-- doppler and aberration corrections
               if(in_isvelocity) then
-                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
-                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om)+r*sin(om)*cinv, &
-                      sqrt(1d0-xi**2)*cos(om)+r*cos(om)*cinv)
+                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
+                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
+                      sqrt(1d0-xi**2)*cos(om)+r*cinv)
 !-- transforming z-axis direction cosine to lab
                  xi = (xi+z*cinv)/(1d0+dirdotu*cinv)
+                 if(xi>1d0) then
+                    xi = 1d0
+                 elseif(xi<-1d0) then
+                    xi = -1d0
+                 endif
 !-- transforming azimuthal angle to lab
                  if(azidotu<0d0) then
                     om = azidotu+pc_pi2
@@ -435,7 +440,7 @@ subroutine diffusion2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
               om = pc_pi2-om
            endif
            if(in_isvelocity) then
-              dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
+              dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
               elabfact = 1d0+dirdotu*cinv
            endif
            if(speclump>0d0) then
@@ -565,11 +570,16 @@ subroutine diffusion2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 
 !-- doppler and aberration corrections
               if(in_isvelocity) then
-                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
-                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om)+r*sin(om)*cinv, &
-                      sqrt(1d0-xi**2)*cos(om)+r*cos(om)*cinv)
+                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
+                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
+                      sqrt(1d0-xi**2)*cos(om)+r*cinv)
 !-- transforming z-axis direction cosine to lab
                  xi = (xi+z*cinv)/(1d0+dirdotu*cinv)
+                 if(xi>1d0) then
+                    xi = 1d0
+                 elseif(xi<-1d0) then
+                    xi = -1d0
+                 endif
 !-- transforming azimuthal angle to lab
                  if(azidotu<0d0) then
                     om = azidotu+pc_pi2
@@ -612,7 +622,7 @@ subroutine diffusion2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
            r1 = rand()
            om = pc_pi2*r1
            if(in_isvelocity) then
-              dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
+              dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
               elabfact = 1d0+dirdotu*cinv
            endif
            if(speclump>0d0) then
@@ -728,11 +738,16 @@ subroutine diffusion2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 
 !-- doppler and aberration corrections
               if(in_isvelocity) then
-                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
-                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om)+r*sin(om)*cinv, &
-                      sqrt(1d0-xi**2)*cos(om)+r*cos(om)*cinv)
+                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
+                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
+                      sqrt(1d0-xi**2)*cos(om)+r*cinv)
 !-- transforming z-axis direction cosine to lab
                  xi = (xi+z*cinv)/(1d0+dirdotu*cinv)
+                 if(xi>1d0) then
+                    xi = 1d0
+                 elseif(xi<-1d0) then
+                    xi = -1d0
+                 endif
 !-- transforming azimuthal angle to lab
                  if(azidotu<0d0) then
                     om = azidotu+pc_pi2
@@ -775,7 +790,7 @@ subroutine diffusion2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
            r1 = rand()
            om = pc_pi2*r1
            if(in_isvelocity) then
-              dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
+              dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
               elabfact = 1d0+dirdotu*cinv
            endif
            if(speclump>0d0) then
@@ -891,11 +906,16 @@ subroutine diffusion2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 
 !-- doppler and aberration corrections
               if(in_isvelocity) then
-                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
-                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om)+r*sin(om)*cinv, &
-                      sqrt(1d0-xi**2)*cos(om)+r*cos(om)*cinv)
+                 dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
+                 azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
+                      sqrt(1d0-xi**2)*cos(om)+r*cinv)
 !-- transforming z-axis direction cosine to lab
                  xi = (xi+z*cinv)/(1d0+dirdotu*cinv)
+                 if(xi>1d0) then
+                    xi = 1d0
+                 elseif(xi<-1d0) then
+                    xi = -1d0
+                 endif
 !-- transforming azimuthal angle to lab
                  if(azidotu<0d0) then
                     om = azidotu+pc_pi2
@@ -954,11 +974,16 @@ subroutine diffusion2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
 !-- doppler and aberration corrections
            if(in_isvelocity) then
 !-- calculating transformation factors
-              dirdotu = xi*z+sqrt(1d0-xi**2)*cos(theta-om)*r
-              azidotu = atan2(sqrt(1d0-xi**2)*sin(om)+r*sin(om)*cinv, &
-                   sqrt(1d0-xi**2)*cos(om)+r*cos(om)*cinv)
+              dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
+              azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
+                   sqrt(1d0-xi**2)*cos(om)+r*cinv)
 !-- transforming z-axis direction cosine to lab
               xi = (xi+z/pc_c)/(1d0+dirdotu/pc_c)
+              if(xi>1d0) then
+                 xi = 1d0
+              elseif(xi<-1d0) then
+                 xi = -1d0
+              endif
 !-- transforming azimuthal angle to lab
               if(azidotu<0d0) then
                  om = azidotu+pc_pi2
@@ -972,22 +997,21 @@ subroutine diffusion2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
               ep0 = ep0*(1d0+dirdotu*cinv)
            endif
         endif
-
-     endif!}}}
+     endif
+  endif!}}}
 
 !-- checking if particle can be terminated with russian roulette
-     if (ep<1d-6*ep0.and..not.vacnt) then
-        r1 = rand()
-        if(r1<0.5d0) then
-           vacnt = .true.
-           prt_done = .true.
-           gas_edep(zr,zz) = gas_edep(zr,zz) + ep*elabfact
-        else
+  if (ep<1d-6*ep0.and..not.vacnt) then
+     r1 = rand()
+     if(r1<0.5d0) then
+        vacnt = .true.
+        prt_done = .true.
+        gas_edep(zr,zz) = gas_edep(zr,zz) + ep*elabfact
+     else
 !-- weight addition accounted for in external source
-           gas_eext=gas_eext+ep
-           ep = 2d0*ep
-           ep0 = 2d0*ep0
-        endif
+        gas_eext=gas_eext+ep
+        ep = 2d0*ep
+        ep0 = 2d0*ep0
      endif
   endif
 
