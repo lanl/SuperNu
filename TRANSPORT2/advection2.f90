@@ -17,8 +17,8 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
   logical,parameter :: partstopper = .true.
 !
   integer,external :: binsrch
-  integer :: zzholder,zrholder,zfdiff
-  real*8 :: help, rold, zold
+  integer :: zzholder,zrholder
+  real*8 :: help, rold, zold, rtil, ztil
   integer :: ir,iz
 
 !-- storing initial position
@@ -41,71 +41,96 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
      if(.not.in_puretran.and.partstopper) then
         ir = zrsrc
         iz = zzsrc
-        zfdiff = -1
-!-- moving particle towards tentative position
-        do while((ir/=zrholder.or.iz/=zzholder).and. &
-             zfdiff==-1)
-!-- checking nearest boundary (r or z)
-           if(max(gas_rarr(ir)/rold,abs(gas_zarr(iz+1)/zold))== &
-                gas_rarr(ir)/rold) then
-!-- checking if cell at inner radius is DDMC
-              if((gas_sig(ir-1,iz)+gas_cap(g,ir-1,iz))* &
-                   min(gas_drarr(ir-1),gas_dzarr(iz))*help>=&
-                   prt_tauddmc) then
-!-- placing particle on outer surface of DDMC cell
-                 zfdiff = ir-1
-                 zrsrc = zfdiff+1
-                 zsrc = zold*(1d0-gas_rarr(zrsrc)/rold)
-                 rsrc = gas_rarr(zrsrc)
+
+        if(iz>gas_nz/2) then
+!-- z>0
+           do while(iz>zzholder.or.ir>zrholder)
+!-- moving towards tentative index
+              if(zold>0d0) then
+                 rtil = (rold/zold)*gas_zarr(iz)
               else
-!-- updating ir index and position to inner cell
-                 ir = ir-1
-                 zold = zold*(1d0-gas_rarr(ir+1)/rold)
-                 rold = gas_rarr(ir+1)
+                 rtil = gas_rarr(ir+1)
               endif
-           else
-!-- checking if z<0
-              if(iz<gas_nz/2) then
-!-- checking if upper cell is DDMC
-                 if((gas_sig(ir,iz+1)+gas_cap(g,ir,iz+1))* &
-                      min(gas_drarr(ir),gas_dzarr(iz+1))*help>=&
-                      prt_tauddmc) then
-!-- placing particle on lower surface of DDMC cell
-                    zfdiff = iz+1
-                    zzsrc = zfdiff-1
-                    rsrc = rold*(1d0-abs(gas_zarr(zzsrc)/zold))
-                    zsrc = gas_zarr(zzsrc+1)
-                 else
-!-- updating iz index and position to upper cell
-                    iz = iz+1
-                    rold = rold*(1d0-abs(gas_zarr(iz)/zold))
-                    zold = gas_zarr(iz)
-                 endif
-!-- else z>0
+              if(rold>0d0) then
+                 ztil = (zold/rold)*gas_rarr(ir)
               else
-!-- checking if lower cell is DDMC
-                 if((gas_sig(ir,iz-1)+gas_cap(g,ir,iz-1))* &
-                      min(gas_drarr(ir),gas_dzarr(iz-1))*help>=&
-                      prt_tauddmc) then
-!-- placing particle on upperer surface of DDMC cell
-                    zfdiff = iz-1
-                    zzsrc = zfdiff+1
-                    rsrc = rold*(1d0-abs(gas_zarr(zzsrc)/zold))
-                    zsrc = gas_zarr(zzsrc)
+                 ztil = gas_zarr(iz+1)
+              endif
+!
+              if(rtil<gas_rarr(ir)) then
+
+!-- meeting inner radial bound
+                 if((gas_sig(ir-1,iz)+gas_cap(g,ir-1,iz)) * &
+                      min(gas_dzarr(iz),gas_drarr(ir-1)) * &
+                      tsp_t >= prt_tauddmc) then
+                    rsrc = gas_rarr(ir)
+                    zsrc = ztil
+                    exit
                  else
-!-- updating iz index and position to lower cell
+                    ir=ir-1
+                 endif
+              else
+
+!-- meeting lower z-axis bound
+                 if((gas_sig(ir,iz-1)+gas_cap(g,ir,iz-1)) * &
+                      min(gas_dzarr(iz-1),gas_drarr(ir)) * &
+                      tsp_t >= prt_tauddmc) then
+                    zsrc = gas_zarr(iz)
+                    rsrc = rtil
+                    exit
+                 else
                     iz = iz-1
-                    rold = rold*(1d0-abs(gas_zarr(iz+1)/zold))
-                    zold = gas_zarr(iz+1)
                  endif
               endif
-           endif
-        enddo
-!-- if no DDMC encountered, setting index to tentative value
-        if(zfdiff==-1) then
-           zrsrc = zrholder
-           zzsrc = zzholder
+           enddo
+!
+        else
+
+!
+!-- z<0
+           do while(iz<zzholder.or.ir>zrholder)
+!-- moving towards tentative index
+              if(zold<0d0) then
+                 rtil = (rold/zold)*gas_zarr(iz+1)
+              else
+                 rtil = gas_rarr(ir+1)
+              endif
+              if(rold>0d0) then
+                 ztil = (zold/rold)*gas_rarr(ir)
+              else
+                 ztil = gas_zarr(iz)
+              endif
+!
+              if(rtil<gas_rarr(ir)) then
+
+!-- meeting inner radial bound
+                 if((gas_sig(ir-1,iz)+gas_cap(g,ir-1,iz)) * &
+                      min(gas_dzarr(iz),gas_drarr(ir-1)) * &
+                      tsp_t >= prt_tauddmc) then
+                    rsrc = gas_rarr(ir)
+                    zsrc = ztil
+                    exit
+                 else
+                    ir=ir-1
+                 endif
+              elseif(ztil>gas_zarr(iz+1)) then
+
+!-- meeting upper z-axis bound (z<0)
+                 if((gas_sig(ir,iz+1)+gas_cap(g,ir,iz+1)) * &
+                      min(gas_dzarr(iz+1),gas_drarr(ir)) * &
+                      tsp_t >= prt_tauddmc) then
+                    zsrc = gas_zarr(iz+1)
+                    rsrc = rtil
+                    exit
+                 else
+                    iz = iz+1
+                 endif
+              endif
+           enddo
         endif
+        zrsrc = ir
+        zzsrc = iz
+
      else
 !-- DDMC inactive, setting index to tentative value
         zrsrc = zrholder
