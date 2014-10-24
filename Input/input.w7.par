@@ -4,7 +4,6 @@
 in_nomp = 1
 in_grab_stdout = f
 in_puretran = f
-in_seed = 1
 in_noreadstruct = f
 in_norestart = t
 

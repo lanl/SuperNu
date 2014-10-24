@@ -39,7 +39,7 @@ c
 c-- allocate permanent storage space for line data
       if(nlinall<=0) stop 'rd_bbxs_data: no sigle line read in'
       allocate(bb_xs(nlinall))
-      n = sizeof(bb_xs)/1024 !kB
+      n = int(sizeof(bb_xs)/1024) !kB
       write(6,*) 'ALLOC bb_xs:',n,"kB",n/1024,"MB",n/1024**2,"GB"
 c
       call time(t0)
@@ -69,8 +69,8 @@ c-- g*xs
 c-- exp(chi)
          bb_xs(ilinall)%chilw = abs(bbxs_level(llw)%chi)
 c-- ion code
-         bb_xs(ilinall)%iz = iz
-         bb_xs(ilinall)%ii = ii
+         bb_xs(ilinall)%iz = int(iz,2)
+         bb_xs(ilinall)%ii = int(ii,2)
         enddo !l
 c-- ready with raw data
         deallocate(bbxs_level,bbxs_line)

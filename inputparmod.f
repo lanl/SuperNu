@@ -39,9 +39,6 @@ c-- analytic heat capacity terms
       real*8 :: in_cvtpwr = 0d0 !power law heat capacity temperature exponent
       real*8 :: in_cvrpwr = 0d0 !power law heat capacity density exponent
 c
-c-- random number generator
-      integer :: in_seed = 1984117 !starting point of random number generator
-c
 c-- particles
       integer :: in_ns = 0    !number of source particles generated per time step (total over all ranks)
       integer :: in_ns0 = 0   !number of initial particles at in_tfirst
@@ -125,7 +122,7 @@ c-- runtime parameter namelist
      & in_ng,in_ngs,in_wldex,in_wlmin,in_wlmax,
      & in_totmass,in_velout,
      & in_consttemp,
-     & in_seed,in_ns,in_ns0,in_npartmax,in_puretran,in_alpha,
+     & in_ns,in_ns0,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,in_ntres,
      & in_grab_stdout,in_nomp,
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
