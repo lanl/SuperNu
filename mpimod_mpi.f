@@ -51,7 +51,6 @@ c     --------------------------!{{{
 * integer :: tsp_nt
 * integer :: in_ntres
 * integer :: tsp_ntres
-* integer :: in_seed
 * integer :: prt_ninitnew
 *-- real*8
 * real*8 :: prt_tauddmc
@@ -84,10 +83,10 @@ c-- copy back
       deallocate(lsndvec)
 c
 c-- integer
-      n = 12
+      n = 11
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/nx,ny,nz,gas_ng,
-     &  prt_npartmax,in_nomp,tsp_nt,in_ntres,tsp_ntres,in_seed,
+     &  prt_npartmax,in_nomp,tsp_nt,in_ntres,tsp_ntres,
      &  prt_ninitnew,in_ng/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -101,9 +100,8 @@ c-- copy back
       tsp_nt = isndvec(7)
       in_ntres = isndvec(8)
       tsp_ntres = isndvec(9)
-      in_seed = isndvec(10)
-      prt_ninitnew = isndvec(11)
-      in_ng = isndvec(12)
+      prt_ninitnew = isndvec(10)
+      in_ng = isndvec(11)
       deallocate(isndvec)
 c
 c-- real*8
