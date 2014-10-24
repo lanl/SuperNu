@@ -143,6 +143,9 @@ program supernu
 !
 !-- time step loop
 !=================
+  write(6,*)
+  write(6,*) "starting time loop:"
+  write(6,*) "===================="
   do it=in_ntres,tsp_nt
 !-- allow negative and zero it for temperature initialization purposes
     tsp_it = max(it,1)
@@ -159,7 +162,7 @@ program supernu
     call tau_update
 
     if(impi==impi0) then
-      write(6,'(a,i5,f8.3,"d",i12)') 'timestep:',it,tsp_t/pc_day, &
+      write(6,'(1x,a,i5,f8.3,"d",i12)') 'timestep:',it,tsp_t/pc_day, &
          count(.not.prt_isvacant)
 !-- update all non-permanent variables
       call gasgrid_update

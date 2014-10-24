@@ -20,10 +20,10 @@ c--
       write(6,*)
       if(gas_isvelocity) then
        write(6,*) 'setup velocity grid:'
-       write(6,*) '==========================='
+       write(6,*) '===================='
       else
        write(6,*) 'setup spatial grid:'
-       write(6,*) '==========================='
+       write(6,*) '===================='
       endif
 c
 c----

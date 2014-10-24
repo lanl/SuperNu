@@ -194,6 +194,7 @@ c
 c-- dump namelist to stdout
       write(6,*) 'namelist read:'
       write(6,nml=inputpars)
+      write(6,*)
 c
 c-- check input parameter validity
       if(in_nomp<0) stop 'in_nomp invalid'!{{{

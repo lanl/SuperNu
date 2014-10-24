@@ -40,6 +40,7 @@ SUBDIRS := $(dir $(LIBRARIES))
 SUBCLEAN = $(addsuffix .clean, $(SUBDIRS))
 
 VERSIONPY := $(wildcard version.py)
+DATE := $(shell date)
 
 #-- Testsuite
 #############
@@ -54,7 +55,7 @@ TESTS := $(addprefix $(TESTDIR),$(TESTS))
 # TARGETS
 ########################################################################
 # Utility targets (ignore corresponding file names)
-.PHONY: all clean $(SUBDIRS) $(SUBCLEAN) prepare_run check run runmpi ready_run $(TESTS)
+.PHONY: all clean $(SUBDIRS) $(SUBCLEAN) prepare_run check run runmpi ready_run $(TESTS) version.inc
 
 all: $(MODULES)
 	$(MAKE) $(SUBDIRS)
@@ -127,11 +128,13 @@ $(SUBDIRS):
 #
 #-- inc files
 ifeq ($(VERSIONPY), version.py)
-  version.inc: $(VERSIONPY)
+  version.inc: #$(VERSIONPY)
 	@python2 -B version.inc.py
+	@echo "     &  '$(DATE)' /" >>$@
 else
-  version.inc: version_dummy.inc
+  version.inc: #version_dummy.inc
 	@cp -vu version_dummy.inc version.inc
+	@echo "     &  '$(DATE)' /" >>$@
 endif
 
 #

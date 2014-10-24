@@ -143,7 +143,7 @@ c
 c-- output
       write(6,*)
       write(6,*) 'input structure 1D:'
-      write(6,*) '==================='
+      write(6,*) '===================='
       write(6,*) 'mass  :', sum(str_mass)/pc_msun, 'Msun'
 c-- ni56 mass
       if(ini56>0) then
@@ -228,7 +228,7 @@ c
 c-- output
       write(6,*)
       write(6,*) 'input structure 2D:'
-      write(6,*) '==================='
+      write(6,*) '===================='
       write(6,*) 'mass  :', sum(str_mass)/pc_msun, 'Msun'
 c-- ni56 mass
       if(ini56>0) then
@@ -243,15 +243,39 @@ c
 c
       subroutine read_inputstr3(ndim,velout)
 c     -----------------------------------!{{{
+      use physconstmod
+      use gasgridmod, only:gas_ini56,gas_ico56
+      use miscmod
       implicit none
       integer,intent(in) :: ndim(3)
       real*8,intent(out) :: velout
 ************************************************************************
 * Read the input structure file
 ************************************************************************
+      integer :: ini56
+      real*8 :: help
+
       velout = 0d0
+c
+c-- dummy
       stop 'read_inputstr3 is a stub'
       write(6,*) ndim !use ndim so compiler doesn't complain
+c
+c-- convert abundlabl to element codes
+      call elnam2elcode(ini56)
+c
+c-- output
+      write(6,*)
+      write(6,*) 'input structure 3D:'
+      write(6,*) '===================='
+      write(6,*) 'mass  :', sum(str_mass)/pc_msun, 'Msun'
+c-- ni56 mass
+      if(ini56>0) then
+       help = sum(str_massfr(ini56,:,:,:)*str_mass)
+      else
+       help = 0d0
+      endif
+      write(6,*) 'm_ni56:', help/pc_msun, 'Msun'
 c!}}}
       end subroutine read_inputstr3
 c
