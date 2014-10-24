@@ -29,9 +29,9 @@ subroutine initial_particles
   do ipart=1,prt_ninitnew
      do iir=iir,gas_nx
         if(iirused(iir)<gas_nvolinit(iir,1,1)) exit
-        iirused(iir)=iirused(iir)+1
      enddo
 !--
+     iirused(iir) = iirused(iir)+1
      denom2 = 0d0
      r1=rand()
      prt_tlyrand = prt_tlyrand+1

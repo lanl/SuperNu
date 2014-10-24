@@ -52,6 +52,7 @@ c     ------------------------------!{{{
       use miscmod, only:warn
       use physconstmod
       use gasgridmod
+      use inputparmod
       implicit none
       real*8,intent(in) :: totmass,sigcoef,texp,dt
 ************************************************************************
@@ -75,9 +76,9 @@ c-- grey solution
      &            log((texp+dt)/texp)
      &            *(4d0*man_aa11/pc_c)+
      &            (3d0*totmass*sigcoef/
-     &            (8d0*pc_pi*gas_velout))*
-     &            ((gas_velout*texp)**(-2d0)-
-     &            (gas_velout*(texp+dt))**(-2d0))*
+     &            (8d0*pc_pi*in_velout))*
+     &            ((in_velout*texp)**(-2d0)-
+     &            (in_velout*(texp+dt))**(-2d0))*
      &            (man_aa11-pc_acoef*pc_c*man_temp0**4)
      &            )
 !     
@@ -113,6 +114,7 @@ c
 c     -------------------------------!{{{
       use physconstmod
       use gasgridmod
+      use inputparmod
       implicit none
       real*8,intent(in) :: totmass,sigcoef,texp,dt
 ************************************************************************
@@ -131,9 +133,9 @@ c-- implement/modify velocity dependent manufactured temperature source
          case ('grey')
 c--   grey solution
             gas_vals2%matsrc = (1d0/dt)*
-     &           (3d0*totmass*sigcoef/(8d0*pc_pi*gas_velout))*
-     &           ((gas_velout*texp)**(-2d0)-
-     &           (gas_velout*(texp+dt))**(-2d0))*
+     &           (3d0*totmass*sigcoef/(8d0*pc_pi*in_velout))*
+     &           ((in_velout*texp)**(-2d0)-
+     &           (in_velout*(texp+dt))**(-2d0))*
      &           (pc_acoef*pc_c*man_temp0**4d0-man_aa11)
 c
          case ('mono')
@@ -160,30 +162,29 @@ c!}}}
       end subroutine generate_manutempsrc
 c
 c
-      subroutine init_manuprofile(texp)
+      subroutine init_manuprofile
 c     ---------------------------
       use physconstmod
       use gasgridmod      
       implicit none
-      real*8,intent(in) :: texp
 ************************************************************************
 * calculate finite volume manufactured initial energy per cell per group
 * in ergs with manufactured parameters
 ************************************************************************
-      real*8 :: help
-c
 c-- verify applicable input pars
       call check_manufacpars
 c
 c-- determine manufacture type
-      if(gas_isvelocity) then
-         help = gas_velout*texp
+      if(.not.gas_isvelocity) then
+c-- implement/modify static manufactured temperature source
+         stop 'init_manuprofile: no static sources'
+      else
 c
 c-- implement/modify velocity dependent manufactured initial profile
          select case (gas_opacanaltype)
          case ('grey')
 c-- grey solution
-           gas_evolinit = (man_aa11/pc_c) * gas_vals2%volr*help**3
+           gas_evolinit = (man_aa11/pc_c) * gas_vals2%vol
 c
          case ('mono')
             stop 'init_manuprofile: gas_opacanaltype=mono'
@@ -195,14 +196,6 @@ c-- line solution
          case default
             stop 'gas_opacanaltype unknown'
          end select
-c
-c
-      else
-c
-c-- implement/modify static manufactured temperature source
-         stop 'init_manuprofile: no static sources'
-c
-c
       endif      
 c
       end subroutine init_manuprofile
