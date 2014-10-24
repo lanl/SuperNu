@@ -27,7 +27,7 @@ program supernu
 !***********************************************************************
   real*8 :: help,dt
   real*8 :: t_elapsed
-  integer :: ierr,ihelp,ng,ns,it
+  integer :: ierr,ng,ns,it
   integer,external :: memusg
   logical :: lmpi0 = .false. !master rank flag
   real*8 :: t0,t1  !timing
@@ -92,7 +92,7 @@ program supernu
 !
 !-- SETUP GRIDS
    call wlgrid_setup(ng)
-   call gasgrid_init(tsp_nt,ng)
+   call gasgrid_init(ng)
    call gasgrid_setup
 !
 
@@ -119,15 +119,9 @@ program supernu
 
   call bcast_permanent !MPI
 !
-!-- initialize random number generator
-  if(in_seed==0) then
-!-- all ranks use the same seed
-    ihelp = in_seed
-  else
-!-- use different seeds for each rank
-    ihelp = 10*impi + in_seed  !this expression uses the same seed for rank==0 as previously used in a the serial run
-  endif
-  help = rand(ihelp)
+!-- initialize random number generator, use different seeds for each rank
+  if(in_nomp==0) stop 'supernu: in_nomp == 0'
+  help = rand(in_nomp*impi)
 !
 !-- reading restart rand() count
   if(tsp_ntres>1.and..not.in_norestart) then

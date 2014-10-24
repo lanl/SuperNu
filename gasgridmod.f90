@@ -132,14 +132,13 @@ module gasgridmod
   contains
 
 
-  subroutine gasgrid_init(nt,ng)
+  subroutine gasgrid_init(ng)
 !-------------------------------------------------------
     use inputparmod
     implicit none
-    integer,intent(in) :: nt,ng
+    integer,intent(in) :: ng
 !
     integer :: n
-    integer*8 :: n8
     logical :: lexist
 !
     gas_nx = in_ndim(1)
@@ -212,11 +211,11 @@ module gasgridmod
     allocate(gas_numcensus(gas_nx,gas_ny,gas_nz))  !# census prt_particles per cell
 !
 !-- output
-    n8 = gas_nx*gas_ny*gas_nz
-    n = (sizeof(gas_vals2) + n8*8*22)/1024 !kB
+    n = gas_nx*gas_ny*gas_nz
+    n = int((sizeof(gas_vals2) + int(n,8)*8*22)/1024) !kB
     write(6,*) 'ALLOC gasgrid:',n,"kB",n/1024,"MB",n/1024**2,"GB"
-    n8 = gas_nx*gas_ny*gas_nz
-    n = ((8+8)*n8*gas_ng)/1024 !kB
+    n = gas_nx*gas_ny*gas_nz
+    n = int(((8+8)*int(n,8)*gas_ng)/1024) !kB
     write(6,*) 'ALLOC gas_cap:',n,"kB",n/1024,"MB",n/1024**2,"GB"
 !
 !-- read preset temperature profiles
