@@ -12,9 +12,9 @@ subroutine initial_particles
   !the first time step.
 !##################################################
 !
-  integer :: ig, iir, iig, ipart
-  integer, dimension(gas_nx) :: iirused
-  real*8 :: wl0, mu0, Ep0, r0
+  integer :: ig, i,j,k iig, ipart
+  integer, dimension(gas_nx,gas_ny,gas_nz) :: ijkused
+  real*8 :: wl0, mu0, ep0, r0
   real*8 :: denom2
   real*8 :: r1,r3
   real*8 :: x1,x2,x3,x4
@@ -24,14 +24,20 @@ subroutine initial_particles
   x2=1d0/gas_wl(1)
 
 !-- instantiating initial particles
-  iir = 1
-  iirused = 0
+  i = 1
+  j = 1
+  k = 1
+  ijkused = 0
   do ipart=1,prt_ninitnew
-     do iir=iir,gas_nx
-        if(iirused(iir)<gas_nvolinit(iir,1,1)) exit
+     do k=k,gas_nz
+     do j=j,gas_ny
+     do i=i,gas_nx
+        if(ijkused(i,j,k)<gas_nvolinit(i,j,k)) exit
+     enddo
+     enddo
      enddo
 !--
-     iirused(iir) = iirused(iir)+1
+     ijkused(i,j,k) = ijkused(i,j,k)+1
      denom2 = 0d0
      r1=rand()
      prt_tlyrand = prt_tlyrand+1
@@ -47,10 +53,11 @@ subroutine initial_particles
      prt_tlyrand = prt_tlyrand+1
      wl0 = 1d0/((1d0-r1)/gas_wl(iig)+r1/gas_wl(iig+1))
 !-- calculating radial position
-     r3 = rand()
+     r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     prt_particles(ipart)%rsrc = (r3*gas_xarr(iir+1)**3 + &
-          (1.0-r3)*gas_xarr(iir)**3)**(1.0/3.0)
+     
+     prt_particles(ipart)%rsrc = (r3*gas_xarr(i+1)**3 + &
+          (1.0-r3)*gas_xarr(i)**3)**(1.0/3.0)
      r0 = prt_particles(ipart)%rsrc
 !-- calculating direction cosine (comoving)
      r1 = rand()
@@ -60,21 +67,21 @@ subroutine initial_particles
 !-- calculating particle time
      prt_particles(ipart)%tsrc = tsp_t
 !-- calculating particle energy
-     Ep0 = gas_evolinit(iir,1,1)/real(gas_nvolinit(iir,1,1))
-!             gas_eext=gas_eext+Ep0
+     ep0 = gas_evolinit(i,1,1)/real(gas_nvolinit(i,1,1))
+!             gas_eext=gas_eext+ep0
      if(gas_isvelocity) then
-        prt_particles(ipart)%Esrc = Ep0*(1.0+r0*mu0/pc_c)
-        prt_particles(ipart)%Ebirth = Ep0*(1.0+r0*mu0/pc_c)
+        prt_particles(ipart)%Esrc = ep0*(1.0+r0*mu0/pc_c)
+        prt_particles(ipart)%Ebirth = ep0*(1.0+r0*mu0/pc_c)
 !-- velocity effects accounting
-!                 gas_evelo=gas_evelo-Ep0*r0*mu0/pc_c
+!                 gas_evelo=gas_evelo-ep0*r0*mu0/pc_c
 !
         prt_particles(ipart)%wlsrc = wl0/(1.0+r0*mu0/pc_c)
         !
         prt_particles(ipart)%musrc = (mu0+r0/pc_c)/&
              (1.0+r0*mu0/pc_c)
      else
-        prt_particles(ipart)%Esrc = Ep0
-        prt_particles(ipart)%Ebirth = Ep0
+        prt_particles(ipart)%Esrc = ep0
+        prt_particles(ipart)%Ebirth = ep0
 
         prt_particles(ipart)%wlsrc = wl0
         !
@@ -82,8 +89,8 @@ subroutine initial_particles
      endif
      prt_particles(ipart)%rtsrc = 1
 
-!-- Setting iir = zone of particle
-     prt_particles(ipart)%zsrc = iir
+!-- Setting i = zone of particle
+     prt_particles(ipart)%zsrc = i
 !-- Setting particle index to not vacant
      prt_isvacant(ipart) = .false.
 
