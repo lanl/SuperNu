@@ -13,6 +13,7 @@ c-- physical constants
       real*8,parameter :: pc_pi = 3.1415926535897932385d0
       real*8,parameter :: pc_pi2 = 2d0*pc_pi
       real*8,parameter :: pc_pi4 = 4d0*pc_pi
+      real*8,parameter :: pc_pi43 = 4d0/3d0*pc_pi
 c
       real*8,parameter :: pc_c = 2.997924562d10 !cm/s
       real*8,parameter :: pc_gc = 6.6742d-8

@@ -22,22 +22,21 @@ c
       contains
 c
 c
-      subroutine read_inputstr(igeom,ndim,velout)
+      subroutine read_inputstr(igeom,ndim)
 c     -------------------------------------!{{{
       implicit none
       integer,intent(in) :: igeom
       integer,intent(in) :: ndim(3)
-      real*8,intent(out) :: velout
 ************************************************************************
 * wrapper around routines for different geometries
 ************************************************************************
       select case(igeom)
       case(1)
-       call read_inputstr1(ndim,velout)
+       call read_inputstr1(ndim)
       case(2)
-       call read_inputstr2(ndim,velout)
+       call read_inputstr2(ndim)
       case(3)
-       call read_inputstr3(ndim,velout)
+       call read_inputstr3(ndim)
       case default
        stop 'read_inputstr: invalid igeom'
       endselect
@@ -49,22 +48,20 @@ c!}}}
       end subroutine read_inputstr
 c
 c
-      subroutine generate_inputstr(igeom,lx,ly,lz,velout)
+      subroutine generate_inputstr(igeom)
 c     ---------------------------------------------!{{{
       implicit none
       integer,intent(in) :: igeom
-      real*8,intent(out) :: lx,ly,lz
-      real*8,intent(out) :: velout
 ************************************************************************
 * wrapper around routines for different geometries
 ************************************************************************
       select case(igeom)
       case(1)
-       call generate_inputstr1(lx,velout)
+       call generate_inputstr1
       case(2)
-       call generate_inputstr2(lx,ly,velout)
+       call generate_inputstr2
       case(3)
-       call generate_inputstr3(lx,ly,lz,velout)
+       call generate_inputstr3
       case default
        stop 'generate_inputstr: invalid igeom'
       endselect
@@ -78,14 +75,13 @@ c
 c
 c
 c
-      subroutine read_inputstr1(ndim,velout)
+      subroutine read_inputstr1(ndim)
 c     -----------------------------------!{{{
       use physconstmod
       use gasgridmod, only:gas_ini56,gas_ico56
       use miscmod
       implicit none
       integer,intent(in) :: ndim(3)
-      real*8,intent(out) :: velout
 ************************************************************************
 * Read the input structure file
 ************************************************************************
@@ -134,9 +130,6 @@ c-- close file
       close(4)
       deallocate(raw)
 c
-c-- result
-      velout = str_xleft(nx+1)
-c
 c-- convert abundlabl to element codes
       call elnam2elcode(ini56)
 c
@@ -156,14 +149,13 @@ c!}}}
       end subroutine read_inputstr1
 c
 c
-      subroutine read_inputstr2(ndim,velout)
+      subroutine read_inputstr2(ndim)
 c     -----------------------------------!{{{
       use physconstmod
       use gasgridmod, only:gas_ini56,gas_ico56
       use miscmod
       implicit none
       integer,intent(in) :: ndim(3)
-      real*8,intent(out) :: velout
 ************************************************************************
 * Read the input structure file
 ************************************************************************
@@ -219,9 +211,6 @@ c-- close file
       close(4)
       deallocate(raw)
 c
-c-- result
-      velout = str_xleft(nx+1)
-c
 c-- convert abundlabl to element codes
       call elnam2elcode(ini56)
 c
@@ -241,21 +230,18 @@ c!}}}
       end subroutine read_inputstr2
 c
 c
-      subroutine read_inputstr3(ndim,velout)
+      subroutine read_inputstr3(ndim)
 c     -----------------------------------!{{{
       use physconstmod
       use gasgridmod, only:gas_ini56,gas_ico56
       use miscmod
       implicit none
       integer,intent(in) :: ndim(3)
-      real*8,intent(out) :: velout
 ************************************************************************
 * Read the input structure file
 ************************************************************************
       integer :: ini56
       real*8 :: help
-
-      velout = 0d0
 c
 c-- dummy
       stop 'read_inputstr3 is a stub'
@@ -282,10 +268,9 @@ c
 c
 c
 c
-      subroutine generate_inputstr1(lx,velout)
+      subroutine generate_inputstr1
       use inputparmod!{{{
       implicit none
-      real*8,intent(out) :: lx,velout
 ************************************************************************
 * generate stratification from input.par variables
 * if in_noreadstruct==.true.
@@ -314,10 +299,6 @@ c-- allocate arrays
       allocate(str_xleft(nx+1))
       allocate(str_mass(nx,1,1))
 c
-c-- local copies
-      velout = in_velout
-      lx = in_lx
-c
 c-- create unit sphere radii rout
       dx = 1d0/real(nx)
       forall(i=1:nx+1) rout(i) = (i-1)*dx
@@ -343,32 +324,23 @@ c!}}}
       end subroutine generate_inputstr1
 c
 c
-      subroutine generate_inputstr2(lx,ly,velout)
+      subroutine generate_inputstr2
       use inputparmod!{{{
       implicit none
-      real*8,intent(out) :: lx,ly,velout
 ************************************************************************
 * Read the input structure file
 ************************************************************************
-      lx = 0d0
-      ly = 0d0
-      velout = 0d0
       stop 'generate_inputstr2 is a stub'
 c!}}}
       end subroutine generate_inputstr2
 c
 c
-      subroutine generate_inputstr3(lx,ly,lz,velout)
+      subroutine generate_inputstr3
       use inputparmod!{{{
       implicit none
-      real*8,intent(out) :: lx,ly,lz,velout
 ************************************************************************
 * Read the input structure file
 ************************************************************************
-      lx = 0d0
-      ly = 0d0
-      lz = 0d0
-      velout = 0d0
       stop 'generate_inputstr3 is a stub'
 c!}}}
       end subroutine generate_inputstr3

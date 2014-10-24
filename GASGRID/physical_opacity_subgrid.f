@@ -61,7 +61,7 @@ c
 c-- thomson scattering
       if(.not.in_nothmson) then
        gas_sig = cthomson*gas_vals2%nelec*
-     &   gas_vals2%natom/gas_vals2%volcrp
+     &   gas_vals2%natom/gas_vals2%vol
       endif
 c
 c-- ground level occupation number

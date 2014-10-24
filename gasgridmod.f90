@@ -12,13 +12,6 @@ module gasgridmod
   integer :: gas_nz = 0
   integer :: gas_ng = 0
 
-  real*8 :: gas_lx = 0
-  real*8 :: gas_ly = 0
-  real*8 :: gas_lz = 0
-
-!
-  real*8 :: gas_velout = 0d0 !outer boundary velocity
-
   real*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
   real*8,allocatable :: gas_cap(:,:,:,:) !(gas_ng,gas_nx,gas_ny,gas_nz) Line+Cont extinction coeff
   real*8,allocatable :: gas_sig(:,:,:) !(gas_nx,gas_ny,gas_nz) scattering coefficient
@@ -113,9 +106,7 @@ module gasgridmod
     real*8 :: eraddens
     real*8 :: ur, rho, bcoef, nisource
        !real*8 :: temp       !gcell temperature
-       real*8 :: volr       !gcell volume [rout=1 units]
        real*8 :: vol        !gcell volume [cm^3]
-       real*8 :: volcrp     !effective volume (of linked rgrid cells) [cm^3]
        real*8 :: mass       !gcell mass
        real*8 :: mass0fr(-2:gas_nelem) = 0d0  !initial mass fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
        real*8 :: natom      !gcell # atoms

@@ -31,7 +31,7 @@ c-- store occupation numbers of each ion's ground states
          ion_grndlev(iz,i,j,k)%oc(ii) =
      &     gas_vals2(i,j,k)%natom*gas_vals2(i,j,k)%natom1fr(iz)*
      &     ion_el(iz)%i(ii)%glev(1) * ion_el(iz)%i(ii)%n /
-     &     (ion_el(iz)%i(ii)%q * gas_vals2(i,j,k)%volcrp) !number density, not number
+     &     (ion_el(iz)%i(ii)%q * gas_vals2(i,j,k)%vol) !number density, not number
          !write(6,*) iz,ii,ion_grndlev(iz,i,j,k)%oc(ii) !ion_el(iz)%i(ii)%nlev,ion_el(iz)%i(ii)%glev(1) !DEBUG
         enddo !ii
        enddo !iz

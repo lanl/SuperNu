@@ -13,8 +13,7 @@ c     ------------------------
 * Initialize the gas grid, the part that is constant with time and
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
-      integer :: l,ll,i
-      real*8 :: help
+      integer :: l,ll
 c
 c--
       write(6,*)
@@ -35,23 +34,9 @@ c
 c-- agnostic mass setup (rev. 200) ----------------------------------
       if(gas_ny>1) stop 'gg_setup: str_mass 1D'
       gas_vals2%mass = str_mass
-c--------------------------------------------------------------------
-c----
-c
-c-- scale gas cell volumes to unit sphere depending on expanding or static
-      if(gas_isvelocity) then
-       help = gas_velout
-      else
-       if(gas_ny>1) stop "gg_setup: help: no 2D"
-       help = gas_lx
-      endif
-c
-c-- volume of unit-radius sphere shells
-!TODO: multiple geometries
-      if(gas_ny>1) stop 'gasgrid_setup: 1D volume only'
-      forall(i=1:gas_nx) gas_vals2(i,1,1)%volr = 
-     &  pc_pi4/3d0*(gas_xarr(i+1)**3 - gas_xarr(i)**3)/help**3  !volume in outer radius units
-c
+
+c-- volume 
+      call gridvolume(in_igeom,gas_isvelocity,tsp_t)
 c
 c-- temperature
       if(in_srctype=='manu') then!{{{

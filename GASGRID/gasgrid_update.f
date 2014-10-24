@@ -73,19 +73,8 @@ c
 c
 c-- update volume and density 
 c============================
-      if(gas_isvelocity) then!{{{
-       help = gas_velout*tsp_t
-      else
-       if(gas_ny>1) stop 'gg_update: help: no 2D'
-       help = gas_lx
-      endif
-      !gas_vals2%vol = gas_vals2%volr*(gas_velout*tsp_tcenter)**3 !volume in cm^3
-      gas_vals2%vol = gas_vals2%volr*help**3 !volume in cm^3
-      gas_vals2%volcrp = gas_vals2%vol !effective volume in cm^3
-c
-c-- density
+      call gridvolume(in_igeom,gas_isvelocity,tsp_t)
       gas_vals2%rho = gas_vals2%mass/gas_vals2%vol
-c!}}}
 c
 c
 c-- update interpolated density and temperatures at cell edges
@@ -126,7 +115,7 @@ c
 c
 c-- gamma opacity
        gas_capgam = in_opcapgam*ye*
-     &   gas_vals2%mass/gas_vals2%volcrp
+     &   gas_vals2%mass/gas_vals2%vol
 c
        gas_siggreyprevit = gas_siggrey
        gas_temp = gas_temp/dtempfrac
