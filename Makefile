@@ -31,7 +31,7 @@ MODULES := profiledatamod.o \
 
 FILES := sourcenumbers.o vacancies.o boundary_source.o interior_source.o particle_advance.o \
   write_output.o wlgrid_setup.o \
-  read_bbxs_data.o restart_file.o dealloc_all.o specint.o initialnumbers.o binsrch.o \
+  read_bbxs_data.o restart_file.o dealloc_all.o initialnumbers.o binsrch.o \
   initialnumbers.o initial_particles.o energy_check.o tau_update.o \
   banner.o
 

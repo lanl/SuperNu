@@ -5,11 +5,12 @@ subroutine boundary_source
   use physconstmod
   use gasgridmod
   use inputparmod
+  use miscmod, only:specint
   implicit none
 
   integer :: ipart, ivac, ig, iig, z0
   real*8 :: r1, r2, P, mu0, r0, Esurfpart, wl0
-  real*8 :: denom2, x1, x2, specint, thelp, mfphelp
+  real*8 :: denom2, x1, x2, thelp, mfphelp
   real*8, dimension(gas_ng) :: emitsurfprobg  !surface emission probabilities 
   !, Ryan W.: size will=# of groups in first cell
 !

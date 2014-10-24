@@ -22,8 +22,8 @@ c-- line data type
 c
 c-- permanent data
       type bb_xs_data
-       real :: wl0    !in ang
-       real :: gxs    !g*xs = g*f*(pi*e**2/m_e/c)
+       real :: wl0   !in ang
+       real :: gxs   !g*xs = g*f*(pi*e**2/m_e/c)
        real :: chilw !exp(h*c*chi_low/(k*1e4))  ![chi] = cm^-1
        integer*2 :: iz
        integer*2 :: ii

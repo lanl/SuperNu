@@ -2,6 +2,7 @@ subroutine emission_probability
 
   use gasgridmod
   use physconstmod
+  use miscmod, only:specint
   implicit none
 
 !-----------------------
@@ -10,7 +11,6 @@ subroutine emission_probability
 
   integer :: i,j,k, ig
   real*8 :: x1, x2
-  real*8 :: specint
 
   !Calculating grouped volume emission probabilities:
   if(gas_opacanaltype=='pick') then

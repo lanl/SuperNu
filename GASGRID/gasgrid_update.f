@@ -1,7 +1,7 @@
       subroutine gasgrid_update
 c     -----------------------
       use physconstmod
-      use miscmod, only:warn
+      use miscmod
       use ionsmod
       use timestepmod
       use gasgridmod
@@ -18,10 +18,10 @@ c     -----------------------
 * - LTE EOS: ionization balance and electron density
 * - opacities
 ************************************************************************
-      logical :: do_output,lexist,planckcheck
+      logical :: do_output,lexist
       integer :: i,j,k,l,ig,it,istat
       real*8 :: help,x1,x2
-      real*8,external :: specint
+      real*8 :: hlparr(gas_ng+1)
       real*8 :: dtempfrac = 0.99d0
       real*8 :: natom1fr(gas_nx,gas_ny,gas_nz,-2:-1) !todo: memory storage order?
       real*8 :: natom2fr(gas_nx,gas_ny,gas_nz,-2:-1)
@@ -71,74 +71,75 @@ c-- use gamma deposition profiles if data available
 c
 c
 c
-c-- update volume and density 
-c============================
+c-- update volume, density, heat capacity
+c========================================
       call gridvolume(in_igeom,gas_isvelocity,tsp_t)
       gas_vals2%rho = gas_vals2%mass/gas_vals2%vol
-c
-c
-c-- update interpolated density and temperatures at cell edges
-c=============================================================
-!Calculating power law heat capacity
+c-- Calculating power law heat capacity
       gas_vals2%bcoef = in_cvcoef * gas_temp**in_cvtpwr *
      &  gas_vals2%rho**in_cvrpwr
-
+c
+c
 c-- add initial thermal input to gas_eext
       if(tsp_it==1) then
        gas_eext = sum(gas_vals2%bcoef*gas_temp*gas_vals2%vol)
       endif
 c
 c
-!     return !DEBUG
-c
-c
-c
-c-- opacity
-c==========
-c!{{{
 c
 c-- compute the starting tempurature derivative in the fleck factor
       if(tsp_it==1.or.in_opacanaltype/='none') then
-       gas_temp=dtempfrac*gas_temp
-       if(gas_isvelocity .and. in_opacanaltype=='none') then
-        call eos_update(.false.)
+       gas_temp = dtempfrac*gas_temp!{{{
+       if(in_opacanaltype=='none') then
+        if(.not.in_noeos) call eos_update(.false.)
        endif
 c
-       call analytic_opacity
-       if(in_opacanaltype=='none') then
+       if(in_opacanaltype/='none') then
+        call analytic_opacity
+       else
         if(in_ngs==0) then
          call physical_opacity
         else
          call physical_opacity_subgrid
         endif
        endif
-c
-c-- gamma opacity
-       gas_capgam = in_opcapgam*ye*
-     &   gas_vals2%mass/gas_vals2%vol
-c
-       gas_siggreyprevit = gas_siggrey
+c-- restore
        gas_temp = gas_temp/dtempfrac
+c
+       gas_siggreyprevit = gas_siggrey!}}}
       endif
+c
+c
 c
 c-- solve LTE EOS
 c================
-      if(gas_isvelocity) then
-       do_output = (in_pdensdump=='each' .or. !{{{
-     &   (in_pdensdump=='one' .and. tsp_it==1))
-c
-       call eos_update(do_output)
-      endif
+      do_output = (in_pdensdump=='each' .or.
+     &  (in_pdensdump=='one' .and. tsp_it==1))
+      if(.not.in_noeos) call eos_update(do_output)
 c
 c
-c-- simple physical group/grey opacities: Planck and Rosseland 
-      call analytic_opacity
-c-- add physical opacities
-c-- rtw: must avoid reset in group_opacity routine
-      if(in_opacanaltype=='none') then
+c
+c-- calculate opacities
+c======================
+c-- gamma opacity
+       gas_capgam = in_opcapgam*ye*gas_vals2%rho
+c
+c
+c-- simple analytical group/grey opacities: Planck and Rosseland 
+      if(in_opacanaltype/='none') then
+       call analytic_opacity
+      else
+c-- calculate physical opacities
 c-- test existence of input.opac file
        inquire(file='input.opac',exist=lexist)
-       if(lexist) then
+       if(.not.lexist) then
+c-- calculate opacities
+        if(in_ngs==0) then
+         call physical_opacity
+        else
+         call physical_opacity_subgrid
+        endif
+       else
 c-- read in opacities
         open(4,file='input.opac',status='old',iostat=istat)!{{{
         if(istat/=0) stop 'read_opac: no file: input.opac'
@@ -160,37 +161,26 @@ c-- read data
         close(4)
         write(6,*) 'read_opac: read successfully'
 !}}}
-       elseif(in_ngs==0) then
-c-- calculate opacities
-        call physical_opacity
-       else
-        call physical_opacity_subgrid
        endif
 c
-      endif
-c
 c-- Planck opacity
-      planckcheck = (.not.in_nobbopac .or. .not.in_nobfopac .or.
-     &  .not.in_noffopac)
-!Ryan,why is this conditional (drr 14/05/31)?
-      if(planckcheck) then
-       gas_siggrey = 0d0
+       gas_siggrey = 0d0!{{{
        do k=1,gas_nz
        do j=1,gas_ny
        do i=1,gas_nx
+        help = pc_h*pc_c/(pc_kb*gas_temp(i,j,k))
+        hlparr = help/gas_wl
         do ig=1,gas_ng
          x1 = pc_h*pc_c/(gas_wl(ig + 1)*pc_kb*gas_temp(i,j,k))
          x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i,j,k))
-         gas_siggrey(i,j,k) = gas_siggrey(i,j,k)+
-     &     15d0*gas_cap(ig,i,j,k)*specint(x1,x2,3)/pc_pi**4
+         gas_siggrey(i,j,k) = gas_siggrey(i,j,k) + 15d0/pc_pi**4*
+     &     sum(gas_cap(:,i,j,k)*specint(hlparr(2:),hlparr(:gas_ng-1),3))
         enddo
        enddo !i
        enddo !j
-       enddo !k
+       enddo !k!}}}
       endif
-      !write(*,*) gas_siggrey(1)
-      !write(*,*) gas_cap(:,1)
-      !gas_siggrey(:)=0.5*gas_cap(2,:)
+c
 c
 c-- write out opacities
 c----------------------
@@ -215,6 +205,7 @@ c-- body
 c-- close file
        close(4)
       endif !do_output !}}}
+c
 c
 c-- Calculating Fleck factor, leakage opacities
       call fleck_factor(dtempfrac)

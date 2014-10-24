@@ -135,13 +135,14 @@ program supernu
 !-- instantiating initial particles (if any)
   call initial_particles
 !
+!
 !-- time step loop
 !=================
   write(6,*)
   write(6,*) "starting time loop:"
   write(6,*) "===================="
   do it=in_ntres,tsp_nt
-!-- allow negative and zero it for temperature initialization purposes
+!-- allow negative and zero it for temperature initialization purposes!{{{
     tsp_it = max(it,1)
 !
 !-- reset particle clocks
@@ -216,7 +217,7 @@ program supernu
 !
 !-- write timestep timing to file
     if(it>0) call timing_timestep(impi)
-!
+!!}}}
   enddo !tsp_it
 !
 !

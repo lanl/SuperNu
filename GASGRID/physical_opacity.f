@@ -30,25 +30,18 @@ c-- ffxs
       integer :: iu,igg
       real*8 :: cap8
 c-- bfxs
-      integer :: ig,iz,ii,ie
+      integer :: il,ig,iz,ii,ie
       real*8 :: en,xs,wl
 c-- bbxs
       real*8 :: phi,ocggrnd,expfac,wl0,dwl
       real*8 :: caphelp
 c-- temporary cap array in the right order
       real*8 :: cap(nx,ny,nz,gas_ng)
-c-- special functions
-      integer :: binsrch
 c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
 c-- warn once
       logical :: lwarn
-!     integer,external :: memusg
-!c
-!c-- constants
-!old  wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
-!old  wlminlg = log(dble(in_wlmin))
 c
 c-- reset
       cap = 0d0
@@ -56,14 +49,12 @@ c
 c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_temp)
 c
-      call time(t0)
-!     write(6,*) 'memusg: physical opac:',memusg()
-c
 c-- thomson scattering
       if(.not.in_nothmson) then
-       gas_sig = cthomson*gas_vals2%nelec*
-     &   gas_vals2%natom/gas_vals2%vol
+       gas_sig = cthomson*gas_vals2%nelec*gas_vals2%natom/gas_vals2%vol
       endif
+c
+      call time(t0)
 c
 c-- bound-bound
       if(.not. in_nobbopac) then
@@ -80,26 +71,29 @@ c-- bound-bound
         enddo !k
        enddo !iz
 c
+       ig = 0
 c$omp parallel do
 c$omp& schedule(static)
-c$omp& private(iz,ii,wl0,dwl,wlinv,ig,phi,caphelp,expfac,ocggrnd)
-c$omp& firstprivate(grndlev,hckt)
+c$omp& private(iz,ii,wl0,dwl,wlinv,phi,caphelp,expfac,ocggrnd)
+c$omp& firstprivate(grndlev,hckt,ig)
 c$omp& shared(cap)
-       do l=1,bb_nline
-        iz = bb_xs(l)%iz
-        ii = bb_xs(l)%ii
-        wl0 = bb_xs(l)%wl0*pc_ang  !in cm
-        wlinv = 1d0/wl0  !in cm
+       do il=1,bb_nline
+        wl0 = bb_xs(il)%wl0*pc_ang  !in cm
 c-- ig pointer
-        ig = binsrch(wl0,gas_wl,gas_ng+1,in_ng)  !todo: thread safe?
-c--
+        if(wl0>gas_wl(ig+1)) then
+         ig = ig + 1  !lines are sorted
+         dwl = gas_wl(ig+1) - gas_wl(ig)  !in cm
+        endif
+c-- line in group
         if(ig<1) cycle
-        if(ig>gas_ng) cycle
-        dwl = gas_wl(ig+1) - gas_wl(ig)  !in cm
+        if(ig>gas_ng) cycle !can't exit in omp
+c
+        iz = bb_xs(il)%iz
+        ii = bb_xs(il)%ii
+        wlinv = 1d0/wl0  !in cm
 c-- profile function
 !old    phi = gas_ng*wlhelp*wl0/pc_c !line profile
         phi = wl0**2/(dwl*pc_c)
-!       write(6,*) 'phi',phi
 c-- evaluate caphelp
         do k=1,nz
         do j=1,ny
@@ -109,16 +103,16 @@ c-- oc high enough to be significant?
 *        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
          if(ocggrnd<=0d0) cycle
          expfac = 1d0 - exp(-hckt(i,j,k)*wlinv)
-         caphelp = phi*bb_xs(l)%gxs*ocggrnd*
-     &     exp(-bb_xs(l)%chilw*hckt(i,j,k))*expfac
+         caphelp = phi*bb_xs(il)%gxs*ocggrnd*
+     &     exp(-bb_xs(il)%chilw*hckt(i,j,k))*expfac
 !        if(caphelp==0.) write(6,*) 'cap0',cap(i,j,k,ig),phi,
-!    &     bb_xs(l)%gxs,ocggrnd,exp(-bb_xs(l)%chilw*hckt(i,j,k)),expfac
+!    &     bb_xs(il)%gxs,ocggrnd,exp(-bb_xs(il)%chilw*hckt(i,j,k)),expfac
          if(caphelp==0.) cycle
          cap(i,j,k,ig) = cap(i,j,k,ig) + caphelp
         enddo !i
         enddo !j
         enddo !k
-       enddo !l
+       enddo !il
 c$omp end parallel do!}}}
       endif !in_nobbopac
 c

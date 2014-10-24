@@ -9,5 +9,6 @@ c
 c
       include 'MISC/warn.f'
       include 'MISC/lcase.f'
+      include 'MISC/specint.f'
 c
       end module miscmod

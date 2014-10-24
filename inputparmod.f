@@ -77,11 +77,6 @@ c-- physical opacities
       real*8 :: in_epsline = 1d0      !line absorption fraction (the rest is scattering)
       logical :: in_noplanckweighting = .false. !disable planck weighting of rosseland opacities within group
       real*8 :: in_opacmixrossel = 1d0 !mix rosseland with planck average, 1=pure rosseland
-c-- test switches
-      logical :: in_nobbopac = .false.    !turn off bound-bound opacity
-      logical :: in_nobfopac = .false.    !turn off bound-bound opacity
-      logical :: in_noffopac = .false.    !turn off bound-bound opacity
-      logical :: in_nothmson = .false.    !turn off thomson scattering
 c
 c
 c-- analytic opacities
@@ -101,18 +96,24 @@ c-- absorption terms:
       real*8 :: in_sigtpwr = 0d0 !power law absorption opacity temperature exponent
       real*8 :: in_sigrpwr = 0d0 !power law absorption opacity density exponent
 c
-c
 c-- external source structure
       character(4) :: in_srctype='none'   !none|heav|strt|manu: external source structure type
       integer :: in_nheav = 0   !outer cell bound if heaviside ('heav') source
       real*8 :: in_theav = 0d0 !duration of heaviside source
       real*8 :: in_srcmax = 0d0 !peak source strength (ergs/cm^3/s)
-c-- disable all sources
-      logical :: in_novolsrc = .true.  !switch to turn off any volume source (could be useful for debugs)
 c
 c-- misc
       character(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
       character(4) :: in_pdensdump = 'off'   !off|one|each: write partial densities to file
+c
+c-- debug and test switches
+      logical :: in_noeos = .false.     !don't use the EOS
+      logical :: in_novolsrc = .false.  !switch to turn off any volume source (could be useful for debugs)
+c--
+      logical :: in_nobbopac = .false.  !turn off bound-bound opacity
+      logical :: in_nobfopac = .false.  !turn off bound-bound opacity
+      logical :: in_noffopac = .false.  !turn off bound-bound opacity
+      logical :: in_nothmson = .false.  !turn off thomson scattering
 c     
 c-- runtime parameter namelist
       namelist /inputpars/

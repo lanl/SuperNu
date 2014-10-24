@@ -2,6 +2,7 @@ subroutine analytic_opacity
 
   use gasgridmod
   use physconstmod
+  use miscmod, only:specint
   !use timestepmod
   implicit none
 
@@ -17,7 +18,6 @@ subroutine analytic_opacity
 
   integer :: ir, ig
   real*8 :: x1, x2  !unitless energy group bounds
-  real*8,external :: specint !debye type function integrator
 
   gas_siggrey = 0d0
   gas_cap = 0d0
