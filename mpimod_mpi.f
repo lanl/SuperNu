@@ -141,12 +141,9 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        !prt_done = .false.
 c-- allocating particle array for helper ranks
        allocate(prt_particles(prt_npartmax))
-       prt_particles%isvacant = .true.
-c--
+       allocate(prt_isvacant(prt_npartmax))
+       prt_isvacant = .true.
       endif
-      !if(impi==impi0) then
-      !   prt_particles%isvacant=.true.
-      !endif
 c
 c-- broadcast data
       call mpi_bcast(gas_nvolinit,nx*ny*nz,MPI_INTEGER,
@@ -447,7 +444,7 @@ c-- helper variables
 c
 c-- scattering part vacancy
       call mpi_scatter(prt_tlyvacant,prt_npartmax,MPI_LOGICAL,
-     &     prt_particles%isvacant,prt_npartmax,MPI_LOGICAL,impi0,
+     &     prt_isvacant,prt_npartmax,MPI_LOGICAL,impi0,
      &     MPI_COMM_WORLD,ierr)
 c
 c-- scattering part zone
@@ -519,7 +516,7 @@ c     -------------------------------!{{{
 ************************************************************************
 c
 c-- gathering part vacancy
-      call mpi_gather(prt_particles%isvacant,prt_npartmax,MPI_LOGICAL,
+      call mpi_gather(prt_isvacant,prt_npartmax,MPI_LOGICAL,
      &     prt_tlyvacant,prt_npartmax,MPI_LOGICAL,impi0,MPI_COMM_WORLD,
      &     ierr)
 c

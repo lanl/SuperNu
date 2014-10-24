@@ -1,4 +1,4 @@
-subroutine transport1(ptcl)
+subroutine transport1(ptcl,isvacant)
 
   use gasgridmod
   use timestepmod
@@ -8,6 +8,7 @@ subroutine transport1(ptcl)
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
+  logical,intent(inout) :: isvacant
 !##################################################
 !This subroutine passes particle parameters as input and modifies
 !them through one IMC transport event (Fleck&Cummings, 1971).  If
@@ -80,7 +81,7 @@ subroutine transport1(ptcl)
      else
         write(*,*) 'domain leak!!'
         prt_done = .true.
-        ptcl%isvacant = .true.
+        isvacant = .true.
      endif
   endif
 !
@@ -258,8 +259,8 @@ subroutine transport1(ptcl)
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
      if(r1<=gas_fcoef(z,1,1).and.prt_isimcanlog) then
-        ptcl%isvacant=.true.
-        prt_done=.true.
+        isvacant = .true.
+        prt_done = .true.
         gas_edep(z,1,1) = gas_edep(z,1,1) + E*elabfact
 !-- velocity effects accounting
         gas_evelo = gas_evelo+E*(1d0-elabfact)
@@ -352,7 +353,7 @@ subroutine transport1(ptcl)
      if (mu>=0.0d0) then!{{{
         if (z == gas_nx) then
 !           if(g/=1) then
-           ptcl%isvacant = .true.
+           isvacant = .true.
            prt_done = .true.
 !
 !-- retrieve lab frame group

@@ -1,4 +1,4 @@
-subroutine diffusion1(ptcl)
+subroutine diffusion1(ptcl,isvacant)
 
   use gasgridmod
   use timestepmod
@@ -8,6 +8,7 @@ subroutine diffusion1(ptcl)
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
+  logical,intent(inout) :: isvacant
 !##################################################
   !This subroutine passes particle parameters as input and modifies
   !them through one DDMC diffusion event (Densmore, 2007).  If
@@ -270,7 +271,7 @@ subroutine diffusion1(ptcl)
 
 !-- absorption sample
   if(r1>=0d0 .and. r1<PA) then
-     ptcl%isvacant = .true.
+     isvacant = .true.
      prt_done = .true.
      gas_edep(z,1,1) = gas_edep(z,1,1)+E
 
@@ -370,7 +371,7 @@ subroutine diffusion1(ptcl)
 !!{{{
 !-- checking if at outer bound
      if (z == gas_nx) then
-        ptcl%isvacant = .true.
+        isvacant = .true.
         prt_done = .true.
         gas_eright = gas_eright+E
 !-- outbound luminosity tally

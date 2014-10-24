@@ -87,7 +87,7 @@ subroutine initial_particles
              !Setting iir = zone of particle
              prt_particles(ipart)%zsrc = iir
              !Setting particle index to not vacant
-             prt_particles(ipart)%isvacant = .false.
+             prt_isvacant(ipart) = .false.
 
              isnotvacnt = .true.
           else

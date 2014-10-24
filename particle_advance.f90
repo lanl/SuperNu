@@ -25,6 +25,7 @@ subroutine particle_advance
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
 ! real*8 :: uul, uur, uumax, r0,r2,r3
+  logical,pointer :: isvacant
   integer, pointer :: zsrc
   real*8, pointer :: rsrc, musrc, esrc, wlsrc
   real*8 :: t0,t1  !timing
@@ -55,9 +56,12 @@ subroutine particle_advance
   nddmc = 0
   nimc = 0
   do ipart = 1, prt_npartmax
-     ptcl => prt_particles(ipart)
      ! Checking vacancy
-     if (ptcl%isvacant) cycle
+     if(prt_isvacant(ipart)) cycle
+!
+!-- active particle
+     isvacant => prt_isvacant(ipart)
+     ptcl => prt_particles(ipart)
      npckt = npckt + 1
 
      ! Assigning pointers to corresponding particle properties
@@ -96,7 +100,7 @@ subroutine particle_advance
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
-              ptcl%isvacant = .true.
+              isvacant = .true.
            endif
         endif
         !!}}}
@@ -114,7 +118,7 @@ subroutine particle_advance
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
-              ptcl%isvacant = .true.
+              isvacant = .true.
            endif
         endif
         !!}}}
@@ -219,7 +223,7 @@ subroutine particle_advance
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
-              ptcl%isvacant = .true.
+              isvacant = .true.
            endif
         endif
         !!}}}
@@ -237,7 +241,7 @@ subroutine particle_advance
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
-              ptcl%isvacant = .true.
+              isvacant = .true.
            endif
         endif
         !!}}}
@@ -254,14 +258,14 @@ subroutine particle_advance
 !     write(*,*) ipart
 !-----------------------------------------------------------------------        
      ! Advancing particle until census, absorption, or escape from domain
-     do while ((.not.prt_done).and.(.not.ptcl%isvacant))
+     do while ((.not.prt_done).and.(.not.isvacant))
         !Calling either diffusion or transport depending on particle type (ptcl%rtsrc)
         if (ptcl%rtsrc == 1.or.in_puretran) then
            nimc = nimc + 1
-           call transport1(ptcl)
+           call transport1(ptcl,isvacant)
         else
            nddmc = nddmc + 1
-           call diffusion1(ptcl)
+           call diffusion1(ptcl,isvacant)
         endif
 
 !-- transformation factor
@@ -272,11 +276,11 @@ subroutine particle_advance
         endif
 
 !-- Russian roulette for termination of exhausted particles
-        if (esrc<1d-6*ptcl%ebirth .and. .not.ptcl%isvacant) then
+        if (esrc<1d-6*ptcl%ebirth .and. .not.isvacant) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
            if(r1<0.5d0) then
-              ptcl%isvacant = .true.
+              isvacant = .true.
               prt_done = .true.
               gas_edep(zsrc,1,1) = gas_edep(zsrc,1,1) + esrc*elabfact
 !-- velocity effects accounting
@@ -293,7 +297,7 @@ subroutine particle_advance
 !-----------------------------------------------------------------------
 
 
-     if(.not.ptcl%isvacant) then
+     if(.not.isvacant) then
 
      ! Redshifting DDMC particle energy weights and wavelengths
      if(ptcl%rtsrc == 2.and.gas_isvelocity) then
@@ -362,7 +366,7 @@ subroutine particle_advance
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
-              ptcl%isvacant = .true.
+              isvacant = .true.
            endif
         endif
         !!}}}
@@ -380,7 +384,7 @@ subroutine particle_advance
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
-              ptcl%isvacant = .true.
+              isvacant = .true.
            endif
         endif
         !!}}}
@@ -392,7 +396,7 @@ subroutine particle_advance
      endif
      endif
 
-     if(.not.ptcl%isvacant) then
+     if(.not.isvacant) then
 !
 !-- radiation energy at census
      if(gas_isvelocity) then

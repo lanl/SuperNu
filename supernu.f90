@@ -149,7 +149,7 @@ program supernu
 !
 !-- reset particle clocks
     if(tsp_it<=tsp_ntres) then
-      where(.not.prt_particles%isvacant) prt_particles%tsrc = tsp_t
+      where(.not.prt_isvacant) prt_particles%tsrc = tsp_t
     endif
 !
 !-- Update tsp_t etc
@@ -160,7 +160,7 @@ program supernu
 
     if(impi==impi0) then
       write(6,'(a,i5,f8.3,"d",i12)') 'timestep:',it,tsp_t/pc_day, &
-         count(.not.prt_particles%isvacant)
+         count(.not.prt_isvacant)
 !-- update all non-permanent variables
       call gasgrid_update
 !-- number of source prt_particles per cell

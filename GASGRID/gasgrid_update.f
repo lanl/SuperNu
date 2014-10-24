@@ -90,8 +90,6 @@ c
 c
 c-- update interpolated density and temperatures at cell edges
 c=============================================================
-c-- keep track of temperature evolution
-      gas_temphist(:,:,:,tsp_it) = gas_temp
 !Calculating power law heat capacity
       gas_vals2%bcoef = in_cvcoef * gas_temp**in_cvtpwr *
      &  gas_vals2%rho**in_cvrpwr
@@ -130,8 +128,8 @@ c-- gamma opacity
        gas_capgam = in_opcapgam*ye*
      &   gas_vals2%mass/gas_vals2%volcrp
 c
-       gas_siggreyold=gas_siggrey
-       gas_temp=gas_temp/dtempfrac
+       gas_siggreyprevit = gas_siggrey
+       gas_temp = gas_temp/dtempfrac
       endif
 c
 c-- solve LTE EOS

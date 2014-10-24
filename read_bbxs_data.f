@@ -12,7 +12,7 @@ c     --------------------------------
 ************************************************************************
       real,parameter :: fconst = sngl(pc_pi*pc_e**2/(pc_me*pc_c))
       integer :: nlinall,ilinall
-      integer :: l,iz,ii,istat,llw,lhg
+      integer :: l,iz,ii,istat,llw,lhg,n
       real*8 :: t0,t1
 c
 c-- quick exit
@@ -39,8 +39,8 @@ c
 c-- allocate permanent storage space for line data
       if(nlinall<=0) stop 'rd_bbxs_data: no sigle line read in'
       allocate(bb_xs(nlinall))
-      write(6,*) 'allocate bb_xs:',
-     &  sizeof(prt_particles)/1024**2,"MB"
+      n = sizeof(bb_xs)/1024 !kB
+      write(6,*) 'ALLOC bb_xs:',n,"kB",n/1024,"MB",n/1024**2,"GB"
 c
       call time(t0)
       ilinall = 0

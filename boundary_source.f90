@@ -138,7 +138,7 @@ subroutine boundary_source
         prt_particles(ivac)%rtsrc = 2
      endif
 
-     prt_particles(ivac)%isvacant = .false.
+     prt_isvacant(ivac) = .false.
 
 
   enddo

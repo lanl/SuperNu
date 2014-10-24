@@ -131,7 +131,7 @@ subroutine interior_source
      !Setting ir = zone of particle
      ptcl%zsrc = ir
      !Setting particle index to not vacant
-     ptcl%isvacant = .false.
+     prt_isvacant(ivac) = .false.
      
      !source tally
      !if(ptcl%rtsrc==2) then
@@ -263,7 +263,7 @@ subroutine interior_source
      !Setting ir = zone of particle
      ptcl%zsrc = ir
      !Setting particle index to not vacant
-     ptcl%isvacant = .false.
+     prt_isvacant(ivac) = .false.
 !}}}
   enddo
 

@@ -26,7 +26,6 @@ module gasgridmod
   real*8,allocatable :: gas_capgam(:,:,:) !(gas_nx,gas_ny,gas_nz) Gamma ray gray opacity
 !
 !-- temperature structure history
-  real*8,allocatable :: gas_temphist(:,:,:,:) !(gas_nx,gas_ny,gas_nz,tim_nt)
   real*8,allocatable :: gas_temppreset(:,:,:,:) !(gas_nx,gas_ny,gas_nz,tim_nt)
   logical :: gas_isvelocity = .false.
   logical :: gas_novolsrc = .false. !no external volume source (e.g. radioactivity)
@@ -86,7 +85,8 @@ module gasgridmod
   
   real*8,allocatable :: gas_eraddens(:,:,:) !(gas_nx,gas_ny,gas_nz)
 !-- old Planck opacity for BDF-2 method
-  real*8,allocatable :: gas_siggreyold(:,:,:) !(gas_nx,gas_ny,gas_nz)
+  real*8,allocatable :: gas_siggreyprevit(:,:,:) !(gas_nx,gas_ny,gas_nz)
+  real*8,allocatable :: gas_tempprevit(:,:,:) !(gas_nx,gas_ny,gas_nz)
 !
 !-- outbound grouped luminosity
   real*8,allocatable :: gas_luminos(:) !(gas_ng)
@@ -147,6 +147,8 @@ module gasgridmod
     implicit none
     integer,intent(in) :: nt,ng
 !
+    integer :: n
+    integer*8 :: n8
     logical :: lexist
 !
     gas_nx = in_ndim(1)
@@ -186,7 +188,8 @@ module gasgridmod
     allocate(gas_edep(gas_nx,gas_ny,gas_nz))   !energy absorbed by material
     allocate(gas_siggrey(gas_nx,gas_ny,gas_nz)) !Planck opacity (gray)
 !-- rtw: using old gas_siggrey in bdf2 Fleck factor calculation
-    allocate(gas_siggreyold(gas_nx,gas_ny,gas_nz)) !Planck opacity (gray)
+    allocate(gas_siggreyprevit(gas_nx,gas_ny,gas_nz)) !Planck opacity (gray)
+    allocate(gas_tempprevit(gas_nx,gas_ny,gas_nz)) !previous temperature
 !
 !- Ryan W.: using power law to calculate gas_sig (similar to Planck opacity)
     allocate(gas_sig(gas_nx,gas_ny,gas_nz))    !grey scattering opacity
@@ -212,12 +215,18 @@ module gasgridmod
 !-- secondary
     allocate(gas_vals2(gas_nx,gas_ny,gas_nz))
     allocate(gas_capgam(gas_nx,gas_ny,gas_nz))
-!------------------------------------
-    allocate(gas_temphist(gas_nx,gas_ny,gas_nz,nt))
 
     allocate(gas_temp(gas_nx,gas_ny,gas_nz))  !cell average temperature
     allocate(gas_methodswap(gas_nx,gas_ny,gas_nz))
     allocate(gas_numcensus(gas_nx,gas_ny,gas_nz))  !# census prt_particles per cell
+!
+!-- output
+    n8 = gas_nx*gas_ny*gas_nz
+    n = (sizeof(gas_vals2) + n8*8*22)/1024 !kB
+    write(6,*) 'ALLOC gasgrid:',n,"kB",n/1024,"MB",n/1024**2,"GB"
+    n8 = gas_nx*gas_ny*gas_nz
+    n = ((8+8)*n8*gas_ng)/1024 !kB
+    write(6,*) 'ALLOC gas_cap:',n,"kB",n/1024,"MB",n/1024**2,"GB"
 !
 !-- read preset temperature profiles
     inquire(file='input.temp',exist=lexist)

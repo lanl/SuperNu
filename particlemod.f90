@@ -7,9 +7,9 @@ module particlemod
      real*8 :: rsrc, musrc, tsrc
      real*8 :: esrc, ebirth, wlsrc
      integer :: zsrc, rtsrc !,gsrc
-     logical :: isvacant,ldummy
   end type packet
   type(packet),allocatable,target :: prt_particles(:)  !(prt_npartmax)
+  logical,allocatable,target :: prt_isvacant(:)  !(prt_npartmax)
 !
   integer :: prt_npartmax, prt_ns, prt_ninit
   integer :: prt_nsurf, prt_nexsrc, prt_nnew, prt_ninitnew
@@ -49,6 +49,7 @@ module particlemod
 !***********************************************************************
 ! init particle module
 !***********************************************************************
+    integer :: n
 !
 !-- adopt input values in module internal storage
     prt_npartmax = npartmax
@@ -61,10 +62,10 @@ module particlemod
     prt_tauvtime = tauvtime
 !
 !-- allocate permanent storage (dealloc in dealloc_all.f)
-    allocate(prt_particles(prt_npartmax))
-    write(6,*) 'allocate prt_particles:',&
-       sizeof(prt_particles)/1024**2,"MB"
-    prt_particles%isvacant = .true.
+    allocate(prt_particles(prt_npartmax),prt_isvacant(prt_npartmax))
+    prt_isvacant = .true.
+    n = sizeof(prt_particles)/1024 !kB
+    write(6,*) 'ALLOC prt_particles:',n,"kB",n/1024,"MB",n/1024**2,"GB"
     if(.not.norestart) then
 !-- rand() count per rank allocation
        allocate(prt_tlyrandarr(nummespasint))
