@@ -58,7 +58,13 @@ subroutine diffusion2(vacnt,hyparam,zr,zz,r,z,theta,t,xi,om,ep,ep0,wl,trndx)
   g = binsrch(wl,gas_wl,gas_ng+1,in_ng)
 !-- checking group bounds
   if(g>gas_ng.or.g<1) then
-     stop 'particle_advance: particle group invalid'
+     if(g==gas_ng+1) then
+        g = gas_ng
+     elseif(g==0) then
+        g = 1
+     else
+        stop 'diffusion2 (1): particle group invalid'
+     endif
   endif
 
 !-- lump testing ---------------------------------------------
