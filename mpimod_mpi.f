@@ -7,7 +7,6 @@ c
       integer :: impi !mpi rank
       integer :: nmpi !number of mpi tasks
       integer,private :: ierr
-      integer :: status(MPI_STATUS_SIZE)
 c
       contains
 c

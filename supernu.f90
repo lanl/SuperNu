@@ -7,6 +7,7 @@ program supernu
   use particlemod
   use physconstmod
   use profiledatamod
+  use miscmod
 
   use inputstrmod
 
@@ -26,7 +27,8 @@ program supernu
 !***********************************************************************
   real*8 :: help,dt
   real*8 :: t_elapsed
-  integer :: ierr,ihelp,ng,ns,ig,it
+  integer :: ierr,ihelp,ng,ns,it
+  integer,external :: memusg
   logical :: lmpi0 = .false. !master rank flag
   real*8 :: t0,t1  !timing
 !
@@ -108,6 +110,9 @@ program supernu
 !-- initial radiation energy
    call initialnumbers
 !
+!-- memory statistics
+   write(6,*) 'memusg: after setup:',memusg()
+!
    call time(t1)
    t_setup = t1-t0!}}}
   endif !impi
@@ -144,7 +149,7 @@ program supernu
 !
 !-- reset particle clocks
     if(tsp_it<=tsp_ntres) then
-      where(.not.prt_particles%isvacant) prt_particles%tsrc = tsp_it
+      where(.not.prt_particles%isvacant) prt_particles%tsrc = tsp_t
     endif
 !
 !-- Update tsp_t etc
@@ -154,7 +159,8 @@ program supernu
     call tau_update
 
     if(impi==impi0) then
-      write(6,'(a,i5,f8.3,"d")') 'timestep:',it,tsp_t/pc_day
+      write(6,'(a,i5,f8.3,"d",i12)') 'timestep:',it,tsp_t/pc_day, &
+         count(.not.prt_particles%isvacant)
 !-- update all non-permanent variables
       call gasgrid_update
 !-- number of source prt_particles per cell

@@ -14,7 +14,6 @@ subroutine temperature_update
 !##################################################
   integer :: i,j,k
   real*8 :: dtemp, dtemp2
-  logical,save :: first=.true.
 
   !calculating radiation energy density
   gas_eraddens=gas_eraddens/gas_vals2%vol

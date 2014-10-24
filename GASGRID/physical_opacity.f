@@ -44,6 +44,7 @@ c-- thomson scattering
      &  *pc_c**4)
 c-- warn once
       logical :: lwarn
+!     integer,external :: memusg
 !c
 !c-- constants
 !old  wlhelp = 1d0/log(in_wlmax/dble(in_wlmin))
@@ -56,6 +57,7 @@ c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_temp)
 c
       call time(t0)
+!     write(6,*) 'memusg: physical opac:',memusg()
 c
 c-- thomson scattering
       if(.not.in_nothmson) then

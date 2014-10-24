@@ -62,6 +62,8 @@ module particlemod
 !
 !-- allocate permanent storage (dealloc in dealloc_all.f)
     allocate(prt_particles(prt_npartmax))
+    write(6,*) 'allocate prt_particles:',&
+       sizeof(prt_particles)/1024**2,"MB"
     prt_particles%isvacant = .true.
     if(.not.norestart) then
 !-- rand() count per rank allocation

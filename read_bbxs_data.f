@@ -39,6 +39,8 @@ c
 c-- allocate permanent storage space for line data
       if(nlinall<=0) stop 'rd_bbxs_data: no sigle line read in'
       allocate(bb_xs(nlinall))
+      write(6,*) 'allocate bb_xs:',
+     &  sizeof(prt_particles)/1024**2,"MB"
 c
       call time(t0)
       ilinall = 0
