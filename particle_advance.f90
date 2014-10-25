@@ -26,8 +26,8 @@ subroutine particle_advance
 ! real*8 :: xx0, bmax
 ! real*8 :: uul, uur, uumax, r0,r2,r3
   logical,pointer :: isvacant
-  integer, pointer :: zsrc
-  real*8, pointer :: rsrc, musrc, esrc, wlsrc
+  integer, pointer :: zsrc, iy, iz
+  real*8, pointer :: rsrc, musrc, esrc, wlsrc, y, z, om
   real*8 :: t0,t1  !timing
 !
   type(packet),pointer :: ptcl
@@ -35,8 +35,10 @@ subroutine particle_advance
   logical,parameter :: isshift=.true.
 !-- statement function
   integer :: l
-  real*8 :: dx
+  real*8 :: dx,dy,dz
   dx(l) = gas_xarr(l+1) - gas_xarr(l)
+  dy(l) = gas_yarr(l+1) - gas_yarr(l)
+  dz(l) = gas_zarr(l+1) - gas_zarr(l)
 
   gas_edep = 0.0
   gas_erad = 0.0
@@ -63,13 +65,30 @@ subroutine particle_advance
      isvacant => prt_isvacant(ipart)
      ptcl => prt_particles(ipart)
      npckt = npckt + 1
-
-     ! Assigning pointers to corresponding particle properties
-     zsrc => ptcl%zsrc
-     wlsrc => ptcl%wlsrc
-     rsrc => ptcl%rsrc
-     musrc => ptcl%musrc
-     esrc => ptcl%esrc
+!
+!-- assigning pointers to corresponding particle properties
+     select case(in_igeom)
+!-- 1D
+     case(1)
+        zsrc => ptcl%zsrc
+        wlsrc => ptcl%wlsrc
+        rsrc => ptcl%rsrc
+        musrc => ptcl%musrc
+        esrc => ptcl%esrc
+!-- 2D
+     case(2)
+        zsrc => ptcl%zsrc
+        iy => ptcl%iy
+        wlsrc => ptcl%wlsrc
+        rsrc => ptcl%rsrc
+        y => ptcl%y
+        musrc => ptcl%musrc
+        om => ptcl%om
+        esrc => ptcl%esrc
+!-- 3D
+     case(3)
+        stop 'particle_advance: no 3D transport'
+     endselect
 
      prt_done=.false.
 

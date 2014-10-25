@@ -46,10 +46,8 @@ subroutine initial_particles
 !-- increasing cell occupancy
      ijkused(i,j,k) = ijkused(i,j,k)+1
 !
-!-- setting i,j,k = zone of particle
+!-- setting 1st cell index
      prt_particles(ipart)%zsrc = i
-     prt_particles(ipart)%iy = j
-     prt_particles(ipart)%iz = k
 
 !-- setting particle index to not vacant
      prt_isvacant(ipart) = .false.
@@ -108,6 +106,8 @@ subroutine initial_particles
 
 !-- 2D
      case(2)
+!-- setting 2nd cell index
+        prt_particles(ipart)%iy = j
 !-- calculating position
         r1 = rand()
         prt_particles(ipart)%rsrc = sqrt(r1*gas_xarr(i+1)**2 + &

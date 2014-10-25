@@ -62,11 +62,9 @@ subroutine interior_source
      enddo
 !-- increasing cell occupancy
      ijkused(i,j,k) = ijkused(i,j,k)+1
-!
-!-- setting i,j,k = zone of particle
+
+!-- setting 1st cell index
      ptcl%zsrc = i
-     ptcl%iy = j
-     ptcl%iz = k
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
@@ -112,7 +110,7 @@ subroutine interior_source
         ptcl%rsrc = (r1*gas_xarr(i+1)**3 + &
              (1.0-r1)*gas_xarr(i)**3)**(1.0/3.0)
 !-- setting IMC logical
-        lhelp = ((gas_sig(i,j,k)+gas_cap(iig,i,j,k))*dx(i)* &
+        lhelp = ((gas_sig(i,1,1)+gas_cap(iig,i,1,1))*dx(i)* &
              help < prt_tauddmc).or.(in_puretran)
 
 !-- if velocity-dependent, transforming direction
@@ -128,6 +126,8 @@ subroutine interior_source
 
 !-- 2D
      case(2)
+!-- setting 2nd cell index
+        ptcl%iy = j
 !-- calculating position
         r1 = rand()
         ptcl%rsrc = sqrt(r1*gas_xarr(i+1)**2 + &
@@ -218,10 +218,8 @@ subroutine interior_source
 !-- increasing cell occupancy
      ijkused(i,j,k) = ijkused(i,j,k)+1
 !
-!-- setting i,j,k = zone of particle
+!-- setting 1st cell index
      ptcl%zsrc = i
-     ptcl%iy = j
-     ptcl%iz = k
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
@@ -264,8 +262,8 @@ subroutine interior_source
         r2 = 1d0
         il = max(i-1,1)  !-- left neighbor
         ir = min(i+1,gas_nx)  !-- right neighbor
-        uul = .5d0*(gas_temp(il,j,k)**4 + gas_temp(i,j,k)**4)
-        uur = .5d0*(gas_temp(ir,j,k)**4 + gas_temp(i,j,k)**4)
+        uul = .5d0*(gas_temp(il,1,1)**4 + gas_temp(i,1,1)**4)
+        uur = .5d0*(gas_temp(ir,1,1)**4 + gas_temp(i,1,1)**4)
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -280,7 +278,7 @@ subroutine interior_source
         enddo
         ptcl%rsrc = x0
 !-- setting IMC logical
-        lhelp = ((gas_sig(i,j,k)+gas_cap(iig,i,j,k))*dx(i)* &
+        lhelp = ((gas_sig(i,1,1)+gas_cap(iig,i,1,1))*dx(i)* &
              help < prt_tauddmc).or.(in_puretran)
 
 !-- if velocity-dependent, transforming direction
@@ -295,14 +293,16 @@ subroutine interior_source
 
 !-- 2D
      case(2)
+!-- setting 2nd cell index
+        ptcl%iy = j
 !-- calculating position:
 !-- source tilting in x
         r3 = 0d0
         r2 = 1d0
         il = max(i-1,1)  !-- left neighbor
         ir = min(i+1,gas_nx)  !-- right neighbor
-        uul = .5d0*(gas_temp(il,j,k)**4 + gas_temp(i,j,k)**4)
-        uur = .5d0*(gas_temp(ir,j,k)**4 + gas_temp(i,j,k)**4)
+        uul = .5d0*(gas_temp(il,j,1)**4 + gas_temp(i,j,1)**4)
+        uur = .5d0*(gas_temp(ir,j,1)**4 + gas_temp(i,j,1)**4)
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -319,8 +319,8 @@ subroutine interior_source
         r2 = 1d0
         il = max(j-1,1)  !-- lower neighbor
         ir = min(j+1,gas_ny)  !-- upper neighbor
-        uul = .5d0*(gas_temp(i,il,k)**4 + gas_temp(i,j,k)**4)
-        uur = .5d0*(gas_temp(i,ir,k)**4 + gas_temp(i,j,k)**4)
+        uul = .5d0*(gas_temp(i,il,1)**4 + gas_temp(i,j,1)**4)
+        uur = .5d0*(gas_temp(i,ir,1)**4 + gas_temp(i,j,1)**4)
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
