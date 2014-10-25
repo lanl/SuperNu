@@ -110,8 +110,8 @@ subroutine initial_particles
      case(2)
 !-- calculating position
         r1 = rand()
-        prt_particles(ipart)%rsrc = (r1*gas_xarr(i+1)**2 + &
-             (1d0-r1)*gas_xarr(i)**2)**(0.5d0)
+        prt_particles(ipart)%rsrc = sqrt(r1*gas_xarr(i+1)**2 + &
+             (1d0-r1)*gas_xarr(i)**2)
         r1 = rand()
         prt_particles(ipart)%y = r1*gas_yarr(j+1) + &
              (1d0-r1)*gas_yarr(j)
