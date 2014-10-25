@@ -17,7 +17,7 @@ subroutine particle_advance
   !are being handled in separate subroutines but this may be changed to reduce
   !total subroutine calls in program.
 !##################################################
-
+  logical :: lhelp
   integer*8 :: nddmc, nimc, npckt
   integer :: ipart, ig
   integer,external :: binsrch
@@ -29,6 +29,7 @@ subroutine particle_advance
   integer, pointer :: zsrc, iy, iz
   real*8, pointer :: rsrc, musrc, esrc, wlsrc, y, z, om
   real*8 :: t0,t1  !timing
+  real*8 :: labfact, cmffact, azitrfm
 !
   type(packet),pointer :: ptcl
 !
@@ -75,6 +76,11 @@ subroutine particle_advance
         rsrc => ptcl%rsrc
         musrc => ptcl%musrc
         esrc => ptcl%esrc
+!-- 1-dir*v/c
+        if(gas_isvelocity.and.ptcl%rtsrc==1) then
+           labfact = 1d0-rsrc*musrc/pc_c
+        endif
+
 !-- 2D
      case(2)
         zsrc => ptcl%zsrc
@@ -85,6 +91,12 @@ subroutine particle_advance
         musrc => ptcl%musrc
         om => ptcl%om
         esrc => ptcl%esrc
+!-- 1-dir*v/c
+        if(gas_isvelocity.and.ptcl%rtsrc==1) then
+           labfact = 1d0-(musrc*y+sqrt(1d0-musrc**2) * &
+                cos(om)*rsrc)/pc_c
+        endif
+
 !-- 3D
      case(3)
         stop 'particle_advance: no 3D transport'
@@ -95,7 +107,7 @@ subroutine particle_advance
      ! Looking up group
      if(ptcl%rtsrc==1) then
         if(gas_isvelocity) then!{{{
-           ig = binsrch(wlsrc/(1d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1,in_ng)
+           ig = binsrch(wlsrc/labfact,gas_wl,gas_ng+1,in_ng)
         else
            ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
         endif
@@ -105,14 +117,14 @@ subroutine particle_advance
            if(ig>gas_ng) then
               ig=gas_ng
               if(gas_isvelocity) then
-                 wlsrc=gas_wl(gas_ng+1)*(1.0d0-rsrc*musrc/pc_c)
+                 wlsrc=gas_wl(gas_ng+1)*labfact
               else
                  wlsrc=gas_wl(gas_ng+1)
               endif
            elseif(ig<1) then
               ig=1
               if(gas_isvelocity) then
-                 wlsrc=gas_wl(1)*(1.0d0-rsrc*musrc/pc_c)
+                 wlsrc=gas_wl(1)*labfact
               else
                  wlsrc=gas_wl(1)
               endif
@@ -151,66 +163,72 @@ subroutine particle_advance
         else
            help = 1d0
         endif
-        if ((gas_sig(zsrc,1,1)+gas_cap(ig,zsrc,1,1))*dx(zsrc) &
-             *help<prt_tauddmc) then
-           !write(*,*) 'here', ig, wlsrc, esrc
-           if (ptcl%rtsrc == 2) then
-              gas_methodswap(zsrc,1,1)=gas_methodswap(zsrc,1,1)+1
+!
+!-- selecting geometry
+        select case(in_igeom)
+
+!-- 1D
+        case(1)
+           lhelp = (gas_sig(zsrc,1,1)+gas_cap(ig,zsrc,1,1)) * &
+                dx(zsrc)*help<prt_tauddmc
+           if (lhelp) then
+              if (ptcl%rtsrc == 2) then
+                 gas_methodswap(zsrc,1,1)=gas_methodswap(zsrc,1,1)+1
 !-- sampling position uniformly
-              r1 =  rand()
-              prt_tlyrand = prt_tlyrand+1
-              rsrc = (r1*gas_xarr(zsrc+1)**3 + &
-                   (1.0-r1)*gas_xarr(zsrc)**3)**(1.0/3.0)
-!-- sampling position from source tilt
-!               r1 = 0d0
-!               r2 = 1d0
-!               irl = max(zsrc-1,1)  !-- left neighbor
-!               irr = min(zsrc+1,gas_nx)  !-- right neighbor
-!               uul = .5d0*(gas_temp(irl)**4 + gas_temp(zsrc)**4)
-!               uur = .5d0*(gas_temp(irr)**4 + gas_temp(zsrc)**4)
-!               uumax = max(uul,uur)
-!               do while (r2 > r1)
-!                  r3 = rand()
-!                  prt_tlyrand = prt_tlyrand+1
-!                  r0 = (r3*gas_xarr(zsrc+1)**3+(1.0-r3)*gas_xarr(zsrc)**3)**(1.0/3.0)
-!                  r3 = (r0-gas_xarr(zsrc))/dx(zsrc)
-!                  r1 = (r3*uur+(1d0-r3)*uul)/uumax
-!                  r2 = rand()
-!                  prt_tlyrand = prt_tlyrand+1
-!               enddo
-!               rsrc = r0
-!
+                 r1 =  rand()
+                 prt_tlyrand = prt_tlyrand+1
+                 rsrc = (r1*gas_xarr(zsrc+1)**3 + &
+                      (1.0-r1)*gas_xarr(zsrc)**3)**(1.0/3.0)
 !-- sampling angle isotropically
-              r1 = rand()
-              prt_tlyrand = prt_tlyrand+1
-              musrc = 1.0 - 2.0*r1
-              if(gas_isvelocity) then
-                 musrc = (musrc + rsrc/pc_c)/(1.0 + rsrc*musrc/pc_c)
-!-- velocity effects accounting
-                 gas_evelo=gas_evelo+esrc*(1d0-1d0/(1.0 - musrc*rsrc/pc_c))
-!
-                 esrc = esrc/(1.0 - musrc*rsrc/pc_c)
-                 ptcl%ebirth = ptcl%ebirth/(1.0 - musrc*rsrc/pc_c)
-              endif
                  r1 = rand()
                  prt_tlyrand = prt_tlyrand+1
-                 wlsrc = 1d0/(r1/gas_wl(ig+1)+(1d0-r1)/gas_wl(ig))
-!              endif
-              !
+                 musrc = 1.0 - 2.0*r1
+                 if(gas_isvelocity) then
+!-- 1+dir*v/c
+                    cmffact = 1d0+rsrc*musrc/pc_c
+!-- mu
+                    musrc = (musrc+rsrc/pc_c)/cmffact
+                 endif
+!-- 1-dir*v/c
+                 labfact = 1d0-rsrc*musrc/pc_c
+              else
+                 if(ptcl%rtsrc==1) then
+                    gas_methodswap(zsrc,1,1)=gas_methodswap(zsrc,1,1)+1
+                 endif
+              endif!}}}
+           endif
+
+!-- 2D
+        case(2)
+
+!-- 3D
+        case(3)
+           stop 'particle_advance: no 3D transport'
+        endselect
+
+        if (lhelp) then
+           if (ptcl%rtsrc == 2) then
               if(gas_isvelocity) then
-                 wlsrc = wlsrc*(1.0-musrc*rsrc/pc_c)
+!-- velocity effects accounting
+                 gas_evelo=gas_evelo+esrc*(1d0-1d0/labfact)
+!
+                 esrc = esrc/labfact
+                 ptcl%ebirth = ptcl%ebirth/labfact
+              endif
+              r1 = rand()
+              prt_tlyrand = prt_tlyrand+1
+              wlsrc = 1d0/(r1/gas_wl(ig+1)+(1d0-r1)/gas_wl(ig))
+              if(gas_isvelocity) then
+                 wlsrc = wlsrc*labfact
               endif
            endif
            ptcl%rtsrc = 1
         else
-           if(ptcl%rtsrc==1) then
-              if(gas_isvelocity) then
-                 gas_evelo = gas_evelo+esrc*musrc*rsrc/pc_c
-                 esrc = esrc*(1.0 - musrc*rsrc/pc_c)
-                 ptcl%ebirth = ptcl%ebirth*(1.0 - musrc*rsrc/pc_c)
-                 wlsrc = wlsrc/(1.0 - musrc*rsrc/pc_c)
-              endif
-              gas_methodswap(zsrc,1,1)=gas_methodswap(zsrc,1,1)+1
+           if(ptcl%rtsrc==1.and.gas_isvelocity) then
+              gas_evelo = gas_evelo+esrc*(1d0-labfact)
+              esrc = esrc*labfact
+              ptcl%ebirth = ptcl%ebirth*labfact
+              wlsrc = wlsrc/labfact
            endif
            ptcl%rtsrc = 2
         endif!}}}
