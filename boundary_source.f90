@@ -9,9 +9,11 @@ subroutine boundary_source
 
   logical :: lhelp
   integer :: ipart, ivac, ig, iig, i,j,k
-  real*8 :: r1, r2, P, mu0, x0, y0, z0, esurfpart, wl0
+  real*8 :: r1, r2, P, mu0, x0, y0, z0, esurfpart, wl0, om0
   real*8 :: denom2, wl1, wl2, thelp, mfphelp
   real*8 :: srftemp = 1d4
+  real*8 :: cmffact,azitrfm
+  integer, external :: binsrch
   real*8, external :: specint
   real*8, dimension(gas_ng) :: emitsurfprobg  !surface emission probabilities 
 
@@ -44,7 +46,7 @@ subroutine boundary_source
         emitsurfprobg(3) = 0d0
      enddo
   else
-     select case
+     select case(in_igeom)
 !-- 1D: sphere surface
      case(1)
         i = gas_nx
