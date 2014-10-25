@@ -24,6 +24,7 @@ subroutine analytic_source
     return
   elseif(gas_srctype=='heav') then
      !Heaviside source (uniform source sphere)!{{{
+     if(gas_ny>1) stop 'analytic_source: heav: no 2D'
      if (tsp_t<=(in_tfirst+gas_theav)*pc_day) then
         do i = 1, min(gas_nheav,gas_nx)
            gas_emitex(i,1,1) = gas_srcmax * &
@@ -47,6 +48,7 @@ subroutine analytic_source
      enddo!}}}
   elseif(gas_srctype=='manu') then
      !!{{{
+     if(gas_ny>1) stop 'analytic_source: manu: no 2D'
 !
 !-- radiation source
      call generate_manuradsrc(in_totmass,in_sigcoef,tsp_t,tsp_dt)

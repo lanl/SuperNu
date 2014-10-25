@@ -60,7 +60,7 @@ subroutine initial_particles
 !-- setting type
      prt_particles(ipart)%rtsrc = 1
 
-!-- calculating wavelegth
+!-- calculating wavelength
      denom2 = 0d0
      r1=rand()
      prt_tlyrand = prt_tlyrand+1
@@ -116,7 +116,7 @@ subroutine initial_particles
         prt_particles(ipart)%y = r1*gas_yarr(j+1) + &
              (1d0-r1)*gas_yarr(j)
 
-!-- sampling azimuthal angle of direction (off radial axis)
+!-- sampling azimuthal angle of direction
         r1 = rand()
         om0 = pc_pi2*r1
 
