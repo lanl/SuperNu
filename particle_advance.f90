@@ -26,7 +26,7 @@ subroutine particle_advance
 ! real*8 :: xx0, bmax
 ! real*8 :: uul, uur, uumax, r0,r2,r3
   logical,pointer :: isvacant
-  integer, pointer :: zsrc, iy, iz
+  integer, pointer :: zsrc, iy
   real*8, pointer :: rsrc, musrc, esrc, wlsrc, y, z, om
   real*8 :: t0,t1  !timing
   real*8 :: labfact, cmffact, azitrfm
@@ -459,16 +459,20 @@ subroutine particle_advance
         if(ig<gas_ng) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           x1 = gas_cap(ig,zsrc,1,1)
+           select case(in_igeom)
+           case(1)
+              x1 = gas_cap(ig,zsrc,1,1)
+           case(2)
+              x1 = gas_cap(ig,zsrc,iy,1)
+           case(3)
+              stop 'particle_advance: no 3D transport'
+           endselect
            x2 = gas_wl(ig)/(pc_c*tsp_t*(gas_wl(ig+1)-gas_wl(ig)))
            if(r1<x2/(x1+x2)) then
-!            if((gas_sig(zsrc,1,1)+gas_cap(ig+1,zsrc,1,1))*dx(zsrc) &
-!                 *tsp_t>=prt_tauddmc) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               wlsrc = 1d0/(r1/gas_wl(ig+1)+(1d0-r1)/gas_wl(ig))
               wlsrc = wlsrc*exp(tsp_dt/tsp_t)
-!            endif
            endif
         endif
         !!}}}
@@ -479,7 +483,7 @@ subroutine particle_advance
      ! Looking up group
      if(ptcl%rtsrc==1) then
         if(gas_isvelocity) then!{{{
-           ig = binsrch(wlsrc/(1.0d0-rsrc*musrc/pc_c),gas_wl,gas_ng+1,in_ng)
+           ig = binsrch(wlsrc/labfact,gas_wl,gas_ng+1,in_ng)
         else
            ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
         endif
@@ -488,14 +492,14 @@ subroutine particle_advance
            if(ig>gas_ng) then
               ig=gas_ng
               if(gas_isvelocity) then
-                 wlsrc=gas_wl(gas_ng+1)*(1.0d0-rsrc*musrc/pc_c)
+                 wlsrc=gas_wl(gas_ng+1)*labfact
               else
                  wlsrc=gas_wl(gas_ng+1)
               endif
            elseif(ig<1) then
               ig=1
               if(gas_isvelocity) then
-                 wlsrc=gas_wl(1)*(1.0d0-rsrc*musrc/pc_c)
+                 wlsrc=gas_wl(1)*labfact
               else
                  wlsrc=gas_wl(1)
               endif
@@ -528,7 +532,17 @@ subroutine particle_advance
      
      if(isshift) then
      if ((gas_isvelocity).and.(ptcl%rtsrc==1)) then
-       call advection1(.false.,ig,zsrc,rsrc)
+        select case(in_igeom)
+!-- 1D
+        case(1)
+           call advection1(.false.,ig,zsrc,rsrc)
+!-- 2D
+        case(2)
+           call advection2(.false.,ig,zsrc,iy,rsrc,y)
+!-- 3D
+        case(3)
+           stop 'particle_advance: no 3D transport'
+        endselect
      endif
      endif
 
