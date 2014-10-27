@@ -8,7 +8,8 @@ subroutine particle_advance
   use timingmod
   use mpimod
   implicit none
-
+!
+  integer,target :: one = 1
 !##################################################
   !This subroutine propagates all existing particles that are not vacant
   !during a time step.  Particles may generally undergo a physical interaction
@@ -26,7 +27,7 @@ subroutine particle_advance
 ! real*8 :: xx0, bmax
 ! real*8 :: uul, uur, uumax, r0,r2,r3
   logical,pointer :: isvacant
-  integer, pointer :: zsrc, iy
+  integer, pointer :: zsrc, iy, iz
   real*8, pointer :: rsrc, musrc, esrc, wlsrc, y, z, om
   real*8 :: t0,t1  !timing
   real*8 :: labfact, cmffact, azitrfm
@@ -68,14 +69,17 @@ subroutine particle_advance
      npckt = npckt + 1
 !
 !-- assigning pointers to corresponding particle properties
+     zsrc => ptcl%zsrc
+     wlsrc => ptcl%wlsrc
+     rsrc => ptcl%rsrc
+     musrc => ptcl%musrc
+     esrc => ptcl%esrc
      select case(in_igeom)
+
 !-- 1D
      case(1)
-        zsrc => ptcl%zsrc
-        wlsrc => ptcl%wlsrc
-        rsrc => ptcl%rsrc
-        musrc => ptcl%musrc
-        esrc => ptcl%esrc
+        iy => one
+        iz => one
 !-- 1-dir*v/c
         if(gas_isvelocity.and.ptcl%rtsrc==1) then
            labfact = 1d0-rsrc*musrc/pc_c
@@ -83,14 +87,10 @@ subroutine particle_advance
 
 !-- 2D
      case(2)
-        zsrc => ptcl%zsrc
         iy => ptcl%iy
-        wlsrc => ptcl%wlsrc
-        rsrc => ptcl%rsrc
+        iz => one
         y => ptcl%y
-        musrc => ptcl%musrc
         om => ptcl%om
-        esrc => ptcl%esrc
 !-- 1-dir*v/c
         if(gas_isvelocity.and.ptcl%rtsrc==1) then
            labfact = 1d0-(musrc*y+sqrt(1d0-musrc**2) * &
@@ -228,6 +228,11 @@ subroutine particle_advance
                          sqrt(1d0-musrc**2)*cos(om)+rsrc/pc_c)
 !-- mu
                     musrc = (musrc+y/pc_c)/cmffact
+                    if(musrc>1d0) then
+                       musrc = 1d0
+                    elseif(musrc<-1d0) then
+                       musrc = -1d0
+                    endif
 !-- om
                     if(azitrfm >= 0d0) then
                        om = azitrfm
@@ -375,7 +380,7 @@ subroutine particle_advance
               if(r1<0.5d0) then
                  isvacant = .true.
                  prt_done = .true.
-                 gas_edep(zsrc,1,1) = gas_edep(zsrc,1,1) + esrc*labfact
+                 gas_edep(zsrc,iy,iz) = gas_edep(zsrc,iy,iz) + esrc*labfact
 !-- velocity effects accounting
                  if(ptcl%rtsrc==1) gas_evelo = gas_evelo + esrc*(1d0-labfact)
               else
@@ -412,7 +417,7 @@ subroutine particle_advance
               if(r1<0.5d0) then
                  isvacant = .true.
                  prt_done = .true.
-                 gas_edep(zsrc,iy,1) = gas_edep(zsrc,iy,1) + esrc*labfact
+                 gas_edep(zsrc,iy,iz) = gas_edep(zsrc,iy,iz) + esrc*labfact
 !-- velocity effects accounting
                  if(ptcl%rtsrc==1) gas_evelo = gas_evelo + esrc*(1d0-labfact)
               else
@@ -459,14 +464,7 @@ subroutine particle_advance
         if(ig<gas_ng) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           select case(in_igeom)
-           case(1)
-              x1 = gas_cap(ig,zsrc,1,1)
-           case(2)
-              x1 = gas_cap(ig,zsrc,iy,1)
-           case(3)
-              stop 'particle_advance: no 3D transport'
-           endselect
+           x1 = gas_cap(ig,zsrc,iy,iz)
            x2 = gas_wl(ig)/(pc_c*tsp_t*(gas_wl(ig+1)-gas_wl(ig)))
            if(r1<x2/(x1+x2)) then
               r1 = rand()
