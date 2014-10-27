@@ -32,7 +32,6 @@ c-- agnostic grid setup (rev. 200) ----------------------------------
       gas_zarr = str_zleft
 c
 c-- agnostic mass setup (rev. 200) ----------------------------------
-      if(gas_ny>1) stop 'gg_setup: str_mass 1D'
       gas_vals2%mass = str_mass
 
 c-- volume 
