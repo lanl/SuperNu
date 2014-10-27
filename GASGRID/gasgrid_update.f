@@ -221,7 +221,7 @@ c-- Calculating Fleck factor, leakage opacities
 c-- Calculating emission probabilities for each group in each cell
       call emission_probability
 c-- Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
-      select case
+      select case(in_igeom)
 c-- 1D
       case(1)
          call leakage_opacity1
