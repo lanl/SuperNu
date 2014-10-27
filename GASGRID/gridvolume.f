@@ -21,7 +21,7 @@ c
       select case(igeom)
       case(1)
        gas_vals2(:,1,1)%vol = pc_pi43*t**3 *
-     &   (gas_xarr(2:)**3 - gas_xarr(:gas_nx-1)**3)
+     &   (gas_xarr(2:)**3 - gas_xarr(:gas_nx)**3)
       case(2)
        forall(i=1:gas_nx,j=1:gas_ny)
         gas_vals2(i,j,1)%vol = pc_pi*t**3 *
