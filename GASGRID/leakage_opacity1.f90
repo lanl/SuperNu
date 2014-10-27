@@ -1,4 +1,4 @@
-subroutine leakage_opacity
+subroutine leakage_opacity1
 
   use gasgridmod
   use timestepmod
@@ -8,7 +8,7 @@ subroutine leakage_opacity
 
 !##################################################
   !This subroutine computes
-  !DDMC lumped leakage opacities.
+  !DDMC 1D lumped leakage opacities.
 !##################################################
   logical :: lhelp
   integer :: i,j,k, ig
@@ -106,4 +106,4 @@ subroutine leakage_opacity
   enddo !k
   
 
-end subroutine leakage_opacity
+end subroutine leakage_opacity1

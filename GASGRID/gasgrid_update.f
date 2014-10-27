@@ -221,7 +221,16 @@ c-- Calculating Fleck factor, leakage opacities
 c-- Calculating emission probabilities for each group in each cell
       call emission_probability
 c-- Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
-      call leakage_opacity
+      select case
+c-- 1D
+      case(1)
+         call leakage_opacity1
+c-- 2D
+      case(2)
+         call leakage_opacity2
+      case(3)
+         stop 'gg_update: no 3D transport'
+      endselect
 c
       call time(t1)
       call timereg(t_gasupd,t1-t0)

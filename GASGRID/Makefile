@@ -8,7 +8,7 @@ FILES = eos_update.o \
   gasgrid_setup.o gasgrid_update.o gridvolume.o \
   temperature_update.o analytic_source.o \
   analytic_opacity.o physical_opacity.o physical_opacity_subgrid.o \
-  leakage_opacity.o fleck_factor.o \
+  leakage_opacity1.o leakage_opacity2.o fleck_factor.o \
   emission_probability.o analytic_initial.o
 
 .PHONY: all clean
