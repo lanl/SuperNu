@@ -47,7 +47,7 @@ subroutine transport2(ptcl,isvacant)
   dtinv = 1d0/tsp_dt
 !
 !-- setting vel-grid helper variables
-  if(in_isvelocity) then
+  if(gas_isvelocity) then
 !-- calculating initial transformation factors
      dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
      elabfact = 1d0 - dirdotu*cinv
@@ -147,7 +147,7 @@ subroutine transport2(ptcl,isvacant)
   endif
 !
 !-- calculating distance to Doppler shift
-  if(in_isvelocity.and.g<gas_ng) then
+  if(gas_isvelocity.and.g<gas_ng) then
      ddop = pc_c*(elabfact-wl/gas_wl(g+1))
      if(ddop<0d0) then
         ddop = 2d0*pc_c*tsp_dt*thelpinv
@@ -189,7 +189,7 @@ subroutine transport2(ptcl,isvacant)
   ptcl%tsrc = ptcl%tsrc + thelp*cinv*d
 !
 !-- updating transformation factors
-  if(in_isvelocity) then
+  if(gas_isvelocity) then
      dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
      elabfact = 1d0 - dirdotu*cinv
   else
@@ -248,7 +248,7 @@ subroutine transport2(ptcl,isvacant)
      r1 = rand()
      om = pc_pi2*r1
 !-- checking velocity dependence
-     if(in_isvelocity) then
+     if(gas_isvelocity) then
 !-- calculating transformation factors
         dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
         azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
@@ -298,7 +298,7 @@ subroutine transport2(ptcl,isvacant)
         r1 = rand()
         om = pc_pi2*r1
 !-- checking velocity dependence
-        if(in_isvelocity) then
+        if(gas_isvelocity) then
 !-- calculating transformation factors
            dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
            azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
@@ -337,7 +337,7 @@ subroutine transport2(ptcl,isvacant)
         r1 = rand()
         wl = 1d0/((1d0-r1)/gas_wl(g)+r1/gas_wl(g+1))
 !-- transforming to lab
-        if(in_isvelocity) then
+        if(gas_isvelocity) then
            wl = wl*(1d0-dirdotu*cinv)
         endif
 !-- checking if DDMC in new group
@@ -347,7 +347,7 @@ subroutine transport2(ptcl,isvacant)
            ptcl%rtsrc = 2
            gas_methodswap(zr,zz,1)=gas_methodswap(zr,zz,1)+1
 !-- transforming to cmf
-           if(in_isvelocity) then
+           if(gas_isvelocity) then
               ep = ep*(1d0-dirdotu*cinv)
               ep0 = ep0*(1d0-dirdotu*cinv)
               wl = wl/(1d0-dirdotu*cinv)
@@ -385,7 +385,7 @@ subroutine transport2(ptcl,isvacant)
              min(dx(zr),dy(zz+1))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
 !-- transforming z-cosine to lab
-           if(in_isvelocity) then
+           if(gas_isvelocity) then
               xi = (xi-z*cinv)/elabfact
               if(xi>1d0) then
                  xi = 1d0
@@ -400,7 +400,7 @@ subroutine transport2(ptcl,isvacant)
            if (r1 < ppl*(1d0+1.5d0*abs(xi))) then
               ptcl%rtsrc = 2
               gas_methodswap(zr,zz,1)=gas_methodswap(zr,zz,1)+1
-              if(in_isvelocity) then
+              if(gas_isvelocity) then
                  ep = ep*elabfact
                  ep0 = ep0*elabfact
                  wl = wl/elabfact
@@ -414,7 +414,7 @@ subroutine transport2(ptcl,isvacant)
 !-- resampling azimuthal
               r1 = rand()
               om = pc_pi2*r1
-              if(in_isvelocity) then
+              if(gas_isvelocity) then
                  dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
                  azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
                       sqrt(1d0-xi**2)*cos(om)+r*cinv)
@@ -465,7 +465,7 @@ subroutine transport2(ptcl,isvacant)
              min(dx(zr),dy(zz-1))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
 !-- transforming z-cosine to lab
-           if(in_isvelocity) then
+           if(gas_isvelocity) then
               xi = (xi-z*cinv)/elabfact
               if(xi>1d0) then
                  xi = 1d0
@@ -481,7 +481,7 @@ subroutine transport2(ptcl,isvacant)
            if (r1 < ppr*(1d0+1.5d0*abs(xi))) then
               ptcl%rtsrc = 2
               gas_methodswap(zr,zz,1)=gas_methodswap(zr,zz,1)+1
-              if(in_isvelocity) then
+              if(gas_isvelocity) then
                  ep = ep*elabfact
                  ep0 = ep0*elabfact
                  wl = wl/elabfact
@@ -495,7 +495,7 @@ subroutine transport2(ptcl,isvacant)
 !-- resampling azimuthal
               r1 = rand()
               om = pc_pi2*r1
-              if(in_isvelocity) then
+              if(gas_isvelocity) then
                  dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
                  azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
                       sqrt(1d0-xi**2)*cos(om)+r*cinv)
@@ -550,7 +550,7 @@ subroutine transport2(ptcl,isvacant)
              min(dx(zr+1),dy(zz))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
 !-- transforming r-cosine to cmf
-           if(in_isvelocity) then
+           if(gas_isvelocity) then
               azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
                    sqrt(1d0-xi**2)*cos(om)-r*cinv)
               if(azidotu<0d0) then
@@ -574,7 +574,7 @@ subroutine transport2(ptcl,isvacant)
            if (r1 < ppl*(1d0+1.5d0*abs(mu0))) then
               ptcl%rtsrc = 2
               gas_methodswap(zr,zz,1)=gas_methodswap(zr,zz,1)+1
-              if(in_isvelocity) then
+              if(gas_isvelocity) then
                  ep = ep*elabfact
                  ep0 = ep0*elabfact
                  wl = wl/elabfact
@@ -596,7 +596,7 @@ subroutine transport2(ptcl,isvacant)
               if(r1 < 0.5d0) then
                  om = pc_pi2-om
               endif
-              if(in_isvelocity) then
+              if(gas_isvelocity) then
                  dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
                  azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
                       sqrt(1d0-xi**2)*cos(om)+r*cinv)
@@ -635,7 +635,7 @@ subroutine transport2(ptcl,isvacant)
              min(dx(zr-1),dy(zz))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
 !-- transforming r-cosine to cmf
-           if(in_isvelocity) then
+           if(gas_isvelocity) then
               azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
                    sqrt(1d0-xi**2)*cos(om)-r*cinv)
               if(azidotu<0d0) then
@@ -659,7 +659,7 @@ subroutine transport2(ptcl,isvacant)
            if (r1 < ppr*(1d0+1.5d0*abs(mu0))) then
               ptcl%rtsrc = 2
               gas_methodswap(zr,zz,1)=gas_methodswap(zr,zz,1)+1
-              if(in_isvelocity) then
+              if(gas_isvelocity) then
                  ep = ep*elabfact
                  ep0 = ep0*elabfact
                  wl = wl/elabfact
@@ -681,7 +681,7 @@ subroutine transport2(ptcl,isvacant)
               if(r1 < 0.5d0) then
                  om = pc_pi2-om
               endif
-              if(in_isvelocity) then
+              if(gas_isvelocity) then
                  dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
                  azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
                       sqrt(1d0-xi**2)*cos(om)+r*cinv)
@@ -716,7 +716,7 @@ subroutine transport2(ptcl,isvacant)
 !
 !-- distance to doppler shift
   elseif(d==ddop) then
-     if(.not.in_isvelocity) stop 'transport2: ddop and no velocity'
+     if(.not.gas_isvelocity) stop 'transport2: ddop and no velocity'
      if(g<gas_ng) then
 !-- shifting group
         g = g+1
@@ -733,7 +733,7 @@ subroutine transport2(ptcl,isvacant)
           .and..not.in_puretran) then
         ptcl%rtsrc = 2
         gas_methodswap(zr,zz,1)=gas_methodswap(zr,zz,1)+1
-        if(in_isvelocity) then
+        if(gas_isvelocity) then
            ep = ep*elabfact
            ep0 = ep0*elabfact
            wl = wl/elabfact

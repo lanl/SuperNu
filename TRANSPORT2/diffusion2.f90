@@ -68,7 +68,7 @@ subroutine diffusion2(ptcl,isvacant)
 
 !
 !-- set expansion helper
-  if(in_isvelocity) then
+  if(gas_isvelocity) then
      thelp = tsp_t
   else
      thelp = 1d0
@@ -185,7 +185,7 @@ subroutine diffusion2(ptcl,isvacant)
      endif
 
 !-- outward
-     if(zr==gas_nr) then
+     if(zr==gas_nx) then
         lhelp = .true.
      else
         lhelp = (gas_cap(g,zr+1,zz,1)+ &
@@ -227,7 +227,7 @@ subroutine diffusion2(ptcl,isvacant)
      endif
 
 !-- upward
-     if(zz==gas_nz) then
+     if(zz==gas_ny) then
         lhelp = .true.
      else
         lhelp = (gas_cap(g,zr,zz+1,1)+ &
@@ -377,7 +377,8 @@ subroutine diffusion2(ptcl,isvacant)
               wl = 1d0/(r1/gas_wl(iig+1)+(1d0-r1)/gas_wl(iig))
 !
 !-- method changed to IMC
-              hyparam = 1
+              ptcl%rtsrc = 1
+              gas_methodswap(zr,zz,1)=gas_methodswap(zr,zz,1)+1
 !
 !-- location set right bound of left cell
               r1 = rand()
@@ -403,7 +404,7 @@ subroutine diffusion2(ptcl,isvacant)
               endif
 
 !-- doppler and aberration corrections
-              if(in_isvelocity) then
+              if(gas_isvelocity) then
                  dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
                  azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
                       sqrt(1d0-xi**2)*cos(om)+r*cinv)
@@ -439,7 +440,7 @@ subroutine diffusion2(ptcl,isvacant)
      elseif (r1>=PA+PL .and. r1<PA+PL+PR) then
 !!{{{
 !-- checking if at outer bound
-        if (zr == gas_nr) then
+        if (zr == gas_nx) then
            isvacant = .true.
            prt_done = .true.
            gas_eout = gas_eout+ep
@@ -447,7 +448,7 @@ subroutine diffusion2(ptcl,isvacant)
 !-- sampling r, z
            r1 = rand()
            z = gas_yarr(zz)*(1d0-r1)+gas_yarr(zz+1)*r1
-           r = gas_xarr(gas_nr+1)
+           r = gas_xarr(gas_nx+1)
 !-- sampling direction
            r1 = rand()
            r2 = rand()
@@ -463,7 +464,7 @@ subroutine diffusion2(ptcl,isvacant)
            if(r1 < 0.5d0) then
               om = pc_pi2-om
            endif
-           if(in_isvelocity) then
+           if(gas_isvelocity) then
               dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
               elabfact = 1d0+dirdotu*cinv
            endif
@@ -567,7 +568,8 @@ subroutine diffusion2(ptcl,isvacant)
               wl = 1d0/(r1/gas_wl(iig+1)+(1d0-r1)/gas_wl(iig))
 !
 !-- method changed to IMC
-              hyparam = 1
+              ptcl%rtsrc = 1
+              gas_methodswap(zr,zz,1)=gas_methodswap(zr,zz,1)+1
 !
 !-- location set right bound of left cell
               r1 = rand()
@@ -593,7 +595,7 @@ subroutine diffusion2(ptcl,isvacant)
               endif
 
 !-- doppler and aberration corrections
-              if(in_isvelocity) then
+              if(gas_isvelocity) then
                  dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
                  azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
                       sqrt(1d0-xi**2)*cos(om)+r*cinv)
@@ -643,7 +645,7 @@ subroutine diffusion2(ptcl,isvacant)
            xi = -max(r1,r2)
            r1 = rand()
            om = pc_pi2*r1
-           if(in_isvelocity) then
+           if(gas_isvelocity) then
               dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
               elabfact = 1d0+dirdotu*cinv
            endif
@@ -742,7 +744,8 @@ subroutine diffusion2(ptcl,isvacant)
               wl = 1d0/(r1/gas_wl(iig+1)+(1d0-r1)/gas_wl(iig))
 !
 !-- method changed to IMC
-              hyparam = 1
+              ptcl%rtsrc = 1
+              gas_methodswap(zr,zz,1)=gas_methodswap(zr,zz,1)+1
 !
 !-- location set right bound of left cell
               r1 = rand()
@@ -759,7 +762,7 @@ subroutine diffusion2(ptcl,isvacant)
               om = pc_pi2*r1
 
 !-- doppler and aberration corrections
-              if(in_isvelocity) then
+              if(gas_isvelocity) then
                  dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
                  azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
                       sqrt(1d0-xi**2)*cos(om)+r*cinv)
@@ -794,7 +797,7 @@ subroutine diffusion2(ptcl,isvacant)
      elseif(r1>=PA+PL+PR+PD.and.r1<PA+PL+PR+PD+PU) then
 
 !-- checking if at outer bound
-        if (zz == gas_nz) then
+        if (zz == gas_ny) then
            isvacant = .true.
            prt_done = .true.
            gas_eout = gas_eout+ep
@@ -809,7 +812,7 @@ subroutine diffusion2(ptcl,isvacant)
            xi = max(r1,r2)
            r1 = rand()
            om = pc_pi2*r1
-           if(in_isvelocity) then
+           if(gas_isvelocity) then
               dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
               elabfact = 1d0+dirdotu*cinv
            endif
@@ -908,7 +911,8 @@ subroutine diffusion2(ptcl,isvacant)
               wl = 1d0/(r1/gas_wl(iig+1)+(1d0-r1)/gas_wl(iig))
 !
 !-- method changed to IMC
-              hyparam = 1
+              ptcl%rtsrc = 1
+              gas_methodswap(zr,zz,1)=gas_methodswap(zr,zz,1)+1
 !
 !-- location set right bound of left cell
               r1 = rand()
@@ -925,7 +929,7 @@ subroutine diffusion2(ptcl,isvacant)
               om = pc_pi2*r1
 
 !-- doppler and aberration corrections
-              if(in_isvelocity) then
+              if(gas_isvelocity) then
                  dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
                  azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &
                       sqrt(1d0-xi**2)*cos(om)+r*cinv)
@@ -976,9 +980,10 @@ subroutine diffusion2(ptcl,isvacant)
         if ((gas_sig(zr,zz,1)+gas_cap(g,zr,zz,1)) * &
              min(dx(zr),dy(zz)) &
              *thelp >= prt_tauddmc) then
-           hyparam = 2
+           ptcl%rtsrc = 2
         else
-           hyparam = 1
+           ptcl%rtsrc = 1
+           gas_methodswap(zr,zz,1)=gas_methodswap(zr,zz,1)+1
 !-- direction sampled isotropically           
            r1 = rand()
            xi = 1d0 - 2d0*r1
@@ -991,7 +996,7 @@ subroutine diffusion2(ptcl,isvacant)
            z = r1*gas_yarr(zz+1)+(1d0-r1)*gas_yarr(zz)
 
 !-- doppler and aberration corrections
-           if(in_isvelocity) then
+           if(gas_isvelocity) then
 !-- calculating transformation factors
               dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
               azidotu = atan2(sqrt(1d0-xi**2)*sin(om), &

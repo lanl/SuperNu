@@ -152,6 +152,11 @@ subroutine interior_source
                 sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
 !-- mu
            ptcl%musrc = (mu0+y0/pc_c)/cmffact
+           if(ptcl%musrc>1d0) then
+              ptcl%musrc = 1d0
+           elseif(ptcl%musrc<-1d0) then
+              ptcl%musrc = -1d0
+           endif
 !-- om
            if(azitrfm >= 0d0) then
               ptcl%om = azitrfm
@@ -347,6 +352,11 @@ subroutine interior_source
                 sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
 !-- mu
            ptcl%musrc = (mu0+y0/pc_c)/cmffact
+           if(ptcl%musrc>1d0) then
+              ptcl%musrc = 1d0
+           elseif(ptcl%musrc<-1d0) then
+              ptcl%musrc = -1d0
+           endif
 !-- om
            if(azitrfm >= 0d0) then
               ptcl%om = azitrfm

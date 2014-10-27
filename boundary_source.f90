@@ -154,6 +154,11 @@ subroutine boundary_source
                 sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
 !-- mu
            prt_particles(ivac)%musrc = (mu0+y0/pc_c)/cmffact
+           if(prt_particles(ivac)%musrc>1d0) then
+              prt_particles(ivac)%musrc = 1d0
+           elseif(prt_particles(ivac)%musrc<-1d0) then
+              prt_particles(ivac)%musrc = -1d0
+           endif
 !-- om
            if(azitrfm >= 0d0) then
               prt_particles(ivac)%om = azitrfm
