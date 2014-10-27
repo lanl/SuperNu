@@ -443,7 +443,7 @@ subroutine diffusion2(ptcl,isvacant)
         if (zr == gas_nx) then
            isvacant = .true.
            prt_done = .true.
-           gas_eout = gas_eout+ep
+           gas_eright = gas_eright+ep
 !-- outbound luminosity tally
 !-- sampling r, z
            r1 = rand()
@@ -633,7 +633,7 @@ subroutine diffusion2(ptcl,isvacant)
         if (zz == 1) then
            isvacant = .true.
            prt_done = .true.
-           gas_eout = gas_eout+ep
+           gas_eright = gas_eright+ep
 !-- outbound luminosity tally
 !-- sampling r, z
            r1 = rand()
@@ -800,7 +800,7 @@ subroutine diffusion2(ptcl,isvacant)
         if (zz == gas_ny) then
            isvacant = .true.
            prt_done = .true.
-           gas_eout = gas_eout+ep
+           gas_eright = gas_eright+ep
 !-- outbound luminosity tally
 !-- sampling r, z
            r1 = rand()
