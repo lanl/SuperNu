@@ -15,7 +15,7 @@ subroutine interior_source
   !particle loop (2nd).
 !##################################################
   logical :: lhelp
-  integer :: i,j,k,il,ir,ipart,ivac,ig,iig
+  integer :: i,j,k,il,ir,ipart,ivac,ig,iig, ihelp, jhelp
   integer, dimension(gas_nx,gas_ny,gas_nz) :: ijkused
   real*8 :: r1, r2, r3, uul, uur, uumax
   real*8 :: om0, mu0, x0, y0, z0, ep0, wl0
@@ -35,8 +35,8 @@ subroutine interior_source
      help = 1d0
   endif
 
-  i = 1
-  j = 1
+  ihelp = 1
+  jhelp = 1
   k = 1
   ijkused = 0
   !Volume particle instantiation: loop
@@ -51,8 +51,8 @@ subroutine interior_source
 !
 !-- check for available particle space to populate in cell
      do k=k,gas_nz
-        do j=j,gas_ny
-           do i=i,gas_nx
+        do j=jhelp,gas_ny
+           do i=ihelp,gas_nx
               lhelp = ijkused(i,j,k)<gas_nvolex(i,j,k)
               if (lhelp) exit
            enddo
@@ -60,7 +60,10 @@ subroutine interior_source
         enddo
         if (lhelp) exit
      enddo
+     ihelp = i
+     jhelp = j
 !-- increasing cell occupancy
+     write(*,*) i,j,k !, ijkused(i,j,k),gas_nvolex(i,j,k)
      ijkused(i,j,k) = ijkused(i,j,k)+1
 
 !-- setting 1st cell index

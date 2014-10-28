@@ -60,9 +60,10 @@ c-- adopt partial masses from input file
         gas_vals2%mass0fr(ll) = str_massfr(l,:,:,:)
        enddo
       elseif(.not.in_novolsrc) then
-       if(gas_ny>1) stop 'gg_setup: str_massfr: no 2D'
+!       if(gas_ny>1) stop 'gg_setup: str_massfr: no 2D'
         gas_vals2%mass0fr(28) = 1d0 !stable+unstable Ni abundance
-        gas_vals2(1:nint(4d0*gas_nx/5d0),1,1)%mass0fr(-1) = 1d0 !Ni56 core
+!        gas_vals2(1:nint(4d0*gas_nx/5d0),1,1)%mass0fr(-1) = 1d0 !Ni56 core
+        gas_vals2%mass0fr(-1) = 1d0
       else
        stop 'gg_setup: no input.str and in_novolsrc=true!'
       endif

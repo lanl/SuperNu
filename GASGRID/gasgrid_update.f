@@ -123,7 +123,7 @@ c
 c
 c-- solve LTE EOS
 c================
-      if(gas_isvelocity) then
+      if(gas_isvelocity.and..not.in_noreadstruct) then
        do_output = (in_pdensdump=='each' .or. !{{{
      &   (in_pdensdump=='one' .and. tsp_it==1))
 c

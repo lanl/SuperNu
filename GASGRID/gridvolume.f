@@ -25,8 +25,8 @@ c
       case(2)
        forall(i=1:gas_nx,j=1:gas_ny)
         gas_vals2(i,j,1)%vol = pc_pi*t**3 *
-     &    (gas_yarr(i+1) - gas_yarr(i)) *
-     &    (gas_xarr(j+1)**2 - gas_xarr(j)**2)
+     &    (gas_xarr(i+1)**2 - gas_xarr(i)**2) *
+     &    (gas_yarr(j+1) - gas_yarr(j))
        endforall
       case(3)
        forall(i=1:gas_nx,j=1:gas_ny,k=1:gas_nz)

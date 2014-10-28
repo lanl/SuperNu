@@ -13,7 +13,7 @@ subroutine initial_particles
 !##################################################
 !
   logical :: lhelp
-  integer :: ig, i,j,k, iig, ipart
+  integer :: ig, i,j,k, iig, ipart, ihelp, jhelp
   integer, dimension(gas_nx,gas_ny,gas_nz) :: ijkused
   real*8 :: wl0, mu0, om0, ep0, x0, y0, z0
   real*8 :: denom2
@@ -26,8 +26,8 @@ subroutine initial_particles
   wl2=1d0/gas_wl(1)
 
 !-- instantiating initial particles
-  i = 1
-  j = 1
+  ihelp = 1
+  jhelp = 1
   k = 1
   ijkused = 0
   do ipart=1,prt_ninitnew
@@ -43,6 +43,8 @@ subroutine initial_particles
         enddo
         if(lhelp) exit
      enddo
+     ihelp = i
+     jhelp = j
 !-- increasing cell occupancy
      ijkused(i,j,k) = ijkused(i,j,k)+1
 !

@@ -38,7 +38,7 @@ subroutine temperature_update
                 gas_vals2(i,j,k)%matsrc
            gas_temp(i,j,k) = gas_temp(i,j,k)+dtemp+dtemp2
         elseif(gas_vals2(i,j,k)%rho>0d0.and.any(gas_cap(:,i,j,k)>0d0)) then
-           gas_temp(i,j,k) = min(1000d0,(gas_eraddens/pc_acoef)**(.25d0))
+           gas_temp(i,j,k) = min(1000d0,(gas_eraddens(i,j,k)/pc_acoef)**(.25d0))
         else
 !-- void?
            gas_temp(i,j,k) = 1000d0
