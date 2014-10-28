@@ -30,12 +30,19 @@ subroutine temperature_update
      do k=1,gas_nz
      do j=1,gas_ny
      do i=1,gas_nx
-        dtemp = gas_edep(i,j,k)/gas_vals2(i,j,k)%vol !new
-        dtemp = (dtemp - tsp_dt*gas_fcoef(i,j,k)*gas_siggrey(i,j,k)* &
-             pc_c*gas_vals2(i,j,k)%ur)/gas_vals2(i,j,k)%bcoef
-        dtemp2 = (gas_fcoef(i,j,k)/gas_vals2(i,j,k)%bcoef)*tsp_dt* &
-             gas_vals2(i,j,k)%matsrc
-        gas_temp(i,j,k) = gas_temp(i,j,k)+dtemp+dtemp2
+        if(gas_vals2(i,j,k)%bcoef>0d0) then
+           dtemp = gas_edep(i,j,k)/gas_vals2(i,j,k)%vol !new
+           dtemp = (dtemp - tsp_dt*gas_fcoef(i,j,k)*gas_siggrey(i,j,k)* &
+                pc_c*gas_vals2(i,j,k)%ur)/gas_vals2(i,j,k)%bcoef
+           dtemp2 = (gas_fcoef(i,j,k)/gas_vals2(i,j,k)%bcoef)*tsp_dt* &
+                gas_vals2(i,j,k)%matsrc
+           gas_temp(i,j,k) = gas_temp(i,j,k)+dtemp+dtemp2
+        elseif(gas_vals2(i,j,k)%rho>0d0.and.any(gas_cap(:,i,j,k)>0d0)) then
+           gas_temp(i,j,k) = min(1000d0,(gas_eraddens/pc_acoef)**(.25d0))
+        else
+!-- void?
+           gas_temp(i,j,k) = 1000d0
+        endif
      enddo !i
      enddo !j
      enddo !k
