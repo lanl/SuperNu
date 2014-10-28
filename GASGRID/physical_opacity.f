@@ -126,18 +126,18 @@ c
 c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(iz,ii,wl0,dwl,wlinv,phi,caphelp,expfac,ocggrnd,l)
-c$omp& firstprivate(grndlev,hckt,ig)
-c$omp& shared(cap)
+c$omp& firstprivate(ig)
+c$omp& shared(grndlev,hckt,cap)
        do il=1,bb_nline
         wl0 = bb_xs(il)%wl0*pc_ang  !in cm
 c-- ig pointer
-        if(wl0>gas_wl(ig+1)) then
-         ig = ig + 1  !lines are sorted
-         dwl = gas_wl(ig+1) - gas_wl(ig)  !in cm
-        endif
+        do ig=ig,gas_ng
+         if(gas_wl(ig+1)>wl0) exit
+        enddo !ig
 c-- line in group
         if(ig<1) cycle
         if(ig>gas_ng) cycle !can't exit in omp
+        dwl = gas_wl(ig+1) - gas_wl(ig)  !in cm
 c
         iz = bb_xs(il)%iz
         ii = bb_xs(il)%ii
@@ -304,6 +304,7 @@ c-- insert into gas_cap
       enddo !k
 c
 c-- sanity check
+      m = 0
       l = l0
       do k=k1,k2
       do j=j1,j2
@@ -311,16 +312,16 @@ c-- sanity check
        l = l + 1
        if(l<l1 .or. l>l2) cycle
        do ig=1,gas_ng
-        if(gas_cap(ig,i,j,k)<=0d0) l = ior(l,1)
-        if(gas_cap(ig,i,j,k)/=gas_cap(ig,i,j,k)) l = ior(l,2)
-        if(gas_cap(ig,i,j,k)>huge(help)) l = ior(l,4)
+        if(gas_cap(ig,i,j,k)<=0d0) m = ior(m,1)
+        if(gas_cap(ig,i,j,k)/=gas_cap(ig,i,j,k)) m = ior(m,2)
+        if(gas_cap(ig,i,j,k)>huge(help)) m = ior(m,4)
        enddo !ig
       enddo !i
       enddo !j
       enddo !k
-      if(l/=iand(l,1)) call warn('opacity_calc','some cap<=0')
-      if(l/=iand(l,2)) call warn('opacity_calc','some cap==NaN')
-      if(l/=iand(l,4)) call warn('opacity_calc','some cap==inf')
+      if(m/=iand(m,1)) call warn('opacity_calc','some cap<=0')
+      if(m/=iand(m,2)) call warn('opacity_calc','some cap==NaN')
+      if(m/=iand(m,4)) call warn('opacity_calc','some cap==inf')
 c
       call time(t4)
 c-- register timing
