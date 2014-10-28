@@ -41,10 +41,10 @@ c-- The difference between these two has decayed.
 c-- beginning of time step
        help = tsp_t
        call update_natomfr(help)
-       forall(l=-2:-1) natom1fr(:,:,:,l) = gas_vals2%natom1fr(l)
+       forall(ll=-2:-1) natom1fr(:,:,:,ll) = gas_vals2%natom1fr(ll)
 c-- end of time step
        call update_natomfr(tsp_t + tsp_dt)
-       forall(l=-2:-1) natom2fr(:,:,:,l) = gas_vals2%natom1fr(l)
+       forall(ll=-2:-1) natom2fr(:,:,:,ll) = gas_vals2%natom1fr(ll)
 c
 c-- update the abundances for the center time
        !call update_natomfr(tsp_tcenter)
@@ -122,7 +122,7 @@ c
 c-- calculate opacities
 c======================
 c-- gamma opacity
-       gas_capgam = in_opcapgam*ye*gas_vals2%rho
+      gas_capgam = in_opcapgam*ye*gas_vals2%rho
 c
 c
 c-- simple analytical group/grey opacities: Planck and Rosseland 
@@ -174,7 +174,7 @@ c-- Planck opacity
          x1 = pc_h*pc_c/(gas_wl(ig + 1)*pc_kb*gas_temp(i,j,k))
          x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i,j,k))
          gas_siggrey(i,j,k) = gas_siggrey(i,j,k) + 15d0/pc_pi**4*
-     &     sum(gas_cap(:,i,j,k)*specint(hlparr(2:),hlparr(:gas_ng-1),3))
+     &     sum(gas_cap(:,i,j,k)*specint(hlparr(2:),hlparr(:gas_ng),3))
         enddo
        enddo !i
        enddo !j
@@ -221,20 +221,20 @@ c
 c
 c
 c
-      subroutine update_natomfr(tsince)
+      subroutine update_natomfr(t)
 c     -------------------------------!{{{
       use physconstmod
       use gasgridmod
       use inputparmod
       implicit none
-      real*8,intent(in) :: tsince
+      real*8,intent(in) :: t
 ************************************************************************
 * update natom fractions for nuclear decay
 ************************************************************************
       real*8 :: expni,expco,help
 c
-      expni = exp(-tsince/pc_thl_ni56)
-      expco = exp(-tsince/pc_thl_co56)
+      expni = exp(-t/pc_thl_ni56)
+      expco = exp(-t/pc_thl_co56)
 c
 c-- update Fe
       help = 1d0 + (pc_thl_co56*expco - pc_thl_ni56*expni)/
