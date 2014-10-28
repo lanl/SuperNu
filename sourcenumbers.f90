@@ -77,7 +77,7 @@ subroutine sourcenumbers
   enddo
   enddo
   enddo
-  
+
   ! Adding external energy to gas_etot
   gas_etot = gas_etot + sum(gas_emitex)
   

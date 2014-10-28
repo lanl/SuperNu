@@ -15,7 +15,7 @@ subroutine interior_source
   !particle loop (2nd).
 !##################################################
   logical :: lhelp
-  integer :: i,j,k,il,ir,ipart,ivac,ig,iig, ihelp, jhelp
+  integer :: i,j,k,il,ir,ipart,ivac,ig,iig
   integer, dimension(gas_nx,gas_ny,gas_nz) :: ijkused
   real*8 :: r1, r2, r3, uul, uur, uumax
   real*8 :: om0, mu0, x0, y0, z0, ep0, wl0
@@ -35,14 +35,13 @@ subroutine interior_source
      help = 1d0
   endif
 
-  ihelp = 1
-  jhelp = 1
+  i = 1
+  j = 1
   k = 1
   ijkused = 0
   !Volume particle instantiation: loop
   !Loop run over the number of new particles that aren't surface source
   !particles.
-  
   x1=1d0/gas_wl(gas_ng+1)
   x2=1d0/gas_wl(1)
   do ipart = prt_nsurf+1, prt_nsurf+prt_nexsrc
@@ -51,19 +50,29 @@ subroutine interior_source
 !
 !-- check for available particle space to populate in cell
      do k=k,gas_nz
-        do j=jhelp,gas_ny
-           do i=ihelp,gas_nx
+        do j=j,gas_ny
+           do i=i,gas_nx
               lhelp = ijkused(i,j,k)<gas_nvolex(i,j,k)
               if (lhelp) exit
            enddo
-           if (lhelp) exit
+           if (lhelp) then
+              exit
+           else
+              i = 1
+           endif
         enddo
-        if (lhelp) exit
+        if (lhelp) then
+           exit
+        else
+           i = 1
+           j = 1
+        endif
      enddo
-     ihelp = i
-     jhelp = j
+!
+!-- sanity check
+     if(.not.lhelp) stop 'interior_source (1): invalid particle'
+
 !-- increasing cell occupancy
-     write(*,*) i,j,k !, ijkused(i,j,k),gas_nvolex(i,j,k)
      ijkused(i,j,k) = ijkused(i,j,k)+1
 
 !-- setting 1st cell index
@@ -219,10 +228,23 @@ subroutine interior_source
               lhelp = ijkused(i,j,k)<gas_nvol(i,j,k)
               if (lhelp) exit
            enddo
-           if (lhelp) exit
+           if (lhelp) then
+              exit
+           else
+              i = 1
+           endif
         enddo
-        if (lhelp) exit
+        if (lhelp) then
+           exit
+        else
+           i = 1
+           j = 1
+        endif
      enddo
+!
+!-- sanity check
+     if(.not.lhelp) stop 'interior_source (2): invalid particle'
+
 !-- increasing cell occupancy
      ijkused(i,j,k) = ijkused(i,j,k)+1
 !

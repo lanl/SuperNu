@@ -38,7 +38,8 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
      zsrc = zsrc*(tsp_t+alph2*tsp_dt)/(tsp_t+tsp_dt)
   endif
 
-  if(rsrc<gas_xarr(zrsrc).or.zsrc<gas_yarr(zzsrc)) then
+  if(rsrc<gas_xarr(zrsrc).or.abs(zsrc) < &
+       min(abs(gas_yarr(zzsrc)),abs(gas_yarr(zzsrc+1)))) then
 !-- finding tentative new index
      zrholder = binsrch(rsrc,gas_xarr,gas_nx+1,0)
      zzholder = binsrch(zsrc,gas_yarr,gas_ny+1,0)
