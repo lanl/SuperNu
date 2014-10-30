@@ -156,13 +156,14 @@ program supernu
 !-- updating prt_tauddmc and prt_taulump
     call tau_update
 
-    if(impi==impi0) write(6,'(1x,a,i5,f8.3,"d",i12)') 'timestep:',it, &
-        tsp_t/pc_day, count(.not.prt_isvacant)
-!
+    if(impi==impi0) then
+      write(6,'(1x,a,i5,f8.3,"d",i12)') 'timestep:',it,tsp_t/pc_day, &
+         count(.not.prt_isvacant)
 !-- update all non-permanent variables
-    call gasgrid_update
+      call gasgrid_update
 !-- number of source prt_particles per cell
-    call sourcenumbers
+      call sourcenumbers
+    endif !impi
 
 !-- broadcast to all workers
     call bcast_nonpermanent !MPI
