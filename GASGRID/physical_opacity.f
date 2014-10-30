@@ -28,7 +28,7 @@ c-- ffxs
       real*8 :: gg,u,gff,help
       real*8 :: yend,dydx,dy !extrapolation
       integer :: iu,igg
-      real*8 :: cap8
+      real*8 :: cap1(nx,ny,nz)
 c-- bfxs
       integer :: il,ig,iz,ii,ie
       real*8 :: en,xs,wl
@@ -37,6 +37,8 @@ c-- bbxs
       real*8 :: caphelp
 c-- temporary cap array in the right order
       real*8 :: cap(nx,ny,nz,gas_ng)
+!-- special functions
+!     integer :: binsrch
 c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
@@ -74,12 +76,13 @@ c
        ig = 0
 c$omp parallel do
 c$omp& schedule(static)
-c$omp& private(iz,ii,wl0,dwl,wlinv,phi,caphelp,expfac,ocggrnd)
+c$omp& private(iz,ii,wl0,dwl,wlinv,phi,caphelp,expfac,ocggrnd,cap1)
 c$omp& firstprivate(ig)
 c$omp& shared(grndlev,hckt,cap)
        do il=1,bb_nline
         wl0 = bb_xs(il)%wl0*pc_ang  !in cm
 c-- ig pointer
+!       ig = binsrch(wl0,gas_wl,gas_ng+1,in_ng)  !todo: thread safe?
         do ig=ig,gas_ng
          if(gas_wl(ig+1)>wl0) exit
         enddo !ig
@@ -101,17 +104,20 @@ c-- evaluate caphelp
          ocggrnd = grndlev(i,j,k,ii,iz)
 c-- oc high enough to be significant?
 *        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
-         if(ocggrnd<=0d0) cycle
-         expfac = 1d0 - exp(-hckt(i,j,k)*wlinv)
-         caphelp = phi*bb_xs(il)%gxs*ocggrnd*
-     &     exp(-bb_xs(il)%chilw*hckt(i,j,k))*expfac
-!        if(caphelp==0.) write(6,*) 'cap0',cap(i,j,k,ig),phi,
-!    &     bb_xs(il)%gxs,ocggrnd,exp(-bb_xs(il)%chilw*hckt(i,j,k)),expfac
-         if(caphelp==0.) cycle
-         cap(i,j,k,ig) = cap(i,j,k,ig) + caphelp
+         if(ocggrnd<=0d0) then
+          caphelp = 0d0
+         else
+          expfac = 1d0 - exp(-hckt(i,j,k)*wlinv)
+          caphelp = phi*bb_xs(il)%gxs*ocggrnd*
+     &      exp(-bb_xs(il)%chilw*hckt(i,j,k))*expfac
+!         if(caphelp==0.) write(6,*) 'cap0',cap(i,j,k,ig),phi,
+!    &      bb_xs(il)%gxs,ocggrnd,exp(-bb_xs(il)%chilw*hckt(i,j,k)),expfac
+         endif
+         cap1(i,j,k) = caphelp
         enddo !i
         enddo !j
         enddo !k
+        cap(:,:,:,ig) = cap(:,:,:,ig) + cap1
        enddo !il
 c$omp end parallel do!}}}
       endif !in_nobbopac
@@ -167,13 +173,14 @@ c-- simple variant: nearest data grid point
        lwarn = .true.
 c$omp parallel do
 c$omp& schedule(static)
-c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy)
-c$omp& firstprivate(hckt,hlparr,lwarn)
-c$omp& shared(cap)
+c$omp& private(wl,wlinv,u,iu,help,cap1,gg,igg,gff,yend,dydx,dy)
+c$omp& firstprivate(lwarn)
+c$omp& shared(hckt,hlparr,cap)
        do ig=1,gas_ng
         wl = gas_wl(ig)  !in cm
         wlinv = 1d0/wl  !in cm
 c-- gcell loop
+        cap1 = 0d0
         do k=1,nz
         do j=1,ny
         do i=1,nx
@@ -190,7 +197,6 @@ c
           iu = max(iu,1)
          endif
 c-- element loop
-         cap8 = 0d0
          do iz=1,gas_nelem
           gg = iz**2*pc_rydberg*hckt(i,j,k)
           igg = nint(5d0*(log10(gg) + 4d0)) + 1
@@ -212,12 +218,13 @@ c-- asymptotic value
            endif
           endif
 c-- cross section
-          cap8 = cap8 + help*gff*iz**2*gas_vals2(i,j,k)%natom1fr(iz)
+          cap1(i,j,k) = cap1(i,j,k) +
+     &      help*gff*iz**2*gas_vals2(i,j,k)%natom1fr(iz)
          enddo !iz
-         cap(i,j,k,ig) = cap(i,j,k,ig) + cap8
         enddo !i
         enddo !j
         enddo !k
+        cap(:,:,:,ig) = cap(:,:,:,ig) + cap1
        enddo !ig
 c$omp end parallel do
 c!}}}
