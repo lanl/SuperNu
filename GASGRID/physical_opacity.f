@@ -53,7 +53,7 @@ c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_temp)
 c
 c-- thomson scattering
-      if(in_nothmson) then
+      if(.not. in_nothmson) then
        gas_sig = cthomson*gas_vals2%nelec*gas_vals2%natom/gas_vals2%vol
       endif
 c
