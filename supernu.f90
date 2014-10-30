@@ -65,8 +65,7 @@ program supernu
 !-- particle init
    ns = in_ns/nmpi
    call particle_init(in_npartmax,ns,in_ns0,in_isimcanlog, &
-        in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime,nmpi, &
-        in_norestart)
+        in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime)
 !
 !-- rand() count and prt restarts
    if(tsp_ntres>1.and..not.in_norestart) then
@@ -117,7 +116,13 @@ program supernu
    t_setup = t1-t0!}}}
   endif !impi
 
+
   call bcast_permanent !MPI
+
+!
+!-- allocate arrays of sizes retreived in bcast_permanent
+  call particle_alloc(impi==impi0,in_norestart,nmpi)
+
 !
 !-- initialize random number generator, use different seeds for each rank
   if(in_nomp==0) stop 'supernu: in_nomp == 0'
