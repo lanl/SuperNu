@@ -88,7 +88,7 @@ c
 c
 c
 c-- compute the starting tempurature derivative in the fleck factor
-      if(tsp_it==1.or.in_opacanaltype/='none') then
+      if(tsp_it==1 .or. in_opacanaltype/='none') then
        gas_temp = dtempfrac*gas_temp!{{{
        if(in_opacanaltype=='none') then
         if(.not.in_noeos) call eos_update(.false.)
@@ -102,6 +102,7 @@ c
         else
          call physical_opacity_subgrid
         endif
+        call opacity_planckmean
        endif
 c-- restore
        gas_temp = gas_temp/dtempfrac
@@ -162,25 +163,7 @@ c-- read data
         write(6,*) 'read_opac: read successfully'
 !}}}
        endif
-c
-c-- Planck opacity
-       gas_siggrey = 0d0!{{{
-       do k=1,gas_nz
-       do j=1,gas_ny
-       do i=1,gas_nx
-*       help = pc_h*pc_c/(pc_kb*gas_temp(i,j,k))
-*       hlparr = help/gas_wl
-*       gas_siggrey(i,j,k) = gas_siggrey(i,j,k) + 15d0/pc_pi**4*
-*    &    sum(gas_cap(:,i,j,k)*specint(hlparr(2:),hlparr(:gas_ng),3))
-        do ig=1,gas_ng
-         x1 = pc_h*pc_c/(gas_wl(ig + 1)*pc_kb*gas_temp(i,j,k))
-         x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i,j,k))
-         gas_siggrey(i,j,k) = gas_siggrey(i,j,k)+
-     &     15d0*gas_cap(ig,i,j,k)*specint(x1,x2,3)/pc_pi**4
-        enddo
-       enddo !i
-       enddo !j
-       enddo !k!}}}
+       call opacity_planckmean
       endif
 c
 c
