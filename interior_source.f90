@@ -192,7 +192,7 @@ subroutine interior_source
            ptcl%ebirth = ep0*cmffact
            ptcl%wlsrc = wl0/cmffact
 !-- velocity effects accounting
-           gas_evelo=gas_evelo-ep0*x0*mu0/pc_c
+           gas_evelo=gas_evelo+ep0*(1d0-cmffact)
         else
            ptcl%esrc = ep0
            ptcl%ebirth = ep0
@@ -405,7 +405,7 @@ subroutine interior_source
            ptcl%ebirth = ep0*cmffact
            ptcl%wlsrc = wl0/cmffact
 !-- velocity effects accounting
-           gas_evelo=gas_evelo-ep0*x0*mu0/pc_c
+           gas_evelo=gas_evelo+ep0*(1d0-cmffact)
         else
            ptcl%esrc = ep0
            ptcl%ebirth = ep0
