@@ -9,7 +9,7 @@ c     --------------------------------
 ************************************************************************
 * Solve the eos for given temperatures.
 ************************************************************************
-      integer :: i,j,k,l,niter,iion,nion,istat
+      integer :: i,j,k,l,ll,niter,iion,nion,istat
       integer :: iz,ii
       real*8 :: t0,t1
       real*8 :: ndens
@@ -68,7 +68,7 @@ c-- write header
        write(4,'(40i12)') (ion_el(iz)%ni,iz=1,gas_nelem)
        write(4,*) '# ions'
        do iz=1,gas_nelem
-        write(4,'(40i12)') (iz*100+l,l=1,ion_grndlev(iz,1,1,1)%ni)
+        write(4,'(40i12)') (iz*100+ll,ll=1,ion_grndlev(iz,1,1,1)%ni)
        enddo
 c
 c-- electron density

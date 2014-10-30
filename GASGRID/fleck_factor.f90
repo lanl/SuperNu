@@ -13,6 +13,9 @@ subroutine fleck_factor(dtempfrac)
   integer :: i,j,k
   real*8 :: Um, beta, beta2, dlogsig
 
+!-- init (necessary for domain decomposition
+  gas_fcoef = 0d0
+
 !-- calculating modified Fleck factor
   do k=1,gas_nz
   do j=1,gas_ny

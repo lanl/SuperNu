@@ -104,7 +104,7 @@ c
 c
 c
       subroutine ion_solve_eos(natomfr,temp,ndens,nelec,iconv)
-c     --------------------------------------------------------
+c     --------------------------------------------------------!{{{
       use physconstmod
       use miscmod, only:warn
       implicit none
@@ -146,8 +146,7 @@ c-- default values
       nec%err(:) = (/1d10,-1d10/)
 c
 c-- sanity check
-      if(nelem<=0)
-     &  stop 'ion_solve_eos: global nelem value not adopted'
+      if(nelem==0) stop 'ion_solve_eos: nelem error'
 c
 c
 c-- evaluate partition functions: Q = Sum_i(g_i exp(e_i/kt)
@@ -210,7 +209,7 @@ c-- newton raphson, but not aways perfect, as it may repeatedly minimize one sid
         if((iconv==2 .or. ihelp/=iprev) .and.
      &    help<1d5 .and. help>1d-5) then !bigger error is to too big
          ynew = 0d0 !perfect newton raphson
-        else !sides are not flipping, depart from perfect newton-raphson
+        else !sides are not flipping, depart from pure newton-raphson
          ynew = .001d0*nec%err(ihelp) !minimize the bigger gap irrespective of the smaller
         endif
         iprev = ihelp !remember which side was reduced
@@ -267,8 +266,8 @@ c
 c-- normalize n_i
        nsum = sum(ion_el(iz)%i(:nion)%n)
        if(nsum/=nsum .or. nsum>huge(nsum) .or. nsum<tiny(nsum)) then !verify nsum
-        write(6,*) 'nsum=',nsum, iz, nion
-        write(6,*) 'sahac,sahac2',sahac,sahac2
+        write(6,*) 'nsum=',nsum,iz,nion
+        write(6,*) 'sahac,sahac2,kti',sahac,sahac2,kti
         write(6,*) 'n'
         write(6,*) (ion_el(iz)%i(ii)%n,ii=1,nion)
         write(6,*) 'e'
@@ -295,13 +294,13 @@ c-- compute new electron density
       enddo !iz
 c
       end subroutine saha_nelec
-c
+c!}}}
       end subroutine ion_solve_eos
 c
 c
 c
       subroutine ion_read_data(nelem_in)
-c     ----------------------------------
+c     ----------------------------------!{{{
       use physconstmod
       implicit none
       integer,intent(in) :: nelem_in
@@ -444,7 +443,7 @@ c-- asign a single state to the uppermost continuum
        allocate(ion_el(iz)%i(l)%glev(1))
        allocate(ion_el(iz)%i(l)%elev(1))
        ion_el(iz)%i(l)%nlev = 1
-       ion_el(iz)%i(l)%glev(1) = 1
+       ion_el(iz)%i(l)%glev(1) = 1d0
        ion_el(iz)%i(l)%elev(1) = 0d0
       enddo
 c
@@ -468,7 +467,7 @@ c-- output
        write(8,'(i3,"|",1p,91e12.4)') iz,
      &   (ion_el(iz)%i(l)%e/pc_ev,l=1,ion_el(iz)%ni) !in eV units, because it's so common
       enddo
-c
+c!}}}
       end subroutine ion_read_data
 c
       end module ionsmod

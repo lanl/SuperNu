@@ -83,25 +83,26 @@ c-- copy back
       deallocate(lsndvec)
 c
 c-- integer
-      n = 11
+      n = 12
       allocate(isndvec(n))
-      if(impi==impi0) isndvec = (/nx,ny,nz,gas_ng,
+      if(impi==impi0) isndvec = (/in_igeom,nx,ny,nz,gas_ng,
      &  prt_npartmax,in_nomp,tsp_nt,in_ntres,tsp_ntres,
      &  prt_ninitnew,in_ng/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      nx = isndvec(1)
-      ny = isndvec(2)
-      nz = isndvec(3)
-      gas_ng = isndvec(4)
-      prt_npartmax = isndvec(5)
-      in_nomp = isndvec(6)
-      tsp_nt = isndvec(7)
-      in_ntres = isndvec(8)
-      tsp_ntres = isndvec(9)
-      prt_ninitnew = isndvec(10)
-      in_ng = isndvec(11)
+      in_igeom     = isndvec(1) 
+      nx           = isndvec(2)
+      ny           = isndvec(3)
+      nz           = isndvec(4)
+      gas_ng       = isndvec(5)
+      prt_npartmax = isndvec(6)
+      in_nomp      = isndvec(7)
+      tsp_nt       = isndvec(8)
+      in_ntres     = isndvec(9)
+      tsp_ntres    = isndvec(10)
+      prt_ninitnew = isndvec(11)
+      in_ng        = isndvec(12)
       deallocate(isndvec)
 c
 c-- real*8
@@ -346,8 +347,8 @@ c     -----------------------!{{{
       integer :: n
       integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:),rcvvec(:)
-      integer :: isndvec3(nx,ny,nz)
-      real*8 :: sndvec3(nx,ny,nz)
+      integer :: isnd3(nx,ny,nz)
+      real*8 :: snd3(nx,ny,nz)
       real*8 :: help
 
 c
@@ -395,22 +396,22 @@ c
       deallocate(sndvec)
 c
 c-- dim==3
-      isndvec3 = gas_numcensus
-      call mpi_reduce(isndvec3,gas_numcensus,nx*ny*nz,
-     &  MPI_INTEGER,MPI_SUM,impi0,MPI_COMM_WORLD,ierr)
-c
-      sndvec3 = gas_edep
-      call mpi_reduce(sndvec3,gas_edep,nx*ny*nz,MPI_REAL8,MPI_SUM,
+      n = nx*ny*nz
+      isnd3 = gas_numcensus
+      call mpi_reduce(isnd3,gas_numcensus,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
+c
+      snd3 = gas_edep
+      call mpi_allreduce(snd3,gas_edep,n,MPI_REAL8,MPI_SUM,
+     &  MPI_COMM_WORLD,ierr)
       gas_edep = gas_edep/dble(nmpi)
 c
-      isndvec3 = gas_methodswap
-      call mpi_reduce(isndvec3,gas_methodswap,nx*ny*nz,
-     &  MPI_INTEGER,MPI_SUM,impi0,MPI_COMM_WORLD,ierr)
+      isnd3 = gas_methodswap
+      call mpi_reduce(isnd3,gas_methodswap,n,MPI_INTEGER,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
 c
-      n = nx*ny*nz
-      sndvec3 = gas_eraddens
-      call mpi_reduce(sndvec3,gas_eraddens,n,MPI_REAL8,MPI_SUM,
+      snd3 = gas_eraddens
+      call mpi_reduce(snd3,gas_eraddens,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
       gas_eraddens = gas_eraddens/dble(nmpi)
 c

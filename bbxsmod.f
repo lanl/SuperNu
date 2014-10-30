@@ -28,7 +28,7 @@ c-- permanent data
        integer*2 :: iz
        integer*2 :: ii
       end type bb_xs_data
-      type(bb_xs_data),allocatable :: bb_xs(:)
+      type(bb_xs_data),allocatable :: bb_xs(:) !bb_nline
 c
       contains
 c

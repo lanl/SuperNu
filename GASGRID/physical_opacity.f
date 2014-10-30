@@ -14,7 +14,7 @@ c$    use omp_lib
 ************************************************************************
 * compute bound-free and bound-bound opacity.
 ************************************************************************
-      integer :: i,j,k,l
+      integer :: i,j,k,m
       real*8 :: wlinv
 c-- timing
       real*8 :: t0,t1,t2,t3,t4
@@ -75,18 +75,18 @@ c
 c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(iz,ii,wl0,dwl,wlinv,phi,caphelp,expfac,ocggrnd)
-c$omp& firstprivate(grndlev,hckt,ig)
-c$omp& shared(cap)
+c$omp& firstprivate(ig)
+c$omp& shared(grndlev,hckt,cap)
        do il=1,bb_nline
         wl0 = bb_xs(il)%wl0*pc_ang  !in cm
 c-- ig pointer
-        if(wl0>gas_wl(ig+1)) then
-         ig = ig + 1  !lines are sorted
-         dwl = gas_wl(ig+1) - gas_wl(ig)  !in cm
-        endif
+        do ig=ig,gas_ng
+         if(gas_wl(ig+1)>wl0) exit
+        enddo !ig
 c-- line in group
         if(ig<1) cycle
         if(ig>gas_ng) cycle !can't exit in omp
+        dwl = gas_wl(ig+1) - gas_wl(ig)  !in cm
 c
         iz = bb_xs(il)%iz
         ii = bb_xs(il)%ii
@@ -229,21 +229,21 @@ c
      &  [gas_ng,nx,ny,nz])
 c
 c-- sanity check
-      l = 0
+      m = 0
       do k=1,nz
       do j=1,ny
       do i=1,nx
        do ig=1,gas_ng
-        if(gas_cap(ig,i,j,k)<=0d0) l = ior(l,1)
-        if(gas_cap(ig,i,j,k)/=gas_cap(ig,i,j,k)) l = ior(l,2)
-        if(gas_cap(ig,i,j,k)>huge(help)) l = ior(l,4)
+        if(gas_cap(ig,i,j,k)<=0d0) m = ior(m,1)
+        if(gas_cap(ig,i,j,k)/=gas_cap(ig,i,j,k)) m = ior(m,2)
+        if(gas_cap(ig,i,j,k)>huge(help)) m = ior(m,4)
        enddo !ig
       enddo !i
       enddo !j
       enddo !k
-      if(l/=iand(l,1)) call warn('opacity_calc','some cap<=0')
-      if(l/=iand(l,2)) call warn('opacity_calc','some cap==NaN')
-      if(l/=iand(l,4)) call warn('opacity_calc','some cap==inf')
+      if(m/=iand(m,1)) call warn('opacity_calc','some cap<=0')
+      if(m/=iand(m,2)) call warn('opacity_calc','some cap==NaN')
+      if(m/=iand(m,4)) call warn('opacity_calc','some cap==inf')
 c
       call time(t4)
 c-- register timing

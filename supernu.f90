@@ -138,9 +138,12 @@ program supernu
 !
 !-- time step loop
 !=================
-  write(6,*)
-  write(6,*) "starting time loop:"
-  write(6,*) "===================="
+  if(impi==impi0) then
+     write(6,*)
+     write(6,*) "starting time loop:"
+     write(6,*) "===================="
+  endif
+!
   do it=in_ntres,tsp_nt
 !-- allow negative and zero it for temperature initialization purposes!{{{
     tsp_it = max(it,1)

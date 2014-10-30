@@ -25,9 +25,12 @@ subroutine leakage_opacity
   else
      thelp = 1d0
   endif
+
+!-- init (necessary for domain decomposition)
+  gas_opacleak = 0d0
+
 !
 !-- calculating leakage opacities
-  gas_opacleak = 0d0
   do k = 1, gas_nz
   do j = 1, gas_ny
   do i = 1, gas_nx

@@ -19,7 +19,7 @@ c     -----------------------
 * - opacities
 ************************************************************************
       logical :: do_output,lexist
-      integer :: i,j,k,l,ig,it,istat
+      integer :: i,j,k,l,ll,ig,it,istat
       real*8 :: help,x1,x2
       real*8 :: hlparr(gas_ng+1)
       real*8 :: dtempfrac = 0.99d0
@@ -202,7 +202,7 @@ c-- header
 c-- body
        do i=1,gas_nx
         write(4,'(1p,9999e12.4)') gas_temp(i,1,1),gas_sig(i,1,1),
-     &    (gas_cap(j,i,1,1),j=1,gas_ng)
+     &    (gas_cap(ll,i,1,1),ll=1,gas_ng)
        enddo
 c-- close file
        close(4)
