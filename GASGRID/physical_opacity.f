@@ -47,6 +47,8 @@ c-- warn once
 c
 c-- reset
       cap = 0d0
+      gas_sig = 0d0
+      gas_siggrey = 0d0
 c
 c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_temp)
