@@ -137,11 +137,6 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(gas_zarr(nz+1))
        allocate(gas_evolinit(nx,ny,nz))
        allocate(gas_wl(gas_ng+1))
-       !prt_done = .false.
-c-- allocating particle array for helper ranks
-       allocate(prt_particles(prt_npartmax))
-       allocate(prt_isvacant(prt_npartmax))
-       prt_isvacant = .true.
       endif
 c
 c-- broadcast data
@@ -269,27 +264,6 @@ c
        allocate(gas_opacleak(6,nx,ny,nz))
        allocate(gas_cap(gas_ng,nx,ny,nz))
       endif
-c
-c-- broadcasting particle array
-C$$$      call mpi_bcast(prt_particles%isvacant,prt_npartmax,
-C$$$     &  MPI_LOGICAL,impi0,MPI_COMM_WORLD,ierr)
-C$$$      call mpi_bcast(prt_particles%zsrc,prt_npartmax,
-C$$$     &  MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
-C$$$      call mpi_bcast(prt_particles%rtsrc,prt_npartmax,
-C$$$     &  MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
-C$$$      call mpi_bcast(prt_particles%rsrc,prt_npartmax,
-C$$$     &  MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
-C$$$      call mpi_bcast(prt_particles%musrc,prt_npartmax,
-C$$$     &  MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
-C$$$      call mpi_bcast(prt_particles%tsrc,prt_npartmax,
-C$$$     &  MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
-C$$$      call mpi_bcast(prt_particles%esrc,prt_npartmax,
-C$$$     &  MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
-C$$$      call mpi_bcast(prt_particles%ebirth,prt_npartmax,
-C$$$     &  MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
-C$$$      call mpi_bcast(prt_particles%wlsrc,prt_npartmax,
-C$$$     &  MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
-c--
 c
       n = nx*ny*nz
       call mpi_bcast(gas_temp,n,MPI_REAL8,

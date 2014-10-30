@@ -40,17 +40,16 @@ module particlemod
   contains
 
   subroutine particle_init(npartmax,ns,ninit,isimcanlog, &
-       isddmcanlog,tauddmc,taulump,tauvtime,nummespasint,norestart)
+       isddmcanlog,tauddmc,taulump,tauvtime)!{{{
 !--------------------------------------
-    integer,intent(in) :: npartmax, ns, ninit, nummespasint
-    logical,intent(in) :: isimcanlog, isddmcanlog,norestart
+    implicit none
+    integer,intent(in) :: npartmax, ns, ninit
+    logical,intent(in) :: isimcanlog, isddmcanlog
     real*8,intent(in) :: tauddmc, taulump
     character(4),intent(in) :: tauvtime
 !***********************************************************************
 ! init particle module
 !***********************************************************************
-    integer :: n
-!
 !-- adopt input values in module internal storage
     prt_npartmax = npartmax
     prt_ns = ns
@@ -60,28 +59,46 @@ module particlemod
     prt_tauddmc = tauddmc
     prt_taulump = taulump
     prt_tauvtime = tauvtime
-!
+!!}}}
+  end subroutine particle_init
+
+
+  subroutine particle_alloc(ltalk,norestart,nummespasint)
+!--------------------------------------------------!{{{
+    implicit none
+    logical,intent(in) :: ltalk,norestart
+    integer,intent(in) :: nummespasint
+
+    integer :: n
+
 !-- allocate permanent storage (dealloc in dealloc_all.f)
     allocate(prt_particles(prt_npartmax),prt_isvacant(prt_npartmax))
     prt_isvacant = .true.
-    n = int(sizeof(prt_particles)/1024) !kB
-    write(6,*) 'ALLOC prt_particles:',n,"kB",n/1024,"MB",n/1024**2,"GB"
+!
+!-- print size only on master rank
+    if(ltalk) then
+      n = int(sizeof(prt_particles)/1024) !kB
+      write(6,*) 'ALLOC prt_particles:',n,"kB",n/1024,"MB",n/1024**2,"GB"
+    endif
+
+!
+!-- restart capabilities
     if(.not.norestart) then
 !-- rand() count per rank allocation
        allocate(prt_tlyrandarr(nummespasint))
        prt_tlyrandarr = 0
 !-- mpi gather arrays for particles
-       allocate(prt_tlyvacant(npartmax,nummespasint))
-       allocate(prt_tlyzsrc(npartmax,nummespasint))
-       allocate(prt_tlyrtsrc(npartmax,nummespasint))
-       allocate(prt_tlyrsrc(npartmax,nummespasint))
-       allocate(prt_tlymusrc(npartmax,nummespasint))
-       allocate(prt_tlytsrc(npartmax,nummespasint))
-       allocate(prt_tlyesrc(npartmax,nummespasint))
-       allocate(prt_tlyebirth(npartmax,nummespasint))
-       allocate(prt_tlywlsrc(npartmax,nummespasint))
+       allocate(prt_tlyvacant(prt_npartmax,nummespasint))
+       allocate(prt_tlyzsrc(prt_npartmax,nummespasint))
+       allocate(prt_tlyrtsrc(prt_npartmax,nummespasint))
+       allocate(prt_tlyrsrc(prt_npartmax,nummespasint))
+       allocate(prt_tlymusrc(prt_npartmax,nummespasint))
+       allocate(prt_tlytsrc(prt_npartmax,nummespasint))
+       allocate(prt_tlyesrc(prt_npartmax,nummespasint))
+       allocate(prt_tlyebirth(prt_npartmax,nummespasint))
+       allocate(prt_tlywlsrc(prt_npartmax,nummespasint))
     endif
-!
-  end subroutine particle_init
+!}}}
+  end subroutine particle_alloc
 
 end module particlemod
