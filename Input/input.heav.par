@@ -6,6 +6,7 @@ in_grab_stdout = f
 in_puretran = f
 in_noreadstruct = t
 in_norestart = t
+in_ntres = 1
 
 !-- time step
 in_tfirst = 2d0

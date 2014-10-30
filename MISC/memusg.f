@@ -83,7 +83,7 @@ c-- read
 *!     write(6,*) 'words'
 *!     write(6,'(a)') (words(i),i=1,n)
 *c-- read stat from words
-      read(words,*) stat
+*      read(words,*) stat
 *      deallocate(words)
 *!     write(6,*) 'stat'
 *!     write(6,*) stat

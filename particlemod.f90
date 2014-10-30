@@ -2,18 +2,19 @@ module particlemod
 
   implicit none
 
-  !Ryan W.: Changing group attribute to continuous wavelength (rev. 120)
   type packet
      real*8 :: rsrc, musrc, tsrc
+     real*8 :: y, z, om
      real*8 :: esrc, ebirth, wlsrc
-     integer :: zsrc, rtsrc !,gsrc
+     integer :: zsrc, rtsrc
+     integer :: iy, iz
   end type packet
   type(packet),allocatable,target :: prt_particles(:)  !(prt_npartmax)
   logical,allocatable,target :: prt_isvacant(:)  !(prt_npartmax)
 !
   integer :: prt_npartmax, prt_ns, prt_ninit
   integer :: prt_nsurf, prt_nexsrc, prt_nnew, prt_ninitnew
-!-- rtw: random number counter added (rev. 262). associated with particle routines
+!-- rtw: random number counter added (rev. 262).
   integer :: prt_tlyrand
 !-- rtw: array of rand counts from each rank
   integer, allocatable :: prt_tlyrandarr(:)

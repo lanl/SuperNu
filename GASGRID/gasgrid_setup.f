@@ -32,7 +32,6 @@ c-- agnostic grid setup (rev. 200) ----------------------------------
       gas_zarr = str_zleft
 c
 c-- agnostic mass setup (rev. 200) ----------------------------------
-      if(gas_ny>1) stop 'gg_setup: str_mass 1D'
       gas_vals2%mass = str_mass
 
 c-- volume 
@@ -61,9 +60,10 @@ c-- adopt partial masses from input file
         gas_vals2%mass0fr(ll) = str_massfr(l,:,:,:)
        enddo
       elseif(.not.in_novolsrc) then
-       if(gas_ny>1) stop 'gg_setup: str_massfr: no 2D'
+!       if(gas_ny>1) stop 'gg_setup: str_massfr: no 2D'
         gas_vals2%mass0fr(28) = 1d0 !stable+unstable Ni abundance
-        gas_vals2(1:nint(4d0*gas_nx/5d0),1,1)%mass0fr(-1) = 1d0 !Ni56 core
+!        gas_vals2(1:nint(4d0*gas_nx/5d0),1,1)%mass0fr(-1) = 1d0 !Ni56 core
+        gas_vals2%mass0fr(-1) = 1d0
       else
        stop 'gg_setup: no input.str and in_novolsrc=true!'
       endif

@@ -7,9 +7,9 @@ subroutine analytic_source
   use manufacmod
   implicit none
 
-  integer :: i
+  integer :: i,j, nhelp
   real*8 :: srcren
-  real*8 :: thelp
+  real*8 :: thelp, help, xcent, ycent
 
   gas_emitex = 0d0
 
@@ -25,10 +25,41 @@ subroutine analytic_source
   elseif(gas_srctype=='heav') then
      !Heaviside source (uniform source sphere)!{{{
      if (tsp_t<=(in_tfirst+gas_theav)*pc_day) then
-        do i = 1, min(gas_nheav,gas_nx)
-           gas_emitex(i,1,1) = gas_srcmax * &
-                gas_vals2(i,1,1)%vol*tsp_dt/thelp**3
-        enddo
+        select case(in_igeom)
+!-- 1D
+        case(1)
+           do i = 1, min(gas_nheav,gas_nx)
+              gas_emitex(i,1,1) = gas_srcmax * &
+                   gas_vals2(i,1,1)%vol*tsp_dt/thelp**3
+           enddo
+
+!-- 2D
+        case(2)
+!
+!-- using min distance to cylinder bound
+           help = min(gas_xarr(gas_nx+1),gas_yarr(gas_ny+1))
+           if(help == gas_xarr(gas_nx+1)) then
+              nhelp = gas_nx
+           else
+              nhelp = gas_ny
+           endif
+!-- Heaviside radius <= distance to cylinder bound
+           help = dble(min(gas_nheav,nhelp))*help / &
+                dble(nhelp)
+!-- non-zero source within Heaviside sphere
+           do j = 1,gas_ny
+              do i = 1,gas_nx
+                 xcent = 0.5d0*(gas_xarr(i+1)+gas_xarr(i))
+                 ycent = 0.5d0*(gas_yarr(j+1)+gas_yarr(j))
+                 if(xcent**2+ycent**2<help**2) then
+                    gas_emitex(i,j,1) = gas_srcmax * &
+                         gas_vals2(i,j,1)%vol*tsp_dt/thelp**3
+                 endif
+              enddo
+           enddo
+        case(3)
+           stop 'analytic_source: no 3D transport'
+        endselect
      endif
 !-- no temp source for heav (matsrc=0.0)
 !--
@@ -47,6 +78,7 @@ subroutine analytic_source
      enddo!}}}
   elseif(gas_srctype=='manu') then
      !!{{{
+     if(gas_ny>1) stop 'analytic_source: manu: no 2D'
 !
 !-- radiation source
      call generate_manuradsrc(in_totmass,in_sigcoef,tsp_t,tsp_dt)

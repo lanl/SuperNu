@@ -320,6 +320,7 @@ c-- mass
       else
        stop 'generate_inputstr1: invalid in_dentype'
       endif
+      deallocate(rout)
 c!}}}
       end subroutine generate_inputstr1
 c
@@ -330,7 +331,97 @@ c
 ************************************************************************
 * Read the input structure file
 ************************************************************************
-      stop 'generate_inputstr2 is a stub'
+      real*8,allocatable :: xout(:) !(nx+1)
+      real*8,allocatable :: yout(:) !(ny+1)
+      integer :: i,j,nx,ny
+      real*8 :: helpx,helpy, dx,dy,rmax
+c
+c-- 2D size
+      nx = in_ndim(1)
+      ny = in_ndim(2)
+c
+c-- verifications (input.par)
+      if(in_velout<=0d0.and.in_isvelocity)
+     &  stop 'generate_inputstr1: invalid in_velout'
+      if(in_lx<=0.and..not.in_isvelocity)
+     &  stop 'generate_inputstr1: invalid in_lx'
+      if(in_ly<=0.and..not.in_isvelocity)
+     &  stop 'generate_inputstr1: invalid in_ly'
+      if(in_lz<=0.and..not.in_isvelocity)
+     &  stop 'generate_inputstr1: invalid in_lz'
+      if(in_totmass<0d0)
+     &  stop 'generate_inputstr1: invalid in_totmass'
+c
+c-- allocate arrays
+      allocate(xout(nx+1))
+      allocate(yout(ny+1))
+      allocate(str_xleft(nx+1))
+      allocate(str_yleft(ny+1))
+      allocate(str_mass(nx,ny,1))
+c
+c-- create unit cylinder radii xout
+      dx = 1d0/real(nx)
+      forall(i=1:nx+1) xout(i) = (i-1)*dx
+c
+c-- create unit cylinder heights yout
+      dy = 1d0/real(ny)
+      forall(j=1:ny+1) yout(j) = -0.5d0+(j-1)*dy
+c
+c-- dimensional scaling
+      if(in_isvelocity) then
+       helpx = in_velout
+       helpy = 2*in_velout
+      else
+       helpx = in_lx
+       helpy = in_ly
+      endif
+      str_xleft = helpx*xout
+      str_yleft = helpy*yout
+c
+c-- mass
+      str_mass = 0d0
+      if(in_dentype=='unif') then
+c-- uniform density sphere
+       rmax = min(helpy/2d0,helpx)
+       do j = 1,ny
+        do i = 1,nx
+          helpx = 0.5*(str_xleft(i+1)+str_xleft(i))
+          helpy = 0.5*(str_yleft(j+1)+str_yleft(j))
+          if(helpy**2+helpx**2<rmax**2) then
+           str_mass(i,j,1)=(str_yleft(j+1)-str_yleft(j)) *
+     &       (str_xleft(i+1)**2-str_xleft(i)**2) *
+     &       in_totmass/(pc_pi43*rmax**3)
+          endif
+        enddo
+       enddo
+      elseif(in_dentype=='mass') then
+c-- spherical 1/r^2 mass shells
+       rmax = min(helpy/2d0,helpx)
+       do j = 1,ny
+        do i = 1,nx
+          helpx = 0.5*(str_xleft(i+1)+str_xleft(i))
+          helpy = 0.5*(str_yleft(j+1)+str_yleft(j))
+          if(helpy**2+helpx**2<rmax**2) then
+           str_mass(i,j,1)=(str_yleft(j+1)-str_yleft(j)) *
+     &       (str_xleft(i+1)**2-str_xleft(i)**2) *
+     &       in_totmass/(pc_pi4*rmax*(helpy**2+helpx**2))
+          endif
+        enddo
+       enddo
+      elseif(in_dentype=='ufil') then
+c-- uniform density for all cylinder
+       forall(j=1:ny) str_mass(:,j,1) = in_totmass *
+     &        (xout(2:)**2 - xout(:nx)**2)*dy
+      elseif(in_dentype=='mfil') then
+c-- equal mass per cell for all cylinder
+       forall(j=1:ny)str_mass(:,j,1) = in_totmass*dx*dy
+      else
+       stop 'generate_inputstr2: invalid in_dentype'
+      endif
+c-- adjusting mass to correct total
+      str_mass = str_mass*in_totmass/sum(str_mass)
+c-- deallocating helper arrays
+      deallocate(xout,yout)
 c!}}}
       end subroutine generate_inputstr2
 c

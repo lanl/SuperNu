@@ -14,18 +14,20 @@ subroutine interior_source
   !Composed of external source particle loop (1st) and thermal source
   !particle loop (2nd).
 !##################################################
-
-  integer :: ir,irl,irr, ipart, ivac, ig, iig
-  integer, dimension(gas_nx) :: irused
-  real*8 :: r1, r2, r3, uul, uur, uumax, mu0, r0, Ep0, wl0
+  logical :: lhelp
+  integer :: i,j,k,il,ir,ipart,ivac,ig,iig
+  integer, dimension(gas_nx,gas_ny,gas_nz) :: ijkused
+  real*8 :: r1, r2, r3, uul, uur, uumax
+  real*8 :: om0, mu0, x0, y0, z0, ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, help
-! real*8 :: bmax, xx0
-!
+  real*8 :: cmffact,azitrfm
   type(packet),pointer :: ptcl
-!-- statement function
+!-- statement functions
   integer :: l
-  real*8 :: dx
+  real*8 :: dx,dy,dz
   dx(l) = gas_xarr(l+1) - gas_xarr(l)
+  dy(l) = gas_yarr(l+1) - gas_yarr(l)
+  dz(l) = gas_zarr(l+1) - gas_zarr(l)
 
   if(gas_isvelocity) then
      help = tsp_t
@@ -33,26 +35,58 @@ subroutine interior_source
      help = 1d0
   endif
 
-  ir = 1
-  irused(1:gas_nx) = 0
+  i = 1
+  j = 1
+  k = 1
+  ijkused = 0
   !Volume particle instantiation: loop
   !Loop run over the number of new particles that aren't surface source
   !particles.
-  
   x1=1d0/gas_wl(gas_ng+1)
   x2=1d0/gas_wl(1)
   do ipart = prt_nsurf+1, prt_nsurf+prt_nexsrc
      ivac = prt_vacantarr(ipart)!{{{
      ptcl => prt_particles(ivac)
-     !If adding particle ivac in current cell ir does not exceed nvolex, add ivac to ir: loop
 !
 !-- check for available particle space to populate in cell
-     do ir=ir,gas_nx
-       if (irused(ir)<gas_nvolex(ir,1,1)) exit
+     do k=k,gas_nz
+        do j=j,gas_ny
+           do i=i,gas_nx
+              lhelp = ijkused(i,j,k)<gas_nvolex(i,j,k)
+              if (lhelp) exit
+           enddo
+           if (lhelp) then
+              exit
+           else
+              i = 1
+           endif
+        enddo
+        if (lhelp) then
+           exit
+        else
+           i = 1
+           j = 1
+        endif
      enddo
+!
+!-- sanity check
+     if(.not.lhelp) stop 'interior_source (1): invalid particle'
 
-     irused(ir) = irused(ir)+1
-     !Calculating Group
+!-- increasing cell occupancy
+     ijkused(i,j,k) = ijkused(i,j,k)+1
+
+!-- setting 1st cell index
+     ptcl%zsrc = i
+
+!-- setting particle index to not vacant
+     prt_isvacant(ivac) = .false.
+!
+!-- calculating particle time
+     r1 = rand()
+     prt_tlyrand = prt_tlyrand+1
+     ptcl%tsrc = tsp_t+r1*tsp_dt
+
+!-- calculating wavelength
      denom2 = 0d0
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
@@ -63,207 +97,329 @@ subroutine interior_source
         if(r1>=denom2.and.r1<denom2+(x4-x3)/(x2-x1)) exit
         denom2 = denom2+(x4-x3)/(x2-x1)
      enddo
-     
-     !Ryan W.: particle group removed (rev. 120)
-     !ptcl%gsrc = iig
-     !Calculating comoving wavelength uniformly from group
-
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-
      wl0 = 1d0/((1d0-r1)/gas_wl(iig)+r1/gas_wl(iig+1))
 
-     !Calculating radial position
-
-     r3 = rand()
-     prt_tlyrand = prt_tlyrand+1
-
-     ptcl%rsrc = (r3*gas_xarr(ir+1)**3 + &
-          (1.0-r3)*gas_xarr(ir)**3)**(1.0/3.0)
-     r0 = ptcl%rsrc
-
-     !Calculating direction cosine (comoving)
-     !mu0 = 1d0
+!-- calculating direction cosine (comoving)
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
      mu0 = 1d0-2d0*r1
 
-     !Calculating particle time
-     r1 = rand()
-     prt_tlyrand = prt_tlyrand+1
+!-- calculating particle energy
+     ep0 = gas_emitex(i,j,k)/real(gas_nvolex(i,j,k))
+     gas_eext=gas_eext+ep0
 
-     ptcl%tsrc = tsp_t+r1*tsp_dt
-
-     !Calculating particle energy, lab frame direction and propagation type
-     Ep0 = gas_emitex(ir,1,1)/real(gas_nvolex(ir,1,1))
-     gas_eext=gas_eext+Ep0
-     if (((gas_sig(ir,1,1)+gas_cap(iig,ir,1,1))*dx(ir)* &
-          help < prt_tauddmc) &
-          .or.(in_puretran)) then
-        if(gas_isvelocity) then
-           ptcl%esrc = Ep0*(1.0+r0*mu0/pc_c)
-           ptcl%ebirth = Ep0*(1.0+r0*mu0/pc_c)
-!-- velocity effects accounting
-           gas_evelo=gas_evelo-Ep0*r0*mu0/pc_c
 !
-        !(rev 120)
-           ptcl%wlsrc = wl0/(1.0+r0*mu0/pc_c)
-        !
-           ptcl%musrc = (mu0+r0/pc_c)/(1.0+r0*mu0/pc_c)
+!-- selecting geometry
+     select case(in_igeom)
+
+!-- 1D
+     case(1)
+!-- calculating position
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        ptcl%rsrc = (r1*gas_xarr(i+1)**3 + &
+             (1.0-r1)*gas_xarr(i)**3)**(1.0/3.0)
+!-- setting IMC logical
+        lhelp = ((gas_sig(i,1,1)+gas_cap(iig,i,1,1))*dx(i)* &
+             help < prt_tauddmc).or.(in_puretran)
+
+!-- if velocity-dependent, transforming direction
+        if(lhelp.and.gas_isvelocity) then
+           x0 = ptcl%rsrc
+!-- 1+dir*v/c
+           cmffact = 1d0+mu0*x0/pc_c
+!-- mu
+           ptcl%musrc = (mu0+x0/pc_c)/cmffact
         else
-           ptcl%esrc = Ep0
-           ptcl%ebirth = Ep0
-        !
-           ptcl%wlsrc = wl0
-        !
            ptcl%musrc = mu0
+        endif
+
+!-- 2D
+     case(2)
+!-- setting 2nd cell index
+        ptcl%iy = j
+!-- calculating position
+        r1 = rand()
+        ptcl%rsrc = sqrt(r1*gas_xarr(i+1)**2 + &
+             (1d0-r1)*gas_xarr(i)**2)
+        r1 = rand()
+        ptcl%y = r1*gas_yarr(j+1) + (1d0-r1) * &
+             gas_yarr(j)
+!-- sampling azimuthal angle of direction
+        r1 = rand()
+        om0 = pc_pi2*r1
+!-- setting IMC logical
+        lhelp = ((gas_sig(i,j,1)+gas_cap(iig,i,j,1)) * &
+             min(dx(i),dy(j))*help < prt_tauddmc) &
+             .or.in_puretran
+!-- if velocity-dependent, transforming direction
+        if(lhelp.and.gas_isvelocity) then
+           x0 = ptcl%rsrc
+           y0 = ptcl%y
+!-- 1+dir*v/c
+           cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
+           azitrfm = atan2(sqrt(1d0-mu0**2)*sin(om0), &
+                sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
+!-- mu
+           ptcl%musrc = (mu0+y0/pc_c)/cmffact
+           if(ptcl%musrc>1d0) then
+              ptcl%musrc = 1d0
+           elseif(ptcl%musrc<-1d0) then
+              ptcl%musrc = -1d0
+           endif
+!-- om
+           if(azitrfm >= 0d0) then
+              ptcl%om = azitrfm
+           else
+              ptcl%om = azitrfm+pc_pi2
+           endif
+        else
+           ptcl%musrc = mu0
+           ptcl%om = om0
+        endif
+
+!-- 3D
+     case(3)
+        stop 'interior_source: no 3D transport'
+     endselect
+
+     if (lhelp) then
+!-- IMC
+        if(gas_isvelocity) then
+           ptcl%esrc = ep0*cmffact
+           ptcl%ebirth = ep0*cmffact
+           ptcl%wlsrc = wl0/cmffact
+!-- velocity effects accounting
+           gas_evelo=gas_evelo+ep0*(1d0-cmffact)
+        else
+           ptcl%esrc = ep0
+           ptcl%ebirth = ep0
+           ptcl%wlsrc = wl0
         endif
         ptcl%rtsrc = 1
      else
-        ptcl%esrc = Ep0
-        ptcl%ebirth = Ep0
-        !(rev 120)
+!-- DDMC
+        ptcl%esrc = ep0
+        ptcl%ebirth = ep0
         ptcl%wlsrc = wl0
-        !
-        ptcl%musrc = mu0
         ptcl%rtsrc = 2
      endif
-     !Setting ir = zone of particle
-     ptcl%zsrc = ir
-     !Setting particle index to not vacant
-     prt_isvacant(ivac) = .false.
-     
-     !source tally
-     !if(ptcl%rtsrc==2) then
-     !   gas_eraddens(ir,1,1)=gas_eraddens(ir,1,1)+Ep0
-     !endif!}}}
+!
   enddo
   
 
 !-- Thermal volume particle instantiation: loop
-  ir = 1
-  irused(1:gas_nx) = 0
+  i = 1
+  j = 1
+  k = 1
+  ijkused = 0
 
   do ipart = prt_nsurf+prt_nexsrc+1, prt_nnew
      ivac = prt_vacantarr(ipart)!{{{
      ptcl => prt_particles(ivac)
-     !If adding particle ivac in current cell ir does not exceed nvol, add ivac to ir: loop
+
 !
 !-- check for available particle space to populate in cell
-     do ir=ir,gas_nx
-       if (irused(ir)<gas_nvol(ir,1,1)) exit
+     do k=k,gas_nz
+        do j=j,gas_ny
+           do i=i,gas_nx
+              lhelp = ijkused(i,j,k)<gas_nvol(i,j,k)
+              if (lhelp) exit
+           enddo
+           if (lhelp) then
+              exit
+           else
+              i = 1
+           endif
+        enddo
+        if (lhelp) then
+           exit
+        else
+           i = 1
+           j = 1
+        endif
      enddo
-!--
-     irused(ir) = irused(ir)+1
-     !Calculating Group
-     denom2 = 0d0
-     r1 = rand()
-     prt_tlyrand = prt_tlyrand+1
-     
-     do ig = 1, gas_ng
-        iig = ig
-        if (r1>=denom2.and.r1<denom2+gas_emitprob(ig,ir,1,1)) exit
-        denom2 = denom2+gas_emitprob(ig,ir,1,1)
-     enddo
-     !write(*,*) 'here',ivac
-     !Ryan W.: particle group removed (rev. 120)
-     !ptcl%gsrc = iig
-     !Calculating wavelength uniformly from group
-     r1 = rand()
-     prt_tlyrand = prt_tlyrand+1
-     wl0 = 1d0/((1d0-r1)/gas_wl(iig)+r1/gas_wl(iig+1))
-     !wl0 = 0.5d0*(gas_wl(iig)+gas_wl(iig+1))
-!            x1 = pc_h*pc_c/(gas_wl(iig+1)*pc_kb*gas_temp(ir,1,1))
-!            x2 = pc_h*pc_c/(gas_wl(iig)*pc_kb*gas_temp(ir,1,1))
-!            if (x2<pc_plkpk) then
-!               bmax = x2**3/(exp(x2)-1d0)
-!            elseif (x1>pc_plkpk) then
-!               bmax = x1**3/(exp(x1)-1d0)
-!            else
-!               bmax = pc_plkpk
-!            endif
-!            r1 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-!            r2 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-!            xx0 = (1d0-r1)*x1+r1*x2
-!            do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
-!               r1 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-!               r2 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-!               xx0 = (1d0-r1)*x1+r1*x2
-!            enddo
-!            wl0 = pc_h*pc_c/(xx0*pc_kb*gas_temp(ir,1,1))
+!
+!-- sanity check
+     if(.not.lhelp) stop 'interior_source (2): invalid particle'
 
-     !Calculating radial position
-     r1 = 0d0
-     r2 = 1d0
-     irl = max(ir-1,1)  !-- left neighbor
-     irr = min(ir+1,gas_nx)  !-- right neighbor
-     uul = .5d0*(gas_temp(irl,1,1)**4 + gas_temp(ir,1,1)**4)
-     uur = .5d0*(gas_temp(irr,1,1)**4 + gas_temp(ir,1,1)**4)
-     uumax = max(uul,uur)
-     do while (r2 > r1)
-        r3 = rand()
-        prt_tlyrand = prt_tlyrand+1
-        r0 = (r3*gas_xarr(ir+1)**3+(1.0-r3)*gas_xarr(ir)**3)**(1.0/3.0)
-        r3 = (r0-gas_xarr(ir))/dx(ir)
-        r1 = (r3*uur+(1.0-r3)*uul)/uumax
-        r2 = rand()
-        prt_tlyrand = prt_tlyrand+1
-     enddo
-     ptcl%rsrc = r0
+!-- increasing cell occupancy
+     ijkused(i,j,k) = ijkused(i,j,k)+1
+!
+!-- setting 1st cell index
+     ptcl%zsrc = i
 
-     !Calculating direction cosine (comoving)
-     r1 = rand()
-     prt_tlyrand = prt_tlyrand+1
-     mu0 = 1d0-2d0*r1
-     if(abs(mu0)<0.0000001d0) then
-        mu0=0.0000001d0
-     endif
-     !Calculating particle time
+!-- setting particle index to not vacant
+     prt_isvacant(ivac) = .false.
+!
+!-- calculating particle time
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
      ptcl%tsrc = tsp_t+r1*tsp_dt
-     !Calculating particle energy, lab frame direction and propagation type
-     Ep0 = gas_emit(ir,1,1)/real(gas_nvol(ir,1,1))
 
-     if (((gas_cap(iig,ir,1,1)+gas_sig(ir,1,1))*dx(ir)* &
-          help < prt_tauddmc) &
-          .or.(in_puretran)) then
-        if(gas_isvelocity) then
-           ptcl%esrc = Ep0*(1.0+r0*mu0/pc_c)
-           ptcl%ebirth = Ep0*(1.0+r0*mu0/pc_c)
-!-- velocity effects accounting
-           gas_evelo=gas_evelo-Ep0*r0*mu0/pc_c
+!-- calculating wavelength
+     denom2 = 0d0
+     r1 = rand()
+     prt_tlyrand = prt_tlyrand+1     
+     do ig = 1, gas_ng
+        iig = ig
+        if (r1>=denom2.and.r1<denom2+gas_emitprob(ig,i,j,k)) exit
+        denom2 = denom2+gas_emitprob(ig,i,j,k)
+     enddo
+     r1 = rand()
+     prt_tlyrand = prt_tlyrand+1
+     wl0 = 1d0/((1d0-r1)/gas_wl(iig)+r1/gas_wl(iig+1))
+
+!-- calculating direction cosine (comoving)
+     r1 = rand()
+     prt_tlyrand = prt_tlyrand+1
+     mu0 = 1d0-2d0*r1
+
+!-- calculating particle energy
+     ep0 = gas_emit(i,j,k)/real(gas_nvol(i,j,k))
+
 !
-        !(rev 120)
-           ptcl%wlsrc = wl0/(1.0+r0*mu0/pc_c)
-        !
-           ptcl%musrc = (mu0+r0/pc_c)/(1.0+r0*mu0/pc_c)
+!-- selecting geometry
+     select case(in_igeom)
+
+!-- 1D
+     case(1)
+!-- calculating position:
+!-- source tilting in x
+        r3 = 0d0
+        r2 = 1d0
+        il = max(i-1,1)  !-- left neighbor
+        ir = min(i+1,gas_nx)  !-- right neighbor
+        uul = .5d0*(gas_temp(il,1,1)**4 + gas_temp(i,1,1)**4)
+        uur = .5d0*(gas_temp(ir,1,1)**4 + gas_temp(i,1,1)**4)
+        uumax = max(uul,uur)
+        uul = uul/uumax
+        uur = uur/uumax
+        do while (r2 > r3)
+           r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
+           x0 = (r1*gas_xarr(i+1)**3+(1.0-r1)*gas_xarr(i)**3)**(1.0/3.0)
+           r3 = (x0-gas_xarr(i))/dx(i)
+           r3 = r3*uur+(1.0-r3)*uul
+           r2 = rand()
+           prt_tlyrand = prt_tlyrand+1
+        enddo
+        ptcl%rsrc = x0
+!-- setting IMC logical
+        lhelp = ((gas_sig(i,1,1)+gas_cap(iig,i,1,1))*dx(i)* &
+             help < prt_tauddmc).or.(in_puretran)
+
+!-- if velocity-dependent, transforming direction
+        if (lhelp.and.gas_isvelocity) then
+!-- 1+dir*v/c
+           cmffact = 1d0+mu0*x0/pc_c
+!-- mu
+           ptcl%musrc = (mu0+x0/pc_c)/cmffact
         else
-           ptcl%esrc = Ep0
-           ptcl%ebirth = Ep0
-        !
-           ptcl%wlsrc = wl0
-        !
            ptcl%musrc = mu0
+        endif
+
+!-- 2D
+     case(2)
+!-- setting 2nd cell index
+        ptcl%iy = j
+!-- calculating position:
+!-- source tilting in x
+        r3 = 0d0
+        r2 = 1d0
+        il = max(i-1,1)  !-- left neighbor
+        ir = min(i+1,gas_nx)  !-- right neighbor
+        uul = .5d0*(gas_temp(il,j,1)**4 + gas_temp(i,j,1)**4)
+        uur = .5d0*(gas_temp(ir,j,1)**4 + gas_temp(i,j,1)**4)
+        uumax = max(uul,uur)
+        uul = uul/uumax
+        uur = uur/uumax
+        do while (r2 > r3)
+           r1 = rand()
+           x0 = sqrt(r1*gas_xarr(i+1)**2+(1.0-r1)*gas_xarr(i)**2)
+           r3 = (x0-gas_xarr(i))/dx(i)
+           r3 = r3*uur+(1.0-r3)*uul
+           r2 = rand()
+        enddo
+        ptcl%rsrc = x0
+!- source tilting in y
+        r3 = 0d0
+        r2 = 1d0
+        il = max(j-1,1)  !-- lower neighbor
+        ir = min(j+1,gas_ny)  !-- upper neighbor
+        uul = .5d0*(gas_temp(i,il,1)**4 + gas_temp(i,j,1)**4)
+        uur = .5d0*(gas_temp(i,ir,1)**4 + gas_temp(i,j,1)**4)
+        uumax = max(uul,uur)
+        uul = uul/uumax
+        uur = uur/uumax
+        do while (r2 > r3)
+           r1 = rand()
+           r3 = r1*uur+(1d0-r1)*uul
+           r2 = rand()
+        enddo
+        y0 = r1*gas_yarr(j+1)+(1d0-r1)*gas_yarr(j)
+        ptcl%y = y0
+!-- sampling azimuthal angle of direction
+        r1 = rand()
+        om0 = pc_pi2*r1
+
+!-- setting IMC logical
+        lhelp = ((gas_sig(i,j,1)+gas_cap(iig,i,j,1)) * &
+             min(dx(i),dy(j))*help < prt_tauddmc) &
+             .or.in_puretran
+!-- if velocity-dependent, transforming direction
+        if(lhelp.and.gas_isvelocity) then
+!-- 1+dir*v/c
+           cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
+           azitrfm = atan2(sqrt(1d0-mu0**2)*sin(om0), &
+                sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
+!-- mu
+           ptcl%musrc = (mu0+y0/pc_c)/cmffact
+           if(ptcl%musrc>1d0) then
+              ptcl%musrc = 1d0
+           elseif(ptcl%musrc<-1d0) then
+              ptcl%musrc = -1d0
+           endif
+!-- om
+           if(azitrfm >= 0d0) then
+              ptcl%om = azitrfm
+           else
+              ptcl%om = azitrfm+pc_pi2
+           endif
+        else
+           ptcl%musrc = mu0
+           ptcl%om = om0
+        endif
+
+!-- 3D
+     case(3)
+        stop 'interior_source: no 3D transport'
+     endselect
+
+     if (lhelp) then
+!-- IMC
+        if(gas_isvelocity) then
+           ptcl%esrc = ep0*cmffact
+           ptcl%ebirth = ep0*cmffact
+           ptcl%wlsrc = wl0/cmffact
+!-- velocity effects accounting
+           gas_evelo=gas_evelo+ep0*(1d0-cmffact)
+        else
+           ptcl%esrc = ep0
+           ptcl%ebirth = ep0
+           ptcl%wlsrc = wl0
         endif
         ptcl%rtsrc = 1
      else
-        ptcl%esrc = Ep0
-        ptcl%ebirth = Ep0
-        !(rev 120)
+!-- DDMC
+        ptcl%esrc = ep0
+        ptcl%ebirth = ep0
         ptcl%wlsrc = wl0
-        !
-        ptcl%musrc = mu0
         ptcl%rtsrc = 2
      endif
-     !Setting ir = zone of particle
-     ptcl%zsrc = ir
-     !Setting particle index to not vacant
-     prt_isvacant(ivac) = .false.
+
 !}}}
   enddo
 
