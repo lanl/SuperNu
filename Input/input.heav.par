@@ -5,6 +5,7 @@ in_nomp = 1
 in_grab_stdout = f
 in_puretran = f
 in_noreadstruct = t
+in_noeos = t
 in_norestart = t
 in_ntres = 1
 
