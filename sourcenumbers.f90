@@ -97,7 +97,11 @@ subroutine sourcenumbers
      endif
      prt_nnew = prt_nnew + gas_nvol(i,j,k)
      !external source volume numbers
-     gas_nvolex(i,j,k)=nint(gas_emitex(i,j,k)*prt_ns/gas_etot)
+     if(gas_emitex(i,j,k)<=0d0) then
+        gas_nvolex(i,j,k)=0
+     else
+        gas_nvolex(i,j,k)=nint(gas_emitex(i,j,k)*prt_ns/gas_etot)+50
+     endif
      prt_nexsrc = prt_nexsrc + gas_nvolex(i,j,k)
      prt_nnew = prt_nnew + gas_nvolex(i,j,k)
   enddo
