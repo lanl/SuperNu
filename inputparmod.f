@@ -139,7 +139,7 @@ c-- runtime parameter namelist
      & in_tauddmc, in_dentype, in_noreadstruct,
      & in_norestart, in_taulump, in_tauvtime,
      & in_tempradinit, in_ismodimc,
-     & in_comment
+     & in_comment, in_noeos
 c
       public
       private inputpars
