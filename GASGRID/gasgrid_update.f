@@ -80,13 +80,13 @@ c========================================
       call gridvolume(in_igeom,gas_isvelocity,tsp_t)
       gas_vals2%rho = gas_vals2%mass/gas_vals2%vol
 c-- Calculating power law heat capacity
-      gas_vals2%bcoef = in_cvcoef * gas_temp**in_cvtpwr *
+      gas_vals2%bcoef = in_cvcoef * dd_temp**in_cvtpwr *
      &  gas_vals2%rho**in_cvrpwr
 c
 c
 c-- add initial thermal input to gas_eext
       if(tsp_it==1) then
-       gas_eext = sum(gas_vals2%bcoef*gas_temp*gas_vals2%vol)
+       gas_eext = sum(gas_vals2%bcoef*dd_temp*gas_vals2%vol)
       endif
 c
 c
@@ -96,7 +96,7 @@ c-- compute the starting tempurature derivative in the fleck factor
        first = .false.
 c
 c-- temporarily change
-       gas_temp = dtempfrac*gas_temp!{{{
+       dd_temp = dtempfrac*dd_temp!{{{
        if(in_opacanaltype=='none') then
         if(.not.in_noeos) call eos_update(.false.)
        endif
@@ -112,13 +112,13 @@ c
         call opacity_planckmean
        endif
 c-- change back
-       gas_temp = gas_temp/dtempfrac
+       dd_temp = dd_temp/dtempfrac
 c
        if(.not.allocated(tempalt)) then
         allocate(tempalt(gas_nx,gas_ny,gas_nz))
         allocate(siggreyalt(gas_nx,gas_ny,gas_nz))
        endif
-       tempalt = gas_temp
+       tempalt = dd_temp
 c-- per gram
        siggreyalt = gas_siggrey/gas_vals2%rho
 !}}}
@@ -198,7 +198,7 @@ c-- header
        write(4,'("#",3i8)') tsp_it
 c-- body
        do i=1,gas_nx
-        write(4,'(1p,9999e12.4)') gas_temp(i,1,1),gas_sig(i,1,1),
+        write(4,'(1p,9999e12.4)') dd_temp(i,1,1),gas_sig(i,1,1),
      &    (gas_cap(ll,i,1,1),ll=1,gas_ng)
        enddo
 c-- close file
@@ -224,7 +224,7 @@ c-- 2D
 c
 c
 c-- save previous values for gentile-fleck factor calculation in next iter
-      tempalt = gas_temp
+      tempalt = dd_temp
       siggreyalt = gas_siggrey/gas_vals2%rho
 c
       call time(t1)

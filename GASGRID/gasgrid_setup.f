@@ -43,7 +43,7 @@ c-- temperature
       elseif(in_consttemp==0d0) then
        call read_restart_file
       else
-       gas_temp = in_consttemp
+       dd_temp = in_consttemp
       endif!}}}
 c
 c
@@ -52,7 +52,7 @@ c-- used in fleck_factor
 c
 c
 c-- temp and ur
-      gas_vals2%ur = pc_acoef*gas_temp**4 !initial guess, may be overwritten by read_temp_str
+      gas_vals2%ur = pc_acoef*dd_temp**4 !initial guess, may be overwritten by read_temp_str
 c
 c-- adopt partial masses from input file
       if(.not.in_noreadstruct) then

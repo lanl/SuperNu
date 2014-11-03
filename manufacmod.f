@@ -221,7 +221,7 @@ c-- implement/modify velocity dependent manufactured initial profile
          select case (gas_opacanaltype)
          case ('grey')
 c-- grey solution (uniform nominal temperature)
-            gas_temp=man_temp0
+            dd_temp = man_temp0
 c
          case ('mono')
             stop 'init_manutemp: gas_opacanaltype=mono'
@@ -234,7 +234,7 @@ c-- line solution
             if(gas_ldisp1/gas_ldisp2>=1d-3)
      &           stop 'init_manutemp: gas_ldisp1/gas_ldisp2>=1d-3'
 c
-            gas_temp=man_temp0
+            dd_temp = man_temp0
 c
          case default
             stop 'gas_opacanaltype unknown'

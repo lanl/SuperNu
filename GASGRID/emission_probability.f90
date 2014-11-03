@@ -34,8 +34,8 @@ subroutine emission_probability
         do j=1,gas_ny
         do i=1,gas_nx
            do ig=1,gas_ng
-              x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(i,j,k))
-              x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i,j,k))
+              x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*dd_temp(i,j,k))
+              x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*dd_temp(i,j,k))
               if(gas_siggrey(i,j,k)<=0d0) then
 !                gas_emitprob(ig,i,j,k) = 0d0  !-- not necessary
               else

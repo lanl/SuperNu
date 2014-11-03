@@ -22,7 +22,7 @@ c-- loop over all gas_vals cells
       do i=1,gas_nx
        ndens = gas_vals2(i,j,k)%natom/gas_vals2(i,j,k)%vol !atom number density
        call ion_solve_eos(gas_vals2(i,j,k)%natom1fr(1:),
-     &   gas_temp(i,j,k),ndens,gas_vals2(i,j,k)%nelec,niter)
+     &   dd_temp(i,j,k),ndens,gas_vals2(i,j,k)%nelec,niter)
 c
 c-- store occupation numbers of each ion's ground states
        do iz=1,gas_nelem

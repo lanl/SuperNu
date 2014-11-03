@@ -30,7 +30,7 @@ subroutine analytic_opacity
      ! sigmaP = A*T^B*rho^C (A,B,C set in input.par)!{{{
      ! sigmaP_g, sigmaR_g = sigmaP for all g 
      ! Input wavelength grid not used
-     gas_siggrey = gas_sigcoef*gas_temp**gas_sigtpwr* &
+     gas_siggrey = gas_sigcoef*dd_temp**gas_sigtpwr* &
           gas_vals2%rho**gas_sigrpwr
      do k = 1,gas_nz
         do j = 1,gas_ny
@@ -46,7 +46,7 @@ subroutine analytic_opacity
      ! func_P(T,g) and func_R(T,g) are functions proportional to
      ! integral_g(1/nu^3)
      !
-     gas_siggrey = gas_sigcoef*gas_temp**gas_sigtpwr* &
+     gas_siggrey = gas_sigcoef*dd_temp**gas_sigtpwr* &
           gas_vals2%rho**gas_sigrpwr
      do k = 1,gas_nz
      do j = 1,gas_ny
@@ -58,8 +58,8 @@ subroutine analytic_opacity
         enddo
         gas_siggrey(i,j,k) = 0d0
         do ig = 1, gas_ng
-           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(i,j,k))
-           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i,j,k))
+           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*dd_temp(i,j,k))
+           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*dd_temp(i,j,k))
            gas_siggrey(i,j,k) = gas_siggrey(i,j,k)+15d0*gas_cap(ig,i,j,k)* &
                 specint(x1,x2,3)/pc_pi**4
         enddo
@@ -73,7 +73,7 @@ subroutine analytic_opacity
      ! Input wavelength grid not used
      if(gas_ny>1) stop 'analytic_opacity: no 2D for opacanaltyp=pick'
      do i = 1, gas_nx
-        gas_siggrey(i,1,1) = gas_sigcoef*gas_temp(i,1,1)**gas_sigtpwr* &
+        gas_siggrey(i,1,1) = gas_sigcoef*dd_temp(i,1,1)**gas_sigtpwr* &
              gas_vals2(i,1,1)%rho**gas_sigrpwr     
         if(gas_suol=='tsta') then    !Case: A
            gas_cap(1,i,1,1) = gas_siggrey(i,1,1)
@@ -96,7 +96,7 @@ subroutine analytic_opacity
      ! Highly structured line test: group opacities alternate in magnitude!{{{
      ! sigmaP = A*T^B*rho^C
      ! sigmaP_g = sigmaP*func_P(g), sigmaR_g = sigmaP
-     gas_siggrey = gas_sigcoef*gas_temp**gas_sigtpwr * &
+     gas_siggrey = gas_sigcoef*dd_temp**gas_sigtpwr * &
           gas_vals2%rho**gas_sigrpwr
      do k = 1, gas_nz
      do j = 1, gas_ny
@@ -114,8 +114,8 @@ subroutine analytic_opacity
         !calculate Planck, Rosseland opacities
         gas_siggrey(i,j,k) = 0d0
         do ig = 1, gas_ng
-           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(i,j,k))
-           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i,j,k))
+           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*dd_temp(i,j,k))
+           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*dd_temp(i,j,k))
            gas_siggrey(i,j,k) = gas_siggrey(i,j,k)+15d0*gas_cap(ig,i,j,k)* &
                 specint(x1,x2,3)/pc_pi**4
         enddo
@@ -128,7 +128,7 @@ subroutine analytic_opacity
   endif
 
   !Calculating grey scattering opacity
-  gas_sig = gas_sigcoefs*gas_temp**gas_sigtpwrs* &
+  gas_sig = gas_sigcoefs*dd_temp**gas_sigtpwrs* &
        gas_vals2%rho**gas_sigrpwrs
 
 end subroutine analytic_opacity

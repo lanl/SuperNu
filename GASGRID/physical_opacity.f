@@ -50,7 +50,7 @@ c-- initialize
       cap = 0d0
 c
 c-- ion_grndlev helper array
-      hckt = pc_h*pc_c/(pc_kb*gas_temp)
+      hckt = pc_h*pc_c/(pc_kb*dd_temp)
 c
 c-- thomson scattering
       if(.not. in_nothmson) then

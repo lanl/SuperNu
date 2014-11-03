@@ -21,8 +21,8 @@ subroutine fleck_factor(tempalt,siggreyalt)
   do k=1,gas_nz
   do j=1,gas_ny
   do i=1,gas_nx
-     Um = gas_vals2(i,j,k)%bcoef*gas_temp(i,j,k)
-     if(gas_temp(i,j,k)<=0d0.or.gas_vals2(i,j,k)%bcoef==0d0) then
+     Um = gas_vals2(i,j,k)%bcoef*dd_temp(i,j,k)
+     if(dd_temp(i,j,k)<=0d0.or.gas_vals2(i,j,k)%bcoef==0d0) then
         beta = 0d0
      elseif(gas_siggrey(i,j,k)<=0d0.or.siggreyalt(i,j,k)<=0d0) then
         beta = 4.0*gas_vals2(i,j,k)%ur/Um
@@ -32,7 +32,7 @@ subroutine fleck_factor(tempalt,siggreyalt)
         else
 !-- convert from per gram
            dlogsig = log(gas_siggrey(i,j,k)/(siggreyalt(i,j,k)*gas_vals2(i,j,k)%rho))/&
-              (gas_temp(i,j,k)-tempalt(i,j,k))
+              (dd_temp(i,j,k)-tempalt(i,j,k))
            beta2 = min(0d0,(gas_vals2(i,j,k)%eraddens-gas_vals2(i,j,k)%ur)*&
               dlogsig/gas_vals2(i,j,k)%bcoef)
         endif

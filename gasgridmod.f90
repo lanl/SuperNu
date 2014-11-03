@@ -25,6 +25,9 @@ module gasgridmod
   real*8 :: gas_sigtpwr=0  !analytic absorption opacity power law temperature exponent
   real*8 :: gas_sigrpwr=0  !analytic absorption opacity power law density exponent
 
+  ! Picket-fence probabilities
+  real*8 :: gas_ppick(2)
+
   character(4) :: gas_opacanaltype = 'grey' !analytic opacity dependence on group.
   !is used with power law to create group opacities each timestep (see 
   !inputparmod for possible values).
@@ -114,8 +117,11 @@ module gasgridmod
 !
   real*8,allocatable :: gas_temp(:,:,:) !(gas_nx,gas_ny,gas_nz)
 
-
+  private read_temp_preset
 !
+!
+!-- DOMAIN DECOMPOSITION
+!=======================
   type gas_secondary
     real*8 :: eraddens
     real*8 :: ur, rho, bcoef, nisource
@@ -133,14 +139,15 @@ module gasgridmod
        real*8 :: matsrc = 0d0
   end type gas_secondary
   type(gas_secondary),pointer :: gas_vals2(:,:,:) !(gas_nx,gas_ny,gas_nz)
+
 !
+!-- domain decomposition
+  real*8,allocatable :: dd_temp(:,:,:) !(gas_nx,gas_ny,gas_nz)
+
+
 !-- temperature structure history
   real*8,allocatable :: gas_temppreset(:,:,:,:) !(gas_nx,gas_ny,gas_nz,tim_nt)
 
-  ! Picket-fence probabilities
-  real*8 :: gas_ppick(2)
-
-  private read_temp_preset
 
   save
 
@@ -214,13 +221,15 @@ module gasgridmod
     allocate(gas_emit(gas_nx,gas_ny,gas_nz))
     allocate(gas_emitex(gas_nx,gas_ny,gas_nz))
     allocate(gas_evolinit(gas_nx,gas_ny,gas_nz))
-!-- secondary
-    allocate(gas_vals2(gas_nx,gas_ny,gas_nz))
     allocate(gas_capgam(gas_nx,gas_ny,gas_nz))
 
     allocate(gas_temp(gas_nx,gas_ny,gas_nz))  !cell average temperature
     allocate(gas_methodswap(gas_nx,gas_ny,gas_nz))
     allocate(gas_numcensus(gas_nx,gas_ny,gas_nz))
+
+!-- secondary
+    allocate(gas_vals2(gas_nx,gas_ny,gas_nz))
+    allocate(dd_temp(gas_nx,gas_ny,gas_nz))
 !
 !-- output
     n = gas_nx*gas_ny*gas_nz

@@ -17,13 +17,13 @@ c-- Planck opacity
       do k=1,gas_nz
       do j=1,gas_ny
       do i=1,gas_nx
-       help = pc_h*pc_c/(pc_kb*gas_temp(i,j,k))
+       help = pc_h*pc_c/(pc_kb*dd_temp(i,j,k))
        hlparr = help/gas_wl
        gas_siggrey(i,j,k) = 15d0/pc_pi**4 *
      &   sum(gas_cap(:,i,j,k)*specint(hlparr(2:),hlparr(:gas_ng),3))
 !      do ig=1,gas_ng
-!       x1 = pc_h*pc_c/(gas_wl(ig + 1)*pc_kb*gas_temp(i,j,k))
-!       x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i,j,k))
+!       x1 = pc_h*pc_c/(gas_wl(ig + 1)*pc_kb*dd_temp(i,j,k))
+!       x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*dd_temp(i,j,k))
 !       gas_siggrey(i,j,k) = gas_siggrey(i,j,k) + 15d0/pc_pi**4*
 !    &    gas_cap(ig,i,j,k)*specint(x1,x2,3)
 !      enddo

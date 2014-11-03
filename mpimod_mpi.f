@@ -227,11 +227,11 @@ c
        allocate(gas_emitprob(gas_ng,nx,ny,nz))
        allocate(gas_opacleak(6,nx,ny,nz))
        allocate(gas_cap(gas_ng,nx,ny,nz))
+
+       allocate(dd_temp(nx,ny,nz))
       endif
 c
       n = nx*ny*nz
-      call mpi_bcast(gas_temp,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_nvol,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_nvolex,n,MPI_INTEGER,
@@ -254,6 +254,13 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_cap,n*gas_ng,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
+c
+c
+c-- domain decomposition (becomes mpi_gather at some point)
+      call mpi_bcast(dd_temp,n,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c-- special case: domain replicated copy
+      gas_temp = dd_temp
 c!}}}
       end subroutine bcast_nonpermanent
 c

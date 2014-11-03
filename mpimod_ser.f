@@ -15,7 +15,7 @@ c     --------------------------
       use inputparmod, only:in_nomp
       implicit none
 ************************************************************************
-* Broadcast the data that does not evolve over time (or temperature).
+* Broadcast the data that does not evolve over time.
 * - stub
 ************************************************************************
       end subroutine bcast_permanent
@@ -23,10 +23,13 @@ c
 c
       subroutine bcast_nonpermanent
 c     ------------------------
+      use gasgridmod
 ************************************************************************
-* Broadcast the data that changes with time/temperature.
+* Broadcast the data that changes with time.
 * - stub
 ************************************************************************
+c-- domain decomposition
+      gas_temp = dd_temp
       end subroutine bcast_nonpermanent
 c
 c

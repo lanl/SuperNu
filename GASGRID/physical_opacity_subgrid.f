@@ -51,7 +51,7 @@ c-- warn once
       logical :: lwarn
 c
 c-- ion_grndlev helper array
-      hckt = pc_h*pc_c/(pc_kb*gas_temp)
+      hckt = pc_h*pc_c/(pc_kb*dd_temp)
 c
       call time(t0)
 c
@@ -154,7 +154,7 @@ c-- calculate Planck function weighted Rosseland
         do k=1,nz
         do j=1,ny
         do i=1,nx
-         kbt = pc_kb*gas_temp(i,j,k)
+         kbt = pc_kb*dd_temp(i,j,k)
          do igs=1,ngs
           wll = (gas_wl(ig) + (igs-1)*dwl)
           x1 = pc_h*pc_c/((wll + dwl)*kbt)
