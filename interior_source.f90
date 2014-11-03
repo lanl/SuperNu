@@ -18,7 +18,7 @@ subroutine interior_source
   integer :: i,j,k,il,ir,ipart,ivac,ig,iig
   integer, dimension(gas_nx,gas_ny,gas_nz) :: ijkused
   real*8 :: r1, r2, r3, uul, uur, uumax
-  real*8 :: om0, mu0, x0, y0, z0, ep0, wl0
+  real*8 :: om0, mu0, x0, y0, ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, help
   real*8 :: cmffact,azitrfm
   type(packet),pointer :: ptcl
@@ -49,25 +49,16 @@ subroutine interior_source
      ptcl => prt_particles(ivac)
 !
 !-- check for available particle space to populate in cell
-     do k=k,gas_nz
+     loop_k: do k=k,gas_nz
         do j=j,gas_ny
            do i=i,gas_nx
               lhelp = ijkused(i,j,k)<gas_nvolex(i,j,k)
-              if (lhelp) exit
+              if (lhelp) exit loop_k
            enddo
-           if (lhelp) then
-              exit
-           else
-              i = 1
-           endif
-        enddo
-        if (lhelp) then
-           exit
-        else
            i = 1
-           j = 1
-        endif
-     enddo
+        enddo
+        j = 1
+     enddo loop_k
 !
 !-- sanity check
      if(.not.lhelp) stop 'interior_source (1): invalid particle'
@@ -206,7 +197,7 @@ subroutine interior_source
         ptcl%wlsrc = wl0
         ptcl%rtsrc = 2
      endif
-!
+!}}}
   enddo
   
 
