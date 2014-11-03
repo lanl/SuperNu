@@ -23,43 +23,6 @@ c     --------------------------!{{{
 * Broadcast the data that does not evolve over time (or temperature).
 * Also once the constants are broadcasted, all allocatable arrays are
 * allocated.
-*
-* arrays:
-* -------
-* integer :: gas_nvolinit(nx,ny,nz)
-* real*8 :: gas_xarr(nx+1)
-* real*8 :: gas_yarr(ny+1)
-* real*8 :: gas_zarr(nz+1)
-* real*8 :: gas_evolinit(nx,ny,nz)
-* real*8 :: gas_wl(gas_ng+1)
-*
-* scalars:
-*----------
-*-- logical
-* logical :: in_isvelocity
-* logical :: in_puretran
-* logical :: prt_isimcanlog
-* logical :: prt_isddmcanlog
-* logical :: in_norestart
-*-- integer
-* integer :: gas_nx
-* integer :: gas_ny
-* integer :: gas_nz
-* integer :: gas_ng
-* integer :: prt_npartmax
-* integer :: in_nomp
-* integer :: tsp_nt
-* integer :: in_ntres
-* integer :: tsp_ntres
-* integer :: prt_ninitnew
-*-- real*8
-* real*8 :: prt_tauddmc
-* real*8 :: prt_taulump
-* real*8 :: tsp_t
-*-- character
-* character(4) :: gas_srctype
-* character(4) :: prt_tauvtime
-*
 ************************************************************************
       integer :: n
       logical,allocatable :: lsndvec(:)
@@ -68,10 +31,10 @@ c     --------------------------!{{{
 c
 c-- broadcast constants
 c-- logical
-      n = 5
+      n = 6
       allocate(lsndvec(n))
       if(impi==impi0) lsndvec = (/gas_isvelocity,in_puretran,
-     &  prt_isimcanlog,prt_isddmcanlog,in_norestart/)
+     &  prt_isimcanlog,prt_isddmcanlog,in_norestart,in_noeos/)
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -80,6 +43,7 @@ c-- copy back
       prt_isimcanlog = lsndvec(3)
       prt_isddmcanlog = lsndvec(4)
       in_norestart = lsndvec(5)
+      in_noeos = lsndvec(6)
       deallocate(lsndvec)
 c
 c-- integer

@@ -19,9 +19,10 @@ c     -----------------------
 * - opacities
 ************************************************************************
       logical :: do_output,lexist
-      integer :: i,j,k,l,ll,ig,it,istat
-      real*8 :: help,x1,x2
-      real*8 :: hlparr(gas_ng+1)
+      integer :: i,ll,it,istat
+*     integer :: j,k,l
+      real*8 :: help
+*     real*8 :: hlparr(gas_ng+1)
       real*8 :: dtempfrac = 0.99d0
       real*8 :: natom1fr(gas_nx,gas_ny,gas_nz,-2:-1) !todo: memory storage order?
       real*8 :: natom2fr(gas_nx,gas_ny,gas_nz,-2:-1)

@@ -49,6 +49,9 @@ c
       logical :: exists
       logical,save :: skipwarn=.false.
 c
+c-- init
+      mbrss = -1  !-- return invalid number if error
+c
 c-- read stat file
       inquire(file='/proc/self/stat',exist=exists)
       if(.not.exists .and. .not.skipwarn) then

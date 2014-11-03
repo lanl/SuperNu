@@ -30,9 +30,6 @@ module gasgridmod
   real*8 :: gas_sigcoef=0  !analytic absorption opacity power law coefficient
   real*8 :: gas_sigtpwr=0  !analytic absorption opacity power law temperature exponent
   real*8 :: gas_sigrpwr=0  !analytic absorption opacity power law density exponent
-  real*8 :: gas_cvcoef=0  !analytic heat capacity power law coefficient
-  real*8 :: gas_cvtpwr=0  !analytic heat capacity power law temperature exponent
-  real*8 :: gas_cvrpwr=0  !analytic heat capacity power law density exponent
 
   character(4) :: gas_opacanaltype = 'grey' !analytic opacity dependence on group.
   !is used with power law to create group opacities each timestep (see 
