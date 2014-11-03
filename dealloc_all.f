@@ -29,7 +29,7 @@ c-- gasgridmod
       deallocate(gas_emitprob,gas_opacleak)
       deallocate(gas_eraddens)
       deallocate(gas_luminos,gas_lumdev,gas_lumnum)
-      if(impi==impi0) deallocate(gas_siggrey,gas_siggreyprevit)
+      if(impi==impi0) deallocate(gas_siggrey)
       deallocate(gas_fcoef)
       deallocate(gas_sig)
       if(impi==impi0) deallocate(gas_capgam)

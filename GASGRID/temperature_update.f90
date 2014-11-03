@@ -19,8 +19,6 @@ subroutine temperature_update
   gas_eraddens=gas_eraddens/gas_vals2%vol
   gas_vals2%eraddens = gas_eraddens
 
-  gas_tempprevit = gas_temp
-
 !-- calculating temperature
   if(allocated(gas_temppreset)) then
 !-- apply read-in temperature profile
@@ -49,11 +47,6 @@ subroutine temperature_update
   endif
 
   gas_vals2%ur = pc_acoef*gas_temp**4
-
-!-- reset physical gas_siggreyprevit (used in fleck_factor, only approximate)
-  if(gas_isvelocity.and.in_opacanaltype=='none') then
-     gas_siggreyprevit = gas_siggrey*(tsp_t/(tsp_t + tsp_dt))**3
-  endif
 !
 !-- summing comoving material energy
   gas_emat = sum(gas_vals2%bcoef*gas_temp*gas_vals2%vol)

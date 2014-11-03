@@ -47,6 +47,10 @@ c-- temperature
       endif!}}}
 c
 c
+c-- used in fleck_factor
+      gas_vals2%eraddens = pc_acoef*in_tempradinit**4
+c
+c
 c-- temp and ur
       gas_vals2%ur = pc_acoef*gas_temp**4 !initial guess, may be overwritten by read_temp_str
 c

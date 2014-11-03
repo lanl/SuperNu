@@ -13,13 +13,7 @@ module gasgridmod
   integer :: gas_ng = 0
 
   real*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
-  real*8,allocatable :: gas_cap(:,:,:,:) !(gas_ng,gas_nx,gas_ny,gas_nz) Line+Cont extinction coeff
-  real*8,allocatable :: gas_sig(:,:,:) !(gas_nx,gas_ny,gas_nz) scattering coefficient
-!---------------------------------------------------------------
-  real*8,allocatable :: gas_capgam(:,:,:) !(gas_nx,gas_ny,gas_nz) Gamma ray gray opacity
-!
-!-- temperature structure history
-  real*8,allocatable :: gas_temppreset(:,:,:,:) !(gas_nx,gas_ny,gas_nz,tim_nt)
+
   logical :: gas_isvelocity = .false.
   logical :: gas_novolsrc = .false. !no external volume source (e.g. radioactivity)
 !-(rev. 121)
@@ -52,11 +46,11 @@ module gasgridmod
   real*8 :: gas_eext = 0d0 !time-integrated input energy from external source
   real*8 :: gas_emat = 0d0 !material energy
   real*8 :: gas_erad = 0d0 !census radiation energy
-  real*8 :: gas_eleft= 0d0 !left (inward) leaked energy from domain
-  real*8 :: gas_eright=0d0 !right (outward) leaked energy from domain
+  real*8 :: gas_eleft = 0d0 !left (inward) leaked energy from domain
+  real*8 :: gas_eright = 0d0 !right (outward) leaked energy from domain
   real*8 :: gas_etot = 0d0 !total source energy added per time step
-  real*8 :: gas_evelo= 0d0 !total energy change to rad field from fluid
-  real*8 :: gas_eerror= 0d0 !error in integral problem energy
+  real*8 :: gas_evelo = 0d0 !total energy change to rad field from fluid
+  real*8 :: gas_eerror = 0d0 !error in integral problem energy
 !-- average quantities used for energy check with MPI
   real*8 :: gas_eextav = 0d0
   real*8 :: gas_eveloav = 0d0
@@ -66,26 +60,50 @@ module gasgridmod
   real*8,allocatable :: gas_xarr(:)   !(gas_nx+1), left cell edge values
   real*8,allocatable :: gas_yarr(:)   !(gas_ny+1), left cell edge values
   real*8,allocatable :: gas_zarr(:)   !(gas_nz+1), left cell edge values
-  real*8,allocatable :: gas_edep(:,:,:)   !(gas_nx,gas_ny,gas_nz)
-  real*8,allocatable :: gas_siggrey(:,:,:)!(gas_nx,gas_ny,gas_nz)
-  real*8,allocatable :: gas_fcoef(:,:,:)  !(gas_nx,gas_ny,gas_nz)
-  real*8,allocatable :: gas_emitprob(:,:,:,:)           !(gas_ng,gas_nx,gas_ny,gas_nz)
+
+
+!-- Probability of emission in a given zone and group
+  real*8,allocatable :: gas_emitprob(:,:,:,:) !(gas_ng,gas_nx,gas_ny,gas_nz)
+!-- Line+Cont extinction coeff
+  real*8,allocatable :: gas_cap(:,:,:,:) !(gas_ng,gas_nx,gas_ny,gas_nz)
 !-- leakage opacities
   real*8,allocatable :: gas_opacleak(:,:,:,:) !(6,gas_nx,gas_ny,gas_nz)
-  
+
+
+!-- scattering coefficient
+  real*8,allocatable :: gas_sig(:,:,:) !(gas_nx,gas_ny,gas_nz)
+!-- Gamma ray gray opacity
+  real*8,allocatable :: gas_capgam(:,:,:) !(gas_nx,gas_ny,gas_nz)
+!-- Planck opacity (gray)
+  real*8,allocatable :: gas_siggrey(:,:,:)!(gas_nx,gas_ny,gas_nz)
+!-- Fleck factor
+  real*8,allocatable :: gas_fcoef(:,:,:)  !(gas_nx,gas_ny,gas_nz)
+
+
+!-- energy absorbed by material
+  real*8,allocatable :: gas_edep(:,:,:)   !(gas_nx,gas_ny,gas_nz)
+!-- radiation energy density in tsp_dt
   real*8,allocatable :: gas_eraddens(:,:,:) !(gas_nx,gas_ny,gas_nz)
-!-- old Planck opacity for BDF-2 method
-  real*8,allocatable :: gas_siggreyprevit(:,:,:) !(gas_nx,gas_ny,gas_nz)
-  real*8,allocatable :: gas_tempprevit(:,:,:) !(gas_nx,gas_ny,gas_nz)
+
+
+!-- number of IMC-DDMC method changes per cell per time step
+  integer,allocatable :: gas_methodswap(:,:,:) !(gas_nx,gas_ny,gas_nz)
+!-- number of census prt_particles per cell
+  integer,allocatable :: gas_numcensus(:,:,:) !(gas_nx,gas_ny,gas_nz)
+
 !
+!-- radiative flux
+!=================
 !-- outbound grouped luminosity
   real*8,allocatable :: gas_luminos(:) !(gas_ng)
 !-- sampled devation of group luminosity
   real*8,allocatable :: gas_lumdev(:) !(gas_ng)
 !-- number of escaped particles per group
   integer,allocatable :: gas_lumnum(:) !(gas_ng)
+
 !
-!---
+!-- packet number and energy distribution
+!========================================
   integer,allocatable :: gas_nvol(:,:,:) !(gas_nx,gas_ny,gas_nz) number of thermal source particles generated per cell
   integer,allocatable :: gas_nvolex(:,:,:) !(gas_nx,gas_ny,gas_nz) number of external source particles generated per cell
   integer,allocatable :: gas_nvolinit(:,:,:) !(gas_nx,gas_ny,gas_nz) number of initial (t=tfirst) particles per cell
@@ -95,9 +113,8 @@ module gasgridmod
   real*8,allocatable :: gas_evolinit(:,:,:) !(gas_nx,gas_ny,gas_nz) amount of initial energy per cell per group
 !
   real*8,allocatable :: gas_temp(:,:,:) !(gas_nx,gas_ny,gas_nz)
-!---
-!
-  integer,allocatable :: gas_methodswap(:,:,:) !(gas_nx,gas_ny,gas_nz) number of IMC-DDMC method changes per cell per time step
+
+
 !
   type gas_secondary
     real*8 :: eraddens
@@ -116,11 +133,12 @@ module gasgridmod
        real*8 :: matsrc = 0d0
   end type gas_secondary
   type(gas_secondary),pointer :: gas_vals2(:,:,:) !(gas_nx,gas_ny,gas_nz)
+!
+!-- temperature structure history
+  real*8,allocatable :: gas_temppreset(:,:,:,:) !(gas_nx,gas_ny,gas_nz,tim_nt)
 
   ! Picket-fence probabilities
   real*8 :: gas_ppick(2)
-
-  integer,allocatable :: gas_numcensus(:,:,:) !(gas_nx,gas_ny,gas_nz)
 
   private read_temp_preset
 
@@ -172,19 +190,16 @@ module gasgridmod
     allocate(gas_xarr(gas_nx+1)) !zone edge x position
     allocate(gas_yarr(gas_ny+1)) !zone edge y position
     allocate(gas_zarr(gas_nz+1)) !zone edge z position
-    allocate(gas_edep(gas_nx,gas_ny,gas_nz))   !energy absorbed by material
-    allocate(gas_siggrey(gas_nx,gas_ny,gas_nz)) !Planck opacity (gray)
-!-- rtw: using old gas_siggrey in bdf2 Fleck factor calculation
-    allocate(gas_siggreyprevit(gas_nx,gas_ny,gas_nz)) !Planck opacity (gray)
-    allocate(gas_tempprevit(gas_nx,gas_ny,gas_nz)) !previous temperature
+    allocate(gas_edep(gas_nx,gas_ny,gas_nz))
+    allocate(gas_siggrey(gas_nx,gas_ny,gas_nz))
 !
 !- Ryan W.: using power law to calculate gas_sig (similar to Planck opacity)
     allocate(gas_sig(gas_nx,gas_ny,gas_nz))    !grey scattering opacity
 !----------------------------------------------------------------
-    allocate(gas_fcoef(gas_nx,gas_ny,gas_nz))  !Fleck factor
-    allocate(gas_emitprob(gas_ng,gas_nx,gas_ny,gas_nz))  !Probability of emission in a given zone and group
+    allocate(gas_fcoef(gas_nx,gas_ny,gas_nz))
+    allocate(gas_emitprob(gas_ng,gas_nx,gas_ny,gas_nz))
     allocate(gas_opacleak(6,gas_nx,gas_ny,gas_nz))
-    allocate(gas_eraddens(gas_nx,gas_ny,gas_nz))  !radiation energy density in tsp_dt per group
+    allocate(gas_eraddens(gas_nx,gas_ny,gas_nz))
     allocate(gas_luminos(gas_ng))  !outbound grouped luminosity array
     allocate(gas_lumdev(gas_ng))
     allocate(gas_lumnum(gas_ng))
@@ -205,7 +220,7 @@ module gasgridmod
 
     allocate(gas_temp(gas_nx,gas_ny,gas_nz))  !cell average temperature
     allocate(gas_methodswap(gas_nx,gas_ny,gas_nz))
-    allocate(gas_numcensus(gas_nx,gas_ny,gas_nz))  !# census prt_particles per cell
+    allocate(gas_numcensus(gas_nx,gas_ny,gas_nz))
 !
 !-- output
     n = gas_nx*gas_ny*gas_nz

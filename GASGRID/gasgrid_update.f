@@ -18,6 +18,7 @@ c     -----------------------
 * - LTE EOS: ionization balance and electron density
 * - opacities
 ************************************************************************
+      logical,save :: first=.true.
       logical :: do_output,lexist
       integer :: i,ll,it,istat
 *     integer :: j,k,l
@@ -28,6 +29,8 @@ c     -----------------------
       real*8 :: natom2fr(gas_nx,gas_ny,gas_nz,-2:-1)
 c-- gamma opacity
       real*8,parameter :: ye=.5d0 !todo: compute this value
+c-- previous values
+      real*8,allocatable,save :: tempalt(:,:,:),siggreyalt(:,:,:)
 c-- timing
       real*8 :: t0,t1
 c
@@ -89,7 +92,10 @@ c
 c
 c
 c-- compute the starting tempurature derivative in the fleck factor
-      if(tsp_it==1 .or. in_opacanaltype/='none') then
+      if(first .or. in_opacanaltype/='none') then
+       first = .false.
+c
+c-- temporarily change
        gas_temp = dtempfrac*gas_temp!{{{
        if(in_opacanaltype=='none') then
         if(.not.in_noeos) call eos_update(.false.)
@@ -105,10 +111,17 @@ c
         endif
         call opacity_planckmean
        endif
-c-- restore
+c-- change back
        gas_temp = gas_temp/dtempfrac
 c
-       gas_siggreyprevit = gas_siggrey!}}}
+       if(.not.allocated(tempalt)) then
+        allocate(tempalt(gas_nx,gas_ny,gas_nz))
+        allocate(siggreyalt(gas_nx,gas_ny,gas_nz))
+       endif
+       tempalt = gas_temp
+c-- per gram
+       siggreyalt = gas_siggrey/gas_vals2%rho
+!}}}
       endif
 c
 c
@@ -194,7 +207,7 @@ c-- close file
 c
 c
 c-- Calculating Fleck factor, leakage opacities
-      call fleck_factor(dtempfrac)
+      call fleck_factor(tempalt,siggreyalt)
 c-- Calculating emission probabilities for each group in each cell
       call emission_probability
 c-- Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
@@ -208,6 +221,11 @@ c-- 2D
       case(3)
          stop 'gg_update: no 3D transport'
       endselect
+c
+c
+c-- save previous values for gentile-fleck factor calculation in next iter
+      tempalt = gas_temp
+      siggreyalt = gas_siggrey/gas_vals2%rho
 c
       call time(t1)
       call timereg(t_gasupd,t1-t0)
