@@ -7,6 +7,7 @@ subroutine particle_advance
   use inputparmod
   use timingmod
   use mpimod
+  use fluxmod
   implicit none
 !
   integer,target :: one = 1

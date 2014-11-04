@@ -5,6 +5,7 @@ subroutine diffusion2(ptcl,isvacant)
   use physconstmod
   use particlemod
   use inputparmod
+  use fluxmod
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
@@ -19,7 +20,7 @@ subroutine diffusion2(ptcl,isvacant)
   real*8,parameter :: cinv = 1d0/pc_c
   integer, external :: binsrch
 !
-  integer :: ig, iig, g
+  integer :: ig, iig, g, imu
   logical :: lhelp
   real*8 :: r1, r2, thelp, mu0
   real*8 :: denom, denom2, denom3
@@ -467,7 +468,10 @@ subroutine diffusion2(ptcl,isvacant)
            if(gas_isvelocity) then
               dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
               elabfact = 1d0+dirdotu*cinv
+           else
+              elabfact = 1d0
            endif
+!-- determining outbound group
            if(speclump>0d0) then
               r1 = rand()
               denom2 = 0d0
@@ -486,35 +490,39 @@ subroutine diffusion2(ptcl,isvacant)
                       (r1<denom2+specig*resopacleakr*speclump*help)) exit
                  denom2 = denom2+specig*resopacleakr*speclump*help
               enddo
-
-              r1 = rand()
-              wl=1d0/(r1/gas_wl(iig+1) + (1d0-r1)/gas_wl(iig))
-!-- changing from comoving frame to observer frame
-              wl = wl/elabfact
-!-- obtaining spectrum (lab) group
-              iig = binsrch(wl,gas_wl,gas_ng+1,in_ng)
-              if(iig>gas_ng.or.iig<1) then
-                 if(iig>gas_ng) then
-                    iig=gas_ng
-                    wl=gas_wl(gas_ng+1)
-                 else
-                    iig=1
-                    wl=gas_wl(1)
-                 endif
-              endif
-              gas_luminos(iig) = gas_luminos(iig)+&
-                   ep*dtinv*elabfact
-              gas_lumdev(iig) = gas_lumdev(iig)+&
-                   (ep*dtinv*elabfact)**2
-              gas_lumnum(iig) = gas_lumnum(iig)+1
            else
               iig = g
-              gas_luminos(iig) = gas_luminos(iig)+&
-                   ep*dtinv*elabfact
-              gas_lumdev(iig) = gas_lumdev(iig)+&
-                   (ep*dtinv*elabfact)**2
-              gas_lumnum(iig) = gas_lumnum(iig)+1
            endif
+!-- sampling outbound wavlength
+           r1 = rand()
+           wl=1d0/(r1/gas_wl(iig+1) + (1d0-r1)/gas_wl(iig))
+!-- changing from comoving frame to observer frame
+           if(gas_isvelocity) then
+              xi = (xi+z*cinv)/elabfact
+              if(xi>1d0) then
+                 xi = 1d0
+              elseif(xi<-1d0) then
+                 xi = -1d0
+              endif
+              wl = wl/elabfact
+           endif
+!-- obtaining spectrum (lab) group and polar bin
+           imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+           iig = binsrch(wl,flx_wl,flx_ng+1,0)
+           if(iig>flx_ng.or.iig<1) then
+              if(iig>flx_ng) then
+                 iig=flx_ng
+                 wl=flx_wl(flx_ng+1)
+              else
+                 iig=1
+                 wl=flx_wl(1)
+              endif
+           endif
+           flx_luminos(iig,imu,1)=flx_luminos(iig,imu,1)+&
+                ep*dtinv*elabfact
+           flx_lumdev(iig,imu,1)=flx_lumdev(iig,imu,1)+&
+                (ep*dtinv*elabfact)**2
+           flx_lumnum(iig,imu,1)=flx_lumnum(iig,imu,1)+1
 
         else
 !-- outward leaking in domain
@@ -648,6 +656,8 @@ subroutine diffusion2(ptcl,isvacant)
            if(gas_isvelocity) then
               dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
               elabfact = 1d0+dirdotu*cinv
+           else
+              elabfact = 1d0
            endif
            if(speclump>0d0) then
               r1 = rand()
@@ -666,35 +676,40 @@ subroutine diffusion2(ptcl,isvacant)
                       (r1<denom2+specig*resopacleakd*speclump*help)) exit
                  denom2 = denom2+specig*resopacleakd*speclump*help
               enddo
-
-              r1 = rand()
-              wl=1d0/(r1/gas_wl(iig+1) + (1d0-r1)/gas_wl(iig))
-!-- changing from comoving frame to observer frame
-              wl = wl/elabfact
-!-- obtaining spectrum (lab) group
-              iig = binsrch(wl,gas_wl,gas_ng+1,in_ng)
-              if(iig>gas_ng.or.iig<1) then
-                 if(iig>gas_ng) then
-                    iig=gas_ng
-                    wl=gas_wl(gas_ng+1)
-                 else
-                    iig=1
-                    wl=gas_wl(1)
-                 endif
-              endif
-              gas_luminos(iig) = gas_luminos(iig)+&
-                   ep*dtinv*elabfact
-              gas_lumdev(iig) = gas_lumdev(iig)+&
-                   (ep*dtinv*elabfact)**2
-              gas_lumnum(iig) = gas_lumnum(iig)+1
            else
               iig = g
-              gas_luminos(iig) = gas_luminos(iig)+&
-                   ep*dtinv*elabfact
-              gas_lumdev(iig) = gas_lumdev(iig)+&
-                   (ep*dtinv*elabfact)**2
-              gas_lumnum(iig) = gas_lumnum(iig)+1
            endif
+!-- sampling outbound wavlength
+           r1 = rand()
+           wl=1d0/(r1/gas_wl(iig+1) + (1d0-r1)/gas_wl(iig))
+!-- changing from comoving frame to observer frame
+           if(gas_isvelocity) then
+              xi = (xi+z*cinv)/elabfact
+              if(xi>1d0) then
+                 xi = 1d0
+              elseif(xi<-1d0) then
+                 xi = -1d0
+              endif
+              wl = wl/elabfact
+           endif
+!-- obtaining spectrum (lab) group and polar bin
+           imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+           iig = binsrch(wl,flx_wl,flx_ng+1,0)
+           if(iig>flx_ng.or.iig<1) then
+              if(iig>flx_ng) then
+                 iig=flx_ng
+                 wl=flx_wl(flx_ng+1)
+              else
+                 iig=1
+                 wl=flx_wl(1)
+              endif
+           endif
+           flx_luminos(iig,imu,1)=flx_luminos(iig,imu,1)+&
+                ep*dtinv*elabfact
+           flx_lumdev(iig,imu,1)=flx_lumdev(iig,imu,1)+&
+                (ep*dtinv*elabfact)**2
+           flx_lumnum(iig,imu,1)=flx_lumnum(iig,imu,1)+1
+
         else
 
 !-- sample adjacent group (assumes aligned g bounds)
@@ -815,7 +830,10 @@ subroutine diffusion2(ptcl,isvacant)
            if(gas_isvelocity) then
               dirdotu = xi*z+sqrt(1d0-xi**2)*cos(om)*r
               elabfact = 1d0+dirdotu*cinv
+           else
+              elabfact = 1d0
            endif
+!-- determining outbound group
            if(speclump>0d0) then
               r1 = rand()
               denom2 = 0d0
@@ -833,35 +851,39 @@ subroutine diffusion2(ptcl,isvacant)
                       (r1<denom2+specig*resopacleaku*speclump*help)) exit
                  denom2 = denom2+specig*resopacleaku*speclump*help
               enddo
-
-              r1 = rand()
-              wl=1d0/(r1/gas_wl(iig+1) + (1d0-r1)/gas_wl(iig))
-!-- changing from comoving frame to observer frame
-              wl = wl/elabfact
-!-- obtaining spectrum (lab) group
-              iig = binsrch(wl,gas_wl,gas_ng+1,in_ng)
-              if(iig>gas_ng.or.iig<1) then
-                 if(iig>gas_ng) then
-                    iig=gas_ng
-                    wl=gas_wl(gas_ng+1)
-                 else
-                    iig=1
-                    wl=gas_wl(1)
-                 endif
-              endif
-              gas_luminos(iig) = gas_luminos(iig)+&
-                   ep*dtinv*elabfact
-              gas_lumdev(iig) = gas_lumdev(iig)+&
-                   (ep*dtinv*elabfact)**2
-              gas_lumnum(iig) = gas_lumnum(iig)+1
            else
               iig = g
-              gas_luminos(iig) = gas_luminos(iig)+&
-                   ep*dtinv*elabfact
-              gas_lumdev(iig) = gas_lumdev(iig)+&
-                   (ep*dtinv*elabfact)**2
-              gas_lumnum(iig) = gas_lumnum(iig)+1
            endif
+           r1 = rand()
+           wl=1d0/(r1/gas_wl(iig+1) + (1d0-r1)/gas_wl(iig))
+!-- changing from comoving frame to observer frame
+           if(gas_isvelocity) then
+              xi = (xi+z*cinv)/elabfact
+              if(xi>1d0) then
+                 xi = 1d0
+              elseif(xi<-1d0) then
+                 xi = -1d0
+              endif
+              wl = wl/elabfact
+           endif
+!-- obtaining spectrum (lab) group and polar bin
+           imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+           iig = binsrch(wl,flx_wl,flx_ng+1,0)
+           if(iig>flx_ng.or.iig<1) then
+              if(iig>flx_ng) then
+                 iig=flx_ng
+                 wl=flx_wl(flx_ng+1)
+              else
+                 iig=1
+                 wl=flx_wl(1)
+              endif
+           endif
+           flx_luminos(iig,imu,1)=flx_luminos(iig,imu,1)+&
+                ep*dtinv*elabfact
+           flx_lumdev(iig,imu,1)=flx_lumdev(iig,imu,1)+&
+                (ep*dtinv*elabfact)**2
+           flx_lumnum(iig,imu,1)=flx_lumnum(iig,imu,1)+1
+
         else
 
 !-- sample adjacent group (assumes aligned g bounds)

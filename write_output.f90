@@ -5,6 +5,7 @@ subroutine write_output
   use timestepmod
   use gasgridmod
   use particlemod
+  use fluxmod
   implicit none
 
   integer :: ig, j

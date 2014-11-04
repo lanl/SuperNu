@@ -7,6 +7,7 @@ c     ----------------------
       use particlemod
       use inputstrmod
       use inputparmod
+      use fluxmod
       implicit none
 ************************************************************************
 * deallocate all that was used till the end of the program. Any

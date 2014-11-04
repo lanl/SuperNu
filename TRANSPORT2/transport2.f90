@@ -5,6 +5,7 @@ subroutine transport2(ptcl,isvacant)
   use physconstmod
   use particlemod
   use inputparmod
+  use fluxmod
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
@@ -18,7 +19,7 @@ subroutine transport2(ptcl,isvacant)
   real*8,parameter :: cinv = 1d0/pc_c
   integer, external :: binsrch
 
-  integer :: g, ig, iig
+  integer :: g, ig, iig,imu
   real*8 :: dirdotu, azidotu, mu0
   real*8 :: dtinv, elabfact, thelp, thelpinv 
   real*8 :: dcen,dcol,dthm,db,dbr,dbz,ddop,d
@@ -364,22 +365,23 @@ subroutine transport2(ptcl,isvacant)
 !-- ending particle
            isvacant = .true.
            prt_done = .true.
-!-- retrieving lab frame group
-           g = binsrch(wl,gas_wl,gas_ng+1,in_ng)
+!-- retrieving lab frame flux group and polar bin
+           imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+           g = binsrch(wl,flx_wl,flx_ng+1,0)
 !-- checking group bounds
-           if(g>gas_ng.or.g<1) then
-              if(g>gas_ng) then
-                 g=gas_ng
-                 wl=gas_wl(gas_ng+1)
+           if(g>flx_ng.or.g<1) then
+              if(g>flx_ng) then
+                 g=flx_ng
+                 wl=flx_wl(flx_ng+1)
               else
                  g=1
-                 wl=gas_wl(1)
+                 wl=flx_wl(1)
               endif
            endif
 !-- tallying outbound luminosity
-           gas_luminos(g) = gas_luminos(g)+ep*dtinv
-           gas_lumdev(g) = gas_lumdev(g)+(ep0*dtinv)**2
-           gas_lumnum(g) = gas_lumnum(g)+1
+           flx_luminos(g,imu,1) = flx_luminos(g,imu,1)+ep*dtinv
+           flx_lumdev(g,imu,1) = flx_lumdev(g,imu,1)+(ep0*dtinv)**2
+           flx_lumnum(g,imu,1) = flx_lumnum(g,imu,1)+1
 !-- checking if above cell is DDMC
         elseif((gas_cap(g,zr,zz+1,1)+gas_sig(zr,zz+1,1)) * &
              min(dx(zr),dy(zz+1))*thelp >= prt_tauddmc &
@@ -444,22 +446,23 @@ subroutine transport2(ptcl,isvacant)
 !-- ending particle
            isvacant = .true.
            prt_done = .true.
-!-- retrieving lab frame group
-           g = binsrch(wl,gas_wl,gas_ng+1,in_ng)
+!-- retrieving lab frame flux group and polar bin
+           imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+           g = binsrch(wl,flx_wl,flx_ng+1,0)
 !-- checking group bounds
-           if(g>gas_ng.or.g<1) then
-              if(g>gas_ng) then
-                 g=gas_ng
-                 wl=gas_wl(gas_ng+1)
+           if(g>flx_ng.or.g<1) then
+              if(g>flx_ng) then
+                 g=flx_ng
+                 wl=flx_wl(flx_ng+1)
               else
                  g=1
-                 wl=gas_wl(1)
+                 wl=flx_wl(1)
               endif
            endif
 !-- tallying outbound luminosity
-           gas_luminos(g) = gas_luminos(g)+ep*dtinv
-           gas_lumdev(g) = gas_lumdev(g)+(ep0*dtinv)**2
-           gas_lumnum(g) = gas_lumnum(g)+1
+           flx_luminos(g,imu,1) = flx_luminos(g,imu,1)+ep*dtinv
+           flx_lumdev(g,imu,1) = flx_lumdev(g,imu,1)+(ep0*dtinv)**2
+           flx_lumnum(g,imu,1) = flx_lumnum(g,imu,1)+1
 !-- checking if lower cell is DDMC
         elseif((gas_cap(g,zr,zz-1,1)+gas_sig(zr,zz-1,1)) * &
              min(dx(zr),dy(zz-1))*thelp >= prt_tauddmc &
@@ -529,22 +532,23 @@ subroutine transport2(ptcl,isvacant)
 !-- ending particle
            isvacant = .true.
            prt_done = .true.
-!-- retrieving lab frame group
-           g = binsrch(wl,gas_wl,gas_ng+1,in_ng)
+!-- retrieving lab frame flux group and polar bin
+           imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+           g = binsrch(wl,flx_wl,flx_ng+1,0)
 !-- checking group bounds
-           if(g>gas_ng.or.g<1) then
-              if(g>gas_ng) then
-                 g=gas_ng
-                 wl=gas_wl(gas_ng+1)
+           if(g>flx_ng.or.g<1) then
+              if(g>flx_ng) then
+                 g=flx_ng
+                 wl=flx_wl(flx_ng+1)
               else
                  g=1
-                 wl=gas_wl(1)
+                 wl=flx_wl(1)
               endif
            endif
 !-- tallying outbound luminosity
-           gas_luminos(g) = gas_luminos(g)+ep*dtinv
-           gas_lumdev(g) = gas_lumdev(g)+(ep0*dtinv)**2
-           gas_lumnum(g) = gas_lumnum(g)+1
+           flx_luminos(g,imu,1) = flx_luminos(g,imu,1)+ep*dtinv
+           flx_lumdev(g,imu,1) = flx_lumdev(g,imu,1)+(ep0*dtinv)**2
+           flx_lumnum(g,imu,1) = flx_lumnum(g,imu,1)+1
 !-- checking if outer cell is DDMC
         elseif((gas_cap(g,zr+1,zz,1)+gas_sig(zr+1,zz,1)) * &
              min(dx(zr+1),dy(zz))*thelp >= prt_tauddmc &

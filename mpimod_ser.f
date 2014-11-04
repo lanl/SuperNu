@@ -25,8 +25,10 @@ c
       end subroutine setup_domain_decomposition
 c
 c
-      subroutine scatter_struct
-      end subroutine scatter_struct
+      subroutine scatter_inputstruct(ndim)
+      implicit none
+      integer,intent(in) :: ndim(3)
+      end subroutine scatter_inputstruct
 c
 c
       subroutine bcast_nonpermanent

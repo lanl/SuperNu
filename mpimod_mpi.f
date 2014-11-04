@@ -397,6 +397,7 @@ c
 c     -----------------------!{{{
       use gasgridmod,nx=>gas_nx,ny=>gas_ny,nz=>gas_nz
       use timingmod
+      use fluxmod
       implicit none
 ************************************************************************
 * Reduce the results from particle_advance that are needed for the

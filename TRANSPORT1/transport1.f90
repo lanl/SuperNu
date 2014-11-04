@@ -5,6 +5,7 @@ subroutine transport1(ptcl,isvacant)
   use physconstmod
   use particlemod
   use inputparmod
+  use fluxmod
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
