@@ -293,85 +293,67 @@ c     ------------------------!{{{
       integer :: n
       integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:)
-c
-c-- integer
-      n = 3
-      allocate(isndvec(n))
-      if(impi==impi0) isndvec = (/prt_nnew,prt_nsurf,
-     & prt_nexsrc/)
-      call mpi_bcast(isndvec,n,MPI_INTEGER,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c-- copy back
-      prt_nnew = isndvec(1)
-      prt_nsurf = isndvec(2)
-      prt_nexsrc = isndvec(3)
-      deallocate(isndvec)
-c
-c-- real*8
-      n = 4
-      allocate(sndvec(n))
-      if(impi==impi0) sndvec = (/tsp_t,tsp_dt,gas_esurf,
-     & gas_etot/)
-      call mpi_bcast(sndvec,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c-- copy back
-      tsp_t = sndvec(1)
-      tsp_dt = sndvec(2)
-      gas_esurf = sndvec(3)
-      gas_etot = sndvec(4)
-      deallocate(sndvec)
-c
-c-- initial send of gas_eext
-      if(tsp_it==1) then
-         call mpi_bcast(gas_eext,1,MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
-      endif
-c
-c-- allocate all arrays. These are deallocated in dealloc_all.f
-      if(impi/=impi0 .and. .not.allocated(gas_temp)) then
-       allocate(gas_temp(nx,ny,nz))
-       allocate(gas_nvol(nx,ny,nz))
-       allocate(gas_nvolex(nx,ny,nz))
-       allocate(gas_emit(nx,ny,nz))
-       allocate(gas_emitex(nx,ny,nz))
-c
-       allocate(gas_fcoef(nx,ny,nz))
-       allocate(gas_sig(nx,ny,nz))
-       allocate(gas_siggrey(nx,ny,nz))
-       allocate(gas_emitprob(gas_ng,nx,ny,nz))
-       allocate(gas_opacleak(6,nx,ny,nz))
-       allocate(gas_cap(gas_ng,nx,ny,nz))
-
-       allocate(dd_temp(nx,ny,nz))
-      endif
-c
-      n = nx*ny*nz
-      call mpi_bcast(gas_nvol,n,MPI_INTEGER,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_nvolex,n,MPI_INTEGER,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_emit,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_emitex,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      call mpi_bcast(gas_siggrey,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      call mpi_bcast(gas_fcoef,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_sig,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_emitprob,n*gas_ng,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_opacleak,6*n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_cap,n*gas_ng,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-c
-c-- domain decomposition (becomes mpi_gather at some point)
-      call mpi_bcast(dd_temp,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
+!c
+!c-- integer
+!      n = 3
+!      allocate(isndvec(n))
+!      if(impi==impi0) isndvec = (/prt_nnew,prt_nsurf,
+!     & prt_nexsrc/)
+!      call mpi_bcast(isndvec,n,MPI_INTEGER,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!c-- copy back
+!      prt_nnew = isndvec(1)
+!      prt_nsurf = isndvec(2)
+!      prt_nexsrc = isndvec(3)
+!      deallocate(isndvec)
+!c
+!c-- real*8
+!      n = 4
+!      allocate(sndvec(n))
+!      if(impi==impi0) sndvec = (/tsp_t,tsp_dt,gas_esurf,
+!     & gas_etot/)
+!      call mpi_bcast(sndvec,n,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!c-- copy back
+!      tsp_t = sndvec(1)
+!      tsp_dt = sndvec(2)
+!      gas_esurf = sndvec(3)
+!      gas_etot = sndvec(4)
+!      deallocate(sndvec)
+!c
+!c-- initial send of gas_eext
+!      if(tsp_it==1) then
+!         call mpi_bcast(gas_eext,1,MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
+!      endif
+!c
+!      n = nx*ny*nz
+!      call mpi_bcast(gas_nvol,n,MPI_INTEGER,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!      call mpi_bcast(gas_nvolex,n,MPI_INTEGER,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!      call mpi_bcast(gas_emit,n,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!      call mpi_bcast(gas_emitex,n,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!c
+!      call mpi_bcast(gas_siggrey,n,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!c
+!      call mpi_bcast(gas_fcoef,n,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!      call mpi_bcast(gas_sig,n,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!      call mpi_bcast(gas_emitprob,n*gas_ng,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!      call mpi_bcast(gas_opacleak,6*n,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!      call mpi_bcast(gas_cap,n*gas_ng,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!c
+!c
+!c-- domain decomposition (becomes mpi_gather at some point)
+!      call mpi_bcast(dd_temp,n,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
 c-- special case: domain replicated copy
       gas_temp = dd_temp
 c!}}}
@@ -471,6 +453,18 @@ c-- timing statistics
      &  impi0,MPI_COMM_WORLD,ierr)
 c!}}}
       end subroutine reduce_tally
+c
+c
+c
+      subroutine reduce_gastemp
+c     -------------------------------------!{{{
+      use gasgridmod
+************************************************************************
+* placeholder
+************************************************************************
+      gas_temp = dd_temp
+c!}}}
+      end subroutine reduce_gastemp
 c
 c
 c

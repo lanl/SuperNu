@@ -25,8 +25,9 @@ c
       end subroutine setup_domain_decomposition
 c
 c
-      subroutine scatter_struct
-      end subroutine scatter_struct
+      subroutine scatter_inputstruct(ndim)
+      integer :: ndim(3)
+      end subroutine scatter_inputstruct
 c
 c
       subroutine bcast_nonpermanent
@@ -59,6 +60,8 @@ c
 ************************************************************************
       end subroutine reduce_fluxes
 c
+      subroutine reduce_gastemp
+      end subroutine reduce_gastemp
 c
       subroutine scatter_restart_data
 ************************************************************************

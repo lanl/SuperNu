@@ -169,14 +169,15 @@ program supernu
 !-- updating prt_tauddmc and prt_taulump
     call tau_update
 
-    if(impi==impi0) then
-      write(6,'(1x,a,i5,f8.3,"d",i12)') 'timestep:',it,tsp_t/pc_day, &
-         count(.not.prt_isvacant)
+    if(impi==impi0) write(6,'(1x,a,i5,f8.3,"d",i12)') 'timestep:',it, &
+         tsp_t/pc_day,count(.not.prt_isvacant)
+
+
 !-- update all non-permanent variables
-      call gasgrid_update
+    call gasgrid_update
 !-- number of source prt_particles per cell
-      call sourcenumbers
-    endif !impi
+    call sourcenumbers
+
 
 !-- broadcast to all workers
     call bcast_nonpermanent !MPI
@@ -203,14 +204,19 @@ program supernu
 
 !-- collect data necessary for restart (tobe written by impi0)
     if(.not.in_norestart) call collect_restart_data !MPI
+
+!-- update temperature
+    call temperature_update
+    call reduce_gastemp !MPI
+write(0,*) impi, gas_temp(:10,1,1) !DEBUG
+
 !
+!-- output
     if(impi==impi0) then
-!-- luminosity statistics
+!-- luminosity statistics!{{{
       where(gas_lumnum>0) gas_lumdev = ( &
          (gas_lumdev/gas_lumnum - (gas_luminos/gas_lumnum)**2) * &
          gas_lumnum/dble(gas_lumnum - 1) )**.5d0
-!-- update temperature
-      call temperature_update
 !-- check energy (particle weight) is accounted
       call energy_check
 !-- write output
@@ -222,7 +228,7 @@ program supernu
          call write_restart_randcount !-- rand() count
          call write_restart_particles !-- particle properties of current time step
       endif
-!
+!!}}}
     endif !impi
 !
 !-- reset rand counters
