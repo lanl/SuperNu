@@ -44,9 +44,9 @@ subroutine particle_advance
 
   gas_edep = 0.0
   gas_erad = 0.0
-  gas_luminos = 0.0
-  gas_lumdev = 0.0
-  gas_lumnum = 0
+  flx_luminos = 0.0
+  flx_lumdev = 0.0
+  flx_lumnum = 0
   gas_methodswap = 0
 !
 !--(rev. 121)

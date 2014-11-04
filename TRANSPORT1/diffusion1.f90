@@ -375,72 +375,80 @@ subroutine diffusion1(ptcl,isvacant)
         prt_done = .true.
         gas_eright = gas_eright+E
 !-- outbound luminosity tally
-        if(gas_isvelocity) then
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        r2 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        mu = max(r1,r2)
+        if(speclump>0d0) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           r2 = rand()
-           prt_tlyrand = prt_tlyrand+1
-           mu = max(r1,r2)
-           if(speclump>0d0) then
-              r1 = rand()
-              prt_tlyrand = prt_tlyrand+1
-              denom2 = 0d0
-              help = 1d0/opacleakrlump
-              do ig = 1, glump
-                 iig=glumps(ig)
-                 specig = gas_siggrey(z,1,1)*gas_emitprob(iig,z,1,1)*capinv(iig)
-!-- calculating resolved leakage opacities
-                 mfphelp = (gas_cap(iig,z,1,1)+gas_sig(z,1,1))*dx(z)*thelp
-                 ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
-                 resopacleakr = 1.5d0*ppr*(thelp*gas_xarr(z+1))**2/ &
-                      (thelp**3*dx3(z))
-                 if((r1>=denom2).and. &
-                      (r1<denom2+specig*resopacleakr*speclump*help)) exit
-                 denom2 = denom2+specig*resopacleakr*speclump*help
-!                    gas_luminos(iig) = gas_luminos(iig)+&
-!                         E*dtinv*(1.0+gas_xarr(gas_nx+1)*mu*cinv) * glumpinv
-              enddo
-              r1 = rand()
-              prt_tlyrand = prt_tlyrand+1
-              wl=1d0/(r1/gas_wl(iig+1) + (1d0-r1)/gas_wl(iig))
-!-- changing from comoving frame to observer frame
-              wl = wl/(1d0+mu*gas_xarr(gas_nx+1)*cinv)
-!-- obtaining spectrum (lab) group
-              iig = binsrch(wl,gas_wl,gas_ng+1,in_ng)
-              if(iig>gas_ng.or.iig<1) then
-                 if(iig>gas_ng) then
-                    iig=gas_ng
-                    wl=gas_wl(gas_ng+1)
-                 else
-                    iig=1
-                    wl=gas_wl(1)
-                 endif
-              endif
-              gas_luminos(iig) = gas_luminos(iig)+&
-                   E*dtinv*(1.0+gas_xarr(gas_nx+1)*mu*cinv)
-              gas_lumdev(iig) = gas_lumdev(iig)+&
-                   (E*dtinv*(1.0+gas_xarr(gas_nx+1)*mu*cinv))**2
-              gas_lumnum(iig) = gas_lumnum(iig)+1
-           else
-              iig = g
-              gas_luminos(iig) = gas_luminos(iig)+&
-                   E*dtinv*(1.0+gas_xarr(gas_nx+1)*mu*cinv)
-              gas_lumdev(iig) = gas_lumdev(iig)+&
-                   (E*dtinv*(1.0+gas_xarr(gas_nx+1)*mu*cinv))**2
-              gas_lumnum(iig) = gas_lumnum(iig)+1
-           endif
-!               gas_luminos(iig) = gas_luminos(iig)+&
-!                    E*dtinv*(1.0+gas_xarr(gas_nx+1)*mu*cinv)
-        else
-           gas_eright = gas_eright+E
+           denom2 = 0d0
+           help = 1d0/opacleakrlump
            do ig = 1, glump
               iig=glumps(ig)
-              gas_luminos(iig)=gas_luminos(iig)+&
-                   (E*dtinv) * glumpinv
-              gas_lumdev(iig) = gas_lumdev(iig)+&
-                   (E*dtinv*glumpinv)**2
-              gas_lumnum(iig) = gas_lumnum(iig)+1
+              specig = gas_siggrey(z,1,1)*gas_emitprob(iig,z,1,1)*capinv(iig)
+!-- calculating resolved leakage opacities
+              mfphelp = (gas_cap(iig,z,1,1)+gas_sig(z,1,1))*dx(z)*thelp
+              ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              resopacleakr = 1.5d0*ppr*(thelp*gas_xarr(z+1))**2/ &
+                   (thelp**3*dx3(z))
+              if((r1>=denom2).and. &
+                   (r1<denom2+specig*resopacleakr*speclump*help)) exit
+              denom2 = denom2+specig*resopacleakr*speclump*help
            enddo
+           r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
+           wl=1d0/(r1/gas_wl(iig+1) + (1d0-r1)/gas_wl(iig))
+!-- changing from comoving frame to observer frame
+           if(gas_isvelocity) then
+              help = 1d0+mu*gas_xarr(gas_nx+1)*cinv
+              wl = wl/help
+           else
+              help = 1d0
+           endif
+!-- obtaining lab frame flux group
+           iig = binsrch(wl,flx_wl,flx_ng+1,0)
+           if(iig>flx_ng.or.iig<1) then
+              if(iig>flx_ng) then
+                 iig=flx_ng
+                 wl=flx_wl(flx_ng+1)
+              else
+                 iig=1
+                 wl=flx_wl(1)
+              endif
+           endif
+           flx_luminos(iig,1,1) = flx_luminos(iig,1,1)+&
+                E*dtinv*help
+           flx_lumdev(iig,1,1) = flx_lumdev(iig,1,1)+&
+                (E*dtinv*help)**2
+           flx_lumnum(iig,1,1) = flx_lumnum(iig,1,1)+1
+        else
+           r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
+           wl=1d0/(r1/gas_wl(g+1) + (1d0-r1)/gas_wl(g))
+!-- changing from comoving frame to observer frame
+           if(gas_isvelocity) then
+              help = 1d0+mu*gas_xarr(gas_nx+1)*cinv
+              wl = wl/help
+           else
+              help = 1d0
+           endif
+           iig = binsrch(wl,flx_wl,flx_ng+1,0)
+           if(iig>flx_ng.or.iig<1) then
+              if(iig>flx_ng) then
+                 iig=flx_ng
+                 wl=flx_wl(flx_ng+1)
+              else
+                 iig=1
+                 wl=flx_wl(1)
+              endif
+           endif
+           flx_luminos(iig,1,1) = flx_luminos(iig,1,1)+&
+                E*dtinv*help
+           flx_lumdev(iig,1,1) = flx_lumdev(iig,1,1)+&
+                (E*dtinv*help)**2
+           flx_lumnum(iig,1,1) = flx_lumnum(iig,1,1)+1
         endif
 !
 !

@@ -356,17 +356,17 @@ subroutine transport1(ptcl,isvacant)
            isvacant = .true.
            prt_done = .true.
 !
-!-- retrieve lab frame group
-           g = binsrch(wl,gas_wl,gas_ng+1,in_ng)
+!-- retrieve lab frame flux group
+           g = binsrch(wl,flx_wl,flx_ng+1,0)
 !
 !-- check group bounds
-           if(g>gas_ng.or.g<1) then
-              if(g>gas_ng) then
-                 g=gas_ng
-                 wl=gas_wl(gas_ng+1)
+           if(g>flx_ng.or.g<1) then
+              if(g>flx_ng) then
+                 g=flx_ng
+                 wl=flx_wl(flx_ng+1)
               else
                  g=1
-                 wl=gas_wl(1)
+                 wl=flx_wl(1)
               endif
            endif
 !
@@ -375,9 +375,9 @@ subroutine transport1(ptcl,isvacant)
            gas_evelo = gas_evelo+E*(1d0-elabfact)
 !
            gas_eright = gas_eright+E*elabfact
-           gas_luminos(g) = gas_luminos(g)+E*dtinv
-           gas_lumdev(g) = gas_lumdev(g)+(E*dtinv)**2
-           gas_lumnum(g) = gas_lumnum(g)+1
+           flx_luminos(g,1,1) = flx_luminos(g,1,1)+E*dtinv
+           flx_lumdev(g,1,1) = flx_lumdev(g,1,1)+(E*dtinv)**2
+           flx_lumnum(g,1,1) = flx_lumnum(g,1,1)+1
         ! Checking if DDMC region right
         elseif (((gas_sig(z+1,1,1)+gas_cap(g,z+1,1,1))*dx(z+1) &
              *thelp >= prt_tauddmc) &
