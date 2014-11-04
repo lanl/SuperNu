@@ -42,8 +42,8 @@ c     --------------------------------------------
       integer :: i
       character(12) :: fnames(3)
 c
-      fnames = (/'input.wlflux','input.muflux',
-     &     'input.omflux'/)
+      fnames = (/'input.fluxwl','input.fluxmu',
+     &     'input.fluxom'/)
 c
 c-- allocating direction grids
       allocate(flx_mu(flx_nmu+1))
@@ -57,12 +57,6 @@ c-- check if bins are read or generated
             call generate_fluxgrid(i,nflx(i),wlmin,wlmax)
          endif
       enddo
-c
-c-- allocating flux tally arrays
-      allocate(flx_luminos(flx_ng,flx_nmu,flx_nom))
-      allocate(flx_lumdev(flx_ng,flx_nmu,flx_nom))
-      allocate(flx_lumnum(flx_ng,flx_nmu,flx_nom))
-c
 c
       end subroutine fluxgrid_setup
 c
@@ -165,7 +159,7 @@ c-- logarithmic wavelength
             forall(i=1:flx_ng+1) flx_wl(i) =
      &        wlmin*help**((i-1d0)/flx_ng)
          else
-            stop 'fluxgrid_setup: invalid nflx(1)'
+            stop 'generate_fluxgrid: invalid nflx(1)'
          endif
 c
 c-- polar projection
@@ -177,7 +171,7 @@ c-- uniform polar array
             help = 2d0/flx_nmu
             forall(i=1:flx_nmu+1) flx_mu(i) = -1d0+(i-1)*help
          else
-            stop 'fluxgrid_setup: invalid nflx(2)'
+            stop 'generate_fluxgrid: invalid nflx(2)'
          endif
 c
 c-- azimuthal angle
@@ -189,11 +183,22 @@ c-- uniform azimuthal array
             help = pc_pi2/flx_nom
             forall(i=1:flx_nom+1) flx_om(i) = (i-1)*help
          else
-            stop 'fluxgrid_setup: invalid nflx(3)'
+            stop 'generate_fluxgrid: invalid nflx(3)'
          endif
       endif
 c
       end subroutine generate_fluxgrid
+c
+c
+      subroutine flux_init
+c     --------------------
+      implicit none
+c-- allocating flux tally arrays
+      allocate(flx_luminos(flx_ng,flx_nmu,flx_nom))
+      allocate(flx_lumdev(flx_ng,flx_nmu,flx_nom))
+      allocate(flx_lumnum(flx_ng,flx_nmu,flx_nom))
+c
+      end subroutine flux_init
 c
 c
       end module fluxmod

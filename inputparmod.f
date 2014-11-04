@@ -212,7 +212,7 @@ c
        if(in_nflx(2)/=1 .or. in_nflx(3)/=1) stop 'in_nflx invalid'
       case(2)
        if(in_ndim(3)>1) stop 'in_ndim invalid'
-       if(in_nflx(3)/=1) stop 'in_ndim invalid'
+       if(in_nflx(3)/=1) stop 'in_nflx invalid'
       case(4:)
        stop 'in_igeom invalid'
       endselect

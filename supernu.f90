@@ -122,6 +122,9 @@ program supernu
   call gasgrid_init
   call gasgrid_setup
 !
+!-- initialize flux tally arrays (rtw: separated from fluxgrid_setup)
+  call flux_init
+!
 !-- initial radiation energy
   call initialnumbers
 

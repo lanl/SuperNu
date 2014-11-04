@@ -22,6 +22,7 @@ c     --------------------------!{{{
       use gasgridmod,nx=>gas_nx,ny=>gas_ny,nz=>gas_nz
       use particlemod
       use timestepmod
+      use fluxmod
       implicit none
 ************************************************************************
 * Broadcast the data that does not evolve over time (or temperature).
@@ -53,13 +54,14 @@ c-- copy back
       deallocate(lsndvec)
 c
 c-- integer
-      n = 17
+      n = 20
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/in_igeom,
      &  in_ndim(1),in_ndim(2),in_ndim(3),gas_ng,
      &  prt_npartmax,in_nomp,tsp_nt,in_ntres,tsp_ntres,
      &  prt_ninit,prt_ninitnew,in_ng,in_nheav,
-     &  ion_nion,ion_iionmax,bb_nline/)
+     &  ion_nion,ion_iionmax,bb_nline,
+     &  flx_ng,flx_nmu,flx_nom/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -80,6 +82,9 @@ c-- copy back
       ion_nion     = isndvec(15)
       ion_iionmax  = isndvec(16)
       bb_nline     = isndvec(17)
+      flx_ng       = isndvec(18)
+      flx_nmu      = isndvec(19)
+      flx_nom      = isndvec(20)
       deallocate(isndvec)
 c
 c-- real*8
@@ -129,13 +134,22 @@ c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0) then
        allocate(gas_wl(gas_ng+1))
+       allocate(flx_wl(flx_ng+1))
+       allocate(flx_mu(flx_nmu+1))
+       allocate(flx_om(flx_nom+1))
        allocate(bb_xs(bb_nline))
       endif
 c
 c-- broadcast data
       call mpi_bcast(gas_wl,gas_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-
+      call mpi_bcast(flx_wl,flx_ng+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(flx_mu,flx_nmu+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(flx_om,flx_nom+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
 c-- bound-bound
       call mpi_bcast(bb_xs,sizeof(bb_xs),MPI_BYTE,
      &  impi0,MPI_COMM_WORLD,ierr)

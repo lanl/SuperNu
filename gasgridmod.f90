@@ -95,16 +95,6 @@ module gasgridmod
   integer,allocatable :: gas_numcensus(:,:,:) !(gas_nx,gas_ny,gas_nz)
 
 !
-!-- radiative flux
-!=================
-!-- outbound grouped luminosity
-  real*8,allocatable :: gas_luminos(:) !(gas_ng)
-!-- sampled devation of group luminosity
-  real*8,allocatable :: gas_lumdev(:) !(gas_ng)
-!-- number of escaped particles per group
-  integer,allocatable :: gas_lumnum(:) !(gas_ng)
-
-!
 !-- packet number and energy distribution
 !========================================
   integer,allocatable :: gas_nvol(:,:,:) !(gas_nx,gas_ny,gas_nz) number of thermal source particles generated per cell
@@ -204,9 +194,6 @@ module gasgridmod
     allocate(gas_opacleak(6,nx,ny,nz))
     allocate(gas_eraddens(nx,ny,nz))
 
-    allocate(gas_luminos(gas_ng))  !outbound grouped luminosity array
-    allocate(gas_lumdev(gas_ng))
-    allocate(gas_lumnum(gas_ng))
 !-Ryan W: gas_wl being allocated in gasgrid_setup now--
     !allocate(gas_wl(gas_ng)) !wavelength grid
 !------------------------------------------------------
