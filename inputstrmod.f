@@ -14,7 +14,7 @@ c
       real*8,allocatable :: str_mass(:,:,:) !(nx,ny,nz)
       real*8,allocatable :: str_massfr(:,:,:,:) !(nabund,nx,ny,nz)
 c
-      character(8),allocatable :: str_abundlabl(:) !(nabund)
+      character(8),allocatable,private :: str_abundlabl(:) !(nabund)
 c
       save
       public
@@ -226,6 +226,8 @@ c-- ni56 mass
        help = 0d0
       endif
       write(6,*) 'm_ni56:', help/pc_msun, 'Msun'
+c
+      deallocate(str_abundlabl)
 c!}}}
       end subroutine read_inputstr2
 c

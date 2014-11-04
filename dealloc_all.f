@@ -41,7 +41,6 @@ c-- inputstrmod
       if(impi==impi0) deallocate(str_xleft)
       if(impi==impi0) deallocate(str_mass)
       if(allocated(str_massfr)) deallocate(str_massfr)
-      if(allocated(str_abundlabl)) deallocate(str_abundlabl)
       if(allocated(str_iabund)) deallocate(str_iabund)
 
       end subroutine dealloc_all

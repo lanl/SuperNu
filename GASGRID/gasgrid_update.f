@@ -93,10 +93,10 @@ c
 c
 c-- compute the starting tempurature derivative in the fleck factor
       if(first .or. in_opacanaltype/='none') then
-       first = .false.
+       first = .false.!{{{
 c
 c-- temporarily change
-       dd_temp = dtempfrac*dd_temp!{{{
+       dd_temp = dtempfrac*dd_temp
        if(in_opacanaltype=='none') then
         if(.not.in_noeos) call eos_update(.false.)
        endif

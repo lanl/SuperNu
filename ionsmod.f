@@ -2,7 +2,7 @@
 c     --------------
       implicit none
 c
-      integer,private :: nelem=0 !private copy (public in gasgridmod) value is obtained in read_ion_data
+      integer,private :: nelem=0 !private copy (public in gasgridmod) value is obtained in ion_read_data
       integer :: ion_iionmax !max number of ions an element has
       integer :: ion_nion    !total number of ions of all elements
 c
@@ -30,7 +30,7 @@ c-- ocupation number and g value of all ion's ground states
        real*8,allocatable :: oc(:)
        real*8,allocatable :: g(:)
       end type ocground
-      type(ocground),allocatable :: ion_grndlev(:,:,:,:) !(nelem,gas_nx,gas_ny,gas_nz)
+      type(ocground),allocatable :: ion_grndlev(:,:,:,:) !(nelem,gas_nx*gas_ny*gas_nz)
 c
 *     private leveldata,elemconf,ocground
 c
@@ -40,15 +40,21 @@ c
 c
 c
 c
-      subroutine ion_alloc_grndlev(nx,ny,nz)
-c     ---------------------------------!{{{
+      subroutine ion_alloc_grndlev(nelemin,nx,ny,nz)
+c     -------------------------------------------!{{{
       implicit none
-      integer,intent(in) :: nx,ny,nz
+      integer,intent(in) :: nelemin,nx,ny,nz
 ************************************************************************
-* ion_grndlev stores the occupation number density and g value of the ground
-* states for all ions in all gas_vals cells.
+* ion_grndlev stores the occupation number density and g value of the
+* ground states for all ions in all gas_vals cells.
 ************************************************************************
-      integer :: i,j,k,iz,ni
+      integer :: l,iz,ni,i,j,k
+c
+      if(nelem==0) then
+       nelem = nelemin
+      elseif(nelem/=nelemin) then
+       stop 'ion_solve_eos: nelem error'
+      endif
 c
       allocate(ion_grndlev(nelem,nx,ny,nz))
       do k=1,nz
@@ -60,10 +66,48 @@ c
         allocate(ion_grndlev(iz,i,j,k)%oc(ni))
         allocate(ion_grndlev(iz,i,j,k)%g(ni))
        enddo
-      enddo !i
-      enddo !j
-      enddo !k!}}}
+      enddo
+      enddo
+      enddo !l!}}}
       end subroutine ion_alloc_grndlev
+c
+c
+c
+      subroutine ion_alloc_el(nelem,nion,nions,nlevel)
+c     ------------------------------------------------!{{{
+      implicit none
+      integer,intent(in) :: nelem,nions
+      integer,intent(in) :: nion(nelem),nlevel(nions)
+************************************************************************
+* allocate the ion_el structure and keep track of the size in bytes.
+* This is used in MPI mode before broadcasting ion_el.
+************************************************************************
+      integer :: ii,iz,iion,nlev
+c
+c-- copy
+      ion_nion = sum(nion)
+c
+c-- allocate data structure
+      allocate(ion_el(nelem))
+      iion = 0
+      do iz=1,nelem
+       allocate(ion_el(iz)%i(iz+1))
+       ion_el(iz)%i%e = 0d0
+       ion_el(iz)%i%q = 0d0
+       ion_el(iz)%ni = nion(iz)
+c-- allocate compressed data
+       do ii=1,nion(iz)
+        iion = iion + 1
+        nlev = nlevel(iion)
+        ion_el(iz)%i(ii)%nlev = nlev
+        allocate(ion_el(iz)%i(ii)%elev(nlev))
+        allocate(ion_el(iz)%i(ii)%glev(nlev))
+        ion_el(iz)%i(ii)%elev = 0d0
+        ion_el(iz)%i(ii)%glev = 0d0
+       enddo !ii
+      enddo !iz
+c!}}}
+      end subroutine ion_alloc_el
 c
 c
 c
@@ -73,31 +117,31 @@ c     ----------------------!{{{
 ************************************************************************
 * deallocate the complex ion_el datastructure, and ion_grndlev
 ************************************************************************
-      integer :: iz,ii,i,j,k
+      integer :: iz,ii,l,i,j,k
 c
       do iz=1,nelem
        do ii=1,ion_el(iz)%ni
-        if(allocated(ion_el(iz)%i(ii)%elev))
-     &    deallocate(ion_el(iz)%i(ii)%elev)
-        if(allocated(ion_el(iz)%i(ii)%glev))
-     &    deallocate(ion_el(iz)%i(ii)%glev)
+        if(allocated(ion_el(iz)%i(ii)%elev)) then
+         deallocate(ion_el(iz)%i(ii)%elev)
+         deallocate(ion_el(iz)%i(ii)%glev)
+        endif
        enddo !ii
        deallocate(ion_el(iz)%i)
       enddo !iz
       deallocate(ion_el)
 c
-      do k=1,ubound(ion_grndlev,dim=4)
-      do j=1,ubound(ion_grndlev,dim=3)
-      do i=1,ubound(ion_grndlev,dim=2)
+      do k=lbound(ion_grndlev,dim=4),ubound(ion_grndlev,dim=4)
+      do j=lbound(ion_grndlev,dim=3),ubound(ion_grndlev,dim=3)
+      do i=lbound(ion_grndlev,dim=2),ubound(ion_grndlev,dim=2)
        do iz=1,nelem
         if(allocated(ion_grndlev(iz,i,j,k)%oc))
      &    deallocate(ion_grndlev(iz,i,j,k)%oc)
         if(allocated(ion_grndlev(iz,i,j,k)%oc))
      &    deallocate(ion_grndlev(iz,i,j,k)%g)
        enddo
-      enddo !i
-      enddo !j
-      enddo !k
+      enddo
+      enddo
+      enddo !l
       deallocate(ion_grndlev)!}}}
       end subroutine ion_dealloc
 c
@@ -266,8 +310,9 @@ c
 c-- normalize n_i
        nsum = sum(ion_el(iz)%i(:nion)%n)
        if(nsum/=nsum .or. nsum>huge(nsum) .or. nsum<tiny(nsum)) then !verify nsum
-        write(6,*) 'nsum=',nsum,iz,nion
+        write(6,*) 'nsum,iz,nion,iconv=',nsum,iz,nion,iconv
         write(6,*) 'sahac,sahac2,kti',sahac,sahac2,kti
+        write(6,*) 'nelec,ndens',nelec,ndens
         write(6,*) 'n'
         write(6,*) (ion_el(iz)%i(ii)%n,ii=1,nion)
         write(6,*) 'e'

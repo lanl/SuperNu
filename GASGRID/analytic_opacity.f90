@@ -27,7 +27,7 @@ subroutine analytic_opacity
   if(gas_opacanaltype=='none') then
      return
   elseif(gas_opacanaltype=='grey') then
-     ! sigmaP = A*T^B*rho^C (A,B,C set in input.par)!{{{
+     ! sigmaP = A*T^B*rho^C (A,B,C set in input.par)
      ! sigmaP_g, sigmaR_g = sigmaP for all g 
      ! Input wavelength grid not used
      gas_siggrey = gas_sigcoef*dd_temp**gas_sigtpwr* &

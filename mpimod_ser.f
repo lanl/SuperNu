@@ -21,8 +21,15 @@ c     --------------------------
       end subroutine bcast_permanent
 c
 c
+      subroutine setup_domain_decomposition
+      end subroutine setup_domain_decomposition
+c
+c
+      subroutine scatter_struct
+      end subroutine scatter_struct
+c
+c
       subroutine bcast_nonpermanent
-c     ------------------------
       use gasgridmod
 ************************************************************************
 * Broadcast the data that changes with time.
@@ -34,7 +41,6 @@ c-- domain decomposition
 c
 c
       subroutine reduce_tally
-c     --------------------------
 ************************************************************************
 * Reduce the results from the packet transport that are needed for the
 * temperature correction.
@@ -47,7 +53,6 @@ c     --------------------------
 c
 c
       subroutine reduce_fluxes
-c     -------------------------
 ************************************************************************
 * Reduce the results from the packet transport.
 * - stub

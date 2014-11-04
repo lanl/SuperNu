@@ -147,40 +147,38 @@ module gasgridmod
   contains
 
 
-  subroutine gasgrid_init(ng)
-!-------------------------------------------------------
+  subroutine gasgrid_init
+!------------------------
     use inputparmod
     implicit none
-    integer,intent(in) :: ng
-!
+
     integer :: n,nx,ny,nz
     logical :: lexist
-!
+
     gas_nx = in_ndim(1)
     gas_ny = in_ndim(2)
     gas_nz = in_ndim(3)
-    gas_ng = ng
-    !
+
     gas_isvelocity = in_isvelocity
     gas_novolsrc = in_novolsrc
-    !power law scattering opacity input:
+!-- power law scattering opacity input:
     gas_sigcoefs = in_sigcoefs
     gas_sigtpwrs = in_sigtpwrs
     gas_sigrpwrs = in_sigrpwrs
-    !power law absorption opacity input:
+!-- power law absorption opacity input:
     gas_sigcoef = in_sigcoef
     gas_sigtpwr = in_sigtpwr
     gas_sigrpwr = in_sigrpwr
-    !group type:
+!-- group type:
     gas_opacanaltype = in_opacanaltype
-    !picket fence input:
+!-- picket fence input:
     gas_suol = in_suol
     gas_ppick(1) = in_suolpick1
     gas_ppick(2) = 1d0-in_suolpick1
-    !group line disparities (strengths):
+!-- group line disparities (strengths):
     gas_ldisp1 = in_ldisp1
     gas_ldisp2 = in_ldisp2
-    !external analytic source input:
+!-- external analytic source input:
     gas_srctype = in_srctype
     gas_theav = in_theav
     gas_nheav = in_nheav
@@ -227,7 +225,6 @@ module gasgridmod
     allocate(gas_numcensus(nx,ny,nz))
 
 !-- secondary
-    allocate(dd_temp(nx,ny,nz))
     allocate(dd_temp(nx,ny,nz)) !(nx,ny,nz)
     allocate(dd_eraddens(nx,ny,nz))
     allocate(dd_ur(nx,ny,nz))
@@ -243,6 +240,8 @@ module gasgridmod
     allocate(dd_matsrc(nx,ny,nz))
     dd_natom1fr = 0d0 !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
     dd_natom0fr = 0d0     !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
+    dd_nelec = 1d0  !gcell # electrons per atom 
+    dd_matsrc = 0d0  !-- material energy (temperature) source (may be manufactured)
 !
 !-- output
     n = nx*ny*nz

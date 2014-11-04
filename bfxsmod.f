@@ -3,16 +3,13 @@ c     --------------
       implicit none
 c
       integer,private :: l
-      integer,private :: ll(7),ninn(30),ntot(30)
-      real,private :: ph1(6,7,30,30),ph2(7,30,30)
-c
-      data (ll(l),l=1,7) /0,0,1,0,1,2,0/
-c
-      data (ninn(l),l=1,30) /0,0,1,1,1,1,1,1,1,1,3,3,
-     & 3,3,3,3,3,3,5,5,5,5,5,5,5,5,5,5,5,5/
-c
-      data (ntot(l),l=1,30) /1,1,2,2,3,3,3,3,3,3,4,4,
-     & 5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,7,7/
+      integer,parameter,private :: ll(7) = [0,0,1,0,1,2,0]
+      integer,parameter,private :: ninn(30) = [0,0,1,1,1,1,1,1,1,1,3,3,
+     &  3,3,3,3,3,3,5,5,5,5,5,5,5,5,5,5,5,5]
+      integer,parameter,private :: ntot(30) = [1,1,2,2,3,3,3,3,3,3,4,4,
+     &  5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,7,7]
+
+      real :: bf_ph1(6,7,30,30),bf_ph2(7,30,30)
 c
 c-- block data
 !     include 'bf_verner.blk'
@@ -27,7 +24,7 @@ c
 c------------------------------
       implicit none
 ************************************************************************
-* Read Verner 1995 (ph1) and 1996 (ph2) data.
+* Read Verner 1995 (ph1) and 1996 (bf_ph2) data.
 ************************************************************************
       character(14),parameter :: fname='data.bf_verner'
       integer :: ne,nz,ns,istat
@@ -44,18 +41,18 @@ c-- read
       read(4,*,err=99) ph2d
       close(4)
 c-- parse
-      ph1 = 0.
+      bf_ph1 = 0.
       do l=1,1699
        ns = nint(ph1d(1,l))
        ne = nint(ph1d(2,l))
        nz = nint(ph1d(3,l))
-       ph1(:,ns,nz,ne) = ph1d(4:,l)
+       bf_ph1(:,ns,nz,ne) = ph1d(4:,l)
       enddo
-      ph2 = 0.
+      bf_ph2 = 0.
       do l=1,465
        ne = nint(ph2d(1,l))
        nz = nint(ph2d(2,l))
-       ph2(:,nz,ne) = ph2d(3:,l)
+       bf_ph2(:,nz,ne) = ph2d(3:,l)
       enddo
       return
 99    stop 'read error in file: bf_verner.dat'
@@ -113,8 +110,8 @@ c-- special cases
       endif
 c
 c     if(is>nout) return
-c     if(e<ph1(1,nz,ne,is)) return
-      if(e<ph1(1,nout,nz,ne)) return
+c     if(e<bf_ph1(1,nz,ne,is)) return
+      if(e<bf_ph1(1,nout,nz,ne)) return
 c
 c-- core state
       nint = ninn(ne)
@@ -124,29 +121,29 @@ c-- core state
        if(ne<3) then
         einn = 1.0e30
        else
-        einn = ph1(1,nint,nz,ne)
+        einn = bf_ph1(1,nint,nz,ne)
        endif
       endif
 c
       xs = 0d0
       do is=1,nout
-       if(e<ph1(1,is,nz,ne)) cycle
+       if(e<bf_ph1(1,is,nz,ne)) cycle
        if(is<nout .and. is>nint .and. e<einn) cycle
 c--
        if(is<=nint .or. e>=einn) then
-        p1 = -ph1(5,is,nz,ne)
-        y = e/ph1(2,is,nz,ne)
+        p1 = -bf_ph1(5,is,nz,ne)
+        y = e/bf_ph1(2,is,nz,ne)
         q = -0.5*p1 - ll(is) - 5.5
-        a = ph1(3,is,nz,ne)*((y - 1.0)**2 + ph1(6,is,nz,ne)**2)
-        b = sqrt(y/ph1(4,is,nz,ne)) + 1.0
+        a = bf_ph1(3,is,nz,ne)*((y - 1.0)**2 + bf_ph1(6,is,nz,ne)**2)
+        b = sqrt(y/bf_ph1(4,is,nz,ne)) + 1.0
         xs = xs + a*y**q*b**p1
        else
-        p1 = -ph2(4,nz,ne)
+        p1 = -bf_ph2(4,nz,ne)
         q = -0.5*p1 - 5.5
-        x = e/ph2(1,nz,ne) - ph2(6,nz,ne)
-        z = sqrt(x*x + ph2(7,nz,ne)**2)
-        a = ph2(2,nz,ne)*((x - 1.0)**2 + ph2(5,nz,ne)**2)
-        b = 1.0 + sqrt(z/ph2(3,nz,ne))
+        x = e/bf_ph2(1,nz,ne) - bf_ph2(6,nz,ne)
+        z = sqrt(x*x + bf_ph2(7,nz,ne)**2)
+        a = bf_ph2(2,nz,ne)*((x - 1.0)**2 + bf_ph2(5,nz,ne)**2)
+        b = 1.0 + sqrt(z/bf_ph2(3,nz,ne))
         xs = xs + a*z**q*b**p1
        endif
       enddo !is
@@ -162,7 +159,7 @@ c
 !* Write the Verner 1995 and Verner 1996 data to file.
 !* The include inflates the executable.
 !************************************************************************
-!      real :: ph1(6,7,30,30),ph2(7,30,30) !local
+!      real :: bf_ph1(6,7,30,30),bf_ph2(7,30,30) !local
 !      integer :: l,ns,ne,nz,nout
 !c
 !      include 'bf_verner.blk'
@@ -184,9 +181,9 @@ c
 !       endif
 !c
 !       do ns=1,nout
-!        write(41,'(3i3,1p,6e12.4)') ns,ne,nz,ph1(:,ns,nz,ne)
+!        write(41,'(3i3,1p,6e12.4)') ns,ne,nz,bf_ph1(:,ns,nz,ne)
 !       enddo
-!       write(42,'(2i3,1p,7e12.4)') ne,nz,ph2(:,nz,ne)
+!       write(42,'(2i3,1p,7e12.4)') ne,nz,bf_ph2(:,nz,ne)
 !      enddo !ne
 !      enddo !nz
 !c

@@ -25,7 +25,7 @@ program supernu
 ! - fix gas_wl indexing BUG in physical_opacity
 !
 !***********************************************************************
-  real*8 :: help,dt
+  real*8 :: help
   real*8 :: t_elapsed
   integer :: ierr,ng,ns,it
   integer,external :: memusg
@@ -60,7 +60,7 @@ program supernu
    call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst)
 !-- constant time step, may be coded to loop if time step is not uniform
    t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
-   dt = t_elapsed/in_nt
+   tsp_dt = t_elapsed/in_nt
 !
 !-- particle init
    ns = in_ns/nmpi
@@ -89,25 +89,18 @@ program supernu
      call read_gamma_profiles(in_ndim)
    endif
 !
-!-- SETUP GRIDS
-   call wlgrid_setup(ng)
-   call gasgrid_init(ng)
-   call gasgrid_setup
-!
+!-- wlgrid
+   call wlgrid_setup(gas_ng)
 
 !-- READ DATA
 !-- read ion and level data
    call ion_read_data(gas_nelem)  !ion and level data
-   call ion_alloc_grndlev(gas_nx,gas_ny,gas_nz)  !ground state occupation numbers
 !-- read bbxs data
    if(.not.in_nobbopac) call read_bbxs_data(gas_nelem)!bound-bound cross section data
 !-- read bfxs data
    if(.not.in_nobfopac) call bfxs_read_data           !bound-free cross section data
 !-- read ffxs data
    if(.not.in_noffopac) call ffxs_read_data           !free-free cross section data
-!
-!-- initial radiation energy
-   call initialnumbers
 !
 !-- memory statistics
    write(6,*) 'memusg: after setup:',memusg()
@@ -116,11 +109,23 @@ program supernu
    t_setup = t1-t0!}}}
   endif !impi
 
-
+!
+!-- MPI
   call bcast_permanent !MPI
+  call setup_domain_decomposition !MPI
+  call scatter_inputstruct(in_ndim) !MPI
+
+!
+!-- setup gasgrid
+  call gasgrid_init
+  call gasgrid_setup
+!
+!-- initial radiation energy
+  call initialnumbers
 
 !
 !-- allocate arrays of sizes retreived in bcast_permanent
+  call ion_alloc_grndlev(gas_nelem,gas_nx,gas_ny,gas_nz)  !ground state occupation numbers
   call particle_alloc(impi==impi0,in_norestart,nmpi)
 
 !
@@ -159,7 +164,7 @@ program supernu
     endif
 !
 !-- Update tsp_t etc
-    if(impi==impi0) call timestep_update(dt)
+    if(impi==impi0) call timestep_update(tsp_dt)  !tsp_dt is being set here, any value can be passed
 !
 !-- updating prt_tauddmc and prt_taulump
     call tau_update

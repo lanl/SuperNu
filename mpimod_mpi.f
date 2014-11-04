@@ -15,6 +15,10 @@ c
       subroutine bcast_permanent
 c     --------------------------!{{{
       use inputparmod
+      use ionsmod
+      use ffxsmod
+      use bfxsmod
+      use bbxsmod
       use gasgridmod,nx=>gas_nx,ny=>gas_ny,nz=>gas_nz
       use particlemod
       use timestepmod
@@ -31,60 +35,89 @@ c     --------------------------!{{{
 c
 c-- broadcast constants
 c-- logical
-      n = 6
+      n = 7
       allocate(lsndvec(n))
-      if(impi==impi0) lsndvec = (/gas_isvelocity,in_puretran,
-     &  prt_isimcanlog,prt_isddmcanlog,in_norestart,in_noeos/)
+      if(impi==impi0) lsndvec = (/in_isvelocity,in_puretran,
+     &  prt_isimcanlog,prt_isddmcanlog,in_norestart,in_noeos,
+     &  in_novolsrc/)
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      gas_isvelocity = lsndvec(1)
+      in_isvelocity = lsndvec(1)
       in_puretran = lsndvec(2)
       prt_isimcanlog = lsndvec(3)
       prt_isddmcanlog = lsndvec(4)
       in_norestart = lsndvec(5)
       in_noeos = lsndvec(6)
+      in_novolsrc = lsndvec(7)
       deallocate(lsndvec)
 c
 c-- integer
-      n = 12
+      n = 17
       allocate(isndvec(n))
-      if(impi==impi0) isndvec = (/in_igeom,nx,ny,nz,gas_ng,
+      if(impi==impi0) isndvec = (/in_igeom,
+     &  in_ndim(1),in_ndim(2),in_ndim(3),gas_ng,
      &  prt_npartmax,in_nomp,tsp_nt,in_ntres,tsp_ntres,
-     &  prt_ninitnew,in_ng/)
+     &  prt_ninit,prt_ninitnew,in_ng,in_nheav,
+     &  ion_nion,ion_iionmax,bb_nline/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       in_igeom     = isndvec(1) 
-      nx           = isndvec(2)
-      ny           = isndvec(3)
-      nz           = isndvec(4)
+      in_ndim(1)   = isndvec(2)
+      in_ndim(2)   = isndvec(3)
+      in_ndim(3)   = isndvec(4)
       gas_ng       = isndvec(5)
       prt_npartmax = isndvec(6)
       in_nomp      = isndvec(7)
       tsp_nt       = isndvec(8)
       in_ntres     = isndvec(9)
       tsp_ntres    = isndvec(10)
-      prt_ninitnew = isndvec(11)
-      in_ng        = isndvec(12)
+      prt_ninit    = isndvec(11)
+      prt_ninitnew = isndvec(12)
+      in_ng        = isndvec(13)
+      in_nheav     = isndvec(14)
+      ion_nion     = isndvec(15)
+      ion_iionmax  = isndvec(16)
+      bb_nline     = isndvec(17)
       deallocate(isndvec)
 c
 c-- real*8
-      n = 3
+      n = 17
       allocate(sndvec(n))
-      if(impi==impi0) sndvec = (/prt_tauddmc,prt_taulump,tsp_t/)
+      if(impi==impi0) sndvec = (/prt_tauddmc,prt_taulump,tsp_t,tsp_dt,
+     &  in_sigcoefs,in_sigtpwrs,in_sigrpwrs,
+     &  in_sigcoef, in_sigtpwr, in_sigrpwr,
+     &  in_suolpick1,in_ldisp1,in_ldisp2,in_theav,in_srcmax,
+     &  in_consttemp,in_tempradinit/)
       call mpi_bcast(sndvec,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      prt_tauddmc = sndvec(1)
-      prt_taulump = sndvec(2)
-      tsp_t = sndvec(3)
+      prt_tauddmc  = sndvec(1)
+      prt_taulump  = sndvec(2)
+      tsp_t        = sndvec(3)
+      tsp_dt       = sndvec(4)
+      in_sigcoefs  = sndvec(5)
+      in_sigtpwrs  = sndvec(6)
+      in_sigrpwrs  = sndvec(7)
+      in_sigcoef   = sndvec(8)
+      in_sigtpwr   = sndvec(9)
+      in_sigrpwr   = sndvec(10)
+      in_suolpick1 = sndvec(11)
+      in_ldisp1    = sndvec(12)
+      in_ldisp2    = sndvec(13)
+      in_theav     = sndvec(14)
+      in_srcmax    = sndvec(15)
+      in_consttemp = sndvec(16)
+      in_tempradinit=sndvec(17)
       deallocate(sndvec)
 c
 c-- character
-      call mpi_bcast(gas_srctype,4,MPI_CHARACTER,
+      call mpi_bcast(in_srctype,4,MPI_CHARACTER,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_opacanaltype,4,MPI_CHARACTER,
+      call mpi_bcast(in_suol,4,MPI_CHARACTER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(in_opacanaltype,4,MPI_CHARACTER,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(prt_tauvtime,4,MPI_CHARACTER,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -95,29 +128,156 @@ c
 c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0) then
-       allocate(gas_nvolinit(nx,ny,nz))
-       allocate(gas_xarr(nx+1))
-       allocate(gas_yarr(ny+1))
-       allocate(gas_zarr(nz+1))
-       allocate(gas_evolinit(nx,ny,nz))
        allocate(gas_wl(gas_ng+1))
+       allocate(bb_xs(bb_nline))
       endif
 c
 c-- broadcast data
-      call mpi_bcast(gas_nvolinit,nx*ny*nz,MPI_INTEGER,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_xarr,nx+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_yarr,ny+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_zarr,nz+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_evolinit,nx*ny*nz,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_wl,gas_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
+
+c-- bound-bound
+      call mpi_bcast(bb_xs,sizeof(bb_xs),MPI_BYTE,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c-- bound-free
+      call mpi_bcast(bf_ph1,6*7*30*30,MPI_REAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(bf_ph1,7*30*30,MPI_REAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c-- free-free
+      call mpi_bcast(ff_gff,ff_nu*ff_ngg,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      call bcast_ions
+c
+c
+      contains
+c
+c
+      subroutine bcast_ions
+c     ---------------------!{{{
+      implicit none
+************************************************************************
+* broadcast the ions data structure
+************************************************************************
+      integer :: ii,iz,iion,n
+      real*8 :: vec(1000)
+      integer :: nion(gas_nelem)
+      integer :: nlev(ion_nion)
+      real*8 :: e(ion_nion)
+c
+c-- evaluate shape info
+      if(impi==impi0) then
+       iion = 0
+       do iz=1,gas_nelem
+        nion(iz) = ion_el(iz)%ni
+        do ii=1,ion_el(iz)%ni
+         iion = iion + 1
+         nlev(iion) = ion_el(iz)%i(ii)%nlev
+         e(iion) = ion_el(iz)%i(ii)%e
+        enddo !ii
+       enddo !iz
+c-- sanity check
+       if(iion/=ion_nion) stop "bcast_perm: ion_nion problem"
+      endif
+c
+c-- bcast shape info and allocate
+      call mpi_bcast(nion,gas_nelem,MPI_INTEGER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(nlev,ion_nion,MPI_INTEGER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c-- allocate structure
+      if(impi/=impi0) call ion_alloc_el(gas_nelem,nion,ion_nion,nlev)
+c
+c-- fill structure
+      call mpi_bcast(e,ion_nion,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      iion = 0
+      do iz=1,gas_nelem
+       do ii=1,ion_el(iz)%ni
+        iion = iion + 1
+        n = nlev(iion)
+c-- eion
+        if(impi/=impi0) ion_el(iz)%i(ii)%e = e(iion)
+c-- elev
+        if(impi==impi0) vec(:n) = ion_el(iz)%i(ii)%elev
+        call mpi_bcast(vec(1),n,MPI_REAL8,
+     &    impi0,MPI_COMM_WORLD,ierr)
+        if(impi/=impi0) ion_el(iz)%i(ii)%elev = vec(:n)
+c-- glev
+        if(impi==impi0) vec(:n) = ion_el(iz)%i(ii)%glev
+        call mpi_bcast(vec(1),n,MPI_REAL8,
+     &    impi0,MPI_COMM_WORLD,ierr)
+        if(impi/=impi0) ion_el(iz)%i(ii)%glev = vec(:n)
+       enddo !ii
+      enddo !iz
+c-- sanity check
+      if(iion/=ion_nion) stop "bcast_perm: ion_nion problem"
+c!}}}
+      end subroutine bcast_ions
+
 c!}}}
       end subroutine bcast_permanent
+c
+c
+c
+      subroutine setup_domain_decomposition
+c     -------------------------------------!{{{
+************************************************************************
+* placeholder
+************************************************************************
+c!}}}
+      end subroutine setup_domain_decomposition
+c
+c
+c
+      subroutine scatter_inputstruct(ndim)
+c     ------------------------------------!{{{
+      use inputstrmod
+      use gasgridmod
+      implicit none
+      integer,intent(in) :: ndim(3)
+************************************************************************
+* mpi_scatter the input structure to all ranks in the worker comm.
+* this is doing bcasts only for now.
+************************************************************************
+      integer :: nx,ny,nz,n
+c
+      nx = ndim(1)
+      ny = ndim(2)
+      nz = ndim(3)
+
+      call mpi_bcast(str_nabund,1,MPI_INTEGER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      if(impi/=impi0) then
+       allocate(str_xleft(nx+1))
+       allocate(str_yleft(ny+1))
+       allocate(str_zleft(nz+1))
+       allocate(str_mass(nx,ny,nz))
+       allocate(str_massfr(str_nabund,nx,ny,nz))
+       allocate(str_iabund(str_nabund))
+      endif
+      call mpi_bcast(str_xleft,nx+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(str_yleft,ny+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(str_zleft,nz+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      n = nx*ny*nz
+      call mpi_bcast(str_mass,n,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+
+      n = str_nabund * nx*ny*nz
+      call mpi_bcast(str_massfr,n,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+
+      n = str_nabund
+      call mpi_bcast(str_iabund,n,MPI_INTEGER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+!}}}
+      end subroutine scatter_inputstruct
 c
 c
 c
@@ -129,57 +289,10 @@ c     ------------------------!{{{
       implicit none
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
-*-- scalars:
-*-- real
-* real*8 :: tsp_t
-* real*8 :: tsp_dt
-* real*8 :: gas_esurf
-* real*8 :: gas_etot
-* real*8 :: gas_eext
-*-- integer
-* integer :: prt_nnew
-* integer :: prt_nsurf
-* integer :: prt_nexsrc
-*--
-*
-*-- arrays:
-*-- real
-* real*8 :: gas_temp(nx,ny,nz)
-* real*8 :: gas_nvol(nx,ny,nz)
-* real*8 :: gas_nvolex(nx,ny,nz)
-* real*8 :: gas_emit(nx,ny,nz)
-* real*8 :: gas_emitex(nx,ny,nz)
-* real*8 :: gas_fcoef(nx,ny,nz)
-* real*8 :: gas_sig(nx,ny,nz)
-* real*8 :: gas_emitprob(gas_ng,nx,ny,nz)
-* real*8 :: gas_opacleak(6,nx,ny,nz)
-* real*8 :: gas_cap(gas_ng,nx,ny,nz)
-*-- integer
-* integer :: gas_methodswap(nx,ny,nz)
-*
 ************************************************************************
       integer :: n
       integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:)
-
-c-- variables to be reduced -----------------------------------
-c-- dim==1,2
-      if(impi/=impi0 .and. .not.allocated(gas_numcensus)) then
-         allocate(gas_numcensus(nx,ny,nz))
-         allocate(gas_edep(nx,ny,nz))
-         allocate(gas_eraddens(nx,ny,nz))
-         allocate(gas_luminos(gas_ng))
-         allocate(gas_lumdev(gas_ng))
-         allocate(gas_lumnum(gas_ng))
-         allocate(gas_methodswap(nx,ny,nz))
-      endif
-!      call mpi_bcast(gas_edep,nx*ny*nz,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(gas_numcensus,nx*ny*nz,MPI_INTEGER,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(gas_eraddens,nx*ny*nz,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-c--------------------------------------------------------------
 c
 c-- integer
       n = 3
@@ -274,20 +387,6 @@ c     -----------------------!{{{
 ************************************************************************
 * Reduce the results from particle_advance that are needed for the
 * temperature correction.
-* - t_pckt_stat !min,mean,max
-* 
-*-- dim==0
-* real*8 :: gas_erad
-* real*8 :: gas_eright
-* real*8 :: gas_eleft
-*-- dim==1
-* integer :: gas_lumnum(ng)
-* real*8 :: gas_luminos(ng)
-* real*8 :: gas_lumdev(ng)
-*-- dim==3
-* integer :: gas_numcensus(nx,ny,nz)
-* real*8 :: gas_edep(nx,ny,nz)
-* real*8 :: gas_eraddens(nx,ny,nz)
 ************************************************************************
       integer :: n
       integer,allocatable :: isndvec(:)
