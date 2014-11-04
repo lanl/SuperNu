@@ -46,31 +46,31 @@ subroutine sourcenumbers
   do i = 1, gas_nx
      
      gas_emit(i,j,k) =  tsp_dt*gas_fcoef(i,j,k)*gas_siggrey(i,j,k)*pc_c* &
-          gas_vals2(i,j,k)%ur*gas_vals2(i,j,k)%vol
+          dd_ur(i,j,k)*dd_vol(i,j,k)
 !
      gas_emit(i,j,k) = gas_emit(i,j,k)+&
-          tsp_dt*gas_vals2(i,j,k)%vol*(1d0-gas_fcoef(i,j,k))*&
-          gas_vals2(i,j,k)%matsrc
+          tsp_dt*dd_vol(i,j,k)*(1d0-gas_fcoef(i,j,k))*&
+          dd_matsrc(i,j,k)
 !-- accounting for total material source energy:
 !-- gas_fcoef of matsrc goes directly in temperature equation
 !-- and remaining 1-gas_fcoef is thermal radiation.
      if(tsp_it==1) then
-        gas_eext = gas_eext+tsp_dt*gas_vals2(i,j,k)%vol*&
-             gas_vals2(i,j,k)%matsrc
+        gas_eext = gas_eext+tsp_dt*dd_vol(i,j,k)*&
+             dd_matsrc(i,j,k)
      else
 !-- rtw: gas_eext is only broadcast for tsp_it==1
-        gas_eext = gas_eext+tsp_dt*gas_vals2(i,j,k)%vol*&
-             gas_vals2(i,j,k)%matsrc*dble(nmpi)
+        gas_eext = gas_eext+tsp_dt*dd_vol(i,j,k)*&
+             dd_matsrc(i,j,k)*dble(nmpi)
      endif
 !
 !-- accounting for thermal decay radiation source energy
      if(.not.gas_novolsrc .and. gas_srctype=='none') then
-        gas_emit(i,j,k) = gas_emit(i,j,k) + gas_vals2(i,j,k)%nisource
+        gas_emit(i,j,k) = gas_emit(i,j,k) + dd_nisource(i,j,k)
         if(tsp_it==1) then
-           gas_eext = gas_eext + gas_vals2(i,j,k)%nisource
+           gas_eext = gas_eext + dd_nisource(i,j,k)
         else
 !-- rtw: gas_eext is only broadcast for tsp_it==1
-           gas_eext = gas_eext + dble(nmpi)*gas_vals2(i,j,k)%nisource
+           gas_eext = gas_eext + dble(nmpi)*dd_nisource(i,j,k)
         endif
      endif
      gas_etot = gas_etot + gas_emit(i,j,k)
@@ -85,7 +85,7 @@ subroutine sourcenumbers
   prt_nsurf = nint(gas_esurf*prt_ns/gas_etot)
   prt_nnew = prt_nsurf
 
-  ! Calculating number of particles per cell (gas_vals2%nvol): loop
+  ! Calculating number of particles per cell (dd_nvol): loop
   prt_nexsrc=0
   do k = 1, gas_nz
   do j = 1, gas_ny

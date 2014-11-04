@@ -9,7 +9,7 @@ c     --------------------------------
 ************************************************************************
 * Solve the eos for given temperatures.
 ************************************************************************
-      integer :: i,j,k,l,ll,niter,iion,nion,istat
+      integer :: i,j,k,ll,niter,iion,nion,istat
       integer :: iz,ii
       real*8 :: t0,t1
       real*8 :: ndens
@@ -20,18 +20,18 @@ c-- loop over all gas_vals cells
       do k=1,gas_nz
       do j=1,gas_ny
       do i=1,gas_nx
-       ndens = gas_vals2(i,j,k)%natom/gas_vals2(i,j,k)%vol !atom number density
-       call ion_solve_eos(gas_vals2(i,j,k)%natom1fr(1:),
-     &   dd_temp(i,j,k),ndens,gas_vals2(i,j,k)%nelec,niter)
+       ndens = dd_natom(i,j,k)/dd_vol(i,j,k) !atom number density
+       call ion_solve_eos(dd_natom1fr(1:,i,j,k),
+     &   dd_temp(i,j,k),ndens,dd_nelec(i,j,k),niter)
 c
 c-- store occupation numbers of each ion's ground states
        do iz=1,gas_nelem
         do ii=1,ion_grndlev(iz,i,j,k)%ni
          ion_grndlev(iz,i,j,k)%g(ii) = ion_el(iz)%i(ii)%glev(1)
          ion_grndlev(iz,i,j,k)%oc(ii) =
-     &     gas_vals2(i,j,k)%natom*gas_vals2(i,j,k)%natom1fr(iz)*
+     &     dd_natom(i,j,k)*dd_natom1fr(iz,i,j,k)*
      &     ion_el(iz)%i(ii)%glev(1) * ion_el(iz)%i(ii)%n /
-     &     (ion_el(iz)%i(ii)%q * gas_vals2(i,j,k)%vol) !number density, not number
+     &     (ion_el(iz)%i(ii)%q * dd_vol(i,j,k)) !number density, not number
          !write(6,*) iz,ii,ion_grndlev(iz,i,j,k)%oc(ii) !ion_el(iz)%i(ii)%nlev,ion_el(iz)%i(ii)%glev(1) !DEBUG
         enddo !ii
        enddo !iz
@@ -76,9 +76,8 @@ c-- electron density
        do k=1,gas_nz
        do j=1,gas_ny
        do i=1,gas_nx
-        write(4,'(1p,2e12.4)') gas_vals2(i,j,k)%nelec,
-     &    gas_vals2(i,j,k)%nelec*gas_vals2(i,j,k)%natom/
-     &    gas_vals2(i,j,k)%vol
+        write(4,'(1p,2e12.4)') dd_nelec(i,j,k),
+     &    dd_nelec(i,j,k)*dd_natom(i,j,k)/dd_vol(i,j,k)
        enddo !i
        enddo !j
        enddo !k
@@ -90,9 +89,8 @@ c-- partial densities
         do k=1,gas_nz
         do j=1,gas_ny
         do i=1,gas_nx
-         write(4,'(1p,40e12.4)') (pdens(nion+l,i,j,k)*
-     &     gas_vals2(i,j,k)%natom1fr(iz),
-     &     l=1,ion_grndlev(iz,1,1,1)%ni)
+         write(4,'(1p,40e12.4)') (pdens(nion+ll,i,j,k)*
+     &     dd_natom1fr(iz,i,j,k),ll=1,ion_grndlev(iz,1,1,1)%ni)
         enddo !i
         enddo !j
         enddo !k

@@ -10,7 +10,7 @@ subroutine boundary_source
 
   logical :: lhelp
   integer :: ipart, ivac, ig, iig, i,j,k
-  real*8 :: r1, r2, P, mu0, x0, y0, z0, esurfpart, wl0, om0
+  real*8 :: r1, r2, P, mu0, x0, y0, esurfpart, wl0, om0
   real*8 :: denom2, wl1, wl2, thelp, mfphelp
   real*8 :: srftemp = 1d4
   real*8 :: cmffact,azitrfm

@@ -448,12 +448,12 @@ c     ------------------------------!{{{
       integer,intent(out) :: ini56
 ************************************************************************
 * convert the abundlabl labels to element codes (atomic z number), which
-* also serve as indexing pointers to the gas_vals2%mass0fr array.
+* also serve as indexing pointers to the mass0fr array.
 ************************************************************************
       integer :: l,j,iabund
       character(4) :: elname
 c
-c-- allocate element code array (pointer to gas_vals2%mass0fr)
+c-- allocate element code array (pointer to mass0fr)
       allocate(str_iabund(str_nabund))
 c
 c-- default
@@ -484,7 +484,7 @@ c-- verify hit
         iabund = j
        endif
 c
-c-- store element code (pointer to gas_vals2%mass0fr)
+c-- store element code (pointer to mass0fr)
        str_iabund(l) = iabund
       enddo!}}}
       end subroutine elnam2elcode

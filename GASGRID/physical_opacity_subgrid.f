@@ -60,8 +60,8 @@ c-- warn once
 c
 c-- thomson scattering
       if(.not.in_nothmson) then
-       gas_sig = cthomson*gas_vals2%nelec*
-     &   gas_vals2%natom/gas_vals2%vol
+       gas_sig = cthomson*dd_nelec*
+     &   dd_natom/dd_vol
       endif
 c
 c-- ground level occupation number
@@ -300,7 +300,7 @@ c-- free-free
       call time(t2)
       if(.not. in_noffopac) then
 c-- simple variant: nearest data grid point!{{{
-       hlparr = (gas_vals2%natom/gas_vals2%vol)**2*gas_vals2%nelec
+       hlparr = (dd_natom/dd_vol)**2*dd_nelec
 c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy)
@@ -348,7 +348,7 @@ c-- asymptotic value
            endif
           endif
 c-- cross section
-          cap8 = cap8 + help*gff*iz**2*gas_vals2(i,j,k)%natom1fr(iz)
+          cap8 = cap8 + help*gff*iz**2*dd_natom1fr(iz,i,j,k)
          enddo !iz
          cap(i,j,k,igs) = cap(i,j,k,igs) + cap8
         enddo !i

@@ -83,7 +83,7 @@ c-- grey solution
      &            )
 !     
                gas_emitex(i,1,1) = gas_emitex(i,1,1)*
-     &              gas_vals2(i,1,1)%vol*dt
+     &              dd_vol(i,1,1)*dt
 !     
             enddo
 c--
@@ -119,7 +119,7 @@ c     -------------------------------!{{{
       real*8,intent(in) :: totmass,sigcoef,texp,dt
 ************************************************************************
 * calculate finite volume manufactured temperature source
-* (gas_vals2%matsrc) in ergs/cm^3/s with manufactured parameters
+* (dd_matsrc) in ergs/cm^3/s with manufactured parameters
 ************************************************************************
 c
 c-- verify applicable input pars
@@ -132,7 +132,7 @@ c-- implement/modify velocity dependent manufactured temperature source
          select case (gas_opacanaltype)
          case ('grey')
 c--   grey solution
-            gas_vals2%matsrc = (1d0/dt)*
+            dd_matsrc = (1d0/dt)*
      &           (3d0*totmass*sigcoef/(8d0*pc_pi*in_velout))*
      &           ((in_velout*texp)**(-2d0)-
      &           (in_velout*(texp+dt))**(-2d0))*
@@ -144,7 +144,7 @@ c
             stop 'generate_manutempsrc: gas_opacanaltype=pick'
          case ('line')
 c--   line solution
-            gas_vals2%matsrc = 0d0 !already set zero in gasgridmod
+            dd_matsrc = 0d0 !already set zero in gasgridmod
 c
          case default
             stop 'gas_opacanaltype unknown'
@@ -184,7 +184,7 @@ c-- implement/modify velocity dependent manufactured initial profile
          select case (gas_opacanaltype)
          case ('grey')
 c-- grey solution
-           gas_evolinit = (man_aa11/pc_c) * gas_vals2%vol
+           gas_evolinit = (man_aa11/pc_c) * dd_vol
 c
          case ('mono')
             stop 'init_manuprofile: gas_opacanaltype=mono'

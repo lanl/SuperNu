@@ -7,7 +7,7 @@ subroutine write_output
   use particlemod
   implicit none
 
-  integer :: i, ig, j
+  integer :: ig, j
   logical :: lexist
   integer :: reclen, reclen2
   character(16), save :: pos='rewind', fstat='replace'
@@ -62,7 +62,7 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.eraddens',position='append',recl=reclen2)
-  write(4,'(1p,10000e12.4)') gas_vals2%eraddens
+  write(4,'(1p,10000e12.4)') gas_eraddens
   close(4)
 
   open(unit=4,file='output.conserve',status='unknown',position=pos)

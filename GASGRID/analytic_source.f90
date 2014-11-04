@@ -30,7 +30,7 @@ subroutine analytic_source
         case(1)
            do i = 1, min(gas_nheav,gas_nx)
               gas_emitex(i,1,1) = gas_srcmax * &
-                   gas_vals2(i,1,1)%vol*tsp_dt/thelp**3
+                   dd_vol(i,1,1)*tsp_dt/thelp**3
            enddo
 
 !-- 2D
@@ -53,7 +53,7 @@ subroutine analytic_source
                  ycent = 0.5d0*(gas_yarr(j+1)+gas_yarr(j))
                  if(xcent**2+ycent**2<help**2) then
                     gas_emitex(i,j,1) = gas_srcmax * &
-                         gas_vals2(i,j,1)%vol*tsp_dt/thelp**3
+                         dd_vol(i,j,1)*tsp_dt/thelp**3
                  endif
               enddo
            enddo
@@ -71,7 +71,7 @@ subroutine analytic_source
         srcren = gas_srcmax*(gas_xarr(gas_nx+1)- &
              0.5d0*(gas_xarr(i)+gas_xarr(i+1)))/ & 
              (gas_xarr(gas_nx+1)-gas_xarr(1))
-        gas_emitex(i,1,1) = srcren * gas_vals2(i,1,1)%vol*tsp_dt
+        gas_emitex(i,1,1) = srcren * dd_vol(i,1,1)*tsp_dt
 !
 !-- no temp source for strt (matsrc=0.0)
 !--

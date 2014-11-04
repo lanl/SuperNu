@@ -31,7 +31,7 @@ subroutine analytic_opacity
      ! sigmaP_g, sigmaR_g = sigmaP for all g 
      ! Input wavelength grid not used
      gas_siggrey = gas_sigcoef*dd_temp**gas_sigtpwr* &
-          gas_vals2%rho**gas_sigrpwr
+          dd_rho**gas_sigrpwr
      do k = 1,gas_nz
         do j = 1,gas_ny
            do i = 1,gas_nx
@@ -47,7 +47,7 @@ subroutine analytic_opacity
      ! integral_g(1/nu^3)
      !
      gas_siggrey = gas_sigcoef*dd_temp**gas_sigtpwr* &
-          gas_vals2%rho**gas_sigrpwr
+          dd_rho**gas_sigrpwr
      do k = 1,gas_nz
      do j = 1,gas_ny
      do i = 1, gas_nx
@@ -74,7 +74,7 @@ subroutine analytic_opacity
      if(gas_ny>1) stop 'analytic_opacity: no 2D for opacanaltyp=pick'
      do i = 1, gas_nx
         gas_siggrey(i,1,1) = gas_sigcoef*dd_temp(i,1,1)**gas_sigtpwr* &
-             gas_vals2(i,1,1)%rho**gas_sigrpwr     
+             dd_rho(i,1,1)**gas_sigrpwr     
         if(gas_suol=='tsta') then    !Case: A
            gas_cap(1,i,1,1) = gas_siggrey(i,1,1)
            gas_cap(2,i,1,1) = gas_siggrey(i,1,1)
@@ -97,7 +97,7 @@ subroutine analytic_opacity
      ! sigmaP = A*T^B*rho^C
      ! sigmaP_g = sigmaP*func_P(g), sigmaR_g = sigmaP
      gas_siggrey = gas_sigcoef*dd_temp**gas_sigtpwr * &
-          gas_vals2%rho**gas_sigrpwr
+          dd_rho**gas_sigrpwr
      do k = 1, gas_nz
      do j = 1, gas_ny
      do i = 1, gas_nx
@@ -129,6 +129,6 @@ subroutine analytic_opacity
 
   !Calculating grey scattering opacity
   gas_sig = gas_sigcoefs*dd_temp**gas_sigtpwrs* &
-       gas_vals2%rho**gas_sigrpwrs
+       dd_rho**gas_sigrpwrs
 
 end subroutine analytic_opacity

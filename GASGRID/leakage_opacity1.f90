@@ -68,14 +68,14 @@ subroutine leakage_opacity1
               ppl = 4d0/(3d0*help+6d0*pc_dext)
               gas_opacleak(1,i,j,k)=gas_opacleak(1,i,j,k)+(specval/speclump)*&
                    1.5d0*ppl*(thelp*gas_xarr(i))**2/ &
-                   (3d0*gas_vals2(i,j,k)%vol/pc_pi4)
+                   (3d0*dd_vol(i,j,k)/pc_pi4)
            else
 !-- DDMC interior
               help = ((gas_sig(i,j,k)+gas_cap(ig,i,j,k))*dx(i)+&
                    (gas_sig(i-1,j,k)+gas_cap(ig,i-1,j,k))*dx(i-1))*thelp
               gas_opacleak(1,i,j,k)=gas_opacleak(1,i,j,k)+(specval/speclump)*&
                    2.0d0*(thelp*gas_xarr(i))**2/ &
-                   (help*3d0*gas_vals2(i,j,k)%vol/pc_pi4)
+                   (help*3d0*dd_vol(i,j,k)/pc_pi4)
            endif
 !
 !
@@ -93,14 +93,14 @@ subroutine leakage_opacity1
               ppr = 4d0/(3d0*help+6d0*pc_dext)
               gas_opacleak(2,i,j,k)=gas_opacleak(2,i,j,k)+(specval/speclump)*&
                    1.5d0*ppr*(thelp*gas_xarr(i+1))**2/ &
-                   (3d0*gas_vals2(i,j,k)%vol/pc_pi4)
+                   (3d0*dd_vol(i,j,k)/pc_pi4)
            else
 !-- DDMC interior
               help = ((gas_sig(i,j,k)+gas_cap(ig,i,j,k))*dx(i)+&
                    (gas_sig(i+1,j,k)+gas_cap(ig,i+1,j,k))*dx(i+1))*thelp
               gas_opacleak(2,i,j,k)=gas_opacleak(2,i,j,k)+(specval/speclump)*&
                    2.0d0*(thelp*gas_xarr(i+1))**2/ &
-                   (help*3d0*gas_vals2(i,j,k)%vol/pc_pi4)
+                   (help*3d0*dd_vol(i,j,k)/pc_pi4)
            endif
         endif
      enddo !ig

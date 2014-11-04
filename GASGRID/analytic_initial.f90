@@ -22,7 +22,7 @@ subroutine analytic_initial
   trad = in_tempradinit
 !
 !-- map radiation temperature to gas_evolinit
-  gas_evolinit = pc_acoef*trad**4 * gas_vals2%vol
+  gas_evolinit = pc_acoef*trad**4 * dd_vol
 !--
 !
 !-- source specific initial conditions (overrides gas_inittyp)

@@ -54,7 +54,7 @@ c-- ion_grndlev helper array
 c
 c-- thomson scattering
       if(.not. in_nothmson) then
-       gas_sig = cthomson*gas_vals2%nelec*gas_vals2%natom/gas_vals2%vol
+       gas_sig = cthomson*dd_nelec*dd_natom/dd_vol
       endif
 c
       call time(t0)
@@ -170,7 +170,7 @@ c-- free-free
       if(.not. in_noffopac) then
 c!{{{
 c-- simple variant: nearest data grid point
-       hlparr = (gas_vals2%natom/gas_vals2%vol)**2*gas_vals2%nelec
+       hlparr = (dd_natom/dd_vol)**2*dd_nelec
        lwarn = .true.
 c$omp parallel do
 c$omp& schedule(static)
@@ -220,7 +220,7 @@ c-- asymptotic value
           endif
 c-- cross section
           cap1(i,j,k) = cap1(i,j,k) +
-     &      help*gff*iz**2*gas_vals2(i,j,k)%natom1fr(iz)
+     &      help*gff*iz**2*dd_natom1fr(iz,i,j,k)
          enddo !iz
         enddo !i
         enddo !j

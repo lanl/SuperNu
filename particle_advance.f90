@@ -28,7 +28,7 @@ subroutine particle_advance
 ! real*8 :: uul, uur, uumax, r0,r2,r3
   logical,pointer :: isvacant
   integer, pointer :: zsrc, iy, iz
-  real*8, pointer :: rsrc, musrc, esrc, wlsrc, y, z, om
+  real*8, pointer :: rsrc, musrc, esrc, wlsrc, y, om
   real*8 :: t0,t1  !timing
   real*8 :: labfact, cmffact, azitrfm
 !

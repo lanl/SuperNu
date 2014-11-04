@@ -122,27 +122,20 @@ module gasgridmod
 !
 !-- DOMAIN DECOMPOSITION
 !=======================
-  type gas_secondary
-    real*8 :: eraddens
-    real*8 :: ur, rho, bcoef, nisource
-       !real*8 :: temp       !gcell temperature
-       real*8 :: vol        !gcell volume [cm^3]
-       real*8 :: mass       !gcell mass
-       real*8 :: mass0fr(-2:gas_nelem) = 0d0  !initial mass fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
-       real*8 :: natom      !gcell # atoms
-       real*8 :: natom1fr(-2:gas_nelem) = 0d0 !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
-       real*8 :: natom0fr(-2:2) = 0d0     !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
-       real*8 :: nelec=1d0  !gcell # electrons per atom
-!-- energy reservoir
-       real*8 :: engdep     !energy deposited by gamma rays
-!-- material energy (temperature) source (may be manufactured), rev>244
-       real*8 :: matsrc = 0d0
-  end type gas_secondary
-  type(gas_secondary),pointer :: gas_vals2(:,:,:) !(gas_nx,gas_ny,gas_nz)
-
-!
-!-- domain decomposition
   real*8,allocatable :: dd_temp(:,:,:) !(gas_nx,gas_ny,gas_nz)
+  real*8,allocatable :: dd_eraddens(:,:,:)
+  real*8,allocatable :: dd_ur(:,:,:)
+  real*8,allocatable :: dd_rho(:,:,:)
+  real*8,allocatable :: dd_bcoef(:,:,:)
+  real*8,allocatable :: dd_nisource(:,:,:)
+  real*8,allocatable :: dd_vol(:,:,:)        !gcell volume [cm^3]
+  real*8,allocatable :: dd_mass(:,:,:)       !gcell mass
+  real*8,allocatable :: dd_natom(:,:,:)      !gcell # atoms
+  real*8,allocatable :: dd_natom1fr(:,:,:,:) !(-2:gas_nelem,nx,ny,nz)  !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
+  real*8,allocatable :: dd_natom0fr(:,:,:,:) !(-2:2,nx,ny,nz)  !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
+  real*8,allocatable :: dd_nelec(:,:,:)      !gcell # electrons per atom
+!-- mate,allocatablerial energy (temperature) source (may be manufactured), rev>244
+  real*8,allocatable :: dd_matsrc(:,:,:)
 
 
 !-- temperature structure history
@@ -160,7 +153,7 @@ module gasgridmod
     implicit none
     integer,intent(in) :: ng
 !
-    integer :: n
+    integer :: n,nx,ny,nz
     logical :: lexist
 !
     gas_nx = in_ndim(1)
@@ -197,45 +190,65 @@ module gasgridmod
     allocate(gas_xarr(gas_nx+1)) !zone edge x position
     allocate(gas_yarr(gas_ny+1)) !zone edge y position
     allocate(gas_zarr(gas_nz+1)) !zone edge z position
-    allocate(gas_edep(gas_nx,gas_ny,gas_nz))
-    allocate(gas_siggrey(gas_nx,gas_ny,gas_nz))
+
+    nx = gas_nx !shortcut
+    ny = gas_ny !shortcut
+    nz = gas_nz !shortcut
+    allocate(gas_edep(nx,ny,nz))
+    allocate(gas_siggrey(nx,ny,nz))
+    allocate(gas_capgam(nx,ny,nz))
 !
 !- Ryan W.: using power law to calculate gas_sig (similar to Planck opacity)
-    allocate(gas_sig(gas_nx,gas_ny,gas_nz))    !grey scattering opacity
+    allocate(gas_sig(nx,ny,nz))    !grey scattering opacity
 !----------------------------------------------------------------
-    allocate(gas_fcoef(gas_nx,gas_ny,gas_nz))
-    allocate(gas_emitprob(gas_ng,gas_nx,gas_ny,gas_nz))
-    allocate(gas_opacleak(6,gas_nx,gas_ny,gas_nz))
-    allocate(gas_eraddens(gas_nx,gas_ny,gas_nz))
+    allocate(gas_fcoef(nx,ny,nz))
+     allocate(gas_emitprob(gas_ng,nx,ny,nz))
+    allocate(gas_opacleak(6,nx,ny,nz))
+    allocate(gas_eraddens(nx,ny,nz))
+
     allocate(gas_luminos(gas_ng))  !outbound grouped luminosity array
     allocate(gas_lumdev(gas_ng))
     allocate(gas_lumnum(gas_ng))
 !-Ryan W: gas_wl being allocated in gasgrid_setup now--
     !allocate(gas_wl(gas_ng)) !wavelength grid
 !------------------------------------------------------
-    allocate(gas_cap(gas_ng,gas_nx,gas_ny,gas_nz)) !Line+Cont extinction coeff
-!--Ryan W: values below were formerly secondary (rev 183)
-    allocate(gas_nvol(gas_nx,gas_ny,gas_nz))
-    allocate(gas_nvolex(gas_nx,gas_ny,gas_nz))
-    allocate(gas_nvolinit(gas_nx,gas_ny,gas_nz))
-    allocate(gas_emit(gas_nx,gas_ny,gas_nz))
-    allocate(gas_emitex(gas_nx,gas_ny,gas_nz))
-    allocate(gas_evolinit(gas_nx,gas_ny,gas_nz))
-    allocate(gas_capgam(gas_nx,gas_ny,gas_nz))
+     allocate(gas_cap(gas_ng,nx,ny,nz)) !Line+Cont extinction coeff
 
-    allocate(gas_temp(gas_nx,gas_ny,gas_nz))  !cell average temperature
-    allocate(gas_methodswap(gas_nx,gas_ny,gas_nz))
-    allocate(gas_numcensus(gas_nx,gas_ny,gas_nz))
+!--Ryan W: values below were formerly secondary (rev 183)
+    allocate(gas_temp(nx,ny,nz))  !cell average temperature
+    allocate(gas_nvol(nx,ny,nz))
+    allocate(gas_nvolex(nx,ny,nz))
+    allocate(gas_nvolinit(nx,ny,nz))
+    allocate(gas_emit(nx,ny,nz))
+    allocate(gas_emitex(nx,ny,nz))
+    allocate(gas_evolinit(nx,ny,nz))
+
+    allocate(gas_methodswap(nx,ny,nz))
+    allocate(gas_numcensus(nx,ny,nz))
 
 !-- secondary
-    allocate(gas_vals2(gas_nx,gas_ny,gas_nz))
-    allocate(dd_temp(gas_nx,gas_ny,gas_nz))
+    allocate(dd_temp(nx,ny,nz))
+    allocate(dd_temp(nx,ny,nz)) !(nx,ny,nz)
+    allocate(dd_eraddens(nx,ny,nz))
+    allocate(dd_ur(nx,ny,nz))
+    allocate(dd_rho(nx,ny,nz))
+    allocate(dd_bcoef(nx,ny,nz))
+    allocate(dd_nisource(nx,ny,nz))
+    allocate(dd_vol(nx,ny,nz))        !gcell volume [cm^3]
+    allocate(dd_mass(nx,ny,nz))       !gcell mass
+    allocate(dd_natom(nx,ny,nz))      !gcell # atoms
+    allocate(dd_natom1fr(-2:gas_nelem,nx,ny,nz))
+    allocate(dd_natom0fr(-2:2,nx,ny,nz))
+    allocate(dd_nelec(nx,ny,nz))  !gcell # electrons per atom
+    allocate(dd_matsrc(nx,ny,nz))
+    dd_natom1fr = 0d0 !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
+    dd_natom0fr = 0d0     !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
 !
 !-- output
-    n = gas_nx*gas_ny*gas_nz
-    n = int((sizeof(gas_vals2) + int(n,8)*8*22)/1024) !kB
+    n = nx*ny*nz
+    n = int(int(n,8)*8*(21 + 11 + 5 + gas_nelem+3)/1024) !kB
     write(6,*) 'ALLOC gasgrid:',n,"kB",n/1024,"MB",n/1024**2,"GB"
-    n = gas_nx*gas_ny*gas_nz
+    n = nx*ny*nz
     n = int(((8+8)*int(n,8)*gas_ng)/1024) !kB
     write(6,*) 'ALLOC gas_cap:',n,"kB",n/1024,"MB",n/1024**2,"GB"
 !

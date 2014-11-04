@@ -45,30 +45,30 @@ c-- The difference between these two has decayed.
 c-- beginning of time step
        help = tsp_t
        call update_natomfr(help)
-       forall(ll=-2:-1) natom1fr(:,:,:,ll) = gas_vals2%natom1fr(ll)
+       forall(ll=-2:-1) natom1fr(:,:,:,ll) = dd_natom1fr(ll,:,:,:)
 c-- end of time step
        call update_natomfr(tsp_t + tsp_dt)
-       forall(ll=-2:-1) natom2fr(:,:,:,ll) = gas_vals2%natom1fr(ll)
+       forall(ll=-2:-1) natom2fr(:,:,:,ll) = dd_natom1fr(ll,:,:,:)
 c
 c-- update the abundances for the center time
        !call update_natomfr(tsp_tcenter)
        call update_natomfr(tsp_t)
 c
 c-- energy deposition
-       gas_vals2%nisource =  !per average atom (mix of stable and unstable)
+       dd_nisource =  !per average atom (mix of stable and unstable)
      &   (natom1fr(:,:,:,gas_ini56) - natom2fr(:,:,:,gas_ini56)) *
      &     (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
      &   (natom1fr(:,:,:,gas_ico56) - natom2fr(:,:,:,gas_ico56)) *
      &     pc_qhl_co56
 c-- total, units=ergs
-       gas_vals2%nisource = gas_vals2%nisource *
-     &   gas_vals2%natom
+       dd_nisource = dd_nisource *
+     &   dd_natom
 c-- use gamma deposition profiles if data available
        if(prof_ntgam>0) then
-        help = sum(gas_vals2%nisource)
+        help = sum(dd_nisource)
 !       write(6,*) 'ni56 source:',help
         if(gas_ny>1 .or. gas_nz>1) stop 'gg_update: gam_prof: no 2D/3D'
-        gas_vals2(:,1,1)%nisource = help * gamma_profile(tsp_t)
+        dd_nisource(:,1,1) = help * gamma_profile(tsp_t)
        endif
       endif
 !}}}
@@ -78,15 +78,15 @@ c
 c-- update volume, density, heat capacity
 c========================================
       call gridvolume(in_igeom,gas_isvelocity,tsp_t)
-      gas_vals2%rho = gas_vals2%mass/gas_vals2%vol
+      dd_rho = dd_mass/dd_vol
 c-- Calculating power law heat capacity
-      gas_vals2%bcoef = in_cvcoef * dd_temp**in_cvtpwr *
-     &  gas_vals2%rho**in_cvrpwr
+      dd_bcoef = in_cvcoef * dd_temp**in_cvtpwr *
+     &  dd_rho**in_cvrpwr
 c
 c
 c-- add initial thermal input to gas_eext
       if(tsp_it==1) then
-       gas_eext = sum(gas_vals2%bcoef*dd_temp*gas_vals2%vol)
+       gas_eext = sum(dd_bcoef*dd_temp*dd_vol)
       endif
 c
 c
@@ -120,7 +120,7 @@ c
        endif
        tempalt = dd_temp
 c-- per gram
-       siggreyalt = gas_siggrey/gas_vals2%rho
+       siggreyalt = gas_siggrey/dd_rho
 !}}}
       endif
 c
@@ -137,7 +137,7 @@ c
 c-- calculate opacities
 c======================
 c-- gamma opacity
-      gas_capgam = in_opcapgam*ye*gas_vals2%rho
+      gas_capgam = in_opcapgam*ye*dd_rho
 c
 c
 c-- simple analytical group/grey opacities: Planck and Rosseland 
@@ -225,7 +225,7 @@ c
 c
 c-- save previous values for gentile-fleck factor calculation in next iter
       tempalt = dd_temp
-      siggreyalt = gas_siggrey/gas_vals2%rho
+      siggreyalt = gas_siggrey/dd_rho
 c
       call time(t1)
       call timereg(t_gasupd,t1-t0)
@@ -235,7 +235,7 @@ c
 c
 c
       subroutine update_natomfr(t)
-c     -------------------------------!{{{
+c     ----------------------------!{{{
       use physconstmod
       use gasgridmod
       use inputparmod
@@ -253,27 +253,27 @@ c-- update Fe
       help = 1d0 + (pc_thl_co56*expco - pc_thl_ni56*expni)/
      &  (pc_thl_ni56 - pc_thl_co56)
       if(help.lt.0) stop 'update_natomfr: Ni->Fe < 0'
-      gas_vals2%natom1fr(26) = gas_vals2%natom0fr(gas_ini56)*help+!initial Ni56
-     &  gas_vals2%natom0fr(gas_ico56)*(1d0-expco) +                  !initial Co56
-     &  gas_vals2%natom0fr(0)                                        !initial Fe (stable)
+      dd_natom1fr(26,:,:,:) = dd_natom0fr(gas_ini56,:,:,:)*help+!initial Ni56
+     &  dd_natom0fr(gas_ico56,:,:,:)*(1d0-expco) +                  !initial Co56
+     &  dd_natom0fr(0,:,:,:)                                        !initial Fe (stable)
 c
 c-- update Co56 and Co
       help = pc_thl_co56*(expni - expco)/(pc_thl_ni56 - pc_thl_co56)
       if(help.lt.0) stop 'update_natomfr: Ni->Co < 0'
 c-- Co56
-      gas_vals2%natom1fr(gas_ico56) =
-     &  gas_vals2%natom0fr(gas_ini56)*help +  !initial Ni56
-     &  gas_vals2%natom0fr(gas_ico56)*expco   !initial Co56
+      dd_natom1fr(gas_ico56,:,:,:) =
+     &  dd_natom0fr(gas_ini56,:,:,:)*help +  !initial Ni56
+     &  dd_natom0fr(gas_ico56,:,:,:)*expco   !initial Co56
 c-- Co
-      gas_vals2%natom1fr(27) = gas_vals2%natom1fr(gas_ico56) +  !unstable
-     &  gas_vals2%natom0fr(1)                                      !initial Co (stable)
+      dd_natom1fr(27,:,:,:) = dd_natom1fr(gas_ico56,:,:,:) +  !unstable
+     &  dd_natom0fr(1,:,:,:)                                      !initial Co (stable)
 c
 c-- update Ni56 and Ni
 c-- Ni56
-      gas_vals2%natom1fr(gas_ini56) =
-     &  gas_vals2%natom0fr(gas_ini56)*expni  !initial Ni56
+      dd_natom1fr(gas_ini56,:,:,:) =
+     &  dd_natom0fr(gas_ini56,:,:,:)*expni  !initial Ni56
 c-- Ni
-      gas_vals2%natom1fr(28) = gas_vals2%natom1fr(gas_ini56) + !unstable
-     &  gas_vals2%natom0fr(2)                              !initial Ni (stable)
+      dd_natom1fr(28,:,:,:) = dd_natom1fr(gas_ini56,:,:,:) + !unstable
+     &  dd_natom0fr(2,:,:,:)                              !initial Ni (stable)
 c!}}}
       end subroutine update_natomfr

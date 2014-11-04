@@ -14,6 +14,7 @@ c     ------------------------
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
       integer :: l,ll
+      real*8 :: mass0fr(-2:gas_nelem,gas_nx,gas_ny,gas_nz)
 c
 c--
       write(6,*)
@@ -32,67 +33,67 @@ c-- agnostic grid setup (rev. 200) ----------------------------------
       gas_zarr = str_zleft
 c
 c-- agnostic mass setup (rev. 200) ----------------------------------
-      gas_vals2%mass = str_mass
+      dd_mass = str_mass
 
 c-- volume 
       call gridvolume(in_igeom,gas_isvelocity,tsp_t)
 c
 c-- temperature
-      if(in_srctype=='manu') then!{{{
+      if(in_srctype=='manu') then
        call init_manutemp
       elseif(in_consttemp==0d0) then
        call read_restart_file
       else
        dd_temp = in_consttemp
-      endif!}}}
+      endif
 c
 c
 c-- used in fleck_factor
-      gas_vals2%eraddens = pc_acoef*in_tempradinit**4
+      dd_eraddens = pc_acoef*in_tempradinit**4
 c
 c
 c-- temp and ur
-      gas_vals2%ur = pc_acoef*dd_temp**4 !initial guess, may be overwritten by read_temp_str
+      dd_ur = pc_acoef*dd_temp**4 !initial guess, may be overwritten by read_temp_str
 c
 c-- adopt partial masses from input file
+      mass0fr = 0d0
       if(.not.in_noreadstruct) then
        if(.not.allocated(str_massfr)) stop 'no input.str read'
        if(gas_ny>1) stop 'gg_setup: str_massfr: no 2D'
        do l=1,str_nabund
         ll = str_iabund(l)
         if(ll>gas_nelem) ll = 0 !divert to container
-        gas_vals2%mass0fr(ll) = str_massfr(l,:,:,:)
+        mass0fr(ll,:,:,:) = str_massfr(l,:,:,:)
        enddo
       elseif(.not.in_novolsrc) then
-!       if(gas_ny>1) stop 'gg_setup: str_massfr: no 2D'
-        gas_vals2%mass0fr(28) = 1d0 !stable+unstable Ni abundance
-!        gas_vals2(1:nint(4d0*gas_nx/5d0),1,1)%mass0fr(-1) = 1d0 !Ni56 core
-        gas_vals2%mass0fr(-1) = 1d0
+        mass0fr(28,:,:,:) = 1d0 !stable+unstable Ni abundance
+        mass0fr(-1,:,:,:) = 1d0
       else
        stop 'gg_setup: no input.str and in_novolsrc=true!'
       endif
 c
 c-- convert mass fractions to # atoms
-      call massfr2natomfr
+      call massfr2natomfr(mass0fr)
 c
 c-- output
 C$$$      write(6,*) 'mass fractions'
 C$$$      write(6,'(1p,33i12)') (l,l=-2,30)
-C$$$      write(6,'(1p,33e12.4)') (gas_vals2(l)%mass0fr,l=1,gas_nx)
+C$$$      write(6,'(1p,33e12.4)') (mass0fr(:,l,1,1),l=1,gas_nx)
 C$$$      write(6,*) 'number fractions'
 C$$$      write(6,'(1p,33i12)') (l,l=-2,30)
-C$$$      write(6,'(1p,33e12.4)') (gas_vals2(l)%natom1fr,l=1,gas_nx)
+C$$$      write(6,'(1p,33e12.4)') dd_natom1fr(:,l,1,1),l=1,gas_nx)
 c
       end subroutine gasgrid_setup
 c
 c
 c
-      subroutine massfr2natomfr
+      subroutine massfr2natomfr(mass0fr)
 c     -------------------------
       use physconstmod
       use elemdatamod, only:elem_data
       use gasgridmod
       implicit none
+      real*8,intent(inout) :: mass0fr(-2:gas_nelem,gas_nx,gas_ny,gas_nz)
 ************************************************************************
 * convert mass fractions to natom fractions, and mass to natom.
 ************************************************************************
@@ -104,54 +105,53 @@ c
       do i=1,gas_nx
 c!{{{
 c-- sanity test
-       if(all(gas_vals2(i,j,k)%mass0fr(1:)==0d0)) stop
+       if(all(mass0fr(1:,i,j,k)==0d0)) stop
      &    'massfr2natomfr: all mass fractions zero'
-       if(any(gas_vals2(i,j,k)%mass0fr(1:)<0d0)) stop
+       if(any(mass0fr(1:,i,j,k)<0d0)) stop
      &    'massfr2natomfr: negative mass fractions'
 c
 c-- renormalize (the container fraction (unused elements) is taken out)
-       gas_vals2(i,j,k)%mass0fr(:) = gas_vals2(i,j,k)%mass0fr(:)/
-     &   sum(gas_vals2(i,j,k)%mass0fr(1:))
+       mass0fr(:,i,j,k) = mass0fr(:,i,j,k)/sum(mass0fr(1:,i,j,k))
 c
 c-- partial mass
-       gas_vals2(i,j,k)%natom1fr = gas_vals2(i,j,k)%mass0fr*
-     &   gas_vals2(i,j,k)%mass
+       dd_natom1fr(:,i,j,k)= mass0fr(:,i,j,k)*
+     &   dd_mass(i,j,k)
 c-- only stable nickel and cobalt
-       gas_vals2(i,j,k)%natom1fr(28) = gas_vals2(i,j,k)%natom1fr(28) -
-     &   gas_vals2(i,j,k)%natom1fr(gas_ini56)
-       gas_vals2(i,j,k)%natom1fr(27) = gas_vals2(i,j,k)%natom1fr(27) -
-     &   gas_vals2(i,j,k)%natom1fr(gas_ico56)
+       dd_natom1fr(28,i,j,k) = dd_natom1fr(28,i,j,k) -
+     &   dd_natom1fr(gas_ini56,i,j,k)
+       dd_natom1fr(27,i,j,k) = dd_natom1fr(27,i,j,k) -
+     &   dd_natom1fr(gas_ico56,i,j,k)
 c
 c-- convert to natoms
        do l=1,gas_nelem
-        gas_vals2(i,j,k)%natom1fr(l) = gas_vals2(i,j,k)%natom1fr(l)/
+        dd_natom1fr(l,i,j,k) = dd_natom1fr(l,i,j,k)/
      &    (elem_data(l)%m*pc_amu)
        enddo !j
 c-- special care for ni56 and co56
 !      help = elem_data(26)%m*pc_amu
        help = elem_data(28)%m*pc_amu !phoenix compatible
-       gas_vals2(i,j,k)%natom1fr(gas_ini56) =
-     &   gas_vals2(i,j,k)%natom1fr(gas_ini56)/help
+       dd_natom1fr(gas_ini56,i,j,k) =
+     &   dd_natom1fr(gas_ini56,i,j,k)/help
        help = elem_data(27)%m*pc_amu !phoenix compatible
-       gas_vals2(i,j,k)%natom1fr(gas_ico56) =
-     &   gas_vals2(i,j,k)%natom1fr(gas_ico56)/help
+       dd_natom1fr(gas_ico56,i,j,k) =
+     &   dd_natom1fr(gas_ico56,i,j,k)/help
 c-- store initial fe/co/ni
-       gas_vals2(i,j,k)%natom0fr(-2:-1)=gas_vals2(i,j,k)%natom1fr(-2:-1)!unstable
-       gas_vals2(i,j,k)%natom0fr(0:2) = gas_vals2(i,j,k)%natom1fr(26:28)!stable
+       dd_natom0fr(-2:-1,i,j,k) = dd_natom1fr(-2:-1,i,j,k)!unstable
+       dd_natom0fr(0:2,i,j,k) = dd_natom1fr(26:28,i,j,k)!stable
 c-- add unstable to stable again
-       gas_vals2(i,j,k)%natom1fr(28) = gas_vals2(i,j,k)%natom1fr(28) +
-     &   gas_vals2(i,j,k)%natom1fr(gas_ini56)
-       gas_vals2(i,j,k)%natom1fr(27) = gas_vals2(i,j,k)%natom1fr(27) +
-     &   gas_vals2(i,j,k)%natom1fr(gas_ico56)
+       dd_natom1fr(28,i,j,k) = dd_natom1fr(28,i,j,k) +
+     &   dd_natom1fr(gas_ini56,i,j,k)
+       dd_natom1fr(27,i,j,k) = dd_natom1fr(27,i,j,k) +
+     &   dd_natom1fr(gas_ico56,i,j,k)
 c
 c-- total natom
-       gas_vals2(i,j,k)%natom = sum(gas_vals2(i,j,k)%natom1fr(1:))
+       dd_natom(i,j,k) = sum(dd_natom1fr(1:,i,j,k))
 c
 c-- convert natoms to natom fractions
-       gas_vals2(i,j,k)%natom1fr = gas_vals2(i,j,k)%natom1fr/
-     &   gas_vals2(i,j,k)%natom
-       gas_vals2(i,j,k)%natom0fr = gas_vals2(i,j,k)%natom0fr/
-     &   gas_vals2(i,j,k)%natom
+       dd_natom1fr(:,i,j,k) = dd_natom1fr(:,i,j,k)/
+     &   dd_natom(i,j,k)
+       dd_natom0fr(:,i,j,k) = dd_natom0fr(:,i,j,k)/
+     &   dd_natom(i,j,k)
 c!}}}
       enddo !i
       enddo !j

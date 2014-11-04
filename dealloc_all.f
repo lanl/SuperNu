@@ -20,7 +20,6 @@ c-- bbxsmod
       if(allocated(bb_xs)) deallocate(bb_xs) !only impi==impi0, but only if nobbopac==f
 !c-- gasgridmod
       deallocate(gas_wl)
-      if(impi==impi0) deallocate(gas_vals2)
 c-- gasgridmod
       deallocate(gas_numcensus)
       deallocate(gas_xarr,gas_yarr,gas_zarr)

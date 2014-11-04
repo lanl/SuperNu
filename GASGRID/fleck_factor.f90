@@ -21,22 +21,22 @@ subroutine fleck_factor(tempalt,siggreyalt)
   do k=1,gas_nz
   do j=1,gas_ny
   do i=1,gas_nx
-     Um = gas_vals2(i,j,k)%bcoef*dd_temp(i,j,k)
-     if(dd_temp(i,j,k)<=0d0.or.gas_vals2(i,j,k)%bcoef==0d0) then
+     Um = dd_bcoef(i,j,k)*dd_temp(i,j,k)
+     if(dd_temp(i,j,k)<=0d0.or.dd_bcoef(i,j,k)==0d0) then
         beta = 0d0
      elseif(gas_siggrey(i,j,k)<=0d0.or.siggreyalt(i,j,k)<=0d0) then
-        beta = 4.0*gas_vals2(i,j,k)%ur/Um
+        beta = 4.0*dd_ur(i,j,k)/Um
      else
         if(.not.in_ismodimc) then
            beta2 = 0d0
         else
 !-- convert from per gram
-           dlogsig = log(gas_siggrey(i,j,k)/(siggreyalt(i,j,k)*gas_vals2(i,j,k)%rho))/&
+           dlogsig = log(gas_siggrey(i,j,k)/(siggreyalt(i,j,k)*dd_rho(i,j,k)))/&
               (dd_temp(i,j,k)-tempalt(i,j,k))
-           beta2 = min(0d0,(gas_vals2(i,j,k)%eraddens-gas_vals2(i,j,k)%ur)*&
-              dlogsig/gas_vals2(i,j,k)%bcoef)
+           beta2 = min(0d0,(dd_eraddens(i,j,k)-dd_ur(i,j,k))*&
+              dlogsig/dd_bcoef(i,j,k))
         endif
-        beta = 4.0*gas_vals2(i,j,k)%ur/Um - beta2
+        beta = 4.0*dd_ur(i,j,k)/Um - beta2
 
      endif
      gas_fcoef(i,j,k) = 1.0/(1.0+tsp_alpha*beta*pc_c*tsp_dt*gas_siggrey(i,j,k))
