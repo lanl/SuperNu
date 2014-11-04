@@ -403,7 +403,7 @@ c     -----------------------!{{{
 * temperature correction.
 ************************************************************************
       integer :: n
-      integer,allocatable :: isndvec(:)
+      integer,allocatable :: isndvec(:),ircvvec(:)
       real*8,allocatable :: sndvec(:),rcvvec(:)
       integer :: isnd3(nx,ny,nz)
       real*8 :: snd3(nx,ny,nz)
@@ -435,23 +435,35 @@ c-- rtw: can't copy back 0 to eext or evelo.
       deallocate(rcvvec)
 c
 c-- dim==1
-      allocate(isndvec(gas_ng))
-      isndvec = gas_lumnum
-      call mpi_reduce(isndvec,gas_lumnum,gas_ng,MPI_INTEGER,MPI_SUM,
+      n = flx_ng*flx_nmu*flx_nom
+      allocate(isndvec(n))
+      allocate(ircvvec(n))
+      isndvec = reshape(flx_lumnum,[n])
+      call mpi_reduce(isndvec,ircvvec,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
+      if(impi==0) flx_lumnum=reshape(ircvvec,[flx_ng,flx_nmu,flx_nom])
       deallocate(isndvec)
+      deallocate(ircvvec)
 c
-      allocate(sndvec(gas_ng))
-      sndvec = gas_luminos
-      call mpi_reduce(sndvec,gas_luminos,gas_ng,MPI_REAL8,MPI_SUM,
+      allocate(sndvec(n))
+      allocate(rcvvec(n))
+      sndvec = reshape(flx_luminos,[n])
+      call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      gas_luminos = gas_luminos/dble(nmpi)
+      if(impi==0) then
+         flx_luminos = reshape(rcvvec,[flx_ng,flx_nmu,flx_nom])
+         flx_luminos = flx_luminos/dble(nmpi)
+      endif
 c
-      sndvec = gas_lumdev
-      call mpi_reduce(sndvec,gas_lumdev,gas_ng,MPI_REAL8,MPI_SUM,
+      sndvec = reshape(flx_lumdev,[n])
+      call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      gas_lumdev = gas_lumdev/dble(nmpi)
+      if(impi==0) then
+         flx_lumdev=reshape(rcvvec,[flx_ng,flx_nmu,flx_nom])
+         flx_lumdev=flx_lumdev/dble(nmpi)
+      endif
       deallocate(sndvec)
+      deallocate(rcvvec)
 c
 c-- dim==3
       n = nx*ny*nz

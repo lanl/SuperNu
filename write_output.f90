@@ -12,7 +12,7 @@ subroutine write_output
   integer :: reclen, reclen2
   character(16), save :: pos='rewind', fstat='replace'
 !
-  reclen = gas_ng*12
+  reclen = flx_ng*flx_nmu*12
   reclen2 = gas_nx*gas_ny*12
 
   inquire(file='output.wlgrid',exist=lexist)
@@ -31,7 +31,7 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.LumNum',status=fstat,position='append',recl=reclen)
-  write(4,'(10000i12)') gas_lumnum
+  write(4,'(10000i12)') flx_lumnum
   close(4)
 
   open(unit=4,file='output.methodswap',status=fstat,position='append',recl=reclen2)
@@ -39,18 +39,12 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.Lum',status=fstat,position='append',recl=reclen)
-  where(gas_luminos<1d-99) gas_luminos = 1d-99  !prevent non-universal number representation, e.g. 1.1234-123
-  write(4,'(1p,10000e12.4)') gas_luminos
+  where(flx_luminos<1d-99) flx_luminos = 1d-99  !prevent non-universal number representation, e.g. 1.1234-123
+  write(4,'(1p,10000e12.4)') flx_luminos
   close(4)
 
-  open(unit=4,file='output.devLum',status='unknown',position=pos)
-  do ig = 1, gas_ng
-     if(gas_luminos(ig)>0d0) then
-        write(4,'(es16.8)',advance='no') gas_lumdev(ig)/gas_luminos(ig)
-     else
-        write(4,'(es16.8)',advance='no') 0d0
-     endif
-  enddo
+  open(unit=4,file='output.devLum',status=fstat,position='append',recl=reclen)
+  write(4,'(1p,10000e12.4)') flx_lumdev/flx_luminos
   close(4)
 
   open(unit=4,file='output.temp',status=fstat,position='append',recl=reclen2)

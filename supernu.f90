@@ -211,9 +211,9 @@ program supernu
 !
     if(impi==impi0) then
 !-- luminosity statistics
-      where(gas_lumnum>0) gas_lumdev = ( &
-         (gas_lumdev/gas_lumnum - (gas_luminos/gas_lumnum)**2) * &
-         gas_lumnum/dble(gas_lumnum - 1) )**.5d0
+      where(flx_lumnum>0) flx_lumdev = ( &
+         (flx_lumdev/flx_lumnum - (flx_luminos/flx_lumnum)**2) * &
+         flx_lumnum/dble(flx_lumnum - 1) )**.5d0
 !-- update temperature
       call temperature_update
 !-- check energy (particle weight) is accounted
