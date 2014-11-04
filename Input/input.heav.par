@@ -25,6 +25,9 @@ in_velout = 1d9
 in_totmass = 1d33
 in_dentype = 'mass'
 
+!-- flux settings
+in_nflx = 0, 1, 1
+
 !-- flat structures
 in_tempradinit = 0d0
 in_consttemp = 11604505d0

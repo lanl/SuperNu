@@ -27,7 +27,7 @@ MODULES := profiledatamod.o \
   inputparmod.o timestepmod.o \
   gasgridmod.o inputstrmod.o \
   particlemod.o \
-  timingmod.o manufacmod.o
+  timingmod.o manufacmod.o fluxmod.o
 
 FILES := sourcenumbers.o vacancies.o boundary_source.o interior_source.o particle_advance.o \
   write_output.o wlgrid_setup.o \
