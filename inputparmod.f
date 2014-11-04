@@ -19,6 +19,11 @@ c-- grid geometry and dimensions
       real*8 :: in_ly = 0d0  !spatial length of y-direction
       real*8 :: in_lz = 0d0  !spatial length of z-direction
 c
+c-- outbound flux group and direction bins
+      integer :: in_nflx(3) = [0, 1, 1]
+      real*8  :: in_wlminflx =   100d-8 !lower wavelength flux boundary [cm]
+      real*8  :: in_wlmaxflx = 32000d-8 !upper wavelength flux boundary [cm]
+c
 c-- do read input structure file instead of specifying the stucture with input parameters
 c==================
       logical :: in_noreadstruct = .false.
@@ -139,7 +144,7 @@ c-- runtime parameter namelist
      & in_tauddmc, in_dentype, in_noreadstruct,
      & in_norestart, in_taulump, in_tauvtime,
      & in_tempradinit, in_ismodimc,
-     & in_comment, in_noeos
+     & in_comment, in_noeos, in_nflx,in_wlminflx,in_wlmaxflx
 c
       public
       private inputpars
@@ -204,8 +209,10 @@ c
        stop 'in_igeom invalid'
       case(1)
        if(in_ndim(2)>1 .or. in_ndim(3)>1) stop 'in_ndim invalid'
+       if(in_nflx(2)/=1 .or. in_nflx(3)/=1) stop 'in_nflx invalid'
       case(2)
        if(in_ndim(3)>1) stop 'in_ndim invalid'
+       if(in_nflx(3)/=1) stop 'in_ndim invalid'
       case(4:)
        stop 'in_igeom invalid'
       endselect

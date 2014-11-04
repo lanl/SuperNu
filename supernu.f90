@@ -10,6 +10,7 @@ program supernu
   use miscmod
 
   use inputstrmod
+  use fluxmod
 
   use ionsmod, only:ion_read_data,ion_alloc_grndlev
   use bfxsmod, only:bfxs_read_data
@@ -91,6 +92,7 @@ program supernu
 !
 !-- wlgrid
    call wlgrid_setup(gas_ng)
+   call fluxgrid_setup(in_nflx,in_wlminflx,in_wlmaxflx)
 
 !-- READ DATA
 !-- read ion and level data

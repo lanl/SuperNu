@@ -15,6 +15,7 @@ subroutine sourcenumbers
 !##################################################
 
   integer :: i,j,k
+  integer :: ihelp
 ! gas_esurf for any new prt_particles from a surface source
 ! prt_nsurf = number of surface prt_particles
 ! prt_nnew = total number of new prt_particles~=prt_ns
@@ -86,6 +87,14 @@ subroutine sourcenumbers
   prt_nnew = prt_nsurf
 
   ! Calculating number of particles per cell (dd_nvol): loop
+  select case(in_igeom)
+  case(1)
+     ihelp = 50
+  case(2)
+     ihelp = 50/nmpi+1
+  case(3)
+     ihelp = 1
+  endselect
   prt_nexsrc=0
   do k = 1, gas_nz
   do j = 1, gas_ny
@@ -93,14 +102,16 @@ subroutine sourcenumbers
      if(gas_emit(i,j,k)<=0d0) then
         gas_nvol(i,j,k)=0
      else
-        gas_nvol(i,j,k)=nint(abs(gas_emit(i,j,k))*prt_ns/gas_etot)+50
+        gas_nvol(i,j,k)=nint(gas_emit(i,j,k)*prt_ns/gas_etot) + &
+             ihelp
      endif
      prt_nnew = prt_nnew + gas_nvol(i,j,k)
      !external source volume numbers
      if(gas_emitex(i,j,k)<=0d0) then
         gas_nvolex(i,j,k)=0
      else
-        gas_nvolex(i,j,k)=nint(gas_emitex(i,j,k)*prt_ns/gas_etot)+50
+        gas_nvolex(i,j,k)=nint(gas_emitex(i,j,k)*prt_ns/gas_etot) + &
+             ihelp
      endif
      prt_nexsrc = prt_nexsrc + gas_nvolex(i,j,k)
      prt_nnew = prt_nnew + gas_nvolex(i,j,k)
