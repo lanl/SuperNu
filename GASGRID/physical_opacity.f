@@ -61,7 +61,6 @@ c
 c
 c-- bound-bound
       if(.not. in_nobbopac) then
-
        do iz=1,gas_nelem!{{{
         do k=1,nz
         do j=1,ny

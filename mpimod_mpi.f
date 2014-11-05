@@ -169,7 +169,7 @@ c-- bound-bound
 c-- bound-free
       call mpi_bcast(bf_ph1,6*7*30*30,MPI_REAL,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(bf_ph1,7*30*30,MPI_REAL,
+      call mpi_bcast(bf_ph2,7*30*30,MPI_REAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- free-free
       call mpi_bcast(ff_gff,ff_nu*ff_ngg,MPI_REAL8,
