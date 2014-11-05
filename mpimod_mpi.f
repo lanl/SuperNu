@@ -22,6 +22,7 @@ c     --------------------------!{{{
       use gasgridmod,nx=>gas_nx,ny=>gas_ny,nz=>gas_nz
       use particlemod
       use timestepmod
+      use fluxmod
       implicit none
 ************************************************************************
 * Broadcast the data that does not evolve over time (or temperature).
@@ -35,11 +36,11 @@ c     --------------------------!{{{
 c
 c-- broadcast constants
 c-- logical
-      n = 7
+      n = 8
       allocate(lsndvec(n))
       if(impi==impi0) lsndvec = (/in_isvelocity,in_puretran,
      &  prt_isimcanlog,prt_isddmcanlog,in_norestart,in_noeos,
-     &  in_novolsrc/)
+     &  in_novolsrc,in_noreadstruct/)
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -50,16 +51,18 @@ c-- copy back
       in_norestart = lsndvec(5)
       in_noeos = lsndvec(6)
       in_novolsrc = lsndvec(7)
+      in_noreadstruct = lsndvec(8)
       deallocate(lsndvec)
 c
 c-- integer
-      n = 17
+      n = 20
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/in_igeom,
      &  in_ndim(1),in_ndim(2),in_ndim(3),gas_ng,
      &  prt_npartmax,in_nomp,tsp_nt,in_ntres,tsp_ntres,
      &  prt_ninit,prt_ninitnew,in_ng,in_nheav,
-     &  ion_nion,ion_iionmax,bb_nline/)
+     &  ion_nion,ion_iionmax,bb_nline,
+     &  flx_ng,flx_nmu,flx_nom/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -80,6 +83,9 @@ c-- copy back
       ion_nion     = isndvec(15)
       ion_iionmax  = isndvec(16)
       bb_nline     = isndvec(17)
+      flx_ng       = isndvec(18)
+      flx_nmu      = isndvec(19)
+      flx_nom      = isndvec(20)
       deallocate(isndvec)
 c
 c-- real*8
@@ -129,16 +135,27 @@ c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0) then
        allocate(gas_wl(gas_ng+1))
-       allocate(bb_xs(bb_nline))
+       allocate(flx_wl(flx_ng+1))
+       allocate(flx_mu(flx_nmu+1))
+       allocate(flx_om(flx_nom+1))
+       if(bb_nline>0) allocate(bb_xs(bb_nline))
       endif
 c
 c-- broadcast data
       call mpi_bcast(gas_wl,gas_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-
-c-- bound-bound
-      call mpi_bcast(bb_xs,sizeof(bb_xs),MPI_BYTE,
+      call mpi_bcast(flx_wl,flx_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(flx_mu,flx_nmu+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(flx_om,flx_nom+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+c-- bound-bound
+      if(bb_nline>0) then
+       call mpi_bcast(bb_xs,sizeof(bb_xs),MPI_BYTE,
+     &   impi0,MPI_COMM_WORLD,ierr)
+      endif
 c-- bound-free
       call mpi_bcast(bf_ph1,6*7*30*30,MPI_REAL,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -152,7 +169,6 @@ c
 c
 c
       contains
-c
 c
       subroutine bcast_ions
 c     ---------------------!{{{
@@ -215,7 +231,6 @@ c-- sanity check
       if(iion/=ion_nion) stop "bcast_perm: ion_nion problem"
 c!}}}
       end subroutine bcast_ions
-
 c!}}}
       end subroutine bcast_permanent
 c
@@ -255,8 +270,8 @@ c
        allocate(str_yleft(ny+1))
        allocate(str_zleft(nz+1))
        allocate(str_mass(nx,ny,nz))
-       allocate(str_massfr(str_nabund,nx,ny,nz))
-       allocate(str_iabund(str_nabund))
+       if(str_nabund>0) allocate(str_massfr(str_nabund,nx,ny,nz))
+       if(str_nabund>0) allocate(str_iabund(str_nabund))
       endif
       call mpi_bcast(str_xleft,nx+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -268,14 +283,18 @@ c
       n = nx*ny*nz
       call mpi_bcast(str_mass,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-
-      n = str_nabund * nx*ny*nz
-      call mpi_bcast(str_massfr,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-
-      n = str_nabund
-      call mpi_bcast(str_iabund,n,MPI_INTEGER,
-     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      if(str_nabund>0) then
+       n = str_nabund * nx*ny*nz
+       call mpi_bcast(str_massfr,n,MPI_REAL8,
+     &   impi0,MPI_COMM_WORLD,ierr)
+      endif
+c
+      if(str_nabund>0) then
+       n = str_nabund
+       call mpi_bcast(str_iabund,n,MPI_INTEGER,
+     &   impi0,MPI_COMM_WORLD,ierr)
+      endif
 !}}}
       end subroutine scatter_inputstruct
 c
@@ -365,6 +384,7 @@ c
 c     -----------------------!{{{
       use gasgridmod,nx=>gas_nx,ny=>gas_ny,nz=>gas_nz
       use timingmod
+      use fluxmod
       implicit none
 ************************************************************************
 * Reduce the results from particle_advance that are needed for the
@@ -373,8 +393,8 @@ c     -----------------------!{{{
       integer :: n
       integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:),rcvvec(:)
-      integer :: isnd3(nx,ny,nz)
-      real*8 :: snd3(nx,ny,nz)
+      integer :: isnd3(nx,ny,nz),isnd3f(flx_ng,flx_nmu,flx_nom)
+      real*8 :: snd3(nx,ny,nz),snd3f(flx_ng,flx_nmu,flx_nom)
       real*8 :: help
 
 c
@@ -382,12 +402,11 @@ c-- dim==0
       n = 5
       allocate(sndvec(n))
       allocate(rcvvec(n))
-      !if(impi==impi0) 
       sndvec = (/gas_erad,gas_eright,gas_eleft,gas_eext,gas_evelo/)
       call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      if(impi==0) then
+      if(impi==impi0) then
        gas_erad = rcvvec(1)/dble(nmpi)
        gas_eright = rcvvec(2)/dble(nmpi)
        gas_eleft = rcvvec(3)/dble(nmpi)
@@ -403,23 +422,20 @@ c-- rtw: can't copy back 0 to eext or evelo.
       deallocate(rcvvec)
 c
 c-- dim==1
-      allocate(isndvec(gas_ng))
-      isndvec = gas_lumnum
-      call mpi_reduce(isndvec,gas_lumnum,gas_ng,MPI_INTEGER,MPI_SUM,
+      n = flx_ng*flx_nmu*flx_nom
+      isnd3f = flx_lumnum
+      call mpi_reduce(isnd3f,flx_lumnum,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      deallocate(isndvec)
 c
-      allocate(sndvec(gas_ng))
-      sndvec = gas_luminos
-      call mpi_reduce(sndvec,gas_luminos,gas_ng,MPI_REAL8,MPI_SUM,
+      snd3f = flx_luminos
+      call mpi_reduce(snd3f,flx_luminos,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      gas_luminos = gas_luminos/dble(nmpi)
+      flx_luminos = flx_luminos/dble(nmpi)
 c
-      sndvec = gas_lumdev
-      call mpi_reduce(sndvec,gas_lumdev,gas_ng,MPI_REAL8,MPI_SUM,
+      snd3f = flx_lumdev
+      call mpi_reduce(snd3f,flx_lumdev,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      gas_lumdev = gas_lumdev/dble(nmpi)
-      deallocate(sndvec)
+      flx_lumdev = flx_lumdev/dble(nmpi)
 c
 c-- dim==3
       n = nx*ny*nz

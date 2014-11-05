@@ -10,6 +10,7 @@ program supernu
   use miscmod
 
   use inputstrmod
+  use fluxmod
 
   use ionsmod, only:ion_read_data,ion_alloc_grndlev
   use bfxsmod, only:bfxs_read_data
@@ -91,6 +92,7 @@ program supernu
 !
 !-- wlgrid
    call wlgrid_setup(gas_ng)
+   call fluxgrid_setup(in_nflx,in_wlminflx,in_wlmaxflx)
 
 !-- READ DATA
 !-- read ion and level data
@@ -119,6 +121,9 @@ program supernu
 !-- setup gasgrid
   call gasgrid_init
   call gasgrid_setup
+!
+!-- initialize flux tally arrays (rtw: separated from fluxgrid_setup)
+  call flux_alloc
 !
 !-- initial radiation energy
   call initialnumbers
@@ -214,9 +219,9 @@ write(0,*) impi, gas_temp(:10,1,1) !DEBUG
 !-- output
     if(impi==impi0) then
 !-- luminosity statistics!{{{
-      where(gas_lumnum>0) gas_lumdev = ( &
-         (gas_lumdev/gas_lumnum - (gas_luminos/gas_lumnum)**2) * &
-         gas_lumnum/dble(gas_lumnum - 1) )**.5d0
+      where(flx_lumnum>0) flx_lumdev = ( &
+         (flx_lumdev/flx_lumnum - (flx_luminos/flx_lumnum)**2) * &
+         flx_lumnum/dble(flx_lumnum - 1) )**.5d0
 !-- check energy (particle weight) is accounted
       call energy_check
 !-- write output

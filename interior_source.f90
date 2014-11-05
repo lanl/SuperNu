@@ -213,25 +213,16 @@ subroutine interior_source
 
 !
 !-- check for available particle space to populate in cell
-     do k=k,gas_nz
+     loop2_k: do k=k,gas_nz
         do j=j,gas_ny
            do i=i,gas_nx
-              lhelp = ijkused(i,j,k)<gas_nvol(i,j,k)
-              if (lhelp) exit
+              lhelp = ijkused(i,j,k)<gas_nvolex(i,j,k)
+              if (lhelp) exit loop2_k
            enddo
-           if (lhelp) then
-              exit
-           else
-              i = 1
-           endif
-        enddo
-        if (lhelp) then
-           exit
-        else
            i = 1
-           j = 1
-        endif
-     enddo
+        enddo
+        j = 1
+     enddo loop2_k
 !
 !-- sanity check
      if(.not.lhelp) stop 'interior_source (2): invalid particle'

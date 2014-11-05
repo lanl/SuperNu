@@ -7,6 +7,7 @@ c     ----------------------
       use particlemod
       use inputstrmod
       use inputparmod
+      use fluxmod
       implicit none
 ************************************************************************
 * deallocate all that was used till the end of the program. Any
@@ -27,7 +28,6 @@ c-- gasgridmod
       deallocate(gas_cap)
       deallocate(gas_emitprob,gas_opacleak)
       deallocate(gas_eraddens)
-      deallocate(gas_luminos,gas_lumdev,gas_lumnum)
       if(impi==impi0) deallocate(gas_siggrey)
       deallocate(gas_fcoef)
       deallocate(gas_sig)
@@ -42,5 +42,8 @@ c-- inputstrmod
       if(impi==impi0) deallocate(str_mass)
       if(allocated(str_massfr)) deallocate(str_massfr)
       if(allocated(str_iabund)) deallocate(str_iabund)
+c-- fluxmod
+      deallocate(flx_wl,flx_mu,flx_om)
+      deallocate(flx_luminos,flx_lumdev,flx_lumnum)
 
       end subroutine dealloc_all

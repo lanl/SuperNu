@@ -4,7 +4,8 @@ c     --------------
 ************************************************************************
 * read bound-bound cross sections (oscillator strengths)
 ************************************************************************
-      integer :: bb_nlevel,bb_nline
+      integer :: bb_nlevel=0
+      integer :: bb_nline=0
 c
 c-- raw data read from file
 c-- level data type
