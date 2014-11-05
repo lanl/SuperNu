@@ -19,7 +19,8 @@ c     --------------------------!{{{
       use ffxsmod
       use bfxsmod
       use bbxsmod
-      use gasgridmod,nx=>gas_nx,ny=>gas_ny,nz=>gas_nz
+      use profiledatamod
+      use gasgridmod
       use particlemod
       use timestepmod
       use fluxmod
@@ -93,14 +94,15 @@ c-- copy back
       deallocate(lsndvec)
 c
 c-- integer
-      n = 13
+      n = 15
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/
      &  gas_ng,prt_ns,
      &  prt_npartmax,tsp_nt,tsp_ntres,
      &  prt_ninit,prt_ninitnew,
      &  ion_nion,ion_iionmax,bb_nline,
-     &  flx_ng,flx_nmu,flx_nom/)
+     &  flx_ng,flx_nmu,flx_nom,
+     &  prof_ntgam,prof_nr/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -117,6 +119,8 @@ c-- copy back
       flx_ng       = isndvec(11)
       flx_nmu      = isndvec(12)
       flx_nom      = isndvec(13)
+      prof_ntgam   = isndvec(14)
+      prof_nr      = isndvec(15)
       deallocate(isndvec)
 c
 c-- real*8
@@ -149,6 +153,16 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(flx_mu(flx_nmu+1))
        allocate(flx_om(flx_nom+1))
        if(bb_nline>0) allocate(bb_xs(bb_nline))
+       if(prof_ntgam>0) allocate(prof_timegamvec(prof_ntgam))
+       if(prof_ntgam>0) allocate(prof_profgamvec(in_ndim(1),prof_ntgam))
+      endif
+c
+c-- gamma profiles
+      if(prof_ntgam>0) then
+       call mpi_bcast(prof_timegamvec,prof_ntgam,MPI_REAL8,
+     &   impi0,MPI_COMM_WORLD,ierr)
+       call mpi_bcast(prof_profgamvec,in_ndim(1)*prof_ntgam,MPI_REAL8,
+     &   impi0,MPI_COMM_WORLD,ierr)
       endif
 c
 c-- broadcast data

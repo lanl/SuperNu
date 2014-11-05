@@ -7,11 +7,11 @@ c     -------------------
 * The profile describes the fraction of the total decay energy that is
 * deposited in each of the bins.
 ************************************************************************
-      integer,private :: nr=0
+      integer :: prof_nr=0
 c-- gamma profiles
       integer :: prof_ntgam=0
-      real*8,allocatable,private :: timegamvec(:) !(prof_ntgam)  !time in seconds
-      real*8,allocatable,private :: profgamvec(:,:) !(gas_nx,prof_ntgam)  !local deposition fraction
+      real*8,allocatable :: prof_timegamvec(:) !(prof_ntgam)  !time in seconds
+      real*8,allocatable :: prof_profgamvec(:,:) !(gas_nx,prof_ntgam)  !local deposition fraction
 c
       contains
 c
@@ -21,7 +21,7 @@ c
 c     ---------------------------------------------!{{{
       implicit none
       real*8,intent(in) :: t
-      real*8 :: prof(nr)
+      real*8 :: prof(prof_nr)
 ************************************************************************
 * interpolate the gamma deposition data for the time requested
 ************************************************************************
@@ -34,17 +34,18 @@ c-- data sanity test
       if(prof_ntgam==0) stop 'tgam_profile: data not loaded'
 c
 c-- previous time slice in input data
-      it = locate(timegamvec,prof_ntgam,t)
+      it = locate(prof_timegamvec,prof_ntgam,t)
 c
 c-- linear interpolation
       if(it == prof_ntgam) then
 c-- use latest profile in dataset
-       prof = profgamvec(:,it)
+       prof = prof_profgamvec(:,it)
       else
-       help = timegamvec(it)
-       help = (t - help)/(timegamvec(it+1) - help)
-       prof = (1d0 - help)*profgamvec(:,it) + help*profgamvec(:,it+1)
-!      write(6,*) 'interp_gam_prof:',timegamvec(it),timegamvec(it+1),t,help
+       help = prof_timegamvec(it)
+       help = (t - help)/(prof_timegamvec(it+1) - help)
+       prof = (1d0 - help)*prof_profgamvec(:,it) +
+     &   help*prof_profgamvec(:,it+1)
+!      write(6,*) 'interp_gam_prof:',prof_timegamvec(it),prof_timegamvec(it+1),t,help
       endif
 c-- debug output
 c!}}}
@@ -63,20 +64,20 @@ c-- open input file
 c-- read header
       read(4,*) !header description
       read(4,*) !header description
-      read(4,*,iostat=istat) prof_ntgam,nr
+      read(4,*,iostat=istat) prof_ntgam,prof_nr
       if(istat/=0) stop 'read_gamprf: header error'
 c-- allocate arrays
-      allocate(timegamvec(prof_ntgam))
-      allocate(profgamvec(nr,prof_ntgam))
+      allocate(prof_timegamvec(prof_ntgam))
+      allocate(prof_profgamvec(prof_nr,prof_ntgam))
 c-- read data
-      read(4,*,iostat=istat) timegamvec
+      read(4,*,iostat=istat) prof_timegamvec
       if(istat/=0) stop 'read_gamprf: body error 1'
-      read(4,*,iostat=istat) profgamvec
+      read(4,*,iostat=istat) prof_profgamvec
       if(istat/=0) stop 'read_gamprf: body error 2'
       close(4)
 c
 c-- verify number of zones
-      if(nr/=ndim(1)) stop 'read_gamprf: incompatible dims: nr/=nr'
+      if(prof_nr/=ndim(1)) stop 'read_gamprf: incompatible dims: nr/=nr'
 c!}}}
       end subroutine read_gamma_profiles
 c
