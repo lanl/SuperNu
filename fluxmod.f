@@ -45,10 +45,6 @@ c
       fnames = (/'input.fluxwl','input.fluxmu',
      &     'input.fluxom'/)
 c
-c-- allocating direction grids
-      allocate(flx_mu(flx_nmu+1))
-      allocate(flx_om(flx_nom+1))
-c
 c-- check if bins are read or generated
       do i = 1,3
          if(nflx(i)<0) then
