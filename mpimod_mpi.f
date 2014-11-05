@@ -29,77 +29,101 @@ c     --------------------------!{{{
 * Also once the constants are broadcasted, all allocatable arrays are
 * allocated.
 ************************************************************************
-      integer :: n
+      integer :: i,n
+      integer :: il,ii,ir,ic
       logical,allocatable :: lsndvec(:)
       integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:)
+      character(4),allocatable :: csndvec(:)
 c
+c-- inputparmod variables
+c========================
+c-- create pointer arrays
+      call inputpar_create_pointers(il,ii,ir,ic)
+c
+c-- broadcast logicals
+      n = il
+      allocate(lsndvec(n))
+      forall(i=1:n) lsndvec(i) = in_l(i)%p
+      call mpi_bcast(lsndvec,n,MPI_LOGICAL,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      forall(i=1:n) in_l(i)%p = lsndvec(i)
+      deallocate(lsndvec)
+c-- broadcast integers
+      n = ii
+      allocate(isndvec(n))
+      forall(i=1:n) isndvec(i) = in_i(i)%p
+      call mpi_bcast(isndvec,n,MPI_INTEGER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      forall(i=1:n) in_i(i)%p = isndvec(i)
+      deallocate(isndvec)
+c-- broadcast real*8
+      n = ir
+      allocate(sndvec(n))
+      forall(i=1:n) sndvec(i) = in_r(i)%p
+      call mpi_bcast(sndvec,n,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      forall(i=1:n) in_r(i)%p = sndvec(i)
+      deallocate(sndvec)
+c-- broadcast characters
+      n = ic
+      allocate(csndvec(n))
+      forall(i=1:n) csndvec(i) = in_c(i)%p
+      call mpi_bcast(csndvec,n*4,MPI_CHARACTER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+!     forall(i=1:n) in_c(i)%p = csndvec(i) !avoid gfortran 4.6.3 compiler bug
+      do i=1,n
+       in_c(i)%p = csndvec(i)
+      enddo
+      deallocate(csndvec)
+c
+c
+c-- everything else
+c==================
 c-- broadcast constants
 c-- logical
-      n = 9
+      n = 2
       allocate(lsndvec(n))
-      if(impi==impi0) lsndvec = (/in_isvelocity,in_puretran,
-     &  prt_isimcanlog,prt_isddmcanlog,in_norestart,in_noeos,
-     &  in_novolsrc,in_noreadstruct,in_ismodimc/)
+      if(impi==impi0) lsndvec = (/prt_isimcanlog,prt_isddmcanlog/)
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      in_isvelocity = lsndvec(1)
-      in_puretran = lsndvec(2)
-      prt_isimcanlog = lsndvec(3)
-      prt_isddmcanlog = lsndvec(4)
-      in_norestart = lsndvec(5)
-      in_noeos = lsndvec(6)
-      in_novolsrc = lsndvec(7)
-      in_noreadstruct = lsndvec(8)
-      in_ismodimc = lsndvec(9)
+      prt_isimcanlog = lsndvec(1)
+      prt_isddmcanlog = lsndvec(2)
       deallocate(lsndvec)
 c
 c-- integer
-      n = 21
+      n = 13
       allocate(isndvec(n))
-      if(impi==impi0) isndvec = (/in_igeom,
-     &  in_ndim(1),in_ndim(2),in_ndim(3),gas_ng,prt_ns,
-     &  prt_npartmax,in_nomp,tsp_nt,in_ntres,tsp_ntres,
-     &  prt_ninit,prt_ninitnew,in_ng,in_nheav,
+      if(impi==impi0) isndvec = (/
+     &  gas_ng,prt_ns,
+     &  prt_npartmax,tsp_nt,tsp_ntres,
+     &  prt_ninit,prt_ninitnew,
      &  ion_nion,ion_iionmax,bb_nline,
      &  flx_ng,flx_nmu,flx_nom/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      in_igeom     = isndvec(1) 
-      in_ndim(1)   = isndvec(2)
-      in_ndim(2)   = isndvec(3)
-      in_ndim(3)   = isndvec(4)
-      gas_ng       = isndvec(5)
-      prt_ns       = isndvec(6)
-      prt_npartmax = isndvec(7)
-      in_nomp      = isndvec(8)
-      tsp_nt       = isndvec(9)
-      in_ntres     = isndvec(10)
-      tsp_ntres    = isndvec(11)
-      prt_ninit    = isndvec(12)
-      prt_ninitnew = isndvec(13)
-      in_ng        = isndvec(14)
-      in_nheav     = isndvec(15)
-      ion_nion     = isndvec(16)
-      ion_iionmax  = isndvec(17)
-      bb_nline     = isndvec(18)
-      flx_ng       = isndvec(19)
-      flx_nmu      = isndvec(20)
-      flx_nom      = isndvec(21)
+      gas_ng       = isndvec(1)
+      prt_ns       = isndvec(2)
+      prt_npartmax = isndvec(3)
+      tsp_nt       = isndvec(4)
+      tsp_ntres    = isndvec(5)
+      prt_ninit    = isndvec(6)
+      prt_ninitnew = isndvec(7)
+      ion_nion     = isndvec(8)
+      ion_iionmax  = isndvec(9)
+      bb_nline     = isndvec(10)
+      flx_ng       = isndvec(11)
+      flx_nmu      = isndvec(12)
+      flx_nom      = isndvec(13)
       deallocate(isndvec)
 c
 c-- real*8
-      n = 21
+      n = 5
       allocate(sndvec(n))
       if(impi==impi0) sndvec = (/prt_tauddmc,prt_taulump,
-     &  tsp_t,tsp_dt,tsp_alpha,
-     &  in_sigcoefs,in_sigtpwrs,in_sigrpwrs,
-     &  in_sigcoef, in_sigtpwr, in_sigrpwr,
-     &  in_suolpick1,in_ldisp1,in_ldisp2,in_theav,in_srcmax,
-     &  in_consttemp,in_tempradinit,
-     &  in_cvcoef,in_cvtpwr,in_cvrpwr/)
+     &  tsp_t,tsp_dt,tsp_alpha/)
       call mpi_bcast(sndvec,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -108,31 +132,9 @@ c-- copy back
       tsp_t        = sndvec(3)
       tsp_dt       = sndvec(4)
       tsp_alpha    = sndvec(5)
-      in_sigcoefs  = sndvec(6)
-      in_sigtpwrs  = sndvec(7)
-      in_sigrpwrs  = sndvec(8)
-      in_sigcoef   = sndvec(9)
-      in_sigtpwr   = sndvec(10)
-      in_sigrpwr   = sndvec(11)
-      in_suolpick1 = sndvec(12)
-      in_ldisp1    = sndvec(13)
-      in_ldisp2    = sndvec(14)
-      in_theav     = sndvec(15)
-      in_srcmax    = sndvec(16)
-      in_consttemp = sndvec(17)
-      in_tempradinit=sndvec(18)
-      in_cvcoef    = sndvec(19)
-      in_cvtpwr    = sndvec(20)
-      in_cvrpwr    = sndvec(21)
       deallocate(sndvec)
 c
 c-- character
-      call mpi_bcast(in_srctype,4,MPI_CHARACTER,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(in_suol,4,MPI_CHARACTER,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(in_opacanaltype,4,MPI_CHARACTER,
-     &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(prt_tauvtime,4,MPI_CHARACTER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c

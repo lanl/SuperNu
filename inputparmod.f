@@ -21,8 +21,8 @@ c-- grid geometry and dimensions
 c
 c-- outbound flux group and direction bins
       integer :: in_nflx(3) = [0, 1, 1]
-      real*8  :: in_wlminflx =   100d-8 !lower wavelength flux boundary [cm]
-      real*8  :: in_wlmaxflx = 32000d-8 !upper wavelength flux boundary [cm]
+      real*8 :: in_wlminflx =   100d-8 !lower wavelength flux boundary [cm]
+      real*8 :: in_wlmaxflx = 32000d-8 !upper wavelength flux boundary [cm]
 c
 c-- do read input structure file instead of specifying the stucture with input parameters
 c==================
@@ -64,7 +64,7 @@ c-- time step
       integer :: in_nt = 0      !number of time steps.  <0 means read timeline from input.tsp_time
       integer :: in_ntres = -1   !restart time step number
       logical :: in_norestart = .true.
-      logical :: in_ismodimc=.true. !Gentile-Fleck factor switch
+      logical :: in_ismodimc = .true. !Gentile-Fleck factor switch
 c
 c
 c-- group structure
@@ -73,8 +73,8 @@ c-- group structure
                                  ! 0 non-subgridded physical_opacities
                                  !<0 target subgrid resolution for automatic subgridding -> lambda/(Delta lambda) = abs(in_ngs)
       integer :: in_wldex = 1    !if in_iswlread = t, selects group grid from formatted group grid file
-      real*8  :: in_wlmin =   100e-8 !lower wavelength boundary [cm]
-      real*8  :: in_wlmax = 32000e-8 !upper wavelength boundary [cm]
+      real*8 :: in_wlmin =   100e-8 !lower wavelength boundary [cm]
+      real*8 :: in_wlmax = 32000e-8 !upper wavelength boundary [cm]
 c
 c
 c-- physical opacities
@@ -102,7 +102,7 @@ c-- absorption terms:
       real*8 :: in_sigrpwr = 0d0 !power law absorption opacity density exponent
 c
 c-- external source structure
-      character(4) :: in_srctype='none'   !none|heav|strt|manu: external source structure type
+      character(4) :: in_srctype = 'none'   !none|heav|strt|manu: external source structure type
       integer :: in_nheav = 0   !outer cell bound if heaviside ('heav') source
       real*8 :: in_theav = 0d0 !duration of heaviside source
       real*8 :: in_srcmax = 0d0 !peak source strength (ergs/cm^3/s)
@@ -146,11 +146,169 @@ c-- runtime parameter namelist
      & in_tempradinit, in_ismodimc,
      & in_comment, in_noeos, in_nflx,in_wlminflx,in_wlmaxflx
 c
+c-- pointers
+c
+      integer,parameter,private :: npointers = 100
+c
+      type lptr
+       logical,pointer :: p
+      endtype lptr
+      type(lptr) :: in_l(npointers)
+c
+      type iptr
+       integer,pointer :: p
+      endtype iptr
+      type(iptr) :: in_i(npointers)
+c
+      type rptr
+       real*8,pointer :: p
+      endtype rptr
+      type(rptr) :: in_r(npointers)
+c
+      type cptr
+       character(4),pointer :: p
+      endtype cptr
+      type(cptr) :: in_c(npointers)
+c
       public
       private inputpars
       save
 c
       contains
+c
+      subroutine inputpar_create_pointers(il,ii,ir,ic)
+c     ------------------------------------------------!{{{
+      implicit none
+************************************************************************
+* create pointer arrays (not to be confused with a array pointers) to
+* all input parameters.  These arrays are used in mpimod to broadcast
+* all input parameters at once.
+************************************************************************
+      integer,intent(out) :: il,ii,ir,ic
+c
+c-- init
+      il=0
+      ii=0
+      ir=0
+      ic=0
+c
+      call insertl(in_grab_stdout,in_l,il)
+      call inserti(in_nomp,in_i,ii)
+      call inserti(in_igeom,in_i,ii)
+      call inserti(in_ndim(1),in_i,ii)
+      call inserti(in_ndim(2),in_i,ii)
+      call inserti(in_ndim(3),in_i,ii)
+      call insertr(in_lx,in_r,ir)
+      call insertr(in_ly,in_r,ir)
+      call insertr(in_lz,in_r,ir)
+      call inserti(in_nflx(1),in_i,ii)
+      call inserti(in_nflx(2),in_i,ii)
+      call inserti(in_nflx(3),in_i,ii)
+      call insertr(in_wlminflx,in_r,ir)
+      call insertr(in_wlmaxflx,in_r,ir)
+      call insertl(in_noreadstruct,in_l,il)
+      call insertl(in_isvelocity,in_l,il)
+      call insertr(in_velout,in_r,ir)
+      call insertr(in_totmass,in_r,ir)
+      call insertc(in_dentype,in_c,ic)
+      call insertr(in_consttemp,in_r,ir)
+      call insertr(in_tempradinit,in_r,ir)
+      call insertr(in_cvcoef,in_r,ir)
+      call insertr(in_cvtpwr,in_r,ir)
+      call insertr(in_cvrpwr,in_r,ir)
+      call inserti(in_ns,in_i,ii)
+      call inserti(in_ns0,in_i,ii)
+      call inserti(in_npartmax,in_i,ii)
+      call insertl(in_puretran,in_l,il)
+      call insertl(in_isimcanlog,in_l,il)
+      call insertl(in_isddmcanlog,in_l,il)
+      call insertr(in_tauddmc,in_r,ir)
+      call insertr(in_taulump,in_r,ir)
+      call insertc(in_tauvtime,in_c,ic)
+      call insertr(in_alpha,in_r,ir)
+      call insertr(in_tfirst,in_r,ir)
+      call insertr(in_tlast,in_r,ir)
+      call inserti(in_nt,in_i,ii)
+      call inserti(in_ntres,in_i,ii)
+      call insertl(in_norestart,in_l,il)
+      call insertl(in_ismodimc,in_l,il)
+      call inserti(in_ng,in_i,ii)
+      call inserti(in_ngs,in_i,ii)
+      call inserti(in_wldex,in_i,ii)
+      call insertr(in_wlmin,in_r,ir)
+      call insertr(in_wlmax,in_r,ir)
+      call insertr(in_opcapgam,in_r,ir)
+      call insertr(in_epsline,in_r,ir)
+      call insertl(in_noplanckweighting,in_l,il)
+      call insertr(in_opacmixrossel,in_r,ir)
+      call insertc(in_opacanaltype,in_c,ic)
+      call insertc(in_suol,in_c,ic)
+      call insertr(in_suolpick1,in_r,ir)
+      call insertr(in_ldisp1,in_r,ir)
+      call insertr(in_ldisp2,in_r,ir)
+      call insertr(in_sigcoefs,in_r,ir)
+      call insertr(in_sigtpwrs,in_r,ir)
+      call insertr(in_sigrpwrs,in_r,ir)
+      call insertr(in_sigcoef,in_r,ir)
+      call insertr(in_sigtpwr,in_r,ir)
+      call insertr(in_sigrpwr,in_r,ir)
+      call insertc(in_srctype,in_c,ic)
+      call inserti(in_nheav,in_i,ii)
+      call insertr(in_theav,in_r,ir)
+      call insertr(in_srcmax,in_r,ir)
+      call insertc(in_opacdump,in_c,ic)
+      call insertc(in_pdensdump,in_c,ic)
+      call insertl(in_noeos,in_l,il)
+      call insertl(in_novolsrc,in_l,il)
+      call insertl(in_nobbopac,in_l,il)
+      call insertl(in_nobfopac,in_l,il)
+      call insertl(in_noffopac,in_l,il)
+      call insertl(in_nothmson,in_l,il)
+c
+      contains
+c
+      subroutine insertl(par,arr,i)
+      implicit none!{{{
+      logical,intent(in),target :: par
+      type(lptr),intent(inout) :: arr(npointers)
+      integer,intent(inout) :: i
+      i = i + 1
+      if(i>npointers) stop 'insertl: i>npointers'
+      arr(i)%p => par!}}}
+      end subroutine insertl
+c
+      subroutine inserti(par,arr,i)
+      implicit none!{{{
+      integer,intent(in),target :: par
+      type(iptr),intent(inout) :: arr(npointers)
+      integer,intent(inout) :: i
+      i = i + 1
+      if(i>npointers) stop 'inserti: i>npointers'
+      arr(i)%p => par!}}}
+      end subroutine inserti
+c
+      subroutine insertr(par,arr,i)
+      implicit none!{{{
+      real*8,intent(in),target :: par
+      type(rptr),intent(inout) :: arr(npointers)
+      integer,intent(inout) :: i
+      i = i + 1
+      if(i>npointers) stop 'insertr: i>npointers'
+      arr(i)%p => par!}}}
+      end subroutine insertr
+c
+      subroutine insertc(par,arr,i)
+      implicit none!{{{
+      character(4),intent(in),target :: par
+      type(cptr),intent(inout) :: arr(npointers)
+      integer,intent(inout) :: i
+      i = i + 1
+      if(i>npointers) stop 'inserti: i>npointers'
+      arr(i)%p => par!}}}
+      end subroutine insertc
+!}}}
+      end subroutine inputpar_create_pointers
+c
 c
       subroutine read_inputpars
 c     -------------------------

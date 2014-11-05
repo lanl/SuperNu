@@ -113,6 +113,7 @@ program supernu
 
 !
 !-- MPI
+call mpi_barrier(MPI_COMM_WORLD,ierr)
   call bcast_permanent !MPI
   call setup_domain_decomposition !MPI
   call scatter_inputstruct(in_ndim) !MPI
