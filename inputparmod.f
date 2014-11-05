@@ -4,6 +4,11 @@ c     ------------------
       implicit none
 ************************************************************************
 * input parameters
+* New parameters need to be added in this routine four places:
+* 1) variable declaration
+* 2) namelist
+* 3) pointer array
+* 4) sanity conditions
 ************************************************************************
 c-- write stdout to file
       character(80) :: in_comment = "" !why did I run this simulation?
