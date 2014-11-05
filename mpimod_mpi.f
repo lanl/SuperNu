@@ -36,11 +36,11 @@ c     --------------------------!{{{
 c
 c-- broadcast constants
 c-- logical
-      n = 7
+      n = 8
       allocate(lsndvec(n))
       if(impi==impi0) lsndvec = (/in_isvelocity,in_puretran,
      &  prt_isimcanlog,prt_isddmcanlog,in_norestart,in_noeos,
-     &  in_novolsrc/)
+     &  in_novolsrc,in_noreadstruct/)
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -51,6 +51,7 @@ c-- copy back
       in_norestart = lsndvec(5)
       in_noeos = lsndvec(6)
       in_novolsrc = lsndvec(7)
+      in_noreadstruct = lsndvec(8)
       deallocate(lsndvec)
 c
 c-- integer
@@ -137,7 +138,7 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(flx_wl(flx_ng+1))
        allocate(flx_mu(flx_nmu+1))
        allocate(flx_om(flx_nom+1))
-       allocate(bb_xs(bb_nline))
+       if(bb_nline>0) allocate(bb_xs(bb_nline))
       endif
 c
 c-- broadcast data
@@ -151,8 +152,10 @@ c-- broadcast data
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- bound-bound
-      call mpi_bcast(bb_xs,sizeof(bb_xs),MPI_BYTE,
-     &  impi0,MPI_COMM_WORLD,ierr)
+      if(bb_nline>0) then
+       call mpi_bcast(bb_xs,sizeof(bb_xs),MPI_BYTE,
+     &   impi0,MPI_COMM_WORLD,ierr)
+      endif
 c-- bound-free
       call mpi_bcast(bf_ph1,6*7*30*30,MPI_REAL,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -166,7 +169,6 @@ c
 c
 c
       contains
-c
 c
       subroutine bcast_ions
 c     ---------------------!{{{
@@ -229,7 +231,6 @@ c-- sanity check
       if(iion/=ion_nion) stop "bcast_perm: ion_nion problem"
 c!}}}
       end subroutine bcast_ions
-
 c!}}}
       end subroutine bcast_permanent
 c
@@ -269,8 +270,8 @@ c
        allocate(str_yleft(ny+1))
        allocate(str_zleft(nz+1))
        allocate(str_mass(nx,ny,nz))
-       allocate(str_massfr(str_nabund,nx,ny,nz))
-       allocate(str_iabund(str_nabund))
+       if(str_nabund>0) allocate(str_massfr(str_nabund,nx,ny,nz))
+       if(str_nabund>0) allocate(str_iabund(str_nabund))
       endif
       call mpi_bcast(str_xleft,nx+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -282,14 +283,18 @@ c
       n = nx*ny*nz
       call mpi_bcast(str_mass,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-
-      n = str_nabund * nx*ny*nz
-      call mpi_bcast(str_massfr,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-
-      n = str_nabund
-      call mpi_bcast(str_iabund,n,MPI_INTEGER,
-     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      if(str_nabund>0) then
+       n = str_nabund * nx*ny*nz
+       call mpi_bcast(str_massfr,n,MPI_REAL8,
+     &   impi0,MPI_COMM_WORLD,ierr)
+      endif
+c
+      if(str_nabund>0) then
+       n = str_nabund
+       call mpi_bcast(str_iabund,n,MPI_INTEGER,
+     &   impi0,MPI_COMM_WORLD,ierr)
+      endif
 !}}}
       end subroutine scatter_inputstruct
 c

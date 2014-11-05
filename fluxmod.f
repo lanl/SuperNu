@@ -186,7 +186,7 @@ c
       end subroutine generate_fluxgrid
 c
 c
-      subroutine flux_init
+      subroutine flux_alloc
 c     --------------------
       implicit none
 c-- allocating flux tally arrays
@@ -194,7 +194,7 @@ c-- allocating flux tally arrays
       allocate(flx_lumdev(flx_ng,flx_nmu,flx_nom))
       allocate(flx_lumnum(flx_ng,flx_nmu,flx_nom))
 c
-      end subroutine flux_init
+      end subroutine flux_alloc
 c
 c
       end module fluxmod
