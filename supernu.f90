@@ -169,7 +169,7 @@ program supernu
     endif
 !
 !-- Update tsp_t etc
-    if(impi==impi0) call timestep_update(tsp_dt)  !tsp_dt is being set here, any value can be passed
+    call timestep_update(tsp_dt)  !tsp_dt is being set here, any value can be passed
 !
 !-- updating prt_tauddmc and prt_taulump
     call tau_update

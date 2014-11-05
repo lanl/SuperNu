@@ -36,11 +36,11 @@ c     --------------------------!{{{
 c
 c-- broadcast constants
 c-- logical
-      n = 8
+      n = 9
       allocate(lsndvec(n))
       if(impi==impi0) lsndvec = (/in_isvelocity,in_puretran,
      &  prt_isimcanlog,prt_isddmcanlog,in_norestart,in_noeos,
-     &  in_novolsrc,in_noreadstruct/)
+     &  in_novolsrc,in_noreadstruct,in_ismodimc/)
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -52,13 +52,14 @@ c-- copy back
       in_noeos = lsndvec(6)
       in_novolsrc = lsndvec(7)
       in_noreadstruct = lsndvec(8)
+      in_ismodimc = lsndvec(9)
       deallocate(lsndvec)
 c
 c-- integer
-      n = 20
+      n = 21
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/in_igeom,
-     &  in_ndim(1),in_ndim(2),in_ndim(3),gas_ng,
+     &  in_ndim(1),in_ndim(2),in_ndim(3),gas_ng,prt_ns,
      &  prt_npartmax,in_nomp,tsp_nt,in_ntres,tsp_ntres,
      &  prt_ninit,prt_ninitnew,in_ng,in_nheav,
      &  ion_nion,ion_iionmax,bb_nline,
@@ -71,31 +72,34 @@ c-- copy back
       in_ndim(2)   = isndvec(3)
       in_ndim(3)   = isndvec(4)
       gas_ng       = isndvec(5)
-      prt_npartmax = isndvec(6)
-      in_nomp      = isndvec(7)
-      tsp_nt       = isndvec(8)
-      in_ntres     = isndvec(9)
-      tsp_ntres    = isndvec(10)
-      prt_ninit    = isndvec(11)
-      prt_ninitnew = isndvec(12)
-      in_ng        = isndvec(13)
-      in_nheav     = isndvec(14)
-      ion_nion     = isndvec(15)
-      ion_iionmax  = isndvec(16)
-      bb_nline     = isndvec(17)
-      flx_ng       = isndvec(18)
-      flx_nmu      = isndvec(19)
-      flx_nom      = isndvec(20)
+      prt_ns       = isndvec(6)
+      prt_npartmax = isndvec(7)
+      in_nomp      = isndvec(8)
+      tsp_nt       = isndvec(9)
+      in_ntres     = isndvec(10)
+      tsp_ntres    = isndvec(11)
+      prt_ninit    = isndvec(12)
+      prt_ninitnew = isndvec(13)
+      in_ng        = isndvec(14)
+      in_nheav     = isndvec(15)
+      ion_nion     = isndvec(16)
+      ion_iionmax  = isndvec(17)
+      bb_nline     = isndvec(18)
+      flx_ng       = isndvec(19)
+      flx_nmu      = isndvec(20)
+      flx_nom      = isndvec(21)
       deallocate(isndvec)
 c
 c-- real*8
-      n = 17
+      n = 21
       allocate(sndvec(n))
-      if(impi==impi0) sndvec = (/prt_tauddmc,prt_taulump,tsp_t,tsp_dt,
+      if(impi==impi0) sndvec = (/prt_tauddmc,prt_taulump,
+     &  tsp_t,tsp_dt,tsp_alpha,
      &  in_sigcoefs,in_sigtpwrs,in_sigrpwrs,
      &  in_sigcoef, in_sigtpwr, in_sigrpwr,
      &  in_suolpick1,in_ldisp1,in_ldisp2,in_theav,in_srcmax,
-     &  in_consttemp,in_tempradinit/)
+     &  in_consttemp,in_tempradinit,
+     &  in_cvcoef,in_cvtpwr,in_cvrpwr/)
       call mpi_bcast(sndvec,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -103,19 +107,23 @@ c-- copy back
       prt_taulump  = sndvec(2)
       tsp_t        = sndvec(3)
       tsp_dt       = sndvec(4)
-      in_sigcoefs  = sndvec(5)
-      in_sigtpwrs  = sndvec(6)
-      in_sigrpwrs  = sndvec(7)
-      in_sigcoef   = sndvec(8)
-      in_sigtpwr   = sndvec(9)
-      in_sigrpwr   = sndvec(10)
-      in_suolpick1 = sndvec(11)
-      in_ldisp1    = sndvec(12)
-      in_ldisp2    = sndvec(13)
-      in_theav     = sndvec(14)
-      in_srcmax    = sndvec(15)
-      in_consttemp = sndvec(16)
-      in_tempradinit=sndvec(17)
+      tsp_alpha    = sndvec(5)
+      in_sigcoefs  = sndvec(6)
+      in_sigtpwrs  = sndvec(7)
+      in_sigrpwrs  = sndvec(8)
+      in_sigcoef   = sndvec(9)
+      in_sigtpwr   = sndvec(10)
+      in_sigrpwr   = sndvec(11)
+      in_suolpick1 = sndvec(12)
+      in_ldisp1    = sndvec(13)
+      in_ldisp2    = sndvec(14)
+      in_theav     = sndvec(15)
+      in_srcmax    = sndvec(16)
+      in_consttemp = sndvec(17)
+      in_tempradinit=sndvec(18)
+      in_cvcoef    = sndvec(19)
+      in_cvtpwr    = sndvec(20)
+      in_cvrpwr    = sndvec(21)
       deallocate(sndvec)
 c
 c-- character
@@ -391,7 +399,6 @@ c     -----------------------!{{{
 * temperature correction.
 ************************************************************************
       integer :: n
-      integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:),rcvvec(:)
       integer :: isnd3(nx,ny,nz),isnd3f(flx_ng,flx_nmu,flx_nom)
       real*8 :: snd3(nx,ny,nz),snd3f(flx_ng,flx_nmu,flx_nom)
