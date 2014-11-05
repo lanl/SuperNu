@@ -216,7 +216,7 @@ subroutine interior_source
      loop2_k: do k=k,gas_nz
         do j=j,gas_ny
            do i=i,gas_nx
-              lhelp = ijkused(i,j,k)<gas_nvolex(i,j,k)
+              lhelp = ijkused(i,j,k)<gas_nvol(i,j,k)
               if (lhelp) exit loop2_k
            enddo
            i = 1
