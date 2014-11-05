@@ -137,10 +137,11 @@ module gasgridmod
   contains
 
 
-  subroutine gasgrid_init
-!------------------------
+  subroutine gasgrid_init(ltalk)
+!-------------------------------
     use inputparmod
     implicit none
+    logical,intent(in) :: ltalk
 
     integer :: n,nx,ny,nz
     logical :: lexist
@@ -231,12 +232,14 @@ module gasgridmod
     dd_matsrc = 0d0  !-- material energy (temperature) source (may be manufactured)
 !
 !-- output
-    n = nx*ny*nz
-    n = int(int(n,8)*8*(21 + 11 + 5 + gas_nelem+3)/1024) !kB
-    write(6,*) 'ALLOC gasgrid:',n,"kB",n/1024,"MB",n/1024**2,"GB"
-    n = nx*ny*nz
-    n = int(((8+8)*int(n,8)*gas_ng)/1024) !kB
-    write(6,*) 'ALLOC gas_cap:',n,"kB",n/1024,"MB",n/1024**2,"GB"
+    if(ltalk) then
+     n = nx*ny*nz
+     n = int(int(n,8)*8*(21 + 11 + 5 + gas_nelem+3)/1024) !kB
+     write(6,*) 'ALLOC gasgrid:',n,"kB",n/1024,"MB",n/1024**2,"GB"
+     n = nx*ny*nz
+     n = int(((8+8)*int(n,8)*gas_ng)/1024) !kB
+     write(6,*) 'ALLOC gas_cap:',n,"kB",n/1024,"MB",n/1024**2,"GB"
+    endif !ltalk
 !
 !-- read preset temperature profiles
     inquire(file='input.temp',exist=lexist)

@@ -16,23 +16,12 @@ c     ------------------------
       integer :: l,ll
       real*8 :: mass0fr(-2:gas_nelem,gas_nx,gas_ny,gas_nz)
 c
-c--
-      write(6,*)
-      if(gas_isvelocity) then
-       write(6,*) 'setup velocity grid:'
-       write(6,*) '===================='
-      else
-       write(6,*) 'setup spatial grid:'
-       write(6,*) '===================='
-      endif
-c
-c----
-c-- agnostic grid setup (rev. 200) ----------------------------------
+c-- agnostic grid setup
       gas_xarr = str_xleft
       gas_yarr = str_yleft
       gas_zarr = str_zleft
 c
-c-- agnostic mass setup (rev. 200) ----------------------------------
+c-- agnostic mass setup
       dd_mass = str_mass
 
 c-- volume 

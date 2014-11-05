@@ -119,8 +119,8 @@ program supernu
 
 !
 !-- setup gasgrid
-  call gasgrid_init
-  call gasgrid_setup
+  call gasgrid_init(impi==impi0)
+  call gasgrid_setup(impi==impi0)
 !
 !-- initialize flux tally arrays (rtw: separated from fluxgrid_setup)
   call flux_alloc
@@ -213,7 +213,6 @@ program supernu
 !-- update temperature
     call temperature_update
     call reduce_gastemp !MPI
-write(0,*) impi, gas_temp(:10,1,1) !DEBUG
 
 !
 !-- output

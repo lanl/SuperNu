@@ -49,7 +49,7 @@ subroutine sourcenumbers
      gas_emit(i,j,k) =  tsp_dt*gas_fcoef(i,j,k)*gas_siggrey(i,j,k)*pc_c* &
           dd_ur(i,j,k)*dd_vol(i,j,k)
 !
-     gas_emit(i,j,k) = gas_emit(i,j,k)+&
+     gas_emit(i,j,k) = gas_emit(i,j,k) + &
           tsp_dt*dd_vol(i,j,k)*(1d0-gas_fcoef(i,j,k))*&
           dd_matsrc(i,j,k)
 !-- accounting for total material source energy:

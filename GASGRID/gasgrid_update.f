@@ -61,8 +61,7 @@ c-- energy deposition
      &   (natom1fr(:,:,:,gas_ico56) - natom2fr(:,:,:,gas_ico56)) *
      &     pc_qhl_co56
 c-- total, units=ergs
-       dd_nisource = dd_nisource *
-     &   dd_natom
+       dd_nisource = dd_nisource * dd_natom
 c-- use gamma deposition profiles if data available
        if(prof_ntgam>0) then
         help = sum(dd_nisource)
