@@ -409,10 +409,10 @@ c     -----------------------!{{{
 * temperature correction.
 ************************************************************************
       integer :: n
-      integer,allocatable :: isndvec(:),ircvvec(:)
+      integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:),rcvvec(:)
-      integer :: isnd3(nx,ny,nz)
-      real*8 :: snd3(nx,ny,nz)
+      integer :: isnd3(nx,ny,nz),isnd3f(flx_ng,flx_nmu,flx_nom)
+      real*8 :: snd3(nx,ny,nz),snd3f(flx_ng,flx_nmu,flx_nom)
       real*8 :: help
 
 c
@@ -420,12 +420,11 @@ c-- dim==0
       n = 5
       allocate(sndvec(n))
       allocate(rcvvec(n))
-      !if(impi==impi0) 
       sndvec = (/gas_erad,gas_eright,gas_eleft,gas_eext,gas_evelo/)
       call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      if(impi==0) then
+      if(impi==impi0) then
        gas_erad = rcvvec(1)/dble(nmpi)
        gas_eright = rcvvec(2)/dble(nmpi)
        gas_eleft = rcvvec(3)/dble(nmpi)
@@ -442,34 +441,19 @@ c-- rtw: can't copy back 0 to eext or evelo.
 c
 c-- dim==1
       n = flx_ng*flx_nmu*flx_nom
-      allocate(isndvec(n))
-      allocate(ircvvec(n))
-      isndvec = reshape(flx_lumnum,[n])
-      call mpi_reduce(isndvec,ircvvec,n,MPI_INTEGER,MPI_SUM,
+      isnd3f = flx_lumnum
+      call mpi_reduce(isnd3f,flx_lumnum,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      if(impi==0) flx_lumnum=reshape(ircvvec,[flx_ng,flx_nmu,flx_nom])
-      deallocate(isndvec)
-      deallocate(ircvvec)
 c
-      allocate(sndvec(n))
-      allocate(rcvvec(n))
-      sndvec = reshape(flx_luminos,[n])
-      call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
+      snd3f = flx_luminos
+      call mpi_reduce(snd3f,flx_luminos,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      if(impi==0) then
-         flx_luminos = reshape(rcvvec,[flx_ng,flx_nmu,flx_nom])
-         flx_luminos = flx_luminos/dble(nmpi)
-      endif
+      flx_luminos = flx_luminos/dble(nmpi)
 c
-      sndvec = reshape(flx_lumdev,[n])
-      call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
+      snd3f = flx_lumdev
+      call mpi_reduce(snd3f,flx_lumdev,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      if(impi==0) then
-         flx_lumdev=reshape(rcvvec,[flx_ng,flx_nmu,flx_nom])
-         flx_lumdev=flx_lumdev/dble(nmpi)
-      endif
-      deallocate(sndvec)
-      deallocate(rcvvec)
+      flx_lumdev = flx_lumdev/dble(nmpi)
 c
 c-- dim==3
       n = nx*ny*nz
