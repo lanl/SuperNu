@@ -59,6 +59,7 @@ c
 c
       subroutine read_fluxgrid(iflx,idex,fname)
 c     ------------------------------
+      use physconstmod
       implicit none
       integer,intent(in) :: idex,iflx
       character(12),intent(in) :: fname
@@ -102,7 +103,7 @@ c
 
 c
 c-- check monotonicity
-      help = 0d0
+      help = -2d0
       do l=1,n+1
        if(store(l+2)<=help) stop 'read_fluxgrid: grid decreasing'
        help = store(l+2)
@@ -119,7 +120,7 @@ c-- check monotonicity
       else
          flx_nom = n
          allocate(flx_om(n+1))
-         flx_om = store(3:)
+         flx_om = pc_pi2*store(3:)
       endif
       deallocate(store)
 c
