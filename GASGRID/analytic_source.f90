@@ -8,7 +8,7 @@ subroutine analytic_source
   use manufacmod
   implicit none
 
-  integer :: i,j,l,nhelp
+  integer :: i,j,l,ll,nhelp
   integer :: l1,l2
   real*8 :: srcren
   real*8 :: thelp, help, xcent, ycent
@@ -33,11 +33,14 @@ subroutine analytic_source
         select case(in_igeom)
 !-- 1D
         case(1)
+           ll = 0
            do i = 1, min(gas_nheav,gas_nx)
               l = i
               if(l<l1 .or. l>l2) cycle
-              dd_emitex(l) = gas_srcmax * &
-                   dd_vol(l)*tsp_dt/thelp**3
+              ll = ll + 1
+              dd_emitex(ll) = gas_srcmax * &
+                   dd_vol(ll)*tsp_dt/thelp**3
+              !write(0,*) impi,ll,dd_emitex(ll),dd_vol(ll)
            enddo
 
 !-- 2D
@@ -55,15 +58,17 @@ subroutine analytic_source
                 dble(nhelp)
 !-- non-zero source within Heaviside sphere
            l = 0
+           ll = 0
            do j = 1,gas_ny
            do i = 1,gas_nx
               l = l + 1
               if(l<l1 .or. l>l2) cycle
+              ll = ll + 1
               xcent = 0.5d0*(gas_xarr(i+1)+gas_xarr(i))
               ycent = 0.5d0*(gas_yarr(j+1)+gas_yarr(j))
               if(xcent**2+ycent**2<help**2) then
-                 dd_emitex(l) = gas_srcmax * &
-                      dd_vol(l)*tsp_dt/thelp**3
+                 dd_emitex(ll) = gas_srcmax * &
+                      dd_vol(ll)*tsp_dt/thelp**3
               endif
            enddo
            enddo
@@ -77,14 +82,15 @@ subroutine analytic_source
   elseif(gas_srctype=='strt') then
      !Linear source profile!{{{
      if(gas_ny>1) stop 'analytic_source: strt: no 2D'
+     ll = 0
      do i=1,gas_nx
         l = i
-        l = l + 1
         if(l<l1 .or. l>l2) cycle
+        ll = ll + 1
         srcren = gas_srcmax*(gas_xarr(gas_nx+1)- &
              0.5d0*(gas_xarr(i)+gas_xarr(i+1)))/ & 
              (gas_xarr(gas_nx+1)-gas_xarr(1))
-        dd_emitex(l) = srcren * dd_vol(l)*tsp_dt
+        dd_emitex(ll) = srcren * dd_vol(ll)*tsp_dt
 !
 !-- no temp source for strt (matsrc=0.0)
 !--

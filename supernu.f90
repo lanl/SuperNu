@@ -115,18 +115,18 @@ program supernu
     t_setup = t1-t0!}}}
   endif !impi
 
-  ncell = product(in_ndim)/nmpi
-  if(mod(product(in_ndim),nmpi)/=0) stop 'supernu: ncell%nmpi != 0'
 !
 !-- MPI
   call bcast_permanent !MPI
   call setup_domain_decomposition !MPI
+!--
+  ncell = product(in_ndim)/nmpi
+  if(mod(product(in_ndim),nmpi)/=0) stop 'supernu: ncell%nmpi != 0'
   call scatter_inputstruct(in_ndim,ncell) !MPI
 
 !
 !-- setup gasgrid
   call gasgrid_init(impi==impi0,ncell)
-write(0,*) ubound(dd_mass)
   call gasgrid_setup(impi==impi0)
 
 !

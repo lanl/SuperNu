@@ -20,6 +20,7 @@ c     --------------------------!{{{
       use bfxsmod
       use bbxsmod
       use profiledatamod
+      use gridmod
       use gasgridmod
       use particlemod
       use timestepmod
@@ -32,6 +33,7 @@ c     --------------------------!{{{
 ************************************************************************
       integer :: i,n
       integer :: il,ii,ir,ic
+      integer :: nx,ny,nz
       logical,allocatable :: lsndvec(:)
       integer,allocatable :: isndvec(:)
       real*8,allocatable :: sndvec(:)
@@ -94,7 +96,7 @@ c-- copy back
       deallocate(lsndvec)
 c
 c-- integer
-      n = 15
+      n = 16
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/
      &  gas_ng,prt_ns,
@@ -102,7 +104,7 @@ c-- integer
      &  prt_ninit,prt_ninitnew,
      &  ion_nion,ion_iionmax,bb_nline,
      &  flx_ng,flx_nmu,flx_nom,
-     &  prof_ntgam,prof_nr/)
+     &  prof_ntgam,prof_nr,grd_igeom/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -121,6 +123,7 @@ c-- copy back
       flx_nom      = isndvec(13)
       prof_ntgam   = isndvec(14)
       prof_nr      = isndvec(15)
+      grd_igeom    = isndvec(16)
       deallocate(isndvec)
 c
 c-- real*8
@@ -145,10 +148,17 @@ c
 c
 c$    if(in_nomp/=0) call omp_set_num_threads(in_nomp)
 c
+c-- dimenstions
+      nx = in_ndim(1)
+      ny = in_ndim(2)
+      nz = in_ndim(3)
 c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0) then
        allocate(gas_wl(gas_ng+1))
+       allocate(gas_xarr(nx+1))
+       allocate(gas_yarr(ny+1))
+       allocate(gas_zarr(nz+1))
        allocate(flx_wl(flx_ng+1))
        allocate(flx_mu(flx_nmu+1))
        allocate(flx_om(flx_nom+1))
@@ -166,6 +176,12 @@ c-- gamma profiles
       endif
 c
 c-- broadcast data
+      call mpi_bcast(gas_xarr,nx+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_yarr,ny+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(gas_zarr,nz+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_wl,gas_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(flx_wl,flx_ng+1,MPI_REAL8,
@@ -313,6 +329,10 @@ c
 c-- domain decomposed
       allocate(str_massdd(ncell))
       if(str_nabund>0) allocate(str_massfrdd(str_nabund,ncell))
+      if(impi/=impi0) then
+       allocate(str_mass(nx,ny,nz))
+       if(str_nabund>0) allocate(str_massfr(str_nabund,nx,ny,nz))
+      endif
 c
       call mpi_scatter(str_mass,ncell,MPI_REAL8,
      &  str_massdd,ncell,MPI_REAL8,
@@ -338,74 +358,75 @@ c     ------------------------!{{{
 * Broadcast the data that changes with time/temperature.
 ************************************************************************
       integer :: n
-      integer,allocatable :: isndvec(:)
+      integer,allocatable :: isndvec(:),ircvvec(:)
       real*8,allocatable :: sndvec(:)
-!c
-!c-- integer
-!      n = 3
-!      allocate(isndvec(n))
-!      if(impi==impi0) isndvec = (/prt_nnew,prt_nsurf,
-!     & prt_nexsrc/)
-!      call mpi_bcast(isndvec,n,MPI_INTEGER,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!c-- copy back
-!      prt_nnew = isndvec(1)
-!      prt_nsurf = isndvec(2)
-!      prt_nexsrc = isndvec(3)
-!      deallocate(isndvec)
+c
+c-- integer
+      n = 3
+      allocate(isndvec(n),ircvvec(n))
+      isndvec = (/prt_nnew,prt_nsurf,
+     &  prt_nexsrc/)
+      call mpi_allreduce(isndvec,ircvvec,n,MPI_INTEGER,MPI_SUM,
+     &  MPI_COMM_WORLD,ierr)
+c-- copy back
+      prt_nnew = ircvvec(1)
+      prt_nsurf = ircvvec(2)
+      prt_nexsrc = ircvvec(3)
+      deallocate(isndvec)
 !c
 !c-- real*8
-!      n = 4
+!      n = 2
 !      allocate(sndvec(n))
-!      if(impi==impi0) sndvec = (/tsp_t,tsp_dt,gas_esurf,
-!     & gas_etot/)
+!      if(impi==impi0) sndvec = (/gas_esurf,gas_etot/)
 !      call mpi_bcast(sndvec,n,MPI_REAL8,
 !     &  impi0,MPI_COMM_WORLD,ierr)
 !c-- copy back
-!      tsp_t = sndvec(1)
-!      tsp_dt = sndvec(2)
-!      gas_esurf = sndvec(3)
-!      gas_etot = sndvec(4)
+!      gas_esurf = sndvec(1)
+!      gas_etot = sndvec(2)
 !      deallocate(sndvec)
 !c
 !c-- initial send of gas_eext
 !      if(tsp_it==1) then
 !         call mpi_bcast(gas_eext,1,MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
 !      endif
-!c
-!      n = nx*ny*nz
-!      call mpi_bcast(gas_nvol,n,MPI_INTEGER,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(gas_nvolex,n,MPI_INTEGER,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(gas_emit,n,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(gas_emitex,n,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!c
-!      call mpi_bcast(gas_siggrey,n,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!c
-!      call mpi_bcast(gas_fcoef,n,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(gas_sig,n,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(gas_emitprob,n*gas_ng,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(gas_opacleak,6*n,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(gas_cap,n*gas_ng,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!c
-!c
-!c-- domain decomposition (becomes mpi_gather at some point)
-!      call mpi_bcast(dd_temp,n,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-
-c-- special case: domain replicated copy
-      call mpi_gather(dd_temp,dd_ncell,MPI_REAL8,
+c
+c-- gather
+      call mpi_allgather(dd_temp,dd_ncell,MPI_REAL8,
      &   gas_temp,dd_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &   MPI_COMM_WORLD,ierr)
+c
+      call mpi_allgather(dd_nvol,dd_ncell,MPI_INTEGER,
+     &   gas_nvol,dd_ncell,MPI_INTEGER,
+     &   MPI_COMM_WORLD,ierr)
+      call mpi_allgather(dd_emit,dd_ncell,MPI_REAL8,
+     &   gas_emit,dd_ncell,MPI_REAL8,
+     &   MPI_COMM_WORLD,ierr)
+      call mpi_allgather(dd_nvolex,dd_ncell,MPI_INTEGER,
+     &   gas_nvolex,dd_ncell,MPI_INTEGER,
+     &   MPI_COMM_WORLD,ierr)
+      call mpi_allgather(dd_emitex,dd_ncell,MPI_REAL8,
+     &   gas_emitex,dd_ncell,MPI_REAL8,
+     &   MPI_COMM_WORLD,ierr)
+c
+      call mpi_allgather(dd_sig,dd_ncell,MPI_REAL8,
+     &   gas_sig,dd_ncell,MPI_REAL8,
+     &   MPI_COMM_WORLD,ierr)
+      call mpi_allgather(dd_capgam,dd_ncell,MPI_REAL8,
+     &   gas_capgam,dd_ncell,MPI_REAL8,
+     &   MPI_COMM_WORLD,ierr)
+      call mpi_allgather(dd_siggrey,dd_ncell,MPI_REAL8,
+     &   gas_siggrey,dd_ncell,MPI_REAL8,
+     &   MPI_COMM_WORLD,ierr)
+      call mpi_allgather(dd_fcoef,dd_ncell,MPI_REAL8,
+     &   gas_fcoef,dd_ncell,MPI_REAL8,
+     &   MPI_COMM_WORLD,ierr)
+c
+      call mpi_allgather(dd_emitprob,gas_ng*dd_ncell,MPI_REAL8,
+     &   gas_emitprob,gas_ng*dd_ncell,MPI_REAL8,
+     &   MPI_COMM_WORLD,ierr)
+      call mpi_allgather(dd_cap,gas_ng*dd_ncell,MPI_REAL8,
+     &   gas_cap,gas_ng*dd_ncell,MPI_REAL8,
+     &   MPI_COMM_WORLD,ierr)
 c!}}}
       end subroutine bcast_nonpermanent
 c
@@ -473,19 +494,27 @@ c-- dim==3
       call mpi_reduce(isnd3,gas_numcensus,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
+      isnd3 = gas_methodswap
+      call mpi_reduce(isnd3,gas_methodswap,n,MPI_INTEGER,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
       snd3 = gas_edep
       call mpi_allreduce(snd3,gas_edep,n,MPI_REAL8,MPI_SUM,
      &  MPI_COMM_WORLD,ierr)
       gas_edep = gas_edep/dble(nmpi)
 c
-      isnd3 = gas_methodswap
-      call mpi_reduce(isnd3,gas_methodswap,n,MPI_INTEGER,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
       snd3 = gas_eraddens
       call mpi_reduce(snd3,gas_eraddens,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
       gas_eraddens = gas_eraddens/dble(nmpi)
+c
+c-- scatter
+      call mpi_scatter(gas_edep,dd_ncell,MPI_REAL8,
+     &   dd_edep,dd_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_WORLD,ierr)
+      call mpi_scatter(gas_eraddens,dd_ncell,MPI_REAL8,
+     &   dd_eraddens,dd_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_WORLD,ierr)
 c
 c-- timing statistics
       help = t_pckt_stat(1)

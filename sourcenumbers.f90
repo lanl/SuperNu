@@ -80,6 +80,7 @@ subroutine sourcenumbers
   
   ! Calculating number of domain inner boundary particles (if any)
   prt_nsurf = nint(gas_esurf*prt_ns/gas_etot)
+  if(prt_nsurf>0) stop 'sourcenumber: nsurf unsupported'
   prt_nnew = prt_nsurf
 
   ! Calculating number of particles per cell (dd_nvol): loop
@@ -109,6 +110,7 @@ subroutine sourcenumbers
      endif
      prt_nexsrc = prt_nexsrc + dd_nvolex(i)
      prt_nnew = prt_nnew + dd_nvolex(i)
+     !write(0,*) impi,prt_nnew,dd_nvol(i),dd_nvolex(i),dd_emitex(i),gas_etot
   enddo
 
 end subroutine sourcenumbers
