@@ -7,7 +7,7 @@ c$    use omp_lib
       use bfxsmod, only:bfxs
       use bbxsmod, only:bb_xs,bb_nline
       use ionsmod
-      use gasgridmod, nx=>gas_nx,ny=>gas_ny,nz=>gas_nz
+      use gasgridmod
       use miscmod
       use timingmod
       use timestepmod, only:tsp_it
@@ -15,15 +15,15 @@ c$    use omp_lib
 ************************************************************************
 * compute bound-free and bound-bound opacity.
 ************************************************************************
-      integer :: i,j,k,l,ll,igs,ngs
+      integer :: i,l,ll,igs,ngs
       real*8 :: wlinv
 c-- timing
       real*8 :: t0,t1,tbb,tbf,tff
 c-- helper arrays
-      real*8 :: grndlev(nx,ny,nz,ion_iionmax-1,gas_nelem)
-      real*8 :: grndlev2(nx,ny,nz,ion_iionmax-1,gas_nelem)
-      real*8 :: hckt(nx,ny,nz)
-      real*8 :: hlparr(nx,ny,nz)
+      real*8 :: grndlev(dd_ncell,ion_iionmax-1,gas_nelem)
+      real*8 :: grndlev2(dd_ncell,ion_iionmax-1,gas_nelem)
+      real*8 :: hckt(dd_ncell)
+      real*8 :: hlparr(dd_ncell)
 c-- ffxs
       real*8,parameter :: c1 = 4d0*pc_e**6/(3d0*pc_h*pc_me*pc_c**4)*
      &  sqrt(pc_pi2/(3*pc_me*pc_h*pc_c))
@@ -39,9 +39,9 @@ c-- bbxs
       real*8 :: phi,ocggrnd,expfac,wl0,dwl
       real*8 :: caphelp
 c-- temporary cap array in the right order
-      real*8,allocatable :: cap(:,:,:,:)  !(nx,ny,nz,ngs)
+      real*8,allocatable :: cap(:,:)  !(dd_ncell,ngs)
 c-- temperary capros array for opacity mixing
-      real*8 :: capros(gas_ng,nx,ny,nz)
+      real*8 :: capros(gas_ng,dd_ncell)
 c-- special functions
       real*8 :: x1, x2
 c-- thomson scattering
@@ -60,31 +60,23 @@ c-- warn once
 c
 c-- thomson scattering
       if(.not.in_nothmson) then
-       gas_sig = cthomson*dd_nelec*
+       dd_sig = cthomson*dd_nelec*
      &   dd_natom/dd_vol
       endif
 c
 c-- ground level occupation number
       do iz=1,gas_nelem
-       do k=1,nz
-       do j=1,ny
-       do i=1,nx
+       do i=1,dd_ncell
         forall(ii=1:min(iz,ion_el(iz)%ni - 1))
-     &    grndlev(i,j,k,ii,iz) = ion_grndlev(iz,i,j,k)%oc(ii)/
-     &    ion_grndlev(iz,i,j,k)%g(ii)
+     &    grndlev(i,ii,iz) = ion_grndlev(iz,i)%oc(ii)/
+     &    ion_grndlev(iz,i)%g(ii)
        enddo !i
-       enddo !j
-       enddo !k
       enddo !iz
       do iz=1,gas_nelem
-       do k=1,nz
-       do j=1,ny
-       do i=1,nx
+       do i=1,dd_ncell
         forall(ii=1:min(iz,ion_el(iz)%ni - 1))
-     &    grndlev2(i,j,k,ii,iz) = ion_grndlev(iz,i,j,k)%oc(ii)
+     &    grndlev2(i,ii,iz) = ion_grndlev(iz,i)%oc(ii)
        enddo !i
-       enddo !j
-       enddo !k
       enddo !iz
 c
 c-- find the start point: set end before first line that falls into a group
@@ -117,7 +109,7 @@ c-- find biggest subgroup number for any of the groups
       endif
 c-- print info in first time step
       if(tsp_it==1) write(6,*) 'ngs max|total:',l,ll
-      allocate(cap(nx,ny,nz,ngs))
+      allocate(cap(dd_ncell,ngs))
 c
 c-- bb,bf,ff opacities - group by group
       tbb = 0d0
@@ -141,55 +133,47 @@ c-- bb loop start end end points
 c
        call group_opacity(ig)
 c
-       if(any(cap(:,:,:,:ngs)==0d0)) call warn('opacity_calc','cap==0')
+       if(any(cap(:,:ngs)==0d0)) call warn('opacity_calc','cap==0')
 c
 c-- planck average
-       gas_cap(ig,:,:,:) = sum(cap(:,:,:,:ngs),dim=4)/ngs !assume evenly spaced subgroup bins
+       dd_cap(ig,:) = sum(cap(:,:ngs),dim=2)/ngs !assume evenly spaced subgroup bins
 c
 c
        if(in_noplanckweighting) then
-        capros(ig,:,:,:) = ngs/sum(1d0/cap(:,:,:,:ngs),dim=4) !assume evenly spaced subgroup bins
+        capros(ig,:) = ngs/sum(1d0/cap(:,:ngs),dim=2) !assume evenly spaced subgroup bins
 c-- calculate Planck function weighted Rosseland
        else
-        do k=1,nz
-        do j=1,ny
-        do i=1,nx
-         kbt = pc_kb*dd_temp(i,j,k)
+        do i=1,dd_ncell
+         kbt = pc_kb*dd_temp(i)
          do igs=1,ngs
           wll = (gas_wl(ig) + (igs-1)*dwl)
           x1 = pc_h*pc_c/((wll + dwl)*kbt)
           x2 = pc_h*pc_c/(wll*kbt)
-          capros(ig,i,j,k) = capros(ig,i,j,k) +
-     &      (15d0*specint(x1,x2,3)/pc_pi**4)/cap(i,j,k,igs)
+          capros(ig,i) = capros(ig,i) +
+     &      (15d0*specint(x1,x2,3)/pc_pi**4)/cap(i,igs)
          enddo !igs
          x1 = pc_h*pc_c/(gas_wl(ig + 1)*kbt)
          x2 = pc_h*pc_c/(gas_wl(ig)*kbt)
-         capros(ig,i,j,k) = (15d0*specint(x1,x2,3)/pc_pi**4)/
-     &     capros(ig,i,j,k)
+         capros(ig,i) = (15d0*specint(x1,x2,3)/pc_pi**4)/
+     &     capros(ig,i)
         enddo !i
-        enddo !j
-        enddo !k
        endif
 c
 c-- combine planck and rosseland averages
        help = in_opacmixrossel
-       gas_cap(ig,:,:,:) = (1d0-help)*gas_cap(ig,:,:,:) +
-     &   help*capros(ig,:,:,:)
+       dd_cap(ig,:) = (1d0-help)*dd_cap(ig,:) +
+     &   help*capros(ig,:)
       enddo !ig
 c
 c-- sanity check
       l = 0
-      do k=1,nz
-      do j=1,ny
-      do i=1,nx
+      do i=1,dd_ncell
        do ig=1,gas_ng
-        if(gas_cap(ig,i,j,k)<=0d0) l = ior(l,1)
-        if(gas_cap(ig,i,j,k)/=gas_cap(ig,i,j,k)) l = ior(l,2)
-        if(gas_cap(ig,i,j,k)>huge(help)) l = ior(l,4)
+        if(dd_cap(ig,i)<=0d0) l = ior(l,1)
+        if(dd_cap(ig,i)/=dd_cap(ig,i)) l = ior(l,2)
+        if(dd_cap(ig,i)>huge(help)) l = ior(l,4)
        enddo !ig
       enddo !i
-      enddo !j
-      enddo !k
       if(l/=iand(l,1)) call warn('opacity_calc','some cap<=0')
       if(l/=iand(l,2)) call warn('opacity_calc','some cap==NaN')
       if(l/=iand(l,4)) call warn('opacity_calc','some cap==inf')
@@ -246,23 +230,19 @@ c-- profile function
         phi = 1d0/dwl
 !       write(6,*) 'phi',phi
 c-- evaluate caphelp
-        do k=1,nz
-        do j=1,ny
-        do i=1,nx
-         ocggrnd = grndlev(i,j,k,ii,iz)
+        do i=1,dd_ncell
+         ocggrnd = grndlev(i,ii,iz)
 c-- oc high enough to be significant?
 *        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
          if(ocggrnd<=0d0) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
-         expfac = 1d0 - exp(-hckt(i,j,k)*wlinv)
+         expfac = 1d0 - exp(-hckt(i)*wlinv)
          caphelp = phi*bb_xs(l)%gxs*ocggrnd * wl0**2/pc_c *
-     &     exp(-bb_xs(l)%chilw*hckt(i,j,k))*expfac
-!        if(caphelp==0.) write(6,*) 'cap0',cap(i,j,k,igs),phi,
-!    &     bb_xs(l)%gxs,ocggrnd,exp(-bb_xs(l)%chilw*hckt(i,j,k)),expfac
+     &     exp(-bb_xs(l)%chilw*hckt(i))*expfac
+!        if(caphelp==0.) write(6,*) 'cap0',cap(i,igs),phi,
+!    &     bb_xs(l)%gxs,ocggrnd,exp(-bb_xs(l)%chilw*hckt(i)),expfac
          if(caphelp==0.) cycle
-         cap(i,j,k,igs) = cap(i,j,k,igs) + caphelp
+         cap(i,igs) = cap(i,igs) + caphelp
         enddo !i
-        enddo !j
-        enddo !k
        enddo !l
 c$omp end parallel do !}}}
       endif !in_nobbopac
@@ -284,13 +264,13 @@ c$omp& shared(cap)
           ie = iz - ii + 1
           xs = bfxs(iz,ie,en)
           if(xs==0d0) cycle
-          forall(i=1:nx,j=1:ny,k=1:nz)
-     &      cap(i,j,k,igs) = cap(i,j,k,igs) +
-     &      xs*pc_mbarn*grndlev2(i,j,k,ii,iz)
+          forall(i=1:dd_ncell)
+     &      cap(i,igs) = cap(i,igs) +
+     &      xs*pc_mbarn*grndlev2(i,ii,iz)
          enddo !ie
         enddo !iz
 !       write(6,*) 'wl done:',igs !DEBUG
-!       write(6,*) cap(:,:,:,igs) !DEBUG
+!       write(6,*) cap(:,igs) !DEBUG
        enddo !igs
 c$omp end parallel do!}}}
       endif !in_nobfopac
@@ -310,13 +290,11 @@ c$omp& shared(cap,lwarn)
         wl = wll + (igs-.5d0)*dwl !-- subgroup bin center value
         wlinv = 1d0/wl  !in cm
 c-- gcell loop
-        do k=1,nz
-        do j=1,ny
-        do i=1,nx
-         u = hckt(i,j,k)*wlinv
+        do i=1,dd_ncell
+         u = hckt(i)*wlinv
          iu = nint(10d0*(log10(u) + 4d0)) + 1
 c
-         help = c1*sqrt(hckt(i,j,k))*(1d0 - exp(-u))*wl**3*hlparr(i,j,k)
+         help = c1*sqrt(hckt(i))*(1d0 - exp(-u))*wl**3*hlparr(i)
          if(iu<1 .or. iu>ff_nu) then
           if(lwarn) then
            lwarn = .false.
@@ -328,7 +306,7 @@ c
 c-- element loop
          cap8 = 0d0
          do iz=1,gas_nelem
-          gg = iz**2*pc_rydberg*hckt(i,j,k)
+          gg = iz**2*pc_rydberg*hckt(i)
           igg = nint(5d0*(log10(gg) + 4d0)) + 1
 c-- gff is approximately constant in the low igg data-limit, do trivial extrapolation:
           igg = max(igg,1)
@@ -348,12 +326,10 @@ c-- asymptotic value
            endif
           endif
 c-- cross section
-          cap8 = cap8 + help*gff*iz**2*dd_natom1fr(iz,i,j,k)
+          cap8 = cap8 + help*gff*iz**2*dd_natom1fr(iz,i)
          enddo !iz
-         cap(i,j,k,igs) = cap(i,j,k,igs) + cap8
+         cap(i,igs) = cap(i,igs) + cap8
         enddo !i
-        enddo !j
-        enddo !k
        enddo !igs
 c$omp end parallel do!}}}
       endif !in_noffopac!}}}

@@ -30,7 +30,7 @@ c-- ocupation number and g value of all ion's ground states
        real*8,allocatable :: oc(:)
        real*8,allocatable :: g(:)
       end type ocground
-      type(ocground),allocatable :: ion_grndlev(:,:,:,:) !(nelem,gas_nx*gas_ny*gas_nz)
+      type(ocground),allocatable :: ion_grndlev(:,:) !(nelem,dd_ncell)
 c
 *     private leveldata,elemconf,ocground
 c
@@ -40,15 +40,15 @@ c
 c
 c
 c
-      subroutine ion_alloc_grndlev(nelemin,nx,ny,nz)
+      subroutine ion_alloc_grndlev(nelemin,ncell)
 c     -------------------------------------------!{{{
       implicit none
-      integer,intent(in) :: nelemin,nx,ny,nz
+      integer,intent(in) :: nelemin,ncell
 ************************************************************************
 * ion_grndlev stores the occupation number density and g value of the
 * ground states for all ions in all gas_vals cells.
 ************************************************************************
-      integer :: l,iz,ni,i,j,k
+      integer :: iz,ni,i
 c
       if(nelem==0) then
        nelem = nelemin
@@ -56,19 +56,15 @@ c
        stop 'ion_solve_eos: nelem error'
       endif
 c
-      allocate(ion_grndlev(nelem,nx,ny,nz))
-      do k=1,nz
-      do j=1,ny
-      do i=1,nx
+      allocate(ion_grndlev(nelem,ncell))
+      do i=1,ncell
        do iz=1,nelem
         ni = ion_el(iz)%ni
-        ion_grndlev(iz,i,j,k)%ni = ni
-        allocate(ion_grndlev(iz,i,j,k)%oc(ni))
-        allocate(ion_grndlev(iz,i,j,k)%g(ni))
+        ion_grndlev(iz,i)%ni = ni
+        allocate(ion_grndlev(iz,i)%oc(ni))
+        allocate(ion_grndlev(iz,i)%g(ni))
        enddo
-      enddo
-      enddo
-      enddo !l!}}}
+      enddo !i!}}}
       end subroutine ion_alloc_grndlev
 c
 c
@@ -117,7 +113,7 @@ c     ----------------------!{{{
 ************************************************************************
 * deallocate the complex ion_el datastructure, and ion_grndlev
 ************************************************************************
-      integer :: iz,ii,l,i,j,k
+      integer :: iz,ii,i
 c
       do iz=1,nelem
        do ii=1,ion_el(iz)%ni
@@ -130,18 +126,14 @@ c
       enddo !iz
       deallocate(ion_el)
 c
-      do k=lbound(ion_grndlev,dim=4),ubound(ion_grndlev,dim=4)
-      do j=lbound(ion_grndlev,dim=3),ubound(ion_grndlev,dim=3)
       do i=lbound(ion_grndlev,dim=2),ubound(ion_grndlev,dim=2)
        do iz=1,nelem
-        if(allocated(ion_grndlev(iz,i,j,k)%oc))
-     &    deallocate(ion_grndlev(iz,i,j,k)%oc)
-        if(allocated(ion_grndlev(iz,i,j,k)%oc))
-     &    deallocate(ion_grndlev(iz,i,j,k)%g)
+        if(allocated(ion_grndlev(iz,i)%oc))
+     &    deallocate(ion_grndlev(iz,i)%oc)
+        if(allocated(ion_grndlev(iz,i)%oc))
+     &    deallocate(ion_grndlev(iz,i)%g)
        enddo
-      enddo
-      enddo
-      enddo !l
+      enddo !i
       deallocate(ion_grndlev)!}}}
       end subroutine ion_dealloc
 c

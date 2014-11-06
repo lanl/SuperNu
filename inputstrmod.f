@@ -14,6 +14,10 @@ c
       real*8,allocatable :: str_mass(:,:,:) !(nx,ny,nz)
       real*8,allocatable :: str_massfr(:,:,:,:) !(nabund,nx,ny,nz)
 c
+c-- domain decomposition
+      real*8,allocatable :: str_massdd(:) !(dd_ncell)
+      real*8,allocatable :: str_massfrdd(:,:) !(nabund,dd_ncell)
+c
       character(8),allocatable,private :: str_abundlabl(:) !(nabund)
 c
       save

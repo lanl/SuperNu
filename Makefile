@@ -25,7 +25,7 @@ MODULES := profiledatamod.o \
   miscmod.o \
   ionsmod.o ffxsmod.o bfxsmod.o bbxsmod.o \
   inputparmod.o timestepmod.o \
-  gasgridmod.o inputstrmod.o \
+  gridmod.o gasgridmod.o inputstrmod.o \
   particlemod.o \
   timingmod.o manufacmod.o fluxmod.o
 
@@ -35,7 +35,7 @@ FILES := sourcenumbers.o vacancies.o boundary_source.o interior_source.o particl
   initialnumbers.o initial_particles.o energy_check.o tau_update.o \
   banner.o
 
-LIBRARIES := GASGRID/gasgrid.a TRANSPORT1/transport1.a MISC/misc.a \
+LIBRARIES := GRID/grid.a GASGRID/gasgrid.a TRANSPORT1/transport1.a MISC/misc.a \
   TRANSPORT2/transport2.a
 SUBDIRS := $(dir $(LIBRARIES))
 SUBCLEAN = $(addsuffix .clean, $(SUBDIRS))

@@ -13,15 +13,19 @@ subroutine analytic_opacity
   !selection to either fully or partially determine
   !opacity dependence on temperature and density.
   !
-  !Since revision 121, calculates grey scattering opacity, gas_sig
+  !Since revision 121, calculates grey scattering opacity, dd_sig
 !#####################################
 
-  integer :: i,j,k, ig
+  integer :: i, ig
   real*8 :: x1, x2  !unitless energy group bounds
 
-  gas_siggrey = 0d0
-  gas_cap = 0d0
-  gas_sig = 0d0
+  dd_siggrey = 0d0
+  dd_cap = 0d0
+  dd_sig = 0d0
+
+  !Calculating grey scattering opacity
+  dd_sig = gas_sigcoefs*dd_temp**gas_sigtpwrs* &
+       dd_rho**gas_sigrpwrs
 
   !Calculating grouped Planck and Rosseland opacities
   if(gas_opacanaltype=='none') then
@@ -30,14 +34,10 @@ subroutine analytic_opacity
      ! sigmaP = A*T^B*rho^C (A,B,C set in input.par)
      ! sigmaP_g, sigmaR_g = sigmaP for all g 
      ! Input wavelength grid not used
-     gas_siggrey = gas_sigcoef*dd_temp**gas_sigtpwr* &
+     dd_siggrey = gas_sigcoef*dd_temp**gas_sigtpwr* &
           dd_rho**gas_sigrpwr
-     do k = 1,gas_nz
-        do j = 1,gas_ny
-           do i = 1,gas_nx
-              gas_cap(:,i,j,k) = gas_siggrey(i,j,k)
-           enddo
-        enddo
+     do i = 1, dd_ncell
+        dd_cap(:,i) = dd_siggrey(i)
      enddo
 
   elseif(gas_opacanaltype=='mono') then
@@ -46,48 +46,44 @@ subroutine analytic_opacity
      ! func_P(T,g) and func_R(T,g) are functions proportional to
      ! integral_g(1/nu^3)
      !
-     gas_siggrey = gas_sigcoef*dd_temp**gas_sigtpwr* &
+     dd_siggrey = gas_sigcoef*dd_temp**gas_sigtpwr* &
           dd_rho**gas_sigrpwr
-     do k = 1,gas_nz
-     do j = 1,gas_ny
-     do i = 1, gas_nx
+     do i = 1, dd_ncell
         do ig = 1, gas_ng
             x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb)
             x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb)
-            gas_cap(ig,i,j,k) = 0.5d0*gas_siggrey(i,j,k)*(x1+x2)/(x1*x2)**2
+            dd_cap(ig,i) = 0.5d0*dd_siggrey(i)*(x1+x2)/(x1*x2)**2
         enddo
-        gas_siggrey(i,j,k) = 0d0
+        dd_siggrey(i) = 0d0
         do ig = 1, gas_ng
-           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*dd_temp(i,j,k))
-           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*dd_temp(i,j,k))
-           gas_siggrey(i,j,k) = gas_siggrey(i,j,k)+15d0*gas_cap(ig,i,j,k)* &
+           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*dd_temp(i))
+           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*dd_temp(i))
+           dd_siggrey(i) = dd_siggrey(i)+15d0*dd_cap(ig,i)* &
                 specint(x1,x2,3)/pc_pi**4
         enddo
-     enddo
-     enddo
      enddo!}}}
   elseif(gas_opacanaltype=='pick') then
      if(gas_ng/=2) stop 'analytic_opacity: invalid gas_ng'
-     ! sigmaP = sigmaR = constant = A (gas_sigcoef set in input.par)!{{{
+     ! sigmaP = sigmaR = constant = A (dd_sigcoef set in input.par)!{{{
      ! Su&Olson picket-fence distributions (tests: A,B,C (Su and Olson 1999))
      ! Input wavelength grid not used
      if(gas_ny>1) stop 'analytic_opacity: no 2D for opacanaltyp=pick'
-     do i = 1, gas_nx
-        gas_siggrey(i,1,1) = gas_sigcoef*dd_temp(i,1,1)**gas_sigtpwr* &
-             dd_rho(i,1,1)**gas_sigrpwr     
+     do i = 1, dd_ncell
+        dd_siggrey(i) = gas_sigcoef*dd_temp(i)**gas_sigtpwr* &
+             dd_rho(i)**gas_sigrpwr     
         if(gas_suol=='tsta') then    !Case: A
-           gas_cap(1,i,1,1) = gas_siggrey(i,1,1)
-           gas_cap(2,i,1,1) = gas_siggrey(i,1,1)
+           dd_cap(1,i) = dd_siggrey(i)
+           dd_cap(2,i) = dd_siggrey(i)
         elseif(gas_suol=='tstb') then  !Case: B
-           gas_cap(1,i,1,1) = 2d0*gas_siggrey(i,1,1)/11d0
-           gas_cap(2,i,1,1) = 20d0*gas_siggrey(i,1,1)/11d0
+           dd_cap(1,i) = 2d0*dd_siggrey(i)/11d0
+           dd_cap(2,i) = 20d0*dd_siggrey(i)/11d0
         elseif(gas_suol=='tstc') then  !Case: C
-           gas_cap(1,i,1,1) = 2d0*gas_siggrey(i,1,1)/101d0
-           gas_cap(2,i,1,1) = 200d0*gas_siggrey(i,1,1)/101d0
+           dd_cap(1,i) = 2d0*dd_siggrey(i)/101d0
+           dd_cap(2,i) = 200d0*dd_siggrey(i)/101d0
 !-- added evacuated picket test
         elseif(gas_suol=='tstd') then !Case: D (not in SuOlson)
-           gas_cap(1,i,1,1) = 0d0
-           gas_cap(2,i,1,1) = 2d0*gas_siggrey(i,1,1)
+           dd_cap(1,i) = 0d0
+           dd_cap(2,i) = 2d0*dd_siggrey(i)
         else
            stop 'analytic_opacity: gas_suol invalid'
         endif!}}}
@@ -96,39 +92,31 @@ subroutine analytic_opacity
      ! Highly structured line test: group opacities alternate in magnitude!{{{
      ! sigmaP = A*T^B*rho^C
      ! sigmaP_g = sigmaP*func_P(g), sigmaR_g = sigmaP
-     gas_siggrey = gas_sigcoef*dd_temp**gas_sigtpwr * &
+     dd_siggrey = gas_sigcoef*dd_temp**gas_sigtpwr * &
           dd_rho**gas_sigrpwr
-     do k = 1, gas_nz
-     do j = 1, gas_ny
-     do i = 1, gas_nx
+     do i = 1, dd_ncell
         !
         !set odd group magnitudes (low)
         do ig = 1, gas_ng, 2
-           gas_cap(ig,i,j,k) = gas_siggrey(i,j,k)*gas_ldisp1
+           dd_cap(ig,i) = dd_siggrey(i)*gas_ldisp1
         enddo
         !set even group magnitudes (high)
         do ig = 2, gas_ng, 2
-           gas_cap(ig,i,j,k) = gas_siggrey(i,j,k)*gas_ldisp2
+           dd_cap(ig,i) = dd_siggrey(i)*gas_ldisp2
         enddo
         !
         !calculate Planck, Rosseland opacities
-        gas_siggrey(i,j,k) = 0d0
+        dd_siggrey(i) = 0d0
         do ig = 1, gas_ng
-           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*dd_temp(i,j,k))
-           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*dd_temp(i,j,k))
-           gas_siggrey(i,j,k) = gas_siggrey(i,j,k)+15d0*gas_cap(ig,i,j,k)* &
+           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*dd_temp(i))
+           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*dd_temp(i))
+           dd_siggrey(i) = dd_siggrey(i)+15d0*dd_cap(ig,i)* &
                 specint(x1,x2,3)/pc_pi**4
         enddo
         !
-     enddo
-     enddo
      enddo!}}}
   else
     stop 'analytic_opacity: gas_opacanaltype invalid'
   endif
-
-  !Calculating grey scattering opacity
-  gas_sig = gas_sigcoefs*dd_temp**gas_sigtpwrs* &
-       dd_rho**gas_sigrpwrs
 
 end subroutine analytic_opacity

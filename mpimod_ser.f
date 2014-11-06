@@ -25,8 +25,17 @@ c
       end subroutine setup_domain_decomposition
 c
 c
-      subroutine scatter_inputstruct(ndim)
-      integer :: ndim(3)
+      subroutine scatter_inputstruct(ndim,ncell)
+      use inputstrmod
+      use gasgridmod
+      implicit none
+      integer,intent(in) :: ndim(3)
+      integer,intent(in) :: ncell
+c
+      allocate(str_massdd(ncell))
+      if(str_nabund>0) allocate(str_massfrdd(str_nabund,ncell))
+      str_massdd = reshape(str_mass,[ncell])
+      str_massfrdd = reshape(str_massfr,[str_nabund,ncell])
       end subroutine scatter_inputstruct
 c
 c
@@ -37,7 +46,21 @@ c
 * - stub
 ************************************************************************
 c-- domain decomposition
-      gas_temp = dd_temp
+      gas_temp = reshape(dd_temp,[gas_nx,gas_ny,gas_nz])
+      gas_nvol = reshape(dd_nvol,[gas_nx,gas_ny,gas_nz])
+      gas_emit = reshape(dd_emit,[gas_nx,gas_ny,gas_nz])
+      gas_nvolex = reshape(dd_nvolex,[gas_nx,gas_ny,gas_nz])
+      gas_emitex = reshape(dd_emitex,[gas_nx,gas_ny,gas_nz])
+      gas_nvolinit = reshape(dd_nvolinit,[gas_nx,gas_ny,gas_nz])
+      gas_evolinit = reshape(dd_evolinit,[gas_nx,gas_ny,gas_nz])
+
+      gas_emitprob = reshape(dd_emitprob,[gas_ng,gas_nx,gas_ny,gas_nz])
+      gas_cap = reshape(dd_cap,[gas_ng,gas_nx,gas_ny,gas_nz])
+      gas_sig = reshape(dd_sig,[gas_nx,gas_ny,gas_nz])
+      gas_capgam = reshape(dd_capgam,[gas_nx,gas_ny,gas_nz])
+      gas_siggrey = reshape(dd_siggrey,[gas_nx,gas_ny,gas_nz])
+      gas_fcoef = reshape(dd_fcoef,[gas_nx,gas_ny,gas_nz])
+
       end subroutine bcast_nonpermanent
 c
 c
@@ -50,6 +73,9 @@ c
       use gasgridmod
       gas_eextav=gas_eext
       gas_eveloav = gas_evelo
+c
+      dd_edep = reshape(gas_edep,[gas_nx*gas_ny*gas_nz])
+      dd_eraddens = reshape(gas_eraddens,[gas_nx*gas_ny*gas_nz])
       end subroutine reduce_tally
 c
 c
@@ -61,6 +87,9 @@ c
       end subroutine reduce_fluxes
 c
       subroutine reduce_gastemp
+c     -------------------------
+      use gasgridmod
+      gas_temp = reshape(dd_temp,[gas_nx,gas_ny,gas_nz])
       end subroutine reduce_gastemp
 c
       subroutine scatter_restart_data

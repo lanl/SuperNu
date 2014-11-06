@@ -1,5 +1,5 @@
-      subroutine gasgrid_update
-c     -----------------------
+      subroutine gasgrid_update(irank)
+c     -------------------------------
       use physconstmod
       use miscmod
       use ionsmod
@@ -9,6 +9,7 @@ c     -----------------------
       use timingmod
       use profiledatamod
       implicit none
+      integer,intent(in) :: irank
 ************************************************************************
 * Update the part of the gas grid that depends on time and temperature.
 * The non-changing part is computed in gasgrid_setup.
@@ -20,17 +21,18 @@ c     -----------------------
 ************************************************************************
       logical,save :: first=.true.
       logical :: do_output,lexist
-      integer :: i,ll,it,istat
+      integer :: i,j,k,l,ll,it,istat
+      integer :: l1,l2
 *     integer :: j,k,l
       real*8 :: help
 *     real*8 :: hlparr(gas_ng+1)
       real*8 :: dtempfrac = 0.99d0
-      real*8 :: natom1fr(gas_nx,gas_ny,gas_nz,-2:-1) !todo: memory storage order?
-      real*8 :: natom2fr(gas_nx,gas_ny,gas_nz,-2:-1)
+      real*8 :: natom1fr(dd_ncell,-2:-1) !todo: memory storage order?
+      real*8 :: natom2fr(dd_ncell,-2:-1)
 c-- gamma opacity
       real*8,parameter :: ye=.5d0 !todo: compute this value
 c-- previous values
-      real*8,allocatable,save :: tempalt(:,:,:),siggreyalt(:,:,:)
+      real*8,allocatable,save :: tempalt(:),siggreyalt(:)
 c-- timing
       real*8 :: t0,t1
 c
@@ -45,10 +47,10 @@ c-- The difference between these two has decayed.
 c-- beginning of time step
        help = tsp_t
        call update_natomfr(help)
-       forall(ll=-2:-1) natom1fr(:,:,:,ll) = dd_natom1fr(ll,:,:,:)
+       forall(ll=-2:-1) natom1fr(:,ll) = dd_natom1fr(ll,:)
 c-- end of time step
        call update_natomfr(tsp_t + tsp_dt)
-       forall(ll=-2:-1) natom2fr(:,:,:,ll) = dd_natom1fr(ll,:,:,:)
+       forall(ll=-2:-1) natom2fr(:,ll) = dd_natom1fr(ll,:)
 c
 c-- update the abundances for the center time
        !call update_natomfr(tsp_tcenter)
@@ -56,9 +58,9 @@ c-- update the abundances for the center time
 c
 c-- energy deposition
        dd_nisource =  !per average atom (mix of stable and unstable)
-     &   (natom1fr(:,:,:,gas_ini56) - natom2fr(:,:,:,gas_ini56)) *
+     &   (natom1fr(:,gas_ini56) - natom2fr(:,gas_ini56)) *
      &     (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
-     &   (natom1fr(:,:,:,gas_ico56) - natom2fr(:,:,:,gas_ico56)) *
+     &   (natom1fr(:,gas_ico56) - natom2fr(:,gas_ico56)) *
      &     pc_qhl_co56
 c-- total, units=ergs
        dd_nisource = dd_nisource * dd_natom
@@ -67,16 +69,34 @@ c-- use gamma deposition profiles if data available
         help = sum(dd_nisource)
 !       write(6,*) 'ni56 source:',help
         if(gas_ny>1 .or. gas_nz>1) stop 'gg_update: gam_prof: no 2D/3D'
-        dd_nisource(:,1,1) = help * gamma_profile(tsp_t)
+        dd_nisource(:) = help * gamma_profile(tsp_t)
        endif
       endif
 !}}}
 c
 c
-c
-c-- update volume, density, heat capacity
+c-- update volume
 c========================================
-      call gridvolume(in_igeom,gas_isvelocity,tsp_t)
+      l1 = irank*dd_ncell + 1
+      l2 = (irank+1)*dd_ncell
+      l = 0
+      ll = 0
+      do k=1,gas_nz
+      do j=1,gas_ny
+      do i=1,gas_nx
+       l = l + 1
+       if(l<l1) cycle
+       if(l>l2) exit
+       ll = ll + 1
+       dd_vol(ll) = gas_vol(i,j,k)
+      enddo !i
+      enddo !j
+      enddo !k
+      if(ll/=dd_ncell) stop 'gasgrid_update: ll/=dd_ncell'
+c
+c
+c-- update density, heat capacity
+c========================================
       dd_rho = dd_mass/dd_vol
 c-- Calculating power law heat capacity
       dd_bcoef = in_cvcoef * dd_temp**in_cvtpwr *
@@ -114,12 +134,12 @@ c-- change back
        dd_temp = dd_temp/dtempfrac
 c
        if(.not.allocated(tempalt)) then
-        allocate(tempalt(gas_nx,gas_ny,gas_nz))
-        allocate(siggreyalt(gas_nx,gas_ny,gas_nz))
+        allocate(tempalt(dd_ncell))
+        allocate(siggreyalt(dd_ncell))
        endif
        tempalt = dd_temp
 c-- per gram
-       siggreyalt = gas_siggrey/dd_rho
+       siggreyalt = dd_siggrey/dd_rho
 !}}}
       endif
 c
@@ -136,7 +156,7 @@ c
 c-- calculate opacities
 c======================
 c-- gamma opacity
-      gas_capgam = in_opcapgam*ye*dd_rho
+      dd_capgam = in_opcapgam*ye*dd_rho
 c
 c
 c-- simple analytical group/grey opacities: Planck and Rosseland 
@@ -166,9 +186,8 @@ c-- skip delimiter
          read(4,*,iostat=istat)
          if(istat/=0) stop 'read_opac: delimiter error: input.opac'
 c-- read data
-         if(gas_ny>1 .or. gas_nz>1) stop 'read_opac: no 2D/3D'
-         do i=1,gas_nx
-          read(4,*,iostat=istat) help,gas_sig(i,1,1),gas_cap(:,i,1,1)
+         do i=1,dd_ncell
+          read(4,*,iostat=istat) help,dd_sig(i),dd_cap(:,i)
           if(istat/=0) stop 'read_opac: body error: input.opac'
          enddo !i
         enddo !it
@@ -192,13 +211,12 @@ c-- write opacity grid
       inquire(4,opened=do_output)
       if(do_output) then
 c-- header
-       if(gas_ny>1 .or. gas_nz>1) stop 'output.opac: no 2D/3D'
-       if(tsp_it==1) write(4,'("#",3i8)') gas_ng,gas_nx,tsp_nt
+       if(tsp_it==1) write(4,'("#",3i8)') dd_ncell,tsp_nt
        write(4,'("#",3i8)') tsp_it
 c-- body
-       do i=1,gas_nx
-        write(4,'(1p,9999e12.4)') dd_temp(i,1,1),gas_sig(i,1,1),
-     &    (gas_cap(ll,i,1,1),ll=1,gas_ng)
+       do i=1,dd_ncell
+        write(4,'(1p,9999e12.4)') dd_temp(i),dd_sig(i),
+     &    (dd_cap(ll,i),ll=1,gas_ng)
        enddo
 c-- close file
        close(4)
@@ -209,22 +227,11 @@ c-- Calculating Fleck factor, leakage opacities
       call fleck_factor(tempalt,siggreyalt)
 c-- Calculating emission probabilities for each group in each cell
       call emission_probability
-c-- Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
-      select case(in_igeom)
-c-- 1D
-      case(1)
-         call leakage_opacity1
-c-- 2D
-      case(2)
-         call leakage_opacity2
-      case(3)
-         stop 'gg_update: no 3D transport'
-      endselect
 c
 c
 c-- save previous values for gentile-fleck factor calculation in next iter
       tempalt = dd_temp
-      siggreyalt = gas_siggrey/dd_rho
+      siggreyalt = dd_siggrey/dd_rho
 c
       call time(t1)
       call timereg(t_gasupd,t1-t0)
@@ -252,27 +259,27 @@ c-- update Fe
       help = 1d0 + (pc_thl_co56*expco - pc_thl_ni56*expni)/
      &  (pc_thl_ni56 - pc_thl_co56)
       if(help.lt.0) stop 'update_natomfr: Ni->Fe < 0'
-      dd_natom1fr(26,:,:,:) = dd_natom0fr(gas_ini56,:,:,:)*help+!initial Ni56
-     &  dd_natom0fr(gas_ico56,:,:,:)*(1d0-expco) +                  !initial Co56
-     &  dd_natom0fr(0,:,:,:)                                        !initial Fe (stable)
+      dd_natom1fr(26,:) = dd_natom0fr(gas_ini56,:)*help+!initial Ni56
+     &  dd_natom0fr(gas_ico56,:)*(1d0-expco) +          !initial Co56
+     &  dd_natom0fr(0,:)                                !initial Fe (stable)
 c
 c-- update Co56 and Co
       help = pc_thl_co56*(expni - expco)/(pc_thl_ni56 - pc_thl_co56)
       if(help.lt.0) stop 'update_natomfr: Ni->Co < 0'
 c-- Co56
-      dd_natom1fr(gas_ico56,:,:,:) =
-     &  dd_natom0fr(gas_ini56,:,:,:)*help +  !initial Ni56
-     &  dd_natom0fr(gas_ico56,:,:,:)*expco   !initial Co56
+      dd_natom1fr(gas_ico56,:) =
+     &  dd_natom0fr(gas_ini56,:)*help +  !initial Ni56
+     &  dd_natom0fr(gas_ico56,:)*expco   !initial Co56
 c-- Co
-      dd_natom1fr(27,:,:,:) = dd_natom1fr(gas_ico56,:,:,:) +  !unstable
-     &  dd_natom0fr(1,:,:,:)                                      !initial Co (stable)
+      dd_natom1fr(27,:) = dd_natom1fr(gas_ico56,:) +  !unstable
+     &  dd_natom0fr(1,:)                                      !initial Co (stable)
 c
 c-- update Ni56 and Ni
 c-- Ni56
-      dd_natom1fr(gas_ini56,:,:,:) =
-     &  dd_natom0fr(gas_ini56,:,:,:)*expni  !initial Ni56
+      dd_natom1fr(gas_ini56,:) =
+     &  dd_natom0fr(gas_ini56,:)*expni  !initial Ni56
 c-- Ni
-      dd_natom1fr(28,:,:,:) = dd_natom1fr(gas_ini56,:,:,:) + !unstable
-     &  dd_natom0fr(2,:,:,:)                              !initial Ni (stable)
+      dd_natom1fr(28,:) = dd_natom1fr(gas_ini56,:) + !unstable
+     &  dd_natom0fr(2,:)                              !initial Ni (stable)
 c!}}}
       end subroutine update_natomfr

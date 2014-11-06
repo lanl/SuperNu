@@ -9,39 +9,35 @@ subroutine fleck_factor(tempalt,siggreyalt)
   !-----------------------
   !This subroutine computes the Fleck factor
   !-----------------------
-  real*8, intent(in) :: tempalt(gas_nx,gas_ny,gas_nz)
-  real*8, intent(in) :: siggreyalt(gas_nx,gas_ny,gas_nz)
-  integer :: i,j,k
+  real*8, intent(in) :: tempalt(dd_ncell)
+  real*8, intent(in) :: siggreyalt(dd_ncell)
+  integer :: i
   real*8 :: Um, beta, beta2, dlogsig
 
 !-- init (necessary for domain decomposition
-  gas_fcoef = 0d0
+  dd_fcoef = 0d0
 
 !-- calculating modified Fleck factor
-  do k=1,gas_nz
-  do j=1,gas_ny
-  do i=1,gas_nx
-     Um = dd_bcoef(i,j,k)*dd_temp(i,j,k)
-     if(dd_temp(i,j,k)<=0d0.or.dd_bcoef(i,j,k)==0d0) then
+  do i=1,dd_ncell
+     Um = dd_bcoef(i)*dd_temp(i)
+     if(dd_temp(i)<=0d0.or.dd_bcoef(i)==0d0) then
         beta = 0d0
-     elseif(gas_siggrey(i,j,k)<=0d0.or.siggreyalt(i,j,k)<=0d0) then
-        beta = 4.0*dd_ur(i,j,k)/Um
+     elseif(dd_siggrey(i)<=0d0.or.siggreyalt(i)<=0d0) then
+        beta = 4.0*dd_ur(i)/Um
      else
         if(.not.in_ismodimc) then
            beta2 = 0d0
         else
 !-- convert from per gram
-           dlogsig = log(gas_siggrey(i,j,k)/(siggreyalt(i,j,k)*dd_rho(i,j,k)))/&
-              (dd_temp(i,j,k)-tempalt(i,j,k))
-           beta2 = min(0d0,(dd_eraddens(i,j,k)-dd_ur(i,j,k))*&
-              dlogsig/dd_bcoef(i,j,k))
+           dlogsig = log(dd_siggrey(i)/(siggreyalt(i)*dd_rho(i)))/&
+              (dd_temp(i)-tempalt(i))
+           beta2 = min(0d0,(dd_eraddens(i)-dd_ur(i))*&
+              dlogsig/dd_bcoef(i))
         endif
-        beta = 4.0*dd_ur(i,j,k)/Um - beta2
+        beta = 4.0*dd_ur(i)/Um - beta2
 
      endif
-     gas_fcoef(i,j,k) = 1.0/(1.0+tsp_alpha*beta*pc_c*tsp_dt*gas_siggrey(i,j,k))
+     dd_fcoef(i) = 1.0/(1.0+tsp_alpha*beta*pc_c*tsp_dt*dd_siggrey(i))
   enddo !i
-  enddo !j
-  enddo !k
 
 end subroutine fleck_factor

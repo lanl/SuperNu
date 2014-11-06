@@ -83,7 +83,7 @@ c-- grey solution
      &            )
 !     
                gas_emitex(i,1,1) = gas_emitex(i,1,1)*
-     &              dd_vol(i,1,1)*dt
+     &              gas_vol(i,1,1)*dt
 !     
             enddo
 c--
@@ -184,7 +184,7 @@ c-- implement/modify velocity dependent manufactured initial profile
          select case (gas_opacanaltype)
          case ('grey')
 c-- grey solution
-           gas_evolinit = (man_aa11/pc_c) * dd_vol
+           gas_evolinit = (man_aa11/pc_c) * gas_vol
 c
          case ('mono')
             stop 'init_manuprofile: gas_opacanaltype=mono'

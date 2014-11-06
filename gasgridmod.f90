@@ -7,10 +7,12 @@ module gasgridmod
   integer,parameter :: gas_nelem=30
   integer,parameter :: gas_ini56=-1, gas_ico56=-2 !positions in mass0fr and natom1fr arrays
 
-  integer :: gas_nx = 0
-  integer :: gas_ny = 0
-  integer :: gas_nz = 0
-  integer :: gas_ng = 0
+  integer :: dd_ncell=0
+
+  integer :: gas_nx=0
+  integer :: gas_ny=0
+  integer :: gas_nz=0
+  integer :: gas_ng=0
 
   real*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
 
@@ -106,45 +108,77 @@ module gasgridmod
   real*8,allocatable :: gas_evolinit(:,:,:) !(gas_nx,gas_ny,gas_nz) amount of initial energy per cell per group
 !
   real*8,allocatable :: gas_temp(:,:,:) !(gas_nx,gas_ny,gas_nz)
+  real*8,allocatable :: gas_vol(:,:,:) !(gas_nx,gas_ny,gas_nz)
 
   private read_temp_preset
-!
-!
-!-- DOMAIN DECOMPOSITION
-!=======================
-  real*8,allocatable :: dd_temp(:,:,:) !(gas_nx,gas_ny,gas_nz)
-  real*8,allocatable :: dd_eraddens(:,:,:)
-  real*8,allocatable :: dd_ur(:,:,:)
-  real*8,allocatable :: dd_rho(:,:,:)
-  real*8,allocatable :: dd_bcoef(:,:,:)
-  real*8,allocatable :: dd_nisource(:,:,:)
-  real*8,allocatable :: dd_vol(:,:,:)        !gcell volume [cm^3]
-  real*8,allocatable :: dd_mass(:,:,:)       !gcell mass
-  real*8,allocatable :: dd_natom(:,:,:)      !gcell # atoms
-  real*8,allocatable :: dd_natom1fr(:,:,:,:) !(-2:gas_nelem,nx,ny,nz)  !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
-  real*8,allocatable :: dd_natom0fr(:,:,:,:) !(-2:2,nx,ny,nz)  !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
-  real*8,allocatable :: dd_nelec(:,:,:)      !gcell # electrons per atom
-!-- mate,allocatablerial energy (temperature) source (may be manufactured), rev>244
-  real*8,allocatable :: dd_matsrc(:,:,:)
 
 
 !-- temperature structure history
   real*8,allocatable :: gas_temppreset(:,:,:,:) !(gas_nx,gas_ny,gas_nz,tim_nt)
 
+!
+!
+!-- DOMAIN DECOMPOSITION
+!=======================
+  real*8,allocatable :: dd_temp(:) !(gas_nx,gas_ny,gas_nz)
+  real*8,allocatable :: dd_eraddens(:)
+  real*8,allocatable :: dd_ur(:)
+  real*8,allocatable :: dd_rho(:)
+  real*8,allocatable :: dd_bcoef(:)
+  real*8,allocatable :: dd_nisource(:)
+  real*8,allocatable :: dd_vol(:)        !cell volume [cm^3]
+  real*8,allocatable :: dd_mass(:)       !cell mass [g]
+  real*8,allocatable :: dd_natom(:)      !cell number of atoms
+  real*8,allocatable :: dd_nelec(:)      !cell number of electrons per atom
+  real*8,allocatable :: dd_natom1fr(:,:) !(-2:gas_nelem,ncell)  !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
+  real*8,allocatable :: dd_natom0fr(:,:) !(-2:2,ncell)  !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
+!-- mate,allocatablerial energy (temperature) source (may be manufactured), rev>244
+  real*8,allocatable :: dd_matsrc(:)
+!
+  real*8,allocatable :: dd_edep(:)
+
+!== DD copies
+!-- Probability of emission in a given zone and group
+  real*8,allocatable :: dd_emitprob(:,:) !(gas_ng,ncell)
+!-- Line+Cont extinction coeff
+  real*8,allocatable :: dd_cap(:,:) !(gas_ng,ncell)
+!-- leakage opacities
+! real*8,allocatable :: dd_opacleak(:,:) !(6,ncell)
+!-- scattering coefficient
+  real*8,allocatable :: dd_sig(:) !(ncell)
+!-- Gamma ray gray opacity
+  real*8,allocatable :: dd_capgam(:) !(ncell)
+!-- Planck opacity (gray)
+  real*8,allocatable :: dd_siggrey(:)!(ncell)
+!-- Fleck factor
+  real*8,allocatable :: dd_fcoef(:)  !(ncell)
+
+  real*8 :: dd_emat = 0d0 !material energy
+
+  integer,allocatable :: dd_nvol(:) !(ncell) number of thermal source particles generated per cell
+  integer,allocatable :: dd_nvolex(:) !(ncell) number of external source particles generated per cell
+  integer,allocatable :: dd_nvolinit(:) !(ncell) number of initial (t=tfirst) particles per cell
+!  
+  real*8,allocatable :: dd_emit(:) !(ncell) amount of fictitious thermal energy emitted per cell in a time step
+  real*8,allocatable :: dd_emitex(:) !(ncell) amount of external energy emitted per cell per group in a time step
+  real*8,allocatable :: dd_evolinit(:) !(ncell) amount of initial energy per cell per group
 
   save
 
   contains
 
 
-  subroutine gasgrid_init(ltalk)
-!-------------------------------
+  subroutine gasgrid_init(ltalk,ncell)
+!-------------------------------------
     use inputparmod
     implicit none
     logical,intent(in) :: ltalk
+    integer,intent(in) :: ncell
 
     integer :: n,nx,ny,nz
     logical :: lexist
+
+    dd_ncell = ncell
 
     gas_nx = in_ndim(1)
     gas_ny = in_ndim(2)
@@ -175,10 +209,10 @@ module gasgridmod
     gas_nheav = in_nheav
     gas_srcmax = in_srcmax
 
-!-- primary
-    allocate(gas_xarr(gas_nx+1)) !zone edge x position
-    allocate(gas_yarr(gas_ny+1)) !zone edge y position
-    allocate(gas_zarr(gas_nz+1)) !zone edge z position
+!!-- primary
+!    allocate(gas_xarr(gas_nx+1)) !zone edge x position
+!    allocate(gas_yarr(gas_ny+1)) !zone edge y position
+!    allocate(gas_zarr(gas_nz+1)) !zone edge z position
 
     nx = gas_nx !shortcut
     ny = gas_ny !shortcut
@@ -202,6 +236,8 @@ module gasgridmod
 
 !--Ryan W: values below were formerly secondary (rev 183)
     allocate(gas_temp(nx,ny,nz))  !cell average temperature
+    allocate(gas_vol(nx,ny,nz))  !cell average temperature
+
     allocate(gas_nvol(nx,ny,nz))
     allocate(gas_nvolex(nx,ny,nz))
     allocate(gas_nvolinit(nx,ny,nz))
@@ -213,28 +249,46 @@ module gasgridmod
     allocate(gas_numcensus(nx,ny,nz))
 
 !-- secondary
-    allocate(dd_temp(nx,ny,nz)) !(nx,ny,nz)
-    allocate(dd_eraddens(nx,ny,nz))
-    allocate(dd_ur(nx,ny,nz))
-    allocate(dd_rho(nx,ny,nz))
-    allocate(dd_bcoef(nx,ny,nz))
-    allocate(dd_nisource(nx,ny,nz))
-    allocate(dd_vol(nx,ny,nz))        !gcell volume [cm^3]
-    allocate(dd_mass(nx,ny,nz))       !gcell mass
-    allocate(dd_natom(nx,ny,nz))      !gcell # atoms
-    allocate(dd_natom1fr(-2:gas_nelem,nx,ny,nz))
-    allocate(dd_natom0fr(-2:2,nx,ny,nz))
-    allocate(dd_nelec(nx,ny,nz))  !gcell # electrons per atom
-    allocate(dd_matsrc(nx,ny,nz))
+    allocate(dd_temp(dd_ncell)) !(dd_ncell)
+    allocate(dd_ur(dd_ncell))
+    allocate(dd_rho(dd_ncell))
+    allocate(dd_bcoef(dd_ncell))
+    allocate(dd_nisource(dd_ncell))
+    allocate(dd_vol(dd_ncell))        !gcell volume [cm^3]
+    allocate(dd_mass(dd_ncell))       !gcell mass
+    allocate(dd_natom(dd_ncell))      !gcell # atoms
+    allocate(dd_natom1fr(-2:gas_nelem,dd_ncell))
+    allocate(dd_natom0fr(-2:2,dd_ncell))
+    allocate(dd_nelec(dd_ncell))  !gcell # electrons per atom
+    allocate(dd_matsrc(dd_ncell))
     dd_natom1fr = 0d0 !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
     dd_natom0fr = 0d0     !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
     dd_nelec = 1d0  !gcell # electrons per atom 
     dd_matsrc = 0d0  !-- material energy (temperature) source (may be manufactured)
+    allocate(dd_emitprob(gas_ng,ncell))
+    allocate(dd_cap(gas_ng,ncell))
+!   allocate(dd_opacleak(6,ncell))
+    allocate(dd_sig(ncell))
+    allocate(dd_capgam(ncell))
+    allocate(dd_siggrey(ncell))
+    allocate(dd_fcoef(ncell))
+!
+    allocate(dd_eraddens(dd_ncell))
+    allocate(dd_edep(ncell))
+!
+    allocate(dd_nvol(ncell))
+    allocate(dd_nvolex(ncell))
+    allocate(dd_nvolinit(ncell))
+    allocate(dd_emit(ncell))
+    allocate(dd_emitex(ncell))
+    allocate(dd_evolinit(ncell))
 !
 !-- output
     if(ltalk) then
+     n = dd_ncell*(11 + 5 + gas_nelem+3)/1024 !kB
+     write(6,*) 'ALLOC dd     :',n,"kB",n/1024,"MB",n/1024**2,"GB"
      n = nx*ny*nz
-     n = int(int(n,8)*8*(21 + 11 + 5 + gas_nelem+3)/1024) !kB
+     n = int((int(n,8)*8*21)/1024) !kB
      write(6,*) 'ALLOC gasgrid:',n,"kB",n/1024,"MB",n/1024**2,"GB"
      n = nx*ny*nz
      n = int(((8+8)*int(n,8)*gas_ng)/1024) !kB

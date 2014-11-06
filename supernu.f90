@@ -3,6 +3,7 @@ program supernu
   use mpimod
   use inputparmod
   use timestepmod
+  use gridmod
   use gasgridmod
   use particlemod
   use physconstmod
@@ -28,7 +29,7 @@ program supernu
 !***********************************************************************
   real*8 :: help
   real*8 :: t_elapsed
-  integer :: ierr,ng,ns,it
+  integer :: ierr,ng,ns,it,ncell
   integer,external :: memusg
   logical :: lmpi0 = .false. !master rank flag
   real*8 :: t0,t1  !timing
@@ -48,79 +49,86 @@ program supernu
 !-- other tasks before packet propagation begins.
 !--
   if(impi==impi0) then
-   lmpi0 = .true. !master rank flag!{{{
-   call time(t0)
+    lmpi0 = .true. !master rank flag!{{{
+    call time(t0)
 !-- startup message
-   call banner
+    call banner
 !-- read runtime parameters
-   call read_inputpars
+    call read_inputpars
 !-- parse and verify runtime parameters
-   call parse_inputpars(nmpi)
+    call parse_inputpars(nmpi)
 !
 !-- time step init
-   call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst)
+    call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst)
 !-- constant time step, may be coded to loop if time step is not uniform
-   t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
-   tsp_dt = t_elapsed/in_nt
+    t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
+    tsp_dt = t_elapsed/in_nt
 !
 !-- particle init
-   ns = in_ns/nmpi
-   call particle_init(in_npartmax,ns,in_ns0,in_isimcanlog, &
-        in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime)
+    ns = in_ns/nmpi
+    call particle_init(in_npartmax,ns,in_ns0,in_isimcanlog, &
+         in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime)
 !
 !-- rand() count and prt restarts
-   if(tsp_ntres>1.and..not.in_norestart) then
+    if(tsp_ntres>1.and..not.in_norestart) then
 !-- read rand() count
-     call read_restart_randcount
+      call read_restart_randcount
 !-- read particle properties
-     call read_restart_particles
-   endif
+      call read_restart_particles
+    endif
 !
 !-- read input structure
-   if(.not.in_noreadstruct.and.in_isvelocity) then
-     call read_inputstr(in_igeom,in_ndim)
-   else
+    if(.not.in_noreadstruct.and.in_isvelocity) then
+      call read_inputstr(in_igeom,in_ndim)
+    else
 !== generate_inputstr development in progress
-     call generate_inputstr(in_igeom)
-   endif
+      call generate_inputstr(in_igeom)
+    endif
+!-- setup spatial grid
+    call grid_init(in_igeom,in_ndim)
+    call grid_setup
 !
 !-- read gamma deposition profiles
-   if(in_isvelocity.and.in_srctype=='none') then
-     if(in_igeom>1) stop 'supernu: read_gam_prof: no 2D/3D'
-     call read_gamma_profiles(in_ndim)
-   endif
+    if(in_isvelocity.and.in_srctype=='none') then
+      if(in_igeom>1) stop 'supernu: read_gam_prof: no 2D/3D'
+      call read_gamma_profiles(in_ndim)
+    endif
 !
 !-- wlgrid
-   call wlgrid_setup(gas_ng)
-   call fluxgrid_setup(in_nflx,in_wlminflx,in_wlmaxflx)
+    call wlgrid_setup(gas_ng)
+    call fluxgrid_setup(in_nflx,in_wlminflx,in_wlmaxflx)
 
 !-- READ DATA
 !-- read ion and level data
-   call ion_read_data(gas_nelem)  !ion and level data
+    call ion_read_data(gas_nelem)  !ion and level data
 !-- read bbxs data
-   if(.not.in_nobbopac) call read_bbxs_data(gas_nelem)!bound-bound cross section data
+    if(.not.in_nobbopac) call read_bbxs_data(gas_nelem)!bound-bound cross section data
 !-- read bfxs data
-   if(.not.in_nobfopac) call bfxs_read_data           !bound-free cross section data
+    if(.not.in_nobfopac) call bfxs_read_data           !bound-free cross section data
 !-- read ffxs data
-   if(.not.in_noffopac) call ffxs_read_data           !free-free cross section data
+    if(.not.in_noffopac) call ffxs_read_data           !free-free cross section data
 !
 !-- memory statistics
-   write(6,*) 'memusg: after setup:',memusg()
+    write(6,*) 'memusg: after setup:',memusg()
 !
-   call time(t1)
-   t_setup = t1-t0!}}}
+    call time(t1)
+    t_setup = t1-t0!}}}
   endif !impi
 
+  ncell = product(in_ndim)/nmpi
+  if(mod(product(in_ndim),nmpi)/=0) stop 'supernu: ncell%nmpi != 0'
 !
 !-- MPI
   call bcast_permanent !MPI
   call setup_domain_decomposition !MPI
-  call scatter_inputstruct(in_ndim) !MPI
+  call scatter_inputstruct(in_ndim,ncell) !MPI
 
 !
 !-- setup gasgrid
-  call gasgrid_init(impi==impi0)
+  call gasgrid_init(impi==impi0,ncell)
+write(0,*) ubound(dd_mass)
   call gasgrid_setup(impi==impi0)
+
 !
 !-- initialize flux tally arrays (rtw: separated from fluxgrid_setup)
   call flux_alloc
@@ -130,7 +138,7 @@ program supernu
 
 !
 !-- allocate arrays of sizes retreived in bcast_permanent
-  call ion_alloc_grndlev(gas_nelem,gas_nx,gas_ny,gas_nz)  !ground state occupation numbers
+  call ion_alloc_grndlev(gas_nelem,dd_ncell)  !ground state occupation numbers
   call particle_alloc(impi==impi0,in_norestart,nmpi)
 
 !
@@ -179,13 +187,26 @@ program supernu
 
 
 !-- update all non-permanent variables
-    call gasgrid_update
+    call grid_update(tsp_t)
+    call gasgrid_update(impi)
 !-- number of source prt_particles per cell
     call sourcenumbers
 
 
 !-- broadcast to all workers
     call bcast_nonpermanent !MPI
+
+!-- Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
+    select case(in_igeom)
+    case(1)
+       call leakage_opacity1
+    case(2)
+       call leakage_opacity2
+    case(3)
+       stop 'supernu: 3D leakage opacities not implemented'
+    case default
+       stop 'supernu: invalid igeom'
+    endselect
 
 !-- Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
     allocate(prt_vacantarr(prt_nnew))

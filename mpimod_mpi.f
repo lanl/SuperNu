@@ -270,12 +270,13 @@ c!}}}
 c
 c
 c
-      subroutine scatter_inputstruct(ndim)
+      subroutine scatter_inputstruct(ndim,ncell)
 c     ------------------------------------!{{{
       use inputstrmod
       use gasgridmod
       implicit none
       integer,intent(in) :: ndim(3)
+      integer,intent(in) :: ncell
 ************************************************************************
 * mpi_scatter the input structure to all ranks in the worker comm.
 * this is doing bcasts only for now.
@@ -293,10 +294,9 @@ c
        allocate(str_xleft(nx+1))
        allocate(str_yleft(ny+1))
        allocate(str_zleft(nz+1))
-       allocate(str_mass(nx,ny,nz))
-       if(str_nabund>0) allocate(str_massfr(str_nabund,nx,ny,nz))
        if(str_nabund>0) allocate(str_iabund(str_nabund))
       endif
+
       call mpi_bcast(str_xleft,nx+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(str_yleft,ny+1,MPI_REAL8,
@@ -304,19 +304,23 @@ c
       call mpi_bcast(str_zleft,nz+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      n = nx*ny*nz
-      call mpi_bcast(str_mass,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      if(str_nabund>0) then
-       n = str_nabund * nx*ny*nz
-       call mpi_bcast(str_massfr,n,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
-      endif
-c
       if(str_nabund>0) then
        n = str_nabund
        call mpi_bcast(str_iabund,n,MPI_INTEGER,
+     &   impi0,MPI_COMM_WORLD,ierr)
+      endif
+c
+c-- domain decomposed
+      allocate(str_massdd(ncell))
+      if(str_nabund>0) allocate(str_massfrdd(str_nabund,ncell))
+c
+      call mpi_scatter(str_mass,ncell,MPI_REAL8,
+     &  str_massdd,ncell,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      if(str_nabund>0) then
+       call mpi_scatter(str_massfr,str_nabund*ncell,MPI_REAL8,
+     &   str_massfrdd,str_nabund*ncell,MPI_REAL8,
      &   impi0,MPI_COMM_WORLD,ierr)
       endif
 !}}}
@@ -326,7 +330,7 @@ c
 c
       subroutine bcast_nonpermanent
 c     ------------------------!{{{
-      use gasgridmod,nx=>gas_nx,ny=>gas_ny,nz=>gas_nz
+      use gasgridmod
       use particlemod
       use timestepmod
       implicit none
@@ -397,8 +401,11 @@ c     ------------------------!{{{
 !c-- domain decomposition (becomes mpi_gather at some point)
 !      call mpi_bcast(dd_temp,n,MPI_REAL8,
 !     &  impi0,MPI_COMM_WORLD,ierr)
+
 c-- special case: domain replicated copy
-      gas_temp = dd_temp
+      call mpi_gather(dd_temp,dd_ncell,MPI_REAL8,
+     &   gas_temp,dd_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_WORLD,ierr)
 c!}}}
       end subroutine bcast_nonpermanent
 c
@@ -501,7 +508,9 @@ c     -------------------------------------!{{{
 ************************************************************************
 * placeholder
 ************************************************************************
-      gas_temp = dd_temp
+      call mpi_scatter(dd_temp,dd_ncell,MPI_REAL8,
+     &   gas_temp,dd_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_WORLD,ierr)
 c!}}}
       end subroutine reduce_gastemp
 c
