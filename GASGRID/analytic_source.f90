@@ -1,5 +1,6 @@
 subroutine analytic_source
 
+  use mpimod
   use gasgridmod
   use physconstmod
   use timestepmod
@@ -7,11 +8,12 @@ subroutine analytic_source
   use manufacmod
   implicit none
 
-  integer :: i,j, nhelp
+  integer :: i,j,l,nhelp
+  integer :: l1,l2
   real*8 :: srcren
   real*8 :: thelp, help, xcent, ycent
 
-  gas_emitex = 0d0
+  dd_emitex = 0d0
 
 !-- setting source helper
   if(gas_isvelocity) then
@@ -19,6 +21,9 @@ subroutine analytic_source
   else
      thelp = 1d0
   endif
+
+  l1 = impi*dd_ncell + 1
+  l2 = (impi+1)*dd_ncell
 
   if(gas_srctype=='none') then
     return
@@ -29,8 +34,10 @@ subroutine analytic_source
 !-- 1D
         case(1)
            do i = 1, min(gas_nheav,gas_nx)
-              gas_emitex(i,1,1) = gas_srcmax * &
-                   gas_vol(i,1,1)*tsp_dt/thelp**3
+              l = i
+              if(l<l1 .or. l>l2) cycle
+              dd_emitex(l) = gas_srcmax * &
+                   dd_vol(l)*tsp_dt/thelp**3
            enddo
 
 !-- 2D
@@ -47,15 +54,18 @@ subroutine analytic_source
            help = dble(min(gas_nheav,nhelp))*help / &
                 dble(nhelp)
 !-- non-zero source within Heaviside sphere
+           l = 0
            do j = 1,gas_ny
-              do i = 1,gas_nx
-                 xcent = 0.5d0*(gas_xarr(i+1)+gas_xarr(i))
-                 ycent = 0.5d0*(gas_yarr(j+1)+gas_yarr(j))
-                 if(xcent**2+ycent**2<help**2) then
-                    gas_emitex(i,j,1) = gas_srcmax * &
-                         gas_vol(i,j,1)*tsp_dt/thelp**3
-                 endif
-              enddo
+           do i = 1,gas_nx
+              l = l + 1
+              if(l<l1 .or. l>l2) cycle
+              xcent = 0.5d0*(gas_xarr(i+1)+gas_xarr(i))
+              ycent = 0.5d0*(gas_yarr(j+1)+gas_yarr(j))
+              if(xcent**2+ycent**2<help**2) then
+                 dd_emitex(l) = gas_srcmax * &
+                      dd_vol(l)*tsp_dt/thelp**3
+              endif
+           enddo
            enddo
         case(3)
            stop 'analytic_source: no 3D transport'
@@ -68,10 +78,13 @@ subroutine analytic_source
      !Linear source profile!{{{
      if(gas_ny>1) stop 'analytic_source: strt: no 2D'
      do i=1,gas_nx
+        l = i
+        l = l + 1
+        if(l<l1 .or. l>l2) cycle
         srcren = gas_srcmax*(gas_xarr(gas_nx+1)- &
              0.5d0*(gas_xarr(i)+gas_xarr(i+1)))/ & 
              (gas_xarr(gas_nx+1)-gas_xarr(1))
-        gas_emitex(i,1,1) = srcren * gas_vol(i,1,1)*tsp_dt
+        dd_emitex(l) = srcren * dd_vol(l)*tsp_dt
 !
 !-- no temp source for strt (matsrc=0.0)
 !--
