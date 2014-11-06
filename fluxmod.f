@@ -94,7 +94,7 @@ c
 c
       allocate(store(n+3))
       rewind(4)
-      do l=1,idex+3
+      do l=1,ihelp+3
        read(4,*)
       enddo
       read(4,*) store(:)
