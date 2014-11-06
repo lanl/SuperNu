@@ -16,7 +16,7 @@ subroutine temperature_update
   real*8 :: dtemp, dtemp2
 
   !calculating radiation energy density
-  dd_eraddens=dd_eraddens/dd_vol
+  dd_eraddens = dd_eraddens/dd_vol
   dd_eraddens = dd_eraddens
 
 !!-- calculating temperature

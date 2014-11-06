@@ -499,7 +499,7 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
 c
       snd3 = gas_edep
-      call mpi_allreduce(snd3,gas_edep,n,MPI_REAL8,MPI_SUM,
+      call mpi_reduce(snd3,gas_edep,n,MPI_REAL8,MPI_SUM,
      &  MPI_COMM_WORLD,ierr)
       gas_edep = gas_edep/dble(nmpi)
 c
@@ -535,9 +535,9 @@ c
 c     -------------------------------------!{{{
       use gasgridmod
 ************************************************************************
-* placeholder
+* for output
 ************************************************************************
-      call mpi_scatter(dd_temp,dd_ncell,MPI_REAL8,
+      call mpi_gather(dd_temp,dd_ncell,MPI_REAL8,
      &   gas_temp,dd_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_WORLD,ierr)
 c!}}}
