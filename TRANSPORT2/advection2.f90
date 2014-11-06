@@ -55,12 +55,12 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
               if(zold>0d0) then
                  rtil = (rold/zold)*gas_yarr(iz)
               else
-                 rtil = gas_xarr(ir+1)
+                 rtil = rsrc
               endif
               if(rold>0d0) then
                  ztil = (zold/rold)*gas_xarr(ir)
               else
-                 ztil = gas_yarr(iz+1)
+                 ztil = zsrc
               endif
 !
               if(rtil<gas_xarr(ir)) then
@@ -75,7 +75,7 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
                  else
                     ir=ir-1
                  endif
-              else
+              elseif(ztil<gas_yarr(iz)) then
 
 !-- meeting lower z-axis bound
                  if((gas_sig(ir,iz-1,1)+gas_cap(ig,ir,iz-1,1)) * &
@@ -99,12 +99,12 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
               if(zold<0d0) then
                  rtil = (rold/zold)*gas_yarr(iz+1)
               else
-                 rtil = gas_xarr(ir+1)
+                 rtil = rsrc
               endif
               if(rold>0d0) then
                  ztil = (zold/rold)*gas_xarr(ir)
               else
-                 ztil = gas_yarr(iz)
+                 ztil = zsrc
               endif
 !
               if(rtil<gas_xarr(ir)) then
