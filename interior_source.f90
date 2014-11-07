@@ -19,7 +19,7 @@ subroutine interior_source
   integer, dimension(gas_nx,gas_ny,gas_nz) :: ijkused
   real*8 :: r1, r2, r3, uul, uur, uumax
   real*8 :: om0, mu0, x0, y0, ep0, wl0
-  real*8 :: denom2,x1,x2,x3,x4, help
+  real*8 :: denom2,x1,x2,x3,x4, thelp
   real*8 :: cmffact,azitrfm
   type(packet),pointer :: ptcl
 !-- statement functions
@@ -30,9 +30,9 @@ subroutine interior_source
   dz(l) = gas_zarr(l+1) - gas_zarr(l)
 
   if(gas_isvelocity) then
-     help = tsp_t
+     thelp = tsp_t
   else
-     help = 1d0
+     thelp = 1d0
   endif
 
   i = 1
@@ -114,7 +114,7 @@ subroutine interior_source
              (1.0-r1)*gas_xarr(i)**3)**(1.0/3.0)
 !-- setting IMC logical
         lhelp = ((gas_sig(i,1,1)+gas_cap(iig,i,1,1))*dx(i)* &
-             help < prt_tauddmc).or.(in_puretran)
+             thelp < prt_tauddmc).or.(in_puretran)
 
 !-- if velocity-dependent, transforming direction
         if(lhelp.and.gas_isvelocity) then
@@ -143,7 +143,7 @@ subroutine interior_source
         om0 = pc_pi2*r1
 !-- setting IMC logical
         lhelp = ((gas_sig(i,j,1)+gas_cap(iig,i,j,1)) * &
-             min(dx(i),dy(j))*help < prt_tauddmc) &
+             min(dx(i),dy(j))*thelp < prt_tauddmc) &
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
         if(lhelp.and.gas_isvelocity) then
@@ -268,7 +268,7 @@ subroutine interior_source
 
 !-- 1D
      case(1)
-!-- calculating position:
+!-- calculating position:!{{{
 !-- source tilting in x
         r3 = 0d0
         r2 = 1d0
@@ -291,7 +291,8 @@ subroutine interior_source
         ptcl%rsrc = x0
 !-- setting IMC logical
         lhelp = ((gas_sig(i,1,1)+gas_cap(iig,i,1,1))*dx(i)* &
-             help < prt_tauddmc).or.(in_puretran)
+             thelp < prt_tauddmc).or.(in_puretran)
+!write(0,*) i,gas_sig(i,1,1),gas_cap(iig,i,1,1),dx(i),thelp,prt_tauddmc
 
 !-- if velocity-dependent, transforming direction
         if (lhelp.and.gas_isvelocity) then
@@ -302,10 +303,10 @@ subroutine interior_source
         else
            ptcl%musrc = mu0
         endif
-
+!}}}
 !-- 2D
      case(2)
-!-- setting 2nd cell index
+!-- setting 2nd cell index!{{{
         ptcl%iy = j
 !-- calculating position:
 !-- source tilting in x
@@ -349,7 +350,7 @@ subroutine interior_source
 
 !-- setting IMC logical
         lhelp = ((gas_sig(i,j,1)+gas_cap(iig,i,j,1)) * &
-             min(dx(i),dy(j))*help < prt_tauddmc) &
+             min(dx(i),dy(j))*thelp < prt_tauddmc) &
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
         if(lhelp.and.gas_isvelocity) then
@@ -374,11 +375,12 @@ subroutine interior_source
            ptcl%musrc = mu0
            ptcl%om = om0
         endif
-
+!}}}
 !-- 3D
      case(3)
         stop 'interior_source: no 3D transport'
      endselect
+
 
      if (lhelp) then
 !-- IMC

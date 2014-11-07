@@ -357,33 +357,33 @@ c     ------------------------!{{{
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
 ************************************************************************
-      integer :: n
-      integer,allocatable :: isndvec(:),ircvvec(:)
-      real*8,allocatable :: sndvec(:)
-c
-c-- integer
-      n = 3
-      allocate(isndvec(n),ircvvec(n))
-      isndvec = (/prt_nnew,prt_nsurf,
-     &  prt_nexsrc/)
-      call mpi_allreduce(isndvec,ircvvec,n,MPI_INTEGER,MPI_SUM,
-     &  MPI_COMM_WORLD,ierr)
-c-- copy back
-      prt_nnew = ircvvec(1)
-      prt_nsurf = ircvvec(2)
-      prt_nexsrc = ircvvec(3)
-      deallocate(isndvec)
+!      integer :: n
+!      integer,allocatable :: isndvec(:),ircvvec(:)
+!      real*8,allocatable :: sndvec(:),rcvvec(:)
+!c
+!c-- integer
+!      n = 3
+!      allocate(isndvec(n),ircvvec(n))
+!      isndvec = (/prt_nnew,prt_nsurf,
+!     &  prt_nexsrc/)
+!      call mpi_allreduce(isndvec,ircvvec,n,MPI_INTEGER,MPI_SUM,
+!     &  MPI_COMM_WORLD,ierr)
+!c-- copy back
+!      prt_nnew = ircvvec(1)
+!      prt_nsurf = ircvvec(2)
+!      prt_nexsrc = ircvvec(3)
+!      deallocate(isndvec)
 !c
 !c-- real*8
 !      n = 2
-!      allocate(sndvec(n))
-!      if(impi==impi0) sndvec = (/gas_esurf,gas_etot/)
-!      call mpi_bcast(sndvec,n,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
+!      allocate(sndvec(n),rcvvec(n))
+!      sndvec = (/gas_esurf,gas_etot/)
+!      call mpi_allreduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
+!     &  MPI_COMM_WORLD,ierr)
 !c-- copy back
-!      gas_esurf = sndvec(1)
-!      gas_etot = sndvec(2)
-!      deallocate(sndvec)
+!      gas_esurf = rcvvec(1)
+!      gas_etot = rcvvec(2)
+!      deallocate(sndvec,rcvvec)
 !c
 !c-- initial send of gas_eext
 !      if(tsp_it==1) then
@@ -395,14 +395,8 @@ c-- gather
      &   gas_temp,dd_ncell,MPI_REAL8,
      &   MPI_COMM_WORLD,ierr)
 c
-      call mpi_allgather(dd_nvol,dd_ncell,MPI_INTEGER,
-     &   gas_nvol,dd_ncell,MPI_INTEGER,
-     &   MPI_COMM_WORLD,ierr)
       call mpi_allgather(dd_emit,dd_ncell,MPI_REAL8,
      &   gas_emit,dd_ncell,MPI_REAL8,
-     &   MPI_COMM_WORLD,ierr)
-      call mpi_allgather(dd_nvolex,dd_ncell,MPI_INTEGER,
-     &   gas_nvolex,dd_ncell,MPI_INTEGER,
      &   MPI_COMM_WORLD,ierr)
       call mpi_allgather(dd_emitex,dd_ncell,MPI_REAL8,
      &   gas_emitex,dd_ncell,MPI_REAL8,
@@ -500,7 +494,7 @@ c
 c
       snd3 = gas_edep
       call mpi_reduce(snd3,gas_edep,n,MPI_REAL8,MPI_SUM,
-     &  MPI_COMM_WORLD,ierr)
+     &  impi0,MPI_COMM_WORLD,ierr)
       gas_edep = gas_edep/dble(nmpi)
 c
       snd3 = gas_eraddens

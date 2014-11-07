@@ -216,8 +216,7 @@ c!}}}
 c
       call time(t3)
 c
-      dd_cap = reshape(transpose(reshape(cap,[dd_ncell,gas_ng])),
-     &  [gas_ng,dd_ncell])
+      dd_cap = transpose(cap)
 c
 c-- sanity check
       m = 0

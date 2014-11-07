@@ -87,12 +87,12 @@ program supernu
 !-- setup spatial grid
     call grid_init(in_igeom,in_ndim)
     call grid_setup
-!
-!-- read gamma deposition profiles
-    if(in_isvelocity.and.in_srctype=='none') then
-      if(in_igeom>1) stop 'supernu: read_gam_prof: no 2D/3D'
-      call read_gamma_profiles(in_ndim)
-    endif
+!!
+!!-- read gamma deposition profiles
+!    if(in_isvelocity.and.in_srctype=='none') then
+!      if(in_igeom>1) stop 'supernu: read_gam_prof: no 2D/3D'
+!      call read_gamma_profiles(in_ndim)
+!    endif
 !
 !-- wlgrid
     call wlgrid_setup(gas_ng)
@@ -189,12 +189,13 @@ program supernu
 !-- update all non-permanent variables
     call grid_update(tsp_t)
     call gasgrid_update(impi)
-!-- number of source prt_particles per cell
-    call sourcenumbers
+!-- energy to be instantiated by source prt_particles per cell in this timestep
+    call sourceenergy(nmpi)
 
-
+!
 !-- broadcast to all workers
     call bcast_nonpermanent !MPI
+
 
 !-- Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
     select case(in_igeom)
@@ -208,6 +209,8 @@ program supernu
        stop 'supernu: invalid igeom'
     endselect
 
+!-- number of source prt_particles per cell
+    call sourcenumbers(nmpi)
 !-- Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
     allocate(prt_vacantarr(prt_nnew))
     call vacancies

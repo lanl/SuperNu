@@ -53,7 +53,6 @@ module gasgridmod
   real*8 :: gas_erad = 0d0 !census radiation energy
   real*8 :: gas_eleft = 0d0 !left (inward) leaked energy from domain
   real*8 :: gas_eright = 0d0 !right (outward) leaked energy from domain
-  real*8 :: gas_etot = 0d0 !total source energy added per time step
   real*8 :: gas_evelo = 0d0 !total energy change to rad field from fluid
   real*8 :: gas_eerror = 0d0 !error in integral problem energy
 !-- average quantities used for energy check with MPI
@@ -155,9 +154,6 @@ module gasgridmod
 
   real*8 :: dd_emat = 0d0 !material energy
 
-  integer,allocatable :: dd_nvol(:) !(ncell) number of thermal source particles generated per cell
-  integer,allocatable :: dd_nvolex(:) !(ncell) number of external source particles generated per cell
-  integer,allocatable :: dd_nvolinit(:) !(ncell) number of initial (t=tfirst) particles per cell
 !  
   real*8,allocatable :: dd_emit(:) !(ncell) amount of fictitious thermal energy emitted per cell in a time step
   real*8,allocatable :: dd_emitex(:) !(ncell) amount of external energy emitted per cell per group in a time step
@@ -276,9 +272,6 @@ module gasgridmod
     allocate(dd_eraddens(dd_ncell))
     allocate(dd_edep(ncell))
 !
-    allocate(dd_nvol(ncell))
-    allocate(dd_nvolex(ncell))
-    allocate(dd_nvolinit(ncell))
     allocate(dd_emit(ncell))
     allocate(dd_emitex(ncell))
     allocate(dd_evolinit(ncell))
