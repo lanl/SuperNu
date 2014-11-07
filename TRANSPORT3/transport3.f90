@@ -138,4 +138,76 @@ subroutine transport3(ptcl,isvacant)
      stop 'transport3: negative distance'
   endif
 
+!-- updating position
+  x = x + mu*d
+  y = y + eta*d
+  z = z + xi*d
+!
+!-- updating time
+  ptcl%tsrc = ptcl%tsrc + thelp*cinv*d
+!
+!-- updating transformation factors
+  if(gas_isvelocity) then
+     elabfact=1d0-(mu*x+eta*y+xi*z)*cinv
+  endif
+
+!-- tallying energy densities
+  if(prt_isimcanlog) then
+!-- analog energy density
+     gas_eraddens(ix,iy,iz)=gas_eraddens(ix,iy,iz)+ep*elabfact* &
+          d*thelp*cinv*dtinv
+  else
+!-- nonanalog energy density
+     if(gas_fcoef(ix,iy,iz)*gas_cap(ig,ix,iy,iz)* &
+          min(dx(ix),dy(iy),dz(iz))*thelp>1d-6) then
+        gas_eraddens(ix,iy,iz) = gas_eraddens(ix,iy,iz)+ep* &
+             (1.0d0-exp(-gas_fcoef(ix,iy,iz)*elabfact* &
+             gas_cap(ig,ix,iy,iz)*d*thelp))* &
+             elabfact/(gas_fcoef(ix,iy,iz)*elabfact * &
+             gas_cap(ig,ix,iy,iz)*pc_c*tsp_dt)
+     else
+!-- analog energy density
+        gas_eraddens(ix,iy,iz)=gas_eraddens(ix,iy,iz)+ep*elabfact* &
+             d*thelp*cinv*dtinv
+     endif
+!-- reducing particle energy
+     ep = ep*exp(-gas_fcoef(ix,iy,iz)*gas_cap(ig,ix,iy,iz) * &
+          elabfact*d*thelp)
+  endif
+
+!
+!-- checking which event occurs from min distance
+
+!
+!-- census
+  if(d==dcen) then
+
+!
+!-- Thomson scatter
+  elseif(d==dthm) then
+
+!
+!-- effective collision
+  elseif(d==dcol) then
+
+!
+!-- x-bound
+  elseif(d==dbx) then
+
+!
+!-- y-bound
+  elseif(d==dby) then
+
+!
+!-- z-bound
+  elseif(d==dbz) then
+
+!
+!-- Doppler shift
+  elseif(d==ddop) then
+
+  else
+     stop 'transport3: invalid distance'
+  endif
+
 end subroutine transport3
