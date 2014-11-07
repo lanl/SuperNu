@@ -26,7 +26,7 @@ subroutine transport3(ptcl,isvacant)
   real*8 :: r1, r2, denom2
 
   integer,pointer :: ix,iy,iz
-  real*8,pointer :: x,y,z,mu,om,ep,ep0,wl
+  real*8,pointer :: x,y,z,xi,om,ep,ep0,wl
 !-- statement functions
   integer :: l
   real*8 :: dx,dy,dz
@@ -181,11 +181,41 @@ subroutine transport3(ptcl,isvacant)
 !
 !-- census
   if(d==dcen) then
-
+     prt_done = .true.
+     gas_numcensus(ix,iy,iz)=gas_numcensus(ix,iy,iz)+1
+     return
+  endif
 !
 !-- Thomson scatter
-  elseif(d==dthm) then
-
+  if(d==dthm) then
+!-- resampling direction
+     r1 = rand()
+     xi = 1d0 - 2d0*r1
+     r1 = rand()
+     om = pc_pi2*r1
+!-- checking velocity dependence
+     if(gas_isvelocity) then
+        eta = sqrt(1d0-xi**2)*sin(om)
+        mu = sqrt(1d0-xi**2)*cos(om)
+!-- transforming xi
+        xi = (xi+z*cinv)/(1d0+(xi*z+eta*y+mu*x)*cinv)
+        if(xi>1d0) then
+           xi = 1d0
+        elseif(xi<-1d0) then
+           xi = -1d0
+        endif
+!-- transforming om
+        om = atan2(eta+y*cinv,mu+x*cinv)
+        if(om<0d0) om=om+pc_pi2
+!-- x,y lab direction cosines
+        eta = sqrt(1d0-xi**2)*sin(om)
+        mu = sqrt(1d0-xi**2)*cos(om)
+!-- lab wavelength
+        wl = wl*(1d0-(xi*z+eta*y+mu*x)*cinv)/elabfact
+!-- energy weight
+        ep = ep*elabfact/(1d0-(xi*z+eta*y+mu*x)*cinv)
+        ep0 = ep0*elabfact/(1d0-(xi*z+eta*y+mu*x)*cinv)
+     endif
 !
 !-- effective collision
   elseif(d==dcol) then
