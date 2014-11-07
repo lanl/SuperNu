@@ -493,7 +493,6 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
 c
       snd3 = gas_edep
-      write(0,*) 'a',impi,sum(gas_edep),sum(gas_eraddens)
       call mpi_reduce(snd3,gas_edep,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
       gas_edep = gas_edep/dble(nmpi)

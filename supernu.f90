@@ -87,12 +87,12 @@ program supernu
 !-- setup spatial grid
     call grid_init(in_igeom,in_ndim)
     call grid_setup
-!
-!-- read gamma deposition profiles
-    if(in_isvelocity.and.in_srctype=='none') then
-      if(in_igeom>1) stop 'supernu: read_gam_prof: no 2D/3D'
-      call read_gamma_profiles(in_ndim)
-    endif
+!!
+!!-- read gamma deposition profiles
+!    if(in_isvelocity.and.in_srctype=='none') then
+!      if(in_igeom>1) stop 'supernu: read_gam_prof: no 2D/3D'
+!      call read_gamma_profiles(in_ndim)
+!    endif
 !
 !-- wlgrid
     call wlgrid_setup(gas_ng)

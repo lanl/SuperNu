@@ -34,6 +34,7 @@ c-- gamma opacity
       real*8,parameter :: ye=.5d0 !todo: compute this value
 c-- previous values
       real*8,allocatable,save :: tempalt(:),siggreyalt(:)
+      real*8 :: hlparr(gas_nx),hlparrdd(dd_ncell)
 c-- timing
       real*8 :: t0,t1
 c
@@ -67,10 +68,26 @@ c-- total, units=ergs
        dd_nisource = dd_nisource * dd_natom
 c-- use gamma deposition profiles if data available
        if(prof_ntgam>0) then
+c-- broken in dd
         help = sum(dd_nisource)
 !       write(6,*) 'ni56 source:',help
         if(gas_ny>1 .or. gas_nz>1) stop 'gg_update: gam_prof: no 2D/3D'
-        dd_nisource(:) = help * gamma_profile(tsp_t)
+        hlparr = gamma_profile(tsp_t)
+
+        l1 = irank*dd_ncell + 1
+        l2 = (irank+1)*dd_ncell
+        l = 0
+        ll = 0
+        do i=1,gas_nx
+         l = l + 1
+         if(l<l1) cycle
+         if(l>l2) exit
+         ll = ll + 1
+         hlparrdd(ll) = hlparr(i)
+        enddo !i
+        if(ll/=dd_ncell) stop 'gasgrid_update: ll/=dd_ncell'
+
+        dd_nisource = help * hlparrdd
        endif
       endif
 !}}}
