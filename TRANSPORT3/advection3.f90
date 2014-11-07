@@ -18,7 +18,7 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
 !
   integer,external :: binsrch
   integer :: ixholder,iyholder,izholder
-  real*8 :: rold, xold,yold,zold,drx,dry,drz
+  real*8 :: rold, xold,yold,zold,rx,ry,rz
   real*8 :: help
   integer :: i,j,k
   integer :: imove,nmove
@@ -64,51 +64,120 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
         i = ix
         j = iy
         k = iz
+        help = 0d0
 !-- number of cell moves
         nmove = abs(ix-ixholder)+abs(iy-iyholder) + &
              abs(iz-izholder)
         do imove=1,nmove
 
+!-- radial displacements toward grid planes
            if(xold==0d0) then
-              drx = rold
+              rx = 0d0
            else
-              drx = rold*(1d0-xmag(i)/abs(xold))
+              rx = rold*xmag(i)/abs(xold)
            endif
            if(yold==0d0) then
-              dry = rold
+              ry = 0d0
            else
-              dry = rold*(1d0-ymag(j)/abs(yold))
+              ry = rold*ymag(j)/abs(yold)
            endif
            if(zold==0d0) then
-              drz = rold
+              rz = 0d0
            else
-              drz = rold*(1d0-zmag(k)/abs(zold))
+              rz = rold*zmag(k)/abs(zold)
            endif
 
-           help = min(drx,dry,drz)
-           if(drx == help) then
+!-- using min radial displacement to move index
+           help = max(rx,ry,rz)
+
+!-- x-plane
+           if(rx == help) then
               if(xmag(i)==abs(gas_xarr(i+1))) then
-                 i = i+1
+!-- x<0
+                 if((gas_sig(i+1,j,k)+gas_cap(ig,i+1,j,k)) * &
+                      min(dy(j),dx(i+1),dz(k))*tsp_t >= &
+                      prt_tauddmc) then
+                    x = gas_xarr(i+1)
+                    y = (yold/xold)*gas_xarr(i+1)
+                    z = (zold/xold)*gas_xarr(i+1)
+                    exit
+                 else
+                    i = i+1
+                 endif
               else
-                 i = i-1
+!-- x>0
+                 if((gas_sig(i-1,j,k)+gas_cap(ig,i-1,j,k)) * &
+                      min(dy(j),dx(i-1),dz(k))*tsp_t >= &
+                      prt_tauddmc) then
+                    x = gas_xarr(i)
+                    y = (yold/xold)*gas_xarr(i)
+                    z = (zold/xold)*gas_xarr(i)
+                    exit
+                 else
+                    i = i-1
+                 endif
               endif
-           endif
-           if(dry == help) then
-              if(ymag(j)==abs(gas_yarr(j+1))) then
-                 j = j+1
-              else
-                 j = j-1
-              endif
-           endif
-           if(drz == help) then
-              if(zmag(k)==abs(gas_zarr(k+1))) then
-                 k = k+1
-              else
-                 k = k-1
-              endif
-           endif
 
+!-- y-plane
+           elseif(ry == help) then
+              if(ymag(j)==abs(gas_yarr(j+1))) then
+!-- y<0
+                 if((gas_sig(i,j+1,k)+gas_cap(ig,i,j+1,k)) * &
+                      min(dy(j+1),dx(i),dz(k))*tsp_t >= &
+                      prt_tauddmc) then
+                    x = (xold/yold)*gas_yarr(j+1)
+                    y = gas_yarr(j+1)
+                    z = (zold/yold)*gas_yarr(j+1)
+                    exit
+                 else
+                    j = j+1
+                 endif
+              else
+!-- y>0
+                 if((gas_sig(i,j-1,k)+gas_cap(ig,i,j-1,k)) * &
+                      min(dy(j-1),dx(i),dz(k))*tsp_t >= &
+                      prt_tauddmc) then
+                    x = (xold/yold)*gas_yarr(j)
+                    y = gas_yarr(j)
+                    z = (zold/yold)*gas_yarr(j)
+                    exit
+                 else
+                    j = j-1
+                 endif
+              endif
+
+!-- z-plane
+           elseif(rz == help) then
+              if(zmag(k)==abs(gas_zarr(k+1))) then
+!-- z<0
+                 if((gas_sig(i,j,k+1)+gas_cap(ig,i,j,k+1)) * &
+                      min(dy(j),dx(i),dz(k+1))*tsp_t >= &
+                      prt_tauddmc) then
+                    x = (xold/zold)*gas_zarr(k+1)
+                    y = (yold/zold)*gas_zarr(k+1)
+                    z = gas_zarr(k+1)
+                    exit
+                 else
+                    k = k+1
+                 endif
+              else
+!-- z>0
+                 if((gas_sig(i,j,k-1)+gas_cap(ig,i,j,k-1)) * &
+                      min(dy(j),dx(i),dz(k-1))*tsp_t >= &
+                      prt_tauddmc) then
+                    x = (xold/zold)*gas_zarr(k)
+                    y = (yold/zold)*gas_zarr(k)
+                    z = gas_zarr(k)
+                    exit
+                 else
+                    k = k-1
+                 endif
+              endif
+           endif
         enddo
+        ix = i
+        iy = j
+        iz = k
 
      else
 !-- DDMC inactive, setting index to tentative value
