@@ -23,8 +23,8 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
 !-- statement functions
   integer :: l
   real*8 :: dx,dy
-  dx(l) = gas_xarr(l+1) - gas_xarr(l)
-  dy(l) = gas_yarr(l+1) - gas_yarr(l)
+  dx(l) = grd_xarr(l+1) - grd_xarr(l)
+  dy(l) = grd_yarr(l+1) - grd_yarr(l)
 
 !-- storing initial position
   rold = rsrc
@@ -38,50 +38,50 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
      zsrc = zsrc*(tsp_t+alph2*tsp_dt)/(tsp_t+tsp_dt)
   endif
 
-  if(rsrc<gas_xarr(zrsrc).or.abs(zsrc) < &
-       min(abs(gas_yarr(zzsrc)),abs(gas_yarr(zzsrc+1)))) then
+  if(rsrc<grd_xarr(zrsrc).or.abs(zsrc) < &
+       min(abs(grd_yarr(zzsrc)),abs(grd_yarr(zzsrc+1)))) then
 !-- finding tentative new index
-     zrholder = binsrch(rsrc,gas_xarr,gas_nx+1,0)
-     zzholder = binsrch(zsrc,gas_yarr,gas_ny+1,0)
+     zrholder = binsrch(rsrc,grd_xarr,grd_nx+1,0)
+     zzholder = binsrch(zsrc,grd_yarr,grd_ny+1,0)
 !-- checking if DDMC is active
      if(.not.in_puretran.and.partstopper) then
         ir = zrsrc
         iz = zzsrc
 
-        if(iz>gas_ny/2) then
+        if(iz>grd_ny/2) then
 !-- z>0
            do while(iz>zzholder.or.ir>zrholder)
 !-- moving towards tentative index
               if(zold>0d0) then
-                 rtil = (rold/zold)*gas_yarr(iz)
+                 rtil = (rold/zold)*grd_yarr(iz)
               else
                  rtil = rsrc
               endif
               if(rold>0d0) then
-                 ztil = (zold/rold)*gas_xarr(ir)
+                 ztil = (zold/rold)*grd_xarr(ir)
               else
                  ztil = zsrc
               endif
 !
-              if(rtil<gas_xarr(ir)) then
+              if(rtil<grd_xarr(ir)) then
 
 !-- meeting inner radial bound
-                 if((gas_sig(ir-1,iz,1)+gas_cap(ig,ir-1,iz,1)) * &
+                 if((grd_sig(ir-1,iz,1)+grd_cap(ig,ir-1,iz,1)) * &
                       min(dy(iz),dx(ir-1)) * &
                       tsp_t >= prt_tauddmc) then
-                    rsrc = gas_xarr(ir)
+                    rsrc = grd_xarr(ir)
                     zsrc = ztil
                     exit
                  else
                     ir=ir-1
                  endif
-              elseif(ztil<gas_yarr(iz)) then
+              elseif(ztil<grd_yarr(iz)) then
 
 !-- meeting lower z-axis bound
-                 if((gas_sig(ir,iz-1,1)+gas_cap(ig,ir,iz-1,1)) * &
+                 if((grd_sig(ir,iz-1,1)+grd_cap(ig,ir,iz-1,1)) * &
                       min(dy(iz-1),dx(ir)) * &
                       tsp_t >= prt_tauddmc) then
-                    zsrc = gas_yarr(iz)
+                    zsrc = grd_yarr(iz)
                     rsrc = rtil
                     exit
                  else
@@ -97,35 +97,35 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
            do while(iz<zzholder.or.ir>zrholder)
 !-- moving towards tentative index
               if(zold<0d0) then
-                 rtil = (rold/zold)*gas_yarr(iz+1)
+                 rtil = (rold/zold)*grd_yarr(iz+1)
               else
                  rtil = rsrc
               endif
               if(rold>0d0) then
-                 ztil = (zold/rold)*gas_xarr(ir)
+                 ztil = (zold/rold)*grd_xarr(ir)
               else
                  ztil = zsrc
               endif
 !
-              if(rtil<gas_xarr(ir)) then
+              if(rtil<grd_xarr(ir)) then
 
 !-- meeting inner radial bound
-                 if((gas_sig(ir-1,iz,1)+gas_cap(ig,ir-1,iz,1)) * &
+                 if((grd_sig(ir-1,iz,1)+grd_cap(ig,ir-1,iz,1)) * &
                       min(dy(iz),dx(ir-1)) * &
                       tsp_t >= prt_tauddmc) then
-                    rsrc = gas_xarr(ir)
+                    rsrc = grd_xarr(ir)
                     zsrc = ztil
                     exit
                  else
                     ir=ir-1
                  endif
-              elseif(ztil>gas_yarr(iz+1)) then
+              elseif(ztil>grd_yarr(iz+1)) then
 
 !-- meeting upper z-axis bound (z<0)
-                 if((gas_sig(ir,iz+1,1)+gas_cap(ig,ir,iz+1,1)) * &
+                 if((grd_sig(ir,iz+1,1)+grd_cap(ig,ir,iz+1,1)) * &
                       min(dy(iz+1),dx(ir)) * &
                       tsp_t >= prt_tauddmc) then
-                    zsrc = gas_yarr(iz+1)
+                    zsrc = grd_yarr(iz+1)
                     rsrc = rtil
                     exit
                  else

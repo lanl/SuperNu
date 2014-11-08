@@ -156,9 +156,9 @@ c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0) then
        allocate(gas_wl(gas_ng+1))
-       allocate(gas_xarr(nx+1))
-       allocate(gas_yarr(ny+1))
-       allocate(gas_zarr(nz+1))
+       allocate(grd_xarr(nx+1))
+       allocate(grd_yarr(ny+1))
+       allocate(grd_zarr(nz+1))
        allocate(flx_wl(flx_ng+1))
        allocate(flx_mu(flx_nmu+1))
        allocate(flx_om(flx_nom+1))
@@ -176,11 +176,11 @@ c-- gamma profiles
       endif
 c
 c-- broadcast data
-      call mpi_bcast(gas_xarr,nx+1,MPI_REAL8,
+      call mpi_bcast(grd_xarr,nx+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_yarr,ny+1,MPI_REAL8,
+      call mpi_bcast(grd_yarr,ny+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_zarr,nz+1,MPI_REAL8,
+      call mpi_bcast(grd_zarr,nz+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_wl,gas_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -392,34 +392,34 @@ c     ------------------------!{{{
 c
 c-- gather
       call mpi_allgather(dd_temp,dd_ncell,MPI_REAL8,
-     &   gas_temp,dd_ncell,MPI_REAL8,
+     &   grd_temp,dd_ncell,MPI_REAL8,
      &   MPI_COMM_WORLD,ierr)
 c
       call mpi_allgather(dd_emit,dd_ncell,MPI_REAL8,
-     &   gas_emit,dd_ncell,MPI_REAL8,
+     &   grd_emit,dd_ncell,MPI_REAL8,
      &   MPI_COMM_WORLD,ierr)
       call mpi_allgather(dd_emitex,dd_ncell,MPI_REAL8,
-     &   gas_emitex,dd_ncell,MPI_REAL8,
+     &   grd_emitex,dd_ncell,MPI_REAL8,
      &   MPI_COMM_WORLD,ierr)
 c
       call mpi_allgather(dd_sig,dd_ncell,MPI_REAL8,
-     &   gas_sig,dd_ncell,MPI_REAL8,
+     &   grd_sig,dd_ncell,MPI_REAL8,
      &   MPI_COMM_WORLD,ierr)
       call mpi_allgather(dd_capgam,dd_ncell,MPI_REAL8,
-     &   gas_capgam,dd_ncell,MPI_REAL8,
+     &   grd_capgam,dd_ncell,MPI_REAL8,
      &   MPI_COMM_WORLD,ierr)
       call mpi_allgather(dd_siggrey,dd_ncell,MPI_REAL8,
-     &   gas_siggrey,dd_ncell,MPI_REAL8,
+     &   grd_siggrey,dd_ncell,MPI_REAL8,
      &   MPI_COMM_WORLD,ierr)
       call mpi_allgather(dd_fcoef,dd_ncell,MPI_REAL8,
-     &   gas_fcoef,dd_ncell,MPI_REAL8,
+     &   grd_fcoef,dd_ncell,MPI_REAL8,
      &   MPI_COMM_WORLD,ierr)
 c
       call mpi_allgather(dd_emitprob,gas_ng*dd_ncell,MPI_REAL8,
-     &   gas_emitprob,gas_ng*dd_ncell,MPI_REAL8,
+     &   grd_emitprob,gas_ng*dd_ncell,MPI_REAL8,
      &   MPI_COMM_WORLD,ierr)
       call mpi_allgather(dd_cap,gas_ng*dd_ncell,MPI_REAL8,
-     &   gas_cap,gas_ng*dd_ncell,MPI_REAL8,
+     &   grd_cap,gas_ng*dd_ncell,MPI_REAL8,
      &   MPI_COMM_WORLD,ierr)
 c!}}}
       end subroutine bcast_nonpermanent
@@ -428,7 +428,7 @@ c
 c
       subroutine reduce_tally
 c     -----------------------!{{{
-      use gasgridmod,nx=>gas_nx,ny=>gas_ny,nz=>gas_nz
+      use gasgridmod,nx=>grd_nx,ny=>grd_ny,nz=>grd_nz
       use timingmod
       use fluxmod
       implicit none
@@ -484,29 +484,29 @@ c
 c
 c-- dim==3
       n = nx*ny*nz
-      isnd3 = gas_numcensus
-      call mpi_reduce(isnd3,gas_numcensus,n,MPI_INTEGER,MPI_SUM,
+      isnd3 = grd_numcensus
+      call mpi_reduce(isnd3,grd_numcensus,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      isnd3 = gas_methodswap
-      call mpi_reduce(isnd3,gas_methodswap,n,MPI_INTEGER,MPI_SUM,
+      isnd3 = grd_methodswap
+      call mpi_reduce(isnd3,grd_methodswap,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      snd3 = gas_edep
-      call mpi_reduce(snd3,gas_edep,n,MPI_REAL8,MPI_SUM,
+      snd3 = grd_edep
+      call mpi_reduce(snd3,grd_edep,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      gas_edep = gas_edep/dble(nmpi)
+      grd_edep = grd_edep/dble(nmpi)
 c
-      snd3 = gas_eraddens
-      call mpi_reduce(snd3,gas_eraddens,n,MPI_REAL8,MPI_SUM,
+      snd3 = grd_eraddens
+      call mpi_reduce(snd3,grd_eraddens,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      gas_eraddens = gas_eraddens/dble(nmpi)
+      grd_eraddens = grd_eraddens/dble(nmpi)
 c
 c-- scatter
-      call mpi_scatter(gas_edep,dd_ncell,MPI_REAL8,
+      call mpi_scatter(grd_edep,dd_ncell,MPI_REAL8,
      &   dd_edep,dd_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_WORLD,ierr)
-      call mpi_scatter(gas_eraddens,dd_ncell,MPI_REAL8,
+      call mpi_scatter(grd_eraddens,dd_ncell,MPI_REAL8,
      &   dd_eraddens,dd_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_WORLD,ierr)
 c
@@ -532,7 +532,7 @@ c     -------------------------------------!{{{
 * for output
 ************************************************************************
       call mpi_gather(dd_temp,dd_ncell,MPI_REAL8,
-     &   gas_temp,dd_ncell,MPI_REAL8,
+     &   grd_temp,dd_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_WORLD,ierr)
 c!}}}
       end subroutine reduce_gastemp

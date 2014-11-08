@@ -14,7 +14,7 @@ c
 c
       subroutine grid_init(igeom,ndim)
 c     --------------------------------!{{{
-      use gasgridmod, only:gas_xarr,gas_yarr,gas_zarr
+      use gasgridmod, only:grd_xarr,grd_yarr,grd_zarr
       implicit none
       integer,intent(in) :: igeom
       integer,intent(in) :: ndim(3)
@@ -25,9 +25,9 @@ c
       grd_ny = ndim(2)
       grd_nz = ndim(3)
 
-      allocate(gas_xarr(grd_nx+1))
-      allocate(gas_yarr(grd_ny+1))
-      allocate(gas_zarr(grd_nz+1))
+      allocate(grd_xarr(grd_nx+1))
+      allocate(grd_yarr(grd_ny+1))
+      allocate(grd_zarr(grd_nz+1))
 c!}}}
       end subroutine grid_init
 c

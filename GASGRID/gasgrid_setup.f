@@ -40,7 +40,7 @@ c-- adopt partial masses from input file
       mass0fr = 0d0
       if(.not.in_noreadstruct) then
        if(.not.allocated(str_massfrdd)) stop 'input.str data not avail'
-       if(gas_ny>1) stop 'gg_setup: str_massfr: no 2D'
+       if(grd_ny>1) stop 'gg_setup: str_massfr: no 2D'
        do l=1,str_nabund
         ll = str_iabund(l)
         if(ll>gas_nelem) ll = 0 !divert to container

@@ -34,7 +34,7 @@ c-- gamma opacity
       real*8,parameter :: ye=.5d0 !todo: compute this value
 c-- previous values
       real*8,allocatable,save :: tempalt(:),siggreyalt(:)
-      real*8 :: hlparr(gas_nx),hlparrdd(dd_ncell)
+      real*8 :: hlparr(grd_nx),hlparrdd(dd_ncell)
 c-- timing
       real*8 :: t0,t1
 c
@@ -45,7 +45,7 @@ c-- nuclear decay
 c================
 c-- Get ni56 and co56 abundances on begin and end of the time step.!{{{
 c-- The difference between these two has decayed.
-      if(gas_isvelocity.and.gas_srctype=='none') then
+      if(grd_isvelocity.and.gas_srctype=='none') then
 c-- beginning of time step
        help = tsp_t
        call update_natomfr(help)
@@ -71,14 +71,14 @@ c-- use gamma deposition profiles if data available
 c-- broken in dd
         help = sum(dd_nisource)
 !       write(6,*) 'ni56 source:',help
-        if(gas_ny>1 .or. gas_nz>1) stop 'gg_update: gam_prof: no 2D/3D'
+        if(grd_ny>1 .or. grd_nz>1) stop 'gg_update: gam_prof: no 2D/3D'
         hlparr = gamma_profile(tsp_t)
 
         l1 = irank*dd_ncell + 1
         l2 = (irank+1)*dd_ncell
         l = 0
         ll = 0
-        do i=1,gas_nx
+        do i=1,grd_nx
          l = l + 1
          if(l<l1) cycle
          if(l>l2) exit
@@ -99,14 +99,14 @@ c========================================
       l2 = (irank+1)*dd_ncell
       l = 0
       ll = 0
-      do k=1,gas_nz
-      do j=1,gas_ny
-      do i=1,gas_nx
+      do k=1,grd_nz
+      do j=1,grd_ny
+      do i=1,grd_nx
        l = l + 1
        if(l<l1) cycle
        if(l>l2) exit
        ll = ll + 1
-       dd_vol(ll) = gas_vol(i,j,k)
+       dd_vol(ll) = grd_vol(i,j,k)
       enddo !i
       enddo !j
       enddo !k

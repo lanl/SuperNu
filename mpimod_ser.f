@@ -46,20 +46,17 @@ c
 * - stub
 ************************************************************************
 c-- domain decomposition
-      gas_temp = reshape(dd_temp,[gas_nx,gas_ny,gas_nz])
-      gas_nvol = reshape(dd_nvol,[gas_nx,gas_ny,gas_nz])
-      gas_emit = reshape(dd_emit,[gas_nx,gas_ny,gas_nz])
-      gas_nvolex = reshape(dd_nvolex,[gas_nx,gas_ny,gas_nz])
-      gas_emitex = reshape(dd_emitex,[gas_nx,gas_ny,gas_nz])
-      gas_nvolinit = reshape(dd_nvolinit,[gas_nx,gas_ny,gas_nz])
-      gas_evolinit = reshape(dd_evolinit,[gas_nx,gas_ny,gas_nz])
+      grd_temp = reshape(dd_temp,[grd_nx,grd_ny,grd_nz])
+      grd_emit = reshape(dd_emit,[grd_nx,grd_ny,grd_nz])
+      grd_emitex = reshape(dd_emitex,[grd_nx,grd_ny,grd_nz])
+      grd_evolinit = reshape(dd_evolinit,[grd_nx,grd_ny,grd_nz])
 
-      gas_emitprob = reshape(dd_emitprob,[gas_ng,gas_nx,gas_ny,gas_nz])
-      gas_cap = reshape(dd_cap,[gas_ng,gas_nx,gas_ny,gas_nz])
-      gas_sig = reshape(dd_sig,[gas_nx,gas_ny,gas_nz])
-      gas_capgam = reshape(dd_capgam,[gas_nx,gas_ny,gas_nz])
-      gas_siggrey = reshape(dd_siggrey,[gas_nx,gas_ny,gas_nz])
-      gas_fcoef = reshape(dd_fcoef,[gas_nx,gas_ny,gas_nz])
+      grd_emitprob = reshape(dd_emitprob,[gas_ng,grd_nx,grd_ny,grd_nz])
+      grd_cap = reshape(dd_cap,[gas_ng,grd_nx,grd_ny,grd_nz])
+      grd_sig = reshape(dd_sig,[grd_nx,grd_ny,grd_nz])
+      grd_capgam = reshape(dd_capgam,[grd_nx,grd_ny,grd_nz])
+      grd_siggrey = reshape(dd_siggrey,[grd_nx,grd_ny,grd_nz])
+      grd_fcoef = reshape(dd_fcoef,[grd_nx,grd_ny,grd_nz])
 
       end subroutine bcast_nonpermanent
 c
@@ -74,8 +71,8 @@ c
       gas_eextav=gas_eext
       gas_eveloav = gas_evelo
 c
-      dd_edep = reshape(gas_edep,[gas_nx*gas_ny*gas_nz])
-      dd_eraddens = reshape(gas_eraddens,[gas_nx*gas_ny*gas_nz])
+      dd_edep = reshape(grd_edep,[grd_nx*grd_ny*grd_nz])
+      dd_eraddens = reshape(grd_eraddens,[grd_nx*grd_ny*grd_nz])
       end subroutine reduce_tally
 c
 c
@@ -89,7 +86,7 @@ c
       subroutine reduce_gastemp
 c     -------------------------
       use gasgridmod
-      gas_temp = reshape(dd_temp,[gas_nx,gas_ny,gas_nz])
+      grd_temp = reshape(dd_temp,[grd_nx,grd_ny,grd_nz])
       end subroutine reduce_gastemp
 c
       subroutine scatter_restart_data

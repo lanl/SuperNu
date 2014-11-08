@@ -14,7 +14,7 @@ subroutine write_output
   character(16), save :: pos='rewind', fstat='replace'
 !
   reclen = flx_ng*flx_nmu*12
-  reclen2 = gas_nx*gas_ny*12
+  reclen2 = grd_nx*grd_ny*12
 
   inquire(file='output.wlgrid',exist=lexist)
 
@@ -36,7 +36,7 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.methodswap',status=fstat,position='append',recl=reclen2)
-  write(4,'(10000i12)') gas_methodswap
+  write(4,'(10000i12)') grd_methodswap
   close(4)
 
   open(unit=4,file='output.Lum',status=fstat,position='append',recl=reclen)
@@ -49,15 +49,15 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.temp',status=fstat,position='append',recl=reclen2)
-  write(4,'(1p,10000e12.4)') gas_temp
+  write(4,'(1p,10000e12.4)') grd_temp
   close(4)
 
-  open(unit=4,file='output.gas_fcoef',position='append',recl=reclen2)
-  write(4,'(1p,10000e12.4)') gas_fcoef
+  open(unit=4,file='output.grd_fcoef',position='append',recl=reclen2)
+  write(4,'(1p,10000e12.4)') grd_fcoef
   close(4)
 
   open(unit=4,file='output.eraddens',position='append',recl=reclen2)
-  write(4,'(1p,10000e12.4)') gas_eraddens
+  write(4,'(1p,10000e12.4)') grd_eraddens
   close(4)
 
   open(unit=4,file='output.conserve',status='unknown',position=pos)
@@ -65,7 +65,7 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.siggrey',position='append',recl=reclen2)
-  write(4,'(1p,10000e12.4)') gas_siggrey
+  write(4,'(1p,10000e12.4)') grd_siggrey
   close(4)
 
   open(unit=4,file='output.pcktstat',status='unknown',position=pos)

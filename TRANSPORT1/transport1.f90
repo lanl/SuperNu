@@ -33,7 +33,7 @@ subroutine transport1(ptcl,isvacant)
 !-- statement function
   integer :: l
   real*8 :: dx
-  dx(l) = gas_xarr(l+1) - gas_xarr(l)
+  dx(l) = grd_xarr(l+1) - grd_xarr(l)
 
   z => ptcl%zsrc
   r => ptcl%rsrc
@@ -45,7 +45,7 @@ subroutine transport1(ptcl,isvacant)
 !-- shortcut
   dtinv = 1d0/tsp_dt
 
-  if(gas_isvelocity) then
+  if(grd_isvelocity) then
      siglabfact = 1.0d0 - mu*r*cinv
      dcollabfact = tsp_t*(1d0-mu*r*cinv)
      thelp = tsp_t
@@ -58,7 +58,7 @@ subroutine transport1(ptcl,isvacant)
 
 !
 !-- calculating current group (rev. 120)
-  if(gas_isvelocity) then
+  if(grd_isvelocity) then
      g = binsrch(wl/(1.0d0-r*mu*cinv),gas_wl,gas_ng+1,in_ng)
   else
      g = binsrch(wl,gas_wl,gas_ng+1,in_ng)
@@ -67,14 +67,14 @@ subroutine transport1(ptcl,isvacant)
      !particle out of wlgrid energy bound
      if(g>gas_ng) then
         g=gas_ng
-        if(gas_isvelocity) then
+        if(grd_isvelocity) then
            wl=gas_wl(gas_ng+1)*(1.0d0-r*mu*cinv)
         else
            wl=gas_wl(gas_ng+1)
         endif
      elseif(g<1) then
         g=1
-        if(gas_isvelocity) then
+        if(grd_isvelocity) then
            wl=gas_wl(1)*(1.0d0-r*mu*cinv)
         else
            wl=gas_wl(1)
@@ -90,37 +90,37 @@ subroutine transport1(ptcl,isvacant)
 !
 !-- distance to boundary = db
   if (z == 1) then
-     db = abs(sqrt(gas_xarr(z+1)**2-(1.0-mu**2)*r**2)-mu*r)
-  elseif (mu < -sqrt(1.0d0-(gas_xarr(z)/r)**2)) then
-     db = abs(sqrt(gas_xarr(z)**2-(1.0d0-mu**2)*r**2)+mu*r)
+     db = abs(sqrt(grd_xarr(z+1)**2-(1.0-mu**2)*r**2)-mu*r)
+  elseif (mu < -sqrt(1.0d0-(grd_xarr(z)/r)**2)) then
+     db = abs(sqrt(grd_xarr(z)**2-(1.0d0-mu**2)*r**2)+mu*r)
   else
-     db = abs(sqrt(gas_xarr(z+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
+     db = abs(sqrt(grd_xarr(z+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
   endif
 !
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
-     if(gas_cap(g,z,1,1)>0d0) then
+     if(grd_cap(g,z,1,1)>0d0) then
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        dcol = abs(log(r1)/(gas_cap(g,z,1,1)*dcollabfact))
+        dcol = abs(log(r1)/(grd_cap(g,z,1,1)*dcollabfact))
      else
         dcol = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
      endif
   else
-     if((1.0d0-gas_fcoef(z,1,1))*gas_cap(g,z,1,1)>0.0d0) then
+     if((1.0d0-grd_fcoef(z,1,1))*grd_cap(g,z,1,1)>0.0d0) then
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        dcol = abs(log(r1)/((1.0d0-gas_fcoef(z,1,1))*gas_cap(g,z,1,1)*dcollabfact))
+        dcol = abs(log(r1)/((1.0d0-grd_fcoef(z,1,1))*grd_cap(g,z,1,1)*dcollabfact))
      else
         dcol = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
      endif
   endif
 !
 !-- distance to Thomson-type collision = dthm
-  if(gas_sig(z,1,1)>0.0d0) then
+  if(grd_sig(z,1,1)>0.0d0) then
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     dthm = abs(log(r1)/(gas_sig(z,1,1)*dcollabfact))
+     dthm = abs(log(r1)/(grd_sig(z,1,1)*dcollabfact))
   else
      dthm = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
   endif
@@ -129,7 +129,7 @@ subroutine transport1(ptcl,isvacant)
   dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%tsrc)*thelpinv)
 !
 !-- distance to Doppler shift = ddop
-   if(gas_isvelocity.and.g<gas_ng) then
+   if(grd_isvelocity.and.g<gas_ng) then
 !      r1 = rand()
 !      prt_tlyrand=prt_tlyrand+1
 !      ddop = pc_c*tsp_t*(gas_wl(g+1)-gas_wl(g))*abs(log(r1))/(gas_wl(g)*dcollabfact)
@@ -161,7 +161,7 @@ subroutine transport1(ptcl,isvacant)
   mu = (rold*mu+d)/r
 
 !-- transformation factor set
-  if(gas_isvelocity) then
+  if(grd_isvelocity) then
      elabfact = 1.0d0 - muold*rold*cinv
   else
      elabfact = 1d0
@@ -169,29 +169,29 @@ subroutine transport1(ptcl,isvacant)
   !calculating energy deposition and density
   !
   if(.not.prt_isimcanlog) then
-        gas_edep(z,1,1)=gas_edep(z,1,1)+E*(1.0d0-exp(-gas_fcoef(z,1,1) &
-             *gas_cap(g,z,1,1)*siglabfact*d*thelp))*elabfact
+        grd_edep(z,1,1)=grd_edep(z,1,1)+E*(1.0d0-exp(-grd_fcoef(z,1,1) &
+             *grd_cap(g,z,1,1)*siglabfact*d*thelp))*elabfact
      !--
-     if(gas_fcoef(z,1,1)*gas_cap(g,z,1,1)*dx(z)*thelp>1d-6) then     
-        gas_eraddens(z,1,1) = gas_eraddens(z,1,1)+E* &
-             (1.0d0-exp(-gas_fcoef(z,1,1)*siglabfact*gas_cap(g,z,1,1)*d*thelp))* &
-             elabfact/(gas_fcoef(z,1,1)*siglabfact*gas_cap(g,z,1,1)*pc_c*tsp_dt)
+     if(grd_fcoef(z,1,1)*grd_cap(g,z,1,1)*dx(z)*thelp>1d-6) then     
+        grd_eraddens(z,1,1) = grd_eraddens(z,1,1)+E* &
+             (1.0d0-exp(-grd_fcoef(z,1,1)*siglabfact*grd_cap(g,z,1,1)*d*thelp))* &
+             elabfact/(grd_fcoef(z,1,1)*siglabfact*grd_cap(g,z,1,1)*pc_c*tsp_dt)
      else
-        gas_eraddens(z,1,1) = gas_eraddens(z,1,1)+E* &
+        grd_eraddens(z,1,1) = grd_eraddens(z,1,1)+E* &
              elabfact*d*dcollabfact*cinv*dtinv
      endif
      !--
-!     E = E*exp(-gas_fcoef(z)*gas_cap(g,z)*d*dcollabfact)
-     E = E*exp(-gas_fcoef(z,1,1)*gas_cap(g,z,1,1)*siglabfact*d*thelp)
+!     E = E*exp(-grd_fcoef(z)*grd_cap(g,z)*d*dcollabfact)
+     E = E*exp(-grd_fcoef(z,1,1)*grd_cap(g,z,1,1)*siglabfact*d*thelp)
 
   else
      !
-     gas_eraddens(z,1,1) = gas_eraddens(z,1,1)+E* &
+     grd_eraddens(z,1,1) = grd_eraddens(z,1,1)+E* &
           elabfact*d*dcollabfact*cinv*dtinv
   endif
 
 !-- transformation factor reset
-  if(gas_isvelocity) then
+  if(grd_isvelocity) then
      elabfact = 1.0d0 - mu*r*cinv
   else
      elabfact = 1d0
@@ -218,12 +218,12 @@ subroutine transport1(ptcl,isvacant)
 !        wl = gas_wl(gas_ng+1)*(1d0-mu*r*cinv)
      endif
 !-- check if ddmc region
-     if (((gas_sig(z,1,1)+gas_cap(g,z,1,1))*dx(z)* &
+     if (((grd_sig(z,1,1)+grd_cap(g,z,1,1))*dx(z)* &
           thelp >= prt_tauddmc) &
           .and.(in_puretran.eqv..false.)) then
         ptcl%rtsrc = 2
-        gas_methodswap(z,1,1)=gas_methodswap(z,1,1)+1
-        if(gas_isvelocity) then
+        grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
+        if(grd_isvelocity) then
 !-- velocity effects accounting
            gas_evelo=gas_evelo+E*r*mu*cinv
 !
@@ -243,7 +243,7 @@ subroutine transport1(ptcl,isvacant)
      if(abs(mu)<0.0000001d0) then
         mu = 0.0000001d0
      endif
-     if(gas_isvelocity) then
+     if(grd_isvelocity) then
         mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
         help = 1d0/(1.0-mu*r*cinv)
@@ -259,10 +259,10 @@ subroutine transport1(ptcl,isvacant)
      !!{{{
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     if(r1<=gas_fcoef(z,1,1).and.prt_isimcanlog) then
+     if(r1<=grd_fcoef(z,1,1).and.prt_isimcanlog) then
         isvacant = .true.
         prt_done = .true.
-        gas_edep(z,1,1) = gas_edep(z,1,1) + E*elabfact
+        grd_edep(z,1,1) = grd_edep(z,1,1) + E*elabfact
 !-- velocity effects accounting
         gas_evelo = gas_evelo+E*(1d0-elabfact)
 !
@@ -273,7 +273,7 @@ subroutine transport1(ptcl,isvacant)
         if(abs(mu)<0.0000001d0) then
            mu = 0.0000001d0
         endif
-        if(gas_isvelocity) then
+        if(grd_isvelocity) then
            mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
            help = 1d0/(1.0-mu*r*cinv)
@@ -289,12 +289,12 @@ subroutine transport1(ptcl,isvacant)
         prt_tlyrand = prt_tlyrand+1
         do ig = 1, gas_ng
            iig = ig
-           if ((r1>=denom2).and.(r1<denom2+gas_emitprob(ig,z,1,1))) exit
-           denom2 = denom2+gas_emitprob(ig,z,1,1)
+           if ((r1>=denom2).and.(r1<denom2+grd_emitprob(ig,z,1,1))) exit
+           denom2 = denom2+grd_emitprob(ig,z,1,1)
         enddo
         g = iig
         !(rev 121): calculating radiation energy tally per group
-        !gas_eraddens(z)=gas_eraddens(z)+E*elabfact
+        !grd_eraddens(z)=grd_eraddens(z)+E*elabfact
         !-------------------------------------------------------
         ! sampling comoving wavelength in group
         r1 = rand()
@@ -304,8 +304,8 @@ subroutine transport1(ptcl,isvacant)
         !wl = 0.5d0*(gas_wl(g)+gas_wl(g+1))
         !
         ! sampling sub-group Planck function:
-!         x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*gas_temp(z))
-!         x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*gas_temp(z))
+!         x1 = pc_h*pc_c/(gas_wl(g+1)*pc_kb*grd_temp(z))
+!         x2 = pc_h*pc_c/(gas_wl(g)*pc_kb*grd_temp(z))
 !         if (x2<pc_plkpk) then
 !            bmax = x2**3/(exp(x2)-1d0)
 !         elseif (x1>pc_plkpk) then
@@ -325,19 +325,19 @@ subroutine transport1(ptcl,isvacant)
 !                 prt_tlyrand = prt_tlyrand+1
 !            xx0 = (1d0-r1)*x1+r1*x2
 !         enddo
-!         wl = pc_h*pc_c/(xx0*pc_kb*gas_temp(z))
+!         wl = pc_h*pc_c/(xx0*pc_kb*grd_temp(z))
         !
         !
-        if(gas_isvelocity) then
+        if(grd_isvelocity) then
 !-- converting comoving wavelength to lab frame wavelength
            wl = wl*(1.0-r*mu*cinv)
         endif
-        if (((gas_sig(z,1,1)+gas_cap(g,z,1,1))*dx(z)* &
+        if (((grd_sig(z,1,1)+grd_cap(g,z,1,1))*dx(z)* &
              thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
            ptcl%rtsrc = 2
-           gas_methodswap(z,1,1)=gas_methodswap(z,1,1)+1
-           if(gas_isvelocity) then
+           grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
+           if(grd_isvelocity) then
 !-- velocity effects accounting
               gas_evelo = gas_evelo+E*r*mu*cinv
 !
@@ -352,7 +352,7 @@ subroutine transport1(ptcl,isvacant)
      !!}}}
   elseif (d == db) then   !------boundary crossing ----
      if (mu>=0.0d0) then!{{{
-        if (z == gas_nx) then
+        if (z == grd_nx) then
 !           if(g/=1) then
            isvacant = .true.
            prt_done = .true.
@@ -380,22 +380,22 @@ subroutine transport1(ptcl,isvacant)
            flx_lumdev(g,1,1) = flx_lumdev(g,1,1)+(E*dtinv)**2
            flx_lumnum(g,1,1) = flx_lumnum(g,1,1)+1
         ! Checking if DDMC region right
-        elseif (((gas_sig(z+1,1,1)+gas_cap(g,z+1,1,1))*dx(z+1) &
+        elseif (((grd_sig(z+1,1,1)+grd_cap(g,z+1,1,1))*dx(z+1) &
              *thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           if(gas_isvelocity) then
+           if(grd_isvelocity) then
               mu = (mu-r*cinv)/(1.0-r*mu*cinv)
            endif
-           help = (gas_cap(g,z+1,1,1)+gas_sig(z+1,1,1))*dx(z+1)*thelp
+           help = (grd_cap(g,z+1,1,1)+grd_sig(z+1,1,1))*dx(z+1)*thelp
            ppl = 4d0/(3d0*help+6d0*pc_dext)
            P = ppl*(1.0+1.5*abs(mu))
 !--
            if (r1 < P) then
               ptcl%rtsrc = 2
-              gas_methodswap(z,1,1)=gas_methodswap(z,1,1)+1
-              if(gas_isvelocity) then
+              grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
+              if(grd_isvelocity) then
 !-- velocity effects accounting
                  gas_evelo=gas_evelo+E*(1d0-elabfact)
 !
@@ -410,32 +410,32 @@ subroutine transport1(ptcl,isvacant)
               r2 = rand()
               prt_tlyrand = prt_tlyrand+1
               mu = -max(r1,r2)
-              if(gas_isvelocity) then
+              if(grd_isvelocity) then
                  mu = (mu+r*cinv)/(1.0+r*mu*cinv)
               endif
            endif
         ! End of check
         else
            z = z+1
-           r = gas_xarr(z)
+           r = grd_xarr(z)
         endif
      else
         if (z==1) then
-           if (((gas_sig(z+1,1,1)+gas_cap(g,z+1,1,1))*dx(z+1) &
+           if (((grd_sig(z+1,1,1)+grd_cap(g,z+1,1,1))*dx(z+1) &
                 *thelp >= prt_tauddmc) &
                 .and.(in_puretran.eqv..false.)) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
-              if(gas_isvelocity) then
+              if(grd_isvelocity) then
                  mu = (mu-r*cinv)/(1.0-r*mu*cinv)
               endif
-              help = (gas_cap(g,z+1,1,1)+gas_sig(z+1,1,1))*dx(z+1)*thelp
+              help = (grd_cap(g,z+1,1,1)+grd_sig(z+1,1,1))*dx(z+1)*thelp
               ppl = 4d0/(3d0*help+6d0*pc_dext)
               P = ppl*(1.0+1.5*abs(mu))
               if (r1 < P) then
                  ptcl%rtsrc = 2
-                 gas_methodswap(z,1,1)=gas_methodswap(z,1,1)+1
-                 if(gas_isvelocity) then
+                 grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
+                 if(grd_isvelocity) then
 !-- velocity effects accounting
                     gas_evelo=gas_evelo+E*(1d0-elabfact)
 !
@@ -450,19 +450,19 @@ subroutine transport1(ptcl,isvacant)
                  r2 = rand()
                  prt_tlyrand = prt_tlyrand+1
                  mu = -max(r1,r2)
-                 if(gas_isvelocity) then
+                 if(grd_isvelocity) then
                     mu = (mu+r*cinv)/(1.0+r*mu*cinv)
                  endif
               endif
            else
               z = z+1
            endif
-        elseif (((gas_sig(z-1,1,1)+gas_cap(g,z-1,1,1))*dx(z-1) &
+        elseif (((grd_sig(z-1,1,1)+grd_cap(g,z-1,1,1))*dx(z-1) &
              *thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           if(gas_isvelocity) then
+           if(grd_isvelocity) then
               mu = (mu-r*cinv)/(1.0-r*mu*cinv)
 !-- amplification
 !
@@ -478,14 +478,14 @@ subroutine transport1(ptcl,isvacant)
               endif
 !--
            endif
-           help = (gas_cap(g,z-1,1,1)+gas_sig(z-1,1,1))*dx(z-1)*thelp
+           help = (grd_cap(g,z-1,1,1)+grd_sig(z-1,1,1))*dx(z-1)*thelp
            ppr = 4d0/(3d0*help+6d0*pc_dext)
            P = ppr*(1.0+1.5*abs(mu))
 !--
            if (r1 < P) then
               ptcl%rtsrc = 2
-              gas_methodswap(z,1,1)=gas_methodswap(z,1,1)+1
-              if(gas_isvelocity) then
+              grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
+              if(grd_isvelocity) then
 !-- velocity effects accounting
                  gas_evelo = gas_evelo+E*(1d0-elabfact)
 !
@@ -500,7 +500,7 @@ subroutine transport1(ptcl,isvacant)
               r2 = rand()
               prt_tlyrand = prt_tlyrand+1
               mu = max(r1,r2)
-              if(gas_isvelocity) then
+              if(grd_isvelocity) then
                  mu = (mu+r*cinv)/(1.0+r*mu*cinv)
               endif
            endif
@@ -511,7 +511,7 @@ subroutine transport1(ptcl,isvacant)
      endif!}}}
   elseif (d == dcen) then
      prt_done = .true.
-     gas_numcensus(z,1,1) = gas_numcensus(z,1,1)+1
+     grd_numcensus(z,1,1) = grd_numcensus(z,1,1)+1
 !     gas_erad = gas_erad + E*elabfact
 !
   endif

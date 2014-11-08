@@ -16,7 +16,7 @@ subroutine interior_source
 !##################################################
   logical :: lhelp
   integer :: i,j,k,il,ir,ipart,ivac,ig,iig
-  integer, dimension(gas_nx,gas_ny,gas_nz) :: ijkused
+  integer, dimension(grd_nx,grd_ny,grd_nz) :: ijkused
   real*8 :: r1, r2, r3, uul, uur, uumax
   real*8 :: om0, mu0, x0, y0, ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, thelp
@@ -25,11 +25,11 @@ subroutine interior_source
 !-- statement functions
   integer :: l
   real*8 :: dx,dy,dz
-  dx(l) = gas_xarr(l+1) - gas_xarr(l)
-  dy(l) = gas_yarr(l+1) - gas_yarr(l)
-  dz(l) = gas_zarr(l+1) - gas_zarr(l)
+  dx(l) = grd_xarr(l+1) - grd_xarr(l)
+  dy(l) = grd_yarr(l+1) - grd_yarr(l)
+  dz(l) = grd_zarr(l+1) - grd_zarr(l)
 
-  if(gas_isvelocity) then
+  if(grd_isvelocity) then
      thelp = tsp_t
   else
      thelp = 1d0
@@ -49,10 +49,10 @@ subroutine interior_source
      ptcl => prt_particles(ivac)
 !
 !-- check for available particle space to populate in cell
-     loop_k: do k=k,gas_nz
-        do j=j,gas_ny
-           do i=i,gas_nx
-              lhelp = ijkused(i,j,k)<gas_nvolex(i,j,k)
+     loop_k: do k=k,grd_nz
+        do j=j,grd_ny
+           do i=i,grd_nx
+              lhelp = ijkused(i,j,k)<grd_nvolex(i,j,k)
               if (lhelp) exit loop_k
            enddo
            i = 1
@@ -98,7 +98,7 @@ subroutine interior_source
      mu0 = 1d0-2d0*r1
 
 !-- calculating particle energy
-     ep0 = gas_emitex(i,j,k)/real(gas_nvolex(i,j,k))
+     ep0 = grd_emitex(i,j,k)/real(grd_nvolex(i,j,k))
      gas_eext=gas_eext+ep0
 
 !
@@ -110,14 +110,14 @@ subroutine interior_source
 !-- calculating position
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        ptcl%rsrc = (r1*gas_xarr(i+1)**3 + &
-             (1.0-r1)*gas_xarr(i)**3)**(1.0/3.0)
+        ptcl%rsrc = (r1*grd_xarr(i+1)**3 + &
+             (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
 !-- setting IMC logical
-        lhelp = ((gas_sig(i,1,1)+gas_cap(iig,i,1,1))*dx(i)* &
+        lhelp = ((grd_sig(i,1,1)+grd_cap(iig,i,1,1))*dx(i)* &
              thelp < prt_tauddmc).or.(in_puretran)
 
 !-- if velocity-dependent, transforming direction
-        if(lhelp.and.gas_isvelocity) then
+        if(lhelp.and.grd_isvelocity) then
            x0 = ptcl%rsrc
 !-- 1+dir*v/c
            cmffact = 1d0+mu0*x0/pc_c
@@ -133,20 +133,20 @@ subroutine interior_source
         ptcl%iy = j
 !-- calculating position
         r1 = rand()
-        ptcl%rsrc = sqrt(r1*gas_xarr(i+1)**2 + &
-             (1d0-r1)*gas_xarr(i)**2)
+        ptcl%rsrc = sqrt(r1*grd_xarr(i+1)**2 + &
+             (1d0-r1)*grd_xarr(i)**2)
         r1 = rand()
-        ptcl%y = r1*gas_yarr(j+1) + (1d0-r1) * &
-             gas_yarr(j)
+        ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
+             grd_yarr(j)
 !-- sampling azimuthal angle of direction
         r1 = rand()
         om0 = pc_pi2*r1
 !-- setting IMC logical
-        lhelp = ((gas_sig(i,j,1)+gas_cap(iig,i,j,1)) * &
+        lhelp = ((grd_sig(i,j,1)+grd_cap(iig,i,j,1)) * &
              min(dx(i),dy(j))*thelp < prt_tauddmc) &
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
-        if(lhelp.and.gas_isvelocity) then
+        if(lhelp.and.grd_isvelocity) then
            x0 = ptcl%rsrc
            y0 = ptcl%y
 !-- 1+dir*v/c
@@ -178,7 +178,7 @@ subroutine interior_source
 
      if (lhelp) then
 !-- IMC
-        if(gas_isvelocity) then
+        if(grd_isvelocity) then
            ptcl%esrc = ep0*cmffact
            ptcl%ebirth = ep0*cmffact
            ptcl%wlsrc = wl0/cmffact
@@ -213,10 +213,10 @@ subroutine interior_source
 
 !
 !-- check for available particle space to populate in cell
-     loop2_k: do k=k,gas_nz
-        do j=j,gas_ny
-           do i=i,gas_nx
-              lhelp = ijkused(i,j,k)<gas_nvol(i,j,k)
+     loop2_k: do k=k,grd_nz
+        do j=j,grd_ny
+           do i=i,grd_nx
+              lhelp = ijkused(i,j,k)<grd_nvol(i,j,k)
               if (lhelp) exit loop2_k
            enddo
            i = 1
@@ -247,8 +247,8 @@ subroutine interior_source
      prt_tlyrand = prt_tlyrand+1     
      do ig = 1, gas_ng
         iig = ig
-        if (r1>=denom2.and.r1<denom2+gas_emitprob(ig,i,j,k)) exit
-        denom2 = denom2+gas_emitprob(ig,i,j,k)
+        if (r1>=denom2.and.r1<denom2+grd_emitprob(ig,i,j,k)) exit
+        denom2 = denom2+grd_emitprob(ig,i,j,k)
      enddo
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
@@ -260,7 +260,7 @@ subroutine interior_source
      mu0 = 1d0-2d0*r1
 
 !-- calculating particle energy
-     ep0 = gas_emit(i,j,k)/real(gas_nvol(i,j,k))
+     ep0 = grd_emit(i,j,k)/real(grd_nvol(i,j,k))
 
 !
 !-- selecting geometry
@@ -273,29 +273,29 @@ subroutine interior_source
         r3 = 0d0
         r2 = 1d0
         il = max(i-1,1)  !-- left neighbor
-        ir = min(i+1,gas_nx)  !-- right neighbor
-        uul = .5d0*(gas_temp(il,1,1)**4 + gas_temp(i,1,1)**4)
-        uur = .5d0*(gas_temp(ir,1,1)**4 + gas_temp(i,1,1)**4)
+        ir = min(i+1,grd_nx)  !-- right neighbor
+        uul = .5d0*(grd_temp(il,1,1)**4 + grd_temp(i,1,1)**4)
+        uur = .5d0*(grd_temp(ir,1,1)**4 + grd_temp(i,1,1)**4)
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
         do while (r2 > r3)
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           x0 = (r1*gas_xarr(i+1)**3+(1.0-r1)*gas_xarr(i)**3)**(1.0/3.0)
-           r3 = (x0-gas_xarr(i))/dx(i)
+           x0 = (r1*grd_xarr(i+1)**3+(1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
+           r3 = (x0-grd_xarr(i))/dx(i)
            r3 = r3*uur+(1.0-r3)*uul
            r2 = rand()
            prt_tlyrand = prt_tlyrand+1
         enddo
         ptcl%rsrc = x0
 !-- setting IMC logical
-        lhelp = ((gas_sig(i,1,1)+gas_cap(iig,i,1,1))*dx(i)* &
+        lhelp = ((grd_sig(i,1,1)+grd_cap(iig,i,1,1))*dx(i)* &
              thelp < prt_tauddmc).or.(in_puretran)
-!write(0,*) i,gas_sig(i,1,1),gas_cap(iig,i,1,1),dx(i),thelp,prt_tauddmc
+!write(0,*) i,grd_sig(i,1,1),grd_cap(iig,i,1,1),dx(i),thelp,prt_tauddmc
 
 !-- if velocity-dependent, transforming direction
-        if (lhelp.and.gas_isvelocity) then
+        if (lhelp.and.grd_isvelocity) then
 !-- 1+dir*v/c
            cmffact = 1d0+mu0*x0/pc_c
 !-- mu
@@ -313,16 +313,16 @@ subroutine interior_source
         r3 = 0d0
         r2 = 1d0
         il = max(i-1,1)  !-- left neighbor
-        ir = min(i+1,gas_nx)  !-- right neighbor
-        uul = .5d0*(gas_temp(il,j,1)**4 + gas_temp(i,j,1)**4)
-        uur = .5d0*(gas_temp(ir,j,1)**4 + gas_temp(i,j,1)**4)
+        ir = min(i+1,grd_nx)  !-- right neighbor
+        uul = .5d0*(grd_temp(il,j,1)**4 + grd_temp(i,j,1)**4)
+        uur = .5d0*(grd_temp(ir,j,1)**4 + grd_temp(i,j,1)**4)
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
         do while (r2 > r3)
            r1 = rand()
-           x0 = sqrt(r1*gas_xarr(i+1)**2+(1.0-r1)*gas_xarr(i)**2)
-           r3 = (x0-gas_xarr(i))/dx(i)
+           x0 = sqrt(r1*grd_xarr(i+1)**2+(1.0-r1)*grd_xarr(i)**2)
+           r3 = (x0-grd_xarr(i))/dx(i)
            r3 = r3*uur+(1.0-r3)*uul
            r2 = rand()
         enddo
@@ -331,9 +331,9 @@ subroutine interior_source
         r3 = 0d0
         r2 = 1d0
         il = max(j-1,1)  !-- lower neighbor
-        ir = min(j+1,gas_ny)  !-- upper neighbor
-        uul = .5d0*(gas_temp(i,il,1)**4 + gas_temp(i,j,1)**4)
-        uur = .5d0*(gas_temp(i,ir,1)**4 + gas_temp(i,j,1)**4)
+        ir = min(j+1,grd_ny)  !-- upper neighbor
+        uul = .5d0*(grd_temp(i,il,1)**4 + grd_temp(i,j,1)**4)
+        uur = .5d0*(grd_temp(i,ir,1)**4 + grd_temp(i,j,1)**4)
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -342,18 +342,18 @@ subroutine interior_source
            r3 = r1*uur+(1d0-r1)*uul
            r2 = rand()
         enddo
-        y0 = r1*gas_yarr(j+1)+(1d0-r1)*gas_yarr(j)
+        y0 = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
         ptcl%y = y0
 !-- sampling azimuthal angle of direction
         r1 = rand()
         om0 = pc_pi2*r1
 
 !-- setting IMC logical
-        lhelp = ((gas_sig(i,j,1)+gas_cap(iig,i,j,1)) * &
+        lhelp = ((grd_sig(i,j,1)+grd_cap(iig,i,j,1)) * &
              min(dx(i),dy(j))*thelp < prt_tauddmc) &
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
-        if(lhelp.and.gas_isvelocity) then
+        if(lhelp.and.grd_isvelocity) then
 !-- 1+dir*v/c
            cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
            azitrfm = atan2(sqrt(1d0-mu0**2)*sin(om0), &
@@ -384,7 +384,7 @@ subroutine interior_source
 
      if (lhelp) then
 !-- IMC
-        if(gas_isvelocity) then
+        if(grd_isvelocity) then
            ptcl%esrc = ep0*cmffact
            ptcl%ebirth = ep0*cmffact
            ptcl%wlsrc = wl0/cmffact

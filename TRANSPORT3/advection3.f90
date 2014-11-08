@@ -25,12 +25,12 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
 !-- statement functions
   integer :: l
   real*8 :: dx,dy,dz,xnext,ynext,znext
-  dx(l) = gas_xarr(l+1) - gas_xarr(l)
-  dy(l) = gas_yarr(l+1) - gas_yarr(l)
-  dz(l) = gas_zarr(l+1) - gas_zarr(l)
-  xmag(l) = min(abs(gas_xarr(l)),abs(gas_xarr(l+1)))
-  ymag(l) = min(abs(gas_yarr(l)),abs(gas_yarr(l+1)))
-  zmag(l) = min(abs(gas_zarr(l)),abs(gas_zarr(l+1)))
+  dx(l) = grd_xarr(l+1) - grd_xarr(l)
+  dy(l) = grd_yarr(l+1) - grd_yarr(l)
+  dz(l) = grd_zarr(l+1) - grd_zarr(l)
+  xmag(l) = min(abs(grd_xarr(l)),abs(grd_xarr(l+1)))
+  ymag(l) = min(abs(grd_yarr(l)),abs(grd_yarr(l+1)))
+  zmag(l) = min(abs(grd_zarr(l)),abs(grd_zarr(l+1)))
 
 !-- storing initial position
   xold = x
@@ -55,9 +55,9 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
      if(xold==0d0.and.yold==0d0.and.zold==0d0) &
           stop 'advection3: invalid position update'
 !-- finding tentative new index
-     ixholder = binsrch(x,gas_xarr,gas_nx+1,0)
-     iyholder = binsrch(y,gas_yarr,gas_ny+1,0)
-     izholder = binsrch(z,gas_zarr,gas_nz+1,0)
+     ixholder = binsrch(x,grd_xarr,grd_nx+1,0)
+     iyholder = binsrch(y,grd_yarr,grd_ny+1,0)
+     izholder = binsrch(z,grd_zarr,grd_nz+1,0)
 !-- checking if DDMC is active
      if(.not.in_puretran.and.partstopper) then
 !-- initializing tracking cells
@@ -92,26 +92,26 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
 
 !-- x-plane
            if(rx == help) then
-              if(xmag(i)==abs(gas_xarr(i+1))) then
+              if(xmag(i)==abs(grd_xarr(i+1))) then
 !-- x<0
-                 if((gas_sig(i+1,j,k)+gas_cap(ig,i+1,j,k)) * &
+                 if((grd_sig(i+1,j,k)+grd_cap(ig,i+1,j,k)) * &
                       min(dy(j),dx(i+1),dz(k))*tsp_t >= &
                       prt_tauddmc) then
-                    x = gas_xarr(i+1)
-                    y = (yold/xold)*gas_xarr(i+1)
-                    z = (zold/xold)*gas_xarr(i+1)
+                    x = grd_xarr(i+1)
+                    y = (yold/xold)*grd_xarr(i+1)
+                    z = (zold/xold)*grd_xarr(i+1)
                     exit
                  else
                     i = i+1
                  endif
               else
 !-- x>0
-                 if((gas_sig(i-1,j,k)+gas_cap(ig,i-1,j,k)) * &
+                 if((grd_sig(i-1,j,k)+grd_cap(ig,i-1,j,k)) * &
                       min(dy(j),dx(i-1),dz(k))*tsp_t >= &
                       prt_tauddmc) then
-                    x = gas_xarr(i)
-                    y = (yold/xold)*gas_xarr(i)
-                    z = (zold/xold)*gas_xarr(i)
+                    x = grd_xarr(i)
+                    y = (yold/xold)*grd_xarr(i)
+                    z = (zold/xold)*grd_xarr(i)
                     exit
                  else
                     i = i-1
@@ -120,26 +120,26 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
 
 !-- y-plane
            elseif(ry == help) then
-              if(ymag(j)==abs(gas_yarr(j+1))) then
+              if(ymag(j)==abs(grd_yarr(j+1))) then
 !-- y<0
-                 if((gas_sig(i,j+1,k)+gas_cap(ig,i,j+1,k)) * &
+                 if((grd_sig(i,j+1,k)+grd_cap(ig,i,j+1,k)) * &
                       min(dy(j+1),dx(i),dz(k))*tsp_t >= &
                       prt_tauddmc) then
-                    x = (xold/yold)*gas_yarr(j+1)
-                    y = gas_yarr(j+1)
-                    z = (zold/yold)*gas_yarr(j+1)
+                    x = (xold/yold)*grd_yarr(j+1)
+                    y = grd_yarr(j+1)
+                    z = (zold/yold)*grd_yarr(j+1)
                     exit
                  else
                     j = j+1
                  endif
               else
 !-- y>0
-                 if((gas_sig(i,j-1,k)+gas_cap(ig,i,j-1,k)) * &
+                 if((grd_sig(i,j-1,k)+grd_cap(ig,i,j-1,k)) * &
                       min(dy(j-1),dx(i),dz(k))*tsp_t >= &
                       prt_tauddmc) then
-                    x = (xold/yold)*gas_yarr(j)
-                    y = gas_yarr(j)
-                    z = (zold/yold)*gas_yarr(j)
+                    x = (xold/yold)*grd_yarr(j)
+                    y = grd_yarr(j)
+                    z = (zold/yold)*grd_yarr(j)
                     exit
                  else
                     j = j-1
@@ -148,26 +148,26 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
 
 !-- z-plane
            elseif(rz == help) then
-              if(zmag(k)==abs(gas_zarr(k+1))) then
+              if(zmag(k)==abs(grd_zarr(k+1))) then
 !-- z<0
-                 if((gas_sig(i,j,k+1)+gas_cap(ig,i,j,k+1)) * &
+                 if((grd_sig(i,j,k+1)+grd_cap(ig,i,j,k+1)) * &
                       min(dy(j),dx(i),dz(k+1))*tsp_t >= &
                       prt_tauddmc) then
-                    x = (xold/zold)*gas_zarr(k+1)
-                    y = (yold/zold)*gas_zarr(k+1)
-                    z = gas_zarr(k+1)
+                    x = (xold/zold)*grd_zarr(k+1)
+                    y = (yold/zold)*grd_zarr(k+1)
+                    z = grd_zarr(k+1)
                     exit
                  else
                     k = k+1
                  endif
               else
 !-- z>0
-                 if((gas_sig(i,j,k-1)+gas_cap(ig,i,j,k-1)) * &
+                 if((grd_sig(i,j,k-1)+grd_cap(ig,i,j,k-1)) * &
                       min(dy(j),dx(i),dz(k-1))*tsp_t >= &
                       prt_tauddmc) then
-                    x = (xold/zold)*gas_zarr(k)
-                    y = (yold/zold)*gas_zarr(k)
-                    z = gas_zarr(k)
+                    x = (xold/zold)*grd_zarr(k)
+                    y = (yold/zold)*grd_zarr(k)
+                    z = grd_zarr(k)
                     exit
                  else
                     k = k-1

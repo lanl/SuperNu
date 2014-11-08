@@ -23,7 +23,7 @@ subroutine advection1(pretrans,ig,zsrc,rsrc)
 !-- statement function
   integer :: l
   real*8 :: dx
-  dx(l) = gas_xarr(l+1) - gas_xarr(l)
+  dx(l) = grd_xarr(l+1) - grd_xarr(l)
 !
 !-- different values are used before and after transport
   if(pretrans) then
@@ -32,19 +32,19 @@ subroutine advection1(pretrans,ig,zsrc,rsrc)
     rsrc = rsrc*(tsp_t + alph2*tsp_dt)/(tsp_t+tsp_dt)
   endif
 !
-  if (rsrc < gas_xarr(zsrc)) then
+  if (rsrc < grd_xarr(zsrc)) then
 !
-    zholder = binsrch(rsrc,gas_xarr,gas_nx+1,0)
+    zholder = binsrch(rsrc,grd_xarr,grd_nx+1,0)
 !
     if(.not.in_puretran.and.partstopper) then
        zfdiff = -1
-       if(gas_isvelocity) then
+       if(grd_isvelocity) then
           help = tsp_t
        else
           help = 1d0
        endif
        do ir = zsrc-1,zholder,-1
-          if((gas_sig(ir,1,1)+gas_cap(ig,ir,1,1))*dx(ir) &
+          if((grd_sig(ir,1,1)+grd_cap(ig,ir,1,1))*dx(ir) &
                *help>=prt_tauddmc) then
              zfdiff = ir
              exit
@@ -53,7 +53,7 @@ subroutine advection1(pretrans,ig,zsrc,rsrc)
        if(zfdiff.ne.-1) then
 !--
           zsrc = zfdiff+1
-          rsrc = gas_xarr(zsrc)
+          rsrc = grd_xarr(zsrc)
 !--
        else
           zsrc = zholder

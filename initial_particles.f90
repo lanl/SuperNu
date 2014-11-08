@@ -14,7 +14,7 @@ subroutine initial_particles
 !
   logical :: lhelp
   integer :: ig, i,j,k, iig, ipart, ihelp, jhelp
-  integer, dimension(gas_nx,gas_ny,gas_nz) :: ijkused
+  integer, dimension(grd_nx,grd_ny,grd_nz) :: ijkused
   real*8 :: wl0, mu0, om0, ep0, x0, y0
   real*8 :: denom2
   real*8 :: r1
@@ -33,10 +33,10 @@ subroutine initial_particles
   do ipart=1,prt_ninitnew
 
 !-- incrementing to next vacant cell
-     do k=k,gas_nz
-        do j=j,gas_ny
-           do i=i,gas_nx
-              lhelp = ijkused(i,j,k)<gas_nvolinit(i,j,k)
+     do k=k,grd_nz
+        do j=j,grd_ny
+           do i=i,grd_nx
+              lhelp = ijkused(i,j,k)<grd_nvolinit(i,j,k)
               if(lhelp) exit
            enddo
            if(lhelp) exit
@@ -81,7 +81,7 @@ subroutine initial_particles
      mu0 = 1d0-2d0*r1
 
 !-- calculating particle energy
-     ep0 = gas_evolinit(i,j,k)/real(gas_nvolinit(i,j,k))
+     ep0 = grd_evolinit(i,j,k)/real(grd_nvolinit(i,j,k))
 
 !
 !-- selecting geometry
@@ -92,11 +92,11 @@ subroutine initial_particles
 !-- calculating position
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        prt_particles(ipart)%rsrc = (r1*gas_xarr(i+1)**3 + &
-             (1d0-r1)*gas_xarr(i)**3)**(1d0/3d0)
+        prt_particles(ipart)%rsrc = (r1*grd_xarr(i+1)**3 + &
+             (1d0-r1)*grd_xarr(i)**3)**(1d0/3d0)
 
 !-- if velocity-dependent, transforming direction
-        if(gas_isvelocity) then
+        if(grd_isvelocity) then
            x0 = prt_particles(ipart)%rsrc
 !-- 1+dir*v/c
            cmffact = 1d0+x0*mu0/pc_c
@@ -112,18 +112,18 @@ subroutine initial_particles
         prt_particles(ipart)%iy = j
 !-- calculating position
         r1 = rand()
-        prt_particles(ipart)%rsrc = sqrt(r1*gas_xarr(i+1)**2 + &
-             (1d0-r1)*gas_xarr(i)**2)
+        prt_particles(ipart)%rsrc = sqrt(r1*grd_xarr(i+1)**2 + &
+             (1d0-r1)*grd_xarr(i)**2)
         r1 = rand()
-        prt_particles(ipart)%y = r1*gas_yarr(j+1) + &
-             (1d0-r1)*gas_yarr(j)
+        prt_particles(ipart)%y = r1*grd_yarr(j+1) + &
+             (1d0-r1)*grd_yarr(j)
 
 !-- sampling azimuthal angle of direction
         r1 = rand()
         om0 = pc_pi2*r1
 
 !-- if velocity-dependent, transforming direction
-        if(gas_isvelocity) then
+        if(grd_isvelocity) then
            x0 = prt_particles(ipart)%rsrc
            y0 = prt_particles(ipart)%y
 !-- 1+dir*v/c
@@ -154,7 +154,7 @@ subroutine initial_particles
      endselect
 
 !-- if velocity-dependent, transforming energy, wavelength
-     if(gas_isvelocity) then
+     if(grd_isvelocity) then
         prt_particles(ipart)%esrc = ep0*cmffact
         prt_particles(ipart)%ebirth = ep0*cmffact
         prt_particles(ipart)%wlsrc = wl0/cmffact

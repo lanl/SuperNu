@@ -39,21 +39,21 @@ subroutine particle_advance
 !-- statement function
   integer :: l
   real*8 :: dx,dy,dz
-  dx(l) = gas_xarr(l+1) - gas_xarr(l)
-  dy(l) = gas_yarr(l+1) - gas_yarr(l)
-  dz(l) = gas_zarr(l+1) - gas_zarr(l)
+  dx(l) = grd_xarr(l+1) - grd_xarr(l)
+  dy(l) = grd_yarr(l+1) - grd_yarr(l)
+  dz(l) = grd_zarr(l+1) - grd_zarr(l)
 
-  gas_edep = 0.0
+  grd_edep = 0.0
   gas_erad = 0.0
   flx_luminos = 0.0
   flx_lumdev = 0.0
   flx_lumnum = 0
-  gas_methodswap = 0
+  grd_methodswap = 0
 !
 !--(rev. 121)
-  gas_eraddens =0d0
+  grd_eraddens =0d0
 !--
-  gas_numcensus = 0
+  grd_numcensus = 0
   
   call time(t0)
   ! Propagating all particles that are not considered vacant: loop
@@ -82,7 +82,7 @@ subroutine particle_advance
         iy => one
         iz => one
 !-- 1-dir*v/c
-        if(gas_isvelocity.and.ptcl%rtsrc==1) then
+        if(grd_isvelocity.and.ptcl%rtsrc==1) then
            labfact = 1d0-rsrc*musrc/pc_c
         endif
 
@@ -93,7 +93,7 @@ subroutine particle_advance
         y => ptcl%y
         om => ptcl%om
 !-- 1-dir*v/c
-        if(gas_isvelocity.and.ptcl%rtsrc==1) then
+        if(grd_isvelocity.and.ptcl%rtsrc==1) then
            labfact = 1d0-(musrc*y+sqrt(1d0-musrc**2) * &
                 cos(om)*rsrc)/pc_c
         endif
@@ -107,7 +107,7 @@ subroutine particle_advance
 
      ! Looking up group
      if(ptcl%rtsrc==1) then
-        if(gas_isvelocity) then!{{{
+        if(grd_isvelocity) then!{{{
            ig = binsrch(wlsrc/labfact,gas_wl,gas_ng+1,in_ng)
         else
            ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
@@ -117,14 +117,14 @@ subroutine particle_advance
            !particle out of wlgrid energy bound
            if(ig>gas_ng) then
               ig=gas_ng
-              if(gas_isvelocity) then
+              if(grd_isvelocity) then
                  wlsrc=gas_wl(gas_ng+1)*labfact
               else
                  wlsrc=gas_wl(gas_ng+1)
               endif
            elseif(ig<1) then
               ig=1
-              if(gas_isvelocity) then
+              if(grd_isvelocity) then
                  wlsrc=gas_wl(1)*labfact
               else
                  wlsrc=gas_wl(1)
@@ -159,7 +159,7 @@ subroutine particle_advance
      
      ! Checking if particle conversions are required since prior time step
      if(.not.in_puretran) then
-        if(gas_isvelocity) then!{{{
+        if(grd_isvelocity) then!{{{
            help = tsp_t
         else
            help = 1d0
@@ -170,22 +170,22 @@ subroutine particle_advance
 
 !-- 1D
         case(1)
-           lhelp = (gas_sig(zsrc,1,1)+gas_cap(ig,zsrc,1,1)) * &
+           lhelp = (grd_sig(zsrc,1,1)+grd_cap(ig,zsrc,1,1)) * &
                 dx(zsrc)*help<prt_tauddmc
            if (lhelp) then
               if (ptcl%rtsrc == 2) then
 !-- DDMC -> IMC
-                 gas_methodswap(zsrc,1,1)=gas_methodswap(zsrc,1,1)+1
+                 grd_methodswap(zsrc,1,1)=grd_methodswap(zsrc,1,1)+1
 !-- sampling position uniformly
                  r1 =  rand()
                  prt_tlyrand = prt_tlyrand+1
-                 rsrc = (r1*gas_xarr(zsrc+1)**3 + &
-                      (1.0-r1)*gas_xarr(zsrc)**3)**(1.0/3.0)
+                 rsrc = (r1*grd_xarr(zsrc+1)**3 + &
+                      (1.0-r1)*grd_xarr(zsrc)**3)**(1.0/3.0)
 !-- sampling angle isotropically
                  r1 = rand()
                  prt_tlyrand = prt_tlyrand+1
                  musrc = 1.0 - 2.0*r1
-                 if(gas_isvelocity) then
+                 if(grd_isvelocity) then
 !-- 1+dir*v/c
                     cmffact = 1d0+rsrc*musrc/pc_c
 !-- mu
@@ -197,31 +197,31 @@ subroutine particle_advance
            else
               if(ptcl%rtsrc==1) then
 !-- IMC -> DDMC
-                 gas_methodswap(zsrc,1,1)=gas_methodswap(zsrc,1,1)+1
+                 grd_methodswap(zsrc,1,1)=grd_methodswap(zsrc,1,1)+1
               endif
            endif!}}}
 
 !-- 2D
         case(2)
-           lhelp = ((gas_sig(zsrc,iy,1)+gas_cap(ig,zsrc,iy,1)) * &
+           lhelp = ((grd_sig(zsrc,iy,1)+grd_cap(ig,zsrc,iy,1)) * &
                 min(dx(zsrc),dy(iy))*help < prt_tauddmc) &
                 .or.in_puretran
            if (lhelp) then
               if (ptcl%rtsrc == 2) then
 !-- DDMC -> IMC
-                 gas_methodswap(zsrc,iy,1)=gas_methodswap(zsrc,iy,1)+1
+                 grd_methodswap(zsrc,iy,1)=grd_methodswap(zsrc,iy,1)+1
 !-- sampling position uniformly
                  r1 =  rand()
-                 rsrc = sqrt(r1*gas_xarr(zsrc+1)**2 + &
-                      (1d0-r1)*gas_xarr(zsrc)**2)
+                 rsrc = sqrt(r1*grd_xarr(zsrc+1)**2 + &
+                      (1d0-r1)*grd_xarr(zsrc)**2)
                  r1 = rand()
-                 y = r1*gas_yarr(iy+1)+(1d0-r1)*gas_yarr(iy)
+                 y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
 !-- sampling direction values
                  r1 = rand()
                  om = pc_pi2*r1
                  r1 = rand()
                  musrc = 1d0 - 2d0*r1
-                 if(gas_isvelocity) then
+                 if(grd_isvelocity) then
 !-- 1+dir*v/c
                     cmffact = 1d0+(musrc*y+sqrt(1d0-musrc**2) * &
                          cos(om)*rsrc)/pc_c
@@ -248,7 +248,7 @@ subroutine particle_advance
            else
               if(ptcl%rtsrc==1) then
 !-- IMC -> DDMC
-                 gas_methodswap(zsrc,iy,1)=gas_methodswap(zsrc,iy,1)+1
+                 grd_methodswap(zsrc,iy,1)=grd_methodswap(zsrc,iy,1)+1
               endif
            endif!}}}
 
@@ -263,7 +263,7 @@ subroutine particle_advance
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               wlsrc = 1d0/(r1/gas_wl(ig+1)+(1d0-r1)/gas_wl(ig))
-              if(gas_isvelocity) then
+              if(grd_isvelocity) then
 !-- velocity effects accounting
                  gas_evelo=gas_evelo+esrc*(1d0-1d0/labfact)
 !
@@ -274,7 +274,7 @@ subroutine particle_advance
            endif
            ptcl%rtsrc = 1
         else
-           if(ptcl%rtsrc==1.and.gas_isvelocity) then
+           if(ptcl%rtsrc==1.and.grd_isvelocity) then
 !-- IMC -> DDMC
               gas_evelo = gas_evelo+esrc*(1d0-labfact)
               esrc = esrc*labfact
@@ -287,7 +287,7 @@ subroutine particle_advance
 !
 !-- looking up group
      if(ptcl%rtsrc==1) then
-        if(gas_isvelocity) then!{{{
+        if(grd_isvelocity) then!{{{
            ig = binsrch(wlsrc/labfact,gas_wl,gas_ng+1,in_ng)
         else
            ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
@@ -296,14 +296,14 @@ subroutine particle_advance
            !particle out of wlgrid energy bound
            if(ig>gas_ng) then
               ig=gas_ng
-              if(gas_isvelocity) then
+              if(grd_isvelocity) then
                  wlsrc=gas_wl(gas_ng+1)*labfact
               else
                  wlsrc=gas_wl(gas_ng+1)
               endif
            elseif(ig<1) then
               ig=1
-              if(gas_isvelocity) then
+              if(grd_isvelocity) then
                  wlsrc=gas_wl(1)*labfact
               else
                  wlsrc=gas_wl(1)
@@ -337,7 +337,7 @@ subroutine particle_advance
 
 !-- First portion of operator split particle velocity position adjustment
      if(isshift) then
-     if ((gas_isvelocity).and.(ptcl%rtsrc==1)) then
+     if ((grd_isvelocity).and.(ptcl%rtsrc==1)) then
         select case(in_igeom)
 !-- 1D
         case(1)
@@ -369,7 +369,7 @@ subroutine particle_advance
               call diffusion1(ptcl,isvacant)
            endif
 !-- transformation factor
-           if(gas_isvelocity .and. ptcl%rtsrc==1) then
+           if(grd_isvelocity .and. ptcl%rtsrc==1) then
               labfact = 1.0d0 - musrc*rsrc/pc_c
            else
               labfact = 1d0
@@ -381,7 +381,7 @@ subroutine particle_advance
               if(r1<0.5d0) then
                  isvacant = .true.
                  prt_done = .true.
-                 gas_edep(zsrc,iy,iz) = gas_edep(zsrc,iy,iz) + esrc*labfact
+                 grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
 !-- velocity effects accounting
                  if(ptcl%rtsrc==1) gas_evelo = gas_evelo + esrc*(1d0-labfact)
               else
@@ -405,7 +405,7 @@ subroutine particle_advance
               call diffusion2(ptcl,isvacant)
            endif
 !-- transformation factor
-           if(gas_isvelocity .and. ptcl%rtsrc==1) then
+           if(grd_isvelocity .and. ptcl%rtsrc==1) then
               labfact = 1d0-(musrc*y+sqrt(1d0-musrc**2) * &
                    cos(om)*rsrc)/pc_c
            else
@@ -418,7 +418,7 @@ subroutine particle_advance
               if(r1<0.5d0) then
                  isvacant = .true.
                  prt_done = .true.
-                 gas_edep(zsrc,iy,iz) = gas_edep(zsrc,iy,iz) + esrc*labfact
+                 grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
 !-- velocity effects accounting
                  if(ptcl%rtsrc==1) gas_evelo = gas_evelo + esrc*(1d0-labfact)
               else
@@ -442,7 +442,7 @@ subroutine particle_advance
      if(.not.isvacant) then
 
      ! Redshifting DDMC particle energy weights and wavelengths
-     if(ptcl%rtsrc == 2.and.gas_isvelocity) then
+     if(ptcl%rtsrc == 2.and.grd_isvelocity) then
 !-- redshifting energy weight!{{{
         gas_evelo=gas_evelo+esrc*(1d0-exp(-tsp_dt/tsp_t))
         esrc = esrc*exp(-tsp_dt/tsp_t)
@@ -465,7 +465,7 @@ subroutine particle_advance
         if(ig<gas_ng) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           x1 = gas_cap(ig,zsrc,iy,iz)
+           x1 = grd_cap(ig,zsrc,iy,iz)
            x2 = gas_wl(ig)/(pc_c*tsp_t*(gas_wl(ig+1)-gas_wl(ig)))
            if(r1<x2/(x1+x2)) then
               r1 = rand()
@@ -481,7 +481,7 @@ subroutine particle_advance
 
      ! Looking up group
      if(ptcl%rtsrc==1) then
-        if(gas_isvelocity) then!{{{
+        if(grd_isvelocity) then!{{{
            ig = binsrch(wlsrc/labfact,gas_wl,gas_ng+1,in_ng)
         else
            ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
@@ -490,14 +490,14 @@ subroutine particle_advance
            !particle out of wlgrid energy bound
            if(ig>gas_ng) then
               ig=gas_ng
-              if(gas_isvelocity) then
+              if(grd_isvelocity) then
                  wlsrc=gas_wl(gas_ng+1)*labfact
               else
                  wlsrc=gas_wl(gas_ng+1)
               endif
            elseif(ig<1) then
               ig=1
-              if(gas_isvelocity) then
+              if(grd_isvelocity) then
                  wlsrc=gas_wl(1)*labfact
               else
                  wlsrc=gas_wl(1)
@@ -530,7 +530,7 @@ subroutine particle_advance
      endif
      
      if(isshift) then
-     if ((gas_isvelocity).and.(ptcl%rtsrc==1)) then
+     if ((grd_isvelocity).and.(ptcl%rtsrc==1)) then
         select case(in_igeom)
 !-- 1D
         case(1)
@@ -548,7 +548,7 @@ subroutine particle_advance
      if(.not.isvacant) then
 !
 !-- radiation energy at census
-     if(gas_isvelocity) then
+     if(grd_isvelocity) then
         if(ptcl%rtsrc==2) then
            gas_erad = gas_erad + esrc
         else
@@ -588,9 +588,9 @@ end subroutine particle_advance
               !
 !               r1 = rand()
 !           prt_tlyrand = prt_tlyrand+1
-!               if(r1<gas_cap(ig,zsrc,1,1)/(gas_cap(ig,zsrc,1,1)+gas_sig(zsrc,1,1))) then
-!                  x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(zsrc,1,1))
-!                  x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(zsrc,1,1))
+!               if(r1<grd_cap(ig,zsrc,1,1)/(grd_cap(ig,zsrc,1,1)+grd_sig(zsrc,1,1))) then
+!                  x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*grd_temp(zsrc,1,1))
+!                  x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*grd_temp(zsrc,1,1))
 !                  if (x2<pc_plkpk) then
 !                     bmax = x2**3/(exp(x2)-1d0)
 !                  elseif (x1>pc_plkpk) then
@@ -610,5 +610,5 @@ end subroutine particle_advance
 !           prt_tlyrand = prt_tlyrand+1
 !                     xx0 = (1d0-r1)*x1+r1*x2
 !                  enddo
-!                  wlsrc = pc_h*pc_c/(xx0*pc_kb*gas_temp(zsrc,1,1))
+!                  wlsrc = pc_h*pc_c/(xx0*pc_kb*grd_temp(zsrc,1,1))
 !               else

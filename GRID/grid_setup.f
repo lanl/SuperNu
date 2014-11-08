@@ -8,8 +8,8 @@ c     ---------------------
 * Setup the grid on the computational domain
 ************************************************************************
 c-- agnostic grid setup
-      gas_xarr = str_xleft
-      gas_yarr = str_yleft
-      gas_zarr = str_zleft
+      grd_xarr = str_xleft
+      grd_yarr = str_yleft
+      grd_zarr = str_zleft
 c
       end subroutine grid_setup

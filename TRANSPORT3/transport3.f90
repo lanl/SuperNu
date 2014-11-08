@@ -31,9 +31,9 @@ subroutine transport3(ptcl,isvacant)
 !-- statement functions
   integer :: l
   real*8 :: dx,dy,dz
-  dx(l) = gas_xarr(l+1) - gas_xarr(l)
-  dy(l) = gas_yarr(l+1) - gas_yarr(l)
-  dz(l) = gas_zarr(l+1) - gas_zarr(l)
+  dx(l) = grd_xarr(l+1) - grd_xarr(l)
+  dy(l) = grd_yarr(l+1) - grd_yarr(l)
+  dz(l) = grd_zarr(l+1) - grd_zarr(l)
 
   ix => ptcl%zsrc
   iy => ptcl%iy
@@ -54,7 +54,7 @@ subroutine transport3(ptcl,isvacant)
   mu = sqrt(1d0-xi**2)*cos(om)
 !
 !-- setting vel-grid helper variables
-  if(gas_isvelocity) then
+  if(grd_isvelocity) then
 !-- calculating initial transformation factors
      elabfact=1d0-(xi*z+eta*y+mu*x)*cinv
      thelp = tsp_t
@@ -86,44 +86,44 @@ subroutine transport3(ptcl,isvacant)
   if(mu==0d0) then
      dbx = 2d0*pc_c*tsp_dt*thelpinv
   else
-     dbx = max((gas_xarr(ix)-x)/mu,(gas_xarr(ix+1)-x)/mu)
+     dbx = max((grd_xarr(ix)-x)/mu,(grd_xarr(ix+1)-x)/mu)
   endif
   if(eta==0d0) then
      dby = 2d0*pc_c*tsp_dt*thelpinv
   else
-     dby = max((gas_yarr(iy)-y)/eta,(gas_yarr(iy+1)-y)/eta)
+     dby = max((grd_yarr(iy)-y)/eta,(grd_yarr(iy+1)-y)/eta)
   endif
   if(xi==0d0) then
      dbz = 2d0*pc_c*tsp_dt*thelpinv
   else
-     dbz = max((gas_zarr(iz)-z)/xi,(gas_zarr(iz+1)-z)/xi)
+     dbz = max((grd_zarr(iz)-z)/xi,(grd_zarr(iz+1)-z)/xi)
   endif
 !
 !-- Thomson scattering distance
-  if(gas_sig(ix,iy,iz)>0d0) then
+  if(grd_sig(ix,iy,iz)>0d0) then
      r1 = rand()
-     dthm = -log(r1)*thelpinv/(elabfact*gas_sig(ix,iy,iz))
+     dthm = -log(r1)*thelpinv/(elabfact*grd_sig(ix,iy,iz))
   else
      dthm = 2d0*pc_c*tsp_dt*thelpinv
   endif
 !
 !-- effective collision distance
-  if(gas_cap(ig,ix,iy,iz)<=0d0) then
+  if(grd_cap(ig,ix,iy,iz)<=0d0) then
      dcol = 2d0*pc_c*tsp_dt*thelpinv
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
      r1 = rand()
-     dcol = -log(r1)*thelpinv/(elabfact*gas_cap(ig,ix,iy,iz))
-  elseif(gas_fcoef(ix,iy,iz)<1d0.and.gas_fcoef(ix,iy,iz)>=0d0) then
+     dcol = -log(r1)*thelpinv/(elabfact*grd_cap(ig,ix,iy,iz))
+  elseif(grd_fcoef(ix,iy,iz)<1d0.and.grd_fcoef(ix,iy,iz)>=0d0) then
      r1 = rand()
      dcol = -log(r1)*thelpinv/&
-          (elabfact*(1d0-gas_fcoef(ix,iy,iz))*gas_cap(ig,ix,iy,iz))
+          (elabfact*(1d0-grd_fcoef(ix,iy,iz))*grd_cap(ig,ix,iy,iz))
   else
      dcol = 2d0*pc_c*tsp_dt*thelpinv
   endif
 !
 !-- Doppler shift distance
-  if(gas_isvelocity.and.ig<gas_ng) then
+  if(grd_isvelocity.and.ig<gas_ng) then
      ddop = pc_c*(elabfact-wl/gas_wl(ig+1))
      if(ddop<0d0) then
         ddop = 2d0*pc_c*tsp_dt*thelpinv
@@ -148,31 +148,31 @@ subroutine transport3(ptcl,isvacant)
   ptcl%tsrc = ptcl%tsrc + thelp*cinv*d
 !
 !-- updating transformation factors
-  if(gas_isvelocity) then
+  if(grd_isvelocity) then
      elabfact=1d0-(mu*x+eta*y+xi*z)*cinv
   endif
 
 !-- tallying energy densities
   if(prt_isimcanlog) then
 !-- analog energy density
-     gas_eraddens(ix,iy,iz)=gas_eraddens(ix,iy,iz)+ep*elabfact* &
+     grd_eraddens(ix,iy,iz)=grd_eraddens(ix,iy,iz)+ep*elabfact* &
           d*thelp*cinv*dtinv
   else
 !-- nonanalog energy density
-     if(gas_fcoef(ix,iy,iz)*gas_cap(ig,ix,iy,iz)* &
+     if(grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz)* &
           min(dx(ix),dy(iy),dz(iz))*thelp>1d-6) then
-        gas_eraddens(ix,iy,iz) = gas_eraddens(ix,iy,iz)+ep* &
-             (1.0d0-exp(-gas_fcoef(ix,iy,iz)*elabfact* &
-             gas_cap(ig,ix,iy,iz)*d*thelp))* &
-             elabfact/(gas_fcoef(ix,iy,iz)*elabfact * &
-             gas_cap(ig,ix,iy,iz)*pc_c*tsp_dt)
+        grd_eraddens(ix,iy,iz) = grd_eraddens(ix,iy,iz)+ep* &
+             (1.0d0-exp(-grd_fcoef(ix,iy,iz)*elabfact* &
+             grd_cap(ig,ix,iy,iz)*d*thelp))* &
+             elabfact/(grd_fcoef(ix,iy,iz)*elabfact * &
+             grd_cap(ig,ix,iy,iz)*pc_c*tsp_dt)
      else
 !-- analog energy density
-        gas_eraddens(ix,iy,iz)=gas_eraddens(ix,iy,iz)+ep*elabfact* &
+        grd_eraddens(ix,iy,iz)=grd_eraddens(ix,iy,iz)+ep*elabfact* &
              d*thelp*cinv*dtinv
      endif
 !-- reducing particle energy
-     ep = ep*exp(-gas_fcoef(ix,iy,iz)*gas_cap(ig,ix,iy,iz) * &
+     ep = ep*exp(-grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz) * &
           elabfact*d*thelp)
   endif
 
@@ -183,7 +183,7 @@ subroutine transport3(ptcl,isvacant)
 !-- census
   if(d==dcen) then
      prt_done = .true.
-     gas_numcensus(ix,iy,iz)=gas_numcensus(ix,iy,iz)+1
+     grd_numcensus(ix,iy,iz)=grd_numcensus(ix,iy,iz)+1
      return
   endif
 
@@ -195,7 +195,7 @@ subroutine transport3(ptcl,isvacant)
      r1 = rand()
      om = pc_pi2*r1
 !-- checking velocity dependence
-     if(gas_isvelocity) then
+     if(grd_isvelocity) then
         eta = sqrt(1d0-xi**2)*sin(om)
         mu = sqrt(1d0-xi**2)*cos(om)
 !-- transforming xi
@@ -217,9 +217,9 @@ subroutine transport3(ptcl,isvacant)
      endif
   elseif(any([dbx,dby,dbz]==d)) then
 !-- checking if escaped domain
-     loutx = d==dbx.and.((mu>=0d0.and.ix==gas_nx).or.(mu<0.and.ix==1))
-     louty = d==dby.and.((eta>=0d0.and.iy==gas_ny).or.(eta<0.and.iy==1))
-     loutz = d==dbz.and.((xi>=0d0.and.iz==gas_nz).or.(xi<0.and.iz==1))
+     loutx = d==dbx.and.((mu>=0d0.and.ix==grd_nx).or.(mu<0.and.ix==1))
+     louty = d==dby.and.((eta>=0d0.and.iy==grd_ny).or.(eta<0.and.iy==1))
+     loutz = d==dbz.and.((xi>=0d0.and.iz==grd_nz).or.(xi<0.and.iz==1))
      if(loutx.or.louty.or.loutz) then
 !-- ending particle
         isvacant = .true.
@@ -248,7 +248,7 @@ subroutine transport3(ptcl,isvacant)
 !-- Thomson scatter
   if(d==dthm) then
 !-- checking velocity dependence
-     if(gas_isvelocity) then
+     if(grd_isvelocity) then
 !-- lab wavelength
         wl = wl*(1d0-(xi*z+eta*y+mu*x)*cinv)/elabfact
      endif
@@ -258,12 +258,12 @@ subroutine transport3(ptcl,isvacant)
   elseif(d==dcol) then
      r1 = rand()
 !-- checking if analog
-     if(prt_isimcanlog.and.r1<=gas_fcoef(ix,iy,iz)) then
+     if(prt_isimcanlog.and.r1<=grd_fcoef(ix,iy,iz)) then
 !-- effective absorption
         isvacant=.true.
         prt_done=.true.
 !-- adding comoving energy to deposition energy
-        gas_edep(ix,iy,iz)=gas_edep(ix,iy,iz)+ep*elabfact
+        grd_edep(ix,iy,iz)=grd_edep(ix,iy,iz)+ep*elabfact
         return
      else
 !-- effective scattering
@@ -271,24 +271,24 @@ subroutine transport3(ptcl,isvacant)
         denom2 = 0d0
         r1 = rand()
         do ig = 1, gas_ng
-           if ((r1>=denom2).and.(r1<denom2+gas_emitprob(ig,ix,iy,iz))) exit
-           denom2 = denom2+gas_emitprob(ig,ix,iy,iz)
+           if ((r1>=denom2).and.(r1<denom2+grd_emitprob(ig,ix,iy,iz))) exit
+           denom2 = denom2+grd_emitprob(ig,ix,iy,iz)
         enddo
 !-- uniformly in new group
         r1 = rand()
         wl = 1d0/((1d0-r1)/gas_wl(ig)+r1/gas_wl(ig+1))
 !-- transforming to lab
-        if(gas_isvelocity) then
+        if(grd_isvelocity) then
            wl = wl*(1d0-(xi*z+eta*y+mu*x)*cinv)
         endif
 !-- checking for DDMC in new group
-        if((gas_cap(ig,ix,iy,iz)+gas_sig(ix,iy,iz)) * &
+        if((grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
              min(dx(ix),dy(iy),dz(iz))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
            ptcl%rtsrc = 2
-           gas_methodswap(ix,iy,iz)=gas_methodswap(ix,iy,iz)+1
+           grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- transforming to cmf
-           if(gas_isvelocity) then
+           if(grd_isvelocity) then
               ep = ep*(1d0-(xi*z+eta*y+mu*x)*cinv)
               ep0 = ep0*(1d0-(xi*z+eta*y+mu*x)*cinv)
               wl = wl/(1d0-(xi*z+eta*y+mu*x)*cinv)
@@ -307,14 +307,14 @@ subroutine transport3(ptcl,isvacant)
         ihelp = -1
      endif
 
-     if((gas_cap(ig,ix+ihelp,iy,iz)+gas_sig(ix+ihelp,iy,iz)) * &
+     if((grd_cap(ig,ix+ihelp,iy,iz)+grd_sig(ix+ihelp,iy,iz)) * &
           min(dx(ix+ihelp),dy(iy),dz(iz))*thelp < prt_tauddmc &
           .or.in_puretran) then
 !-- IMC in adjacent cell
         ix = ix+ihelp
      else
 !-- DDMC in adjacent cell
-        if(gas_isvelocity) then
+        if(grd_isvelocity) then
 !-- transforming x-cosine to cmf
            mu = (mu-x*cinv)/elabfact
            if(mu>1d0) then
@@ -323,15 +323,15 @@ subroutine transport3(ptcl,isvacant)
               mu = -1
            endif
         endif
-        help = (gas_cap(ig,ix+ihelp,iy,iz)+gas_sig(ix+ihelp,iy,iz)) * &
+        help = (grd_cap(ig,ix+ihelp,iy,iz)+grd_sig(ix+ihelp,iy,iz)) * &
              dx(ix+ihelp)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
         r1 = rand()
         if (r1 < help*(1d0+1.5d0*abs(mu))) then
            ptcl%rtsrc = 2
-           gas_methodswap(ix,iy,iz)=gas_methodswap(ix,iy,iz)+1
-           if(gas_isvelocity) then
+           grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+           if(grd_isvelocity) then
               ep = ep*elabfact
               ep0 = ep0*elabfact
               wl = wl/elabfact
@@ -348,7 +348,7 @@ subroutine transport3(ptcl,isvacant)
 !-- resampling azimuthal
            om = atan2(eta,mu)
            if(om<0d0) om=om+pc_pi2
-           if(gas_isvelocity) then
+           if(grd_isvelocity) then
 !-- transforming xi to lab
               xi=(xi+z*cinv)/(1d0+(x*mu+y*eta+z*xi)*cinv)
               if(xi>1d0) then
@@ -373,14 +373,14 @@ subroutine transport3(ptcl,isvacant)
         ihelp = -1
      endif
 
-     if((gas_cap(ig,ix,iy+ihelp,iz)+gas_sig(ix,iy+ihelp,iz)) * &
+     if((grd_cap(ig,ix,iy+ihelp,iz)+grd_sig(ix,iy+ihelp,iz)) * &
           min(dx(ix),dy(iy+ihelp),dz(iz))*thelp < prt_tauddmc &
           .or.in_puretran) then
 !-- IMC in adjacent cell
         iy = iy+ihelp
      else
 !-- DDMC in adjacent cell
-        if(gas_isvelocity) then
+        if(grd_isvelocity) then
 !-- transforming x-cosine to cmf
            eta = (eta-y*cinv)/elabfact
            if(eta>1d0) then
@@ -389,15 +389,15 @@ subroutine transport3(ptcl,isvacant)
               eta = -1
            endif
         endif
-        help = (gas_cap(ig,ix,iy+ihelp,iz)+gas_sig(ix,iy+ihelp,iz)) * &
+        help = (grd_cap(ig,ix,iy+ihelp,iz)+grd_sig(ix,iy+ihelp,iz)) * &
              dy(iy+ihelp)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
         r1 = rand()
         if (r1 < help*(1d0+1.5d0*abs(eta))) then
            ptcl%rtsrc = 2
-           gas_methodswap(ix,iy,iz)=gas_methodswap(ix,iy,iz)+1
-           if(gas_isvelocity) then
+           grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+           if(grd_isvelocity) then
               ep = ep*elabfact
               ep0 = ep0*elabfact
               wl = wl/elabfact
@@ -414,7 +414,7 @@ subroutine transport3(ptcl,isvacant)
 !-- resampling azimuthal
            om = atan2(eta,mu)
            if(om<0d0) om=om+pc_pi2
-           if(gas_isvelocity) then
+           if(grd_isvelocity) then
 !-- transforming xi to lab
               xi=(xi+z*cinv)/(1d0+(x*mu+y*eta+z*xi)*cinv)
               if(xi>1d0) then
@@ -439,14 +439,14 @@ subroutine transport3(ptcl,isvacant)
         ihelp = -1
      endif
 
-     if((gas_cap(ig,ix,iy,iz+ihelp)+gas_sig(ix,iy,iz+ihelp)) * &
+     if((grd_cap(ig,ix,iy,iz+ihelp)+grd_sig(ix,iy,iz+ihelp)) * &
           min(dx(ix),dy(iy),dz(iz+ihelp))*thelp < prt_tauddmc &
           .or.in_puretran) then
 !-- IMC in adjacent cell
         iz = iz+ihelp
      else
 !-- DDMC in adjacent cell
-        if(gas_isvelocity) then
+        if(grd_isvelocity) then
 !-- transforming x-cosine to cmf
            xi = (xi-z*cinv)/elabfact
            if(xi>1d0) then
@@ -455,15 +455,15 @@ subroutine transport3(ptcl,isvacant)
               xi = -1
            endif
         endif
-        help = (gas_cap(ig,ix,iy,iz+ihelp)+gas_sig(ix,iy,iz+ihelp)) * &
+        help = (grd_cap(ig,ix,iy,iz+ihelp)+grd_sig(ix,iy,iz+ihelp)) * &
              dz(iz+ihelp)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
         !-- sampling
         r1 = rand()
         if (r1 < help*(1d0+1.5d0*abs(xi))) then
            ptcl%rtsrc = 2
-           gas_methodswap(ix,iy,iz)=gas_methodswap(ix,iy,iz)+1
-           if(gas_isvelocity) then
+           grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+           if(grd_isvelocity) then
               ep = ep*elabfact
               ep0 = ep0*elabfact
               wl = wl/elabfact
@@ -479,7 +479,7 @@ subroutine transport3(ptcl,isvacant)
            om = pc_pi2*r1
            mu = sqrt(1d0-xi**2)*cos(om)
            eta = sqrt(1d0-xi**2)*sin(om)
-           if(gas_isvelocity) then
+           if(grd_isvelocity) then
 !-- transforming xi to lab
               xi=(xi+z*cinv)/(1d0+(x*mu+y*eta+z*xi)*cinv)
               if(xi>1d0) then
@@ -497,7 +497,7 @@ subroutine transport3(ptcl,isvacant)
 !
 !-- Doppler shift
   elseif(d==ddop) then
-     if(.not.gas_isvelocity) stop 'transport3: ddop and no velocity'
+     if(.not.grd_isvelocity) stop 'transport3: ddop and no velocity'
      if(ig<gas_ng) then
 !-- shifting group
         ig = ig+1
@@ -509,12 +509,12 @@ subroutine transport3(ptcl,isvacant)
         wl = wl*elabfact
      endif
 !-- check if ddmc region
-     if ((gas_sig(ix,iy,iz)+gas_cap(ig,ix,iy,iz)) * &
+     if ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz)) * &
           min(dx(ix),dy(iy),dz(iz))*thelp >= prt_tauddmc &
           .and..not.in_puretran) then
         ptcl%rtsrc = 2
-        gas_methodswap(ix,iy,iz)=gas_methodswap(ix,iy,iz)+1
-        if(gas_isvelocity) then
+        grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+        if(grd_isvelocity) then
            ep = ep*elabfact
            ep0 = ep0*elabfact
            wl = wl/elabfact

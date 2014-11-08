@@ -8,6 +8,6 @@ c     -------------------------
 * Setup the grid on the whole domain
 ************************************************************************
 c-- volume 
-      call grid_volume(grd_igeom,gas_isvelocity,t)
+      call grid_volume(grd_igeom,grd_isvelocity,t)
 
       end subroutine grid_update

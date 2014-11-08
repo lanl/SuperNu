@@ -8,7 +8,7 @@ subroutine analytic_initial
   use profiledatamod
   implicit none
 
-  real*8 :: trad(gas_nx,gas_ny,gas_nz)
+  real*8 :: trad(grd_nx,grd_ny,grd_nz)
 
 !###############################################
 ! This subroutines attributes radiation energy to
@@ -16,13 +16,13 @@ subroutine analytic_initial
 ! of gas_srctype
 !###############################################
 !
-  gas_evolinit = 0d0
+  grd_evolinit = 0d0
 !
 !-- initial radiation energy
   trad = in_tempradinit
 !
-!-- map radiation temperature to gas_evolinit
-  gas_evolinit = pc_acoef*trad**4 * gas_vol
+!-- map radiation temperature to grd_evolinit
+  grd_evolinit = pc_acoef*trad**4 * grd_vol
 !--
 !
 !-- source specific initial conditions (overrides gas_inittyp)

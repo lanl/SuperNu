@@ -17,23 +17,23 @@ subroutine initialnumbers
   
   prt_ninitnew=0
 !
-  gas_nvolinit = 0
-  gas_evolinit = 0d0
+  grd_nvolinit = 0
+  grd_evolinit = 0d0
   etotinit = 0d0
 !
   gas_eext = 0d0
 !
   call analytic_initial
 
-  etotinit = sum(gas_evolinit)
+  etotinit = sum(grd_evolinit)
 !
   gas_eext = etotinit
 !
   if(etotinit > 0d0) then
-     gas_nvolinit = nint(gas_evolinit*prt_ninit/etotinit) !+50
+     grd_nvolinit = nint(grd_evolinit*prt_ninit/etotinit) !+50
   endif
 
-  prt_ninitnew = sum(gas_nvolinit)
+  prt_ninitnew = sum(grd_nvolinit)
 
 
 end subroutine initialnumbers

@@ -20,20 +20,20 @@ c
 c
       select case(igeom)
       case(1)
-       gas_vol(:,1,1) = pc_pi43*t**3 *
-     &   (gas_xarr(2:)**3 - gas_xarr(:gas_nx)**3)
+       grd_vol(:,1,1) = pc_pi43*t**3 *
+     &   (grd_xarr(2:)**3 - grd_xarr(:grd_nx)**3)
       case(2)
-       forall(i=1:gas_nx,j=1:gas_ny)
-        gas_vol(i,j,1) = pc_pi*t**3 *
-     &    (gas_yarr(j+1) - gas_yarr(j)) *
-     &    (gas_xarr(i+1)**2 - gas_xarr(i)**2)
+       forall(i=1:grd_nx,j=1:grd_ny)
+        grd_vol(i,j,1) = pc_pi*t**3 *
+     &    (grd_yarr(j+1) - grd_yarr(j)) *
+     &    (grd_xarr(i+1)**2 - grd_xarr(i)**2)
        endforall
       case(3)
-       forall(i=1:gas_nx,j=1:gas_ny,k=1:gas_nz)
-        gas_vol(i,j,k) = t**3 *
-     &    (gas_xarr(i+1) - gas_xarr(i)) *
-     &    (gas_yarr(j+1) - gas_yarr(j)) *
-     &    (gas_zarr(k+1) - gas_zarr(k))
+       forall(i=1:grd_nx,j=1:grd_ny,k=1:grd_nz)
+        grd_vol(i,j,k) = t**3 *
+     &    (grd_xarr(i+1) - grd_xarr(i)) *
+     &    (grd_yarr(j+1) - grd_yarr(j)) *
+     &    (grd_zarr(k+1) - grd_zarr(k))
        endforall
       case default
        stop 'grid_volume: invalid igeom'

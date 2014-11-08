@@ -23,11 +23,11 @@ subroutine sourcenumbers(nmpi)
 
 !-- sanity check
 
-  gas_nvol = 0
-  gas_nvolex = 0
+  grd_nvol = 0
+  grd_nvolex = 0
 
 !-- etot
-  etot = sum(gas_emit) + sum(gas_emitex)
+  etot = sum(grd_emit) + sum(grd_emitex)
   
   ! Calculating number of domain inner boundary particles (if any)
   prt_nsurf = nint(gas_esurf*prt_ns/etot)
@@ -43,28 +43,28 @@ subroutine sourcenumbers(nmpi)
      ihelp = 1
   endselect
   prt_nexsrc=0
-  do k = 1, gas_nz
-  do j = 1, gas_ny
-  do i = 1, gas_nx
+  do k = 1, grd_nz
+  do j = 1, grd_ny
+  do i = 1, grd_nx
 
      !thermal volume source numbers
-     if(gas_emit(i,j,k)<=0d0) then
-        gas_nvol(i,j,k)=0
+     if(grd_emit(i,j,k)<=0d0) then
+        grd_nvol(i,j,k)=0
      else
-        gas_nvol(i,j,k)=nint(gas_emit(i,j,k)*prt_ns/etot) + &
+        grd_nvol(i,j,k)=nint(grd_emit(i,j,k)*prt_ns/etot) + &
              ihelp
      endif
-     prt_nnew = prt_nnew + gas_nvol(i,j,k)
+     prt_nnew = prt_nnew + grd_nvol(i,j,k)
 
      !external volume source numbers
-     if(gas_emitex(i,j,k)<=0d0) then
-        gas_nvolex(i,j,k)=0
+     if(grd_emitex(i,j,k)<=0d0) then
+        grd_nvolex(i,j,k)=0
      else
-        gas_nvolex(i,j,k)=nint(gas_emitex(i,j,k)*prt_ns/etot) + &
+        grd_nvolex(i,j,k)=nint(grd_emitex(i,j,k)*prt_ns/etot) + &
              ihelp
      endif
-     prt_nexsrc = prt_nexsrc + gas_nvolex(i,j,k)
-     prt_nnew = prt_nnew + gas_nvolex(i,j,k)
+     prt_nexsrc = prt_nexsrc + grd_nvolex(i,j,k)
+     prt_nnew = prt_nnew + grd_nvolex(i,j,k)
   enddo
   enddo
   enddo

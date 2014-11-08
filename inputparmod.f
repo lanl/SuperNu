@@ -42,7 +42,7 @@ c============
 c
 c-- temperature parameters
       real*8 :: in_consttemp = 0d0 !non-zero will not read temp from file. units: K
-      real*8 :: in_tempradinit = 0d0 !initial radiation temperature.  Use gas_temp by default
+      real*8 :: in_tempradinit = 0d0 !initial radiation temperature.  Use grd_temp by default
 c
 c-- analytic heat capacity terms
       real*8 :: in_cvcoef = 1d0 !power law heat capacity coefficient

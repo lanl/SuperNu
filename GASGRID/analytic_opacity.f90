@@ -67,7 +67,7 @@ subroutine analytic_opacity
      ! sigmaP = sigmaR = constant = A (dd_sigcoef set in input.par)!{{{
      ! Su&Olson picket-fence distributions (tests: A,B,C (Su and Olson 1999))
      ! Input wavelength grid not used
-     if(gas_ny>1) stop 'analytic_opacity: no 2D for opacanaltyp=pick'
+     if(grd_ny>1) stop 'analytic_opacity: no 2D for opacanaltyp=pick'
      do i = 1, dd_ncell
         dd_siggrey(i) = gas_sigcoef*dd_temp(i)**gas_sigtpwr* &
              dd_rho(i)**gas_sigrpwr     

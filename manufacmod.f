@@ -65,14 +65,14 @@ c-- verify applicable input pars
       call check_manufacpars
 c
 c-- determine manufacture type
-      if(gas_isvelocity) then
+      if(grd_isvelocity) then
 c         
 c-- implement/modify velocity dependent manufactured radiation source
          select case (gas_opacanaltype)
          case ('grey')
 c-- grey solution
-            do i = 1, gas_nx
-               gas_emitex(i,1,1)= (1d0/dt)*(
+            do i = 1, grd_nx
+               grd_emitex(i,1,1)= (1d0/dt)*(
      &            log((texp+dt)/texp)
      &            *(4d0*man_aa11/pc_c)+
      &            (3d0*totmass*sigcoef/
@@ -82,8 +82,8 @@ c-- grey solution
      &            (man_aa11-pc_acoef*pc_c*man_temp0**4)
      &            )
 !     
-               gas_emitex(i,1,1) = gas_emitex(i,1,1)*
-     &              gas_vol(i,1,1)*dt
+               grd_emitex(i,1,1) = grd_emitex(i,1,1)*
+     &              grd_vol(i,1,1)*dt
 !     
             enddo
 c--
@@ -126,7 +126,7 @@ c-- verify applicable input pars
       call check_manufacpars
 c
 c-- determine manufacture type
-      if(gas_isvelocity) then
+      if(grd_isvelocity) then
 c
 c-- implement/modify velocity dependent manufactured temperature source
          select case (gas_opacanaltype)
@@ -175,7 +175,7 @@ c-- verify applicable input pars
       call check_manufacpars
 c
 c-- determine manufacture type
-      if(.not.gas_isvelocity) then
+      if(.not.grd_isvelocity) then
 c-- implement/modify static manufactured temperature source
          stop 'init_manuprofile: no static sources'
       else
@@ -184,7 +184,7 @@ c-- implement/modify velocity dependent manufactured initial profile
          select case (gas_opacanaltype)
          case ('grey')
 c-- grey solution
-           gas_evolinit = (man_aa11/pc_c) * gas_vol
+           grd_evolinit = (man_aa11/pc_c) * grd_vol
 c
          case ('mono')
             stop 'init_manuprofile: gas_opacanaltype=mono'
@@ -215,7 +215,7 @@ c-- verify applicable input pars
       call check_manufacpars
 c
 c-- determine manufacture type
-      if(gas_isvelocity) then
+      if(grd_isvelocity) then
 c
 c-- implement/modify velocity dependent manufactured initial profile
          select case (gas_opacanaltype)
