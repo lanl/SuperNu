@@ -235,8 +235,8 @@ c
 c-- line solution
             if(gas_ng/=2)
      &           stop 'init_manutemp: in_opacanaltype=line'
-            if(gas_ldisp1/gas_ldisp2>=1d-3)
-     &           stop 'init_manutemp: gas_ldisp1/gas_ldisp2>=1d-3'
+            if(in_ldisp1/in_ldisp2>=1d-3)
+     &           stop 'init_manutemp: in_ldisp1/in_ldisp2>=1d-3'
 c
             dd_temp = man_temp0
 c

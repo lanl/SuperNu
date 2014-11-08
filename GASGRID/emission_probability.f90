@@ -1,5 +1,6 @@
 subroutine emission_probability
 
+  use inputparmod
   use gasgridmod
   use physconstmod
   use miscmod, only:specint
@@ -16,10 +17,10 @@ subroutine emission_probability
   dd_emitprob = 0d0
 
 !-- Calculating grouped volume emission probabilities:
-  if(gas_opacanaltype=='pick') then
+  if(in_opacanaltype=='pick') then
      do i=1,dd_ncell
-        dd_emitprob(1,i) = gas_ppick(1)*dd_cap(1,i)/dd_siggrey(i)
-        dd_emitprob(2,i) = gas_ppick(2)*dd_cap(2,i)/dd_siggrey(i)
+        dd_emitprob(1,i) = in_suolpick1*dd_cap(1,i)/dd_siggrey(i)
+        dd_emitprob(2,i) = (1d0 - in_suolpick1)*dd_cap(2,i)/dd_siggrey(i)
 !       dd_emitprob(3:gas_ng,i) = 0d0  !-- not necessary
      enddo !i
   else

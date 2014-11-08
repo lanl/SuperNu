@@ -46,7 +46,7 @@ c-- nuclear decay
 c================
 c-- Get ni56 and co56 abundances on begin and end of the time step.!{{{
 c-- The difference between these two has decayed.
-      if(grd_isvelocity.and.gas_srctype=='none') then
+      if(grd_isvelocity.and.in_srctype=='none') then
 c-- beginning of time step
        help = tsp_t
        call update_natomfr(help)

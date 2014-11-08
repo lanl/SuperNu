@@ -8,6 +8,8 @@ c
       integer :: nmpi !number of mpi tasks
       integer,private :: ierr
 c
+      integer :: MPI_COMM_GAS !communicator for GAS domain decomposition
+c
       contains
 c
 c
@@ -282,10 +284,11 @@ c
 c
       subroutine setup_domain_decomposition
 c     -------------------------------------!{{{
+      implicit none
 ************************************************************************
 * placeholder
 ************************************************************************
-      mpi_comm_dup(MPI_COMM_WORLD,MPI_COMM_GAS,ierr)
+      call mpi_comm_dup(MPI_COMM_WORLD,MPI_COMM_GAS,ierr)
 c!}}}
       end subroutine setup_domain_decomposition
 c

@@ -14,7 +14,7 @@ subroutine analytic_initial
 !###############################################
 ! This subroutines attributes radiation energy to
 ! each cell and group depeding on user specification
-! of gas_srctype
+! of in_srctype
 !###############################################
 !
   grd_evolinit = 0d0
@@ -27,22 +27,22 @@ subroutine analytic_initial
 !--
 !
 !-- source specific initial conditions (overrides gas_inittyp)
-!-- currently only supplying nonzero for gas_srctype=manu
-  if(gas_srctype=='none') then
-     if(gas_opacanaltype=='pick') then
+!-- currently only supplying nonzero for in_srctype=manu
+  if(in_srctype=='none') then
+     if(in_opacanaltype=='pick') then
 !-- tstd initial energy profile currently approximation
-        stop 'analytic_initial: gas_opacanaltype==pick not implemented'
+        stop 'analytic_initial: in_opacanaltype==pick not implemented'
      else
         return
      endif
-  elseif(gas_srctype=='heav') then
+  elseif(in_srctype=='heav') then
      return
-  elseif(gas_srctype=='strt') then
+  elseif(in_srctype=='strt') then
      return
-  elseif(gas_srctype=='manu') then
+  elseif(in_srctype=='manu') then
      call init_manuprofile
   else
-     stop 'analytic_initial: invalid gas_srctype'
+     stop 'analytic_initial: invalid in_srctype'
   endif
 
 end subroutine analytic_initial

@@ -7,50 +7,12 @@ module gasgridmod
   integer,parameter :: gas_nelem=30
   integer,parameter :: gas_ini56=-1, gas_ico56=-2 !positions in mass0fr and natom1fr arrays
 
-  integer :: dd_ncell=0
-
+!-- wavelength grid (gridmod has a copy as well)
   integer :: gas_ng=0
-
   real*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
 
-  logical :: gas_novolsrc = .false. !no external volume source (e.g. radioactivity)
-!-(rev. 121)
-  real*8 :: gas_sigcoefs=0  !analytic scattering opacity power law coefficient
-  real*8 :: gas_sigtpwrs=0  !analytic scattering opacity power law temperature exponent
-  real*8 :: gas_sigrpwrs=0  !analytic scattering opacity power law density exponent
-!-
-  real*8 :: gas_sigcoef=0  !analytic absorption opacity power law coefficient
-  real*8 :: gas_sigtpwr=0  !analytic absorption opacity power law temperature exponent
-  real*8 :: gas_sigrpwr=0  !analytic absorption opacity power law density exponent
-
-  ! Picket-fence probabilities
-  real*8 :: gas_ppick(2)
-
-  character(4) :: gas_opacanaltype = 'grey' !analytic opacity dependence on group.
-  !is used with power law to create group opacities each timestep (see 
-  !inputparmod for possible values).
-  character(4) :: gas_suol = 'tsta' !if gas_opacanaltype='pick', sets picket
-  !magnitudes with values from cases in literature (Su&Olson 1999).
-  
-  real*8 :: gas_ldisp1 = 0d0 !if gas_opacanaltype='line',
-  real*8 :: gas_ldisp2 = 0d0 !if gas_opacanaltype-'line'
-  !ratio of strong line group opacity strength to weak group
-
-  character(4) :: gas_srctype = 'none' !analytic external source dependence
-  !on space (and group if gas_srctype='manu')
-  integer :: gas_nheav = 0 !outer cell bound of external heaviside ('heav') source
-  real*8 :: gas_theav = 0d0 !duration of heaviside source
-  real*8 :: gas_srcmax = 0d0 !peak strength (ergs*s^2/cm^3 if isvelocity, else ergs/cm^3/s) of external source
-  real*8 :: gas_tempradinit = 0d0 !initial radiation temperature
-
-
-!-- temperature structure history
-  real*8,allocatable :: dd_temppreset(:,:) !(ncell,tim_nt)
-
-!
-!
-!-- DOMAIN DECOMPOSITION
-!=======================
+!-- domain decomposed grid variables used to calculate the state of the material (gas)
+  integer :: dd_ncell=0
   real*8,allocatable :: dd_temp(:)       !(ncell)
   real*8,allocatable :: dd_eraddens(:)
   real*8,allocatable :: dd_ur(:)
@@ -88,6 +50,10 @@ module gasgridmod
   real*8,allocatable :: dd_emitex(:) !(ncell) amount of external energy emitted per cell per group in a time step
   real*8,allocatable :: dd_evolinit(:) !(ncell) amount of initial energy per cell per group
 
+
+!-- temperature structure history
+  real*8,allocatable :: dd_temppreset(:,:) !(ncell,tim_nt)
+
   save
 
   contains
@@ -104,30 +70,6 @@ module gasgridmod
     logical :: lexist
 
     dd_ncell = ncell
-
-    gas_novolsrc = in_novolsrc
-!-- power law scattering opacity input:
-    gas_sigcoefs = in_sigcoefs
-    gas_sigtpwrs = in_sigtpwrs
-    gas_sigrpwrs = in_sigrpwrs
-!-- power law absorption opacity input:
-    gas_sigcoef = in_sigcoef
-    gas_sigtpwr = in_sigtpwr
-    gas_sigrpwr = in_sigrpwr
-!-- group type:
-    gas_opacanaltype = in_opacanaltype
-!-- picket fence input:
-    gas_suol = in_suol
-    gas_ppick(1) = in_suolpick1
-    gas_ppick(2) = 1d0-in_suolpick1
-!-- group line disparities (strengths):
-    gas_ldisp1 = in_ldisp1
-    gas_ldisp2 = in_ldisp2
-!-- external analytic source input:
-    gas_srctype = in_srctype
-    gas_theav = in_theav
-    gas_nheav = in_nheav
-    gas_srcmax = in_srcmax
 
 
 !-- secondary

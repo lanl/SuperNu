@@ -26,20 +26,20 @@ subroutine analytic_source
   l1 = impi*dd_ncell + 1
   l2 = (impi+1)*dd_ncell
 
-  if(gas_srctype=='none') then
+  if(in_srctype=='none') then
     return
-  elseif(gas_srctype=='heav') then
+  elseif(in_srctype=='heav') then
      !Heaviside source (uniform source sphere)!{{{
-     if (tsp_t<=(in_tfirst+gas_theav)*pc_day) then
+     if (tsp_t<=(in_tfirst+in_theav)*pc_day) then
         select case(in_igeom)
 !-- 1D
         case(1)
            ll = 0
-           do i = 1, min(gas_nheav,grd_nx)
+           do i = 1, min(in_nheav,grd_nx)
               l = i
               if(l<l1 .or. l>l2) cycle
               ll = ll + 1
-              dd_emitex(ll) = gas_srcmax * &
+              dd_emitex(ll) = in_srcmax * &
                    dd_vol(ll)*tsp_dt/thelp**3
               !write(0,*) impi,ll,dd_emitex(ll),dd_vol(ll)
            enddo
@@ -55,7 +55,7 @@ subroutine analytic_source
               nhelp = grd_ny
            endif
 !-- Heaviside radius <= distance to cylinder bound
-           help = dble(min(gas_nheav,nhelp))*help / &
+           help = dble(min(in_nheav,nhelp))*help / &
                 dble(nhelp)
 !-- non-zero source within Heaviside sphere
            l = 0
@@ -68,7 +68,7 @@ subroutine analytic_source
               xcent = 0.5d0*(grd_xarr(i+1)+grd_xarr(i))
               ycent = 0.5d0*(grd_yarr(j+1)+grd_yarr(j))
               if(xcent**2+ycent**2<help**2) then
-                 dd_emitex(ll) = gas_srcmax * &
+                 dd_emitex(ll) = in_srcmax * &
                       dd_vol(ll)*tsp_dt/thelp**3
               endif
            enddo
@@ -80,7 +80,7 @@ subroutine analytic_source
 !-- no temp source for heav (matsrc=0.0)
 !--
      !!}}}
-  elseif(gas_srctype=='strt') then
+  elseif(in_srctype=='strt') then
      !Linear source profile!{{{
      if(grd_ny>1) stop 'analytic_source: strt: no 2D'
      ll = 0
@@ -88,7 +88,7 @@ subroutine analytic_source
         l = i
         if(l<l1 .or. l>l2) cycle
         ll = ll + 1
-        srcren = gas_srcmax*(grd_xarr(grd_nx+1)- &
+        srcren = in_srcmax*(grd_xarr(grd_nx+1)- &
              0.5d0*(grd_xarr(i)+grd_xarr(i+1)))/ & 
              (grd_xarr(grd_nx+1)-grd_xarr(1))
         dd_emitex(ll) = srcren * dd_vol(ll)*tsp_dt
@@ -96,7 +96,7 @@ subroutine analytic_source
 !-- no temp source for strt (matsrc=0.0)
 !--
      enddo!}}}
-  elseif(gas_srctype=='manu') then
+  elseif(in_srctype=='manu') then
      !!{{{
      if(grd_ny>1) stop 'analytic_source: manu: no 2D'
 !
@@ -108,7 +108,7 @@ subroutine analytic_source
 !     
      !}}}
   else
-     stop 'analytic_source: gas_srctype invalid'
+     stop 'analytic_source: in_srctype invalid'
   endif
 
   !write(*,*) grd_siggrey(grd_nx), grd_cap(1,grd_nx)
