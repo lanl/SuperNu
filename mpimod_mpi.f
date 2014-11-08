@@ -285,6 +285,7 @@ c     -------------------------------------!{{{
 ************************************************************************
 * placeholder
 ************************************************************************
+      mpi_comm_dup(MPI_COMM_WORLD,MPI_COMM_GAS,ierr)
 c!}}}
       end subroutine setup_domain_decomposition
 c
@@ -340,12 +341,12 @@ c-- domain decomposed
 c
       call mpi_scatter(str_mass,ncell,MPI_REAL8,
      &  str_massdd,ncell,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
+     &  impi0,MPI_COMM_GAS,ierr)
 c
       if(str_nabund>0) then
        call mpi_scatter(str_massfr,str_nabund*ncell,MPI_REAL8,
      &   str_massfrdd,str_nabund*ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &   impi0,MPI_COMM_GAS,ierr)
       endif
 !}}}
       end subroutine scatter_inputstruct
@@ -362,70 +363,37 @@ c     ------------------------!{{{
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
 ************************************************************************
-!      integer :: n
-!      integer,allocatable :: isndvec(:),ircvvec(:)
-!      real*8,allocatable :: sndvec(:),rcvvec(:)
-!c
-!c-- integer
-!      n = 3
-!      allocate(isndvec(n),ircvvec(n))
-!      isndvec = (/prt_nnew,prt_nsurf,
-!     &  prt_nexsrc/)
-!      call mpi_allreduce(isndvec,ircvvec,n,MPI_INTEGER,MPI_SUM,
-!     &  MPI_COMM_WORLD,ierr)
-!c-- copy back
-!      prt_nnew = ircvvec(1)
-!      prt_nsurf = ircvvec(2)
-!      prt_nexsrc = ircvvec(3)
-!      deallocate(isndvec)
-!c
-!c-- real*8
-!      n = 2
-!      allocate(sndvec(n),rcvvec(n))
-!      sndvec = (/tot_esurf,gas_etot/)
-!      call mpi_allreduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
-!     &  MPI_COMM_WORLD,ierr)
-!c-- copy back
-!      tot_esurf = rcvvec(1)
-!      gas_etot = rcvvec(2)
-!      deallocate(sndvec,rcvvec)
-!c
-!c-- initial send of tot_eext
-!      if(tsp_it==1) then
-!         call mpi_bcast(tot_eext,1,MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
-!      endif
-c
 c-- gather
       call mpi_allgather(dd_temp,dd_ncell,MPI_REAL8,
      &   grd_temp,dd_ncell,MPI_REAL8,
-     &   MPI_COMM_WORLD,ierr)
+     &   MPI_COMM_GAS,ierr)
 c
       call mpi_allgather(dd_emit,dd_ncell,MPI_REAL8,
      &   grd_emit,dd_ncell,MPI_REAL8,
-     &   MPI_COMM_WORLD,ierr)
+     &   MPI_COMM_GAS,ierr)
       call mpi_allgather(dd_emitex,dd_ncell,MPI_REAL8,
      &   grd_emitex,dd_ncell,MPI_REAL8,
-     &   MPI_COMM_WORLD,ierr)
+     &   MPI_COMM_GAS,ierr)
 c
       call mpi_allgather(dd_sig,dd_ncell,MPI_REAL8,
      &   grd_sig,dd_ncell,MPI_REAL8,
-     &   MPI_COMM_WORLD,ierr)
+     &   MPI_COMM_GAS,ierr)
       call mpi_allgather(dd_capgam,dd_ncell,MPI_REAL8,
      &   grd_capgam,dd_ncell,MPI_REAL8,
-     &   MPI_COMM_WORLD,ierr)
+     &   MPI_COMM_GAS,ierr)
       call mpi_allgather(dd_siggrey,dd_ncell,MPI_REAL8,
      &   grd_siggrey,dd_ncell,MPI_REAL8,
-     &   MPI_COMM_WORLD,ierr)
+     &   MPI_COMM_GAS,ierr)
       call mpi_allgather(dd_fcoef,dd_ncell,MPI_REAL8,
      &   grd_fcoef,dd_ncell,MPI_REAL8,
-     &   MPI_COMM_WORLD,ierr)
+     &   MPI_COMM_GAS,ierr)
 c
       call mpi_allgather(dd_emitprob,gas_ng*dd_ncell,MPI_REAL8,
      &   grd_emitprob,gas_ng*dd_ncell,MPI_REAL8,
-     &   MPI_COMM_WORLD,ierr)
+     &   MPI_COMM_GAS,ierr)
       call mpi_allgather(dd_cap,gas_ng*dd_ncell,MPI_REAL8,
      &   grd_cap,gas_ng*dd_ncell,MPI_REAL8,
-     &   MPI_COMM_WORLD,ierr)
+     &   MPI_COMM_GAS,ierr)
 c!}}}
       end subroutine bcast_nonpermanent
 c
@@ -472,6 +440,17 @@ c-- rtw: can't copy back 0 to eext or evelo.
       endif !impi
       deallocate(sndvec)
       deallocate(rcvvec)
+
+      n = 2
+      allocate(sndvec(n))
+      allocate(rcvvec(n))
+      sndvec = (/tot_eext,tot_emat/)
+      call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_GAS,ierr)
+      tot_eext = rcvvec(1)
+      tot_emat = rcvvec(2)
+      deallocate(sndvec)
+      deallocate(rcvvec)
 c
 c-- dim==1
       n = flx_ng*flx_nmu*flx_nom
@@ -512,10 +491,10 @@ c
 c-- scatter
       call mpi_scatter(grd_edep,dd_ncell,MPI_REAL8,
      &   dd_edep,dd_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &   impi0,MPI_COMM_GAS,ierr)
       call mpi_scatter(grd_eraddens,dd_ncell,MPI_REAL8,
      &   dd_eraddens,dd_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &   impi0,MPI_COMM_GAS,ierr)
 c
 c-- timing statistics
       help = t_pckt_stat(1)
@@ -541,7 +520,7 @@ c     -------------------------------------!{{{
 ************************************************************************
       call mpi_gather(dd_temp,dd_ncell,MPI_REAL8,
      &   grd_temp,dd_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &   impi0,MPI_COMM_GAS,ierr)
 c!}}}
       end subroutine reduce_gastemp
 c

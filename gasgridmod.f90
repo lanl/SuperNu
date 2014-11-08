@@ -83,9 +83,6 @@ module gasgridmod
   real*8,allocatable :: dd_siggrey(:)!(ncell)
 !-- Fleck factor
   real*8,allocatable :: dd_fcoef(:)  !(ncell)
-
-  real*8 :: dd_emat = 0d0 !material energy
-
 !  
   real*8,allocatable :: dd_emit(:) !(ncell) amount of fictitious thermal energy emitted per cell in a time step
   real*8,allocatable :: dd_emitex(:) !(ncell) amount of external energy emitted per cell per group in a time step

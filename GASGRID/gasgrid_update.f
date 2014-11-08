@@ -131,7 +131,7 @@ c-- add initial thermal input to dd_eext
        tot_eext = sum(dd_bcoef*dd_temp*dd_vol)
       endif
 !-- total comoving material energy
-      dd_emat = sum(dd_bcoef*dd_temp*dd_vol)
+      tot_emat = sum(dd_bcoef*dd_temp*dd_vol)
 c
 c
 c
