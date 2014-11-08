@@ -19,6 +19,7 @@ subroutine transport3(ptcl,isvacant)
   real*8,parameter :: cinv = 1d0/pc_c
   integer, external :: binsrch
 
+  logical :: loutx,louty,loutz
   integer :: ig, imu, iom
   real*8 :: elabfact
   real*8 :: dtinv, thelp, thelpinv
@@ -214,11 +215,34 @@ subroutine transport3(ptcl,isvacant)
         ep = ep*elabfact/(1d0-(xi*z+eta*y+mu*x)*cinv)
         ep0 = ep0*elabfact/(1d0-(xi*z+eta*y+mu*x)*cinv)
      endif
-
-!-- common manipulations for boundary crossings
-     if(d==dbx.or.d==dby.or.d==dbz) then
-
+  elseif(any([dbx,dby,dbz]==d)) then
+!-- checking if escaped domain
+     loutx = d==dbx.and.((mu>=0d0.and.ix==gas_nx).or.(mu<0.and.ix==1))
+     louty = d==dby.and.((eta>=0d0.and.iy==gas_ny).or.(eta<0.and.iy==1))
+     loutz = d==dbz.and.((xi>=0d0.and.iz==gas_nz).or.(xi<0.and.iz==1))
+     if(loutx.or.louty.or.loutz) then
+!-- ending particle
+        isvacant = .true.
+        prt_done = .true.
+!-- retrieving lab frame flux group, polar, azimuthal bin
+        iom = binsrch(om,flx_om,flx_nom+1,0)
+        imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+        ig = binsrch(wl,flx_wl,flx_ng+1,0)
+!-- checking group bounds
+        if(ig>flx_ng.or.ig<1) then
+           if(ig>flx_ng) then
+              ig=flx_ng
+           else
+              ig=1
+           endif
+        endif
+!-- tallying outbound luminosity
+        flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+ep*dtinv
+        flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+(ep0*dtinv)**2
+        flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1
+        return
      endif
+  endif
 
 !
 !-- Thomson scatter
@@ -276,6 +300,28 @@ subroutine transport3(ptcl,isvacant)
 !-- x-bound
   elseif(d==dbx) then
 
+     if(mu>=0d0) then
+        if((gas_cap(ig,ix+1,iy,iz)+gas_sig(ix+1,iy,iz)) * &
+             min(dx(ix+1),dy(iy),dz(iz))*thelp < prt_tauddmc &
+             .or.in_puretran) then
+!-- IMC in outward cell
+           ix = ix+1
+        else
+
+        endif
+     else
+!-- mu<0
+
+!-- checking if inward cell is DDMC
+        if((gas_cap(ig,ix-1,iy,iz)+gas_sig(ix-1,iy,iz)) * &
+             min(dx(ix-1),dy(iy),dz(iz))*thelp < prt_tauddmc &
+             .or.in_puretran) then
+!-- IMC in inward cell
+           ix = ix-1
+        else
+
+        endif
+     endif
 !
 !-- y-bound
   elseif(d==dby) then
