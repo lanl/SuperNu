@@ -17,6 +17,7 @@ c
       subroutine bcast_permanent
 c     --------------------------!{{{
       use inputparmod
+      use inputstrmod
       use ionsmod
       use ffxsmod
       use bfxsmod
@@ -101,32 +102,31 @@ c-- integer
       n = 16
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/
-     &  gas_ng,grd_ng,prt_ns,
+     &  gas_ng,prt_ns,
      &  prt_npartmax,tsp_nt,tsp_ntres,
      &  prt_ninit,prt_ninitnew,
      &  ion_nion,ion_iionmax,bb_nline,
      &  flx_ng,flx_nmu,flx_nom,
-     &  prof_ntgam,prof_nr,grd_igeom/)
+     &  prof_ntgam,prof_nr,str_nabund/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       gas_ng       = isndvec(1)
-      grd_ng       = isndvec(2)
-      prt_ns       = isndvec(3)
-      prt_npartmax = isndvec(4)
-      tsp_nt       = isndvec(5)
-      tsp_ntres    = isndvec(6)
-      prt_ninit    = isndvec(7)
-      prt_ninitnew = isndvec(8)
-      ion_nion     = isndvec(9)
-      ion_iionmax  = isndvec(10)
-      bb_nline     = isndvec(11)
-      flx_ng       = isndvec(12)
-      flx_nmu      = isndvec(13)
-      flx_nom      = isndvec(14)
-      prof_ntgam   = isndvec(15)
-      prof_nr      = isndvec(16)
-      grd_igeom    = isndvec(17)
+      prt_ns       = isndvec(2)
+      prt_npartmax = isndvec(3)
+      tsp_nt       = isndvec(4)
+      tsp_ntres    = isndvec(5)
+      prt_ninit    = isndvec(6)
+      prt_ninitnew = isndvec(7)
+      ion_nion     = isndvec(8)
+      ion_iionmax  = isndvec(9)
+      bb_nline     = isndvec(10)
+      flx_ng       = isndvec(11)
+      flx_nmu      = isndvec(12)
+      flx_nom      = isndvec(13)
+      prof_ntgam   = isndvec(14)
+      prof_nr      = isndvec(15)
+      str_nabund   = isndvec(16)
       deallocate(isndvec)
 c
 c-- real*8
@@ -156,19 +156,33 @@ c-- dimenstions
       ny = in_ndim(2)
       nz = in_ndim(3)
 c
+c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0) then
        allocate(gas_wl(gas_ng+1))
-       allocate(grd_wl(grd_ng+1))
-       allocate(grd_xarr(nx+1))
-       allocate(grd_yarr(ny+1))
-       allocate(grd_zarr(nz+1))
        allocate(flx_wl(flx_ng+1))
        allocate(flx_mu(flx_nmu+1))
        allocate(flx_om(flx_nom+1))
        if(bb_nline>0) allocate(bb_xs(bb_nline))
        if(prof_ntgam>0) allocate(prof_timegamvec(prof_ntgam))
        if(prof_ntgam>0) allocate(prof_profgamvec(in_ndim(1),prof_ntgam))
+       allocate(str_xleft(nx+1)) !(nx+1)
+       allocate(str_yleft(ny+1)) !(ny+1)
+       allocate(str_zleft(nz+1)) !(nz+1)
+       if(str_nabund>0) allocate(str_iabund(str_nabund))
+      endif
+c
+c-- inputstr
+      call mpi_bcast(str_xleft,nx+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(str_yleft,ny+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(str_zleft,nz+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      if(str_nabund>0) then
+       call mpi_bcast(str_iabund,str_nabund,MPI_INTEGER,
+     &   impi0,MPI_COMM_WORLD,ierr)
       endif
 c
 c-- gamma profiles
@@ -180,15 +194,13 @@ c-- gamma profiles
       endif
 c
 c-- broadcast data
-      call mpi_bcast(grd_xarr,nx+1,MPI_REAL8,
+      call mpi_bcast(str_xleft,nx+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(grd_yarr,ny+1,MPI_REAL8,
+      call mpi_bcast(str_yleft,ny+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(grd_zarr,nz+1,MPI_REAL8,
+      call mpi_bcast(str_zleft,nz+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_wl,gas_ng+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(grd_wl,grd_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(flx_wl,flx_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -310,29 +322,6 @@ c
       nx = ndim(1)
       ny = ndim(2)
       nz = ndim(3)
-
-      call mpi_bcast(str_nabund,1,MPI_INTEGER,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      if(impi/=impi0) then
-       allocate(str_xleft(nx+1))
-       allocate(str_yleft(ny+1))
-       allocate(str_zleft(nz+1))
-       if(str_nabund>0) allocate(str_iabund(str_nabund))
-      endif
-
-      call mpi_bcast(str_xleft,nx+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(str_yleft,ny+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(str_zleft,nz+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      if(str_nabund>0) then
-       n = str_nabund
-       call mpi_bcast(str_iabund,n,MPI_INTEGER,
-     &   impi0,MPI_COMM_WORLD,ierr)
-      endif
 c
 c-- domain decomposed
       allocate(str_massdd(ncell))

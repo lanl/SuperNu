@@ -74,7 +74,7 @@ c     --------------------------------!{{{
       logical,intent(in) :: ltalk,isvelocity
       integer,intent(in) :: ng,igeom
       integer,intent(in) :: ndim(3)
-      real*8,intent(in) :: wlarr(grd_ng+1)
+      real*8,intent(in) :: wlarr(ng+1)
 c
       integer :: n,nx,ny,nz
 c
@@ -128,12 +128,14 @@ c
       allocate(grd_methodswap(nx,ny,nz))
       allocate(grd_numcensus(nx,ny,nz))
 
-      n = nx*ny*nz
-      n = int((int(n,8)*8*21)/1024) !kB
-      write(6,*) 'ALLOC grid:',n,"kB",n/1024,"MB",n/1024**2,"GB"
-      n = nx*ny*nz
-      n = int(((8+8)*int(n,8)*ng)/1024) !kB
-      write(6,*) 'ALLOC grd_cap:',n,"kB",n/1024,"MB",n/1024**2,"GB"
+      if(ltalk) then
+       n = nx*ny*nz
+       n = int((int(n,8)*8*21)/1024) !kB
+       write(6,*) 'ALLOC grid:',n,"kB",n/1024,"MB",n/1024**2,"GB"
+       n = nx*ny*nz
+       n = int(((8+8)*int(n,8)*ng)/1024) !kB
+       write(6,*) 'ALLOC grd_cap:',n,"kB",n/1024,"MB",n/1024**2,"GB"
+      endif
 c!}}}
       end subroutine grid_init
 c

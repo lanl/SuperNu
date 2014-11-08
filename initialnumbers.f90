@@ -13,7 +13,7 @@ subroutine initialnumbers
 !##################################################
   real*8 :: etotinit
   
-  prt_ninitnew=0
+  prt_ninitnew = 0
 !
   grd_nvolinit = 0
   grd_evolinit = 0d0

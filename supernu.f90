@@ -43,8 +43,8 @@ program supernu
   call timing_init
 !
 !--
-!-- SETUP SIMULATION:
-!====================
+!-- READ DATA AND INIT SIMULATION
+!================================
 !-- The setup is done by the master task only, and broadcasted to the
 !-- other tasks before packet propagation begins.
 !--
@@ -88,10 +88,6 @@ program supernu
 !== generate_inputstr development in progress
       call generate_inputstr(in_igeom)
     endif
-!-- setup spatial grid
-    call grid_init(impi==impi0,gas_ng,gas_wl,in_igeom,in_ndim, &
-                   in_isvelocity)
-    call grid_setup(gas_wl)
 !!
 !!-- read gamma deposition profiles
 !    if(in_isvelocity.and.in_srctype=='none') then
@@ -115,10 +111,14 @@ program supernu
     call time(t1)
     t_setup = t1-t0!}}}
   endif !impi
-
 !
 !-- MPI
   call bcast_permanent !MPI
+
+!-- setup spatial grid
+  call grid_init(impi==impi0,gas_ng,gas_wl,in_igeom,in_ndim,in_isvelocity)
+  call grid_setup(gas_wl)
+
   call setup_domain_decomposition !MPI
 !--
   ncell = product(in_ndim)/nmpi
