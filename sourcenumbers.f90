@@ -1,6 +1,6 @@
 subroutine sourcenumbers(nmpi)
 
-  use gasgridmod
+  use gridmod
   use timestepmod
   use particlemod
   use physconstmod

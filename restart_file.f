@@ -1,6 +1,6 @@
       subroutine read_restart_file
 c     ----------------------------
-      use gasgridmod
+      use gridmod
       use timestepmod
 ************************************************************************
 * read restart file
@@ -28,7 +28,7 @@ c
 c
       subroutine write_restart_file
 c     -----------------------------
-      use gasgridmod
+      use gridmod
 ************************************************************************
 * write restart file
 ************************************************************************

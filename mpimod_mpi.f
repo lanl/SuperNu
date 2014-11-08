@@ -350,6 +350,7 @@ c
 c
       subroutine bcast_nonpermanent
 c     ------------------------!{{{
+      use gridmod
       use gasgridmod
       use particlemod
       use timestepmod
@@ -428,7 +429,8 @@ c
 c
       subroutine reduce_tally
 c     -----------------------!{{{
-      use gasgridmod,nx=>grd_nx,ny=>grd_ny,nz=>grd_nz
+      use gridmod,nx=>grd_nx,ny=>grd_ny,nz=>grd_nz
+      use gasgridmod
       use timingmod
       use fluxmod
       implicit none
@@ -527,6 +529,7 @@ c
 c
       subroutine reduce_gastemp
 c     -------------------------------------!{{{
+      use gridmod
       use gasgridmod
 ************************************************************************
 * for output

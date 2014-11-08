@@ -3,6 +3,7 @@ subroutine boundary_source
   use particlemod
   use timestepmod
   use physconstmod
+  use gridmod
   use gasgridmod
   use inputparmod
   use miscmod, only:specint

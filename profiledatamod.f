@@ -11,7 +11,7 @@ c     -------------------
 c-- gamma profiles
       integer :: prof_ntgam=0
       real*8,allocatable :: prof_timegamvec(:) !(prof_ntgam)  !time in seconds
-      real*8,allocatable :: prof_profgamvec(:,:) !(grd_nx,prof_ntgam)  !local deposition fraction
+      real*8,allocatable :: prof_profgamvec(:,:) !(nx,prof_ntgam)  !local deposition fraction
 c
       contains
 c

@@ -1,5 +1,6 @@
 subroutine initial_particles
 
+  use gridmod
   use gasgridmod
   use timestepmod
   use particlemod
@@ -33,16 +34,14 @@ subroutine initial_particles
   do ipart=1,prt_ninitnew
 
 !-- incrementing to next vacant cell
-     do k=k,grd_nz
-        do j=j,grd_ny
-           do i=i,grd_nx
-              lhelp = ijkused(i,j,k)<grd_nvolinit(i,j,k)
-              if(lhelp) exit
-           enddo
-           if(lhelp) exit
-        enddo
-        if(lhelp) exit
+     loopk: do k=k,grd_nz
+     do j=j,grd_ny
+     do i=i,grd_nx
+        lhelp = ijkused(i,j,k)<grd_nvolinit(i,j,k)
+        if(lhelp) exit loopk
      enddo
+     enddo
+     enddo loopk
      ihelp = i
      jhelp = j
 !-- increasing cell occupancy

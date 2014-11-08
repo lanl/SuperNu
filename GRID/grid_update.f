@@ -1,7 +1,6 @@
       subroutine grid_update(t)
 c     -------------------------
       use gridmod
-      use gasgridmod
       implicit none
       real*8,intent(in) :: t
 ************************************************************************

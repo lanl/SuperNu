@@ -1,6 +1,6 @@
 subroutine transport2(ptcl,isvacant)
 
-  use gasgridmod
+  use gridmod
   use timestepmod
   use physconstmod
   use particlemod
@@ -63,11 +63,11 @@ subroutine transport2(ptcl,isvacant)
   thelpinv = 1d0/thelp
 !
 !-- looking up initial group
-  g = binsrch(wl/elabfact,gas_wl,gas_ng+1,in_ng)
+  g = binsrch(wl/elabfact,grd_wl,grd_ng+1,in_ng)
 !-- checking group bounds
-  if(g>gas_ng.or.g<1) then
-     if(g==gas_ng+1) then
-        g = gas_ng
+  if(g>grd_ng.or.g<1) then
+     if(g==grd_ng+1) then
+        g = grd_ng
      elseif(g==0) then
         g = 1
      else
@@ -148,8 +148,8 @@ subroutine transport2(ptcl,isvacant)
   endif
 !
 !-- calculating distance to Doppler shift
-  if(grd_isvelocity.and.g<gas_ng) then
-     ddop = pc_c*(elabfact-wl/gas_wl(g+1))
+  if(grd_isvelocity.and.g<grd_ng) then
+     ddop = pc_c*(elabfact-wl/grd_wl(g+1))
      if(ddop<0d0) then
         ddop = 2d0*pc_c*tsp_dt*thelpinv
      endif
@@ -328,7 +328,7 @@ subroutine transport2(ptcl,isvacant)
 !-- redistributing wavelength
         denom2 = 0d0
         r1 = rand()
-        do ig = 1, gas_ng
+        do ig = 1, grd_ng
            iig = ig
            if ((r1>=denom2).and.(r1<denom2+grd_emitprob(ig,zr,zz,1))) exit
            denom2 = denom2+grd_emitprob(ig,zr,zz,1)
@@ -336,7 +336,7 @@ subroutine transport2(ptcl,isvacant)
         g = iig
 !-- uniformly in new group
         r1 = rand()
-        wl = 1d0/((1d0-r1)/gas_wl(g)+r1/gas_wl(g+1))
+        wl = 1d0/((1d0-r1)/grd_wl(g)+r1/grd_wl(g+1))
 !-- transforming to lab
         if(grd_isvelocity) then
            wl = wl*(1d0-dirdotu*cinv)
@@ -721,14 +721,14 @@ subroutine transport2(ptcl,isvacant)
 !-- distance to doppler shift
   elseif(d==ddop) then
      if(.not.grd_isvelocity) stop 'transport2: ddop and no velocity'
-     if(g<gas_ng) then
+     if(g<grd_ng) then
 !-- shifting group
         g = g+1
-        wl = (gas_wl(g)+1d-6*(gas_wl(g+1)-gas_wl(g)))*elabfact
+        wl = (grd_wl(g)+1d-6*(grd_wl(g+1)-grd_wl(g)))*elabfact
      else
 !-- resampling wavelength in highest group
         r1 = rand()
-        wl=1d0/(r1/gas_wl(g+1) + (1d0-r1)/gas_wl(gas_ng))
+        wl=1d0/(r1/grd_wl(g+1) + (1d0-r1)/grd_wl(grd_ng))
         wl = wl*elabfact
      endif
 !-- check if ddmc region

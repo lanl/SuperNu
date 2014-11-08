@@ -1,6 +1,6 @@
 subroutine energy_check
 
-  use gasgridmod
+  use gridmod
   use timestepmod
   use physconstmod
   use manufacmod

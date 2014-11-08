@@ -20,7 +20,7 @@ subroutine temperature_update
   dd_eraddens = dd_eraddens
 
 !-- calculating temperature
-  if(allocated(gas_temppreset)) then
+  if(allocated(dd_temppreset)) then
 !-- apply read-in temperature profile
    dd_temp = dd_temppreset(:,tsp_it)
   else
@@ -40,6 +40,6 @@ subroutine temperature_update
            dd_temp(i) = 1000d0
         endif
      enddo !i
-!  endif
+  endif
 
 end subroutine temperature_update

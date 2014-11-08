@@ -1,6 +1,6 @@
       subroutine grid_volume(igeom,isvelocity,time)
 c     ---------------------------------------------
-      use gasgridmod
+      use gridmod
       use physconstmod
       implicit none
       integer,intent(in) :: igeom

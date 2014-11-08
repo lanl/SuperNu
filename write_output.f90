@@ -3,7 +3,7 @@ subroutine write_output
   use inputparmod
   use timingmod
   use timestepmod
-  use gasgridmod
+  use gridmod
   use particlemod
   use fluxmod
   implicit none
@@ -21,9 +21,9 @@ subroutine write_output
   if(.not.lexist) then
    open(unit=4,file='output.wlgrid',status='unknown',position=pos)
 !-- header: dimension
-   write(4,*) "#",size(gas_wl)
+   write(4,*) "#",size(grd_wl)
 !-- body
-   write(4,*) gas_wl
+   write(4,*) grd_wl
    close(4)
   endif
 

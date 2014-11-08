@@ -1,6 +1,6 @@
 subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
   use timestepmod
-  use gasgridmod
+  use gridmod
   use particlemod
   use inputparmod
   implicit none

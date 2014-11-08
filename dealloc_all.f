@@ -3,6 +3,7 @@ c     ----------------------
       use mpimod, only:impi,impi0
       use ionsmod, only:ion_dealloc
       use bbxsmod
+      use gridmod
       use gasgridmod
       use particlemod
       use inputstrmod

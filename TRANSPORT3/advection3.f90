@@ -1,6 +1,6 @@
 subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
   use timestepmod
-  use gasgridmod
+  use gridmod
   use particlemod
   use inputparmod
   implicit none

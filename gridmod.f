@@ -4,6 +4,9 @@ c     --------------
 c
       integer :: grd_igeom = 0
 c
+      integer :: grd_ng=0
+      real*8,allocatable :: grd_wl(:)
+c
       integer :: grd_nx=0
       integer :: grd_ny=0
       integer :: grd_nz=0
@@ -60,21 +63,40 @@ c
 c
 c-- temperature structure history (allocated only if used)
       real*8,allocatable :: grd_temppreset(:,:,:,:) !(nx,ny,nz,tim_nt)
+!
+!-- energy conservation check quantities
+      real*8 :: gas_eext = 0d0 !time-integrated input energy from external source
+      real*8 :: gas_emat = 0d0 !material energy
+      real*8 :: gas_erad = 0d0 !census radiation energy
+      real*8 :: gas_eleft = 0d0 !left (inward) leaked energy from domain
+      real*8 :: gas_eright = 0d0 !right (outward) leaked energy from domain
+      real*8 :: gas_evelo = 0d0 !total energy change to rad field from fluid
+      real*8 :: gas_eerror = 0d0 !error in integral problem energy
+!-- average quantities used for energy check with MPI
+      real*8 :: gas_eextav = 0d0
+      real*8 :: gas_eveloav = 0d0
+!--
+      real*8 :: gas_esurf
 c
       save
 c
       contains
 c
-      subroutine grid_init(ltalk,ng,igeom,ndim,isvelocity)
+      subroutine grid_init(ltalk,ng,wlarr,igeom,ndim,isvelocity)
 c     --------------------------------!{{{
       implicit none
       logical,intent(in) :: ltalk,isvelocity
       integer,intent(in) :: ng,igeom
       integer,intent(in) :: ndim(3)
+      real*8,intent(in) :: wlarr(grd_ng+1)
 c
       integer :: n,nx,ny,nz
 c
       grd_igeom = igeom
+c
+      grd_ng = ng
+      allocate(grd_wl(ng+1))
+      grd_wl = wlarr
 c
       grd_nx = ndim(1)
       grd_ny = ndim(2)

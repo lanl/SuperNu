@@ -89,8 +89,9 @@ program supernu
       call generate_inputstr(in_igeom)
     endif
 !-- setup spatial grid
-    call grid_init(impi==impi0,gas_ng,in_igeom,in_ndim,in_isvelocity)
-    call grid_setup
+    call grid_init(impi==impi0,gas_ng,gas_wl,in_igeom,in_ndim, &
+                   in_isvelocity)
+    call grid_setup(gas_wl)
 !!
 !!-- read gamma deposition profiles
 !    if(in_isvelocity.and.in_srctype=='none') then

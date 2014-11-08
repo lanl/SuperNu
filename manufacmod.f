@@ -51,6 +51,7 @@ c
 c     ------------------------------!{{{
       use miscmod, only:warn
       use physconstmod
+      use gridmod
       use gasgridmod
       use inputparmod
       implicit none
@@ -65,10 +66,10 @@ c-- verify applicable input pars
       call check_manufacpars
 c
 c-- determine manufacture type
-      if(grd_isvelocity) then
-c         
+      if(in_isvelocity) then
+c
 c-- implement/modify velocity dependent manufactured radiation source
-         select case (gas_opacanaltype)
+         select case (in_opacanaltype)
          case ('grey')
 c-- grey solution
             do i = 1, grd_nx
@@ -81,21 +82,21 @@ c-- grey solution
      &            (in_velout*(texp+dt))**(-2d0))*
      &            (man_aa11-pc_acoef*pc_c*man_temp0**4)
      &            )
-!     
+!
                grd_emitex(i,1,1) = grd_emitex(i,1,1)*
      &              grd_vol(i,1,1)*dt
-!     
+!
             enddo
 c--
          case ('mono')
-            stop 'generate_manuradsrc: gas_opacanaltype=mono'
+            stop 'generate_manuradsrc: in_opacanaltype=mono'
          case ('pick')
-            stop 'generate_manuradsrc: gas_opacanaltype=pick'
+            stop 'generate_manuradsrc: in_opacanaltype=pick'
          case ('line')
 c-- line solution
-            stop 'generate_manuradsrc: gas_opacanaltype=line'
+            stop 'generate_manuradsrc: in_opacanaltype=line'
          case default
-            stop 'gas_opacanaltype unknown'
+            stop 'in_opacanaltype unknown'
          end select
 c
 c
@@ -126,10 +127,10 @@ c-- verify applicable input pars
       call check_manufacpars
 c
 c-- determine manufacture type
-      if(grd_isvelocity) then
+      if(in_isvelocity) then
 c
 c-- implement/modify velocity dependent manufactured temperature source
-         select case (gas_opacanaltype)
+         select case (in_opacanaltype)
          case ('grey')
 c--   grey solution
             dd_matsrc = (1d0/dt)*
@@ -139,15 +140,15 @@ c--   grey solution
      &           (pc_acoef*pc_c*man_temp0**4d0-man_aa11)
 c
          case ('mono')
-            stop 'generate_manutempsrc: gas_opacanaltype=mono'
+            stop 'generate_manutempsrc: in_opacanaltype=mono'
          case ('pick')
-            stop 'generate_manutempsrc: gas_opacanaltype=pick'
+            stop 'generate_manutempsrc: in_opacanaltype=pick'
          case ('line')
 c--   line solution
             dd_matsrc = 0d0 !already set zero in gasgridmod
 c
          case default
-            stop 'gas_opacanaltype unknown'
+            stop 'in_opacanaltype unknown'
          end select
 c
 c
@@ -165,7 +166,8 @@ c
       subroutine init_manuprofile
 c     ---------------------------
       use physconstmod
-      use gasgridmod      
+      use inputparmod
+      use gridmod
       implicit none
 ************************************************************************
 * calculate finite volume manufactured initial energy per cell per group
@@ -175,28 +177,28 @@ c-- verify applicable input pars
       call check_manufacpars
 c
 c-- determine manufacture type
-      if(.not.grd_isvelocity) then
+      if(.not.in_isvelocity) then
 c-- implement/modify static manufactured temperature source
          stop 'init_manuprofile: no static sources'
       else
 c
 c-- implement/modify velocity dependent manufactured initial profile
-         select case (gas_opacanaltype)
+         select case (in_opacanaltype)
          case ('grey')
 c-- grey solution
            grd_evolinit = (man_aa11/pc_c) * grd_vol
 c
          case ('mono')
-            stop 'init_manuprofile: gas_opacanaltype=mono'
+            stop 'init_manuprofile: in_opacanaltype=mono'
          case ('pick')
-            stop 'init_manuprofile: gas_opacanaltype=pick'
+            stop 'init_manuprofile: in_opacanaltype=pick'
          case ('line')
 c-- line solution
-           stop 'init_manuprofile: gas_opacanaltype=line ! implemented'
+           stop 'init_manuprofile: in_opacanaltype=line ! implemented'
          case default
-            stop 'gas_opacanaltype unknown'
+            stop 'in_opacanaltype unknown'
          end select
-      endif      
+      endif
 c
       end subroutine init_manuprofile
 c
@@ -204,7 +206,9 @@ c
       subroutine init_manutemp
 c     ---------------------------
       use physconstmod
-      use gasgridmod      
+      use gridmod
+      use inputparmod
+      use gasgridmod
       implicit none
 ************************************************************************
 * calculate initial temperature in Kelvin
@@ -215,29 +219,29 @@ c-- verify applicable input pars
       call check_manufacpars
 c
 c-- determine manufacture type
-      if(grd_isvelocity) then
+      if(in_isvelocity) then
 c
 c-- implement/modify velocity dependent manufactured initial profile
-         select case (gas_opacanaltype)
+         select case (in_opacanaltype)
          case ('grey')
 c-- grey solution (uniform nominal temperature)
             dd_temp = man_temp0
 c
          case ('mono')
-            stop 'init_manutemp: gas_opacanaltype=mono'
+            stop 'init_manutemp: in_opacanaltype=mono'
          case ('pick')
-            stop 'init_manutemp: gas_opacanaltype=pick'
+            stop 'init_manutemp: in_opacanaltype=pick'
          case ('line')
 c-- line solution
             if(gas_ng/=2)
-     &           stop 'init_manutemp: gas_opacanaltype=line'
+     &           stop 'init_manutemp: in_opacanaltype=line'
             if(gas_ldisp1/gas_ldisp2>=1d-3)
      &           stop 'init_manutemp: gas_ldisp1/gas_ldisp2>=1d-3'
 c
             dd_temp = man_temp0
 c
          case default
-            stop 'gas_opacanaltype unknown'
+            stop 'in_opacanaltype unknown'
          end select
 c
 c
@@ -245,7 +249,7 @@ c
 c
 c-- implement/modify static manufactured initial temperature
          stop 'init_manutemp: no static solution'
-c         
+c
       endif
 c
       end subroutine init_manutemp

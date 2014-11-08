@@ -2,6 +2,7 @@ subroutine particle_advance
 
   use particlemod
   use timestepmod
+  use gridmod
   use gasgridmod
   use physconstmod
   use inputparmod

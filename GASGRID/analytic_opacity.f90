@@ -1,5 +1,6 @@
 subroutine analytic_opacity
 
+  use gridmod
   use gasgridmod
   use physconstmod
   use miscmod, only:specint

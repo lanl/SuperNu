@@ -40,6 +40,7 @@ c
 c
 c
       subroutine bcast_nonpermanent
+      use gridmod
       use gasgridmod
 ************************************************************************
 * Broadcast the data that changes with time.
@@ -67,7 +68,9 @@ c
 * temperature correction.
 * - stub
 ************************************************************************
+      use gridmod
       use gasgridmod
+c
       gas_eextav=gas_eext
       gas_eveloav = gas_evelo
 c
@@ -85,6 +88,7 @@ c
 c
       subroutine reduce_gastemp
 c     -------------------------
+      use gridmod
       use gasgridmod
       grd_temp = reshape(dd_temp,[grd_nx,grd_ny,grd_nz])
       end subroutine reduce_gastemp

@@ -1,6 +1,6 @@
 subroutine diffusion1(ptcl,isvacant)
 
-  use gasgridmod
+  use gridmod
   use timestepmod
   use physconstmod
   use particlemod
@@ -35,8 +35,8 @@ subroutine diffusion1(ptcl,isvacant)
   real*8 :: opacleakllump, opacleakrlump, mfphelp, ppl, ppr
   real*8 :: resopacleakl, resopacleakr
   integer :: glump, gunlump
-  integer :: glumps(gas_ng)
-  real*8 :: glumpinv,dtinv,capinv(gas_ng)
+  integer :: glumps(grd_ng)
+  real*8 :: glumpinv,dtinv,capinv(grd_ng)
   real*8 :: help
 
   integer,pointer :: z
@@ -70,15 +70,15 @@ subroutine diffusion1(ptcl,isvacant)
 
 
 !-- find group
-  g = binsrch(wl,gas_wl,gas_ng+1,in_ng)
-  if(g>gas_ng.or.g<1) then
+  g = binsrch(wl,grd_wl,grd_ng+1,in_ng)
+  if(g>grd_ng.or.g<1) then
      !particle out of wlgrid bound
-     if(g>gas_ng) then
-        g=gas_ng
-        wl=gas_wl(gas_ng+1)
+     if(g>grd_ng) then
+        g=grd_ng
+        wl=grd_wl(grd_ng+1)
      elseif(g<1) then
         g=1
-        wl=gas_wl(1)
+        wl=grd_wl(1)
      else
         stop 'diffusion1: missing particle group'
      endif
@@ -88,7 +88,7 @@ subroutine diffusion1(ptcl,isvacant)
 !-- lump testing ---------------------------------------------
 !
   glump = 0
-  gunlump = gas_ng
+  gunlump = grd_ng
   glumps = 0
 !
 !-- find lumpable groups
@@ -103,7 +103,7 @@ subroutine diffusion1(ptcl,isvacant)
            gunlump=gunlump-1
         endif
      enddo
-     do ig = g, gas_ng
+     do ig = g, grd_ng
         if(grd_cap(ig,z,1,1)*dx(z) &
              *thelp >= prt_taulump) then
            glump=glump+1
@@ -120,7 +120,7 @@ subroutine diffusion1(ptcl,isvacant)
      glumps(1)=g
 !
      forall(ig=2:g) glumps(ig)=ig-1
-     forall(ig=g+1:gas_ng) glumps(ig)=ig
+     forall(ig=g+1:grd_ng) glumps(ig)=ig
 !
   endif
   glumpinv = 1d0/glump
@@ -324,12 +324,12 @@ subroutine diffusion1(ptcl,isvacant)
            z = z-1
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           wl = 1d0/(r1/gas_wl(iig+1)+(1d0-r1)/gas_wl(iig))
+           wl = 1d0/(r1/grd_wl(iig+1)+(1d0-r1)/grd_wl(iig))
            g = iig
         else
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           wl = 1d0/(r1/gas_wl(iig+1)+(1d0-r1)/gas_wl(iig))
+           wl = 1d0/(r1/grd_wl(iig+1)+(1d0-r1)/grd_wl(iig))
 !
 !-- method changed to IMC
            ptcl%rtsrc = 1
@@ -400,7 +400,7 @@ subroutine diffusion1(ptcl,isvacant)
            enddo
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           wl=1d0/(r1/gas_wl(iig+1) + (1d0-r1)/gas_wl(iig))
+           wl=1d0/(r1/grd_wl(iig+1) + (1d0-r1)/grd_wl(iig))
 !-- changing from comoving frame to observer frame
            if(grd_isvelocity) then
               help = 1d0+mu*grd_xarr(grd_nx+1)*cinv
@@ -427,7 +427,7 @@ subroutine diffusion1(ptcl,isvacant)
         else
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           wl=1d0/(r1/gas_wl(g+1) + (1d0-r1)/gas_wl(g))
+           wl=1d0/(r1/grd_wl(g+1) + (1d0-r1)/grd_wl(g))
 !-- changing from comoving frame to observer frame
            if(grd_isvelocity) then
               help = 1d0+mu*grd_xarr(grd_nx+1)*cinv
@@ -494,13 +494,13 @@ subroutine diffusion1(ptcl,isvacant)
            z = z+1
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           wl = 1d0/(r1/gas_wl(iig+1)+(1d0-r1)/gas_wl(iig))
+           wl = 1d0/(r1/grd_wl(iig+1)+(1d0-r1)/grd_wl(iig))
 !--
 !
         else
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           wl = 1d0/(r1/gas_wl(iig+1)+(1d0-r1)/gas_wl(iig))
+           wl = 1d0/(r1/grd_wl(iig+1)+(1d0-r1)/grd_wl(iig))
 !
 !-- method changed to IMC
            ptcl%rtsrc = 1
@@ -540,7 +540,7 @@ subroutine diffusion1(ptcl,isvacant)
 !-- effective scattering sample
   else
 !         denom2 = 0d0!{{{
-!         do ig = gas_ng,glump+1,-1
+!         do ig = grd_ng,glump+1,-1
 !            iig=glumps(ig)
 !            denom2 = denom2+grd_emitprob(iig,z,1,1)
 !         enddo
@@ -552,7 +552,7 @@ subroutine diffusion1(ptcl,isvacant)
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
 
-     do ig = gas_ng,glump+1,-1
+     do ig = grd_ng,glump+1,-1
         iig=glumps(ig)
         if((r1>=denom3).and.(r1<denom3+grd_emitprob(iig,z,1,1)*help)) exit
         denom3 = denom3+grd_emitprob(iig,z,1,1)*help
@@ -561,7 +561,7 @@ subroutine diffusion1(ptcl,isvacant)
      g = iig
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     wl = 1d0/((1d0-r1)/gas_wl(g) + r1/gas_wl(g+1))
+     wl = 1d0/((1d0-r1)/grd_wl(g) + r1/grd_wl(g+1))
 
      if ((grd_sig(z,1,1)+grd_cap(g,z,1,1))*dx(z) &
           *thelp >= prt_tauddmc) then

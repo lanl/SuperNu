@@ -1,5 +1,6 @@
 subroutine analytic_source
 
+  use gridmod
   use mpimod
   use gasgridmod
   use physconstmod

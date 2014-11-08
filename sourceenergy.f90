@@ -1,5 +1,6 @@
 subroutine sourceenergy(nmpi)
 
+  use gridmod !should become gbolbalsmod
   use gasgridmod
   use timestepmod
   use particlemod

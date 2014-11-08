@@ -1,5 +1,6 @@
 subroutine interior_source
 
+  use gridmod
   use gasgridmod
   use timestepmod
   use particlemod

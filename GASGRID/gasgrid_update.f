@@ -1,6 +1,6 @@
       subroutine gasgrid_update(irank)
 c     -------------------------------
-      use mpimod !DEBUG
+      use gridmod
       use physconstmod
       use miscmod
       use ionsmod

@@ -1,5 +1,6 @@
 subroutine initialnumbers
 
+  use gridmod
   use gasgridmod
   use timestepmod
   use particlemod
