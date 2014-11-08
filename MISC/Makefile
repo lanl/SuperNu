@@ -4,10 +4,7 @@ include ../Makefile.compiler
 include ../Makefile.include
 
 LIBRARY = misc.a
-FILES = locate.o sorti.o memusg.o
-#-- the following routines are included in miscmod.f in order to avoid
-#-- explicit interfaces:
-# warn.o lcase.o
+FILES = locate.o sorti.o memusg.o binsrch.o warn.o lcase.o specint.o
 
 .PHONY: all clean
 
