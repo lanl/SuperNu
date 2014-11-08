@@ -37,7 +37,6 @@ c
 c
       subroutine read_atom(iz,ii,istat,get_data)
 c     ------------------------------------------
-c     use physconstmod
       use miscmod, only:lcase
       use elemdatamod, only:elem_data
       implicit none

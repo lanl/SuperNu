@@ -1,6 +1,5 @@
       module inputparmod
 c     ------------------
-      use physconstmod
       implicit none
 ************************************************************************
 * input parameters

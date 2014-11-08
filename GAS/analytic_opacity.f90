@@ -5,7 +5,6 @@ subroutine analytic_opacity
   use gasmod
   use physconstmod
   use miscmod, only:specint
-  !use timestepmod
   implicit none
 
 !#####################################

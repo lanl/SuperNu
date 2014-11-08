@@ -1,11 +1,9 @@
 subroutine write_output
 
-  use inputparmod
   use timingmod
   use timestepmod
   use gridmod
   use totalsmod
-  use particlemod
   use fluxmod
   implicit none
 

@@ -3,11 +3,11 @@ program supernu
   use mpimod
   use inputparmod
   use timestepmod
-  use gridmod
+  use gridmod, only:grid_init
   use gasmod
   use particlemod
   use physconstmod
-  use profiledatamod
+  use profiledatamod, only:read_gamma_profiles
   use miscmod
 
   use inputstrmod

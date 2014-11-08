@@ -5,7 +5,6 @@ subroutine boundary_source
   use physconstmod
   use gridmod
   use totalsmod
-  use gasmod
   use inputparmod
   use miscmod, only:specint
   implicit none

@@ -333,6 +333,7 @@ c
 c
       subroutine generate_inputstr2
       use inputparmod!{{{
+      use physconstmod
       implicit none
 ************************************************************************
 * Read the input structure file

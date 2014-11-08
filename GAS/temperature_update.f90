@@ -4,7 +4,6 @@ subroutine temperature_update
   use timestepmod
   use physconstmod
   use manufacmod
-  use inputparmod
   implicit none
 
 !##################################################

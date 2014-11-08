@@ -1,13 +1,11 @@
       subroutine gas_setup
-c     ------------------------
+c     --------------------
       use inputstrmod
       use physconstmod
       use inputparmod
-      use timestepmod
       use gasmod
       use manufacmod
       use miscmod, only:warn
-      use profiledatamod
       implicit none
 ************************************************************************
 * Initialize the gas grid, the part that is constant with time and

@@ -61,7 +61,6 @@ c-- temperature structure history (only allocated when used)
 
       subroutine gas_init(ltalk,ncell)
 c-------------------------------------
-      use inputparmod
       implicit none
       logical,intent(in) :: ltalk
       integer,intent(in) :: ncell

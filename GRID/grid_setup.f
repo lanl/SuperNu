@@ -2,7 +2,6 @@
 c     ---------------------
       use gridmod
       use inputstrmod
-      use timestepmod
       implicit none
 ************************************************************************
 * Setup the grid on the computational domain

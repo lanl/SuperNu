@@ -2,9 +2,7 @@ subroutine sourcenumbers(nmpi)
 
   use totalsmod
   use gridmod
-  use timestepmod
   use particlemod
-  use physconstmod
   use inputparmod
   implicit none
   integer,intent(in) :: nmpi

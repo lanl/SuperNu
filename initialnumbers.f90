@@ -2,10 +2,7 @@ subroutine initialnumbers
 
   use gridmod
   use totalsmod
-  use timestepmod
   use particlemod
-  use physconstmod
-  use inputparmod
   implicit none
 
 !##################################################

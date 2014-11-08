@@ -4,9 +4,7 @@ subroutine analytic_initial
   use gasmod
   use inputparmod
   use physconstmod
-  use timestepmod
   use manufacmod
-  use profiledatamod
   implicit none
 
   real*8 :: trad(grd_nx,grd_ny,grd_nz)
