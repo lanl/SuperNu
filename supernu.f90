@@ -77,6 +77,10 @@ program supernu
       call read_restart_particles
     endif
 !
+!-- wlgrid (before grid setup)
+    call wlgrid_setup(gas_ng)
+    call fluxgrid_setup(in_nflx,in_wlminflx,in_wlmaxflx)
+!
 !-- read input structure
     if(.not.in_noreadstruct.and.in_isvelocity) then
       call read_inputstr(in_igeom,in_ndim)
@@ -85,7 +89,7 @@ program supernu
       call generate_inputstr(in_igeom)
     endif
 !-- setup spatial grid
-    call grid_init(in_igeom,in_ndim)
+    call grid_init(impi==impi0,gas_ng,in_igeom,in_ndim,in_isvelocity)
     call grid_setup
 !!
 !!-- read gamma deposition profiles
@@ -93,10 +97,6 @@ program supernu
 !      if(in_igeom>1) stop 'supernu: read_gam_prof: no 2D/3D'
 !      call read_gamma_profiles(in_ndim)
 !    endif
-!
-!-- wlgrid
-    call wlgrid_setup(gas_ng)
-    call fluxgrid_setup(in_nflx,in_wlminflx,in_wlmaxflx)
 
 !-- READ DATA
 !-- read ion and level data

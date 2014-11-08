@@ -9,14 +9,10 @@ module gasgridmod
 
   integer :: dd_ncell=0
 
-  integer :: grd_nx=0
-  integer :: grd_ny=0
-  integer :: grd_nz=0
   integer :: gas_ng=0
 
   real*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
 
-  logical :: grd_isvelocity = .false.
   logical :: gas_novolsrc = .false. !no external volume source (e.g. radioactivity)
 !-(rev. 121)
   real*8 :: gas_sigcoefs=0  !analytic scattering opacity power law coefficient
@@ -61,66 +57,15 @@ module gasgridmod
 !--
   real*8 :: gas_esurf
 
-  real*8,allocatable :: grd_xarr(:)   !(grd_nx+1), left cell edge values
-  real*8,allocatable :: grd_yarr(:)   !(grd_ny+1), left cell edge values
-  real*8,allocatable :: grd_zarr(:)   !(grd_nz+1), left cell edge values
-
-
-!-- Probability of emission in a given zone and group
-  real*8,allocatable :: grd_emitprob(:,:,:,:) !(gas_ng,grd_nx,grd_ny,grd_nz)
-!-- Line+Cont extinction coeff
-  real*8,allocatable :: grd_cap(:,:,:,:) !(gas_ng,grd_nx,grd_ny,grd_nz)
-!-- leakage opacities
-  real*8,allocatable :: grd_opacleak(:,:,:,:) !(6,grd_nx,grd_ny,grd_nz)
-
-
-!-- scattering coefficient
-  real*8,allocatable :: grd_sig(:,:,:) !(grd_nx,grd_ny,grd_nz)
-!-- Gamma ray gray opacity
-  real*8,allocatable :: grd_capgam(:,:,:) !(grd_nx,grd_ny,grd_nz)
-!-- Planck opacity (gray)
-  real*8,allocatable :: grd_siggrey(:,:,:)!(grd_nx,grd_ny,grd_nz)
-!-- Fleck factor
-  real*8,allocatable :: grd_fcoef(:,:,:)  !(grd_nx,grd_ny,grd_nz)
-
-
-!-- energy absorbed by material
-  real*8,allocatable :: grd_edep(:,:,:)   !(grd_nx,grd_ny,grd_nz)
-!-- radiation energy density in tsp_dt
-  real*8,allocatable :: grd_eraddens(:,:,:) !(grd_nx,grd_ny,grd_nz)
-
-
-!-- number of IMC-DDMC method changes per cell per time step
-  integer,allocatable :: grd_methodswap(:,:,:) !(grd_nx,grd_ny,grd_nz)
-!-- number of census prt_particles per cell
-  integer,allocatable :: grd_numcensus(:,:,:) !(grd_nx,grd_ny,grd_nz)
-
-!
-!-- packet number and energy distribution
-!========================================
-  integer,allocatable :: grd_nvol(:,:,:) !(grd_nx,grd_ny,grd_nz) number of thermal source particles generated per cell
-  integer,allocatable :: grd_nvolex(:,:,:) !(grd_nx,grd_ny,grd_nz) number of external source particles generated per cell
-  integer,allocatable :: grd_nvolinit(:,:,:) !(grd_nx,grd_ny,grd_nz) number of initial (t=tfirst) particles per cell
-!  
-  real*8,allocatable :: grd_emit(:,:,:) !(grd_nx,grd_ny,grd_nz) amount of fictitious thermal energy emitted per cell in a time step
-  real*8,allocatable :: grd_emitex(:,:,:) !(grd_nx,grd_ny,grd_nz) amount of external energy emitted per cell per group in a time step
-  real*8,allocatable :: grd_evolinit(:,:,:) !(grd_nx,grd_ny,grd_nz) amount of initial energy per cell per group
-!
-  real*8,allocatable :: grd_temp(:,:,:) !(grd_nx,grd_ny,grd_nz)
-  real*8,allocatable :: grd_vol(:,:,:) !(grd_nx,grd_ny,grd_nz)
-
-  private read_temp_preset
-
 
 !-- temperature structure history
-  real*8,allocatable :: gas_temppreset(:,:,:,:) !(grd_nx,grd_ny,grd_nz,tim_nt)
-  real*8,allocatable :: dd_temppreset(:,:) !(grd_nx,grd_ny,grd_nz,tim_nt)
+  real*8,allocatable :: dd_temppreset(:,:) !(ncell,tim_nt)
 
 !
 !
 !-- DOMAIN DECOMPOSITION
 !=======================
-  real*8,allocatable :: dd_temp(:) !(grd_nx,grd_ny,grd_nz)
+  real*8,allocatable :: dd_temp(:)       !(ncell)
   real*8,allocatable :: dd_eraddens(:)
   real*8,allocatable :: dd_ur(:)
   real*8,allocatable :: dd_rho(:)
@@ -172,16 +117,11 @@ module gasgridmod
     logical,intent(in) :: ltalk
     integer,intent(in) :: ncell
 
-    integer :: n,nx,ny,nz
+    integer :: n
     logical :: lexist
 
     dd_ncell = ncell
 
-    grd_nx = in_ndim(1)
-    grd_ny = in_ndim(2)
-    grd_nz = in_ndim(3)
-
-    grd_isvelocity = in_isvelocity
     gas_novolsrc = in_novolsrc
 !-- power law scattering opacity input:
     gas_sigcoefs = in_sigcoefs
@@ -206,44 +146,6 @@ module gasgridmod
     gas_nheav = in_nheav
     gas_srcmax = in_srcmax
 
-!!-- primary
-!    allocate(grd_xarr(grd_nx+1)) !zone edge x position
-!    allocate(grd_yarr(grd_ny+1)) !zone edge y position
-!    allocate(grd_zarr(grd_nz+1)) !zone edge z position
-
-    nx = grd_nx !shortcut
-    ny = grd_ny !shortcut
-    nz = grd_nz !shortcut
-    allocate(grd_edep(nx,ny,nz))
-    allocate(grd_siggrey(nx,ny,nz))
-    allocate(grd_capgam(nx,ny,nz))
-!
-!- Ryan W.: using power law to calculate grd_sig (similar to Planck opacity)
-    allocate(grd_sig(nx,ny,nz))    !grey scattering opacity
-!----------------------------------------------------------------
-    allocate(grd_fcoef(nx,ny,nz))
-     allocate(grd_emitprob(gas_ng,nx,ny,nz))
-    allocate(grd_opacleak(6,nx,ny,nz))
-    allocate(grd_eraddens(nx,ny,nz))
-
-!-Ryan W: gas_wl being allocated in gasgrid_setup now--
-    !allocate(gas_wl(gas_ng)) !wavelength grid
-!------------------------------------------------------
-     allocate(grd_cap(gas_ng,nx,ny,nz)) !Line+Cont extinction coeff
-
-!--Ryan W: values below were formerly secondary (rev 183)
-    allocate(grd_temp(nx,ny,nz))  !cell average temperature
-    allocate(grd_vol(nx,ny,nz))  !cell average temperature
-
-    allocate(grd_nvol(nx,ny,nz))
-    allocate(grd_nvolex(nx,ny,nz))
-    allocate(grd_nvolinit(nx,ny,nz))
-    allocate(grd_emit(nx,ny,nz))
-    allocate(grd_emitex(nx,ny,nz))
-    allocate(grd_evolinit(nx,ny,nz))
-
-    allocate(grd_methodswap(nx,ny,nz))
-    allocate(grd_numcensus(nx,ny,nz))
 
 !-- secondary
     allocate(dd_temp(dd_ncell)) !(dd_ncell)
@@ -280,39 +182,9 @@ module gasgridmod
 !-- output
     if(ltalk) then
      n = dd_ncell*(11 + 5 + gas_nelem+3)/1024 !kB
-     write(6,*) 'ALLOC dd     :',n,"kB",n/1024,"MB",n/1024**2,"GB"
-     n = nx*ny*nz
-     n = int((int(n,8)*8*21)/1024) !kB
-     write(6,*) 'ALLOC gasgrid:',n,"kB",n/1024,"MB",n/1024**2,"GB"
-     n = nx*ny*nz
-     n = int(((8+8)*int(n,8)*gas_ng)/1024) !kB
-     write(6,*) 'ALLOC grd_cap:',n,"kB",n/1024,"MB",n/1024**2,"GB"
+     write(6,*) 'ALLOC gas    :',n,"kB",n/1024,"MB",n/1024**2,"GB"
     endif !ltalk
-!
-!-- read preset temperature profiles
-    inquire(file='input.temp',exist=lexist)
-    if(lexist) call read_temp_preset
   end subroutine gasgrid_init
-
-
-  subroutine read_temp_preset
-!-----------------------------!{{{
-    use timestepmod
-    integer :: istat
-!
-    open(4,file='input.temp',status='old',iostat=istat)
-    if(istat/=0) stop 'rd_temp_preset: no file: input.temp'
-!-- alloc and read
-    allocate(gas_temppreset(grd_nx,grd_ny,grd_nz,tsp_nt))
-    read(4,*,iostat=istat) gas_temppreset
-    if(istat/=0) stop 'rd_temp_preset: file too short: input.temp'
-!-- check EOF
-    read(4,*,iostat=istat)
-    if(istat==0) stop 'rd_temp_preset: file too long: input.temp'
-    close(4)
-    write(6,*) 'rd_temp_preset: custom temp profiles read successfully'
-!}}}
-  end subroutine read_temp_preset
 
 
 end module gasgridmod
