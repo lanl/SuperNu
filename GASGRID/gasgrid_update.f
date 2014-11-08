@@ -5,6 +5,7 @@ c     -------------------------------
       use miscmod
       use ionsmod
       use timestepmod
+      use totalsmod
       use gasgridmod
       use inputparmod
       use timingmod
@@ -127,7 +128,7 @@ c-- totals
 c=========
 c-- add initial thermal input to dd_eext
       if(tsp_it==1) then
-       gas_eext = sum(dd_bcoef*dd_temp*dd_vol)
+       tot_eext = sum(dd_bcoef*dd_temp*dd_vol)
       endif
 !-- total comoving material energy
       dd_emat = sum(dd_bcoef*dd_temp*dd_vol)

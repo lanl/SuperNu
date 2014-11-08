@@ -2,8 +2,8 @@ subroutine particle_advance
 
   use particlemod
   use timestepmod
+  use totalsmod
   use gridmod
-  use gasgridmod
   use physconstmod
   use inputparmod
   use timingmod
@@ -45,7 +45,7 @@ subroutine particle_advance
   dz(l) = grd_zarr(l+1) - grd_zarr(l)
 
   grd_edep = 0.0
-  gas_erad = 0.0
+  tot_erad = 0.0
   flx_luminos = 0.0
   flx_lumdev = 0.0
   flx_lumnum = 0
@@ -109,26 +109,26 @@ subroutine particle_advance
      ! Looking up group
      if(ptcl%rtsrc==1) then
         if(grd_isvelocity) then!{{{
-           ig = binsrch(wlsrc/labfact,gas_wl,gas_ng+1,in_ng)
+           ig = binsrch(wlsrc/labfact,grd_wl,grd_ng+1,in_ng)
         else
-           ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
+           ig = binsrch(wlsrc,grd_wl,grd_ng+1,in_ng)
         endif
         !
-        if(ig>gas_ng.or.ig<1) then
+        if(ig>grd_ng.or.ig<1) then
            !particle out of wlgrid energy bound
-           if(ig>gas_ng) then
-              ig=gas_ng
+           if(ig>grd_ng) then
+              ig=grd_ng
               if(grd_isvelocity) then
-                 wlsrc=gas_wl(gas_ng+1)*labfact
+                 wlsrc=grd_wl(grd_ng+1)*labfact
               else
-                 wlsrc=gas_wl(gas_ng+1)
+                 wlsrc=grd_wl(grd_ng+1)
               endif
            elseif(ig<1) then
               ig=1
               if(grd_isvelocity) then
-                 wlsrc=gas_wl(1)*labfact
+                 wlsrc=grd_wl(1)*labfact
               else
-                 wlsrc=gas_wl(1)
+                 wlsrc=grd_wl(1)
               endif
            else
               write(*,*) 'domain leak!!'
@@ -138,16 +138,16 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)!{{{
+        ig = binsrch(wlsrc,grd_wl,grd_ng+1,in_ng)!{{{
         !
-        if(ig>gas_ng.or.ig<1) then
+        if(ig>grd_ng.or.ig<1) then
            !particle out of wlgrid bound
-           if(ig>gas_ng) then
-              ig=gas_ng
-              wlsrc=gas_wl(gas_ng+1)
+           if(ig>grd_ng) then
+              ig=grd_ng
+              wlsrc=grd_wl(grd_ng+1)
            elseif(ig<1) then
               ig=1
-              wlsrc=gas_wl(1)
+              wlsrc=grd_wl(1)
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
@@ -263,10 +263,10 @@ subroutine particle_advance
 !-- DDMC -> IMC
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
-              wlsrc = 1d0/(r1/gas_wl(ig+1)+(1d0-r1)/gas_wl(ig))
+              wlsrc = 1d0/(r1/grd_wl(ig+1)+(1d0-r1)/grd_wl(ig))
               if(grd_isvelocity) then
 !-- velocity effects accounting
-                 gas_evelo=gas_evelo+esrc*(1d0-1d0/labfact)
+                 tot_evelo=tot_evelo+esrc*(1d0-1d0/labfact)
 !
                  esrc = esrc/labfact
                  ptcl%ebirth = ptcl%ebirth/labfact
@@ -277,7 +277,7 @@ subroutine particle_advance
         else
            if(ptcl%rtsrc==1.and.grd_isvelocity) then
 !-- IMC -> DDMC
-              gas_evelo = gas_evelo+esrc*(1d0-labfact)
+              tot_evelo = tot_evelo+esrc*(1d0-labfact)
               esrc = esrc*labfact
               ptcl%ebirth = ptcl%ebirth*labfact
               wlsrc = wlsrc/labfact
@@ -289,25 +289,25 @@ subroutine particle_advance
 !-- looking up group
      if(ptcl%rtsrc==1) then
         if(grd_isvelocity) then!{{{
-           ig = binsrch(wlsrc/labfact,gas_wl,gas_ng+1,in_ng)
+           ig = binsrch(wlsrc/labfact,grd_wl,grd_ng+1,in_ng)
         else
-           ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
+           ig = binsrch(wlsrc,grd_wl,grd_ng+1,in_ng)
         endif
-        if(ig>gas_ng.or.ig<1) then
+        if(ig>grd_ng.or.ig<1) then
            !particle out of wlgrid energy bound
-           if(ig>gas_ng) then
-              ig=gas_ng
+           if(ig>grd_ng) then
+              ig=grd_ng
               if(grd_isvelocity) then
-                 wlsrc=gas_wl(gas_ng+1)*labfact
+                 wlsrc=grd_wl(grd_ng+1)*labfact
               else
-                 wlsrc=gas_wl(gas_ng+1)
+                 wlsrc=grd_wl(grd_ng+1)
               endif
            elseif(ig<1) then
               ig=1
               if(grd_isvelocity) then
-                 wlsrc=gas_wl(1)*labfact
+                 wlsrc=grd_wl(1)*labfact
               else
-                 wlsrc=gas_wl(1)
+                 wlsrc=grd_wl(1)
               endif
            else
               write(*,*) 'domain leak!!'
@@ -317,16 +317,16 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)!{{{
+        ig = binsrch(wlsrc,grd_wl,grd_ng+1,in_ng)!{{{
         !
-        if(ig>gas_ng.or.ig<1) then
+        if(ig>grd_ng.or.ig<1) then
            !particle out of wlgrid bound
-           if(ig>gas_ng) then
-              ig=gas_ng
-              wlsrc=gas_wl(gas_ng+1)
+           if(ig>grd_ng) then
+              ig=grd_ng
+              wlsrc=grd_wl(grd_ng+1)
            elseif(ig<1) then
               ig=1
-              wlsrc=gas_wl(1)
+              wlsrc=grd_wl(1)
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
@@ -384,10 +384,10 @@ subroutine particle_advance
                  prt_done = .true.
                  grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
 !-- velocity effects accounting
-                 if(ptcl%rtsrc==1) gas_evelo = gas_evelo + esrc*(1d0-labfact)
+                 if(ptcl%rtsrc==1) tot_evelo = tot_evelo + esrc*(1d0-labfact)
               else
 !-- weight addition accounted for in external source
-                 gas_eext = gas_eext + esrc
+                 tot_eext = tot_eext + esrc
 !
                  esrc = 2d0*esrc
                  ptcl%ebirth = 2d0*ptcl%ebirth
@@ -421,10 +421,10 @@ subroutine particle_advance
                  prt_done = .true.
                  grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
 !-- velocity effects accounting
-                 if(ptcl%rtsrc==1) gas_evelo = gas_evelo + esrc*(1d0-labfact)
+                 if(ptcl%rtsrc==1) tot_evelo = tot_evelo + esrc*(1d0-labfact)
               else
 !-- weight addition accounted for in external source
-                 gas_eext = gas_eext + esrc
+                 tot_eext = tot_eext + esrc
 !
                  esrc = 2d0*esrc
                  ptcl%ebirth = 2d0*ptcl%ebirth
@@ -445,33 +445,33 @@ subroutine particle_advance
      ! Redshifting DDMC particle energy weights and wavelengths
      if(ptcl%rtsrc == 2.and.grd_isvelocity) then
 !-- redshifting energy weight!{{{
-        gas_evelo=gas_evelo+esrc*(1d0-exp(-tsp_dt/tsp_t))
+        tot_evelo=tot_evelo+esrc*(1d0-exp(-tsp_dt/tsp_t))
         esrc = esrc*exp(-tsp_dt/tsp_t)
         ptcl%ebirth = ptcl%ebirth*exp(-tsp_dt/tsp_t)
         !
 !
 !-- find group
-        ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
+        ig = binsrch(wlsrc,grd_wl,grd_ng+1,in_ng)
         !
-        if(ig>gas_ng.or.ig<1) then
+        if(ig>grd_ng.or.ig<1) then
            !particle out of wlgrid energy bound
-           if(ig>gas_ng) then
-              ig=gas_ng
+           if(ig>grd_ng) then
+              ig=grd_ng
            else
               ig=1
            endif
         endif
         !
         !
-        if(ig<gas_ng) then
+        if(ig<grd_ng) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
            x1 = grd_cap(ig,zsrc,iy,iz)
-           x2 = gas_wl(ig)/(pc_c*tsp_t*(gas_wl(ig+1)-gas_wl(ig)))
+           x2 = grd_wl(ig)/(pc_c*tsp_t*(grd_wl(ig+1)-grd_wl(ig)))
            if(r1<x2/(x1+x2)) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
-              wlsrc = 1d0/(r1/gas_wl(ig+1)+(1d0-r1)/gas_wl(ig))
+              wlsrc = 1d0/(r1/grd_wl(ig+1)+(1d0-r1)/grd_wl(ig))
               wlsrc = wlsrc*exp(tsp_dt/tsp_t)
            endif
         endif
@@ -483,25 +483,25 @@ subroutine particle_advance
      ! Looking up group
      if(ptcl%rtsrc==1) then
         if(grd_isvelocity) then!{{{
-           ig = binsrch(wlsrc/labfact,gas_wl,gas_ng+1,in_ng)
+           ig = binsrch(wlsrc/labfact,grd_wl,grd_ng+1,in_ng)
         else
-           ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)
+           ig = binsrch(wlsrc,grd_wl,grd_ng+1,in_ng)
         endif
-        if(ig>gas_ng.or.ig<1) then
+        if(ig>grd_ng.or.ig<1) then
            !particle out of wlgrid energy bound
-           if(ig>gas_ng) then
-              ig=gas_ng
+           if(ig>grd_ng) then
+              ig=grd_ng
               if(grd_isvelocity) then
-                 wlsrc=gas_wl(gas_ng+1)*labfact
+                 wlsrc=grd_wl(grd_ng+1)*labfact
               else
-                 wlsrc=gas_wl(gas_ng+1)
+                 wlsrc=grd_wl(grd_ng+1)
               endif
            elseif(ig<1) then
               ig=1
               if(grd_isvelocity) then
-                 wlsrc=gas_wl(1)*labfact
+                 wlsrc=grd_wl(1)*labfact
               else
-                 wlsrc=gas_wl(1)
+                 wlsrc=grd_wl(1)
               endif
            else
               write(*,*) 'domain leak!!'
@@ -511,16 +511,16 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        ig = binsrch(wlsrc,gas_wl,gas_ng+1,in_ng)!{{{
+        ig = binsrch(wlsrc,grd_wl,grd_ng+1,in_ng)!{{{
         !
-        if(ig>gas_ng.or.ig<1) then
+        if(ig>grd_ng.or.ig<1) then
            !particle out of wlgrid bound
-           if(ig>gas_ng) then
-              ig=gas_ng
-              wlsrc=gas_wl(gas_ng+1)
+           if(ig>grd_ng) then
+              ig=grd_ng
+              wlsrc=grd_wl(grd_ng+1)
            elseif(ig<1) then
               ig=1
-              wlsrc=gas_wl(1)
+              wlsrc=grd_wl(1)
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
@@ -551,15 +551,15 @@ subroutine particle_advance
 !-- radiation energy at census
      if(grd_isvelocity) then
         if(ptcl%rtsrc==2) then
-           gas_erad = gas_erad + esrc
+           tot_erad = tot_erad + esrc
         else
-           gas_erad = gas_erad + esrc !*(1d0-musrc*rsrc/pc_c)
+           tot_erad = tot_erad + esrc !*(1d0-musrc*rsrc/pc_c)
 !-- velocity effects accounting
-!           gas_evelo=gas_evelo+esrc*musrc*rsrc/pc_c
+!           tot_evelo=tot_evelo+esrc*musrc*rsrc/pc_c
 !
         endif
      else
-        gas_erad = gas_erad + esrc
+        tot_erad = tot_erad + esrc
      endif
 
      endif
@@ -577,21 +577,21 @@ subroutine particle_advance
   nimc = 0
   !write(6,*) eleft, eright
 
-  gas_eext = gas_eext-gas_eleft-gas_eright
+  tot_eext = tot_eext-tot_eleft-tot_eright
 
 end subroutine particle_advance
 
 
-              !wlsrc = 0.5d0*(gas_wl(ig)+gas_wl(ig+1))
+              !wlsrc = 0.5d0*(grd_wl(ig)+grd_wl(ig+1))
               !r1 = rand()
 !           prt_tlyrand = prt_tlyrand+1
-              !wlsrc=gas_wl(ig)*(1d0-r1)+gas_wl(ig+1)*r1
+              !wlsrc=grd_wl(ig)*(1d0-r1)+grd_wl(ig+1)*r1
               !
 !               r1 = rand()
 !           prt_tlyrand = prt_tlyrand+1
 !               if(r1<grd_cap(ig,zsrc,1,1)/(grd_cap(ig,zsrc,1,1)+grd_sig(zsrc,1,1))) then
-!                  x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*grd_temp(zsrc,1,1))
-!                  x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*grd_temp(zsrc,1,1))
+!                  x1 = pc_h*pc_c/(grd_wl(ig+1)*pc_kb*grd_temp(zsrc,1,1))
+!                  x2 = pc_h*pc_c/(grd_wl(ig)*pc_kb*grd_temp(zsrc,1,1))
 !                  if (x2<pc_plkpk) then
 !                     bmax = x2**3/(exp(x2)-1d0)
 !                  elseif (x1>pc_plkpk) then

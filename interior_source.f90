@@ -1,6 +1,7 @@
 subroutine interior_source
 
   use gridmod
+  use totalsmod
   use gasgridmod
   use timestepmod
   use particlemod
@@ -43,8 +44,8 @@ subroutine interior_source
   !Volume particle instantiation: loop
   !Loop run over the number of new particles that aren't surface source
   !particles.
-  x1=1d0/gas_wl(gas_ng+1)
-  x2=1d0/gas_wl(1)
+  x1=1d0/grd_wl(grd_ng+1)
+  x2=1d0/grd_wl(1)
   do ipart = prt_nsurf+1, prt_nsurf+prt_nexsrc
      ivac = prt_vacantarr(ipart)!{{{
      ptcl => prt_particles(ivac)
@@ -82,16 +83,16 @@ subroutine interior_source
      denom2 = 0d0
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     do ig = 1, gas_ng
-        x3=1d0/gas_wl(ig+1)
-        x4=1d0/gas_wl(ig)
+     do ig = 1, grd_ng
+        x3=1d0/grd_wl(ig+1)
+        x4=1d0/grd_wl(ig)
         iig = ig
         if(r1>=denom2.and.r1<denom2+(x4-x3)/(x2-x1)) exit
         denom2 = denom2+(x4-x3)/(x2-x1)
      enddo
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     wl0 = 1d0/((1d0-r1)/gas_wl(iig)+r1/gas_wl(iig+1))
+     wl0 = 1d0/((1d0-r1)/grd_wl(iig)+r1/grd_wl(iig+1))
 
 !-- calculating direction cosine (comoving)
      r1 = rand()
@@ -100,7 +101,7 @@ subroutine interior_source
 
 !-- calculating particle energy
      ep0 = grd_emitex(i,j,k)/real(grd_nvolex(i,j,k))
-     gas_eext=gas_eext+ep0
+     tot_eext=tot_eext+ep0
 
 !
 !-- selecting geometry
@@ -184,7 +185,7 @@ subroutine interior_source
            ptcl%ebirth = ep0*cmffact
            ptcl%wlsrc = wl0/cmffact
 !-- velocity effects accounting
-           gas_evelo=gas_evelo+ep0*(1d0-cmffact)
+           tot_evelo=tot_evelo+ep0*(1d0-cmffact)
         else
            ptcl%esrc = ep0
            ptcl%ebirth = ep0
@@ -246,14 +247,14 @@ subroutine interior_source
      denom2 = 0d0
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1     
-     do ig = 1, gas_ng
+     do ig = 1, grd_ng
         iig = ig
         if (r1>=denom2.and.r1<denom2+grd_emitprob(ig,i,j,k)) exit
         denom2 = denom2+grd_emitprob(ig,i,j,k)
      enddo
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     wl0 = 1d0/((1d0-r1)/gas_wl(iig)+r1/gas_wl(iig+1))
+     wl0 = 1d0/((1d0-r1)/grd_wl(iig)+r1/grd_wl(iig+1))
 
 !-- calculating direction cosine (comoving)
      r1 = rand()
@@ -390,7 +391,7 @@ subroutine interior_source
            ptcl%ebirth = ep0*cmffact
            ptcl%wlsrc = wl0/cmffact
 !-- velocity effects accounting
-           gas_evelo=gas_evelo+ep0*(1d0-cmffact)
+           tot_evelo=tot_evelo+ep0*(1d0-cmffact)
         else
            ptcl%esrc = ep0
            ptcl%ebirth = ep0

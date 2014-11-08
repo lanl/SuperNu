@@ -6,6 +6,7 @@ subroutine diffusion2(ptcl,isvacant)
   use particlemod
   use inputparmod
   use fluxmod
+  use totalsmod
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
@@ -444,7 +445,7 @@ subroutine diffusion2(ptcl,isvacant)
         if (zr == grd_nx) then
            isvacant = .true.
            prt_done = .true.
-           gas_eright = gas_eright+ep
+           tot_eright = tot_eright+ep
 !-- outbound luminosity tally
 !-- sampling r, z
            r1 = rand()
@@ -641,7 +642,7 @@ subroutine diffusion2(ptcl,isvacant)
         if (zz == 1) then
            isvacant = .true.
            prt_done = .true.
-           gas_eright = gas_eright+ep
+           tot_eright = tot_eright+ep
 !-- outbound luminosity tally
 !-- sampling r, z
            r1 = rand()
@@ -815,7 +816,7 @@ subroutine diffusion2(ptcl,isvacant)
         if (zz == grd_ny) then
            isvacant = .true.
            prt_done = .true.
-           gas_eright = gas_eright+ep
+           tot_eright = tot_eright+ep
 !-- outbound luminosity tally
 !-- sampling r, z
            r1 = rand()

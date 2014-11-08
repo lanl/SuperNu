@@ -4,6 +4,7 @@ subroutine boundary_source
   use timestepmod
   use physconstmod
   use gridmod
+  use totalsmod
   use gasgridmod
   use inputparmod
   use miscmod, only:specint
@@ -16,7 +17,7 @@ subroutine boundary_source
   real*8 :: srftemp = 1d4
   real*8 :: cmffact,azitrfm
   integer, external :: binsrch
-  real*8, dimension(gas_ng) :: emitsurfprobg  !surface emission probabilities 
+  real*8, dimension(grd_ng) :: emitsurfprobg  !surface emission probabilities 
 
 !
 !-- statement functions
@@ -27,11 +28,11 @@ subroutine boundary_source
   dz(l) = grd_zarr(l+1) - grd_zarr(l)
 
 !
-  gas_eleft = 0d0
-  gas_eright = 0d0
+  tot_eleft = 0d0
+  tot_eright = 0d0
 !
 
-  esurfpart = gas_esurf/dble(prt_nsurf)
+  esurfpart = tot_esurf/dble(prt_nsurf)
 
   if(grd_isvelocity) then
      thelp = tsp_t
@@ -40,10 +41,10 @@ subroutine boundary_source
   endif
 
 !-- calculating grouped thermal emission probabilities
-  if(gas_opacanaltype=='pick') then
-     emitsurfprobg(1) = gas_ppick(1)
-     emitsurfprobg(2) = gas_ppick(2)
-     do ig = 3, gas_ng
+  if(in_opacanaltype=='pick') then
+     emitsurfprobg(1) = in_suolpick1
+     emitsurfprobg(2) = 1d0 - in_suolpick1
+     do ig = 3, grd_ng
         emitsurfprobg(3) = 0d0
      enddo
   else
@@ -61,9 +62,9 @@ subroutine boundary_source
      case(3)
         k = 1
      endselect
-     do ig = 1, gas_ng
-        wl1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*srftemp)
-        wl2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*srftemp)
+     do ig = 1, grd_ng
+        wl1 = pc_h*pc_c/(grd_wl(ig+1)*pc_kb*srftemp)
+        wl2 = pc_h*pc_c/(grd_wl(ig)*pc_kb*srftemp)
         emitsurfprobg(ig) = 15d0*specint(wl1,wl2,3)/pc_pi**4 
      enddo
   endif
@@ -80,17 +81,17 @@ subroutine boundary_source
      denom2 = 0d0
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     do ig = 1, gas_ng
+     do ig = 1, grd_ng
         iig = ig
         if(r1>=denom2.and.r1<denom2+emitsurfprobg(ig)) exit
         denom2 = denom2+emitsurfprobg(ig)
      enddo
-     if(grd_isvelocity.and.gas_srctype=='manu') then
+     if(grd_isvelocity.and.in_srctype=='manu') then
         iig = 2
      endif
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     wl0 = (1d0-r1)*gas_wl(iig)+r1*gas_wl(iig+1)
+     wl0 = (1d0-r1)*grd_wl(iig)+r1*grd_wl(iig+1)
 
 !-- sampling surface projection
      r1 = rand()
@@ -184,12 +185,12 @@ subroutine boundary_source
      if(lhelp) then
 !-- IMC
         if(grd_isvelocity) then
-           gas_eext = gas_eext+esurfpart
+           tot_eext = tot_eext+esurfpart
            prt_particles(ivac)%esrc = esurfpart*cmffact
            prt_particles(ivac)%ebirth = esurfpart*cmffact
            prt_particles(ivac)%wlsrc = wl0/cmffact
 !-- velocity effects accounting
-           gas_evelo=gas_evelo-esurfpart*(cmffact-1d0)
+           tot_evelo=tot_evelo-esurfpart*(cmffact-1d0)
         else
            prt_particles(ivac)%esrc = esurfpart
            prt_particles(ivac)%ebirth = esurfpart
@@ -200,7 +201,7 @@ subroutine boundary_source
 !-- DDMC
         prt_particles(ivac)%esrc = P*esurfpart
         prt_particles(ivac)%ebirth = P*esurfpart
-        gas_eext = gas_eext+prt_particles(ivac)%esrc
+        tot_eext = tot_eext+prt_particles(ivac)%esrc
         prt_particles(ivac)%wlsrc = wl0
         prt_particles(ivac)%rtsrc = 2
      endif

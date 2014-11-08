@@ -99,7 +99,7 @@ c-- integer
       n = 16
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/
-     &  gas_ng,prt_ns,
+     &  gas_ng,grd_ng,prt_ns,
      &  prt_npartmax,tsp_nt,tsp_ntres,
      &  prt_ninit,prt_ninitnew,
      &  ion_nion,ion_iionmax,bb_nline,
@@ -109,21 +109,22 @@ c-- integer
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       gas_ng       = isndvec(1)
-      prt_ns       = isndvec(2)
-      prt_npartmax = isndvec(3)
-      tsp_nt       = isndvec(4)
-      tsp_ntres    = isndvec(5)
-      prt_ninit    = isndvec(6)
-      prt_ninitnew = isndvec(7)
-      ion_nion     = isndvec(8)
-      ion_iionmax  = isndvec(9)
-      bb_nline     = isndvec(10)
-      flx_ng       = isndvec(11)
-      flx_nmu      = isndvec(12)
-      flx_nom      = isndvec(13)
-      prof_ntgam   = isndvec(14)
-      prof_nr      = isndvec(15)
-      grd_igeom    = isndvec(16)
+      grd_ng       = isndvec(2)
+      prt_ns       = isndvec(3)
+      prt_npartmax = isndvec(4)
+      tsp_nt       = isndvec(5)
+      tsp_ntres    = isndvec(6)
+      prt_ninit    = isndvec(7)
+      prt_ninitnew = isndvec(8)
+      ion_nion     = isndvec(9)
+      ion_iionmax  = isndvec(10)
+      bb_nline     = isndvec(11)
+      flx_ng       = isndvec(12)
+      flx_nmu      = isndvec(13)
+      flx_nom      = isndvec(14)
+      prof_ntgam   = isndvec(15)
+      prof_nr      = isndvec(16)
+      grd_igeom    = isndvec(17)
       deallocate(isndvec)
 c
 c-- real*8
@@ -156,6 +157,7 @@ c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0) then
        allocate(gas_wl(gas_ng+1))
+       allocate(grd_wl(grd_ng+1))
        allocate(grd_xarr(nx+1))
        allocate(grd_yarr(ny+1))
        allocate(grd_zarr(nz+1))
@@ -183,6 +185,8 @@ c-- broadcast data
       call mpi_bcast(grd_zarr,nz+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(gas_wl,gas_ng+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(grd_wl,grd_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(flx_wl,flx_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -378,17 +382,17 @@ c     ------------------------!{{{
 !c-- real*8
 !      n = 2
 !      allocate(sndvec(n),rcvvec(n))
-!      sndvec = (/gas_esurf,gas_etot/)
+!      sndvec = (/tot_esurf,gas_etot/)
 !      call mpi_allreduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
 !     &  MPI_COMM_WORLD,ierr)
 !c-- copy back
-!      gas_esurf = rcvvec(1)
+!      tot_esurf = rcvvec(1)
 !      gas_etot = rcvvec(2)
 !      deallocate(sndvec,rcvvec)
 !c
-!c-- initial send of gas_eext
+!c-- initial send of tot_eext
 !      if(tsp_it==1) then
-!         call mpi_bcast(gas_eext,1,MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
+!         call mpi_bcast(tot_eext,1,MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
 !      endif
 c
 c-- gather
@@ -430,6 +434,7 @@ c
       subroutine reduce_tally
 c     -----------------------!{{{
       use gridmod,nx=>grd_nx,ny=>grd_ny,nz=>grd_nz
+      use totalsmod
       use gasgridmod
       use timingmod
       use fluxmod
@@ -449,20 +454,20 @@ c-- dim==0
       n = 5
       allocate(sndvec(n))
       allocate(rcvvec(n))
-      sndvec = (/gas_erad,gas_eright,gas_eleft,gas_eext,gas_evelo/)
+      sndvec = (/tot_erad,tot_eright,tot_eleft,tot_eext,tot_evelo/)
       call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       if(impi==impi0) then
-       gas_erad = rcvvec(1)/dble(nmpi)
-       gas_eright = rcvvec(2)/dble(nmpi)
-       gas_eleft = rcvvec(3)/dble(nmpi)
-       gas_eextav = rcvvec(4)/dble(nmpi)
-       gas_eveloav = rcvvec(5)/dble(nmpi)
+       tot_erad = rcvvec(1)/dble(nmpi)
+       tot_eright = rcvvec(2)/dble(nmpi)
+       tot_eleft = rcvvec(3)/dble(nmpi)
+       tot_eextav = rcvvec(4)/dble(nmpi)
+       tot_eveloav = rcvvec(5)/dble(nmpi)
       else
-       gas_erad = 0d0
-       gas_eright = 0d0
-       gas_eleft = 0d0
+       tot_erad = 0d0
+       tot_eright = 0d0
+       tot_eleft = 0d0
 c-- rtw: can't copy back 0 to eext or evelo.
       endif !impi
       deallocate(sndvec)

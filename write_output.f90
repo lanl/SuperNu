@@ -4,6 +4,7 @@ subroutine write_output
   use timingmod
   use timestepmod
   use gridmod
+  use totalsmod
   use particlemod
   use fluxmod
   implicit none
@@ -61,7 +62,7 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.conserve',status='unknown',position=pos)
-  write(4,*) gas_eerror
+  write(4,*) tot_eerror
   close(4)
 
   open(unit=4,file='output.siggrey',position='append',recl=reclen2)

@@ -1,7 +1,7 @@
 subroutine sourceenergy(nmpi)
 
-  use gridmod !should become gbolbalsmod
   use gasgridmod
+  use totalsmod
   use timestepmod
   use particlemod
   use physconstmod
@@ -17,11 +17,11 @@ subroutine sourceenergy(nmpi)
 
   integer :: i
   integer :: ihelp
-! gas_esurf for any new prt_particles from a surface source
+! tot_esurf for any new prt_particles from a surface source
 ! prt_nsurf = number of surface prt_particles
 ! prt_nnew = total number of new prt_particles~=prt_ns
 
-  gas_esurf = 0d0
+  tot_esurf = 0d0
   dd_emit = 0d0
   dd_emitex = 0d0
   
@@ -41,22 +41,22 @@ subroutine sourceenergy(nmpi)
 !-- dd_fcoef of matsrc goes directly in temperature equation
 !-- and remaining 1-dd_fcoef is thermal radiation.
      if(tsp_it==1) then
-        gas_eext = gas_eext+tsp_dt*dd_vol(i)*&
+        tot_eext = tot_eext+tsp_dt*dd_vol(i)*&
              dd_matsrc(i)
      else
-!-- rtw: gas_eext is only broadcast for tsp_it==1
-        gas_eext = gas_eext+tsp_dt*dd_vol(i)*&
+!-- rtw: tot_eext is only broadcast for tsp_it==1
+        tot_eext = tot_eext+tsp_dt*dd_vol(i)*&
              dd_matsrc(i)*dble(nmpi)
      endif
 !
 !-- accounting for thermal decay radiation source energy
-     if(.not.gas_novolsrc .and. gas_srctype=='none') then
+     if(.not.in_novolsrc .and. in_srctype=='none') then
         dd_emit(i) = dd_emit(i) + dd_nisource(i)
         if(tsp_it==1) then
-           gas_eext = gas_eext + dd_nisource(i)
+           tot_eext = tot_eext + dd_nisource(i)
         else
-!-- rtw: gas_eext is only broadcast for tsp_it==1
-           gas_eext = gas_eext + dble(nmpi)*dd_nisource(i)
+!-- rtw: tot_eext is only broadcast for tsp_it==1
+           tot_eext = tot_eext + dble(nmpi)*dd_nisource(i)
         endif
      endif
   enddo

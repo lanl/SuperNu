@@ -1,6 +1,7 @@
 subroutine transport1(ptcl,isvacant)
 
   use gridmod
+  use totalsmod
   use timestepmod
   use physconstmod
   use particlemod
@@ -225,7 +226,7 @@ subroutine transport1(ptcl,isvacant)
         grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
         if(grd_isvelocity) then
 !-- velocity effects accounting
-           gas_evelo=gas_evelo+E*r*mu*cinv
+           tot_evelo=tot_evelo+E*r*mu*cinv
 !
            E = E*(1.0-r*mu*cinv)
            E0 = E0*(1.0-r*mu*cinv)
@@ -247,7 +248,7 @@ subroutine transport1(ptcl,isvacant)
         mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
         help = 1d0/(1.0-mu*r*cinv)
-        gas_evelo=gas_evelo+E*(1d0-elabfact*help)
+        tot_evelo=tot_evelo+E*(1d0-elabfact*help)
 !
         E = E*elabfact*help
 !        E0 = E0*elabfact/(1.0-mu*r*cinv)
@@ -264,7 +265,7 @@ subroutine transport1(ptcl,isvacant)
         prt_done = .true.
         grd_edep(z,1,1) = grd_edep(z,1,1) + E*elabfact
 !-- velocity effects accounting
-        gas_evelo = gas_evelo+E*(1d0-elabfact)
+        tot_evelo = tot_evelo+E*(1d0-elabfact)
 !
      else
         r1 = rand()
@@ -277,7 +278,7 @@ subroutine transport1(ptcl,isvacant)
            mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
            help = 1d0/(1.0-mu*r*cinv)
-           gas_evelo=gas_evelo+E*(1d0-elabfact*help)
+           tot_evelo=tot_evelo+E*(1d0-elabfact*help)
 !
            E = E*elabfact*help
 !           wl = wl*(1.0-mu*r*cinv)/elabfact
@@ -339,7 +340,7 @@ subroutine transport1(ptcl,isvacant)
            grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
-              gas_evelo = gas_evelo+E*r*mu*cinv
+              tot_evelo = tot_evelo+E*r*mu*cinv
 !
               E = E*(1.0-r*mu*cinv)
               E0 = E0*(1.0-r*mu*cinv)
@@ -373,9 +374,9 @@ subroutine transport1(ptcl,isvacant)
 !
 !-- outbound luminosity tally
 !-- velocity effects accounting
-           gas_evelo = gas_evelo+E*(1d0-elabfact)
+           tot_evelo = tot_evelo+E*(1d0-elabfact)
 !
-           gas_eright = gas_eright+E*elabfact
+           tot_eright = tot_eright+E*elabfact
            flx_luminos(g,1,1) = flx_luminos(g,1,1)+E*dtinv
            flx_lumdev(g,1,1) = flx_lumdev(g,1,1)+(E*dtinv)**2
            flx_lumnum(g,1,1) = flx_lumnum(g,1,1)+1
@@ -397,7 +398,7 @@ subroutine transport1(ptcl,isvacant)
               grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
               if(grd_isvelocity) then
 !-- velocity effects accounting
-                 gas_evelo=gas_evelo+E*(1d0-elabfact)
+                 tot_evelo=tot_evelo+E*(1d0-elabfact)
 !
                  E = E*elabfact
                  E0 = E0*elabfact
@@ -437,7 +438,7 @@ subroutine transport1(ptcl,isvacant)
                  grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
                  if(grd_isvelocity) then
 !-- velocity effects accounting
-                    gas_evelo=gas_evelo+E*(1d0-elabfact)
+                    tot_evelo=tot_evelo+E*(1d0-elabfact)
 !
                     E = E*elabfact
                     E0 = E0*elabfact
@@ -471,7 +472,7 @@ subroutine transport1(ptcl,isvacant)
               if(mu<0d0) then
 !-- velocity effects accounting
                  help = 1d0/abs(mu)
-                 gas_evelo = gas_evelo-E*2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv
+                 tot_evelo = tot_evelo-E*2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv
 !
                  E0 = E0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv)
                  E = E*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv)
@@ -487,7 +488,7 @@ subroutine transport1(ptcl,isvacant)
               grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
               if(grd_isvelocity) then
 !-- velocity effects accounting
-                 gas_evelo = gas_evelo+E*(1d0-elabfact)
+                 tot_evelo = tot_evelo+E*(1d0-elabfact)
 !
                  E = E*elabfact
                  E0 = E0*elabfact
@@ -512,7 +513,7 @@ subroutine transport1(ptcl,isvacant)
   elseif (d == dcen) then
      prt_done = .true.
      grd_numcensus(z,1,1) = grd_numcensus(z,1,1)+1
-!     gas_erad = gas_erad + E*elabfact
+!     tot_erad = tot_erad + E*elabfact
 !
   endif
 

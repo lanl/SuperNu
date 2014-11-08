@@ -1,7 +1,7 @@
 subroutine initialnumbers
 
   use gridmod
-  use gasgridmod
+  use totalsmod
   use timestepmod
   use particlemod
   use physconstmod
@@ -22,13 +22,13 @@ subroutine initialnumbers
   grd_evolinit = 0d0
   etotinit = 0d0
 !
-  gas_eext = 0d0
+  tot_eext = 0d0
 !
   call analytic_initial
 
   etotinit = sum(grd_evolinit)
 !
-  gas_eext = etotinit
+  tot_eext = etotinit
 !
   if(etotinit > 0d0) then
      grd_nvolinit = nint(grd_evolinit*prt_ninit/etotinit) !+50

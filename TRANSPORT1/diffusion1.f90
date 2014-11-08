@@ -6,6 +6,7 @@ subroutine diffusion1(ptcl,isvacant)
   use particlemod
   use inputparmod
   use fluxmod
+  use totalsmod
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
@@ -352,7 +353,7 @@ subroutine diffusion1(ptcl,isvacant)
               mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
               help = 1d0/(1.0-r*mu*cinv)
-              gas_evelo=gas_evelo+E*(1d0 - help)
+              tot_evelo=tot_evelo+E*(1d0 - help)
 !
               E = E*help
               E0 = E0*help
@@ -374,7 +375,7 @@ subroutine diffusion1(ptcl,isvacant)
      if (z == grd_nx) then
         isvacant = .true.
         prt_done = .true.
-        gas_eright = gas_eright+E
+        tot_eright = tot_eright+E
 !-- outbound luminosity tally
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
@@ -523,7 +524,7 @@ subroutine diffusion1(ptcl,isvacant)
               mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
               help = 1d0/(1.0-r*mu*cinv)
-              gas_evelo=gas_evelo+E*(1d0 - help)
+              tot_evelo=tot_evelo+E*(1d0 - help)
 !
               E = E*help
               E0 = E0*help
@@ -582,7 +583,7 @@ subroutine diffusion1(ptcl,isvacant)
            mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
            help = 1d0/(1.0-r*mu*cinv)
-           gas_evelo=gas_evelo+E*(1d0 - help)
+           tot_evelo=tot_evelo+E*(1d0 - help)
 !
            E = E*help
            E0 = E0*help

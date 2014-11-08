@@ -41,7 +41,6 @@ c
 c
       subroutine bcast_nonpermanent
       use gridmod
-      use gasgridmod
 ************************************************************************
 * Broadcast the data that changes with time.
 * - stub
@@ -52,8 +51,8 @@ c-- domain decomposition
       grd_emitex = reshape(dd_emitex,[grd_nx,grd_ny,grd_nz])
       grd_evolinit = reshape(dd_evolinit,[grd_nx,grd_ny,grd_nz])
 
-      grd_emitprob = reshape(dd_emitprob,[gas_ng,grd_nx,grd_ny,grd_nz])
-      grd_cap = reshape(dd_cap,[gas_ng,grd_nx,grd_ny,grd_nz])
+      grd_emitprob = reshape(dd_emitprob,[grd_ng,grd_nx,grd_ny,grd_nz])
+      grd_cap = reshape(dd_cap,[grd_ng,grd_nx,grd_ny,grd_nz])
       grd_sig = reshape(dd_sig,[grd_nx,grd_ny,grd_nz])
       grd_capgam = reshape(dd_capgam,[grd_nx,grd_ny,grd_nz])
       grd_siggrey = reshape(dd_siggrey,[grd_nx,grd_ny,grd_nz])
@@ -71,8 +70,8 @@ c
       use gridmod
       use gasgridmod
 c
-      gas_eextav=gas_eext
-      gas_eveloav = gas_evelo
+      tot_eextav=tot_eext
+      tot_eveloav = tot_evelo
 c
       dd_edep = reshape(grd_edep,[grd_nx*grd_ny*grd_nz])
       dd_eraddens = reshape(grd_eraddens,[grd_nx*grd_ny*grd_nz])

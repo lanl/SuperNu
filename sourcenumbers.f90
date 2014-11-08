@@ -1,5 +1,6 @@
 subroutine sourcenumbers(nmpi)
 
+  use totalsmod
   use gridmod
   use timestepmod
   use particlemod
@@ -17,7 +18,7 @@ subroutine sourcenumbers(nmpi)
   integer :: i,j,k
   integer :: ihelp
   real*8 :: etot
-! gas_esurf for any new prt_particles from a surface source
+! tot_esurf for any new prt_particles from a surface source
 ! prt_nsurf = number of surface prt_particles
 ! prt_nnew = total number of new prt_particles~=prt_ns
 
@@ -30,7 +31,7 @@ subroutine sourcenumbers(nmpi)
   etot = sum(grd_emit) + sum(grd_emitex)
   
   ! Calculating number of domain inner boundary particles (if any)
-  prt_nsurf = nint(gas_esurf*prt_ns/etot)
+  prt_nsurf = nint(tot_esurf*prt_ns/etot)
   prt_nnew = prt_nsurf
 
   ! Calculating number of particles per cell (dd_nvol): loop

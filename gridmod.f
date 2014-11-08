@@ -63,20 +63,6 @@ c
 c
 c-- temperature structure history (allocated only if used)
       real*8,allocatable :: grd_temppreset(:,:,:,:) !(nx,ny,nz,tim_nt)
-!
-!-- energy conservation check quantities
-      real*8 :: gas_eext = 0d0 !time-integrated input energy from external source
-      real*8 :: gas_emat = 0d0 !material energy
-      real*8 :: gas_erad = 0d0 !census radiation energy
-      real*8 :: gas_eleft = 0d0 !left (inward) leaked energy from domain
-      real*8 :: gas_eright = 0d0 !right (outward) leaked energy from domain
-      real*8 :: gas_evelo = 0d0 !total energy change to rad field from fluid
-      real*8 :: gas_eerror = 0d0 !error in integral problem energy
-!-- average quantities used for energy check with MPI
-      real*8 :: gas_eextav = 0d0
-      real*8 :: gas_eveloav = 0d0
-!--
-      real*8 :: gas_esurf
 c
       save
 c

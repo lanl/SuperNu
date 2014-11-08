@@ -1,9 +1,6 @@
 subroutine energy_check
 
-  use gridmod
-  use timestepmod
-  use physconstmod
-  use manufacmod
+  use totalsmod
   implicit none
 
 !-----------------------------------------------------
@@ -13,8 +10,8 @@ subroutine energy_check
 !-----------------------------------------------------
 
 
-  gas_eerror = (gas_eextav-gas_eveloav-gas_erad-gas_emat)/&
-       gas_eextav
+  tot_eerror = (tot_eextav-tot_eveloav-tot_erad-tot_emat)/&
+       tot_eextav
 
 
 
