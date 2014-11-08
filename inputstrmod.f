@@ -82,7 +82,7 @@ c
       subroutine read_inputstr1(ndim)
 c     -----------------------------------!{{{
       use physconstmod
-      use gasgridmod, only:gas_ini56,gas_ico56
+      use gasmod, only:gas_ini56,gas_ico56
       use miscmod
       implicit none
       integer,intent(in) :: ndim(3)
@@ -156,7 +156,7 @@ c
       subroutine read_inputstr2(ndim)
 c     -----------------------------------!{{{
       use physconstmod
-      use gasgridmod, only:gas_ini56,gas_ico56
+      use gasmod, only:gas_ini56,gas_ico56
       use miscmod
       implicit none
       integer,intent(in) :: ndim(3)
@@ -239,7 +239,7 @@ c
       subroutine read_inputstr3(ndim)
 c     -----------------------------------!{{{
       use physconstmod
-      use gasgridmod, only:gas_ini56,gas_ico56
+      use gasmod, only:gas_ini56,gas_ico56
       use miscmod
       implicit none
       integer,intent(in) :: ndim(3)
@@ -448,7 +448,7 @@ c
       subroutine elnam2elcode(ini56)
 c     ------------------------------!{{{
       use miscmod, only:lcase
-      use gasgridmod, only:gas_ini56,gas_ico56
+      use gasmod, only:gas_ini56,gas_ico56
       use elemdatamod
       implicit none
       integer,intent(out) :: ini56

@@ -27,7 +27,7 @@ c
 c
       subroutine scatter_inputstruct(ndim,ncell)
       use inputstrmod
-      use gasgridmod
+      use gasmod
       implicit none
       integer,intent(in) :: ndim(3)
       integer,intent(in) :: ncell
@@ -68,7 +68,7 @@ c
 * - stub
 ************************************************************************
       use gridmod
-      use gasgridmod
+      use gasmod
 c
       tot_eextav=tot_eext
       tot_eveloav = tot_evelo
@@ -88,7 +88,7 @@ c
       subroutine reduce_gastemp
 c     -------------------------
       use gridmod
-      use gasgridmod
+      use gasmod
       grd_temp = reshape(gas_temp,[grd_nx,grd_ny,grd_nz])
       end subroutine reduce_gastemp
 c

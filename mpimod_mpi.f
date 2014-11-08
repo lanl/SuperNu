@@ -23,7 +23,7 @@ c     --------------------------!{{{
       use bbxsmod
       use profiledatamod
       use gridmod
-      use gasgridmod
+      use gasmod
       use particlemod
       use timestepmod
       use fluxmod
@@ -297,7 +297,7 @@ c
       subroutine scatter_inputstruct(ndim,ncell)
 c     ------------------------------------!{{{
       use inputstrmod
-      use gasgridmod
+      use gasmod
       implicit none
       integer,intent(in) :: ndim(3)
       integer,intent(in) :: ncell
@@ -359,7 +359,7 @@ c
       subroutine bcast_nonpermanent
 c     ------------------------!{{{
       use gridmod
-      use gasgridmod
+      use gasmod
       use particlemod
       use timestepmod
       implicit none
@@ -406,7 +406,7 @@ c
 c     -----------------------!{{{
       use gridmod,nx=>grd_nx,ny=>grd_ny,nz=>grd_nz
       use totalsmod
-      use gasgridmod
+      use gasmod
       use timingmod
       use fluxmod
       implicit none
@@ -517,7 +517,7 @@ c
       subroutine reduce_gastemp
 c     -------------------------------------!{{{
       use gridmod
-      use gasgridmod
+      use gasmod
 ************************************************************************
 * for output
 ************************************************************************

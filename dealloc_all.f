@@ -4,7 +4,7 @@ c     ----------------------
       use ionsmod, only:ion_dealloc
       use bbxsmod
       use gridmod
-      use gasgridmod
+      use gasmod
       use particlemod
       use inputstrmod
       use inputparmod
@@ -20,9 +20,9 @@ c-- ionsmod
       if(impi==impi0) call ion_dealloc
 c-- bbxsmod
       if(allocated(bb_xs)) deallocate(bb_xs) !only impi==impi0, but only if nobbopac==f
-!c-- gasgridmod
+!c-- gasmod
       deallocate(gas_wl)
-c-- gasgridmod
+c-- gasmod
       deallocate(grd_numcensus)
       deallocate(grd_xarr,grd_yarr,grd_zarr)
       deallocate(grd_edep,grd_temp,grd_methodswap)

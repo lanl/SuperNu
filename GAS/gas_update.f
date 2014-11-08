@@ -1,4 +1,4 @@
-      subroutine gasgrid_update(irank)
+      subroutine gas_update(irank)
 c     -------------------------------
       use gridmod
       use physconstmod
@@ -6,7 +6,7 @@ c     -------------------------------
       use ionsmod
       use timestepmod
       use totalsmod
-      use gasgridmod
+      use gasmod
       use inputparmod
       use timingmod
       use profiledatamod
@@ -14,7 +14,7 @@ c     -------------------------------
       integer,intent(in) :: irank
 ************************************************************************
 * Update the part of the gas grid that depends on time and temperature.
-* The non-changing part is computed in gasgrid_setup.
+* The non-changing part is computed in gas_setup.
 * The work done here is:
 * - nuclear decay (energy release and chemical composition update)
 * - temperature and volume
@@ -86,7 +86,7 @@ c-- broken in dd
          ll = ll + 1
          hlparrdd(ll) = hlparr(i)
         enddo !i
-        if(ll/=gas_ncell) stop 'gasgrid_update: ll/=gas_ncell'
+        if(ll/=gas_ncell) stop 'gas_update: ll/=gas_ncell'
 
         gas_nisource = help * hlparrdd
        endif
@@ -111,7 +111,7 @@ c========================================
       enddo !i
       enddo !j
       enddo !k
-      if(ll/=gas_ncell) stop 'gasgrid_update: ll/=gas_ncell'
+      if(ll/=gas_ncell) stop 'gas_update: ll/=gas_ncell'
 c
 c
 c-- update density, heat capacity
@@ -261,14 +261,14 @@ c
       call time(t1)
       call timereg(t_gasupd,t1-t0)
 c
-      end subroutine gasgrid_update
+      end subroutine gas_update
 c
 c
 c
       subroutine update_natomfr(t)
 c     ----------------------------!{{{
       use physconstmod
-      use gasgridmod
+      use gasmod
       use inputparmod
       implicit none
       real*8,intent(in) :: t

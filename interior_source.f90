@@ -2,7 +2,7 @@ subroutine interior_source
 
   use gridmod
   use totalsmod
-  use gasgridmod
+  use gasmod
   use timestepmod
   use particlemod
   use physconstmod

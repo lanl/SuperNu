@@ -1,7 +1,7 @@
 subroutine analytic_initial
 
   use gridmod
-  use gasgridmod
+  use gasmod
   use inputparmod
   use physconstmod
   use timestepmod

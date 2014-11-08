@@ -1,6 +1,6 @@
 subroutine temperature_update
 
-  use gasgridmod
+  use gasmod
   use timestepmod
   use physconstmod
   use manufacmod

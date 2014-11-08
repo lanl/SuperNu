@@ -2,7 +2,7 @@
 c     --------------
       implicit none
 c
-      integer,private :: nelem=0 !private copy (public in gasgridmod) value is obtained in ion_read_data
+      integer,private :: nelem=0 !private copy (public in gasmod) value is obtained in ion_read_data
       integer :: ion_iionmax !max number of ions an element has
       integer :: ion_nion    !total number of ions of all elements
 c

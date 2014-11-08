@@ -130,7 +130,7 @@ c
       subroutine generate_fluxgrid(iflx,idex,wlmin,wlmax)
 c     ---------------------------------------
       use physconstmod
-      use gasgridmod, only:gas_ng,gas_wl
+      use gasmod, only:gas_ng,gas_wl
       implicit none
       integer,intent(in) :: idex,iflx
       real*8,intent(in) :: wlmin,wlmax

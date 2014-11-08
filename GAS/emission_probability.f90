@@ -1,7 +1,7 @@
 subroutine emission_probability
 
   use inputparmod
-  use gasgridmod
+  use gasmod
   use physconstmod
   use miscmod, only:specint
   implicit none

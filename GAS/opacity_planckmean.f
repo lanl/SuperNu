@@ -2,7 +2,7 @@
 c     -----------------------------
       use physconstmod
       use mpimod
-      use gasgridmod
+      use gasmod
       use miscmod
       implicit none
 ************************************************************************

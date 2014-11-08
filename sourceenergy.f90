@@ -1,6 +1,6 @@
 subroutine sourceenergy(nmpi)
 
-  use gasgridmod
+  use gasmod
   use totalsmod
   use timestepmod
   use particlemod

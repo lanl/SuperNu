@@ -1,10 +1,10 @@
-      subroutine gasgrid_setup
+      subroutine gas_setup
 c     ------------------------
       use inputstrmod
       use physconstmod
       use inputparmod
       use timestepmod
-      use gasgridmod
+      use gasmod
       use manufacmod
       use miscmod, only:warn
       use profiledatamod
@@ -64,7 +64,7 @@ C$$$      write(6,*) 'number fractions'
 C$$$      write(6,'(1p,33i12)') (l,l=-2,30)
 C$$$      write(6,'(1p,33e12.4)') gas_natom1fr(:,l,1,1),l=1,gas_ncell)
 c
-      end subroutine gasgrid_setup
+      end subroutine gas_setup
 c
 c
 c
@@ -72,7 +72,7 @@ c
 c     -------------------------
       use physconstmod
       use elemdatamod, only:elem_data
-      use gasgridmod
+      use gasmod
       implicit none
       real*8,intent(inout) :: mass0fr(-2:gas_nelem,gas_ncell)
 ************************************************************************

@@ -2,7 +2,7 @@ subroutine analytic_opacity
 
   use inputparmod
   use gridmod
-  use gasgridmod
+  use gasmod
   use physconstmod
   use miscmod, only:specint
   !use timestepmod

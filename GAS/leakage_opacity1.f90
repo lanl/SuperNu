@@ -1,7 +1,7 @@
 subroutine leakage_opacity1
 
   use gridmod
-  use gasgridmod
+  use gasmod
   use timestepmod
   use particlemod
   use physconstmod

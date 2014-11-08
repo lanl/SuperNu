@@ -2,7 +2,7 @@ subroutine analytic_source
 
   use gridmod
   use mpimod
-  use gasgridmod
+  use gasmod
   use physconstmod
   use timestepmod
   use inputparmod

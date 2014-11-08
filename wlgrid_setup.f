@@ -1,6 +1,6 @@
       subroutine wlgrid_setup(ng)
 c     ---------------------------
-      use gasgridmod
+      use gasmod
       use inputparmod
       implicit none
       integer,intent(out) :: ng
@@ -24,7 +24,7 @@ c
 c
       subroutine read_wlgrid(ng)
 c     --------------------------!{{{
-      use gasgridmod
+      use gasmod
       use inputparmod
       implicit none
       integer,intent(out) :: ng

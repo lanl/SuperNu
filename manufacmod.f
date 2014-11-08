@@ -52,7 +52,7 @@ c     ------------------------------!{{{
       use miscmod, only:warn
       use physconstmod
       use gridmod
-      use gasgridmod
+      use gasmod
       use inputparmod
       implicit none
       real*8,intent(in) :: totmass,sigcoef,texp,dt
@@ -114,7 +114,7 @@ c
       subroutine generate_manutempsrc(totmass,sigcoef,texp,dt)
 c     -------------------------------!{{{
       use physconstmod
-      use gasgridmod
+      use gasmod
       use inputparmod
       implicit none
       real*8,intent(in) :: totmass,sigcoef,texp,dt
@@ -145,7 +145,7 @@ c
             stop 'generate_manutempsrc: in_opacanaltype=pick'
          case ('line')
 c--   line solution
-            gas_matsrc = 0d0 !already set zero in gasgridmod
+            gas_matsrc = 0d0 !already set zero in gasmod
 c
          case default
             stop 'in_opacanaltype unknown'
@@ -208,7 +208,7 @@ c     ---------------------------
       use physconstmod
       use gridmod
       use inputparmod
-      use gasgridmod
+      use gasmod
       implicit none
 ************************************************************************
 * calculate initial temperature in Kelvin

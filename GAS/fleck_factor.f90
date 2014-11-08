@@ -1,7 +1,7 @@
 subroutine fleck_factor(tempalt,siggreyalt)
 
   use inputparmod
-  use gasgridmod
+  use gasmod
   use timestepmod
   use physconstmod
   implicit none

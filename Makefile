@@ -25,17 +25,17 @@ MODULES := profiledatamod.o \
   miscmod.o \
   ionsmod.o ffxsmod.o bfxsmod.o bbxsmod.o \
   inputparmod.o timestepmod.o \
-  gridmod.o gasgridmod.o inputstrmod.o \
+  gridmod.o gasmod.o inputstrmod.o \
   particlemod.o \
   timingmod.o manufacmod.o fluxmod.o totalsmod.o
 
 FILES := sourceenergy.o sourcenumbers.o vacancies.o boundary_source.o interior_source.o particle_advance.o \
   write_output.o wlgrid_setup.o \
-  read_bbxs_data.o restart_file.o dealloc_all.o initialnumbers.o binsrch.o \
+  read_bbxs_data.o restart_file.o dealloc_all.o initialnumbers.o \
   initialnumbers.o initial_particles.o energy_check.o tau_update.o \
   banner.o
 
-LIBRARIES := GRID/grid.a GASGRID/gasgrid.a TRANSPORT1/transport1.a MISC/misc.a \
+LIBRARIES := GRID/grid.a GAS/gas.a TRANSPORT1/transport1.a MISC/misc.a \
   TRANSPORT2/transport2.a
 SUBDIRS := $(dir $(LIBRARIES))
 SUBCLEAN = $(addsuffix .clean, $(SUBDIRS))
@@ -115,13 +115,13 @@ $(SUBDIRS):
 ##
 ##-- modules
 #bbxsmod.o bbxsmod.mod: bbxsmod.f elemdatamod.o miscmod.o 
-#gasgridmod.o gasgridmod.mod: gasgridmod.f90 inputparmod.o 
+#gasmod.o gasmod.mod: gasmod.f90 inputparmod.o 
 #inputparmod.o inputparmod.mod: inputparmod.f miscmod.o physconstmod.o 
-#inputstrmod.o inputstrmod.mod: inputstrmod.f elemdatamod.o gasgridmod.o inputparmod.o miscmod.o physconstmod.o 
+#inputstrmod.o inputstrmod.mod: inputstrmod.f elemdatamod.o gasmod.o inputparmod.o miscmod.o physconstmod.o 
 #ionsmod.o ionsmod.mod: ionsmod.f miscmod.o physconstmod.o 
-#manufacmod.o manufacmod.mod: manufacmod.f gasgridmod.o inputparmod.o miscmod.o physconstmod.o 
+#manufacmod.o manufacmod.mod: manufacmod.f gasmod.o inputparmod.o miscmod.o physconstmod.o 
 #miscmod.o miscmod.mod: miscmod.f MISC/lcase.f MISC/warn.f 
-#mpimod.o mpimod.mod: mpimod.f gasgridmod.o inputparmod.o particlemod.o timestepmod.o timingmod.o
+#mpimod.o mpimod.mod: mpimod.f gasmod.o inputparmod.o particlemod.o timestepmod.o timingmod.o
 #timestepmod.o timestepmod.mod: timestepmod.f90 physconstmod.o 
 #profiledatamod.o profiledatamod.mod: profiledatamod.f
 

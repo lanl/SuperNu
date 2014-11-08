@@ -4,7 +4,7 @@ program supernu
   use inputparmod
   use timestepmod
   use gridmod
-  use gasgridmod
+  use gasmod
   use particlemod
   use physconstmod
   use profiledatamod
@@ -126,9 +126,9 @@ program supernu
   call scatter_inputstruct(in_ndim,ncell) !MPI
 
 !
-!-- setup gasgrid
-  call gasgrid_init(impi==impi0,ncell)
-  call gasgrid_setup(impi==impi0)
+!-- setup gas
+  call gas_init(impi==impi0,ncell)
+  call gas_setup(impi==impi0)
 
 !
 !-- initialize flux tally arrays (rtw: separated from fluxgrid_setup)
@@ -189,7 +189,7 @@ program supernu
 
 !-- update all non-permanent variables
     call grid_update(tsp_t)
-    call gasgrid_update(impi)
+    call gas_update(impi)
 !-- energy to be instantiated by source prt_particles per cell in this timestep
     call sourceenergy(nmpi)
 
