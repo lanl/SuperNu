@@ -19,11 +19,11 @@ subroutine temperature_update
   dd_eraddens = dd_eraddens/dd_vol
   dd_eraddens = dd_eraddens
 
-!!-- calculating temperature
-!  if(allocated(gas_temppreset)) then
-!!-- apply read-in temperature profile
-!   dd_temp = gas_temppreset(:,:,:,tsp_it)
-!  else
+!-- calculating temperature
+  if(allocated(gas_temppreset)) then
+!-- apply read-in temperature profile
+   dd_temp = dd_temppreset(:,tsp_it)
+  else
 !!-- calculate temp correction
      do i=1,dd_ncell
         if(dd_bcoef(i)>0d0) then
@@ -41,10 +41,5 @@ subroutine temperature_update
         endif
      enddo !i
 !  endif
-
-  dd_ur = pc_acoef*dd_temp**4
-!
-!-- summing comoving material energy
-  dd_emat = sum(dd_bcoef*dd_temp*dd_vol)
 
 end subroutine temperature_update

@@ -114,6 +114,7 @@ module gasgridmod
 
 !-- temperature structure history
   real*8,allocatable :: gas_temppreset(:,:,:,:) !(grd_nx,grd_ny,grd_nz,tim_nt)
+  real*8,allocatable :: dd_temppreset(:,:) !(grd_nx,grd_ny,grd_nz,tim_nt)
 
 !
 !

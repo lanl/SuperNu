@@ -114,17 +114,23 @@ c========================================
 c
 c
 c-- update density, heat capacity
-c========================================
+c================================
       dd_rho = dd_mass/dd_vol
 c-- Calculating power law heat capacity
       dd_bcoef = in_cvcoef * dd_temp**in_cvtpwr *
      &  dd_rho**in_cvrpwr
+c-- temperature
+      dd_ur = pc_acoef*dd_temp**4
 c
 c
-c-- add initial thermal input to gas_eext
+c-- totals
+c=========
+c-- add initial thermal input to dd_eext
       if(tsp_it==1) then
        gas_eext = sum(dd_bcoef*dd_temp*dd_vol)
       endif
+!-- total comoving material energy
+      dd_emat = sum(dd_bcoef*dd_temp*dd_vol)
 c
 c
 c
