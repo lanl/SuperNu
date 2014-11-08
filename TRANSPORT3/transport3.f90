@@ -20,9 +20,9 @@ subroutine transport3(ptcl,isvacant)
   integer, external :: binsrch
 
   logical :: loutx,louty,loutz
-  integer :: ig, imu, iom
+  integer :: ig, imu, iom, ihelp
   real*8 :: elabfact
-  real*8 :: dtinv, thelp, thelpinv
+  real*8 :: dtinv, thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop,d
   real*8 :: r1, r2, denom2
 
@@ -497,7 +497,29 @@ subroutine transport3(ptcl,isvacant)
 !
 !-- Doppler shift
   elseif(d==ddop) then
-
+     if(.not.gas_isvelocity) stop 'transport3: ddop and no velocity'
+     if(ig<gas_ng) then
+!-- shifting group
+        ig = ig+1
+        wl = (gas_wl(ig)+1d-6*(gas_wl(ig+1)-gas_wl(ig)))*elabfact
+     else
+!-- resampling wavelength in highest group
+        r1 = rand()
+        wl=1d0/(r1/gas_wl(ig+1) + (1d0-r1)/gas_wl(gas_ng))
+        wl = wl*elabfact
+     endif
+!-- check if ddmc region
+     if ((gas_sig(ix,iy,iz)+gas_cap(ig,ix,iy,iz)) * &
+          min(dx(ix),dy(iy),dz(iz))*thelp >= prt_tauddmc &
+          .and..not.in_puretran) then
+        ptcl%rtsrc = 2
+        gas_methodswap(ix,iy,iz)=gas_methodswap(ix,iy,iz)+1
+        if(gas_isvelocity) then
+           ep = ep*elabfact
+           ep0 = ep0*elabfact
+           wl = wl/elabfact
+        endif
+     endif
   else
      stop 'transport3: invalid distance'
   endif
