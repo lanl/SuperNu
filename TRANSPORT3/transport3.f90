@@ -185,9 +185,9 @@ subroutine transport3(ptcl,isvacant)
      gas_numcensus(ix,iy,iz)=gas_numcensus(ix,iy,iz)+1
      return
   endif
-!
-!-- Thomson scatter
-  if(d==dthm) then
+
+!-- common manipulations for collisions
+  if(d==dthm.or.d==dcol) then
 !-- resampling direction
      r1 = rand()
      xi = 1d0 - 2d0*r1
@@ -210,15 +210,67 @@ subroutine transport3(ptcl,isvacant)
 !-- x,y lab direction cosines
         eta = sqrt(1d0-xi**2)*sin(om)
         mu = sqrt(1d0-xi**2)*cos(om)
-!-- lab wavelength
-        wl = wl*(1d0-(xi*z+eta*y+mu*x)*cinv)/elabfact
 !-- energy weight
         ep = ep*elabfact/(1d0-(xi*z+eta*y+mu*x)*cinv)
         ep0 = ep0*elabfact/(1d0-(xi*z+eta*y+mu*x)*cinv)
      endif
+
+!-- common manipulations for boundary crossings
+     if(d==dbx.or.d==dby.or.d==dbz) then
+
+     endif
+
+!
+!-- Thomson scatter
+  if(d==dthm) then
+!-- checking velocity dependence
+     if(gas_isvelocity) then
+!-- lab wavelength
+        wl = wl*(1d0-(xi*z+eta*y+mu*x)*cinv)/elabfact
+     endif
+
 !
 !-- effective collision
   elseif(d==dcol) then
+     r1 = rand()
+!-- checking if analog
+     if(prt_isimcanlog.and.r1<=gas_fcoef(ix,iy,iz)) then
+!-- effective absorption
+        isvacant=.true.
+        prt_done=.true.
+!-- adding comoving energy to deposition energy
+        gas_edep(ix,iy,iz)=gas_edep(ix,iy,iz)+ep*elabfact
+        return
+     else
+!-- effective scattering
+!-- redistributing wavelength
+        denom2 = 0d0
+        r1 = rand()
+        do ig = 1, gas_ng
+           if ((r1>=denom2).and.(r1<denom2+gas_emitprob(ig,ix,iy,iz))) exit
+           denom2 = denom2+gas_emitprob(ig,ix,iy,iz)
+        enddo
+!-- uniformly in new group
+        r1 = rand()
+        wl = 1d0/((1d0-r1)/gas_wl(ig)+r1/gas_wl(ig+1))
+!-- transforming to lab
+        if(gas_isvelocity) then
+           wl = wl*(1d0-(xi*z+eta*y+mu*x)*cinv)
+        endif
+!-- checking for DDMC in new group
+        if((gas_cap(ig,ix,iy,iz)+gas_sig(ix,iy,iz)) * &
+             min(dx(ix),dy(iy),dz(iz))*thelp >= prt_tauddmc &
+             .and..not.in_puretran) then
+           ptcl%rtsrc = 2
+           gas_methodswap(ix,iy,iz)=gas_methodswap(ix,iy,iz)+1
+!-- transforming to cmf
+           if(gas_isvelocity) then
+              ep = ep*(1d0-(xi*z+eta*y+mu*x)*cinv)
+              ep0 = ep0*(1d0-(xi*z+eta*y+mu*x)*cinv)
+              wl = wl/(1d0-(xi*z+eta*y+mu*x)*cinv)
+           endif
+        endif
+     endif
 
 !
 !-- x-bound
