@@ -300,28 +300,69 @@ subroutine transport3(ptcl,isvacant)
 !-- x-bound
   elseif(d==dbx) then
 
+
      if(mu>=0d0) then
-        if((gas_cap(ig,ix+1,iy,iz)+gas_sig(ix+1,iy,iz)) * &
-             min(dx(ix+1),dy(iy),dz(iz))*thelp < prt_tauddmc &
-             .or.in_puretran) then
-!-- IMC in outward cell
-           ix = ix+1
-        else
-
-        endif
+        ihelp = 1
      else
-!-- mu<0
-
-!-- checking if inward cell is DDMC
-        if((gas_cap(ig,ix-1,iy,iz)+gas_sig(ix-1,iy,iz)) * &
-             min(dx(ix-1),dy(iy),dz(iz))*thelp < prt_tauddmc &
-             .or.in_puretran) then
-!-- IMC in inward cell
-           ix = ix-1
-        else
-
-        endif
+        ihelp = -1
      endif
+
+     if((gas_cap(ig,ix+ihelp,iy,iz)+gas_sig(ix+ihelp,iy,iz)) * &
+          min(dx(ix+ihelp),dy(iy),dz(iz))*thelp < prt_tauddmc &
+          .or.in_puretran) then
+!-- IMC in adjacent cell
+           ix = ix+ihelp
+        else
+!-- DDMC in adjacent cell
+           if(gas_isvelocity) then
+!-- transforming x-cosine to cmf
+              mu = (mu-x*cinv)/elabfact
+              if(mu>1d0) then
+                 mu = 1
+              elseif(mu<-1d0) then
+                 mu = -1
+              endif
+           endif
+           help = (gas_cap(ig,ix+ihelp,iy,iz)+gas_sig(ix+ihelp,iy,iz)) * &
+                dx(ix+ihelp)*thelp
+           help = 4d0/(3d0*help+6d0*pc_dext)
+!-- sampling
+           r1 = rand()
+           if (r1 < help*(1d0+1.5d0*abs(mu))) then
+              ptcl%rtsrc = 2
+              gas_methodswap(ix,iy,iz)=gas_methodswap(ix,iy,iz)+1
+              if(gas_isvelocity) then
+                 ep = ep*elabfact
+                 ep0 = ep0*elabfact
+                 wl = wl/elabfact
+              endif
+              ix = ix + ihelp
+           else
+              r1 = rand()
+              r2 = rand()
+              mu = -ihelp*max(r1,r2)
+              r1 = rand()
+              eta = sqrt(1d0-mu**2)*cos(pc_pi2*r1)
+!-- resampling z-cosine
+              xi = sqrt(1d0-mu**2)*sin(pc_pi2*r1)
+!-- resampling azimuthal
+              om = atan2(eta,mu)
+              if(om<0d0) om=om+pc_pi2
+              if(gas_isvelocity) then
+!-- transforming xi to lab
+                 xi=(xi+z*cinv)/(1d0+(x*mu+y*eta+z*xi)*cinv)
+                 if(xi>1d0) then
+                    xi = 1d0
+                 elseif(xi<-1d0) then
+                    xi = -1d0
+                 endif
+!-- transforming om to lab
+                 om = atan2(eta+y*cinv,mu+x*cinv)
+                 if(om<0d0) om=om+pc_pi2
+              endif
+           endif
+        endif
+
 !
 !-- y-bound
   elseif(d==dby) then
