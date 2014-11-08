@@ -20,10 +20,10 @@ c$    use omp_lib
 c-- timing
       real*8 :: t0,t1,tbb,tbf,tff
 c-- helper arrays
-      real*8 :: grndlev(dd_ncell,ion_iionmax-1,gas_nelem)
-      real*8 :: grndlev2(dd_ncell,ion_iionmax-1,gas_nelem)
-      real*8 :: hckt(dd_ncell)
-      real*8 :: hlparr(dd_ncell)
+      real*8 :: grndlev(gas_ncell,ion_iionmax-1,gas_nelem)
+      real*8 :: grndlev2(gas_ncell,ion_iionmax-1,gas_nelem)
+      real*8 :: hckt(gas_ncell)
+      real*8 :: hlparr(gas_ncell)
 c-- ffxs
       real*8,parameter :: c1 = 4d0*pc_e**6/(3d0*pc_h*pc_me*pc_c**4)*
      &  sqrt(pc_pi2/(3*pc_me*pc_h*pc_c))
@@ -39,9 +39,9 @@ c-- bbxs
       real*8 :: phi,ocggrnd,expfac,wl0,dwl
       real*8 :: caphelp
 c-- temporary cap array in the right order
-      real*8,allocatable :: cap(:,:)  !(dd_ncell,ngs)
+      real*8,allocatable :: cap(:,:)  !(gas_ncell,ngs)
 c-- temperary capros array for opacity mixing
-      real*8 :: capros(gas_ng,dd_ncell)
+      real*8 :: capros(gas_ng,gas_ncell)
 c-- special functions
       real*8 :: x1, x2
 c-- thomson scattering
@@ -51,7 +51,7 @@ c-- warn once
       logical :: lwarn
 c
 c-- ion_grndlev helper array
-      hckt = pc_h*pc_c/(pc_kb*dd_temp)
+      hckt = pc_h*pc_c/(pc_kb*gas_temp)
 c
       call time(t0)
 c
@@ -60,20 +60,20 @@ c-- warn once
 c
 c-- thomson scattering
       if(.not.in_nothmson) then
-       dd_sig = cthomson*dd_nelec*
-     &   dd_natom/dd_vol
+       gas_sig = cthomson*gas_nelec*
+     &   gas_natom/gas_vol
       endif
 c
 c-- ground level occupation number
       do iz=1,gas_nelem
-       do i=1,dd_ncell
+       do i=1,gas_ncell
         forall(ii=1:min(iz,ion_el(iz)%ni - 1))
      &    grndlev(i,ii,iz) = ion_grndlev(iz,i)%oc(ii)/
      &    ion_grndlev(iz,i)%g(ii)
        enddo !i
       enddo !iz
       do iz=1,gas_nelem
-       do i=1,dd_ncell
+       do i=1,gas_ncell
         forall(ii=1:min(iz,ion_el(iz)%ni - 1))
      &    grndlev2(i,ii,iz) = ion_grndlev(iz,i)%oc(ii)
        enddo !i
@@ -109,7 +109,7 @@ c-- find biggest subgroup number for any of the groups
       endif
 c-- print info in first time step
       if(tsp_it==1) write(6,*) 'ngs max|total:',l,ll
-      allocate(cap(dd_ncell,ngs))
+      allocate(cap(gas_ncell,ngs))
 c
 c-- bb,bf,ff opacities - group by group
       tbb = 0d0
@@ -136,15 +136,15 @@ c
        if(any(cap(:,:ngs)==0d0)) call warn('opacity_calc','cap==0')
 c
 c-- planck average
-       dd_cap(ig,:) = sum(cap(:,:ngs),dim=2)/ngs !assume evenly spaced subgroup bins
+       gas_cap(ig,:) = sum(cap(:,:ngs),dim=2)/ngs !assume evenly spaced subgroup bins
 c
 c
        if(in_noplanckweighting) then
         capros(ig,:) = ngs/sum(1d0/cap(:,:ngs),dim=2) !assume evenly spaced subgroup bins
 c-- calculate Planck function weighted Rosseland
        else
-        do i=1,dd_ncell
-         kbt = pc_kb*dd_temp(i)
+        do i=1,gas_ncell
+         kbt = pc_kb*gas_temp(i)
          do igs=1,ngs
           wll = (gas_wl(ig) + (igs-1)*dwl)
           x1 = pc_h*pc_c/((wll + dwl)*kbt)
@@ -161,17 +161,17 @@ c-- calculate Planck function weighted Rosseland
 c
 c-- combine planck and rosseland averages
        help = in_opacmixrossel
-       dd_cap(ig,:) = (1d0-help)*dd_cap(ig,:) +
+       gas_cap(ig,:) = (1d0-help)*gas_cap(ig,:) +
      &   help*capros(ig,:)
       enddo !ig
 c
 c-- sanity check
       l = 0
-      do i=1,dd_ncell
+      do i=1,gas_ncell
        do ig=1,gas_ng
-        if(dd_cap(ig,i)<=0d0) l = ior(l,1)
-        if(dd_cap(ig,i)/=dd_cap(ig,i)) l = ior(l,2)
-        if(dd_cap(ig,i)>huge(help)) l = ior(l,4)
+        if(gas_cap(ig,i)<=0d0) l = ior(l,1)
+        if(gas_cap(ig,i)/=gas_cap(ig,i)) l = ior(l,2)
+        if(gas_cap(ig,i)>huge(help)) l = ior(l,4)
        enddo !ig
       enddo !i
       if(l/=iand(l,1)) call warn('opacity_calc','some cap<=0')
@@ -230,7 +230,7 @@ c-- profile function
         phi = 1d0/dwl
 !       write(6,*) 'phi',phi
 c-- evaluate caphelp
-        do i=1,dd_ncell
+        do i=1,gas_ncell
          ocggrnd = grndlev(i,ii,iz)
 c-- oc high enough to be significant?
 *        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
@@ -264,7 +264,7 @@ c$omp& shared(cap)
           ie = iz - ii + 1
           xs = bfxs(iz,ie,en)
           if(xs==0d0) cycle
-          forall(i=1:dd_ncell)
+          forall(i=1:gas_ncell)
      &      cap(i,igs) = cap(i,igs) +
      &      xs*pc_mbarn*grndlev2(i,ii,iz)
          enddo !ie
@@ -280,7 +280,7 @@ c-- free-free
       call time(t2)
       if(.not. in_noffopac) then
 c-- simple variant: nearest data grid point!{{{
-       hlparr = (dd_natom/dd_vol)**2*dd_nelec
+       hlparr = (gas_natom/gas_vol)**2*gas_nelec
 c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(wl,wlinv,u,iu,help,cap8,gg,igg,gff,yend,dydx,dy)
@@ -290,7 +290,7 @@ c$omp& shared(cap,lwarn)
         wl = wll + (igs-.5d0)*dwl !-- subgroup bin center value
         wlinv = 1d0/wl  !in cm
 c-- gcell loop
-        do i=1,dd_ncell
+        do i=1,gas_ncell
          u = hckt(i)*wlinv
          iu = nint(10d0*(log10(u) + 4d0)) + 1
 c
@@ -326,7 +326,7 @@ c-- asymptotic value
            endif
           endif
 c-- cross section
-          cap8 = cap8 + help*gff*iz**2*dd_natom1fr(iz,i)
+          cap8 = cap8 + help*gff*iz**2*gas_natom1fr(iz,i)
          enddo !iz
          cap(i,igs) = cap(i,igs) + cap8
         enddo !i

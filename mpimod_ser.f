@@ -46,17 +46,17 @@ c
 * - stub
 ************************************************************************
 c-- domain decomposition
-      grd_temp = reshape(dd_temp,[grd_nx,grd_ny,grd_nz])
-      grd_emit = reshape(dd_emit,[grd_nx,grd_ny,grd_nz])
-      grd_emitex = reshape(dd_emitex,[grd_nx,grd_ny,grd_nz])
-      grd_evolinit = reshape(dd_evolinit,[grd_nx,grd_ny,grd_nz])
+      grd_temp = reshape(gas_temp,[grd_nx,grd_ny,grd_nz])
+      grd_emit = reshape(gas_emit,[grd_nx,grd_ny,grd_nz])
+      grd_emitex = reshape(gas_emitex,[grd_nx,grd_ny,grd_nz])
+      grd_evolinit = reshape(gas_evolinit,[grd_nx,grd_ny,grd_nz])
 
-      grd_emitprob = reshape(dd_emitprob,[grd_ng,grd_nx,grd_ny,grd_nz])
-      grd_cap = reshape(dd_cap,[grd_ng,grd_nx,grd_ny,grd_nz])
-      grd_sig = reshape(dd_sig,[grd_nx,grd_ny,grd_nz])
-      grd_capgam = reshape(dd_capgam,[grd_nx,grd_ny,grd_nz])
-      grd_siggrey = reshape(dd_siggrey,[grd_nx,grd_ny,grd_nz])
-      grd_fcoef = reshape(dd_fcoef,[grd_nx,grd_ny,grd_nz])
+      grd_emitprob = reshape(gas_emitprob,[grd_ng,grd_nx,grd_ny,grd_nz])
+      grd_cap = reshape(gas_cap,[grd_ng,grd_nx,grd_ny,grd_nz])
+      grd_sig = reshape(gas_sig,[grd_nx,grd_ny,grd_nz])
+      grd_capgam = reshape(gas_capgam,[grd_nx,grd_ny,grd_nz])
+      grd_siggrey = reshape(gas_siggrey,[grd_nx,grd_ny,grd_nz])
+      grd_fcoef = reshape(gas_fcoef,[grd_nx,grd_ny,grd_nz])
 
       end subroutine bcast_nonpermanent
 c
@@ -73,8 +73,8 @@ c
       tot_eextav=tot_eext
       tot_eveloav = tot_evelo
 c
-      dd_edep = reshape(grd_edep,[grd_nx*grd_ny*grd_nz])
-      dd_eraddens = reshape(grd_eraddens,[grd_nx*grd_ny*grd_nz])
+      gas_edep = reshape(grd_edep,[grd_nx*grd_ny*grd_nz])
+      gas_eraddens = reshape(grd_eraddens,[grd_nx*grd_ny*grd_nz])
       end subroutine reduce_tally
 c
 c
@@ -89,7 +89,7 @@ c
 c     -------------------------
       use gridmod
       use gasgridmod
-      grd_temp = reshape(dd_temp,[grd_nx,grd_ny,grd_nz])
+      grd_temp = reshape(gas_temp,[grd_nx,grd_ny,grd_nz])
       end subroutine reduce_gastemp
 c
       subroutine scatter_restart_data

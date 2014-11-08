@@ -120,7 +120,7 @@ c     -------------------------------!{{{
       real*8,intent(in) :: totmass,sigcoef,texp,dt
 ************************************************************************
 * calculate finite volume manufactured temperature source
-* (dd_matsrc) in ergs/cm^3/s with manufactured parameters
+* (gas_matsrc) in ergs/cm^3/s with manufactured parameters
 ************************************************************************
 c
 c-- verify applicable input pars
@@ -133,7 +133,7 @@ c-- implement/modify velocity dependent manufactured temperature source
          select case (in_opacanaltype)
          case ('grey')
 c--   grey solution
-            dd_matsrc = (1d0/dt)*
+            gas_matsrc = (1d0/dt)*
      &           (3d0*totmass*sigcoef/(8d0*pc_pi*in_velout))*
      &           ((in_velout*texp)**(-2d0)-
      &           (in_velout*(texp+dt))**(-2d0))*
@@ -145,7 +145,7 @@ c
             stop 'generate_manutempsrc: in_opacanaltype=pick'
          case ('line')
 c--   line solution
-            dd_matsrc = 0d0 !already set zero in gasgridmod
+            gas_matsrc = 0d0 !already set zero in gasgridmod
 c
          case default
             stop 'in_opacanaltype unknown'
@@ -225,7 +225,7 @@ c-- implement/modify velocity dependent manufactured initial profile
          select case (in_opacanaltype)
          case ('grey')
 c-- grey solution (uniform nominal temperature)
-            dd_temp = man_temp0
+            gas_temp = man_temp0
 c
          case ('mono')
             stop 'init_manutemp: in_opacanaltype=mono'
@@ -238,7 +238,7 @@ c-- line solution
             if(in_ldisp1/in_ldisp2>=1d-3)
      &           stop 'init_manutemp: in_ldisp1/in_ldisp2>=1d-3'
 c
-            dd_temp = man_temp0
+            gas_temp = man_temp0
 c
          case default
             stop 'in_opacanaltype unknown'

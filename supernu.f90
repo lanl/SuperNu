@@ -139,7 +139,7 @@ program supernu
 
 !
 !-- allocate arrays of sizes retreived in bcast_permanent
-  call ion_alloc_grndlev(gas_nelem,dd_ncell)  !ground state occupation numbers
+  call ion_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
   call particle_alloc(impi==impi0,in_norestart,nmpi)
 
 !

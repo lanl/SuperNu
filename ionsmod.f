@@ -30,7 +30,7 @@ c-- ocupation number and g value of all ion's ground states
        real*8,allocatable :: oc(:)
        real*8,allocatable :: g(:)
       end type ocground
-      type(ocground),allocatable :: ion_grndlev(:,:) !(nelem,dd_ncell)
+      type(ocground),allocatable :: ion_grndlev(:,:) !(nelem,gas_ncell)
 c
 *     private leveldata,elemconf,ocground
 c

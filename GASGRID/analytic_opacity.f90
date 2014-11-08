@@ -15,19 +15,19 @@ subroutine analytic_opacity
   !selection to either fully or partially determine
   !opacity dependence on temperature and density.
   !
-  !Since revision 121, calculates grey scattering opacity, dd_sig
+  !Since revision 121, calculates grey scattering opacity, gas_sig
 !#####################################
 
   integer :: i, ig
   real*8 :: x1, x2  !unitless energy group bounds
 
-  dd_siggrey = 0d0
-  dd_cap = 0d0
-  dd_sig = 0d0
+  gas_siggrey = 0d0
+  gas_cap = 0d0
+  gas_sig = 0d0
 
   !Calculating grey scattering opacity
-  dd_sig = in_sigcoefs*dd_temp**in_sigtpwrs* &
-       dd_rho**in_sigrpwrs
+  gas_sig = in_sigcoefs*gas_temp**in_sigtpwrs* &
+       gas_rho**in_sigrpwrs
 
   !Calculating grouped Planck and Rosseland opacities
   if(in_opacanaltype=='none') then
@@ -36,10 +36,10 @@ subroutine analytic_opacity
      ! sigmaP = A*T^B*rho^C (A,B,C set in input.par)
      ! sigmaP_g, sigmaR_g = sigmaP for all g 
      ! Input wavelength grid not used
-     dd_siggrey = in_sigcoef*dd_temp**in_sigtpwr* &
-          dd_rho**in_sigrpwr
-     do i = 1, dd_ncell
-        dd_cap(:,i) = dd_siggrey(i)
+     gas_siggrey = in_sigcoef*gas_temp**in_sigtpwr* &
+          gas_rho**in_sigrpwr
+     do i = 1, gas_ncell
+        gas_cap(:,i) = gas_siggrey(i)
      enddo
 
   elseif(in_opacanaltype=='mono') then
@@ -48,19 +48,19 @@ subroutine analytic_opacity
      ! func_P(T,g) and func_R(T,g) are functions proportional to
      ! integral_g(1/nu^3)
      !
-     dd_siggrey = in_sigcoef*dd_temp**in_sigtpwr* &
-          dd_rho**in_sigrpwr
-     do i = 1, dd_ncell
+     gas_siggrey = in_sigcoef*gas_temp**in_sigtpwr* &
+          gas_rho**in_sigrpwr
+     do i = 1, gas_ncell
         do ig = 1, gas_ng
             x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb)
             x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb)
-            dd_cap(ig,i) = 0.5d0*dd_siggrey(i)*(x1+x2)/(x1*x2)**2
+            gas_cap(ig,i) = 0.5d0*gas_siggrey(i)*(x1+x2)/(x1*x2)**2
         enddo
-        dd_siggrey(i) = 0d0
+        gas_siggrey(i) = 0d0
         do ig = 1, gas_ng
-           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*dd_temp(i))
-           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*dd_temp(i))
-           dd_siggrey(i) = dd_siggrey(i)+15d0*dd_cap(ig,i)* &
+           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(i))
+           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i))
+           gas_siggrey(i) = gas_siggrey(i)+15d0*gas_cap(ig,i)* &
                 specint(x1,x2,3)/pc_pi**4
         enddo
      enddo!}}}
@@ -70,22 +70,22 @@ subroutine analytic_opacity
      ! Su&Olson picket-fence distributions (tests: A,B,C (Su and Olson 1999))
      ! Input wavelength grid not used
      if(grd_ny>1) stop 'analytic_opacity: no 2D for opacanaltyp=pick'
-     do i = 1, dd_ncell
-        dd_siggrey(i) = in_sigcoef*dd_temp(i)**in_sigtpwr* &
-             dd_rho(i)**in_sigrpwr     
+     do i = 1, gas_ncell
+        gas_siggrey(i) = in_sigcoef*gas_temp(i)**in_sigtpwr* &
+             gas_rho(i)**in_sigrpwr     
         if(in_suol=='tsta') then    !Case: A
-           dd_cap(1,i) = dd_siggrey(i)
-           dd_cap(2,i) = dd_siggrey(i)
+           gas_cap(1,i) = gas_siggrey(i)
+           gas_cap(2,i) = gas_siggrey(i)
         elseif(in_suol=='tstb') then  !Case: B
-           dd_cap(1,i) = 2d0*dd_siggrey(i)/11d0
-           dd_cap(2,i) = 20d0*dd_siggrey(i)/11d0
+           gas_cap(1,i) = 2d0*gas_siggrey(i)/11d0
+           gas_cap(2,i) = 20d0*gas_siggrey(i)/11d0
         elseif(in_suol=='tstc') then  !Case: C
-           dd_cap(1,i) = 2d0*dd_siggrey(i)/101d0
-           dd_cap(2,i) = 200d0*dd_siggrey(i)/101d0
+           gas_cap(1,i) = 2d0*gas_siggrey(i)/101d0
+           gas_cap(2,i) = 200d0*gas_siggrey(i)/101d0
 !-- added evacuated picket test
         elseif(in_suol=='tstd') then !Case: D (not in SuOlson)
-           dd_cap(1,i) = 0d0
-           dd_cap(2,i) = 2d0*dd_siggrey(i)
+           gas_cap(1,i) = 0d0
+           gas_cap(2,i) = 2d0*gas_siggrey(i)
         else
            stop 'analytic_opacity: in_suol invalid'
         endif!}}}
@@ -94,25 +94,25 @@ subroutine analytic_opacity
      ! Highly structured line test: group opacities alternate in magnitude!{{{
      ! sigmaP = A*T^B*rho^C
      ! sigmaP_g = sigmaP*func_P(g), sigmaR_g = sigmaP
-     dd_siggrey = in_sigcoef*dd_temp**in_sigtpwr * &
-          dd_rho**in_sigrpwr
-     do i = 1, dd_ncell
+     gas_siggrey = in_sigcoef*gas_temp**in_sigtpwr * &
+          gas_rho**in_sigrpwr
+     do i = 1, gas_ncell
         !
         !set odd group magnitudes (low)
         do ig = 1, gas_ng, 2
-           dd_cap(ig,i) = dd_siggrey(i)*in_ldisp1
+           gas_cap(ig,i) = gas_siggrey(i)*in_ldisp1
         enddo
         !set even group magnitudes (high)
         do ig = 2, gas_ng, 2
-           dd_cap(ig,i) = dd_siggrey(i)*in_ldisp2
+           gas_cap(ig,i) = gas_siggrey(i)*in_ldisp2
         enddo
         !
         !calculate Planck, Rosseland opacities
-        dd_siggrey(i) = 0d0
+        gas_siggrey(i) = 0d0
         do ig = 1, gas_ng
-           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*dd_temp(i))
-           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*dd_temp(i))
-           dd_siggrey(i) = dd_siggrey(i)+15d0*dd_cap(ig,i)* &
+           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(i))
+           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i))
+           gas_siggrey(i) = gas_siggrey(i)+15d0*gas_cap(ig,i)* &
                 specint(x1,x2,3)/pc_pi**4
         enddo
         !

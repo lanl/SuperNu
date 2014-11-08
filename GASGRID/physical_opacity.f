@@ -19,16 +19,16 @@ c$    use omp_lib
 c-- timing
       real*8 :: t0,t1,t2,t3,t4
 c-- helper arrays
-      real*8 :: grndlev(dd_ncell,ion_iionmax-1,gas_nelem)
-      real*8 :: hckt(dd_ncell)
-      real*8 :: hlparr(dd_ncell)
+      real*8 :: grndlev(gas_ncell,ion_iionmax-1,gas_nelem)
+      real*8 :: hckt(gas_ncell)
+      real*8 :: hlparr(gas_ncell)
 c-- ffxs
       real*8,parameter :: c1 = 4d0*pc_e**6/(3d0*pc_h*pc_me*pc_c**4)*
      &  sqrt(pc_pi2/(3*pc_me*pc_h*pc_c))
       real*8 :: gg,u,gff,help
       real*8 :: yend,dydx,dy !extrapolation
       integer :: iu,igg
-      real*8 :: cap1(dd_ncell)
+      real*8 :: cap1(gas_ncell)
 c-- bfxs
       integer :: il,ig,iz,ii,ie
       real*8 :: en,xs,wl
@@ -36,7 +36,7 @@ c-- bbxs
       real*8 :: phi,ocggrnd,expfac,wl0,dwl
       real*8 :: caphelp
 c-- temporary cap array in the right order
-      real*8 :: cap(dd_ncell,gas_ng)
+      real*8 :: cap(gas_ncell,gas_ng)
 !-- special functions
 !     integer :: binsrch
 c-- thomson scattering
@@ -46,15 +46,15 @@ c-- warn once
       logical :: lwarn
 c
 c-- initialize
-      dd_sig = 0d0
+      gas_sig = 0d0
       cap = 0d0
 c
 c-- ion_grndlev helper array
-      hckt = pc_h*pc_c/(pc_kb*dd_temp)
+      hckt = pc_h*pc_c/(pc_kb*gas_temp)
 c
 c-- thomson scattering
       if(.not. in_nothmson) then
-       dd_sig = cthomson*dd_nelec*dd_natom/dd_vol
+       gas_sig = cthomson*gas_nelec*gas_natom/gas_vol
       endif
 c
       call time(t0)
@@ -62,7 +62,7 @@ c
 c-- bound-bound
       if(.not. in_nobbopac) then
        do iz=1,gas_nelem!{{{
-        do i=1,dd_ncell
+        do i=1,gas_ncell
         forall(ii=1:min(iz,ion_el(iz)%ni - 1))
      &    grndlev(i,ii,iz) = ion_grndlev(iz,i)%oc(ii)/
      &    ion_grndlev(iz,i)%g(ii)
@@ -94,7 +94,7 @@ c-- profile function
 !old    phi = gas_ng*wlhelp*wl0/pc_c !line profile
         phi = wl0**2/(dwl*pc_c)
 c-- evaluate caphelp
-        do i=1,dd_ncell
+        do i=1,gas_ncell
          ocggrnd = grndlev(i,ii,iz)
 c-- oc high enough to be significant?
 *        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
@@ -120,7 +120,7 @@ c-- bound-free
       if(.not. in_nobfopac) then
 c!{{{
        do iz=1,gas_nelem
-        do i=1,dd_ncell
+        do i=1,gas_ncell
          forall(ii=1:min(iz,ion_el(iz)%ni - 1))
      &    grndlev(i,ii,iz) = ion_grndlev(iz,i)%oc(ii)
         enddo !i
@@ -139,7 +139,7 @@ c$omp& shared(cap)
           ie = iz - ii + 1
           xs = bfxs(iz,ie,en)
           if(xs==0d0) cycle
-          forall(i=1:dd_ncell)
+          forall(i=1:gas_ncell)
      &      cap(i,ig) = cap(i,ig) +
      &      xs*pc_mbarn*grndlev(i,ii,iz)
          enddo !ie
@@ -157,7 +157,7 @@ c-- free-free
       if(.not. in_noffopac) then
 c!{{{
 c-- simple variant: nearest data grid point
-       hlparr = (dd_natom/dd_vol)**2*dd_nelec
+       hlparr = (gas_natom/gas_vol)**2*gas_nelec
        lwarn = .true.
 c$omp parallel do
 c$omp& schedule(static)
@@ -169,7 +169,7 @@ c$omp& shared(hckt,hlparr,cap)
         wlinv = 1d0/wl  !in cm
 c-- gcell loop
         cap1 = 0d0
-        do i=1,dd_ncell
+        do i=1,gas_ncell
          u = hckt(i)*wlinv
          iu = nint(10d0*(log10(u) + 4d0)) + 1
 c
@@ -205,7 +205,7 @@ c-- asymptotic value
           endif
 c-- cross section
           cap1(i) = cap1(i) +
-     &      help*gff*iz**2*dd_natom1fr(iz,i)
+     &      help*gff*iz**2*gas_natom1fr(iz,i)
          enddo !iz
         enddo !i
         cap(:,ig) = cap(:,ig) + cap1
@@ -216,15 +216,15 @@ c!}}}
 c
       call time(t3)
 c
-      dd_cap = transpose(cap)
+      gas_cap = transpose(cap)
 c
 c-- sanity check
       m = 0
-      do i=1,dd_ncell
+      do i=1,gas_ncell
        do ig=1,gas_ng
-        if(dd_cap(ig,i)<=0d0) m = ior(m,1)
-        if(dd_cap(ig,i)/=dd_cap(ig,i)) m = ior(m,2)
-        if(dd_cap(ig,i)>huge(help)) m = ior(m,4)
+        if(gas_cap(ig,i)<=0d0) m = ior(m,1)
+        if(gas_cap(ig,i)/=gas_cap(ig,i)) m = ior(m,2)
+        if(gas_cap(ig,i)>huge(help)) m = ior(m,4)
        enddo !ig
       enddo !i
       if(m/=iand(m,1)) call warn('opacity_calc','some cap<=0')

@@ -14,7 +14,7 @@ subroutine analytic_source
   real*8 :: srcren
   real*8 :: thelp, help, xcent, ycent
 
-  dd_emitex = 0d0
+  gas_emitex = 0d0
 
 !-- setting source helper
   if(grd_isvelocity) then
@@ -23,8 +23,8 @@ subroutine analytic_source
      thelp = 1d0
   endif
 
-  l1 = impi*dd_ncell + 1
-  l2 = (impi+1)*dd_ncell
+  l1 = impi*gas_ncell + 1
+  l2 = (impi+1)*gas_ncell
 
   if(in_srctype=='none') then
     return
@@ -39,9 +39,9 @@ subroutine analytic_source
               l = i
               if(l<l1 .or. l>l2) cycle
               ll = ll + 1
-              dd_emitex(ll) = in_srcmax * &
-                   dd_vol(ll)*tsp_dt/thelp**3
-              !write(0,*) impi,ll,dd_emitex(ll),dd_vol(ll)
+              gas_emitex(ll) = in_srcmax * &
+                   gas_vol(ll)*tsp_dt/thelp**3
+              !write(0,*) impi,ll,gas_emitex(ll),gas_vol(ll)
            enddo
 
 !-- 2D
@@ -68,8 +68,8 @@ subroutine analytic_source
               xcent = 0.5d0*(grd_xarr(i+1)+grd_xarr(i))
               ycent = 0.5d0*(grd_yarr(j+1)+grd_yarr(j))
               if(xcent**2+ycent**2<help**2) then
-                 dd_emitex(ll) = in_srcmax * &
-                      dd_vol(ll)*tsp_dt/thelp**3
+                 gas_emitex(ll) = in_srcmax * &
+                      gas_vol(ll)*tsp_dt/thelp**3
               endif
            enddo
            enddo
@@ -91,7 +91,7 @@ subroutine analytic_source
         srcren = in_srcmax*(grd_xarr(grd_nx+1)- &
              0.5d0*(grd_xarr(i)+grd_xarr(i+1)))/ & 
              (grd_xarr(grd_nx+1)-grd_xarr(1))
-        dd_emitex(ll) = srcren * dd_vol(ll)*tsp_dt
+        gas_emitex(ll) = srcren * gas_vol(ll)*tsp_dt
 !
 !-- no temp source for strt (matsrc=0.0)
 !--

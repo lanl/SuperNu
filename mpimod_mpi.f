@@ -367,35 +367,35 @@ c     ------------------------!{{{
 * Broadcast the data that changes with time/temperature.
 ************************************************************************
 c-- gather
-      call mpi_allgather(dd_temp,dd_ncell,MPI_REAL8,
-     &   grd_temp,dd_ncell,MPI_REAL8,
+      call mpi_allgather(gas_temp,gas_ncell,MPI_REAL8,
+     &   grd_temp,gas_ncell,MPI_REAL8,
      &   MPI_COMM_GAS,ierr)
 c
-      call mpi_allgather(dd_emit,dd_ncell,MPI_REAL8,
-     &   grd_emit,dd_ncell,MPI_REAL8,
+      call mpi_allgather(gas_emit,gas_ncell,MPI_REAL8,
+     &   grd_emit,gas_ncell,MPI_REAL8,
      &   MPI_COMM_GAS,ierr)
-      call mpi_allgather(dd_emitex,dd_ncell,MPI_REAL8,
-     &   grd_emitex,dd_ncell,MPI_REAL8,
-     &   MPI_COMM_GAS,ierr)
-c
-      call mpi_allgather(dd_sig,dd_ncell,MPI_REAL8,
-     &   grd_sig,dd_ncell,MPI_REAL8,
-     &   MPI_COMM_GAS,ierr)
-      call mpi_allgather(dd_capgam,dd_ncell,MPI_REAL8,
-     &   grd_capgam,dd_ncell,MPI_REAL8,
-     &   MPI_COMM_GAS,ierr)
-      call mpi_allgather(dd_siggrey,dd_ncell,MPI_REAL8,
-     &   grd_siggrey,dd_ncell,MPI_REAL8,
-     &   MPI_COMM_GAS,ierr)
-      call mpi_allgather(dd_fcoef,dd_ncell,MPI_REAL8,
-     &   grd_fcoef,dd_ncell,MPI_REAL8,
+      call mpi_allgather(gas_emitex,gas_ncell,MPI_REAL8,
+     &   grd_emitex,gas_ncell,MPI_REAL8,
      &   MPI_COMM_GAS,ierr)
 c
-      call mpi_allgather(dd_emitprob,gas_ng*dd_ncell,MPI_REAL8,
-     &   grd_emitprob,gas_ng*dd_ncell,MPI_REAL8,
+      call mpi_allgather(gas_sig,gas_ncell,MPI_REAL8,
+     &   grd_sig,gas_ncell,MPI_REAL8,
      &   MPI_COMM_GAS,ierr)
-      call mpi_allgather(dd_cap,gas_ng*dd_ncell,MPI_REAL8,
-     &   grd_cap,gas_ng*dd_ncell,MPI_REAL8,
+      call mpi_allgather(gas_capgam,gas_ncell,MPI_REAL8,
+     &   grd_capgam,gas_ncell,MPI_REAL8,
+     &   MPI_COMM_GAS,ierr)
+      call mpi_allgather(gas_siggrey,gas_ncell,MPI_REAL8,
+     &   grd_siggrey,gas_ncell,MPI_REAL8,
+     &   MPI_COMM_GAS,ierr)
+      call mpi_allgather(gas_fcoef,gas_ncell,MPI_REAL8,
+     &   grd_fcoef,gas_ncell,MPI_REAL8,
+     &   MPI_COMM_GAS,ierr)
+c
+      call mpi_allgather(gas_emitprob,gas_ng*gas_ncell,MPI_REAL8,
+     &   grd_emitprob,gas_ng*gas_ncell,MPI_REAL8,
+     &   MPI_COMM_GAS,ierr)
+      call mpi_allgather(gas_cap,gas_ng*gas_ncell,MPI_REAL8,
+     &   grd_cap,gas_ng*gas_ncell,MPI_REAL8,
      &   MPI_COMM_GAS,ierr)
 c!}}}
       end subroutine bcast_nonpermanent
@@ -492,11 +492,11 @@ c
       grd_eraddens = grd_eraddens/dble(nmpi)
 c
 c-- scatter
-      call mpi_scatter(grd_edep,dd_ncell,MPI_REAL8,
-     &   dd_edep,dd_ncell,MPI_REAL8,
+      call mpi_scatter(grd_edep,gas_ncell,MPI_REAL8,
+     &   gas_edep,gas_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_GAS,ierr)
-      call mpi_scatter(grd_eraddens,dd_ncell,MPI_REAL8,
-     &   dd_eraddens,dd_ncell,MPI_REAL8,
+      call mpi_scatter(grd_eraddens,gas_ncell,MPI_REAL8,
+     &   gas_eraddens,gas_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_GAS,ierr)
 c
 c-- timing statistics
@@ -521,8 +521,8 @@ c     -------------------------------------!{{{
 ************************************************************************
 * for output
 ************************************************************************
-      call mpi_gather(dd_temp,dd_ncell,MPI_REAL8,
-     &   grd_temp,dd_ncell,MPI_REAL8,
+      call mpi_gather(gas_temp,gas_ncell,MPI_REAL8,
+     &   grd_temp,gas_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_GAS,ierr)
 c!}}}
       end subroutine reduce_gastemp

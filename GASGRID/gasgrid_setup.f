@@ -14,10 +14,10 @@ c     ------------------------
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
       integer :: l,ll
-      real*8 :: mass0fr(-2:gas_nelem,dd_ncell)
+      real*8 :: mass0fr(-2:gas_nelem,gas_ncell)
 c
 c-- agnostic mass setup
-      dd_mass = str_massdd
+      gas_mass = str_massdd
 c
 c-- temperature
       if(in_srctype=='manu') then
@@ -25,16 +25,16 @@ c-- temperature
       elseif(in_consttemp==0d0) then
        call read_restart_file
       else
-       dd_temp = in_consttemp
+       gas_temp = in_consttemp
       endif
 c
 c
 c-- used in fleck_factor
-      dd_eraddens = pc_acoef*in_tempradinit**4
+      gas_eraddens = pc_acoef*in_tempradinit**4
 c
 c
 c-- temp and ur
-      dd_ur = pc_acoef*dd_temp**4 !initial guess, may be overwritten by read_temp_str
+      gas_ur = pc_acoef*gas_temp**4 !initial guess, may be overwritten by read_temp_str
 c
 c-- adopt partial masses from input file
       mass0fr = 0d0
@@ -59,10 +59,10 @@ c
 c-- output
 C$$$      write(6,*) 'mass fractions'
 C$$$      write(6,'(1p,33i12)') (l,l=-2,30)
-C$$$      write(6,'(1p,33e12.4)') (mass0fr(:,l),l=1,dd_ncell)
+C$$$      write(6,'(1p,33e12.4)') (mass0fr(:,l),l=1,gas_ncell)
 C$$$      write(6,*) 'number fractions'
 C$$$      write(6,'(1p,33i12)') (l,l=-2,30)
-C$$$      write(6,'(1p,33e12.4)') dd_natom1fr(:,l,1,1),l=1,dd_ncell)
+C$$$      write(6,'(1p,33e12.4)') gas_natom1fr(:,l,1,1),l=1,gas_ncell)
 c
       end subroutine gasgrid_setup
 c
@@ -74,14 +74,14 @@ c     -------------------------
       use elemdatamod, only:elem_data
       use gasgridmod
       implicit none
-      real*8,intent(inout) :: mass0fr(-2:gas_nelem,dd_ncell)
+      real*8,intent(inout) :: mass0fr(-2:gas_nelem,gas_ncell)
 ************************************************************************
 * convert mass fractions to natom fractions, and mass to natom.
 ************************************************************************
       integer :: i,l
       real*8 :: help
 c
-      do i=1,dd_ncell
+      do i=1,gas_ncell
 c!{{{
 c-- sanity test
        if(all(mass0fr(1:,i)==0d0)) stop
@@ -93,43 +93,43 @@ c-- renormalize (the container fraction (unused elements) is taken out)
        mass0fr(:,i) = mass0fr(:,i)/sum(mass0fr(1:,i))
 c
 c-- partial mass
-       dd_natom1fr(:,i)= mass0fr(:,i)*dd_mass(i)
+       gas_natom1fr(:,i)= mass0fr(:,i)*gas_mass(i)
 c-- only stable nickel and cobalt
-       dd_natom1fr(28,i) = dd_natom1fr(28,i) -
-     &   dd_natom1fr(gas_ini56,i)
-       dd_natom1fr(27,i) = dd_natom1fr(27,i) -
-     &   dd_natom1fr(gas_ico56,i)
+       gas_natom1fr(28,i) = gas_natom1fr(28,i) -
+     &   gas_natom1fr(gas_ini56,i)
+       gas_natom1fr(27,i) = gas_natom1fr(27,i) -
+     &   gas_natom1fr(gas_ico56,i)
 c
 c-- convert to natoms
        do l=1,gas_nelem
-        dd_natom1fr(l,i) = dd_natom1fr(l,i)/
+        gas_natom1fr(l,i) = gas_natom1fr(l,i)/
      &    (elem_data(l)%m*pc_amu)
        enddo !j
 c-- special care for ni56 and co56
 !      help = elem_data(26)%m*pc_amu
        help = elem_data(28)%m*pc_amu !phoenix compatible
-       dd_natom1fr(gas_ini56,i) =
-     &   dd_natom1fr(gas_ini56,i)/help
+       gas_natom1fr(gas_ini56,i) =
+     &   gas_natom1fr(gas_ini56,i)/help
        help = elem_data(27)%m*pc_amu !phoenix compatible
-       dd_natom1fr(gas_ico56,i) =
-     &   dd_natom1fr(gas_ico56,i)/help
+       gas_natom1fr(gas_ico56,i) =
+     &   gas_natom1fr(gas_ico56,i)/help
 c-- store initial fe/co/ni
-       dd_natom0fr(-2:-1,i) = dd_natom1fr(-2:-1,i)!unstable
-       dd_natom0fr(0:2,i) = dd_natom1fr(26:28,i)!stable
+       gas_natom0fr(-2:-1,i) = gas_natom1fr(-2:-1,i)!unstable
+       gas_natom0fr(0:2,i) = gas_natom1fr(26:28,i)!stable
 c-- add unstable to stable again
-       dd_natom1fr(28,i) = dd_natom1fr(28,i) +
-     &   dd_natom1fr(gas_ini56,i)
-       dd_natom1fr(27,i) = dd_natom1fr(27,i) +
-     &   dd_natom1fr(gas_ico56,i)
+       gas_natom1fr(28,i) = gas_natom1fr(28,i) +
+     &   gas_natom1fr(gas_ini56,i)
+       gas_natom1fr(27,i) = gas_natom1fr(27,i) +
+     &   gas_natom1fr(gas_ico56,i)
 c
 c-- total natom
-       dd_natom(i) = sum(dd_natom1fr(1:,i))
+       gas_natom(i) = sum(gas_natom1fr(1:,i))
 c
 c-- convert natoms to natom fractions
-       dd_natom1fr(:,i) = dd_natom1fr(:,i)/
-     &   dd_natom(i)
-       dd_natom0fr(:,i) = dd_natom0fr(:,i)/
-     &   dd_natom(i)
+       gas_natom1fr(:,i) = gas_natom1fr(:,i)/
+     &   gas_natom(i)
+       gas_natom0fr(:,i) = gas_natom0fr(:,i)/
+     &   gas_natom(i)
 c!}}}
       enddo !i
 c

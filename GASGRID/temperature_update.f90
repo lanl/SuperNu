@@ -16,28 +16,28 @@ subroutine temperature_update
   real*8 :: dtemp, dtemp2
 
   !calculating radiation energy density
-  dd_eraddens = dd_eraddens/dd_vol
-  dd_eraddens = dd_eraddens
+  gas_eraddens = gas_eraddens/gas_vol
+  gas_eraddens = gas_eraddens
 
 !-- calculating temperature
-  if(allocated(dd_temppreset)) then
+  if(allocated(gas_temppreset)) then
 !-- apply read-in temperature profile
-   dd_temp = dd_temppreset(:,tsp_it)
+   gas_temp = gas_temppreset(:,tsp_it)
   else
 !!-- calculate temp correction
-     do i=1,dd_ncell
-        if(dd_bcoef(i)>0d0) then
-           dtemp = dd_edep(i)/dd_vol(i) !new
-           dtemp = (dtemp - tsp_dt*dd_fcoef(i)*dd_siggrey(i)* &
-                pc_c*dd_ur(i))/dd_bcoef(i)
-           dtemp2 = (dd_fcoef(i)/dd_bcoef(i))*tsp_dt* &
-                dd_matsrc(i)
-           dd_temp(i) = dd_temp(i)+dtemp+dtemp2
-        elseif(dd_rho(i)>0d0.and.any(dd_cap(:,i)>0d0)) then
-           dd_temp(i) = max(1000d0,(dd_eraddens(i)/pc_acoef)**(.25d0))
+     do i=1,gas_ncell
+        if(gas_bcoef(i)>0d0) then
+           dtemp = gas_edep(i)/gas_vol(i) !new
+           dtemp = (dtemp - tsp_dt*gas_fcoef(i)*gas_siggrey(i)* &
+                pc_c*gas_ur(i))/gas_bcoef(i)
+           dtemp2 = (gas_fcoef(i)/gas_bcoef(i))*tsp_dt* &
+                gas_matsrc(i)
+           gas_temp(i) = gas_temp(i)+dtemp+dtemp2
+        elseif(gas_rho(i)>0d0.and.any(gas_cap(:,i)>0d0)) then
+           gas_temp(i) = max(1000d0,(gas_eraddens(i)/pc_acoef)**(.25d0))
         else
 !-- void?
-           dd_temp(i) = 1000d0
+           gas_temp(i) = 1000d0
         endif
      enddo !i
   endif
