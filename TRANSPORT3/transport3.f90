@@ -505,7 +505,7 @@ subroutine transport3(ptcl,isvacant)
      else
 !-- resampling wavelength in highest group
         r1 = rand()
-        wl=1d0/(r1/grd_wl(ig+1) + (1d0-r1)/grd_wl(grd_ng))
+        wl=1d0/(r1/grd_wl(grd_ng+1) + (1d0-r1)/grd_wl(grd_ng))
         wl = wl*elabfact
      endif
 !-- check if ddmc region

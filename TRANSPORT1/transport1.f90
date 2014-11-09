@@ -214,7 +214,7 @@ subroutine transport1(ptcl,isvacant)
         r1 = rand()
         prt_tlyrand=prt_tlyrand+1
 !     wl = r1*grd_wl(grd_ng)+(1d0-r1)*grd_wl(grd_ng+1) !uniform sample
-        wl=1d0/(r1/grd_wl(g+1) + (1d0-r1)/grd_wl(grd_ng))  !reciprocal sample
+        wl=1d0/(r1/grd_wl(grd_ng+1) + (1d0-r1)/grd_wl(grd_ng))  !reciprocal sample
         wl = wl*(1d0-mu*r*cinv)
 !        wl = grd_wl(grd_ng+1)*(1d0-mu*r*cinv)
      endif
