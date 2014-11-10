@@ -1133,6 +1133,60 @@ subroutine diffusion3(ptcl,isvacant)
 
 !-- effective scattering
   else
+     denom2 = 1d0-emitlump
+     help = 1d0/denom2
+!
+     denom3 = 0d0
+     r1 = rand()
+
+     do iig = grd_ng,glump+1,-1
+        iiig=glumps(iig)
+        if((r1>=denom3).and.(r1<denom3+grd_emitprob(iiig,ix,iy,iz)*help)) exit
+        denom3 = denom3+grd_emitprob(iiig,ix,iy,iz)*help
+     enddo
+!
+     r1 = rand()
+     wl = 1d0/((1d0-r1)/grd_wl(iiig) + r1/grd_wl(iiig+1))
+
+     if ((grd_sig(ix,iy,iz)+grd_cap(iiig,ix,iy,iz)) * &
+          min(dx(ix),dy(iy),dz(iz)) &
+          *thelp < prt_tauddmc) then
+        ptcl%rtsrc = 1
+        grd_methodswap(zr,zz,1)=grd_methodswap(zr,zz,1)+1
+!-- direction sampled isotropically           
+        r1 = rand()
+        xi = 1d0 - 2d0*r1
+        r1 = rand()
+        om = pc_pi2*r1
+        mu = sqrt(1d0-xi**2)*cos(om)
+        eta = sqrt(1d0-xi**2)*sin(om)
+!-- position sampled uniformly
+        r1 = rand()
+        x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
+        r1 = rand()
+        y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
+        r1 = rand()
+        z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
+!-- doppler and aberration corrections
+        if(grd_isvelocity) then
+!-- calculating transformation factors
+           elabfact = 1d0+(x*mu+y*eta+z*xi)*cinv
+!-- transforming z-axis direction cosine to lab
+           xi = (xi+z*cinv)/elabfact
+           if(xi>1d0) then
+              xi = 1d0
+           elseif(xi<-1d0) then
+              xi = -1d0
+           endif
+           om = atan2(eta+y*cinv,mu+x*cinv)
+           if(om<0d0) om=om+pc_pi2
+!-- transforming wavelength to lab
+           wl = wl/elabfact
+!-- transforming energy weights to lab
+           ep = ep*elabfact
+           ep0 = ep0*elabfact
+        endif
+     endif
 
   endif
 
