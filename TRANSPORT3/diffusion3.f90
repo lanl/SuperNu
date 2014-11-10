@@ -27,12 +27,13 @@ subroutine diffusion3(ptcl,isvacant)
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus
   real*8 :: elabfact, dirdotu, azidotu
-  real*8 :: pu, pd, pr, pl, pt, pb, pa
 !-- lumped quantities
   real*8 :: emitlump, speclump
   real*8 :: caplump
   real*8 :: specig
   real*8 :: opacleak(6)
+  real*8 :: probleak(6) !leakage probabilities
+  real*8 :: pa !absorption probability
   real*8 :: mfphelp, pp
   real*8 :: resopacleak
   integer :: glump, gunlump
@@ -305,6 +306,79 @@ subroutine diffusion3(ptcl,isvacant)
 
 !
 !-- calculating energy depostion and density
+  if(prt_isddmcanlog) then
+     grd_eraddens(ix,iy,iz)= grd_eraddens(ix,iy,iz)+ep*ddmct*dtinv
+  else
+     grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz)+ep * &
+          (1d0-exp(-grd_fcoef(ix,iy,iz)*caplump*pc_c*ddmct))
+     if(grd_fcoef(ix,iy,iz)*caplump*min(dx(ix),dy(iy),dz(iz)) * &
+          thelp>1d-6) then
+        help = 1d0/(grd_fcoef(ix,iy,iz)*caplump)
+        grd_eraddens(ix,iy,iz)= &
+             grd_eraddens(ix,iy,iz)+ep* &
+             (1d0-exp(-grd_fcoef(ix,iy,iz)*caplump*pc_c*ddmct))* &
+             help*cinv*dtinv
+     else
+        grd_eraddens(ix,iy,iz) = grd_eraddens(ix,iy,iz)+ep*ddmct*dtinv
+     endif
+     ep=ep*exp(-grd_fcoef(ix,iy,iz)*caplump*pc_c*ddmct)
+  endif
 
+!-- updating particle time
+  ptcl%tsrc = ptcl%tsrc+ddmct
+
+!-- stepping particle ------------------------------------
+!
+!
+!-- check for census
+  if (ddmct /= tau) then
+     prt_done = .true.
+     grd_numcensus(ix,iy,iz)=grd_numcensus(ix,iy,iz)+1
+     return
+  endif
+
+
+!-- otherwise, perform event
+  r1 = rand()
+  help = 1/denom
+
+!-- leakage probabilities
+  probleak=opacleak*help
+
+!-- absorption probability
+  if(prt_isddmcanlog) then
+     pa = grd_fcoef(ix,iy,iz)*caplump*help
+  else
+     pa = 0d0
+  endif
+
+!-- absorption
+  if(r1>=0d0 .and. r1<pa) then
+     isvacant = .true.
+     prt_done = .true.
+     grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz)+ep
+
+!-- x left leakage
+  elseif(r1>=pa.and.r1<pa+probleak(1)) then
+
+!-- x right leakage
+  elseif(r1>=pa+probleak(1).and.r1<pa+sum(probleak(1:2))) then
+
+!-- y down leakage
+  elseif(r1>=pa+sum(probleak(1:2)).and.r1<pa+sum(probleak(1:3))) then
+
+!-- y up leakage
+  elseif(r1>=pa+sum(probleak(1:3)).and.r1<pa+sum(probleak(1:4))) then
+
+!-- z bottom leakage
+  elseif(r1>=pa+sum(probleak(1:4)).and.r1<pa+sum(probleak(1:5))) then
+
+!-- z top leakage
+  elseif(r1>=pa+sum(probleak(1:5)).and.r1<pa+sum(probleak(1:6))) then
+
+!-- effective scattering
+  else
+
+  endif
 
 end subroutine diffusion3
