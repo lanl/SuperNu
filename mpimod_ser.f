@@ -41,7 +41,6 @@ c
 c
       subroutine bcast_nonpermanent
       use gridmod
-      use gasmod
 ************************************************************************
 * Broadcast the data that changes with time.
 * - stub
@@ -63,7 +62,6 @@ c-- domain decomposition
 c
 c
       subroutine reduce_tally
-      use totalsmod
 ************************************************************************
 * Reduce the results from the packet transport that are needed for the
 * temperature correction.
