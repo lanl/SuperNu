@@ -66,11 +66,12 @@ subroutine transport2(ptcl,isvacant)
   ig = binsrch(wl/elabfact,grd_wl,grd_ng+1,in_ng)
 !-- checking group bounds
   if(ig>grd_ng.or.ig<1) then
-     if(ig==grd_ng+1) then
+     if(ig>grd_ng) then
         ig = grd_ng
      elseif(ig==0) then
         ig = 1
      else
+        write(0,*) ig,grd_ng,wl,elabfact
         stop 'transport2 (1): particle group invalid'
      endif
   endif

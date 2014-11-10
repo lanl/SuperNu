@@ -37,8 +37,6 @@ c-- bbxs
       real*8 :: caphelp
 c-- temporary cap array in the right order
       real*8 :: cap(gas_ncell,gas_ng)
-!-- special functions
-!     integer :: binsrch
 c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
@@ -78,7 +76,6 @@ c$omp& shared(grndlev,hckt,cap)
        do il=1,bb_nline
         wl0 = bb_xs(il)%wl0*pc_ang  !in cm
 c-- ig pointer
-!       ig = binsrch(wl0,gas_wl,gas_ng+1,in_ng)  !todo: thread safe?
         do ig=ig,gas_ng
          if(gas_wl(ig+1)>wl0) exit
         enddo !ig

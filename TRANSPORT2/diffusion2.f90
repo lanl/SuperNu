@@ -80,7 +80,7 @@ subroutine diffusion2(ptcl,isvacant)
   g = binsrch(wl,grd_wl,grd_ng+1,in_ng)
 !-- checking group bounds
   if(g>grd_ng.or.g<1) then
-     if(g==grd_ng+1) then
+     if(g>grd_ng) then
         g = grd_ng
      elseif(g==0) then
         g = 1

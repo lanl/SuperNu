@@ -11,16 +11,11 @@ c     ----------------------------
 c
       open(unit=4,file=fname,status='old',iostat=istat)
       if(istat/=0) stop 'read_restart: no input.restart file'
-      if(tsp_ntres<=1) then
-         read(4,*) grd_temp
-      else
-c
 c-- assumes no header
-         do it = 1, tsp_ntres-2
-            read(4,*)
-         enddo
-         read(4,*) grd_temp
-      endif
+      do it = 1, tsp_ntres-2
+         read(4,*)
+      enddo
+      read(4,*) grd_temp
       close(4)
       end subroutine read_restart_file
 c
