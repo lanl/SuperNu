@@ -36,7 +36,7 @@ FILES := sourceenergy.o sourcenumbers.o vacancies.o boundary_source.o interior_s
   banner.o
 
 LIBRARIES := GRID/grid.a GAS/gas.a TRANSPORT1/transport1.a MISC/misc.a \
-  TRANSPORT2/transport2.a
+  TRANSPORT2/transport2.a TRANSPORT3/transport3.a
 SUBDIRS := $(dir $(LIBRARIES))
 SUBCLEAN = $(addsuffix .clean, $(SUBDIRS))
 

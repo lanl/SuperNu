@@ -21,9 +21,9 @@ subroutine diffusion3(ptcl,isvacant)
   real*8,parameter :: cinv = 1d0/pc_c
   integer, external :: binsrch
 !
-  integer :: ig, iig, iiig, imu
+  integer :: ig, iig, iiig, imu, iom
   logical :: lhelp
-  real*8 :: r1, r2, thelp, mu0
+  real*8 :: r1, r2, thelp
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus
   real*8 :: elabfact, mu, eta
@@ -38,7 +38,7 @@ subroutine diffusion3(ptcl,isvacant)
   real*8 :: resopacleak
   integer :: glump, gunlump
   integer :: glumps(grd_ng)
-  real*8 :: glumpinv,dtinv,capinv(grd_ng)
+  real*8 :: dtinv,capinv(grd_ng)
   real*8 :: help
 !
   integer,pointer :: ix,iy,iz
@@ -48,7 +48,7 @@ subroutine diffusion3(ptcl,isvacant)
   real*8 :: dx,dy,dz
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
-  dx(l) = grd_zarr(l+1) - grd_zarr(l)
+  dz(l) = grd_zarr(l+1) - grd_zarr(l)
 
   ix => ptcl%zsrc
   iy => ptcl%iy
@@ -78,9 +78,9 @@ subroutine diffusion3(ptcl,isvacant)
   ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)
 !-- checking group bounds
   if(ig>grd_ng.or.ig<1) then
-     if(g==grd_ng+1) then
+     if(ig==grd_ng+1) then
         ig = grd_ng
-     elseif(g==0) then
+     elseif(ig==0) then
         ig = 1
      else
         stop 'diffusion3: particle group invalid'
@@ -685,8 +685,8 @@ subroutine diffusion3(ptcl,isvacant)
         r2 = rand()
         eta = -max(r1,r2)
         r1 = rand()
-        mu = sqrt(1d0-mu**2)*cos(pc_pi2*r1)
-        xi = sqrt(1d0-mu**2)*sin(pc_pi2*r1)
+        mu = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
+        xi = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
         om = atan2(eta,mu)
         if(om<0d0) om=om+pc_pi2
         if(grd_isvelocity) then
@@ -814,8 +814,8 @@ subroutine diffusion3(ptcl,isvacant)
         r2 = rand()
         eta = max(r1,r2)
         r1 = rand()
-        mu = sqrt(1d0-mu**2)*cos(pc_pi2*r1)
-        xi = sqrt(1d0-mu**2)*sin(pc_pi2*r1)
+        mu = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
+        xi = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
         om = atan2(eta,mu)
         if(om<0d0) om=om+pc_pi2
         if(grd_isvelocity) then
@@ -1152,7 +1152,7 @@ subroutine diffusion3(ptcl,isvacant)
           min(dx(ix),dy(iy),dz(iz)) &
           *thelp < prt_tauddmc) then
         ptcl%rtsrc = 1
-        grd_methodswap(zr,zz,1)=grd_methodswap(zr,zz,1)+1
+        grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- direction sampled isotropically           
         r1 = rand()
         xi = 1d0 - 2d0*r1

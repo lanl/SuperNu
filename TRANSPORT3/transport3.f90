@@ -21,7 +21,7 @@ subroutine transport3(ptcl,isvacant)
 
   logical :: loutx,louty,loutz
   integer :: ig, imu, iom, ihelp
-  real*8 :: elabfact
+  real*8 :: elabfact, eta, mu
   real*8 :: dtinv, thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop,d
   real*8 :: r1, r2, denom2
@@ -134,7 +134,7 @@ subroutine transport3(ptcl,isvacant)
 !
 !-- finding minimum distance
   d = min(dcen,dbx,dby,dbz,dthm,dcol,ddop)
-  if(any((/dcen,dbx,dby,dyz,dthm,dcol,ddop/)<0d0)) then
+  if(any((/dcen,dbx,dby,dbz,dthm,dcol,ddop/)<0d0)) then
      write(*,*) dcen,dbx,dby,dbz,dthm,dcol,ddop
      stop 'transport3: negative distance'
   endif

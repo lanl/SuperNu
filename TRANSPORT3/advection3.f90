@@ -24,7 +24,7 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
   integer :: imove,nmove
 !-- statement functions
   integer :: l
-  real*8 :: dx,dy,dz,xnext,ynext,znext
+  real*8 :: dx,dy,dz,xmag,ymag,zmag
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
   dz(l) = grd_zarr(l+1) - grd_zarr(l)
