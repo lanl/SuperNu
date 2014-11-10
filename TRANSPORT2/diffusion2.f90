@@ -82,7 +82,7 @@ subroutine diffusion2(ptcl,isvacant)
   if(g>grd_ng.or.g<1) then
      if(g>grd_ng) then
         g = grd_ng
-     elseif(g==0) then
+     elseif(g<1) then
         g = 1
      else
         stop 'diffusion2 (1): particle group invalid'

@@ -68,7 +68,7 @@ subroutine transport2(ptcl,isvacant)
   if(ig>grd_ng.or.ig<1) then
      if(ig>grd_ng) then
         ig = grd_ng
-     elseif(ig==0) then
+     elseif(ig<1) then
         ig = 1
      else
         write(0,*) ig,grd_ng,wl,elabfact
