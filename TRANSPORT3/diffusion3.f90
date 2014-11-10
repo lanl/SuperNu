@@ -21,6 +21,13 @@ subroutine diffusion3(ptcl,isvacant)
   real*8,parameter :: cinv = 1d0/pc_c
   integer, external :: binsrch
 !
+  integer :: ig, iig, iiig, imu
+  logical :: lhelp
+  real*8 :: r1, r2, thelp, mu0
+  real*8 :: denom, denom2, denom3
+  real*8 :: ddmct, tau, tcensus
+  real*8 :: elabfact, dirdotu, azidotu
+  real*8 :: pu, pd, pr, pl, pt, pb, pa
 !-- lumped quantities
   real*8 :: emitlump, speclump
   real*8 :: caplump
@@ -69,16 +76,146 @@ subroutine diffusion3(ptcl,isvacant)
   endif
 !
 !-- looking up initial group
-  g = binsrch(wl,grd_wl,grd_ng+1,in_ng)
+  ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)
 !-- checking group bounds
-  if(g>grd_ng.or.g<1) then
+  if(ig>grd_ng.or.ig<1) then
      if(g==grd_ng+1) then
-        g = grd_ng
+        ig = grd_ng
      elseif(g==0) then
-        g = 1
+        ig = 1
      else
         stop 'diffusion3: particle group invalid'
      endif
+  endif
+
+!
+!-- opacity regrouping --------------------------
+  glump = 0
+  gunlump = grd_ng
+  glumps = 0
+!
+!-- find lumpable groups
+  if(grd_cap(ig,ix,iy,iz)*min(dx(ix),dy(iy),dz(iz)) * &
+       thelp>=prt_taulump) then
+     do iig = 1, ig-1
+        if(grd_cap(iig,ix,iy,iz)*min(dx(ix),dy(iy),dz(iz)) &
+             *thelp >= prt_taulump) then
+           glump=glump+1
+           glumps(glump)=iig
+        else
+           glumps(gunlump)=iig
+           gunlump=gunlump-1
+        endif
+     enddo
+     do iig = ig, grd_ng
+        if(grd_cap(iig,ix,iy,iz)*min(dx(ix),dy(iy),dz(iz)) &
+             *thelp >= prt_taulump) then
+           glump=glump+1
+           glumps(glump)=iig
+        else
+           glumps(gunlump)=iig
+           gunlump=gunlump-1
+        endif
+     enddo
+  endif
+!
+  if(glump==0) then
+     glump=1
+     glumps(1)=ig
+!
+     forall(iig=2:ig) glumps(iig)=iig-1
+     forall(iig=ig+1:grd_ng) glumps(iig)=iig
+!
+  endif
+
+!
+!-- lumping
+  speclump = 0d0
+  do iig = 1, glump
+     iiig = glumps(iig)
+     specig = grd_siggrey(ix,iy,iz)*grd_emitprob(iiig,ix,iy,iz)*capinv(iiig)
+     speclump = speclump+specig
+  enddo
+  if(speclump>0d0.and.glump>1) then
+     speclump = 1d0/speclump
+  else
+     speclump = 0d0
+  endif
+
+  emitlump = 0d0
+  caplump = 0d0
+  if(speclump>0d0) then
+!
+!-- calculating lumped values
+     do iig = 1, glump
+        iiig = glumps(iig)
+        specig = grd_siggrey(ix,iy,iz)*grd_emitprob(iiig,ix,iy,iz)*capinv(iiig)
+!-- emission lump
+        emitlump = emitlump+grd_emitprob(iiig,ix,iy,iz)
+!-- Planck x-section lump
+        caplump = caplump+specig*grd_cap(iiig,ix,iy,iz)*speclump
+     enddo
+!-- leakage opacities
+     opacleakllump = grd_opacleak(1,ix,iy,iz)
+     opacleakrlump = grd_opacleak(2,ix,iy,iz)
+     opacleakdlump = grd_opacleak(3,ix,iy,iz)
+     opacleakulump = grd_opacleak(4,ix,iy,iz)
+     opacleakblump = grd_opacleak(5,ix,iy,iz)
+     opacleaktlump = grd_opacleak(6,ix,iy,iz)
+  else
+!
+!-- calculating unlumped values
+     emitlump = grd_emitprob(ig,ix,iy,iz)
+     caplump = grd_cap(ig,ix,iy,iz)
+
+!-- x left (opacleakllump)
+     if(ix==1) then
+        lhelp = .true.
+     else
+        lhelp = (grd_cap(ig,ix-1,iy,iz)+ &
+           grd_sig(ix-1,iy,iz))*min(dx(ix-1),dy(iy),dz(iz))* &
+           thelp<prt_tauddmc
+     endif
+     if(lhelp) then
+!-- DDMC interface
+        help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*dx(ix)*thelp
+        pp = 4d0/(3d0*help+6d0*pc_dext)
+        opacleakllump=0.5d0*pp/(thelp*dx(ix))
+     else
+!-- DDMC interior
+        help = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz))*dx(ix)+&
+             (grd_sig(ix-1,iy,iz)+grd_cap(ig,ix-1,iy,iz))*dx(ix-1))*thelp
+        opacleakllump=(2d0/3d0)/(help*dx(ix)*thelp)
+     endif
+
+!-- x right (opacleakrlump)
+     if(ix==grd_nx) then
+        lhelp = .true.
+     else
+        lhelp = (grd_cap(ig,ix+1,iy,iz)+ &
+           grd_sig(ix+1,iy,iz))*min(dx(ix+1),dy(iy),dz(iz))* &
+           thelp<prt_tauddmc
+     endif
+     if(lhelp) then
+!-- DDMC interface
+        help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*dx(ix)*thelp
+        pp = 4d0/(3d0*help+6d0*pc_dext)
+        opacleakrlump=0.5d0*pp/(thelp*dx(ix))
+     else
+!-- DDMC interior
+        help = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz))*dx(ix)+&
+             (grd_sig(ix+1,iy,iz)+grd_cap(ig,ix+1,iy,iz))*dx(ix+1))*thelp
+        opacleakrlump=(2d0/3d0)/(help*dx(ix)*thelp)
+     endif
+
+!-- y down
+
+!-- y up
+
+!-- z bottom
+
+!-- z top
+
   endif
 
 end subroutine diffusion3

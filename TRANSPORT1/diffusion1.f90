@@ -37,7 +37,7 @@ subroutine diffusion1(ptcl,isvacant)
   real*8 :: resopacleakl, resopacleakr
   integer :: glump, gunlump
   integer :: glumps(grd_ng)
-  real*8 :: glumpinv,dtinv,capinv(grd_ng)
+  real*8 :: dtinv,capinv(grd_ng)
   real*8 :: help
 
   integer,pointer :: z
@@ -124,7 +124,7 @@ subroutine diffusion1(ptcl,isvacant)
      forall(ig=g+1:grd_ng) glumps(ig)=ig
 !
   endif
-  glumpinv = 1d0/glump
+
 !
 !-- lumping
   speclump = 0d0
