@@ -56,7 +56,7 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.eraddens',position='append',recl=reclen2)
-  write(4,'(1p,10000e12.4)') grd_eraddens
+  write(4,'(1p,10000e12.4)') grd_eraddens/grd_vol
   close(4)
 
   open(unit=4,file='output.conserve',status='unknown',position=pos)

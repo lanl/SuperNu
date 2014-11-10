@@ -19,7 +19,7 @@ subroutine transport2(ptcl,isvacant)
   real*8,parameter :: cinv = 1d0/pc_c
   integer, external :: binsrch
 
-  integer :: g, ig, iig,imu
+  integer :: ig, iig,imu
   real*8 :: dirdotu, azidotu, mu0
   real*8 :: dtinv, elabfact, thelp, thelpinv 
   real*8 :: dcen,dcol,dthm,db,dbr,dbz,ddop,d
@@ -63,13 +63,13 @@ subroutine transport2(ptcl,isvacant)
   thelpinv = 1d0/thelp
 !
 !-- looking up initial group
-  g = binsrch(wl/elabfact,grd_wl,grd_ng+1,in_ng)
+  ig = binsrch(wl/elabfact,grd_wl,grd_ng+1,in_ng)
 !-- checking group bounds
-  if(g>grd_ng.or.g<1) then
-     if(g==grd_ng+1) then
-        g = grd_ng
-     elseif(g==0) then
-        g = 1
+  if(ig>grd_ng.or.ig<1) then
+     if(ig==grd_ng+1) then
+        ig = grd_ng
+     elseif(ig==0) then
+        ig = 1
      else
         stop 'transport2 (1): particle group invalid'
      endif
@@ -131,25 +131,25 @@ subroutine transport2(ptcl,isvacant)
   endif
 !
 !-- calculating distance to effective collision:
-  if(grd_cap(g,zr,zz,1)<=0d0) then
+  if(grd_cap(ig,zr,zz,1)<=0d0) then
 !-- making greater than dcen
      dcol = 2d0*pc_c*tsp_dt*thelpinv
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
      r1 = rand()
-     dcol = -log(r1)*thelpinv/(elabfact*grd_cap(g,zr,zz,1))
+     dcol = -log(r1)*thelpinv/(elabfact*grd_cap(ig,zr,zz,1))
   elseif(grd_fcoef(zr,zz,1)<1d0.and.grd_fcoef(zr,zz,1)>=0d0) then
      r1 = rand()
      dcol = -log(r1)*thelpinv/&
-          (elabfact*(1d0-grd_fcoef(zr,zz,1))*grd_cap(g,zr,zz,1))
+          (elabfact*(1d0-grd_fcoef(zr,zz,1))*grd_cap(ig,zr,zz,1))
   else
 !-- making greater than dcen
      dcol = 2d0*pc_c*tsp_dt*thelpinv
   endif
 !
 !-- calculating distance to Doppler shift
-  if(grd_isvelocity.and.g<grd_ng) then
-     ddop = pc_c*(elabfact-wl/grd_wl(g+1))
+  if(grd_isvelocity.and.ig<grd_ng) then
+     ddop = pc_c*(elabfact-wl/grd_wl(ig+1))
      if(ddop<0d0) then
         ddop = 2d0*pc_c*tsp_dt*thelpinv
      endif
@@ -206,13 +206,13 @@ subroutine transport2(ptcl,isvacant)
           d*thelp*cinv*dtinv
   else
 !-- nonanalog energy density
-     if(grd_fcoef(zr,zz,1)*grd_cap(g,zr,zz,1)* &
+     if(grd_fcoef(zr,zz,1)*grd_cap(ig,zr,zz,1)* &
           min(dx(zr),dy(zz))*thelp>1d-6) then
         grd_eraddens(zr,zz,1) = grd_eraddens(zr,zz,1)+ep* &
              (1.0d0-exp(-grd_fcoef(zr,zz,1)*elabfact* &
-             grd_cap(g,zr,zz,1)*d*thelp))* &
+             grd_cap(ig,zr,zz,1)*d*thelp))* &
              elabfact/(grd_fcoef(zr,zz,1)*elabfact * &
-             grd_cap(g,zr,zz,1)*pc_c*tsp_dt)
+             grd_cap(ig,zr,zz,1)*pc_c*tsp_dt)
      else
 !-- analog energy density
         grd_eraddens(zr,zz,1)=grd_eraddens(zr,zz,1)+ep*elabfact* &
@@ -220,13 +220,13 @@ subroutine transport2(ptcl,isvacant)
      endif
 !-- depositing nonanalog absorbed energy
      grd_edep(zr,zz,1)=grd_edep(zr,zz,1)+ep* &
-          (1d0-exp(-grd_fcoef(zr,zz,1)*grd_cap(g,zr,zz,1)* &
+          (1d0-exp(-grd_fcoef(zr,zz,1)*grd_cap(ig,zr,zz,1)* &
           elabfact*d*thelp))*elabfact
      if(grd_edep(zr,zz,1)/=grd_edep(zr,zz,1)) then
         stop 'transport2: invalid energy deposition'
      endif
 !-- reducing particle energy
-     ep = ep*exp(-grd_fcoef(zr,zz,1)*grd_cap(g,zr,zz,1) * &
+     ep = ep*exp(-grd_fcoef(zr,zz,1)*grd_cap(ig,zr,zz,1) * &
           elabfact*d*thelp)
   endif
 
@@ -329,20 +329,18 @@ subroutine transport2(ptcl,isvacant)
         denom2 = 0d0
         r1 = rand()
         do ig = 1, grd_ng
-           iig = ig
            if ((r1>=denom2).and.(r1<denom2+grd_emitprob(ig,zr,zz,1))) exit
            denom2 = denom2+grd_emitprob(ig,zr,zz,1)
         enddo
-        g = iig
 !-- uniformly in new group
         r1 = rand()
-        wl = 1d0/((1d0-r1)/grd_wl(g)+r1/grd_wl(g+1))
+        wl = 1d0/((1d0-r1)/grd_wl(ig)+r1/grd_wl(ig+1))
 !-- transforming to lab
         if(grd_isvelocity) then
            wl = wl*(1d0-dirdotu*cinv)
         endif
 !-- checking if DDMC in new group
-        if((grd_cap(g,zr,zz,1)+grd_sig(zr,zz,1)) * &
+        if((grd_cap(ig,zr,zz,1)+grd_sig(zr,zz,1)) * &
              min(dx(zr),dy(zz))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
            ptcl%rtsrc = 2
@@ -367,23 +365,23 @@ subroutine transport2(ptcl,isvacant)
            prt_done = .true.
 !-- retrieving lab frame flux group and polar bin
            imu = binsrch(xi,flx_mu,flx_nmu+1,0)
-           g = binsrch(wl,flx_wl,flx_ng+1,0)
+           ig = binsrch(wl,flx_wl,flx_ng+1,0)
 !-- checking group bounds
-           if(g>flx_ng.or.g<1) then
-              if(g>flx_ng) then
-                 g=flx_ng
+           if(ig>flx_ng.or.ig<1) then
+              if(ig>flx_ng) then
+                 ig=flx_ng
                  wl=flx_wl(flx_ng+1)
               else
-                 g=1
+                 ig=1
                  wl=flx_wl(1)
               endif
            endif
 !-- tallying outbound luminosity
-           flx_luminos(g,imu,1) = flx_luminos(g,imu,1)+ep*dtinv
-           flx_lumdev(g,imu,1) = flx_lumdev(g,imu,1)+(ep0*dtinv)**2
-           flx_lumnum(g,imu,1) = flx_lumnum(g,imu,1)+1
+           flx_luminos(ig,imu,1) = flx_luminos(ig,imu,1)+ep*dtinv
+           flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(ep0*dtinv)**2
+           flx_lumnum(ig,imu,1) = flx_lumnum(ig,imu,1)+1
 !-- checking if above cell is DDMC
-        elseif((grd_cap(g,zr,zz+1,1)+grd_sig(zr,zz+1,1)) * &
+        elseif((grd_cap(ig,zr,zz+1,1)+grd_sig(zr,zz+1,1)) * &
              min(dx(zr),dy(zz+1))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
 !-- transforming z-cosine to lab
@@ -395,7 +393,7 @@ subroutine transport2(ptcl,isvacant)
                  xi = -1d0
               endif
            endif
-           help = (grd_cap(g,zr,zz+1,1)+grd_sig(zr,zz+1,1))*dy(zz+1)*thelp
+           help = (grd_cap(ig,zr,zz+1,1)+grd_sig(zr,zz+1,1))*dy(zz+1)*thelp
            ppl = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
            r1 = rand()
@@ -448,23 +446,23 @@ subroutine transport2(ptcl,isvacant)
            prt_done = .true.
 !-- retrieving lab frame flux group and polar bin
            imu = binsrch(xi,flx_mu,flx_nmu+1,0)
-           g = binsrch(wl,flx_wl,flx_ng+1,0)
+           ig = binsrch(wl,flx_wl,flx_ng+1,0)
 !-- checking group bounds
-           if(g>flx_ng.or.g<1) then
-              if(g>flx_ng) then
-                 g=flx_ng
+           if(ig>flx_ng.or.ig<1) then
+              if(ig>flx_ng) then
+                 ig=flx_ng
                  wl=flx_wl(flx_ng+1)
               else
-                 g=1
+                 ig=1
                  wl=flx_wl(1)
               endif
            endif
 !-- tallying outbound luminosity
-           flx_luminos(g,imu,1) = flx_luminos(g,imu,1)+ep*dtinv
-           flx_lumdev(g,imu,1) = flx_lumdev(g,imu,1)+(ep0*dtinv)**2
-           flx_lumnum(g,imu,1) = flx_lumnum(g,imu,1)+1
+           flx_luminos(ig,imu,1) = flx_luminos(ig,imu,1)+ep*dtinv
+           flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(ep0*dtinv)**2
+           flx_lumnum(ig,imu,1) = flx_lumnum(ig,imu,1)+1
 !-- checking if lower cell is DDMC
-        elseif((grd_cap(g,zr,zz-1,1)+grd_sig(zr,zz-1,1)) * &
+        elseif((grd_cap(ig,zr,zz-1,1)+grd_sig(zr,zz-1,1)) * &
              min(dx(zr),dy(zz-1))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
 !-- transforming z-cosine to lab
@@ -476,7 +474,7 @@ subroutine transport2(ptcl,isvacant)
                  xi = -1d0
               endif
            endif
-           help = (grd_cap(g,zr,zz-1,1)+grd_sig(zr,zz-1,1)) * &
+           help = (grd_cap(ig,zr,zz-1,1)+grd_sig(zr,zz-1,1)) * &
                 dy(zz-1)*thelp
            ppr = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
@@ -534,23 +532,23 @@ subroutine transport2(ptcl,isvacant)
            prt_done = .true.
 !-- retrieving lab frame flux group and polar bin
            imu = binsrch(xi,flx_mu,flx_nmu+1,0)
-           g = binsrch(wl,flx_wl,flx_ng+1,0)
+           ig = binsrch(wl,flx_wl,flx_ng+1,0)
 !-- checking group bounds
-           if(g>flx_ng.or.g<1) then
-              if(g>flx_ng) then
-                 g=flx_ng
+           if(ig>flx_ng.or.ig<1) then
+              if(ig>flx_ng) then
+                 ig=flx_ng
                  wl=flx_wl(flx_ng+1)
               else
-                 g=1
+                 ig=1
                  wl=flx_wl(1)
               endif
            endif
 !-- tallying outbound luminosity
-           flx_luminos(g,imu,1) = flx_luminos(g,imu,1)+ep*dtinv
-           flx_lumdev(g,imu,1) = flx_lumdev(g,imu,1)+(ep0*dtinv)**2
-           flx_lumnum(g,imu,1) = flx_lumnum(g,imu,1)+1
+           flx_luminos(ig,imu,1) = flx_luminos(ig,imu,1)+ep*dtinv
+           flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(ep0*dtinv)**2
+           flx_lumnum(ig,imu,1) = flx_lumnum(ig,imu,1)+1
 !-- checking if outer cell is DDMC
-        elseif((grd_cap(g,zr+1,zz,1)+grd_sig(zr+1,zz,1)) * &
+        elseif((grd_cap(ig,zr+1,zz,1)+grd_sig(zr+1,zz,1)) * &
              min(dx(zr+1),dy(zz))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
 !-- transforming r-cosine to cmf
@@ -571,7 +569,7 @@ subroutine transport2(ptcl,isvacant)
            endif
 !-- r-cosine
            mu0 = sqrt(1d0-xi**2)*cos(om)
-           help = (grd_cap(g,zr+1,zz,1)+grd_sig(zr+1,zz,1))*dx(zr+1)*thelp
+           help = (grd_cap(ig,zr+1,zz,1)+grd_sig(zr+1,zz,1))*dx(zr+1)*thelp
            ppl = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
            r1 = rand()
@@ -635,7 +633,7 @@ subroutine transport2(ptcl,isvacant)
            write(*,*) om, omold, r, rold, db
            stop 'transport2: cos(om)<0 and zr=1'
         endif
-        if((grd_cap(g,zr-1,zz,1)+grd_sig(zr-1,zz,1)) * &
+        if((grd_cap(ig,zr-1,zz,1)+grd_sig(zr-1,zz,1)) * &
              min(dx(zr-1),dy(zz))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
 !-- transforming r-cosine to cmf
@@ -656,7 +654,7 @@ subroutine transport2(ptcl,isvacant)
            endif
 !-- r-cosine
            mu0 = sqrt(1d0-xi**2)*cos(om)
-           help = (grd_cap(g,zr-1,zz,1)+grd_sig(zr-1,zz,1))*dx(zr-1)*thelp
+           help = (grd_cap(ig,zr-1,zz,1)+grd_sig(zr-1,zz,1))*dx(zr-1)*thelp
            ppr = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
            r1 = rand()
@@ -721,10 +719,10 @@ subroutine transport2(ptcl,isvacant)
 !-- distance to doppler shift
   elseif(d==ddop) then
      if(.not.grd_isvelocity) stop 'transport2: ddop and no velocity'
-     if(g<grd_ng) then
+     if(ig<grd_ng) then
 !-- shifting group
-        g = g+1
-        wl = (grd_wl(g)+1d-6*(grd_wl(g+1)-grd_wl(g)))*elabfact
+        ig = ig+1
+        wl = (grd_wl(ig)+1d-6*(grd_wl(ig+1)-grd_wl(ig)))*elabfact
      else
 !-- resampling wavelength in highest group
         r1 = rand()
@@ -732,7 +730,7 @@ subroutine transport2(ptcl,isvacant)
         wl = wl*elabfact
      endif
 !-- check if ddmc region
-     if ((grd_sig(zr,zz,1)+grd_cap(g,zr,zz,1)) * &
+     if ((grd_sig(zr,zz,1)+grd_cap(ig,zr,zz,1)) * &
           min(dx(zr),dy(zz))*thelp >= prt_tauddmc &
           .and..not.in_puretran) then
         ptcl%rtsrc = 2
