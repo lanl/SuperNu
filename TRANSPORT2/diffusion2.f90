@@ -345,14 +345,14 @@ subroutine diffusion2(ptcl,isvacant)
                  if((grd_cap(iig,zr-1,zz,1) + &
                       grd_sig(zr-1,zz,1))*min(dx(zr-1),dy(zz)) * &
                       thelp<prt_tauddmc) then
-!-- DDMC interface
+!-- IMC interface
                     mfphelp = (grd_cap(iig,zr,zz,1)+grd_sig(zr,zz,1)) * &
                          dx(zr)*thelp
                     ppl = 4d0/(3d0*mfphelp+6d0*pc_dext)
                     resopacleakl = ppl*(thelp*grd_xarr(zr))/ &
                          (thelp**2*dx2(zr))
                  else
-!-- IMC interface
+!-- DDMC interface
                     mfphelp = ((grd_sig(zr,zz,1)+grd_cap(iig,zr,zz,1)) * &
                          dx(zr)+(grd_sig(zr-1,zz,1) + &
                          grd_cap(iig,zr-1,zz,1))*dx(zr-1))*thelp
@@ -540,14 +540,14 @@ subroutine diffusion2(ptcl,isvacant)
 !-- calculating resolved leakage opacities
                  if((grd_cap(iig,zr+1,zz,1)+grd_sig(zr+1,zz,1)) * &
                       min(dx(zr+1),dy(zz))*thelp<prt_tauddmc) then
-!-- DDMC interface
+!-- IMC interface
                     mfphelp = (grd_cap(iig,zr,zz,1)+grd_sig(zr,zz,1)) * &
                          dx(zr)*thelp
                     ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
                     resopacleakr = ppr*(thelp*grd_xarr(zr+1))/ &
                          (thelp**2*dx2(zr))
                  else
-!-- IMC interface
+!-- DDMC interface
                     mfphelp = ((grd_sig(zr,zz,1)+grd_cap(iig,zr,zz,1)) * &
                          dx(zr)+&
                          (grd_sig(zr+1,zz,1)+grd_cap(iig,zr+1,zz,1)) * &
@@ -725,13 +725,13 @@ subroutine diffusion2(ptcl,isvacant)
 !-- calculating resolved leakage opacities
                  if((grd_cap(iig,zr,zz-1,1)+grd_sig(zr,zz-1,1)) * &
                       min(dx(zr),dy(zz-1))*thelp<prt_tauddmc) then
-!-- DDMC interface
+!-- IMC interface
                     mfphelp = (grd_cap(iig,zr,zz,1)+grd_sig(zr,zz,1)) * &
                          dy(zz)*thelp
                     ppl = 4d0/(3d0*mfphelp+6d0*pc_dext)
                     resopacleakd = 0.5d0*ppl/(thelp*dy(zz))
                  else
-!-- IMC interface
+!-- DDMC interface
                     mfphelp = ((grd_sig(zr,zz,1)+grd_cap(iig,zr,zz,1)) * &
                          dy(zz)+&
                          (grd_sig(zr,zz-1,1)+grd_cap(iig,zr,zz-1,1)) * &
@@ -899,13 +899,13 @@ subroutine diffusion2(ptcl,isvacant)
 !-- calculating resolved leakage opacities
                  if((grd_cap(iig,zr,zz+1,1)+grd_sig(zr,zz+1,1)) * &
                       min(dx(zr),dy(zz+1))*thelp<prt_tauddmc) then
-!-- DDMC interface
+!-- IMC interface
                     mfphelp = (grd_cap(iig,zr,zz,1)+grd_sig(zr,zz,1)) * &
                          dy(zz)*thelp
                     ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
                     resopacleaku = 0.5d0*ppr/(thelp*dy(zz))
                  else
-!-- IMC interface
+!-- DDMC interface
                     mfphelp = ((grd_sig(zr,zz,1)+grd_cap(iig,zr,zz,1)) * &
                          dy(zz)+&
                          (grd_sig(zr,zz+1,1)+grd_cap(iig,zr,zz+1,1)) * &
