@@ -358,23 +358,71 @@ subroutine diffusion3(ptcl,isvacant)
      prt_done = .true.
      grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz)+ep
 
-!-- x left leakage
+!-- ix->ix-1 leakage
   elseif(r1>=pa.and.r1<pa+probleak(1)) then
 
-!-- x right leakage
+     if(ix==1) then
+!-- escaping at ix=1
+
+     else
+!-- ix->ix-1
+
+     endif
+
+!-- ix->ix+1 leakage
   elseif(r1>=pa+probleak(1).and.r1<pa+sum(probleak(1:2))) then
 
-!-- y down leakage
+     if(ix==grd_nx) then
+!-- escaping at ix=nx
+
+     else
+!-- ix->ix+1
+
+     endif
+
+!-- iy->iy-1 leakage
   elseif(r1>=pa+sum(probleak(1:2)).and.r1<pa+sum(probleak(1:3))) then
 
-!-- y up leakage
+     if(iy==1) then
+!-- escaping at iy=1
+
+     else
+!-- iy->iy-1
+
+     endif
+
+!-- iy->iy+1 leakage
   elseif(r1>=pa+sum(probleak(1:3)).and.r1<pa+sum(probleak(1:4))) then
 
-!-- z bottom leakage
+     if(iy==grd_ny) then
+!-- escaping at iy=ny
+
+     else
+!-- iy->iy+1
+
+     endif
+
+!-- iz->iz-1 leakage
   elseif(r1>=pa+sum(probleak(1:4)).and.r1<pa+sum(probleak(1:5))) then
 
-!-- z top leakage
+     if(iz==1) then
+!-- escaping at iz=1
+
+     else
+!-- iz->iz-1
+
+     endif
+
+!-- iz->iz+1 leakage
   elseif(r1>=pa+sum(probleak(1:5)).and.r1<pa+sum(probleak(1:6))) then
+
+     if(iz==grd_nz) then
+!-- escaping at iz=nz
+
+     else
+!-- iz->iz+1
+
+     endif
 
 !-- effective scattering
   else
