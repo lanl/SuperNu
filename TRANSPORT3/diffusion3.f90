@@ -419,9 +419,9 @@ subroutine diffusion3(ptcl,isvacant)
 !-- sampling x,y,z
         x = grd_xarr(ix)
         r1 = rand()
-        y = (1d0-r1)*gas_yarr(iy)+r1*gas_yarr(iy+1)
+        y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
         r1 = rand()
-        z = (1d0-r1)*gas_zarr(iz)+r1*gas_zarr(iz+1)
+        z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
 !-- sampling direction
         r1 = rand()
         r2 = rand()
@@ -548,9 +548,9 @@ subroutine diffusion3(ptcl,isvacant)
 !-- sampling x,y,z
         x = grd_xarr(ix+1)
         r1 = rand()
-        y = (1d0-r1)*gas_yarr(iy)+r1*gas_yarr(iy+1)
+        y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
         r1 = rand()
-        z = (1d0-r1)*gas_zarr(iz)+r1*gas_zarr(iz+1)
+        z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
 !-- sampling direction
         r1 = rand()
         r2 = rand()
@@ -676,10 +676,10 @@ subroutine diffusion3(ptcl,isvacant)
      else
 !-- sampling x,y,z
         r1 = rand()
-        x = (1d0-r1)*gas_xarr(ix)+r1*gas_xarr(ix+1)
+        x = (1d0-r1)*grd_xarr(ix)+r1*grd_xarr(ix+1)
         y = grd_yarr(iy)
         r1 = rand()
-        z = (1d0-r1)*gas_zarr(iz)+r1*gas_zarr(iz+1)
+        z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
 !-- sampling direction
         r1 = rand()
         r2 = rand()
@@ -805,10 +805,10 @@ subroutine diffusion3(ptcl,isvacant)
      else
 !-- sampling x,y,z
         r1 = rand()
-        x = (1d0-r1)*gas_xarr(ix)+r1*gas_xarr(ix+1)
+        x = (1d0-r1)*grd_xarr(ix)+r1*grd_xarr(ix+1)
         y = grd_yarr(iy+1)
         r1 = rand()
-        z = (1d0-r1)*gas_zarr(iz)+r1*gas_zarr(iz+1)
+        z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
 !-- sampling direction
         r1 = rand()
         r2 = rand()
@@ -878,17 +878,257 @@ subroutine diffusion3(ptcl,isvacant)
 !-- iz->iz-1 leakage
   elseif(r1>=pa+sum(probleak(1:4)).and.r1<pa+sum(probleak(1:5))) then
 
+!-- sampling next group
+     if(speclump>0d0) then
+        r1 = rand()
+        denom2 = 0d0
+        help = 1d0/opacleak(5)
+        do iig = 1, glump
+           iiig=glumps(iig)
+           specig = grd_siggrey(ix,iy,iz)*grd_emitprob(iiig,ix,iy,iz) * &
+                capinv(iiig)
+!-- calculating resolved leakage opacities
+           if(iz==1) then
+              lhelp = .true.
+           else
+              lhelp = (grd_cap(iiig,ix,iy,iz-1)+grd_sig(ix,iy,iz-1)) * &
+                   min(dx(ix),dy(iy),dz(iz-1))*thelp<prt_tauddmc
+           endif
+           if(lhelp) then
+!-- IMC interface or boundary
+              mfphelp = (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
+                   dz(iz)*thelp
+              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              resopacleak = 0.5d0*pp/(thelp*dz(iz))
+           else
+!-- DDMC interface
+              mfphelp = ((grd_sig(ix,iy,iz)+grd_cap(iiig,ix,iy,iz)) * &
+                   dz(iz)+&
+                   (grd_sig(ix,iy,iz-1)+grd_cap(iiig,ix,iy,iz-1)) * &
+                   dz(iz-1))*thelp
+              resopacleak = (2d0/3d0)/(mfphelp*thelp*dz(iz))
+           endif
+           if((r1>=denom2).and. &
+                (r1<denom2+specig*resopacleak*speclump*help)) exit
+           denom2 = denom2+specig*resopacleak*speclump*help
+        enddo
+     else
+        iiig = ig
+     endif
 
+!-- sampling wavelength
+     r1 = rand()
+     wl = 1d0/(r1/grd_wl(iiig+1)+(1d0-r1)/grd_wl(iiig))
+
+!-- checking adjacent
+     if(iz==1) then
+        lhelp = .true.
+     else
+        lhelp = (grd_cap(iiig,ix,iy,iz-1)+grd_sig(ix,iy,iz-1)) * &
+             min(dx(ix),dy(iy),dz(iz-1))*thelp<prt_tauddmc
+     endif
+
+     if(.not.lhelp) then
+!-- iz->iz-1
+        iz = iz-1
+     else
+!-- sampling x,y,z
+        r1 = rand()
+        x = (1d0-r1)*grd_xarr(ix)+r1*grd_xarr(ix+1)
+        r1 = rand()
+        y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
+        z = grd_zarr(iz)
+!-- sampling direction
+        r1 = rand()
+        r2 = rand()
+        xi = -max(r1,r2)
+        r1 = rand()
+        om = pc_pi2*r1
+        mu = sqrt(1d0-xi**2)*cos(om)
+        eta = sqrt(1d0-xi**2)*sin(om)
+        if(grd_isvelocity) then
+           elabfact = 1d0+(x*mu+y*eta+z*xi)*cinv
+        else
+           elabfact = 1d0
+        endif
+!-- changing from comoving frame to observer frame
+        if(grd_isvelocity) then
+!-- transforming xi to lab
+           xi = (xi+z*cinv)/elabfact
+           if(xi>1d0) then
+              xi = 1d0
+           elseif(xi<-1d0) then
+              xi = -1d0
+           endif
+!-- transforming om to lab
+           om = atan2(eta+y*cinv,mu+x*cinv)
+           if(om<0d0) om=om+pc_pi2
+!-- transforming wl to lab
+           wl = wl/elabfact
+!-- transforming energy weights to lab
+           ep = ep*elabfact
+           ep0 = ep0*elabfact
+        endif
+        if(iz==1) then
+!-- escaping at iz=1
+           isvacant = .true.
+           prt_done = .true.
+           tot_eright = tot_eright+ep
+!-- luminosity tally
+!-- obtaining spectrum (lab) group and polar bin
+           iom = binsrch(om,flx_om,flx_nom+1,0)
+           imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+           iiig = binsrch(wl,flx_wl,flx_ng+1,0)
+           if(iiig>flx_ng.or.iiig<1) then
+              if(iiig>flx_ng) then
+                 iiig=flx_ng
+                 wl=flx_wl(flx_ng+1)
+              else
+                 iiig=1
+                 wl=flx_wl(1)
+              endif
+           endif
+           flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+&
+                ep*dtinv
+           flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+&
+                (ep*dtinv)**2
+           flx_lumnum(iiig,imu,iom)=flx_lumnum(iiig,imu,iom)+1
+           return
+        else
+!-- converting to IMC
+           ptcl%rtsrc = 1
+           grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+!-- iz->iz-1
+           iz = iz-1
+        endif
+     endif
 
 !-- iz->iz+1 leakage
   elseif(r1>=pa+sum(probleak(1:5)).and.r1<pa+sum(probleak(1:6))) then
 
-     if(iz==grd_nz) then
-!-- escaping at iz=nz
-
+!-- sampling next group
+     if(speclump>0d0) then
+        r1 = rand()
+        denom2 = 0d0
+        help = 1d0/opacleak(6)
+        do iig = 1, glump
+           iiig=glumps(iig)
+           specig = grd_siggrey(ix,iy,iz)*grd_emitprob(iiig,ix,iy,iz) * &
+                capinv(iiig)
+!-- calculating resolved leakage opacities
+           if(iz==grd_nz) then
+              lhelp = .true.
+           else
+              lhelp = (grd_cap(iiig,ix,iy,iz+1)+grd_sig(ix,iy,iz+1)) * &
+                   min(dx(ix),dy(iy),dz(iz+1))*thelp<prt_tauddmc
+           endif
+           if(lhelp) then
+!-- IMC interface or boundary
+              mfphelp = (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
+                   dz(iz)*thelp
+              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              resopacleak = 0.5d0*pp/(thelp*dz(iz))
+           else
+!-- DDMC interface
+              mfphelp = ((grd_sig(ix,iy,iz)+grd_cap(iiig,ix,iy,iz)) * &
+                   dz(iz)+&
+                   (grd_sig(ix,iy,iz+1)+grd_cap(iiig,ix,iy,iz+1)) * &
+                   dz(iz+1))*thelp
+              resopacleak = (2d0/3d0)/(mfphelp*thelp*dz(iz))
+           endif
+           if((r1>=denom2).and. &
+                (r1<denom2+specig*resopacleak*speclump*help)) exit
+           denom2 = denom2+specig*resopacleak*speclump*help
+        enddo
      else
-!-- iz->iz+1
+        iiig = ig
+     endif
 
+!-- sampling wavelength
+     r1 = rand()
+     wl = 1d0/(r1/grd_wl(iiig+1)+(1d0-r1)/grd_wl(iiig))
+
+!-- checking adjacent
+     if(iz==grd_nz) then
+        lhelp = .true.
+     else
+        lhelp = (grd_cap(iiig,ix,iy,iz+1)+grd_sig(ix,iy,iz+1)) * &
+             min(dx(ix),dy(iy),dz(iz+1))*thelp<prt_tauddmc
+     endif
+
+     if(.not.lhelp) then
+!-- iz->iz+1
+        iz = iz+1
+     else
+!-- sampling x,y,z
+        r1 = rand()
+        x = (1d0-r1)*grd_xarr(ix)+r1*grd_xarr(ix+1)
+        r1 = rand()
+        y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
+        z = grd_zarr(iz+1)
+!-- sampling direction
+        r1 = rand()
+        r2 = rand()
+        xi = max(r1,r2)
+        r1 = rand()
+        om = pc_pi2*r1
+        mu = sqrt(1d0-xi**2)*cos(om)
+        eta = sqrt(1d0-xi**2)*sin(om)
+        if(grd_isvelocity) then
+           elabfact = 1d0+(x*mu+y*eta+z*xi)*cinv
+        else
+           elabfact = 1d0
+        endif
+!-- changing from comoving frame to observer frame
+        if(grd_isvelocity) then
+!-- transforming xi to lab
+           xi = (xi+z*cinv)/elabfact
+           if(xi>1d0) then
+              xi = 1d0
+           elseif(xi<-1d0) then
+              xi = -1d0
+           endif
+!-- transforming om to lab
+           om = atan2(eta+y*cinv,mu+x*cinv)
+           if(om<0d0) om=om+pc_pi2
+!-- transforming wl to lab
+           wl = wl/elabfact
+!-- transforming energy weights to lab
+           ep = ep*elabfact
+           ep0 = ep0*elabfact
+        endif
+        if(iz==grd_nz) then
+!-- escaping at iz=1
+           isvacant = .true.
+           prt_done = .true.
+           tot_eright = tot_eright+ep
+!-- luminosity tally
+!-- obtaining spectrum (lab) group and polar bin
+           iom = binsrch(om,flx_om,flx_nom+1,0)
+           imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+           iiig = binsrch(wl,flx_wl,flx_ng+1,0)
+           if(iiig>flx_ng.or.iiig<1) then
+              if(iiig>flx_ng) then
+                 iiig=flx_ng
+                 wl=flx_wl(flx_ng+1)
+              else
+                 iiig=1
+                 wl=flx_wl(1)
+              endif
+           endif
+           flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+&
+                ep*dtinv
+           flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+&
+                (ep*dtinv)**2
+           flx_lumnum(iiig,imu,iom)=flx_lumnum(iiig,imu,iom)+1
+           return
+        else
+!-- converting to IMC
+           ptcl%rtsrc = 1
+           grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+!-- iz->iz+1
+           iz = iz+1
+        endif
      endif
 
 !-- effective scattering
