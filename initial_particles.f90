@@ -1,7 +1,6 @@
 subroutine initial_particles
 
   use gridmod
-  use gasmod
   use timestepmod
   use particlemod
   use physconstmod
@@ -23,8 +22,8 @@ subroutine initial_particles
   real*8 :: cmffact, azitrfm
 
 !-- helper quantities
-  wl1=1d0/gas_wl(gas_ng+1)
-  wl2=1d0/gas_wl(1)
+  wl1=1d0/grd_wl(grd_ng+1)
+  wl2=1d0/grd_wl(1)
 
 !-- instantiating initial particles
   ihelp = 1
@@ -63,16 +62,16 @@ subroutine initial_particles
      denom2 = 0d0
      r1=rand()
      prt_tlyrand = prt_tlyrand+1
-     do ig = 1, gas_ng
-        wl3 = 1d0/gas_wl(ig+1)
-        wl4 = 1d0/gas_wl(ig)
+     do ig = 1, grd_ng
+        wl3 = 1d0/grd_wl(ig+1)
+        wl4 = 1d0/grd_wl(ig)
         iig = ig
         if(r1>=denom2.and.r1<denom2 + (wl4-wl3)/(wl2-wl1)) exit
         denom2 = denom2 + (wl4-wl3)/(wl2-wl1)
      enddo
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     wl0 = 1d0/((1d0-r1)/gas_wl(iig)+r1/gas_wl(iig+1))
+     wl0 = 1d0/((1d0-r1)/grd_wl(iig)+r1/grd_wl(iig+1))
 
 !-- calculating direction cosine (comoving)
      r1 = rand()

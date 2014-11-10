@@ -1,28 +1,25 @@
       module mpimod
 c     -------------
       implicit none
-      integer :: MPI_COMM_WORLD=0
-      integer :: MPI_MAX_PROCESSOR_NAME=13
+      integer,parameter :: MPI_COMM_WORLD=0
+      integer,parameter :: MPI_MAX_PROCESSOR_NAME=13
+      integer,parameter :: MPI_COMM_GAS=0
       integer,private :: ierr=0
-      integer :: impi=0  !mpi rank
-      integer :: impi0=0 !master mpi rank
-      integer :: nmpi=1  !number of mpi tasks
+      integer,parameter :: impi=0  !mpi rank
+      integer,parameter :: impi0=0 !master mpi rank
+      integer,parameter :: nmpi=1  !number of mpi tasks
+      integer,parameter :: impi_gas=0
+      integer,parameter :: nmpi_gas=1
 c
       contains
 c
       subroutine bcast_permanent
-c     --------------------------
-      use inputparmod, only:in_nomp
-      implicit none
-************************************************************************
-* Broadcast the data that does not evolve over time.
-* - stub
-************************************************************************
       end subroutine bcast_permanent
 c
 c
-      subroutine setup_domain_decomposition
-      end subroutine setup_domain_decomposition
+      subroutine mpi_setup_communicators(ncell)
+      integer :: ncell
+      end subroutine mpi_setup_communicators
 c
 c
       subroutine scatter_inputstruct(ndim,ncell)
@@ -41,6 +38,7 @@ c
 c
       subroutine bcast_nonpermanent
       use gridmod
+      use gasmod
 ************************************************************************
 * Broadcast the data that changes with time.
 * - stub
@@ -67,10 +65,11 @@ c
 * temperature correction.
 * - stub
 ************************************************************************
+      use totalsmod
       use gridmod
       use gasmod
 c
-      tot_eextav=tot_eext
+      tot_eextav = tot_eext
       tot_eveloav = tot_evelo
 c
       gas_edep = reshape(grd_edep,[grd_nx*grd_ny*grd_nz])
@@ -79,10 +78,6 @@ c
 c
 c
       subroutine reduce_fluxes
-************************************************************************
-* Reduce the results from the packet transport.
-* - stub
-************************************************************************
       end subroutine reduce_fluxes
 c
       subroutine reduce_gastemp
@@ -93,10 +88,6 @@ c     -------------------------
       end subroutine reduce_gastemp
 c
       subroutine scatter_restart_data
-************************************************************************
-* Distribute data required for restarting a simulation at some time
-* - stub
-************************************************************************
       end subroutine scatter_restart_data
 c
 c
@@ -123,7 +114,6 @@ c
       ierr_ = ierr
       impi_ = impi
       mpi_comm = MPI_COMM_WORLD
-      impi = impi
       end subroutine mpi_comm_rank
 c
       subroutine mpi_comm_size(mpi_comm,nmpi_,ierr_)

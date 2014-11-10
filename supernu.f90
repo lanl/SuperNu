@@ -119,16 +119,15 @@ program supernu
   call grid_init(impi==impi0,gas_ng,gas_wl,in_igeom,in_ndim,in_isvelocity)
   call grid_setup(gas_wl)
 
-  call setup_domain_decomposition !MPI
+  call mpi_setup_communicators(product(in_ndim)) !MPI
 !--
-  ncell = product(in_ndim)/nmpi
-  if(mod(product(in_ndim),nmpi)/=0) stop 'supernu: ncell%nmpi != 0'
+  ncell = product(in_ndim)/nmpi_gas
   call scatter_inputstruct(in_ndim,ncell) !MPI
 
 !
 !-- setup gas
-  call gas_init(impi==impi0,ncell)
-  call gas_setup(impi==impi0)
+  if(impi_gas>=0) call gas_init(impi==impi0,ncell)
+  if(impi_gas>=0) call gas_setup(impi==impi0)
 
 !
 !-- initialize flux tally arrays (rtw: separated from fluxgrid_setup)
@@ -139,7 +138,7 @@ program supernu
 
 !
 !-- allocate arrays of sizes retreived in bcast_permanent
-  call ion_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
+  if(impi_gas>=0) call ion_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
   call particle_alloc(impi==impi0,in_norestart,nmpi)
 
 !
@@ -158,6 +157,7 @@ program supernu
 !
 !-- instantiating initial particles (if any)
   call initial_particles
+!
 !
 !
 !-- time step loop
@@ -189,9 +189,9 @@ program supernu
 
 !-- update all non-permanent variables
     call grid_update(tsp_t)
-    call gas_update(impi)
+    if(impi_gas>=0) call gas_update(impi)
 !-- energy to be instantiated by source prt_particles per cell in this timestep
-    call sourceenergy(nmpi)
+    if(impi_gas>=0) call sourceenergy(nmpi)
 
 !
 !-- broadcast to all workers
@@ -236,7 +236,7 @@ program supernu
     if(.not.in_norestart) call collect_restart_data !MPI
 
 !-- update temperature
-    call temperature_update
+    if(impi_gas>=0) call temperature_update
     call reduce_gastemp !MPI
 
 !

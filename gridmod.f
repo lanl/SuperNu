@@ -109,8 +109,6 @@ c
       allocate(grd_opacleak(6,nx,ny,nz))
       allocate(grd_eraddens(nx,ny,nz))
 
-!-Ryan W: gas_wl being allocated in gasgrid_setup now--
-      !allocate(gas_wl(ng)) !wavelength grid
 !------------------------------------------------------
        allocate(grd_cap(ng,nx,ny,nz)) !Line+Cont extinction coeff
 
