@@ -1,13 +1,13 @@
       module mpimod
 c     -------------
       implicit none
-      integer,parameter :: MPI_COMM_WORLD=0
+      integer :: MPI_COMM_WORLD=0
       integer,parameter :: MPI_MAX_PROCESSOR_NAME=13
       integer,parameter :: MPI_COMM_GAS=0
       integer,private :: ierr=0
-      integer,parameter :: impi=0  !mpi rank
+      integer :: impi=0  !mpi rank
       integer,parameter :: impi0=0 !master mpi rank
-      integer,parameter :: nmpi=1  !number of mpi tasks
+      integer :: nmpi=1  !number of mpi tasks
       integer,parameter :: impi_gas=0
       integer,parameter :: nmpi_gas=1
 c

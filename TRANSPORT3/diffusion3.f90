@@ -32,9 +32,7 @@ subroutine diffusion3(ptcl,isvacant)
   real*8 :: emitlump, speclump
   real*8 :: caplump
   real*8 :: specig
-  real*8 :: opacleakllump, opacleakrlump !x-leakage
-  real*8 :: opacleakdlump, opacleakulump !y-leakage
-  real*8 :: opacleakblump, opacleaktlump !z-leakage
+  real*8 :: opacleak(6)
   real*8 :: mfphelp, pp
   real*8 :: resopacleak
   integer :: glump, gunlump
@@ -156,12 +154,12 @@ subroutine diffusion3(ptcl,isvacant)
         caplump = caplump+specig*grd_cap(iiig,ix,iy,iz)*speclump
      enddo
 !-- leakage opacities
-     opacleakllump = grd_opacleak(1,ix,iy,iz)
-     opacleakrlump = grd_opacleak(2,ix,iy,iz)
-     opacleakdlump = grd_opacleak(3,ix,iy,iz)
-     opacleakulump = grd_opacleak(4,ix,iy,iz)
-     opacleakblump = grd_opacleak(5,ix,iy,iz)
-     opacleaktlump = grd_opacleak(6,ix,iy,iz)
+     opacleak(1) = grd_opacleak(1,ix,iy,iz)
+     opacleak(2) = grd_opacleak(2,ix,iy,iz)
+     opacleak(3) = grd_opacleak(3,ix,iy,iz)
+     opacleak(4) = grd_opacleak(4,ix,iy,iz)
+     opacleak(5) = grd_opacleak(5,ix,iy,iz)
+     opacleak(6) = grd_opacleak(6,ix,iy,iz)
   else
 !
 !-- calculating unlumped values
@@ -180,12 +178,12 @@ subroutine diffusion3(ptcl,isvacant)
 !-- DDMC interface
         help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*dx(ix)*thelp
         pp = 4d0/(3d0*help+6d0*pc_dext)
-        opacleakllump=0.5d0*pp/(thelp*dx(ix))
+        opacleak(1)=0.5d0*pp/(thelp*dx(ix))
      else
 !-- DDMC interior
         help = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz))*dx(ix)+&
              (grd_sig(ix-1,iy,iz)+grd_cap(ig,ix-1,iy,iz))*dx(ix-1))*thelp
-        opacleakllump=(2d0/3d0)/(help*dx(ix)*thelp)
+        opacleak(1)=(2d0/3d0)/(help*dx(ix)*thelp)
      endif
 
 !-- x right (opacleakrlump)
@@ -200,22 +198,113 @@ subroutine diffusion3(ptcl,isvacant)
 !-- DDMC interface
         help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*dx(ix)*thelp
         pp = 4d0/(3d0*help+6d0*pc_dext)
-        opacleakrlump=0.5d0*pp/(thelp*dx(ix))
+        opacleak(2)=0.5d0*pp/(thelp*dx(ix))
      else
 !-- DDMC interior
         help = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz))*dx(ix)+&
              (grd_sig(ix+1,iy,iz)+grd_cap(ig,ix+1,iy,iz))*dx(ix+1))*thelp
-        opacleakrlump=(2d0/3d0)/(help*dx(ix)*thelp)
+        opacleak(2)=(2d0/3d0)/(help*dx(ix)*thelp)
      endif
 
-!-- y down
+!-- y down (opacleakdlump)
+     if(iy==1) then
+        lhelp = .true.
+     else
+        lhelp = (grd_cap(ig,ix,iy-1,iz)+ &
+           grd_sig(ix,iy-1,iz))*min(dx(ix),dy(iy-1),dz(iz))* &
+           thelp<prt_tauddmc
+     endif
+     if(lhelp) then
+!-- DDMC interface
+        help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*dy(iy)*thelp
+        pp = 4d0/(3d0*help+6d0*pc_dext)
+        opacleak(3)=0.5d0*pp/(thelp*dy(iy))
+     else
+!-- DDMC interior
+        help = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz))*dy(iy)+&
+             (grd_sig(ix,iy-1,iz)+grd_cap(ig,ix,iy-1,iz))*dy(iy-1))*thelp
+        opacleak(3)=(2d0/3d0)/(help*dy(iy)*thelp)
+     endif
 
-!-- y up
+!-- y up (opacleakulump)
+     if(iy==grd_ny) then
+        lhelp = .true.
+     else
+        lhelp = (grd_cap(ig,ix,iy+1,iz)+ &
+           grd_sig(ix,iy+1,iz))*min(dx(ix),dy(iy+1),dz(iz))* &
+           thelp<prt_tauddmc
+     endif
+     if(lhelp) then
+!-- DDMC interface
+        help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*dy(iy)*thelp
+        pp = 4d0/(3d0*help+6d0*pc_dext)
+        opacleak(4)=0.5d0*pp/(thelp*dy(iy))
+     else
+!-- DDMC interior
+        help = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz))*dy(iy)+&
+             (grd_sig(ix,iy+1,iz)+grd_cap(ig,ix,iy+1,iz))*dy(iy+1))*thelp
+        opacleak(4)=(2d0/3d0)/(help*dy(iy)*thelp)
+     endif
 
-!-- z bottom
+!-- z bottom (opacleakblump)
+     if(iz==1) then
+        lhelp = .true.
+     else
+        lhelp = (grd_cap(ig,ix,iy,iz-1)+ &
+           grd_sig(ix,iy,iz-1))*min(dx(ix),dy(iy),dz(iz-1))* &
+           thelp<prt_tauddmc
+     endif
+     if(lhelp) then
+!-- DDMC interface
+        help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*dz(iz)*thelp
+        pp = 4d0/(3d0*help+6d0*pc_dext)
+        opacleak(5)=0.5d0*pp/(thelp*dz(iz))
+     else
+!-- DDMC interior
+        help = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz))*dz(iz)+&
+             (grd_sig(ix,iy,iz-1)+grd_cap(ig,ix,iy,iz-1))*dz(iz-1))*thelp
+        opacleak(5)=(2d0/3d0)/(help*dz(iz)*thelp)
+     endif
 
-!-- z top
+!-- z top (opacleaktlump)
+     if(iz==grd_nz) then
+        lhelp = .true.
+     else
+        lhelp = (grd_cap(ig,ix,iy,iz+1)+ &
+           grd_sig(ix,iy,iz+1))*min(dx(ix),dy(iy),dz(iz+1))* &
+           thelp<prt_tauddmc
+     endif
+     if(lhelp) then
+!-- DDMC interface
+        help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*dz(iz)*thelp
+        pp = 4d0/(3d0*help+6d0*pc_dext)
+        opacleak(6)=0.5d0*pp/(thelp*dz(iz))
+     else
+!-- DDMC interior
+        help = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz))*dz(iz)+&
+             (grd_sig(ix,iy,iz+1)+grd_cap(ig,ix,iy,iz+1))*dz(iz+1))*thelp
+        opacleak(6)=(2d0/3d0)/(help*dz(iz)*thelp)
+     endif
 
   endif
+!
+!--------------------------------------------------------
+!
+
+!-- calculating time to census or event
+  denom = sum(opacleak) + &
+       (1d0-emitlump)*(1d0-grd_fcoef(ix,iy,iz))*caplump
+  if(prt_isddmcanlog) then
+     denom = denom+grd_fcoef(ix,iy,iz)*caplump
+  endif
+
+  r1 = rand()
+  tau = abs(log(r1)/(pc_c*denom))
+  tcensus = tsp_t+tsp_dt-ptcl%tsrc
+  ddmct = min(tau,tcensus)
+
+!
+!-- calculating energy depostion and density
+
 
 end subroutine diffusion3
