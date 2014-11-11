@@ -70,12 +70,20 @@ subroutine leakage_opacity3
 !
            if(lhelp) then
 !-- DDMC interface
+              help = (grd_cap(ig,i,j,k)+grd_sig(i,j,k))*dx(i)*thelp
+              pp = 4d0/(3d0*help+6d0*pc_dext)
+              grd_opacleak(1,i,j,k)=grd_opacleak(1,i,j,k)+(specval/speclump)*&
+                   0.5d0*pp/(thelp*dx(i))
            else
 !-- DDMC interior
+              help = ((grd_sig(i,j,k)+grd_cap(ig,i,j,k))*dx(i)+&
+                   (grd_sig(i-1,j,k)+grd_cap(ig,i-1,j,k))*dx(i-1))*thelp
+              grd_opacleak(1,i,j,k)=grd_opacleak(1,i,j,k)+(specval/speclump)*&
+                   (2d0/3d0)/(help*dx(i)*thelp)
            endif
 
 !
-!-- calculating outward leakage opacity
+!-- calculating i->i+1 leakage opacity
            if(i==grd_nx) then
               lhelp = .true.
            else
@@ -86,12 +94,20 @@ subroutine leakage_opacity3
 !
            if(lhelp) then
 !-- DDMC interface
+              help = (grd_cap(ig,i,j,k)+grd_sig(i,j,k))*dx(i)*thelp
+              pp = 4d0/(3d0*help+6d0*pc_dext)
+              grd_opacleak(2,i,j,k)=grd_opacleak(2,i,j,k)+(specval/speclump)*&
+                   0.5d0*pp/(thelp*dx(i))
            else
 !-- DDMC interior
+              help = ((grd_sig(i,j,k)+grd_cap(ig,i,j,k))*dx(i)+&
+                   (grd_sig(i+1,j,k)+grd_cap(ig,i+1,j,k))*dx(i+1))*thelp
+              grd_opacleak(2,i,j,k)=grd_opacleak(2,i,j,k)+(specval/speclump)*&
+                   (2d0/3d0)/(help*dx(i)*thelp)
            endif
 
 !
-!-- calculating downward leakage opacity
+!-- calculating j->j-1 leakage opacity
            if(j==1) then
               lhelp = .true.
            else
@@ -107,7 +123,7 @@ subroutine leakage_opacity3
            endif
 
 !
-!-- calculating upward leakage opacity
+!-- calculating j->j+1 leakage opacity
            if(j==grd_ny) then
               lhelp = .true.
            else
@@ -121,6 +137,39 @@ subroutine leakage_opacity3
            else
 !-- DDMC interior
            endif
+
+!
+!-- calculating k->k-1 leakage opacity
+           if(k==1) then
+              lhelp = .true.
+           else
+              lhelp = (grd_cap(ig,i,j,k-1)+ &
+                 grd_sig(i,j,k-1))*min(dx(i),dy(j),dz(k-1)) * &
+                 thelp<prt_tauddmc
+           endif
+!
+           if(lhelp) then
+!-- DDMC interface
+           else
+!-- DDMC interior
+           endif
+
+!
+!-- calculating k->k+1 leakage opacity
+           if(k==grd_nz) then
+              lhelp = .true.
+           else
+              lhelp = (grd_cap(ig,i,j,k+1)+ &
+                 grd_sig(i,j,k+1))*min(dx(i),dy(j),dz(k+1)) * &
+                 thelp<prt_tauddmc
+           endif
+!
+           if(lhelp) then
+!-- DDMC interface
+           else
+!-- DDMC interior
+           endif
+
         endif
      enddo !ig
   enddo !i
