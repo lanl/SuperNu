@@ -30,7 +30,7 @@ subroutine particle_advance
 ! real*8 :: uul, uur, uumax, r0,r2,r3
   logical,pointer :: isvacant
   integer, pointer :: zsrc, iy, iz
-  real*8, pointer :: rsrc, musrc, esrc, wlsrc, y, om
+  real*8, pointer :: rsrc,y,z, musrc, esrc, wlsrc, om
   real*8 :: t0,t1  !timing
   real*8 :: labfact, cmffact, azitrfm, mu1, mu2
 !
@@ -297,7 +297,7 @@ subroutine particle_advance
                        musrc = -1d0
                     endif
 !-- om
-                    om = atan2(mu2+y/pc_c,mu1+x/pc_c)
+                    om = atan2(mu2+y/pc_c,mu1+rsrc/pc_c)
                     if(om<0d0) om = om+pc_pi2
 !-- 1-dir*v/c
                     labfact = 1d0-(musrc*z+mu1*rsrc+mu2*y)/pc_c
@@ -499,7 +499,7 @@ subroutine particle_advance
 !-- transformation factor
            if(grd_isvelocity .and. ptcl%rtsrc==1) then
               labfact = 1d0-(musrc*z+sqrt(1d0-musrc**2) * &
-                   (cos(om)*rsrc+sin(om)*y)/pc_c
+                   (cos(om)*rsrc+sin(om)*y))/pc_c
            else
               labfact = 1d0
            endif
