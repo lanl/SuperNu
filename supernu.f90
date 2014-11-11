@@ -205,7 +205,7 @@ program supernu
     case(2)
        call leakage_opacity2
     case(3)
-       stop 'supernu: 3D leakage opacities not implemented'
+       call leakage_opacity3
     case default
        stop 'supernu: invalid igeom'
     endselect
