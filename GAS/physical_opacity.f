@@ -75,6 +75,8 @@ c$omp& firstprivate(ig)
 c$omp& shared(grndlev,hckt,cap)
        do il=1,bb_nline
         wl0 = bb_xs(il)%wl0*pc_ang  !in cm
+        iz = bb_xs(il)%iz
+        ii = bb_xs(il)%ii
 c-- ig pointer
         do ig=ig,gas_ng
          if(gas_wl(ig+1)>wl0) exit
@@ -84,8 +86,6 @@ c-- line in group
         if(ig>gas_ng) cycle !can't exit in omp
         dwl = gas_wl(ig+1) - gas_wl(ig)  !in cm
 c
-        iz = bb_xs(il)%iz
-        ii = bb_xs(il)%ii
         wlinv = 1d0/wl0  !in cm
 c-- profile function
 !old    phi = gas_ng*wlhelp*wl0/pc_c !line profile

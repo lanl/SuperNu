@@ -1,0 +1,210 @@
+subroutine particle_advance_gamgrey
+
+  use particlemod
+  use gridmod
+  use physconstmod
+  use inputparmod
+  use timingmod
+  use fluxmod
+  implicit none
+!
+  integer,target :: one = 1
+!##################################################
+  !This subroutine propagates all existing particles that are not vacant
+  !during a time step.  Particles may generally undergo a physical interaction
+  !with the gas, cross a spatial cell boundary, or be censused for continued
+  !propagation in the next time step.  Currently DDMC and IMC particle events
+  !are being handled in separate subroutines but this may be changed to reduce
+  !total subroutine calls in program.
+!##################################################
+  logical :: lhelp
+  integer :: ipart, npart, ig
+  integer,external :: binsrch
+  real*8 :: r1, x1, x2
+! integer :: irl,irr
+! real*8 :: xx0, bmax
+! real*8 :: uul, uur, uumax, r0,r2,r3
+  logical,pointer :: isvacant
+  integer :: zsrc, iy, iz
+  real*8 :: rsrc, musrc, esrc, wlsrc, y, om
+  real*8 :: t0,t1  !timing
+  real*8 :: labfact
+  real*8 :: esq
+!
+  type(packet) :: ptcl
+!
+  logical,parameter :: isshift=.false.
+
+  grd_edep = 0.0
+  flx_gamluminos = 0.0
+  flx_gamlumdev = 0.0
+  flx_gamlumnum = 0
+!
+!--(rev. 121)
+  grd_eraddens = 0d0
+!--
+  grd_numcensus = 0
+  
+  call time(t0)
+
+  esq = sum(sqrt(grd_emit))
+  grd_nvol = sqrt(grd_emit)/esq*prt_ns  !-- no source tilting yet
+!-- floor under particle per cell number
+  where(grd_emit>0d0) grd_nvol = max(grd_nvol,10)
+!-- total number of particles
+  npart = sum(grd_nvol)
+
+!-- link particle properties
+  zsrc => ptcl%zsrc
+  iy => ptcl%iy
+  iz => ptcl%iz
+  rsrc => ptcl%rsrc
+  musrc => ptcl%musrc
+  esrc => ptcl%esrc
+
+!-- start from the left
+  zsrc = 1
+  iy = 1
+  iz = 1
+
+! Propagating all particles that are not considered vacant: loop
+  do ipart = 1, npart
+!
+!-- find cell in which to generate the particle
+     do iz=iz,grd_nz
+     do iy=iy,grd_ny
+     do zsrc=zsrc,grd_nx
+       if(grd_nvol(zsrc,iy,iz)>0) exit  !still particles left to generate
+     enddo
+     enddo
+     enddo
+     if(zsrc==grd_nx+1) stop 'prt_adv_gamgrey: particle generation error'
+!-- decrease particle-in-cell counter
+     grd_nvol(zsrc,iy,iz) = grd_nvol(zsrc,iy,iz) - 1
+
+!-- emission energy per particle
+     esrc = grd_emit(zsrc,iy,iz)/grd_nvol(zsrc,iy,iz)
+     zsrc =
+     rsrc =
+     musrc =
+
+!-- particle propagation
+     select case(in_igeom)
+     case(1)
+     case(2)
+        y => ptcl%y
+        om => ptcl%om
+     case(3)
+        stop 'particle_advance_gamgray: no 3D transport'
+     endselect
+
+     prt_done=.false.
+
+!-- First portion of operator split particle velocity position adjustment
+     if(isshift) then
+     if ((grd_isvelocity)) then
+        select case(in_igeom)
+        case(1)
+           call advection1(.true.,ig,zsrc,rsrc)
+        case(2)
+           call advection2(.true.,ig,zsrc,iy,rsrc,y)
+        case(3)
+           stop 'particle_advance_gamgrey: no 3D transport'
+        endselect
+     endif
+     endif
+
+!     write(*,*) ipart
+!-----------------------------------------------------------------------        
+!-- Advancing particle until census, absorption, or escape from domain
+     select case(in_igeom)
+
+!-- 1D
+     case(1)
+        do while ((.not.prt_done).and.(.not.isvacant))
+           call transport1_gamgrey(ptcl,isvacant)
+!-- transformation factor
+           if(grd_isvelocity) then
+              labfact = 1.0d0 - musrc*rsrc/pc_c
+           else
+              labfact = 1d0
+           endif
+!-- Russian roulette for termination of exhausted particles
+           if (esrc<1d-6*ptcl%ebirth .and. .not.isvacant) then
+              r1 = rand()
+              prt_tlyrand = prt_tlyrand+1
+              if(r1<0.5d0) then
+                 isvacant = .true.
+                 prt_done = .true.
+                 grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
+!-- velocity effects accounting
+                 tot_evelo = tot_evelo + esrc*(1d0-labfact)
+              else
+!-- weight addition accounted for in external source
+                 tot_eext = tot_eext + esrc
+!
+                 esrc = 2d0*esrc
+                 ptcl%ebirth = 2d0*ptcl%ebirth
+              endif
+           endif
+        enddo
+
+!-- 2D
+     case(2)
+        stop 'particle_advance_gamgrey: no 2D transport'
+!        do while ((.not.prt_done).and.(.not.isvacant))
+!           call transport2_gamgrey(ptcl,isvacant)
+!!-- transformation factor
+!           if(grd_isvelocity) then
+!              labfact = 1d0-(musrc*y+sqrt(1d0-musrc**2) * &
+!                   cos(om)*rsrc)/pc_c
+!           else
+!              labfact = 1d0
+!           endif
+!!-- Russian roulette for termination of exhausted particles
+!           if (esrc<1d-6*ptcl%ebirth .and. .not.isvacant) then
+!              r1 = rand()
+!              prt_tlyrand = prt_tlyrand+1
+!              if(r1<0.5d0) then
+!                 isvacant = .true.
+!                 prt_done = .true.
+!                 grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
+!!-- velocity effects accounting
+!                 tot_evelo = tot_evelo + esrc*(1d0-labfact)
+!              else
+!!-- weight addition accounted for in external source
+!                 tot_eext = tot_eext + esrc
+!!
+!                 esrc = 2d0*esrc
+!                 ptcl%ebirth = 2d0*ptcl%ebirth
+!              endif
+!           endif
+!        enddo
+
+!-- 3D
+     case(3)
+        stop 'particle_advance_gamgrey: no 3D transport'
+     endselect
+
+!-----------------------------------------------------------------------
+
+     if(isshift) then
+     if (grd_isvelocity) then
+        select case(in_igeom)
+        case(1)
+           call advection1(.false.,ig,zsrc,rsrc)
+        case(2)
+           call advection2(.false.,ig,zsrc,iy,rsrc,y)
+        case(3)
+           stop 'particle_advance_gamgrey: no 3D transport'
+        endselect
+     endif
+     endif
+
+  enddo !ipart
+
+  call time(t1)
+  t_pckt_stat = t1-t0  !register timing
+  call timereg(t_pcktgam, t1-t0)
+
+end subroutine particle_advance_gamgrey
