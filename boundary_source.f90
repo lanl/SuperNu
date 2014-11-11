@@ -15,6 +15,7 @@ subroutine boundary_source
   real*8 :: denom2, wl1, wl2, thelp, mfphelp, mu1, mu2
   real*8 :: srftemp = 1d4
   real*8 :: cmffact,azitrfm
+  type(packet),pointer :: ptcl
   integer, external :: binsrch
   real*8, dimension(grd_ng) :: emitsurfprobg  !surface emission probabilities 
 
@@ -75,11 +76,12 @@ subroutine boundary_source
 !-- filling vacant spot in vacancy array
      ivac = prt_vacantarr(ipart)
      prt_isvacant(ivac) = .false.
+     ptcl => prt_particles(ivac)
 !
 !-- calculating particle time
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     prt_particles(ivac)%tsrc = tsp_t+r1*tsp_dt
+     ptcl%tsrc = tsp_t+r1*tsp_dt
 
 !-- calculating wavelength
      denom2 = 0d0
@@ -111,10 +113,10 @@ subroutine boundary_source
 !-- 1D (outer surface)
      case(1)
 !-- calculating position
-        prt_particles(ivac)%rsrc = grd_xarr(i+1)
-        x0 = prt_particles(ivac)%rsrc
+        ptcl%rsrc = grd_xarr(i+1)
+        x0 = ptcl%rsrc
 !-- setting cell index
-        prt_particles(ivac)%zsrc = i
+        ptcl%zsrc = i
 !-- calculating albedo
         mfphelp = (grd_cap(iig,i,1,1)+grd_sig(i,1,1))*dx(i)*thelp
         P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
@@ -126,23 +128,23 @@ subroutine boundary_source
 !-- 1+dir*v/c
            cmffact = 1d0-mu0*x0/pc_c
 !-- mu
-           prt_particles(ivac)%musrc = (-mu0+x0/pc_c)/cmffact
+           ptcl%musrc = (-mu0+x0/pc_c)/cmffact
         else
-           prt_particles(ipart)%musrc = -mu0
+           ptcl%musrc = -mu0
         endif
 
 !-- 2D (cylinder base)
      case(2)
 !-- calculating position
         r1 = rand()
-        prt_particles(ivac)%rsrc = sqrt(r1)*grd_xarr(grd_nx+1)
-        x0 = prt_particles(ivac)%rsrc
-        prt_particles(ivac)%y = grd_yarr(j)
-        y0 = prt_particles(ivac)%y
+        ptcl%rsrc = sqrt(r1)*grd_xarr(grd_nx+1)
+        x0 = ptcl%rsrc
+        ptcl%y = grd_yarr(j)
+        y0 = ptcl%y
 !-- setting cell index
-        prt_particles(ivac)%zsrc = binsrch(x0,grd_xarr,grd_nx+1,0)
-        i = prt_particles(ivac)%zsrc
-        prt_particles(ivac)%iy = j
+        ptcl%zsrc = binsrch(x0,grd_xarr,grd_nx+1,0)
+        i = ptcl%zsrc
+        ptcl%iy = j
 !-- sampling azimuthal angle of direction
         r1 = rand()
         om0 = pc_pi2*r1
@@ -159,40 +161,40 @@ subroutine boundary_source
            azitrfm = atan2(sqrt(1d0-mu0**2)*sin(om0), &
                 sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
 !-- mu
-           prt_particles(ivac)%musrc = (mu0+y0/pc_c)/cmffact
-           if(prt_particles(ivac)%musrc>1d0) then
-              prt_particles(ivac)%musrc = 1d0
-           elseif(prt_particles(ivac)%musrc<-1d0) then
-              prt_particles(ivac)%musrc = -1d0
+           ptcl%musrc = (mu0+y0/pc_c)/cmffact
+           if(ptcl%musrc>1d0) then
+              ptcl%musrc = 1d0
+           elseif(ptcl%musrc<-1d0) then
+              ptcl%musrc = -1d0
            endif
 !-- om
            if(azitrfm >= 0d0) then
-              prt_particles(ivac)%om = azitrfm
+              ptcl%om = azitrfm
            else
-              prt_particles(ivac)%om = azitrfm+pc_pi2
+              ptcl%om = azitrfm+pc_pi2
            endif
         else
-           prt_particles(ivac)%musrc = mu0
-           prt_particles(ivac)%om = om0
+           ptcl%musrc = mu0
+           ptcl%om = om0
         endif
 
 !-- 3D (box base)
      case(3)
 !-- calculating position
         r1 = rand()
-        prt_particles(ivac)%rsrc = r1*grd_xarr(grd_nx+1)
-        x0 = prt_particles(ivac)%rsrc
+        ptcl%rsrc = r1*grd_xarr(grd_nx+1)
+        x0 = ptcl%rsrc
         r1 = rand()
-        prt_particles(ivac)%y = r1*grd_yarr(grd_ny+1)
-        y0 = prt_particles(ivac)%y
-        prt_particles(ivac)%z = grd_zarr(k)
-        z0 = prt_particles(ivac)%z
+        ptcl%y = r1*grd_yarr(grd_ny+1)
+        y0 = ptcl%y
+        ptcl%z = grd_zarr(k)
+        z0 = ptcl%z
 !-- setting cell index
-        prt_particles(ivac)%zsrc = binsrch(x0,grd_xarr,grd_nx+1,0)
-        i = prt_particles(ivac)%zsrc
-        prt_particles(ivac)%iy = binsrch(y0,grd_yarr,grd_ny+1,0)
-        j = prt_particles(ivac)%iy
-        prt_particles(ivac)%iz = k
+        ptcl%zsrc = binsrch(x0,grd_xarr,grd_nx+1,0)
+        i = ptcl%zsrc
+        ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1,0)
+        j = ptcl%iy
+        ptcl%iz = k
 !-- sampling azimuthal angle of direction
         r1 = rand()
         om0 = pc_pi2*r1
@@ -209,19 +211,18 @@ subroutine boundary_source
            mu2 = sqrt(1d0-mu0**2)*sin(om0)
            cmffact = 1d0+(mu0*z0+mu1*x0+mu2*y0)/pc_c
 !-- mu
-           prt_particles(ivac)%musrc = (mu0+z0/pc_c)/cmffact
-           if(prt_particles(ivac)%musrc>1d0) then
-              prt_particles(ivac)%musrc = 1d0
-           elseif(prt_particles(ivac)%musrc<-1d0) then
-              prt_particles(ivac)%musrc = -1d0
+           ptcl%musrc = (mu0+z0/pc_c)/cmffact
+           if(ptcl%musrc>1d0) then
+              ptcl%musrc = 1d0
+           elseif(ptcl%musrc<-1d0) then
+              ptcl%musrc = -1d0
            endif
 !-- om
-           prt_particles(ivac)%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
-           if(prt_particles(ivac)%om<0d0) prt_particles(ivac)%om = &
-                prt_particles(ivac)%om+pc_pi2
+           ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
+           if(ptcl%om<0d0) ptcl%om = ptcl%om+pc_pi2
         else
-           prt_particles(ivac)%musrc = mu0
-           prt_particles(ivac)%om = om0
+           ptcl%musrc = mu0
+           ptcl%om = om0
         endif
      endselect
 
@@ -229,24 +230,24 @@ subroutine boundary_source
 !-- IMC
         if(grd_isvelocity) then
            tot_eext = tot_eext+esurfpart
-           prt_particles(ivac)%esrc = esurfpart*cmffact
-           prt_particles(ivac)%ebirth = esurfpart*cmffact
-           prt_particles(ivac)%wlsrc = wl0/cmffact
+           ptcl%esrc = esurfpart*cmffact
+           ptcl%ebirth = esurfpart*cmffact
+           ptcl%wlsrc = wl0/cmffact
 !-- velocity effects accounting
            tot_evelo=tot_evelo-esurfpart*(cmffact-1d0)
         else
-           prt_particles(ivac)%esrc = esurfpart
-           prt_particles(ivac)%ebirth = esurfpart
-           prt_particles(ivac)%wlsrc = wl0
+           ptcl%esrc = esurfpart
+           ptcl%ebirth = esurfpart
+           ptcl%wlsrc = wl0
         endif
-        prt_particles(ivac)%rtsrc = 1
+        ptcl%rtsrc = 1
      else
 !-- DDMC
-        prt_particles(ivac)%esrc = P*esurfpart
-        prt_particles(ivac)%ebirth = P*esurfpart
-        tot_eext = tot_eext+prt_particles(ivac)%esrc
-        prt_particles(ivac)%wlsrc = wl0
-        prt_particles(ivac)%rtsrc = 2
+        ptcl%esrc = P*esurfpart
+        ptcl%ebirth = P*esurfpart
+        tot_eext = tot_eext+ptcl%esrc
+        ptcl%wlsrc = wl0
+        ptcl%rtsrc = 2
      endif
 
 

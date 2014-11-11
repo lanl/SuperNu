@@ -21,7 +21,7 @@ subroutine interior_source
   real*8 :: r1, r2, r3, uul, uur, uumax
   real*8 :: om0, mu0, x0, y0, ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, thelp
-  real*8 :: cmffact,azitrfm
+  real*8 :: cmffact,azitrfm,mu1,mu2
   type(packet),pointer :: ptcl
 !-- statement functions
   integer :: l
@@ -174,7 +174,50 @@ subroutine interior_source
 
 !-- 3D
      case(3)
-        stop 'interior_source: no 3D transport'
+!-- setting 2nd,3rd cell index
+        ptcl%iy = j
+        prcl%iz = k
+!-- calculating position
+        r1 = rand()
+        ptcl%rsrc = r1*grd_xarr(i+1) + (1d0-r1) * &
+             grd_xarr(i)
+        r1 = rand()
+        ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
+             grd_yarr(j)
+        r1 = rand()
+        ptcl%z = r1*grd_zarr(k+1) + (1d0-r1) * &
+             grd_zarr(k)
+!-- sampling azimuthal angle of direction
+        r1 = rand()
+        om0 = pc_pi2*r1
+!-- setting IMC logical
+        lhelp = ((grd_sig(i,j,k)+grd_cap(iig,i,j,k)) * &
+             min(dx(i),dy(j),dz(k))*thelp < prt_tauddmc) &
+             .or.in_puretran
+!-- if velocity-dependent, transforming direction
+        if(lhelp.and.grd_isvelocity) then
+           x0 = ptcl%rsrc
+           y0 = ptcl%y
+           z0 = ptcl%z
+!-- 1+dir*v/c
+           mu1 = sqrt(1d0-mu0**2)*cos(om0)
+           mu2 = sqrt(1d0-mu0**2)*sin(om0)
+           cmffact = 1d0+(mu0*z0+mu1*x0+mu2*y0)/pc_c
+!-- mu
+           ptcl%musrc = (mu0+z0/pc_c)/cmffact
+           if(ptcl%musrc>1d0) then
+              ptcl%musrc = 1d0
+           elseif(ptcl%musrc<-1d0) then
+              ptcl%musrc = -1d0
+           endif
+!-- om
+           ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
+           if(ptcl%om<0d0) ptcl%om = ptcl%om+pc_pi2
+        else
+           ptcl%musrc = mu0
+           ptcl%om = om0
+        endif
+
      endselect
 
      if (lhelp) then
@@ -379,7 +422,91 @@ subroutine interior_source
 !}}}
 !-- 3D
      case(3)
-        stop 'interior_source: no 3D transport'
+!-- setting 2nd,3rd cell index
+        ptcl%iy = j
+        prcl%iz = k
+!-- source tilting in x
+        r3 = 0d0
+        r2 = 1d0
+        il = max(i-1,1)  !-- left neighbor
+        ir = min(i+1,grd_nx)  !-- right neighbor
+        uul = .5d0*(grd_temp(il,j,k)**4 + grd_temp(i,j,k)**4)
+        uur = .5d0*(grd_temp(ir,j,k)**4 + grd_temp(i,j,k)**4)
+        uumax = max(uul,uur)
+        uul = uul/uumax
+        uur = uur/uumax
+        do while (r2 > r3)
+           r1 = rand()
+           r3 = r1*uur+(1d0-r1)*uul
+           r2 = rand()
+        enddo
+        ptcl%rsrc = r1*grd_xarr(i+1)+(1d0-r1)*grd_xarr(i)
+
+!- source tilting in y
+        r3 = 0d0
+        r2 = 1d0
+        il = max(j-1,1)  !-- lower neighbor
+        ir = min(j+1,grd_ny)  !-- upper neighbor
+        uul = .5d0*(grd_temp(i,il,k)**4 + grd_temp(i,j,k)**4)
+        uur = .5d0*(grd_temp(i,ir,k)**4 + grd_temp(i,j,k)**4)
+        uumax = max(uul,uur)
+        uul = uul/uumax
+        uur = uur/uumax
+        do while (r2 > r3)
+           r1 = rand()
+           r3 = r1*uur+(1d0-r1)*uul
+           r2 = rand()
+        enddo
+        ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
+
+!- source tilting in y
+        r3 = 0d0
+        r2 = 1d0
+        il = max(k-1,1)  !-- lower neighbor
+        ir = min(k+1,grd_nz)  !-- upper neighbor
+        uul = .5d0*(grd_temp(i,j,il)**4 + grd_temp(i,j,k)**4)
+        uur = .5d0*(grd_temp(i,j,ir)**4 + grd_temp(i,j,k)**4)
+        uumax = max(uul,uur)
+        uul = uul/uumax
+        uur = uur/uumax
+        do while (r2 > r3)
+           r1 = rand()
+           r3 = r1*uur+(1d0-r1)*uul
+           r2 = rand()
+        enddo
+        ptcl%z = r1*grd_zarr(k+1) + (1d0-r1) * &
+             grd_zarr(k)
+
+!-- sampling azimuthal angle of direction
+        r1 = rand()
+        om0 = pc_pi2*r1
+!-- setting IMC logical
+        lhelp = ((grd_sig(i,j,k)+grd_cap(iig,i,j,k)) * &
+             min(dx(i),dy(j),dz(k))*thelp < prt_tauddmc) &
+             .or.in_puretran
+!-- if velocity-dependent, transforming direction
+        if(lhelp.and.grd_isvelocity) then
+           x0 = ptcl%rsrc
+           y0 = ptcl%y
+           z0 = ptcl%z
+!-- 1+dir*v/c
+           mu1 = sqrt(1d0-mu0**2)*cos(om0)
+           mu2 = sqrt(1d0-mu0**2)*sin(om0)
+           cmffact = 1d0+(mu0*z0+mu1*x0+mu2*y0)/pc_c
+!-- mu
+           ptcl%musrc = (mu0+z0/pc_c)/cmffact
+           if(ptcl%musrc>1d0) then
+              ptcl%musrc = 1d0
+           elseif(ptcl%musrc<-1d0) then
+              ptcl%musrc = -1d0
+           endif
+!-- om
+           ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
+           if(ptcl%om<0d0) ptcl%om = ptcl%om+pc_pi2
+        else
+           ptcl%musrc = mu0
+           ptcl%om = om0
+        endif
      endselect
 
 
