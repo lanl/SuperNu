@@ -26,23 +26,27 @@ subroutine initial_particles
   wl2=1d0/grd_wl(1)
 
 !-- instantiating initial particles
-  ihelp = 1
-  jhelp = 1
+  i = 1
+  j = 1
   k = 1
   ijkused = 0
   do ipart=1,prt_ninitnew
 
 !-- incrementing to next vacant cell
      loopk: do k=k,grd_nz
-     do j=j,grd_ny
-     do i=i,grd_nx
-        lhelp = ijkused(i,j,k)<grd_nvolinit(i,j,k)
-        if(lhelp) exit loopk
-     enddo
-     enddo
+        do j=j,grd_ny
+           do i=i,grd_nx
+              lhelp = ijkused(i,j,k)<grd_nvolinit(i,j,k)
+              if(lhelp) exit loopk
+           enddo
+           i = 1
+        enddo
+        j = 1
      enddo loopk
-     ihelp = i
-     jhelp = j
+!
+!-- sanity check
+     if(.not.lhelp) stop 'initial_particles: invalid particle'
+
 !-- increasing cell occupancy
      ijkused(i,j,k) = ijkused(i,j,k)+1
 !

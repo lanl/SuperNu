@@ -75,6 +75,11 @@ subroutine boundary_source
 !-- filling vacant spot in vacancy array
      ivac = prt_vacantarr(ipart)
      prt_isvacant(ivac) = .false.
+!
+!-- calculating particle time
+     r1 = rand()
+     prt_tlyrand = prt_tlyrand+1
+     prt_particles(ivac)%tsrc = tsp_t+r1*tsp_dt
 
 !-- calculating wavelength
      denom2 = 0d0
@@ -218,11 +223,6 @@ subroutine boundary_source
            prt_particles(ivac)%om = om0
         endif
      endselect
-
-     r1 = rand()
-     prt_tlyrand = prt_tlyrand+1
-     prt_particles(ivac)%tsrc = tsp_t+r1*tsp_dt
-
 
      if(lhelp) then
 !-- IMC
