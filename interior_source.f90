@@ -19,7 +19,7 @@ subroutine interior_source
   integer :: i,j,k,il,ir,ipart,ivac,ig,iig
   integer, dimension(grd_nx,grd_ny,grd_nz) :: ijkused
   real*8 :: r1, r2, r3, uul, uur, uumax
-  real*8 :: om0, mu0, x0, y0, ep0, wl0
+  real*8 :: om0, mu0, x0, y0, z0, ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, thelp
   real*8 :: cmffact,azitrfm,mu1,mu2
   type(packet),pointer :: ptcl
@@ -176,7 +176,7 @@ subroutine interior_source
      case(3)
 !-- setting 2nd,3rd cell index
         ptcl%iy = j
-        prcl%iz = k
+        ptcl%iz = k
 !-- calculating position
         r1 = rand()
         ptcl%rsrc = r1*grd_xarr(i+1) + (1d0-r1) * &
@@ -424,7 +424,7 @@ subroutine interior_source
      case(3)
 !-- setting 2nd,3rd cell index
         ptcl%iy = j
-        prcl%iz = k
+        ptcl%iz = k
 !-- source tilting in x
         r3 = 0d0
         r2 = 1d0
