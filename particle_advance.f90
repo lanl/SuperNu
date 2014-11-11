@@ -32,7 +32,7 @@ subroutine particle_advance
   integer, pointer :: zsrc, iy, iz
   real*8, pointer :: rsrc, musrc, esrc, wlsrc, y, om
   real*8 :: t0,t1  !timing
-  real*8 :: labfact, cmffact, azitrfm
+  real*8 :: labfact, cmffact, azitrfm, mu1, mu2
 !
   type(packet),pointer :: ptcl
 !
@@ -101,7 +101,17 @@ subroutine particle_advance
 
 !-- 3D
      case(3)
-        stop 'particle_advance: no 3D transport'
+        iy => ptcl%iy
+        iz => ptcl%iz
+        y => ptcl%y
+        z => ptcl%z
+        om => ptcl%om
+!-- 1-dir*v/c
+        if(grd_isvelocity.and.ptcl%rtsrc==1) then
+           mu1 = sqrt(1d0-musrc**2)*cos(om)
+           mu2 = sqrt(1d0-musrc**2)*sin(om)
+           labfact = 1d0-(musrc*z+mu1*rsrc+mu2*y)/pc_c
+        endif
      endselect
 
      prt_done=.false.
@@ -255,7 +265,51 @@ subroutine particle_advance
 
 !-- 3D
         case(3)
-           stop 'particle_advance: no 3D transport'
+           lhelp = ((grd_sig(zsrc,iy,iz)+grd_cap(ig,zsrc,iy,iz)) * &
+                min(dx(zsrc),dy(iy),dz(iz))*help < prt_tauddmc) &
+                .or.in_puretran
+           if (lhelp) then
+              if (ptcl%rtsrc == 2) then
+!-- DDMC -> IMC
+                 grd_methodswap(zsrc,iy,iz)=grd_methodswap(zsrc,iy,iz)+1
+!-- sampling position uniformly
+                 r1 =  rand()
+                 rsrc = r1*grd_xarr(zsrc+1)+(1d0-r1)*grd_xarr(zsrc)
+                 r1 = rand()
+                 y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
+                 r1 = rand()
+                 z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
+!-- sampling direction values
+                 r1 = rand()
+                 om = pc_pi2*r1
+                 r1 = rand()
+                 musrc = 1d0 - 2d0*r1
+                 if(grd_isvelocity) then
+!-- 1+dir*v/c
+                    mu1 = sqrt(1d0-musrc**2)*cos(om)
+                    mu2 = sqrt(1d0-musrc**2)*sin(om)
+                    cmffact = 1d0+(musrc*z+mu1*rsrc+mu2*y)/pc_c
+!-- mu
+                    musrc = (musrc+z/pc_c)/cmffact
+                    if(musrc>1d0) then
+                       musrc = 1d0
+                    elseif(musrc<-1d0) then
+                       musrc = -1d0
+                    endif
+!-- om
+                    om = atan2(mu2+y/pc_c,mu1+x/pc_c)
+                    if(om<0d0) om = om+pc_pi2
+!-- 1-dir*v/c
+                    labfact = 1d0-(musrc*z+mu1*rsrc+mu2*y)/pc_c
+                 endif
+              endif
+           else
+              if(ptcl%rtsrc==1) then
+!-- IMC -> DDMC
+                 grd_methodswap(zsrc,iy,iz)=grd_methodswap(zsrc,iy,iz)+1
+              endif
+           endif!}}}
+
         endselect
 
         if (lhelp) then
@@ -348,7 +402,7 @@ subroutine particle_advance
            call advection2(.true.,ig,zsrc,iy,rsrc,y)
 !-- 3D
         case(3)
-           stop 'particle_advance: no 3D transport'
+           call advection3(.true.,ig,zsrc,iy,iz,rsrc,y,z)
         endselect
      endif
      endif
@@ -434,7 +488,41 @@ subroutine particle_advance
 
 !-- 3D
      case(3)
-        stop 'particle_advance: no 3D transport'
+        do while ((.not.prt_done).and.(.not.isvacant))
+           if (ptcl%rtsrc == 1.or.in_puretran) then
+              nimc = nimc + 1
+              call transport3(ptcl,isvacant)
+           else
+              nddmc = nddmc + 1
+              call diffusion3(ptcl,isvacant)
+           endif
+!-- transformation factor
+           if(grd_isvelocity .and. ptcl%rtsrc==1) then
+              labfact = 1d0-(musrc*z+sqrt(1d0-musrc**2) * &
+                   (cos(om)*rsrc+sin(om)*y)/pc_c
+           else
+              labfact = 1d0
+           endif
+!-- Russian roulette for termination of exhausted particles
+           if (esrc<1d-6*ptcl%ebirth .and. .not.isvacant) then
+              r1 = rand()
+              prt_tlyrand = prt_tlyrand+1
+              if(r1<0.5d0) then
+                 isvacant = .true.
+                 prt_done = .true.
+                 grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
+!-- velocity effects accounting
+                 if(ptcl%rtsrc==1) tot_evelo = tot_evelo + esrc*(1d0-labfact)
+              else
+!-- weight addition accounted for in external source
+                 tot_eext = tot_eext + esrc
+!
+                 esrc = 2d0*esrc
+                 ptcl%ebirth = 2d0*ptcl%ebirth
+              endif
+           endif
+        enddo
+
      endselect
 
 !-----------------------------------------------------------------------
@@ -541,7 +629,7 @@ subroutine particle_advance
            call advection2(.false.,ig,zsrc,iy,rsrc,y)
 !-- 3D
         case(3)
-           stop 'particle_advance: no 3D transport'
+           call advection3(.false.,ig,zsrc,iy,iz,rsrc,y,z)
         endselect
      endif
      endif
