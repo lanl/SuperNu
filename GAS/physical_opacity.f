@@ -37,8 +37,6 @@ c-- bbxs
       real*8 :: caphelp
 c-- temporary cap array in the right order
       real*8 :: cap(gas_ncell,gas_ng)
-!-- special functions
-!     integer :: binsrch
 c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
@@ -77,8 +75,9 @@ c$omp& firstprivate(ig)
 c$omp& shared(grndlev,hckt,cap)
        do il=1,bb_nline
         wl0 = bb_xs(il)%wl0*pc_ang  !in cm
+        iz = bb_xs(il)%iz
+        ii = bb_xs(il)%ii
 c-- ig pointer
-!       ig = binsrch(wl0,gas_wl,gas_ng+1,in_ng)  !todo: thread safe?
         do ig=ig,gas_ng
          if(gas_wl(ig+1)>wl0) exit
         enddo !ig
@@ -87,8 +86,6 @@ c-- line in group
         if(ig>gas_ng) cycle !can't exit in omp
         dwl = gas_wl(ig+1) - gas_wl(ig)  !in cm
 c
-        iz = bb_xs(il)%iz
-        ii = bb_xs(il)%ii
         wlinv = 1d0/wl0  !in cm
 c-- profile function
 !old    phi = gas_ng*wlhelp*wl0/pc_c !line profile

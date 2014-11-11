@@ -20,6 +20,11 @@ c-- wavelength (wl), polar (mu), and azimuthal (om) bins
 !-- number of escaped particles per group
       integer,allocatable :: flx_lumnum(:,:,:) !(flx_ng,flx_nmu,flx_nom)
 c
+c-- grey gamma flux
+      real*8,allocatable :: flx_gamluminos(:,:) !(flx_nmu,flx_nom)
+      real*8,allocatable :: flx_gamlumdev(:,:)  !(flx_nmu,flx_nom)
+      integer,allocatable :: flx_gamlumnum(:,:) !(flx_nmu,flx_nom)
+c
       contains
 c
 c
@@ -194,6 +199,11 @@ c-- allocating flux tally arrays
       allocate(flx_luminos(flx_ng,flx_nmu,flx_nom))
       allocate(flx_lumdev(flx_ng,flx_nmu,flx_nom))
       allocate(flx_lumnum(flx_ng,flx_nmu,flx_nom))
+c
+c-- grey gamma flux
+      allocate(flx_gamluminos(flx_nmu,flx_nom))
+      allocate(flx_gamlumdev((flx_nmu,flx_nom))
+      allocate(flx_gamlumnum(flx_nmu,flx_nom))
 c
       end subroutine flux_alloc
 c

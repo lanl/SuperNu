@@ -19,7 +19,7 @@ subroutine transport2(ptcl,isvacant)
   real*8,parameter :: cinv = 1d0/pc_c
   integer, external :: binsrch
 
-  integer :: ig, iig,imu
+  integer :: ig, imu
   real*8 :: dirdotu, azidotu, mu0
   real*8 :: dtinv, elabfact, thelp, thelpinv 
   real*8 :: dcen,dcol,dthm,db,dbr,dbz,ddop,d
@@ -66,11 +66,12 @@ subroutine transport2(ptcl,isvacant)
   ig = binsrch(wl/elabfact,grd_wl,grd_ng+1,in_ng)
 !-- checking group bounds
   if(ig>grd_ng.or.ig<1) then
-     if(ig==grd_ng+1) then
+     if(ig>grd_ng) then
         ig = grd_ng
-     elseif(ig==0) then
+     elseif(ig<1) then
         ig = 1
      else
+        write(0,*) ig,grd_ng,wl,elabfact
         stop 'transport2 (1): particle group invalid'
      endif
   endif
@@ -84,7 +85,7 @@ subroutine transport2(ptcl,isvacant)
 !-- making greater than dcen
      dbr = 2d0*pc_c*tsp_dt*thelpinv
   else
-     if(abs(sin(om))<grd_xarr(zr)/r.and.cos(om)<0d0) then
+     if(abs(sin(om))<grd_xarr(zr)/r .and. cos(om)<0d0) then
 !-- inner boundary
         dbr = abs(r*cos(om)/sqrt(1d0-xi**2) &
              +sqrt(((cos(om)*r)**2-r**2+grd_xarr(zr)**2)/(1d0-xi**2)))
@@ -92,14 +93,20 @@ subroutine transport2(ptcl,isvacant)
            write(*,*) ((cos(om)*r)**2-r**2+grd_xarr(zr)**2)/(1d0-xi**2)
            stop 'transport2: invalid inner dbr'
         endif
+     elseif(abs(grd_xarr(zr+1)-r)<1d-15*r .and. cos(om)>0d0) then
+!-- on outer boundary moving out
+        dbr = 0d0
      else
 !-- outer boundary
         dbr = -r*cos(om)/sqrt(1d0-xi**2) &
-             +sqrt(((cos(om)*r)**2+grd_xarr(zr+1)**2-r**2)/(1d0-xi**2))
+             + sqrt(((cos(om)*r)**2 + grd_xarr(zr+1)**2-r**2)/(1d0-xi**2))
         if(dbr/=dbr) then
            write(*,*) ((cos(om)*r)**2-r**2+grd_xarr(zr+1)**2)/(1d0-xi**2)
            stop 'transport2: invalid outer dbr'
         endif
+        if(dbr<0d0) write(0,*) 'dbr<0',dbr,r,z,om/pc_pi*180,xi, &
+           sin(om),cos(om), &
+           r*sin(om),grd_xarr(zr),grd_xarr(zr+1),r-grd_xarr(zr+1)
      endif
   endif
 
