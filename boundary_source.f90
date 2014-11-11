@@ -11,7 +11,7 @@ subroutine boundary_source
 
   logical :: lhelp
   integer :: ipart, ivac, ig, iig, i,j,k
-  real*8 :: r1, r2, P, mu0, x0, y0, esurfpart, wl0, om0
+  real*8 :: r1, r2, P, mu0, x0,y0,z0, esurfpart, wl0, om0
   real*8 :: denom2, wl1, wl2, thelp, mfphelp, mu1, mu2
   real*8 :: srftemp = 1d4
   real*8 :: cmffact,azitrfm
@@ -216,8 +216,9 @@ subroutine boundary_source
               prt_particles(ivac)%musrc = -1d0
            endif
 !-- om
-           om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
-           if(om<0d0) om = om+pc_pi2
+           prt_particles(ivac)%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
+           if(prt_particles(ivac)%om<0d0) prt_particles(ivac)%om = &
+                prt_particles(ivac)%om+pc_pi2
         else
            prt_particles(ivac)%musrc = mu0
            prt_particles(ivac)%om = om0

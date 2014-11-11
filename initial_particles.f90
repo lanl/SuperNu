@@ -15,8 +15,8 @@ subroutine initial_particles
   logical :: lhelp
   integer :: ig, i,j,k, iig, ipart, ihelp, jhelp
   integer, dimension(grd_nx,grd_ny,grd_nz) :: ijkused
-  real*8 :: wl0, mu0, om0, ep0, x0, y0
-  real*8 :: denom2
+  real*8 :: wl0, mu0, om0, ep0, x0, y0, z0
+  real*8 :: denom2, mu1, mu2
   real*8 :: r1
   real*8 :: wl1,wl2,wl3,wl4
   real*8 :: cmffact, azitrfm
@@ -152,7 +152,48 @@ subroutine initial_particles
 
 !-- 3D
      case(3)
-        stop 'initial_particles: no 3D transport'
+!-- setting 2nd, 3rd cell index
+        prt_particles(ipart)%iy = j
+        prt_particles(ipart)%iz = k
+!-- calculating position
+        r1 = rand()
+        prt_particles(ipart)%rsrc = r1*grd_xarr(i+1) + &
+             (1d0-r1)*grd_xarr(i)
+        r1 = rand()
+        prt_particles(ipart)%y = r1*grd_yarr(j+1) + &
+             (1d0-r1)*grd_yarr(j)
+        r1 = rand()
+        prt_particles(ipart)%z = r1*grd_zarr(k+1) + &
+             (1d0-r1)*grd_zarr(k)
+
+!-- sampling azimuthal angle of direction
+        r1 = rand()
+        om0 = pc_pi2*r1
+
+!-- if velocity-dependent, transforming direction
+        if(grd_isvelocity) then
+           x0 = prt_particles(ipart)%rsrc
+           y0 = prt_particles(ipart)%y
+           z0 = prt_particles(ipart)%z
+!-- 1+dir*v/c
+           mu1 = sqrt(1d0-mu0**2)*cos(om0)
+           mu2 = sqrt(1d0-mu0**2)*sin(om0)
+           cmffact = 1d0+(mu0*z0+mu1*x0+mu2*y0)/pc_c
+!-- mu
+           prt_particles(ipart)%musrc = (mu0+z0/pc_c)/cmffact
+           if(prt_particles(ipart)%musrc>1d0) then
+              prt_particles(ipart)%musrc = 1d0
+           elseif(prt_particles(ipart)%musrc<-1d0) then
+              prt_particles(ipart)%musrc = -1d0
+           endif
+!-- om
+           prt_particles(ipart)%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
+           if(prt_particles(ipart)%om<0d0) prt_particles(ipart)%om = &
+                prt_particles(ipart)%om+pc_pi2
+        else
+           prt_particles(ipart)%musrc = mu0
+           prt_particles(ipart)%om = om0
+        endif
      endselect
 
 !-- if velocity-dependent, transforming energy, wavelength

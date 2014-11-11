@@ -202,7 +202,7 @@ c-- allocating flux tally arrays
 c
 c-- grey gamma flux
       allocate(flx_gamluminos(flx_nmu,flx_nom))
-      allocate(flx_gamlumdev((flx_nmu,flx_nom))
+      allocate(flx_gamlumdev(flx_nmu,flx_nom))
       allocate(flx_gamlumnum(flx_nmu,flx_nom))
 c
       end subroutine flux_alloc
