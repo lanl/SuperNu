@@ -9,10 +9,10 @@ subroutine analytic_source
   use manufacmod
   implicit none
 
-  integer :: i,j,l,ll,nhelp
+  integer :: i,j,k,l,ll,nhelp
   integer :: l1,l2
   real*8 :: srcren
-  real*8 :: thelp, help, xcent, ycent
+  real*8 :: thelp, help, xcent, ycent, zcent
 
   gas_emitex = 0d0
 
