@@ -1,4 +1,4 @@
-subroutine transport1_gamgrey(ptcl,isvacant)
+subroutine transport1_gamgrey(ptcl)
 
   use gridmod
   use totalsmod
@@ -10,7 +10,6 @@ subroutine transport1_gamgrey(ptcl,isvacant)
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
-  logical,intent(inout) :: isvacant
 !##################################################
 !This subroutine passes particle parameters as input and modifies
 !them through one IMC transport event (Fleck&Cummings, 1971).  If
@@ -23,7 +22,7 @@ subroutine transport1_gamgrey(ptcl,isvacant)
   real*8 :: r1, r2, thelp,thelpinv
   real*8 :: db, dcol, dcen, dthm, ddop, d
   real*8 :: siglabfact, dcollabfact, elabfact
-  real*8 :: rold, P, told, muold
+  real*8 :: rold, P, muold
 ! real*8 :: x1, x2, xx0
   real*8 :: dtinv
   real*8 :: help
@@ -70,10 +69,10 @@ subroutine transport1_gamgrey(ptcl,isvacant)
 !
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
-     if(gas_capgam(z,1,1)>0d0) then
+     if(grd_capgam(z,1,1)>0d0) then
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        dcol = abs(log(r1)/(gas_capgam(z,1,1)*dcollabfact))
+        dcol = abs(log(r1)/(grd_capgam(z,1,1)*dcollabfact))
      else
         dcol = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
      endif
@@ -84,9 +83,6 @@ subroutine transport1_gamgrey(ptcl,isvacant)
 !-- distance to Thomson-type collision = dthm
   dthm = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
 !
-!-- distance to census = dcen
-  dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%tsrc)*thelpinv)
-!
 !-- distance to Doppler shift = ddop
   if(grd_isvelocity) then
      ddop = abs(pc_c - r*mu)
@@ -96,7 +92,7 @@ subroutine transport1_gamgrey(ptcl,isvacant)
 !
 !-- minimum distance = d
 !  if(tsp_it==29) write(*,*) dcol,dthm,db,dcen,ddop
-  d = min(dcol,dthm,db,dcen,ddop)
+  d = min(dcol,dthm,db,ddop)
 !
 !== END OF DISTANCE CALCULATIONS
 !
@@ -104,8 +100,6 @@ subroutine transport1_gamgrey(ptcl,isvacant)
   rold = r
   r = sqrt((1.0d0-mu**2)*r**2+(d+r*mu)**2)
 !  r = sqrt(r**2+d**2+2d0*d*r*mu)
-  told = ptcl%tsrc
-  ptcl%tsrc = ptcl%tsrc + thelp*d*cinv
   muold = mu
   mu = (rold*mu+d)/r
 
@@ -119,18 +113,18 @@ subroutine transport1_gamgrey(ptcl,isvacant)
   !
   if(.not.prt_isimcanlog) then
         grd_edep(z,1,1)=grd_edep(z,1,1)+E*(1.0d0-exp( &
-             -gas_capgam(z,1,1)*siglabfact*d*thelp))*elabfact
+             -grd_capgam(z,1,1)*siglabfact*d*thelp))*elabfact
      !--
-     if(gas_capgam(z,1,1)*dx(z)*thelp>1d-6) then     
+     if(grd_capgam(z,1,1)*dx(z)*thelp>1d-6) then     
         grd_eraddens(z,1,1) = grd_eraddens(z,1,1)+E* &
-             (1.0d0-exp(-siglabfact*gas_capgam(z,1,1)*d*thelp))* &
-             elabfact/(siglabfact*gas_capgam(z,1,1)*pc_c*tsp_dt)
+             (1.0d0-exp(-siglabfact*grd_capgam(z,1,1)*d*thelp))* &
+             elabfact/(siglabfact*grd_capgam(z,1,1)*pc_c*tsp_dt)
      else
         grd_eraddens(z,1,1) = grd_eraddens(z,1,1)+E* &
              elabfact*d*dcollabfact*cinv*dtinv
      endif
      !--
-     E = E*exp(-gas_capgam(z,1,1)*siglabfact*d*thelp)
+     E = E*exp(-grd_capgam(z,1,1)*siglabfact*d*thelp)
 
   else
      !
@@ -147,6 +141,7 @@ subroutine transport1_gamgrey(ptcl,isvacant)
 
   !
   if(d == ddop) then !group shift
+
   elseif (d == dthm) then  !physical scattering (Thomson-type)
      !!{{{
      r1 = rand()
@@ -170,7 +165,6 @@ subroutine transport1_gamgrey(ptcl,isvacant)
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
      if(r1<=1d0.and.prt_isimcanlog) then
-        isvacant = .true.
         prt_done = .true.
         grd_edep(z,1,1) = grd_edep(z,1,1) + E*elabfact
 !-- velocity effects accounting
@@ -198,7 +192,6 @@ subroutine transport1_gamgrey(ptcl,isvacant)
   elseif (d == db) then   !------boundary crossing ----
      if (mu>=0.0d0) then!{{{
         if (z == grd_nx) then
-           isvacant = .true.
            prt_done = .true.
 !
 !-- outbound luminosity tally
@@ -209,15 +202,13 @@ subroutine transport1_gamgrey(ptcl,isvacant)
            flx_gamlumdev(1,1) = flx_gamlumdev(1,1)+(E*dtinv)**2
            flx_gamlumnum(1,1) = flx_gamlumnum(1,1)+1
         ! Checking if DDMC region right
-           else
-              r1 = rand()
-              prt_tlyrand = prt_tlyrand+1
-              r2 = rand()
-              prt_tlyrand = prt_tlyrand+1
-              mu = -max(r1,r2)
-              if(grd_isvelocity) then
-                 mu = (mu+r*cinv)/(1.0+r*mu*cinv)
-              endif
+           r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
+           r2 = rand()
+           prt_tlyrand = prt_tlyrand+1
+           mu = -max(r1,r2)
+           if(grd_isvelocity) then
+              mu = (mu+r*cinv)/(1.0+r*mu*cinv)
            endif
         ! End of check
         else
@@ -226,70 +217,11 @@ subroutine transport1_gamgrey(ptcl,isvacant)
         endif
      else
         if (z==1) then
-           if ((gas_capgam(z,1,1)*dx(z+1) &
-                *thelp >= prt_tauddmc) &
-                .and.(in_puretran.eqv..false.)) then
-              r1 = rand()
-              prt_tlyrand = prt_tlyrand+1
-              if(grd_isvelocity) then
-                 mu = (mu-r*cinv)/(1.0-r*mu*cinv)
-              endif
-              help = gas_capgam(z,1,1)*dx(z+1)*thelp
-              ppl = 4d0/(3d0*help+6d0*pc_dext)
-              P = ppl*(1.0+1.5*abs(mu))
-
-              r1 = rand()
-              prt_tlyrand = prt_tlyrand+1
-              r2 = rand()
-              prt_tlyrand = prt_tlyrand+1
-              mu = -max(r1,r2)
-              if(grd_isvelocity) then
-                 mu = (mu+r*cinv)/(1.0+r*mu*cinv)
-              endif
-           else
-              z = z+1
-           endif
-        elseif ((gas_capgam(z,1,1)*dx(z-1) &
-             *thelp >= prt_tauddmc) &
-             .and.(in_puretran.eqv..false.)) then
-           r1 = rand()
-           prt_tlyrand = prt_tlyrand+1
-           if(grd_isvelocity) then
-              mu = (mu-r*cinv)/(1.0-r*mu*cinv)
-!-- amplification
-!
-!              E0=E0*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r*cinv)
-!              E = E*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r*cinv)
-              if(mu<0d0) then
-!-- velocity effects accounting
-                 help = 1d0/abs(mu)
-!
-                 E0 = E0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv)
-                 E = E*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv)
-              endif
-!--
-           endif
-           help = gas_capgam(z,1,1)*dx(z-1)*thelp
-           ppr = 4d0/(3d0*help+6d0*pc_dext)
-           P = ppr*(1.0+1.5*abs(mu))
-!--
-           r1 = rand()
-           prt_tlyrand = prt_tlyrand+1
-           r2 = rand()
-           prt_tlyrand = prt_tlyrand+1
-           mu = max(r1,r2)
-           if(grd_isvelocity) then
-              mu = (mu+r*cinv)/(1.0+r*mu*cinv)
-           endif
+           z = z+1
         else
            z = z-1
         endif
      endif!}}}
-  elseif (d == dcen) then
-     prt_done = .true.
-     grd_numcensus(z,1,1) = grd_numcensus(z,1,1)+1
-!     tot_erad = tot_erad + E*elabfact
-!
   endif
 
 end subroutine transport1_gamgrey

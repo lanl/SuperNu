@@ -24,12 +24,12 @@ subroutine particle_advance_gamgrey
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
 ! real*8 :: uul, uur, uumax, r0,r2,r3
-  logical,pointer :: isvacant
   integer :: zsrc, iy, iz
   real*8 :: rsrc, musrc, esrc, wlsrc, y, om
   real*8 :: t0,t1  !timing
   real*8 :: labfact
-  real*8 :: esq
+  real*8 :: esq,mu0
+!-- hardware
 !
   type(packet) :: ptcl
 !
@@ -84,14 +84,30 @@ subroutine particle_advance_gamgrey
 
 !-- emission energy per particle
      esrc = grd_emit(zsrc,iy,iz)/grd_nvol(zsrc,iy,iz)
-     zsrc =
-     rsrc =
-     musrc =
+
+!-- calculating direction cosine (comoving)
+     r1 = rand()
+     prt_tlyrand = prt_tlyrand+1
+     mu0 = 1d0-2d0*r1
 
 !-- particle propagation
      select case(in_igeom)
      case(1)
+!-- calculating position
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        rsrc = (r1*grd_xarr(i+1)**3 + &
+             (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
+!--
+        if(grd_isvelocity) then
+           x0 = ptcl%rsrc
+           cmffact = 1d0+mu0*x0/pc_c !-- 1+dir*v/c
+           musrc = (mu0+x0/pc_c)/cmffact
+        else
+           musrc = mu0
+        endif
      case(2)
+        stop 'particle_advance_grey: no 2D'
         y => ptcl%y
         om => ptcl%om
      case(3)
@@ -101,11 +117,15 @@ subroutine particle_advance_gamgrey
      prt_done=.false.
 
 !-- First portion of operator split particle velocity position adjustment
+!-- advection
      if(isshift) then
      if ((grd_isvelocity)) then
         select case(in_igeom)
         case(1)
-           call advection1(.true.,ig,zsrc,rsrc)
+           rsrc = rsrc*tsp_t/(tsp_t+.5*tsp_dt)
+           if(rsrc<grd_xarr(zsrc)) then
+              zholder = binsrch(rsrc,grd_xarr,grd_nx+1,0)
+           endif
         case(2)
            call advection2(.true.,ig,zsrc,iy,rsrc,y)
         case(3)
@@ -121,8 +141,8 @@ subroutine particle_advance_gamgrey
 
 !-- 1D
      case(1)
-        do while ((.not.prt_done).and.(.not.isvacant))
-           call transport1_gamgrey(ptcl,isvacant)
+        do while (.not.prt_done)
+           call transport1_gamgrey(ptcl)
 !-- transformation factor
            if(grd_isvelocity) then
               labfact = 1.0d0 - musrc*rsrc/pc_c
@@ -130,11 +150,10 @@ subroutine particle_advance_gamgrey
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (esrc<1d-6*ptcl%ebirth .and. .not.isvacant) then
+           if (esrc<1d-6*ptcl%ebirth .and. .not.prt_done) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
-                 isvacant = .true.
                  prt_done = .true.
                  grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
 !-- velocity effects accounting
@@ -187,12 +206,15 @@ subroutine particle_advance_gamgrey
      endselect
 
 !-----------------------------------------------------------------------
-
+!-- advection
      if(isshift) then
      if (grd_isvelocity) then
         select case(in_igeom)
         case(1)
-           call advection1(.false.,ig,zsrc,rsrc)
+           rsrc = rsrc*(tsp_t + alph2*tsp_dt)/(tsp_t+tsp_dt)
+           if(rsrc<grd_xarr(zsrc)) then
+              zholder = binsrch(rsrc,grd_xarr,grd_nx+1,0)
+           endif
         case(2)
            call advection2(.false.,ig,zsrc,iy,rsrc,y)
         case(3)

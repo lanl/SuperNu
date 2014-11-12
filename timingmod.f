@@ -12,7 +12,7 @@ c-- one-time events
       real*8 :: t_setup
       real*8 :: t_all
 c
-      integer,private,parameter :: mreg = 11
+      integer,private,parameter :: mreg = 12
       real*8,private,target :: registers(3,mreg)
 c
 c-- global-flow time registers:
@@ -25,6 +25,7 @@ c-- global-flow time registers:
 c-- packet transport
       real*8,pointer :: t_pckt_allrank(:) !collect the max runtimes across all ranks
       real*8,pointer :: t_pckt(:)
+      real*8,pointer :: t_pcktgam(:)  !gamma transport
       real*8,pointer :: t_pcktnpckt(:)
       real*8,pointer :: t_pcktnddmc(:)
       real*8,pointer :: t_pcktnimc(:)
@@ -46,11 +47,12 @@ c     ----------------------
       t_bf =>     registers(:,5)    !bound-free opacity
       t_ff =>     registers(:,6)    !bound-free opacity
 c--
-      t_pckt_allrank => registers(:, 7)  !collect the max runtimes across all ranks
-      t_pckt =>         registers(:, 8)
-      t_pcktnpckt =>    registers(:, 9)
-      t_pcktnddmc =>    registers(:,10)
-      t_pcktnimc =>     registers(:,11)
+      t_pcktgam =>      registers(:, 7)
+      t_pckt_allrank => registers(:, 8)  !collect the max runtimes across all ranks
+      t_pckt =>         registers(:, 9)
+      t_pcktnpckt =>    registers(:,10)
+      t_pcktnddmc =>    registers(:,11)
+      t_pcktnimc =>     registers(:,12)
       end subroutine timing_init
 c
 c
@@ -92,7 +94,7 @@ c-- write output on master rank only
 c-- header
        if(.not.lexist) then
          write(4,'("#",30a12)') 't_gasupd','t_eos',
-     &   't_opac','t_bb','t_bf','t_ff',
+     &   't_opac','t_bb','t_bf','t_ff','t_pcktgam',
      &   't_p_allrank','t_pckt',
      &   't_pcktnpckt','t_pcktnddmc','t_pcktnimc'
        endif
