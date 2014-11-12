@@ -12,8 +12,8 @@ subroutine write_output
   integer :: reclen, reclen2
   character(16), save :: pos='rewind', fstat='replace'
 !
-  reclen = flx_ng*flx_nmu*12
-  reclen2 = grd_nx*grd_ny*12
+  reclen = flx_ng*flx_nmu*flx_nom*12
+  reclen2 = grd_nx*grd_ny*grd_nz*12
 
   inquire(file='output.wlgrid',exist=lexist)
 
