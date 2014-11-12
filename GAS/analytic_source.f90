@@ -73,8 +73,39 @@ subroutine analytic_source
               endif
            enddo
            enddo
+
+!-- 3D
         case(3)
-           stop 'analytic_source: no 3D transport'
+!
+!-- using min distance to cylinder bound
+           help = min(grd_xarr(grd_nx+1),grd_yarr(grd_ny+1) , &
+                grd_zarr(grd_nz+1))
+           if(help == grd_xarr(grd_nx+1)) then
+              nhelp = grd_nx
+           elseif(help == grd_yarr(grd_ny+1)) then
+              nhelp = grd_ny
+           else
+              nhelp = grd_nz
+           endif
+!-- non-zero source within Heaviside sphere
+           l = 0
+           ll = 0
+           do k = 1,grd_nz
+           do j = 1,grd_ny
+           do i = 1,grd_nx
+              l = l + 1
+              if(l<l1 .or. l>l2) cycle
+              ll = ll + 1
+              xcent = 0.5d0*(grd_xarr(i+1)+grd_xarr(i))
+              ycent = 0.5d0*(grd_yarr(j+1)+grd_yarr(j))
+              zcent = 0.5d0*(grd_zarr(k+1)+grd_zarr(k))
+              if(xcent**2+ycent**2+zcent**2<help**2) then
+                 gas_emitex(ll) = in_srcmax * &
+                      gas_vol(ll)*tsp_dt/thelp**3
+              endif
+           enddo
+           enddo
+           enddo
         endselect
      endif
 !-- no temp source for heav (matsrc=0.0)
