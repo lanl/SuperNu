@@ -349,15 +349,15 @@ c-- 2D size
 c
 c-- verifications (input.par)
       if(in_velout<=0d0.and.in_isvelocity)
-     &  stop 'generate_inputstr1: invalid in_velout'
+     &  stop 'generate_inputstr2: invalid in_velout'
       if(in_lx<=0.and..not.in_isvelocity)
-     &  stop 'generate_inputstr1: invalid in_lx'
+     &  stop 'generate_inputstr2: invalid in_lx'
       if(in_ly<=0.and..not.in_isvelocity)
-     &  stop 'generate_inputstr1: invalid in_ly'
+     &  stop 'generate_inputstr2: invalid in_ly'
       if(in_lz<=0.and..not.in_isvelocity)
-     &  stop 'generate_inputstr1: invalid in_lz'
+     &  stop 'generate_inputstr2: invalid in_lz'
       if(in_totmass<0d0)
-     &  stop 'generate_inputstr1: invalid in_totmass'
+     &  stop 'generate_inputstr2: invalid in_totmass'
 c
 c-- allocate arrays
       allocate(xout(nx+1))
@@ -435,11 +435,118 @@ c
 c
       subroutine generate_inputstr3
       use inputparmod!{{{
+      use physconstmod
       implicit none
 ************************************************************************
 * Read the input structure file
 ************************************************************************
-      stop 'generate_inputstr3 is a stub'
+      real*8,allocatable :: xout(:) !(nx+1)
+      real*8,allocatable :: yout(:) !(ny+1)
+      real*8,allocatable :: zout(:) !(nz+1)
+      integer :: i,j,k,nx,ny,nz
+      real*8 :: helpx,helpy,helpz, dx,dy,dz,rmax
+c
+c-- 3D size
+      nx = in_ndim(1)
+      ny = in_ndim(2)
+      nz = in_ndim(3)
+c
+c-- verifications (input.par)
+      if(in_velout<=0d0.and.in_isvelocity)
+     &  stop 'generate_inputstr3: invalid in_velout'
+      if(in_lx<=0.and..not.in_isvelocity)
+     &  stop 'generate_inputstr3: invalid in_lx'
+      if(in_ly<=0.and..not.in_isvelocity)
+     &  stop 'generate_inputstr3: invalid in_ly'
+      if(in_lz<=0.and..not.in_isvelocity)
+     &  stop 'generate_inputstr3: invalid in_lz'
+      if(in_totmass<0d0)
+     &  stop 'generate_inputstr3: invalid in_totmass'
+c
+c-- allocate arrays
+      allocate(xout(nx+1))
+      allocate(yout(ny+1))
+      allocate(zout(nz+1))
+      allocate(str_xleft(nx+1))
+      allocate(str_yleft(ny+1))
+      allocate(str_yleft(nz+1))
+      allocate(str_mass(nx,ny,nz))
+c
+c-- create unit-length x array
+      dx = 1d0/real(nx)
+      forall(i=1:nx+1) xout(i) = -0.5d0+(i-1)*dx
+c
+c-- create unit-length y array
+      dy = 1d0/real(ny)
+      forall(j=1:ny+1) yout(j) = -0.5d0+(j-1)*dy
+c
+c-- create unit-length z array
+      dz = 1d0/real(nz)
+      forall(k=1:nz+1) zout(k) = -0.5d0+(k-1)*dz
+c
+c-- dimensional scaling
+      if(in_isvelocity) then
+       helpx = 2*in_velout
+       helpy = 2*in_velout
+       helpz = 2*in_velout
+      else
+       helpx = in_lx
+       helpy = in_ly
+       helpz = in_lz
+      endif
+      str_xleft = helpx*xout
+      str_yleft = helpy*yout
+      str_zleft = helpz*zout
+c
+c-- mass
+      str_mass = 0d0
+      if(in_dentype=='unif') then
+c-- uniform density sphere
+       rmax = min(helpx/2d0,helpy/2d0,helpz/2d0)
+       do k = 1,nz
+        do j = 1,ny
+         do i = 1,nx
+           helpx = 0.5*(str_xleft(i+1)+str_xleft(i))
+           helpy = 0.5*(str_yleft(j+1)+str_yleft(j))
+           helpz = 0.5*(str_zleft(k+1)+str_zleft(k))
+           if(helpx**2+helpy**2+helpz**2<rmax**2) then
+            str_mass(i,j,k)=(str_xleft(i+1)-str_xleft(i)) *
+     &        (str_yleft(j+1)-str_yleft(j)) *
+     &        (str_zleft(k+1)-str_zleft(k)) *
+     &        in_totmass/(pc_pi43*rmax**3)
+           endif
+         enddo
+        enddo
+       enddo
+      elseif(in_dentype=='mass') then
+c-- spherical 1/r^2 mass shells
+       rmax = min(helpz/2d0,helpy/2d0,helpz/2d0)
+       do k = 1,nz
+        do j = 1,ny
+         do i = 1,nx
+           helpx = 0.5*(str_xleft(i+1)+str_xleft(i))
+           helpy = 0.5*(str_yleft(j+1)+str_yleft(j))
+           helpz = 0.5*(str_zleft(k+1)+str_zleft(k))
+           if(helpx**2+helpy**2+helpz**2<rmax**2) then
+            str_mass(i,j,k)=(str_xleft(i+1)-str_xleft(i)) *
+     &        (str_yleft(j+1)-str_yleft(j)) *
+     &        (str_zleft(k+1)-str_zleft(k)) *
+     &        in_totmass/(pc_pi4*rmax*(helpy**2+helpx**2 +
+     &        helpz**2))
+           endif
+         enddo
+        enddo
+       enddo
+      elseif(in_dentype=='ufil'.or.in_dentype=='mfil') then
+c-- uniform density for all box
+       str_mass = in_totmass/(nx*ny*nz)
+      else
+       stop 'generate_inputstr3: invalid in_dentype'
+      endif
+c-- adjusting mass to correct total
+      str_mass = str_mass*in_totmass/sum(str_mass)
+c-- deallocating helper arrays
+      deallocate(xout,yout,zout)
 c!}}}
       end subroutine generate_inputstr3
 c
