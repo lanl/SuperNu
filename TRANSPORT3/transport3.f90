@@ -171,6 +171,13 @@ subroutine transport3(ptcl,isvacant)
         grd_eraddens(ix,iy,iz)=grd_eraddens(ix,iy,iz)+ep*elabfact* &
              d*thelp*cinv*dtinv
      endif
+!-- depositing nonanalog absorbed energy
+     grd_edep(ix,iy,iz)=grd_edep(ix,iy,iz)+ep* &
+          (1d0-exp(-grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz)* &
+          elabfact*d*thelp))*elabfact
+     if(grd_edep(ix,iy,iz)/=grd_edep(ix,iy,iz)) then
+        stop 'transport3: invalid energy deposition'
+     endif
 !-- reducing particle energy
      ep = ep*exp(-grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz) * &
           elabfact*d*thelp)
@@ -299,7 +306,6 @@ subroutine transport3(ptcl,isvacant)
 !
 !-- x-bound
   elseif(d==dbx) then
-
 
      if(mu>=0d0) then
         ihelp = 1
