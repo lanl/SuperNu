@@ -7,6 +7,7 @@ subroutine analytic_source
   use timestepmod
   use inputparmod
   use manufacmod
+  use totalsmod
   implicit none
 
   integer :: i,j,k,l,ll,nhelp
@@ -14,6 +15,7 @@ subroutine analytic_source
   real*8 :: srcren
   real*8 :: thelp, help, xcent, ycent, zcent
 
+  tot_esurf = 0d0
   gas_emitex = 0d0
 
 !-- setting source helper
@@ -28,6 +30,21 @@ subroutine analytic_source
 
   if(in_srctype=='none') then
     return
+  elseif(in_srctype=='surf') then
+!-- time-integrated surface flux [erg/cm^2]
+     help = 0.25d0*pc_acoef*pc_c*tsp_dt*in_srcmax**4
+     select case(in_igeom)
+!-- 1D
+     case(1)
+        tot_esurf = help*pc_pi4*(grd_xarr(grd_nx+1)*thelp)**2
+!-- 2D
+     case(2)
+        tot_esurf = help*pc_pi*(grd_xarr(grd_nx+1)*thelp)**2
+!-- 3D
+     case(3)
+        tot_esurf = help*(grd_xarr(grd_nx+1)-grd_xarr(1)) * &
+             (grd_yarr(grd_ny+1)-grd_yarr(1))*thelp**2
+     endselect
   elseif(in_srctype=='heav') then
      !Heaviside source (uniform source sphere)!{{{
      if (tsp_t<=(in_tfirst+in_theav)*pc_day) then

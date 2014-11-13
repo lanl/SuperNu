@@ -26,9 +26,9 @@ subroutine sourcenumbers(nmpi)
   grd_nvolex = 0
 
 !-- etot
-  etot = sum(grd_emit) + sum(grd_emitex)
+  etot = sum(grd_emit) + sum(grd_emitex) + tot_esurf
   
-  ! Calculating number of domain inner boundary particles (if any)
+!-- calculating number of boundary particles (if any)
   prt_nsurf = nint(tot_esurf*prt_ns/etot)
   prt_nnew = prt_nsurf
 

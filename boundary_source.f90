@@ -14,7 +14,7 @@ subroutine boundary_source
   real*8 :: r1, r2, P, mu0, x0,y0,z0, esurfpart, wl0, om0
   real*8 :: denom2, wl1, wl2, thelp, mfphelp, mu1, mu2
   real*8 :: srftemp = 1d4
-  real*8 :: cmffact,azitrfm
+  real*8 :: cmffact,azitrfm, alb,beta,eps
   type(packet),pointer :: ptcl
   integer, external :: binsrch
   real*8, dimension(grd_ng) :: emitsurfprobg  !surface emission probabilities 
@@ -62,6 +62,7 @@ subroutine boundary_source
      case(3)
         k = 1
      endselect
+     if(in_srcmax>0d0.and.in_srctype=='surf') srftemp = in_srcmax
      do ig = 1, grd_ng
         wl1 = pc_h*pc_c/(grd_wl(ig+1)*pc_kb*srftemp)
         wl2 = pc_h*pc_c/(grd_wl(ig)*pc_kb*srftemp)
@@ -200,7 +201,13 @@ subroutine boundary_source
         om0 = pc_pi2*r1
 !-- calculating albedo
         mfphelp = (grd_cap(iig,i,j,k)+grd_sig(i,j,k))*dz(k)*thelp
-        P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
+        alb = grd_fcoef(i,j,k)*grd_cap(iig,i,j,k)/ &
+             (grd_cap(iig,i,j,k)+grd_sig(i,j,k))
+        eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
+        beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
+             2.25d0*alb**2*mfphelp**4)
+        P = 0.5d0*eps*beta*(1d0+1.5d0*mu0)/(beta-0.75*eps*mfphelp)
+!        P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
         lhelp = ((grd_sig(i,j,k)+grd_cap(iig,i,j,k)) * &
              min(dx(i),dy(j),dz(k))*thelp < prt_tauddmc) &
              .or.in_puretran.or.P>1d0.or.P<0d0

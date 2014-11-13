@@ -429,6 +429,9 @@ c
       endif
 c
 c-- broadcast
+      call mpi_bcast(tot_esurf,1,MPI_REAL8,
+     &   impi0,MPI_COMM_WORLD,ierr)
+c
       n = grd_nx*grd_ny*grd_nz
       call mpi_bcast(grd_temp,n,MPI_REAL8,
      &   impi0,MPI_COMM_WORLD,ierr)

@@ -469,7 +469,7 @@ c-- allocate arrays
       allocate(zout(nz+1))
       allocate(str_xleft(nx+1))
       allocate(str_yleft(ny+1))
-      allocate(str_yleft(nz+1))
+      allocate(str_zleft(nz+1))
       allocate(str_mass(nx,ny,nz))
 c
 c-- create unit-length x array
