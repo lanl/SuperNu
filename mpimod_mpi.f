@@ -349,7 +349,6 @@ c     ------------------------------------!{{{
       integer,intent(in) :: ncell
 ************************************************************************
 * mpi_scatter the input structure to all ranks in the worker comm.
-* this is doing bcasts only for now.
 ************************************************************************
       integer :: nx,ny,nz,n
 c
@@ -386,6 +385,7 @@ c
 c     ------------------------!{{{
       use gridmod
       use gasmod
+      use totalsmod
       use particlemod
       use timestepmod
       implicit none
