@@ -178,10 +178,8 @@ subroutine diffusion3(ptcl,isvacant)
      if(lhelp) then
 !-- DDMC interface
         help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*dx(ix)*thelp
-        alb = (grd_sig(ix,iy,iz)+(1d0-grd_fcoef(ix,iy,iz)) * &
-             grd_cap(ig,ix,iy,iz))/ &
+        alb = grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz)/ &
              (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))
-        alb = 1d0-alb
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
         beta = 1.5d0*alb*help**2+sqrt(3d0*alb*help**2 + &
              2.25d0*alb**2*help**4)
@@ -206,10 +204,8 @@ subroutine diffusion3(ptcl,isvacant)
      if(lhelp) then
 !-- DDMC interface
         help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*dx(ix)*thelp
-        alb = (grd_sig(ix,iy,iz)+(1d0-grd_fcoef(ix,iy,iz)) * &
-             grd_cap(ig,ix,iy,iz))/ &
+        alb = grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz)/ &
              (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))
-        alb = 1d0-alb
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
         beta = 1.5d0*alb*help**2+sqrt(3d0*alb*help**2 + &
              2.25d0*alb**2*help**4)
@@ -234,10 +230,8 @@ subroutine diffusion3(ptcl,isvacant)
      if(lhelp) then
 !-- DDMC interface
         help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*dy(iy)*thelp
-        alb = (grd_sig(ix,iy,iz)+(1d0-grd_fcoef(ix,iy,iz)) * &
-             grd_cap(ig,ix,iy,iz))/ &
+        alb = grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz)/ &
              (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))
-        alb = 1d0-alb
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
         beta = 1.5d0*alb*help**2+sqrt(3d0*alb*help**2 + &
              2.25d0*alb**2*help**4)
@@ -262,10 +256,8 @@ subroutine diffusion3(ptcl,isvacant)
      if(lhelp) then
 !-- DDMC interface
         help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*dy(iy)*thelp
-        alb = (grd_sig(ix,iy,iz)+(1d0-grd_fcoef(ix,iy,iz)) * &
-             grd_cap(ig,ix,iy,iz))/ &
+        alb = grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz)/ &
              (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))
-        alb = 1d0-alb
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
         beta = 1.5d0*alb*help**2+sqrt(3d0*alb*help**2 + &
              2.25d0*alb**2*help**4)
@@ -290,10 +282,8 @@ subroutine diffusion3(ptcl,isvacant)
      if(lhelp) then
 !-- DDMC interface
         help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*dz(iz)*thelp
-        alb = (grd_sig(ix,iy,iz)+(1d0-grd_fcoef(ix,iy,iz)) * &
-             grd_cap(ig,ix,iy,iz))/ &
+        alb = grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz)/ &
              (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))
-        alb = 1d0-alb
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
         beta = 1.5d0*alb*help**2+sqrt(3d0*alb*help**2 + &
              2.25d0*alb**2*help**4)
@@ -318,10 +308,8 @@ subroutine diffusion3(ptcl,isvacant)
      if(lhelp) then
 !-- DDMC interface
         help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*dz(iz)*thelp
-        alb = (grd_sig(ix,iy,iz)+(1d0-grd_fcoef(ix,iy,iz)) * &
-             grd_cap(ig,ix,iy,iz))/ &
+        alb = grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz)/ &
              (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))
-        alb = 1d0-alb
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
         beta = 1.5d0*alb*help**2+sqrt(3d0*alb*help**2 + &
              2.25d0*alb**2*help**4)
@@ -430,10 +418,8 @@ subroutine diffusion3(ptcl,isvacant)
 !-- IMC interface or boundary
               mfphelp = (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
                    dx(ix)*thelp
-              alb = (grd_sig(ix,iy,iz)+(1d0-grd_fcoef(ix,iy,iz)) * &
-                   grd_cap(iiig,ix,iy,iz))/ &
+              alb = grd_fcoef(ix,iy,iz)*grd_cap(iiig,ix,iy,iz)/ &
                    (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz))
-              alb = 1d0-alb
               eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
               beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
                    2.25d0*alb**2*mfphelp**4)
@@ -567,10 +553,8 @@ subroutine diffusion3(ptcl,isvacant)
 !-- IMC interface or boundary
               mfphelp = (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
                    dx(ix)*thelp
-              alb = (grd_sig(ix,iy,iz)+(1d0-grd_fcoef(ix,iy,iz)) * &
-                   grd_cap(iiig,ix,iy,iz))/ &
+              alb = grd_fcoef(ix,iy,iz)*grd_cap(iiig,ix,iy,iz)/ &
                    (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz))
-              alb = 1d0-alb
               eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
               beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
                    2.25d0*alb**2*mfphelp**4)
@@ -704,10 +688,8 @@ subroutine diffusion3(ptcl,isvacant)
 !-- IMC interface or boundary
               mfphelp = (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
                    dy(iy)*thelp
-              alb = (grd_sig(ix,iy,iz)+(1d0-grd_fcoef(ix,iy,iz)) * &
-                   grd_cap(iiig,ix,iy,iz))/ &
+              alb = grd_fcoef(ix,iy,iz)*grd_cap(iiig,ix,iy,iz)/ &
                    (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz))
-              alb = 1d0-alb
               eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
               beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
                    2.25d0*alb**2*mfphelp**4)
@@ -841,10 +823,8 @@ subroutine diffusion3(ptcl,isvacant)
 !-- IMC interface or boundary
               mfphelp = (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
                    dy(iy)*thelp
-              alb = (grd_sig(ix,iy,iz)+(1d0-grd_fcoef(ix,iy,iz)) * &
-                   grd_cap(iiig,ix,iy,iz))/ &
+              alb = grd_fcoef(ix,iy,iz)*grd_cap(iiig,ix,iy,iz)/ &
                    (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz))
-              alb = 1d0-alb
               eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
               beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
                    2.25d0*alb**2*mfphelp**4)
@@ -978,10 +958,8 @@ subroutine diffusion3(ptcl,isvacant)
 !-- IMC interface or boundary
               mfphelp = (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
                    dz(iz)*thelp
-              alb = (grd_sig(ix,iy,iz)+(1d0-grd_fcoef(ix,iy,iz)) * &
-                   grd_cap(iiig,ix,iy,iz))/ &
+              alb = grd_fcoef(ix,iy,iz)*grd_cap(iiig,ix,iy,iz)/ &
                    (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz))
-              alb = 1d0-alb
               eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
               beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
                    2.25d0*alb**2*mfphelp**4)
@@ -1114,10 +1092,8 @@ subroutine diffusion3(ptcl,isvacant)
 !-- IMC interface or boundary
               mfphelp = (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
                    dz(iz)*thelp
-              alb = (grd_sig(ix,iy,iz)+(1d0-grd_fcoef(ix,iy,iz)) * &
-                   grd_cap(iiig,ix,iy,iz))/ &
+              alb = grd_fcoef(ix,iy,iz)*grd_cap(iiig,ix,iy,iz)/ &
                    (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz))
-              alb = 1d0-alb
               eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
               beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
                    2.25d0*alb**2*mfphelp**4)
