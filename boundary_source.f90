@@ -62,6 +62,7 @@ subroutine boundary_source
      case(3)
         k = 1
      endselect
+     if(in_srcmax>0d0.and.in_srctype=='surf') srftemp = in_srcmax
      do ig = 1, grd_ng
         wl1 = pc_h*pc_c/(grd_wl(ig+1)*pc_kb*srftemp)
         wl2 = pc_h*pc_c/(grd_wl(ig)*pc_kb*srftemp)

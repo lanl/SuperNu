@@ -106,10 +106,10 @@ c-- absorption terms:
       real*8 :: in_sigrpwr = 0d0 !power law absorption opacity density exponent
 c
 c-- external source structure
-      character(4) :: in_srctype = 'none'   !none|heav|strt|manu: external source structure type
+      character(4) :: in_srctype = 'none'   !none|heav|strt|manu|surf: external source structure type
       integer :: in_nheav = 0   !outer cell bound if heaviside ('heav') source
       real*8 :: in_theav = 0d0 !duration of heaviside source
-      real*8 :: in_srcmax = 0d0 !peak source strength (ergs/cm^3/s)
+      real*8 :: in_srcmax = 0d0 !peak source strength
 c
 c-- misc
       character(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
