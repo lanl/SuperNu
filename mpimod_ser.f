@@ -17,21 +17,24 @@ c
 c
 c
       subroutine mpi_setup_communicators(ncell)
-      integer :: ncell
+      integer,intent(in) :: ncell
       end subroutine mpi_setup_communicators
 c
 c
       subroutine scatter_inputstruct(ndim,ncell)
-      use inputstrmod
+      use inputstrmod!{{{
       use gasmod
       implicit none
       integer,intent(in) :: ndim(3)
       integer,intent(in) :: ncell
+************************************************************************
+* mpi_scatter the input structure to all ranks in the worker comm.
+************************************************************************
 c
       allocate(str_massdd(ncell))
       if(str_nabund>0) allocate(str_massfrdd(str_nabund,ncell))
       str_massdd = reshape(str_mass,[ncell])
-      str_massfrdd = reshape(str_massfr,[str_nabund,ncell])
+      str_massfrdd = reshape(str_massfr,[str_nabund,ncell])!}}}
       end subroutine scatter_inputstruct
 c
 c

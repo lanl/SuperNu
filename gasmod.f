@@ -53,24 +53,22 @@ c
 
 c-- temperature structure history (only allocated when used)
       real*8,allocatable :: gas_temppreset(:,:) !(ncell,tim_nt)
-
+c
       save
-
+c
       contains
-
-
+c
+c
       subroutine gas_init(ltalk,ncell)
-c-------------------------------------
+c-------------------------------------!{{{
       implicit none
       logical,intent(in) :: ltalk
       integer,intent(in) :: ncell
-
+c
       integer :: n
-      logical :: lexist
-
+c
       gas_ncell = ncell
-
-
+c
 c-- secondary
       allocate(gas_temp(gas_ncell)) !(gas_ncell)
       allocate(gas_ur(gas_ncell))
@@ -107,7 +105,7 @@ c-- output
       if(ltalk) then
        n = gas_ncell*(11 + 5 + gas_nelem+3)/1024 !kB
        write(6,*) 'ALLOC gas    :',n,"kB",n/1024,"MB",n/1024**2,"GB"
-      endif !ltalk
+      endif !ltalk!}}}
       end subroutine gas_init
 c
       end module gasmod

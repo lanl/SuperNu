@@ -1,14 +1,13 @@
 subroutine particle_advance_gamgrey
 
   use particlemod
+  use timestepmod
   use gridmod
   use physconstmod
   use inputparmod
   use timingmod
   use fluxmod
   implicit none
-!
-  integer,target :: one = 1
 !##################################################
   !This subroutine propagates all existing particles that are not vacant
   !during a time step.  Particles may generally undergo a physical interaction
@@ -17,23 +16,22 @@ subroutine particle_advance_gamgrey
   !are being handled in separate subroutines but this may be changed to reduce
   !total subroutine calls in program.
 !##################################################
-  logical :: lhelp
   integer :: ipart, npart, ig
   integer,external :: binsrch
-  real*8 :: r1, x1, x2
-! integer :: irl,irr
-! real*8 :: xx0, bmax
-! real*8 :: uul, uur, uumax, r0,r2,r3
+  real*8 :: r1
   integer :: zsrc, iy, iz
-  real*8 :: rsrc, musrc, esrc, wlsrc, y, om
+  real*8 :: rsrc, musrc, esrc, y, om
   real*8 :: t0,t1  !timing
-  real*8 :: labfact
+  real*8 :: labfact,cmffact,x0
   real*8 :: esq,mu0
 !-- hardware
 !
   type(packet) :: ptcl
 !
-  logical,parameter :: isshift=.false.
+!-- advection split parameter
+  real*8,parameter :: alph2 = .5d0
+
+  logical,parameter :: isshift=.true.
 
   grd_edep = 0.0
   flx_gamluminos = 0.0
@@ -48,19 +46,11 @@ subroutine particle_advance_gamgrey
   call time(t0)
 
   esq = sum(sqrt(grd_emit))
-  grd_nvol = sqrt(grd_emit)/esq*prt_ns  !-- no source tilting yet
+  grd_nvol = nint(sqrt(grd_emit)/esq*prt_ns)  !-- no source tilting yet
 !-- floor under particle per cell number
   where(grd_emit>0d0) grd_nvol = max(grd_nvol,10)
 !-- total number of particles
   npart = sum(grd_nvol)
-
-!-- link particle properties
-  zsrc => ptcl%zsrc
-  iy => ptcl%iy
-  iz => ptcl%iz
-  rsrc => ptcl%rsrc
-  musrc => ptcl%musrc
-  esrc => ptcl%esrc
 
 !-- start from the left
   zsrc = 1
@@ -96,8 +86,8 @@ subroutine particle_advance_gamgrey
 !-- calculating position
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        rsrc = (r1*grd_xarr(i+1)**3 + &
-             (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
+        rsrc = (r1*grd_xarr(zsrc+1)**3 + &
+             (1.0-r1)*grd_xarr(zsrc)**3)**(1.0/3.0)
 !--
         if(grd_isvelocity) then
            x0 = ptcl%rsrc
@@ -108,8 +98,8 @@ subroutine particle_advance_gamgrey
         endif
      case(2)
         stop 'particle_advance_grey: no 2D'
-        y => ptcl%y
-        om => ptcl%om
+        y = ptcl%y
+        om = ptcl%om
      case(3)
         stop 'particle_advance_gamgray: no 3D transport'
      endselect
@@ -124,7 +114,7 @@ subroutine particle_advance_gamgrey
         case(1)
            rsrc = rsrc*tsp_t/(tsp_t+.5*tsp_dt)
            if(rsrc<grd_xarr(zsrc)) then
-              zholder = binsrch(rsrc,grd_xarr,grd_nx+1,0)
+              zsrc = binsrch(rsrc,grd_xarr,grd_nx+1,0)
            endif
         case(2)
            call advection2(.true.,ig,zsrc,iy,rsrc,y)
@@ -156,11 +146,11 @@ subroutine particle_advance_gamgrey
               if(r1<0.5d0) then
                  prt_done = .true.
                  grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
-!-- velocity effects accounting
-                 tot_evelo = tot_evelo + esrc*(1d0-labfact)
+!!-- velocity effects accounting
+!                 tot_evelo = tot_evelo + esrc*(1d0-labfact)
               else
-!-- weight addition accounted for in external source
-                 tot_eext = tot_eext + esrc
+!!-- weight addition accounted for in external source
+!                 tot_eext = tot_eext + esrc
 !
                  esrc = 2d0*esrc
                  ptcl%ebirth = 2d0*ptcl%ebirth
@@ -188,11 +178,11 @@ subroutine particle_advance_gamgrey
 !                 isvacant = .true.
 !                 prt_done = .true.
 !                 grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
-!!-- velocity effects accounting
-!                 tot_evelo = tot_evelo + esrc*(1d0-labfact)
+!!!-- velocity effects accounting
+!!                 tot_evelo = tot_evelo + esrc*(1d0-labfact)
 !              else
 !!-- weight addition accounted for in external source
-!                 tot_eext = tot_eext + esrc
+!!                tot_eext = tot_eext + esrc
 !!
 !                 esrc = 2d0*esrc
 !                 ptcl%ebirth = 2d0*ptcl%ebirth
@@ -213,7 +203,7 @@ subroutine particle_advance_gamgrey
         case(1)
            rsrc = rsrc*(tsp_t + alph2*tsp_dt)/(tsp_t+tsp_dt)
            if(rsrc<grd_xarr(zsrc)) then
-              zholder = binsrch(rsrc,grd_xarr,grd_nx+1,0)
+              zsrc = binsrch(rsrc,grd_xarr,grd_nx+1,0)
            endif
         case(2)
            call advection2(.false.,ig,zsrc,iy,rsrc,y)
