@@ -107,6 +107,8 @@ c-- absorption terms:
 c
 c-- external source structure
       character(4) :: in_srctype = 'none'   !none|heav|strt|manu|surf: external source structure type
+      character(4) :: in_surfsrcloc = 'out' !in|out|up|down|top|botm: surface source location
+      character(4) :: in_surfsrcmu = 'isot' !isot|beam: surface source direction distribution
       integer :: in_nheav = 0   !outer cell bound if heaviside ('heav') source
       real*8 :: in_theav = 0d0 !duration of heaviside source
       real*8 :: in_srcmax = 0d0 !peak source strength
@@ -143,7 +145,8 @@ c-- runtime parameter namelist
      & in_cvcoef,in_cvtpwr,in_cvrpwr,
      & in_opacanaltype,in_suol,
      & in_suolpick1, in_ldisp1, in_ldisp2,
-     & in_srctype, in_theav, in_nheav, in_srcmax,
+     & in_srctype,in_theav,in_nheav,in_srcmax,
+     & in_surfsrcloc,in_surfsrcmu,
      & in_isimcanlog, in_isddmcanlog,
      & in_tauddmc, in_dentype, in_noreadstruct,
      & in_norestart, in_taulump, in_tauvtime,
@@ -257,6 +260,8 @@ c
       call insertr(in_sigtpwr,in_r,ir)
       call insertr(in_sigrpwr,in_r,ir)
       call insertc(in_srctype,in_c,ic)
+      call insertc(in_surfsrcloc,in_c,ic)
+      call insertc(in_surfsrcmu,in_c,ic)
       call inserti(in_nheav,in_i,ii)
       call insertr(in_theav,in_r,ir)
       call insertr(in_srcmax,in_r,ir)
@@ -372,9 +377,14 @@ c
       case(1)
        if(in_ndim(2)>1 .or. in_ndim(3)>1) stop 'in_ndim invalid'
        if(in_nflx(2)/=1 .or. in_nflx(3)/=1) stop 'in_nflx invalid'
+       if(in_srctype=='surf'.and.in_surfsrcloc/='out')
+     &    stop 'in_srctype and in_surfsrcloc invalid'
       case(2)
        if(in_ndim(3)>1) stop 'in_ndim invalid'
        if(in_nflx(3)/=1) stop 'in_nflx invalid'
+       if(in_srctype=='surf' .and.
+     &      any((/'in  ','top ','botm'/)==in_surfsrcloc))
+     &      stop 'in_srctype and in_surfsrcloc invalid'
       case(4:)
        stop 'in_igeom invalid'
       endselect
