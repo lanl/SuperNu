@@ -31,7 +31,7 @@ subroutine sourcenumbers(nmpi)
 !-- calculating number of boundary particles (if any)
   prt_nsurf = nint(tot_esurf*prt_ns/etot)
   prt_nnew = prt_nsurf
-  write(*,*) prt_nsurf
+
   ! Calculating number of particles per cell (dd_nvol): loop
   select case(in_igeom)
   case(1)
