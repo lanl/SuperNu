@@ -262,7 +262,7 @@ subroutine boundary_source
 !-- setting albedo helpers
            help = dx(i)
            mu2 = mu0
-           mu0 = sqrt(max(1d0-mu0**2-mu1**2,0d0))
+           mu0 = sqrt(1d0-mu0**2)*sin(pc_pi2*r1)
 
         elseif(in_surfsrcloc=='down'.or.in_surfsrcloc=='up') then
 !-- y surface
@@ -293,7 +293,7 @@ subroutine boundary_source
 !-- setting albedo helpers
            help = dy(j)
            mu2 = mu0
-           mu0 = sqrt(max(1d0-mu0**2-mu1**2,0d0))
+           mu0 = sqrt(1d0-mu0**2)*sin(pc_pi2*r1)
 
         else
 !-- z surface
