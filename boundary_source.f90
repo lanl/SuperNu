@@ -12,9 +12,9 @@ subroutine boundary_source
   logical :: lhelp
   integer :: ipart, ivac, ig, iig, i,j,k
   real*8 :: r1, r2, P, mu0, x0,y0,z0, esurfpart, wl0, om0
-  real*8 :: denom2, wl1, wl2, thelp, mfphelp, mu1, mu2
+  real*8 :: denom2, wl1, wl2, thelp, mfphelp, help, mu1, mu2
   real*8 :: srftemp = 1d4
-  real*8 :: cmffact,azitrfm, alb,beta,eps
+  real*8 :: cmffact, alb,beta,eps
   type(packet),pointer :: ptcl
   integer, external :: binsrch
   real*8, dimension(grd_ng) :: emitsurfprobg  !surface emission probabilities 
@@ -49,18 +49,36 @@ subroutine boundary_source
      enddo
   else
      select case(in_igeom)
-!-- 1D: sphere surface
+!-- 1D
      case(1)
         i = grd_nx
         j = 1
         k = 1
-!-- 2D: cylinder base
+!-- 2D
      case(2)
-        j = 1
+        if(in_surfsrcloc=='down') then
+           j = 1
+        elseif(in_surfsrcloc=='up') then
+           j = grd_ny
+        else
+           i = grd_nx
+        endif
         k = 1
-!-- 3D: box base
+!-- 3D
      case(3)
-        k = 1
+        if(in_surfsrcloc=='in') then
+           i = 1
+        elseif(in_surfsrcloc=='out') then
+           i = grd_nx
+        elseif(in_surfsrcloc=='down') then
+           j = 1
+        elseif(in_surfsrcloc=='up') then
+           j = grd_ny
+        elseif(in_surfsrcloc=='botm') then
+           k = 1
+        else
+           k = grd_nz
+        endif
      endselect
      if(in_srcmax>0d0.and.in_srctype=='surf') srftemp = in_srcmax
      do ig = 1, grd_ng
@@ -101,12 +119,15 @@ subroutine boundary_source
      wl0 = 1d0/((1d0-r1)/grd_wl(iig)+r1/grd_wl(iig+1))
 
 !-- sampling surface projection
-     r1 = rand()
-     prt_tlyrand = prt_tlyrand+1
-     r2 = rand()
-     prt_tlyrand = prt_tlyrand+1
-     mu0 = max(r1,r2)
-
+     if(in_surfsrcmu=='beam') then
+        mu0 = 1d0
+     elseif(in_surfsrcmu=='isot') then
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        r2 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        mu0 = max(r1,r2)
+     endif
 !
 !-- selecting geometry and surface
      select case(in_igeom)
@@ -134,24 +155,58 @@ subroutine boundary_source
            ptcl%musrc = -mu0
         endif
 
-!-- 2D (cylinder base)
+!-- 2D
      case(2)
 !-- calculating position
-        r1 = rand()
-        ptcl%rsrc = sqrt(r1)*grd_xarr(grd_nx+1)
-        x0 = ptcl%rsrc
-        ptcl%y = grd_yarr(j)
-        y0 = ptcl%y
+        if(in_surfsrcloc=='down'.or.in_surfsrcloc=='up') then
+!-- flat surface
+           r1 = rand()
+           ptcl%rsrc = sqrt(r1)*grd_xarr(grd_nx+1)
+           x0 = ptcl%rsrc
+           if(j==1) then
+              ptcl%y = grd_yarr(j)
+           else
+              ptcl%y = grd_yarr(j+1)
+              mu0 = -mu0
+           endif
+           y0 = ptcl%y
 !-- setting cell index
-        ptcl%zsrc = binsrch(x0,grd_xarr,grd_nx+1,0)
-        i = ptcl%zsrc
-        ptcl%iy = j
-!-- sampling azimuthal angle of direction
-        r1 = rand()
-        om0 = pc_pi2*r1
+           ptcl%zsrc = binsrch(x0,grd_xarr,grd_nx+1,0)
+           i = ptcl%zsrc
+           ptcl%iy = j
+!-- sampling direction helpers
+           r1 = rand()
+           om0 = pc_pi2*r1
+!-- setting albedo helpers
+           help = dy(j)
+           mu2 = mu0
+        else
+!-- curved surface
+           ptcl%rsrc = grd_xarr(grd_nx+1)
+           x0 = ptcl%rsrc
+           r1 = rand()
+           ptcl%y = r1*grd_yarr(grd_ny+1)+(1d0-r1)*grd_yarr(1)
+           y0 = ptcl%y
+!-- setting cell index
+           ptcl%zsrc = i
+           ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1,0)
+           j = ptcl%iy
+!-- sampling direction helpers
+           r1 = rand()
+           mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
+           om0 = atan2(sqrt(max(1d0-mu1**2-mu0**2,0d0)),-mu0)
+           if(om0<0d0) om0=om0+pc_pi2
+           r1 = rand()
+           if(r1<0.5d0) om0=pc_pi2-om0
+!-- setting albedo helpers
+           help = dx(i)
+           mu2 = mu0
+           mu0 = mu1
+        endif
+
 !-- calculating albedo
-        mfphelp = (grd_cap(iig,i,j,1)+grd_sig(i,j,1))*dy(j)*thelp
-        P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
+        mfphelp = (grd_cap(iig,i,j,1)+grd_sig(i,j,1))*help*thelp
+        P = 4d0*(1.0+1.5*abs(mu2))/(3d0*mfphelp+6d0*pc_dext)
         lhelp = ((grd_sig(i,j,1)+grd_cap(iig,i,j,1)) * &
              min(dx(i),dy(j))*thelp < prt_tauddmc) &
              .or.in_puretran.or.P>1d0.or.P<0d0
@@ -159,7 +214,7 @@ subroutine boundary_source
         if(lhelp.and.grd_isvelocity) then
 !-- 1+dir*v/c
            cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
-           azitrfm = atan2(sqrt(1d0-mu0**2)*sin(om0), &
+           ptcl%om = atan2(sqrt(1d0-mu0**2)*sin(om0), &
                 sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
 !-- mu
            ptcl%musrc = (mu0+y0/pc_c)/cmffact
@@ -169,44 +224,114 @@ subroutine boundary_source
               ptcl%musrc = -1d0
            endif
 !-- om
-           if(azitrfm >= 0d0) then
-              ptcl%om = azitrfm
-           else
-              ptcl%om = azitrfm+pc_pi2
-           endif
+           if(ptcl%om < 0d0) ptcl%om=ptcl%om+pc_pi2
         else
            ptcl%musrc = mu0
            ptcl%om = om0
         endif
 
-!-- 3D (box base)
+!-- 3D
      case(3)
 !-- calculating position
-        r1 = rand()
-        ptcl%rsrc = r1*grd_xarr(grd_nx+1)
-        x0 = ptcl%rsrc
-        r1 = rand()
-        ptcl%y = r1*grd_yarr(grd_ny+1)
-        y0 = ptcl%y
-        ptcl%z = grd_zarr(k)
-        z0 = ptcl%z
+        if(in_surfsrcloc=='in'.or.in_surfsrcloc=='out') then
+!-- x surface
+           if(i==1) then
+              ptcl%rsrc = grd_xarr(i)
+           else
+              ptcl%rsrc = grd_xarr(i+1)
+              mu0 = -mu0
+           endif
+           x0 = ptcl%rsrc
+           r1 = rand()
+           ptcl%y = r1*grd_yarr(grd_ny+1)+(1d0-r1)*grd_yarr(1)
+           y0 = ptcl%y
+           r1 = rand()
+           ptcl%z = r1*grd_zarr(grd_nz+1)+(1d0-r1)*grd_zarr(1)
+           z0 = ptcl%z
 !-- setting cell index
-        ptcl%zsrc = binsrch(x0,grd_xarr,grd_nx+1,0)
-        i = ptcl%zsrc
-        ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1,0)
-        j = ptcl%iy
-        ptcl%iz = k
+           ptcl%zsrc = i
+           ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1,0)
+           j = ptcl%iy
+           ptcl%iz = binsrch(z0,grd_zarr,grd_nz+1,0)
+           k = ptcl%iz
+!-- sampling direction helpers
+           r1 = rand()
+           mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
+           om0 = atan2(mu1,mu0)
+           if(om0<0d0) om0=om0+pc_pi2
+!-- setting albedo helpers
+           help = dx(i)
+           mu2 = mu0
+           mu0 = sqrt(max(1d0-mu0**2-mu1**2,0d0))
+
+        elseif(in_surfsrcloc=='down'.or.in_surfsrcloc=='up') then
+!-- y surface
+           r1 = rand()
+           ptcl%rsrc = r1*grd_xarr(grd_nx+1)+(1d0-r1)*grd_xarr(1)
+           x0 = ptcl%rsrc
+           if(j==1) then
+              ptcl%y = grd_yarr(j)
+           else
+              ptcl%y = grd_yarr(j+1)
+              mu0 = -mu0
+           endif
+           y0 = ptcl%y
+           r1 = rand()
+           ptcl%z = r1*grd_zarr(grd_nz+1)+(1d0-r1)*grd_zarr(1)
+           z0 = ptcl%z
+!-- setting cell index
+           ptcl%zsrc = binsrch(x0,grd_xarr,grd_nx+1,0)
+           i = ptcl%zsrc
+           ptcl%iy = j
+           ptcl%iz = binsrch(z0,grd_zarr,grd_nz+1,0)
+           k = ptcl%iz
+!-- sampling direction helpers
+           r1 = rand()
+           mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
+           om0 = atan2(mu0,mu1)
+           if(om0<0d0) om0=om0+pc_pi2
+!-- setting albedo helpers
+           help = dy(j)
+           mu2 = mu0
+           mu0 = sqrt(max(1d0-mu0**2-mu1**2,0d0))
+
+        else
+!-- z surface
+           r1 = rand()
+           ptcl%rsrc = r1*grd_xarr(grd_nx+1)+(1d0-r1)*grd_xarr(1)
+           x0 = ptcl%rsrc
+           r1 = rand()
+           ptcl%y = r1*grd_yarr(grd_ny+1)+(1d0-r1)*grd_yarr(1)
+           y0 = ptcl%y
+           if(k==1) then
+              ptcl%z = grd_zarr(k)
+           else
+              ptcl%z = grd_zarr(k+1)
+              mu0 = -mu0
+           endif
+           z0 = ptcl%z
+!-- setting cell index
+           ptcl%zsrc = binsrch(x0,grd_xarr,grd_nx+1,0)
+           i = ptcl%zsrc
+           ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1,0)
+           j = ptcl%iy
+           ptcl%iz = k
 !-- sampling azimuthal angle of direction
-        r1 = rand()
-        om0 = pc_pi2*r1
+           r1 = rand()
+           om0 = pc_pi2*r1
+!-- setting albedo helpers
+           help = dz(k)
+           mu2 = mu0
+        endif
+
 !-- calculating albedo
-        mfphelp = (grd_cap(iig,i,j,k)+grd_sig(i,j,k))*dz(k)*thelp
+        mfphelp = (grd_cap(iig,i,j,k)+grd_sig(i,j,k))*help*thelp
         alb = grd_fcoef(i,j,k)*grd_cap(iig,i,j,k)/ &
              (grd_cap(iig,i,j,k)+grd_sig(i,j,k))
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
         beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
              2.25d0*alb**2*mfphelp**4)
-        P = 0.5d0*eps*beta*(1d0+1.5d0*mu0)/(beta-0.75*eps*mfphelp)
+        P = 0.5d0*eps*beta*(1d0+1.5d0*abs(mu2))/(beta-0.75*eps*mfphelp)
 !        P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
         lhelp = ((grd_sig(i,j,k)+grd_cap(iig,i,j,k)) * &
              min(dx(i),dy(j),dz(k))*thelp < prt_tauddmc) &
