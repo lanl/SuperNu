@@ -438,6 +438,7 @@ c
       case('heav')
       case('strt')
       case('manu')
+      case('surf')
       case default
        stop 'in_srctype unknown'
       end select

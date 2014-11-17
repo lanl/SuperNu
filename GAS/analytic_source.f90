@@ -32,18 +32,37 @@ subroutine analytic_source
     return
   elseif(in_srctype=='surf') then
 !-- time-integrated surface flux [erg/cm^2]
-     help = 0.25d0*pc_acoef*pc_c*tsp_dt*in_srcmax**4
+     help = 0.25d0*pc_acoef*pc_c*tsp_dt*in_srcmax**4 * &
+          thelp**2
      select case(in_igeom)
 !-- 1D
      case(1)
-        tot_esurf = help*pc_pi4*(grd_xarr(grd_nx+1)*thelp)**2
+        tot_esurf = help*pc_pi4*grd_xarr(grd_nx+1)**2
 !-- 2D
      case(2)
-        tot_esurf = help*pc_pi*(grd_xarr(grd_nx+1)*thelp)**2
+        if(in_surfsrcloc=='down'.or.in_surfsrcloc=='up') then
+!-- flat surface
+           tot_esurf = help*pc_pi*grd_xarr(grd_nx+1)**2
+        else
+!-- curved surface
+           tot_esurf = help*2d0*pc_pi*grd_xarr(grd_nx+1) * &
+                (grd_yarr(grd_ny+1)-grd_yarr(1))
+        endif
 !-- 3D
      case(3)
-        tot_esurf = help*(grd_xarr(grd_nx+1)-grd_xarr(1)) * &
-             (grd_yarr(grd_ny+1)-grd_yarr(1))*thelp**2
+        if(in_surfsrcloc=='in'.or.in_surfsrcloc=='out') then
+!-- x surface
+           tot_esurf = help*(grd_yarr(grd_ny+1)-grd_yarr(1)) * &
+                (grd_zarr(grd_nz+1)-grd_zarr(1))
+        elseif(in_surfsrcloc=='down'.or.in_surfsrcloc=='up') then
+!-- y surface
+           tot_esurf = help*(grd_xarr(grd_nx+1)-grd_xarr(1)) * &
+                (grd_zarr(grd_nz+1)-grd_zarr(1))
+        elseif(in_surfsrcloc=='botm'.or.in_surfsrcloc=='top') then
+!-- z surface
+           tot_esurf = help*(grd_xarr(grd_nx+1)-grd_xarr(1)) * &
+                (grd_yarr(grd_ny+1)-grd_yarr(1))
+        endif
      endselect
   elseif(in_srctype=='heav') then
      !Heaviside source (uniform source sphere)!{{{
