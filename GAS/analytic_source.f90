@@ -117,11 +117,11 @@ subroutine analytic_source
            help = min(grd_xarr(grd_nx+1),grd_yarr(grd_ny+1) , &
                 grd_zarr(grd_nz+1))
            if(help == grd_xarr(grd_nx+1)) then
-              nhelp = grd_nx
+              nhelp = grd_nx/2
            elseif(help == grd_yarr(grd_ny+1)) then
-              nhelp = grd_ny
+              nhelp = grd_ny/2
            else
-              nhelp = grd_nz
+              nhelp = grd_nz/2
            endif
 !-- Heaviside radius <= distance to bound
            help = dble(min(in_nheav,nhelp))*help / &
