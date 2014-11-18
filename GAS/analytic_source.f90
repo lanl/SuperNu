@@ -113,7 +113,7 @@ subroutine analytic_source
 !-- 3D
         case(3)
 !
-!-- using min distance to cylinder bound
+!-- using min distance to bound
            help = min(grd_xarr(grd_nx+1),grd_yarr(grd_ny+1) , &
                 grd_zarr(grd_nz+1))
            if(help == grd_xarr(grd_nx+1)) then
@@ -123,6 +123,9 @@ subroutine analytic_source
            else
               nhelp = grd_nz
            endif
+!-- Heaviside radius <= distance to bound
+           help = dble(min(in_nheav,nhelp))*help / &
+                dble(nhelp)
 !-- non-zero source within Heaviside sphere
            l = 0
            ll = 0
