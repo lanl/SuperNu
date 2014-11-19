@@ -31,8 +31,6 @@ c     -------------------------------
       real*8 :: dtempfrac = 0.99d0
       real*8 :: natom1fr(gas_ncell,-2:-1) !todo: memory storage order?
       real*8 :: natom2fr(gas_ncell,-2:-1)
-c-- gamma opacity
-      real*8,parameter :: ye=.5d0 !todo: compute this value
 c-- previous values
       real*8,allocatable,save :: tempalt(:),siggreyalt(:)
       real*8 :: hlparr(grd_nx),hlparrdd(gas_ncell)
@@ -58,6 +56,7 @@ c
 c-- update the abundances for the center time
        !call update_natomfr(tsp_tcenter)
        call update_natomfr(tsp_t)
+       call update_ye
 c
 c-- energy deposition
        gas_nisource =  !per average atom (mix of stable and unstable)
@@ -181,7 +180,7 @@ c
 c-- calculate opacities
 c======================
 c-- gamma opacity
-      gas_capgam = in_opcapgam*ye*gas_rho
+      gas_capgam = in_opcapgam*gas_ye*gas_rho
 c
 c
 c-- simple analytical group/grey opacities: Planck and Rosseland 
@@ -308,3 +307,28 @@ c-- Ni
      &  gas_natom0fr(2,:)                              !initial Ni (stable)
 c!}}}
       end subroutine update_natomfr
+
+
+
+      subroutine update_ye
+c     --------------------!{{{
+      use gasmod
+      use elemdatamod
+      implicit none
+************************************************************************
+* update nuclear electron fractions
+************************************************************************
+      integer :: l
+c
+      gas_ye = 0d0
+      do l=1,gas_nelem
+c-- wrong memory order, but this is a small array
+       gas_ye = gas_ye + gas_natom1fr(l,:)*l/elem_data(l)%m
+      enddo
+cc
+cc-- dump values for verification purposes
+c      do i=1,gas_ncell
+c       write(6,*) i,gas_ye(i)
+c      enddo
+c!}}}
+      end subroutine update_ye

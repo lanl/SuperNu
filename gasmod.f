@@ -21,12 +21,13 @@ c-- domain decomposed grid variables used to calculate the state of the material
       real*8,allocatable :: gas_nisource(:)
       real*8,allocatable :: gas_vol(:)        !cell volume [cm^3]
       real*8,allocatable :: gas_mass(:)       !cell mass [g]
+      real*8,allocatable :: gas_ye(:)         !electron fraction
       real*8,allocatable :: gas_natom(:)      !cell number of atoms
       real*8,allocatable :: gas_nelec(:)      !cell number of electrons per atom
       real*8,allocatable :: gas_natom1fr(:,:) !(-2:gas_nelem,ncell)  !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
       real*8,allocatable :: gas_natom0fr(:,:) !(-2:2,ncell)  !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
 c-- mate,allocatablerial energy (temperature) source (may be manufactured), rev>244
-      real*8,allocatable :: gas_matsrc(:)
+      real*8,allocatable :: gas_matsrc(:)     !-- material energy (temperature) source (may be manufactured)
 c
       real*8,allocatable :: gas_edep(:)
 
@@ -70,22 +71,24 @@ c
       gas_ncell = ncell
 c
 c-- secondary
-      allocate(gas_temp(gas_ncell)) !(gas_ncell)
+      allocate(gas_temp(gas_ncell))
       allocate(gas_ur(gas_ncell))
       allocate(gas_rho(gas_ncell))
       allocate(gas_bcoef(gas_ncell))
       allocate(gas_nisource(gas_ncell))
-      allocate(gas_vol(gas_ncell))        !gcell volume [cm^3]
-      allocate(gas_mass(gas_ncell))       !gcell mass
-      allocate(gas_natom(gas_ncell))      !gcell # atoms
+      allocate(gas_vol(gas_ncell))
+      allocate(gas_mass(gas_ncell))
+      allocate(gas_ye(gas_ncell))
+      allocate(gas_natom(gas_ncell))
       allocate(gas_natom1fr(-2:gas_nelem,gas_ncell))
       allocate(gas_natom0fr(-2:2,gas_ncell))
-      allocate(gas_nelec(gas_ncell))  !gcell # electrons per atom
+      allocate(gas_nelec(gas_ncell))
       allocate(gas_matsrc(gas_ncell))
-      gas_natom1fr = 0d0 !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
-      gas_natom0fr = 0d0     !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
-      gas_nelec = 1d0  !gcell # electrons per atom 
-      gas_matsrc = 0d0  !-- material energy (temperature) source (may be manufactured)
+      gas_natom1fr = 0d0
+      gas_natom0fr = 0d0
+      gas_ye = .5d0
+      gas_nelec = 1d0
+      gas_matsrc = 0d0
       allocate(gas_emitprob(gas_ng,gas_ncell))
       allocate(gas_cap(gas_ng,gas_ncell))
 c   allocate(dd_opacleak(6,gas_ncell))
@@ -103,7 +106,7 @@ c
 c
 c-- output
       if(ltalk) then
-       n = gas_ncell*(11 + 5 + gas_nelem+3)/1024 !kB
+       n = gas_ncell*(20 + 5 + gas_nelem+3 + 2*gas_ng)/1024 !kB
        write(6,*) 'ALLOC gas    :',n,"kB",n/1024,"MB",n/1024**2,"GB"
       endif !ltalk!}}}
       end subroutine gas_init
