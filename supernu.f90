@@ -7,7 +7,6 @@ program supernu
   use gasmod
   use particlemod
   use physconstmod
-  use profiledatamod, only:read_gamma_profiles
   use miscmod
 
   use inputstrmod
@@ -88,12 +87,6 @@ program supernu
 !== generate_inputstr development in progress
       call generate_inputstr(in_igeom)
     endif
-!!
-!!-- read gamma deposition profiles
-!    if(in_isvelocity.and.in_srctype=='none') then
-!      if(in_igeom>1) stop 'supernu: read_gam_prof: no 2D/3D'
-!      call read_gamma_profiles(in_ndim)
-!    endif
 
 !-- READ DATA
 !-- read ion and level data

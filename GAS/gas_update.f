@@ -9,7 +9,6 @@ c     -------------------------------
       use gasmod
       use inputparmod
       use timingmod
-      use profiledatamod
       implicit none
       integer,intent(in) :: irank
 ************************************************************************
@@ -66,16 +65,6 @@ c-- energy deposition
      &     pc_qhl_co56
 c-- total, units=ergs
        gas_nisource = gas_nisource * gas_natom
-c-- use gamma deposition profiles if data available
-       if(prof_ntgam>0) then
-c-- broken in dd
-!       help = sum(gas_nisource)
-!       write(6,*) 'ni56 source:',help
-        if(grd_ny>1 .or. grd_nz>1) stop 'gg_update: gam_prof: no 2D/3D'
-        if(grd_nx/=gas_ncell) stop 'gas_update: no gamprf and dd'
-!       hlparr = gamma_profile(tsp_t)
-!       gas_nisource = help * hlparrdd
-       endif
       endif
 !}}}
 c
