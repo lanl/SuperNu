@@ -65,12 +65,24 @@ c-------------------------------------!{{{
       implicit none
       logical,intent(in) :: ltalk
       integer,intent(in) :: ncell
-c
+************************************************************************
+* Allocate gas variables.
+*
+* Don't forget to update the print statement if variables are added or
+* removed
+************************************************************************
       integer :: n
 c
       gas_ncell = ncell
 c
-c-- secondary
+c-- print alloc size (keep this updated)
+c---------------------------------------
+      if(ltalk) then
+       n = gas_ncell*(20 + (gas_nelem+3+5) + 2*gas_ng)/1024 !kB
+       write(6,*) 'ALLOC gas    :',n,"kB",n/1024,"MB",n/1024**2,"GB"
+      endif !ltalk
+c
+c-- ndim=1 alloc
       allocate(gas_temp(gas_ncell))
       allocate(gas_ur(gas_ncell))
       allocate(gas_rho(gas_ncell))
@@ -80,17 +92,11 @@ c-- secondary
       allocate(gas_mass(gas_ncell))
       allocate(gas_ye(gas_ncell))
       allocate(gas_natom(gas_ncell))
-      allocate(gas_natom1fr(-2:gas_nelem,gas_ncell))
-      allocate(gas_natom0fr(-2:2,gas_ncell))
       allocate(gas_nelec(gas_ncell))
       allocate(gas_matsrc(gas_ncell))
-      gas_natom1fr = 0d0
-      gas_natom0fr = 0d0
       gas_ye = .5d0
       gas_nelec = 1d0
       gas_matsrc = 0d0
-      allocate(gas_emitprob(gas_ng,gas_ncell))
-      allocate(gas_cap(gas_ng,gas_ncell))
 c   allocate(dd_opacleak(6,gas_ncell))
       allocate(gas_sig(gas_ncell))
       allocate(gas_capgam(gas_ncell))
@@ -104,11 +110,16 @@ c
       allocate(gas_emitex(gas_ncell))
       allocate(gas_evolinit(gas_ncell))
 c
-c-- output
-      if(ltalk) then
-       n = gas_ncell*(20 + 5 + gas_nelem+3 + 2*gas_ng)/1024 !kB
-       write(6,*) 'ALLOC gas    :',n,"kB",n/1024,"MB",n/1024**2,"GB"
-      endif !ltalk!}}}
+c-- ndim=2 alloc small
+      allocate(gas_natom1fr(-2:gas_nelem,gas_ncell))
+      allocate(gas_natom0fr(-2:2,gas_ncell))
+      gas_natom1fr = 0d0
+      gas_natom0fr = 0d0
+c
+c-- ndim=2 alloc big
+      allocate(gas_emitprob(gas_ng,gas_ncell))
+      allocate(gas_cap(gas_ng,gas_ncell))
+!}}}
       end subroutine gas_init
 c
       end module gasmod
