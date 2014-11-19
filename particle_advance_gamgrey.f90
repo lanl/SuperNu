@@ -76,11 +76,13 @@ subroutine particle_advance_gamgrey
 !
 !-- find cell in which to generate the particle
      loop_k: do iz1=iz1,grd_nz
-     do iy1=iy1,grd_ny
-     do zsrc1=zsrc1,grd_nx
-       if(ijkused(zsrc1,iy1,iz1)<grd_nvol(zsrc1,iy1,iz1)) exit loop_k !still particles left to generate
-     enddo
-     enddo
+        do iy1=iy1,grd_ny
+           do zsrc1=zsrc1,grd_nx
+             if(ijkused(zsrc1,iy1,iz1)<grd_nvol(zsrc1,iy1,iz1)) exit loop_k !still particles left to generate
+           enddo
+           zsrc1 = 1
+        enddo
+        iy1 = 1
      enddo loop_k
      if(zsrc1==grd_nx+1) stop 'prt_adv_gamgrey: particle generation error1'
      if(iy1==grd_ny+1) stop 'prt_adv_gamgrey: particle generation error2'
