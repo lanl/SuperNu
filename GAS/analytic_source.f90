@@ -2,7 +2,6 @@ subroutine analytic_source
 
   use gridmod
   use mpimod
-  use gasmod
   use physconstmod
   use timestepmod
   use inputparmod
@@ -10,13 +9,12 @@ subroutine analytic_source
   use totalsmod
   implicit none
 
-  integer :: i,j,k,l,ll,nhelp
-  integer :: l1,l2
+  integer :: i,j,k,nhelp
   real*8 :: srcren
   real*8 :: thelp, help, xcent, ycent, zcent
 
   tot_esurf = 0d0
-  gas_emitex = 0d0
+  grd_emitex = 0d0
 
 !-- setting source helper
   if(grd_isvelocity) then
@@ -24,9 +22,6 @@ subroutine analytic_source
   else
      thelp = 1d0
   endif
-
-  l1 = impi*gas_ncell + 1
-  l2 = (impi+1)*gas_ncell
 
   if(in_srctype=='none') then
     return
@@ -70,14 +65,10 @@ subroutine analytic_source
         select case(in_igeom)
 !-- 1D
         case(1)
-           ll = 0
-           do i = 1, min(in_nheav,grd_nx)
-              l = i
-              if(l<l1 .or. l>l2) cycle
-              ll = ll + 1
-              gas_emitex(ll) = in_srcmax * &
-                   gas_vol(ll)*tsp_dt/thelp**3
-              !write(0,*) impi,ll,gas_emitex(ll),gas_vol(ll)
+           do i=1,min(in_nheav,grd_nx)
+              grd_emitex(i,1,1) = in_srcmax * &
+                   grd_vol(i,1,1)*tsp_dt/thelp**3
+              !write(0,*) impi,grd_emitex(i,1,1),grd_vol(i,1,1)
            enddo
 
 !-- 2D
@@ -94,18 +85,13 @@ subroutine analytic_source
            help = dble(min(in_nheav,nhelp))*help / &
                 dble(nhelp)
 !-- non-zero source within Heaviside sphere
-           l = 0
-           ll = 0
-           do j = 1,grd_ny
-           do i = 1,grd_nx
-              l = l + 1
-              if(l<l1 .or. l>l2) cycle
-              ll = ll + 1
+           do j=1,grd_ny
+           ycent = 0.5d0*(grd_yarr(j+1)+grd_yarr(j))
+           do i=1,grd_nx
               xcent = 0.5d0*(grd_xarr(i+1)+grd_xarr(i))
-              ycent = 0.5d0*(grd_yarr(j+1)+grd_yarr(j))
               if(xcent**2+ycent**2<help**2) then
-                 gas_emitex(ll) = in_srcmax * &
-                      gas_vol(ll)*tsp_dt/thelp**3
+                 grd_emitex(i,j,1) = in_srcmax * &
+                      grd_vol(i,j,1)*tsp_dt/thelp**3
               endif
            enddo
            enddo
@@ -127,20 +113,15 @@ subroutine analytic_source
            help = dble(min(in_nheav,nhelp))*help / &
                 dble(nhelp)
 !-- non-zero source within Heaviside sphere
-           l = 0
-           ll = 0
-           do k = 1,grd_nz
-           do j = 1,grd_ny
-           do i = 1,grd_nx
-              l = l + 1
-              if(l<l1 .or. l>l2) cycle
-              ll = ll + 1
+           do k=1,grd_nz
+           zcent = 0.5d0*(grd_zarr(k+1)+grd_zarr(k))
+           do j=1,grd_ny
+           ycent = 0.5d0*(grd_yarr(j+1)+grd_yarr(j))
+           do i=1,grd_nx
               xcent = 0.5d0*(grd_xarr(i+1)+grd_xarr(i))
-              ycent = 0.5d0*(grd_yarr(j+1)+grd_yarr(j))
-              zcent = 0.5d0*(grd_zarr(k+1)+grd_zarr(k))
               if(xcent**2+ycent**2+zcent**2<help**2) then
-                 gas_emitex(ll) = in_srcmax * &
-                      gas_vol(ll)*tsp_dt/thelp**3
+                 grd_emitex(i,j,k) = in_srcmax * &
+                      grd_vol(i,j,k)*tsp_dt/thelp**3
               endif
            enddo
            enddo
@@ -153,15 +134,11 @@ subroutine analytic_source
   elseif(in_srctype=='strt') then
      !Linear source profile!{{{
      if(grd_ny>1) stop 'analytic_source: strt: no 2D'
-     ll = 0
      do i=1,grd_nx
-        l = i
-        if(l<l1 .or. l>l2) cycle
-        ll = ll + 1
         srcren = in_srcmax*(grd_xarr(grd_nx+1)- &
              0.5d0*(grd_xarr(i)+grd_xarr(i+1)))/ & 
              (grd_xarr(grd_nx+1)-grd_xarr(1))
-        gas_emitex(ll) = srcren * gas_vol(ll)*tsp_dt
+        grd_emitex(i,1,1) = srcren * grd_vol(i,1,1)*tsp_dt
 !
 !-- no temp source for strt (matsrc=0.0)
 !--
