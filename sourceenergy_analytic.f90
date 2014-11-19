@@ -1,4 +1,4 @@
-subroutine analytic_source
+subroutine sourceenergy_analytic
 
   use gridmod
   use mpimod
@@ -133,7 +133,7 @@ subroutine analytic_source
      !!}}}
   elseif(in_srctype=='strt') then
      !Linear source profile!{{{
-     if(grd_ny>1) stop 'analytic_source: strt: no 2D'
+     if(grd_ny>1) stop 'sourceenergy_analytic: strt: no 2D'
      do i=1,grd_nx
         srcren = in_srcmax*(grd_xarr(grd_nx+1)- &
              0.5d0*(grd_xarr(i)+grd_xarr(i+1)))/ & 
@@ -145,19 +145,20 @@ subroutine analytic_source
      enddo!}}}
   elseif(in_srctype=='manu') then
      !!{{{
-     if(grd_ny>1) stop 'analytic_source: manu: no 2D'
+     if(grd_ny>1) stop 'sourceenergy_analytic: manu: no 2D'
 !
 !-- radiation source
      call generate_manuradsrc(in_totmass,in_sigcoef,tsp_t,tsp_dt)
 !
-!-- temperature source
-     call generate_manutempsrc(in_totmass,in_sigcoef,tsp_t,tsp_dt)
+!--  NOW DONE IN SOURCEENERGY
+!!-- temperature source
+!     call generate_manutempsrc(in_totmass,in_sigcoef,tsp_t,tsp_dt)
 !     
      !}}}
   else
-     stop 'analytic_source: in_srctype invalid'
+     stop 'sourceenergy_analytic: in_srctype invalid'
   endif
 
   !write(*,*) grd_siggrey(grd_nx), grd_cap(1,grd_nx)
 
-end subroutine analytic_source
+end subroutine sourceenergy_analytic

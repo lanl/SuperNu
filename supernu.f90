@@ -29,7 +29,7 @@ program supernu
 !***********************************************************************
   real*8 :: help
   real*8 :: t_elapsed
-  integer :: ierr,ng,ns,it,ncell
+  integer :: ierr,ns,it,ncell
   integer,external :: memusg
   logical :: lmpi0 = .false. !master rank flag
   real*8 :: t0,t1  !timing
@@ -194,21 +194,21 @@ program supernu
     if(impi_gas>=0) call sourceenergy(nmpi)
 
 !
-!-- broadcast to all workers
+!-- gather from gas workers and broadcast to world ranks
     call bcast_nonpermanent !MPI
 
+!-- grey gamma ray transport
+    if(in_srctype=='none' .and. .not.in_novolsrc) then
+       call particle_advance_gamgrey
+       call allreduce_gammaenergy !MPI
+       call sourceenergy_gamma
+    endif
+
+!-- Calculating gas_emitex from analytic distribution
+    call sourceenergy_analytic
 
 !-- Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
-    select case(in_igeom)
-    case(1)
-       call leakage_opacity1
-    case(2)
-       call leakage_opacity2
-    case(3)
-       call leakage_opacity3
-    case default
-       stop 'supernu: invalid igeom'
-    endselect
+    call leakage_opacity
 
 !-- number of source prt_particles per cell
     call sourcenumbers(nmpi)

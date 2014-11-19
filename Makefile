@@ -29,7 +29,7 @@ MODULES := profiledatamod.o \
   particlemod.o \
   timingmod.o manufacmod.o fluxmod.o totalsmod.o
 
-FILES := sourceenergy.o sourcenumbers.o vacancies.o \
+FILES := sourceenergy.o sourceenergy_analytic.o sourceenergy_gamma.o sourcenumbers.o vacancies.o \
   boundary_source.o interior_source.o particle_advance.o \
   particle_advance_gamgrey.o \
   write_output.o wlgrid_setup.o \

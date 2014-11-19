@@ -13,7 +13,7 @@ subroutine initial_particles
 !##################################################
 !
   logical :: lhelp
-  integer :: ig, i,j,k, iig, ipart, ihelp, jhelp
+  integer :: ig, i,j,k, iig, ipart
   integer, dimension(grd_nx,grd_ny,grd_nz) :: ijkused
   real*8 :: wl0, mu0, om0, ep0, x0, y0, z0
   real*8 :: denom2, mu1, mu2

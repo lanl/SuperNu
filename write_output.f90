@@ -7,7 +7,7 @@ subroutine write_output
   use fluxmod
   implicit none
 
-  integer :: ig, j
+  integer :: j
   logical :: lexist
   integer :: reclen, reclen2
   character(16), save :: pos='rewind', fstat='replace'

@@ -6,6 +6,7 @@ subroutine sourceenergy(nmpi)
   use particlemod
   use physconstmod
   use inputparmod
+  use manufacmod
   implicit none
   integer,intent(in) :: nmpi
 
@@ -16,24 +17,24 @@ subroutine sourceenergy(nmpi)
 !##################################################
 
   integer :: i
-  integer :: ihelp
-! tot_esurf for any new prt_particles from a surface source
 ! prt_nsurf = number of surface prt_particles
 ! prt_nnew = total number of new prt_particles~=prt_ns
+  
+!-- prepare manufactured solution temperature source
+  if(in_srctype=='manu') then
+     call generate_manutempsrc(in_totmass,in_sigcoef,tsp_t,tsp_dt)
+  endif
 
-  tot_esurf = 0d0
   gas_emit = 0d0
   gas_emitex = 0d0
-  
-  ! Calculating gas_emitex from analytic distribution
-  call analytic_source
-
   ! Calculating fictitious emission energy per cell: loop
-  do i = 1, gas_ncell
-     
+  do i=1,gas_ncell
+!
+!-- thermal source
      gas_emit(i) =  tsp_dt*gas_fcoef(i)*gas_siggrey(i)*pc_c* &
           gas_ur(i)*gas_vol(i)
 !
+!-- manufactured solution material source
      gas_emit(i) = gas_emit(i) + &
           tsp_dt*gas_vol(i)*(1d0-gas_fcoef(i))*&
           gas_matsrc(i)
@@ -49,15 +50,9 @@ subroutine sourceenergy(nmpi)
              gas_matsrc(i)*dble(nmpi)
      endif
 !
-!-- accounting for thermal decay radiation source energy
+!-- non-thermal decay radiation source energy
      if(.not.in_novolsrc .and. in_srctype=='none') then
-        gas_emit(i) = gas_emit(i) + gas_nisource(i)
-        if(tsp_it==1) then
-           tot_eext = tot_eext + gas_nisource(i)
-        else
-!-- rtw: tot_eext is only broadcast for tsp_it==1
-           tot_eext = tot_eext + dble(nmpi)*gas_nisource(i)
-        endif
+        gas_emitex(i) = gas_nisource(i)
      endif
   enddo
 

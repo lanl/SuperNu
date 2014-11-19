@@ -19,21 +19,23 @@ subroutine particle_advance_gamgrey
   integer :: ipart, npart, ig
   integer,external :: binsrch
   real*8 :: r1
-  integer :: zsrc, iy, iz
-  real*8 :: rsrc, musrc, esrc, y, om
+  integer :: zsrc1, iy1, iz1
+  integer,pointer :: zsrc, iy, iz
+  real*8,pointer :: rsrc, musrc, esrc, y, z, om
   real*8 :: t0,t1  !timing
   real*8 :: labfact,cmffact,x0
   real*8 :: esq,mu0
+  integer, dimension(grd_nx,grd_ny,grd_nz) :: ijkused
 !-- hardware
 !
-  type(packet) :: ptcl
+  type(packet),target :: ptcl
 !
 !-- advection split parameter
   real*8,parameter :: alph2 = .5d0
 
   logical,parameter :: isshift=.true.
 
-  grd_edep = 0.0
+  grd_edep = 0d0
   flx_gamluminos = 0.0
   flx_gamlumdev = 0.0
   flx_gamlumnum = 0
@@ -45,35 +47,56 @@ subroutine particle_advance_gamgrey
   
   call time(t0)
 
-  esq = sum(sqrt(grd_emit))
-  grd_nvol = nint(sqrt(grd_emit)/esq*prt_ns)  !-- no source tilting yet
+  esq = sum(sqrt(grd_emitex))
+  grd_nvol = nint(sqrt(grd_emitex)/esq*prt_ns)  !-- no source tilting yet
 !-- floor under particle per cell number
-  where(grd_emit>0d0) grd_nvol = max(grd_nvol,10)
+  where(grd_emitex>0d0) grd_nvol = max(grd_nvol,10)
 !-- total number of particles
   npart = sum(grd_nvol)
 
+!--
+  zsrc => ptcl%zsrc
+  iy => ptcl%iy
+  iz => ptcl%iz
+  rsrc => ptcl%rsrc
+  musrc => ptcl%musrc
+  esrc => ptcl%esrc
+  y => ptcl%y
+  z => ptcl%z
+  om => ptcl%om
+
 !-- start from the left
-  zsrc = 1
-  iy = 1
-  iz = 1
+  zsrc1 = 1
+  iy1 = 1
+  iz1 = 1
+  ijkused = 0
 
 ! Propagating all particles that are not considered vacant: loop
-  do ipart = 1, npart
+  do ipart=1,npart
 !
 !-- find cell in which to generate the particle
-     do iz=iz,grd_nz
-     do iy=iy,grd_ny
-     do zsrc=zsrc,grd_nx
-       if(grd_nvol(zsrc,iy,iz)>0) exit  !still particles left to generate
+     loop_k: do iz1=iz1,grd_nz
+     do iy1=iy1,grd_ny
+     do zsrc1=zsrc1,grd_nx
+       if(ijkused(zsrc1,iy1,iz1)<grd_nvol(zsrc1,iy1,iz1)) exit loop_k !still particles left to generate
      enddo
      enddo
-     enddo
-     if(zsrc==grd_nx+1) stop 'prt_adv_gamgrey: particle generation error'
+     enddo loop_k
+     if(zsrc1==grd_nx+1) stop 'prt_adv_gamgrey: particle generation error1'
+     if(iy1==grd_ny+1) stop 'prt_adv_gamgrey: particle generation error2'
+     if(iz1==grd_nz+1) stop 'prt_adv_gamgrey: particle generation error3'
+!
+!-- adopt position
+     zsrc = zsrc1
+     iy = iy1
+     iz = iz1
+!
 !-- decrease particle-in-cell counter
-     grd_nvol(zsrc,iy,iz) = grd_nvol(zsrc,iy,iz) - 1
+     ijkused(zsrc,iy,iz) = ijkused(zsrc,iy,iz) + 1
 
 !-- emission energy per particle
-     esrc = grd_emit(zsrc,iy,iz)/grd_nvol(zsrc,iy,iz)
+     esrc = grd_emitex(zsrc,iy,iz)/grd_nvol(zsrc,iy,iz)
+     ptcl%ebirth = esrc
 
 !-- calculating direction cosine (comoving)
      r1 = rand()
@@ -98,8 +121,6 @@ subroutine particle_advance_gamgrey
         endif
      case(2)
         stop 'particle_advance_grey: no 2D'
-        y = ptcl%y
-        om = ptcl%om
      case(3)
         stop 'particle_advance_gamgray: no 3D transport'
      endselect
@@ -218,5 +239,6 @@ subroutine particle_advance_gamgrey
   call time(t1)
   t_pckt_stat = t1-t0  !register timing
   call timereg(t_pcktgam, t1-t0)
+
 
 end subroutine particle_advance_gamgrey

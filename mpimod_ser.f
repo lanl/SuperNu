@@ -61,6 +61,10 @@ c-- domain decomposition
       end subroutine bcast_nonpermanent
 c
 c
+      subroutine allreduce_gammaenergy
+      end subroutine allreduce_gammaenergy
+c
+c
       subroutine reduce_tally
 ************************************************************************
 * Reduce the results from the packet transport that are needed for the

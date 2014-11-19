@@ -7,6 +7,7 @@ c     ---------------------
 * Setup the grid on the computational domain
 ************************************************************************
       logical :: lexist
+c
 c-- agnostic grid setup
       grd_xarr = str_xleft
       grd_yarr = str_yleft

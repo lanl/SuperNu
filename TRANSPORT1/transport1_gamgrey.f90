@@ -18,15 +18,13 @@ subroutine transport1_gamgrey(ptcl)
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
 !
-  integer :: binsrch
   real*8 :: r1, r2, thelp,thelpinv
-  real*8 :: db, dcol, dcen, dthm, ddop, d
+  real*8 :: db, dcol, dthm, ddop, d
   real*8 :: siglabfact, dcollabfact, elabfact
-  real*8 :: rold, P, muold
+  real*8 :: rold, muold
 ! real*8 :: x1, x2, xx0
   real*8 :: dtinv
   real*8 :: help
-  real*8 :: ppl, ppr
 
   integer,pointer :: z
   real*8,pointer :: r, mu, E, E0

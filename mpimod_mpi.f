@@ -397,65 +397,85 @@ c
 c-- gather
       if(impi_gas>=0) then
        call mpi_gather(gas_temp,gas_ncell,MPI_REAL8,
-     &    grd_temp,gas_ncell,MPI_REAL8,
-     &    impi0,MPI_COMM_GAS,ierr)
+     &   grd_temp,gas_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_GAS,ierr)
 c
        call mpi_gather(gas_emit,gas_ncell,MPI_REAL8,
-     &    grd_emit,gas_ncell,MPI_REAL8,
-     &    impi0,MPI_COMM_GAS,ierr)
+     &   grd_emit,gas_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_GAS,ierr)
        call mpi_gather(gas_emitex,gas_ncell,MPI_REAL8,
-     &    grd_emitex,gas_ncell,MPI_REAL8,
-     &    impi0,MPI_COMM_GAS,ierr)
+     &   grd_emitex,gas_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_GAS,ierr)
 c
        call mpi_gather(gas_sig,gas_ncell,MPI_REAL8,
-     &    grd_sig,gas_ncell,MPI_REAL8,
-     &    impi0,MPI_COMM_GAS,ierr)
+     &   grd_sig,gas_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_GAS,ierr)
        call mpi_gather(gas_capgam,gas_ncell,MPI_REAL8,
-     &    grd_capgam,gas_ncell,MPI_REAL8,
-     &    impi0,MPI_COMM_GAS,ierr)
+     &   grd_capgam,gas_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_GAS,ierr)
        call mpi_gather(gas_siggrey,gas_ncell,MPI_REAL8,
-     &    grd_siggrey,gas_ncell,MPI_REAL8,
-     &    impi0,MPI_COMM_GAS,ierr)
+     &   grd_siggrey,gas_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_GAS,ierr)
        call mpi_gather(gas_fcoef,gas_ncell,MPI_REAL8,
-     &    grd_fcoef,gas_ncell,MPI_REAL8,
-     &    impi0,MPI_COMM_GAS,ierr)
+     &   grd_fcoef,gas_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_GAS,ierr)
 c
        call mpi_gather(gas_emitprob,gas_ng*gas_ncell,MPI_REAL8,
-     &    grd_emitprob,gas_ng*gas_ncell,MPI_REAL8,
-     &    impi0,MPI_COMM_GAS,ierr)
+     &   grd_emitprob,gas_ng*gas_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_GAS,ierr)
        call mpi_gather(gas_cap,gas_ng*gas_ncell,MPI_REAL8,
-     &    grd_cap,gas_ng*gas_ncell,MPI_REAL8,
-     &    impi0,MPI_COMM_GAS,ierr)
+     &   grd_cap,gas_ng*gas_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_GAS,ierr)
       endif
 c
 c-- broadcast
       call mpi_bcast(tot_esurf,1,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &  impi0,MPI_COMM_WORLD,ierr)
 c
       n = grd_nx*grd_ny*grd_nz
       call mpi_bcast(grd_temp,n,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &  impi0,MPI_COMM_WORLD,ierr)
 c
       call mpi_bcast(grd_emit,n,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(grd_emitex,n,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &  impi0,MPI_COMM_WORLD,ierr)
 c
       call mpi_bcast(grd_sig,n,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(grd_capgam,n,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(grd_siggrey,n,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(grd_fcoef,n,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &  impi0,MPI_COMM_WORLD,ierr)
 c
       call mpi_bcast(grd_emitprob,gas_ng*n,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(grd_cap,gas_ng*n,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
+     &  impi0,MPI_COMM_WORLD,ierr)
 c!}}}
       end subroutine bcast_nonpermanent
+c
+c
+c
+      subroutine allreduce_gammaenergy
+c     ------------------------!{{{
+      use gridmod,nx=>grd_nx,ny=>grd_ny,nz=>grd_nz
+      implicit none
+************************************************************************
+* Broadcast the data that changes with time/temperature.
+************************************************************************
+      integer :: n
+      real*8 :: snd3(nx,ny,nz)
+c
+      n = nx*ny*nz
+      snd3 = grd_edep
+      call mpi_allreduce(snd3,grd_edep,n,MPI_REAL8,MPI_SUM,
+     &  MPI_COMM_WORLD,ierr)
+      grd_edep = grd_edep/dble(nmpi)
+c!}}}
+      end subroutine allreduce_gammaenergy
 c
 c
 c
@@ -553,10 +573,10 @@ c
 c
 c-- scatter
       if(impi_gas>=0) then
-      call mpi_scatter(grd_edep,gas_ncell,MPI_REAL8,
+       call mpi_scatter(grd_edep,gas_ncell,MPI_REAL8,
      &   gas_edep,gas_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_GAS,ierr)
-      call mpi_scatter(grd_eraddens,gas_ncell,MPI_REAL8,
+       call mpi_scatter(grd_eraddens,gas_ncell,MPI_REAL8,
      &   gas_eraddens,gas_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_GAS,ierr)
       endif
