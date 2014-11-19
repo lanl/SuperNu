@@ -3,7 +3,7 @@ program supernu
   use mpimod
   use inputparmod
   use timestepmod
-  use gridmod, only:grid_init
+  use gridmod
   use gasmod
   use particlemod
   use physconstmod
@@ -201,6 +201,7 @@ program supernu
     if(in_srctype=='none' .and. .not.in_novolsrc) then
        call particle_advance_gamgrey
        call allreduce_gammaenergy !MPI
+!      grd_edep = grd_emitex  !-- testing: local deposition
        call sourceenergy_gamma
     endif
 

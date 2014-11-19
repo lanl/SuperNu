@@ -21,7 +21,7 @@ c
 c
 c
       subroutine check_manufacpars
-c     ----------------------------
+c     ----------------------------!{{{
       use miscmod, only:warn
       use inputparmod, only: in_nobbopac,in_nobfopac,in_noffopac,
      &     in_nothmson,in_dentype,in_opacanaltype
@@ -43,7 +43,7 @@ c
      &     stop 'check_manufacpars: invalid in_nothmson'
       if(in_dentype/='unif')
      &     call warn('check_manufacpars','in_dentype/=unif')
-c
+c!}}}
       end subroutine check_manufacpars
 c
 c

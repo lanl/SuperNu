@@ -1,11 +1,9 @@
 subroutine transport1_gamgrey(ptcl)
 
   use gridmod
-  use totalsmod
   use timestepmod
   use physconstmod
   use particlemod
-  use inputparmod
   use fluxmod
   implicit none
 !
@@ -17,9 +15,10 @@ subroutine transport1_gamgrey(ptcl)
 !analogous DDMC diffusion routine through the advance.
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
+  real*8,parameter :: dt = pc_year !give grey transport infinite time
 !
   real*8 :: r1, r2, thelp,thelpinv
-  real*8 :: db, dcol, dthm, ddop, d
+  real*8 :: db, dcol, d
   real*8 :: siglabfact, dcollabfact, elabfact
   real*8 :: rold, muold
 ! real*8 :: x1, x2, xx0
@@ -40,7 +39,7 @@ subroutine transport1_gamgrey(ptcl)
   E0 => ptcl%ebirth
 !
 !-- shortcut
-  dtinv = 1d0/tsp_dt
+  dtinv = 1d0/dt
 
   if(grd_isvelocity) then
      siglabfact = 1.0d0 - mu*r*cinv
@@ -72,25 +71,15 @@ subroutine transport1_gamgrey(ptcl)
         prt_tlyrand = prt_tlyrand+1
         dcol = abs(log(r1)/(grd_capgam(z,1,1)*dcollabfact))
      else
-        dcol = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
+        dcol = 2d0*abs(pc_c*dt*thelpinv) !> dcen
      endif
   else
-     dcol = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
-  endif
-!
-!-- distance to Thomson-type collision = dthm
-  dthm = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
-!
-!-- distance to Doppler shift = ddop
-  if(grd_isvelocity) then
-     ddop = abs(pc_c - r*mu)
-  else
-     ddop = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
+     dcol = 2d0*abs(pc_c*dt*thelpinv) !> dcen
   endif
 !
 !-- minimum distance = d
 !  if(tsp_it==29) write(*,*) dcol,dthm,db,dcen,ddop
-  d = min(dcol,dthm,db,ddop)
+  d = min(dcol,db)
 !
 !== END OF DISTANCE CALCULATIONS
 !
@@ -116,7 +105,7 @@ subroutine transport1_gamgrey(ptcl)
      if(grd_capgam(z,1,1)*dx(z)*thelp>1d-6) then     
         grd_eraddens(z,1,1) = grd_eraddens(z,1,1)+E* &
              (1.0d0-exp(-siglabfact*grd_capgam(z,1,1)*d*thelp))* &
-             elabfact/(siglabfact*grd_capgam(z,1,1)*pc_c*tsp_dt)
+             elabfact/(siglabfact*grd_capgam(z,1,1)*pc_c*dt)
      else
         grd_eraddens(z,1,1) = grd_eraddens(z,1,1)+E* &
              elabfact*d*dcollabfact*cinv*dtinv
@@ -137,28 +126,7 @@ subroutine transport1_gamgrey(ptcl)
      elabfact = 1d0
   endif
 
-  !
-  if(d == ddop) then !group shift
-
-  elseif (d == dthm) then  !physical scattering (Thomson-type)
-     !!{{{
-     r1 = rand()
-     prt_tlyrand = prt_tlyrand+1
-     mu = 1.0-2.0*r1
-     if(abs(mu)<0.0000001d0) then
-        mu = 0.0000001d0
-     endif
-     if(grd_isvelocity) then
-        mu = (mu+r*cinv)/(1.0+r*mu*cinv)
-!-- velocity effects accounting
-        help = 1d0/(1.0-mu*r*cinv)
-!
-        E = E*elabfact*help
-!        E0 = E0*elabfact/(1.0-mu*r*cinv)
-     endif
-     !
-     !!}}}
-  elseif (d == dcol) then  !fictitious scattering with implicit capture
+  if (d == dcol) then  !fictitious scattering with implicit capture
      !!{{{
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
@@ -195,7 +163,6 @@ subroutine transport1_gamgrey(ptcl)
 !-- outbound luminosity tally
 !-- velocity effects accounting
 !
-           tot_eright = tot_eright+E*elabfact
            flx_gamluminos(1,1) = flx_gamluminos(1,1)+E*dtinv
            flx_gamlumdev(1,1) = flx_gamlumdev(1,1)+(E*dtinv)**2
            flx_gamlumnum(1,1) = flx_gamlumnum(1,1)+1

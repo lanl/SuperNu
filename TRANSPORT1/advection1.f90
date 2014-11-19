@@ -58,9 +58,9 @@ subroutine advection1(pretrans,ig,zsrc,rsrc)
        else
           zsrc = zholder
        endif
-     else
-       zsrc = zholder
-     endif
+    else
+      zsrc = zholder
+    endif
 !
   endif
 end subroutine advection1

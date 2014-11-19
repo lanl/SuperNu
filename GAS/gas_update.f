@@ -33,7 +33,7 @@ c     -------------------------------
       real*8 :: natom2fr(gas_ncell,-2:-1)
 c-- previous values
       real*8,allocatable,save :: tempalt(:),siggreyalt(:)
-      real*8 :: hlparr(grd_nx),hlparrdd(gas_ncell)
+!     real*8 :: hlparr(grd_nx),hlparrdd(gas_ncell)
 c-- timing
       real*8 :: t0,t1
 c
@@ -69,25 +69,12 @@ c-- total, units=ergs
 c-- use gamma deposition profiles if data available
        if(prof_ntgam>0) then
 c-- broken in dd
-        help = sum(gas_nisource)
+!       help = sum(gas_nisource)
 !       write(6,*) 'ni56 source:',help
         if(grd_ny>1 .or. grd_nz>1) stop 'gg_update: gam_prof: no 2D/3D'
-        hlparr = gamma_profile(tsp_t)
-
-        l1 = irank*gas_ncell + 1
-        l2 = (irank+1)*gas_ncell
-        l = 0
-        ll = 0
-        do i=1,grd_nx
-         l = l + 1
-         if(l<l1) cycle
-         if(l>l2) exit
-         ll = ll + 1
-         hlparrdd(ll) = hlparr(i)
-        enddo !i
-        if(ll/=gas_ncell) stop 'gas_update: ll/=gas_ncell'
-
-        gas_nisource = help * hlparrdd
+        if(grd_nx/=gas_ncell) stop 'gas_update: no gamprf and dd'
+!       hlparr = gamma_profile(tsp_t)
+!       gas_nisource = help * hlparrdd
        endif
       endif
 !}}}
@@ -325,10 +312,5 @@ c
 c-- wrong memory order, but this is a small array
        gas_ye = gas_ye + gas_natom1fr(l,:)*l/elem_data(l)%m
       enddo
-cc
-cc-- dump values for verification purposes
-c      do i=1,gas_ncell
-c       write(6,*) i,gas_ye(i)
-c      enddo
 c!}}}
       end subroutine update_ye

@@ -14,15 +14,6 @@ module particlemod
 !
   integer :: prt_npartmax, prt_ns, prt_ninit
   integer :: prt_nsurf, prt_nexsrc, prt_nnew, prt_ninitnew
-!-- rtw: random number counter added (rev. 262).
-  integer :: prt_tlyrand
-!-- rtw: array of rand counts from each rank
-  integer, allocatable :: prt_tlyrandarr(:)
-!-- particle property restart arrays:
-   logical, allocatable :: prt_tlyvacant(:,:)
-  integer, allocatable :: prt_tlyzsrc(:,:), prt_tlyrtsrc(:,:)
-  real*8, allocatable :: prt_tlyrsrc(:,:), prt_tlymusrc(:,:), prt_tlytsrc(:,:)
-  real*8, allocatable :: prt_tlyesrc(:,:), prt_tlyebirth(:,:), prt_tlywlsrc(:,:)
 !
   integer, allocatable :: prt_vacantarr(:) !array of vacant particle array locations
 
@@ -35,6 +26,17 @@ module particlemod
   real*8 :: prt_tauddmc
   real*8 :: prt_taulump
   character(4) :: prt_tauvtime ! unif|incr
+!
+!
+!-- rtw: random number counter added (rev. 262).
+  integer :: prt_tlyrand
+!-- rtw: array of rand counts from each rank
+  integer, allocatable :: prt_tlyrandarr(:)
+!-- particle property restart arrays:
+   logical, allocatable :: prt_tlyvacant(:,:)
+  integer, allocatable :: prt_tlyzsrc(:,:), prt_tlyrtsrc(:,:)
+  real*8, allocatable :: prt_tlyrsrc(:,:), prt_tlymusrc(:,:), prt_tlytsrc(:,:)
+  real*8, allocatable :: prt_tlyesrc(:,:), prt_tlyebirth(:,:), prt_tlywlsrc(:,:)
 
   save
 

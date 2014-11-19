@@ -1,7 +1,6 @@
 subroutine particle_advance_gamgrey
 
   use particlemod
-  use timestepmod
   use gridmod
   use physconstmod
   use inputparmod
@@ -16,7 +15,7 @@ subroutine particle_advance_gamgrey
   !are being handled in separate subroutines but this may be changed to reduce
   !total subroutine calls in program.
 !##################################################
-  integer :: ipart, npart, ig
+  integer :: ipart, npart
   integer,external :: binsrch
   real*8 :: r1
   integer :: zsrc1, iy1, iz1
@@ -29,11 +28,6 @@ subroutine particle_advance_gamgrey
 !-- hardware
 !
   type(packet),target :: ptcl
-!
-!-- advection split parameter
-  real*8,parameter :: alph2 = .5d0
-
-  logical,parameter :: isshift=.true.
 
   grd_edep = 0d0
   flx_gamluminos = 0.0
@@ -50,7 +44,7 @@ subroutine particle_advance_gamgrey
   esq = sum(sqrt(grd_emitex))
   grd_nvol = nint(sqrt(grd_emitex)/esq*prt_ns)  !-- no source tilting yet
 !-- floor under particle per cell number
-  where(grd_emitex>0d0) grd_nvol = max(grd_nvol,10)
+  where(grd_emitex>0d0) grd_nvol = max(grd_nvol,100)
 !-- total number of particles
   npart = sum(grd_nvol)
 
@@ -64,6 +58,11 @@ subroutine particle_advance_gamgrey
   y => ptcl%y
   z => ptcl%z
   om => ptcl%om
+
+!-- unused
+!    real*8 :: tsrc
+!    real*8 :: wlsrc
+!    integer :: rtsrc
 
 !-- start from the left
   zsrc1 = 1
@@ -96,10 +95,6 @@ subroutine particle_advance_gamgrey
 !-- decrease particle-in-cell counter
      ijkused(zsrc,iy,iz) = ijkused(zsrc,iy,iz) + 1
 
-!-- emission energy per particle
-     esrc = grd_emitex(zsrc,iy,iz)/grd_nvol(zsrc,iy,iz)
-     ptcl%ebirth = esrc
-
 !-- calculating direction cosine (comoving)
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
@@ -126,26 +121,12 @@ subroutine particle_advance_gamgrey
      case(3)
         stop 'particle_advance_gamgray: no 3D transport'
      endselect
+!
+!-- emission energy per particle
+     esrc = grd_emitex(zsrc,iy,iz)/grd_nvol(zsrc,iy,iz)*cmffact
+     ptcl%ebirth = esrc
 
      prt_done=.false.
-
-!-- First portion of operator split particle velocity position adjustment
-!-- advection
-     if(isshift) then
-     if ((grd_isvelocity)) then
-        select case(in_igeom)
-        case(1)
-           rsrc = rsrc*tsp_t/(tsp_t+.5*tsp_dt)
-           if(rsrc<grd_xarr(zsrc)) then
-              zsrc = binsrch(rsrc,grd_xarr,grd_nx+1,0)
-           endif
-        case(2)
-           call advection2(.true.,ig,zsrc,iy,rsrc,y)
-        case(3)
-           stop 'particle_advance_gamgrey: no 3D transport'
-        endselect
-     endif
-     endif
 
 !     write(*,*) ipart
 !-----------------------------------------------------------------------        
@@ -217,24 +198,6 @@ subroutine particle_advance_gamgrey
      case(3)
         stop 'particle_advance_gamgrey: no 3D transport'
      endselect
-
-!-----------------------------------------------------------------------
-!-- advection
-     if(isshift) then
-     if (grd_isvelocity) then
-        select case(in_igeom)
-        case(1)
-           rsrc = rsrc*(tsp_t + alph2*tsp_dt)/(tsp_t+tsp_dt)
-           if(rsrc<grd_xarr(zsrc)) then
-              zsrc = binsrch(rsrc,grd_xarr,grd_nx+1,0)
-           endif
-        case(2)
-           call advection2(.false.,ig,zsrc,iy,rsrc,y)
-        case(3)
-           stop 'particle_advance_gamgrey: no 3D transport'
-        endselect
-     endif
-     endif
 
   enddo !ipart
 

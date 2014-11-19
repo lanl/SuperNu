@@ -45,7 +45,8 @@ c-- use latest profile in dataset
        help = (t - help)/(prof_timegamvec(it+1) - help)
        prof = (1d0 - help)*prof_profgamvec(:,it) +
      &   help*prof_profgamvec(:,it+1)
-!      write(6,*) 'interp_gam_prof:',prof_timegamvec(it),prof_timegamvec(it+1),t,help
+!      write(6,*) 'interp_gam_prof:',it,prof_timegamvec(it),
+!    &   prof_timegamvec(it+1),t,help
       endif
 c-- debug output
 c!}}}
