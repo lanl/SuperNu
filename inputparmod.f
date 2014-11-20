@@ -44,9 +44,9 @@ c-- temperature parameters
       real*8 :: in_tempradinit = 0d0 !initial radiation temperature.  Use grd_temp by default
 c
 c-- analytic heat capacity terms
-      real*8 :: in_gas_cvcoef = 1d0 !power law heat capacity coefficient
+      real*8 :: in_gas_cvcoef = 1d7 !power law heat capacity coefficient
       real*8 :: in_gas_cvtpwr = 0d0 !power law heat capacity temperature exponent
-      real*8 :: in_gas_cvrpwr = 0d0 !power law heat capacity density exponent
+      real*8 :: in_gas_cvrpwr = 1d0 !power law heat capacity density exponent
 c
 c-- particles
       integer :: in_ns = 0    !number of source particles generated per time step (total over all ranks)
