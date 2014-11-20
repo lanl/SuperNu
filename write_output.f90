@@ -20,9 +20,11 @@ subroutine write_output
   if(.not.lexist) then
    open(unit=4,file='output.wlgrid',status='unknown',position=pos)
 !-- header: dimension
-   write(4,*) "#",size(grd_wl)
+   write(4,*) "#",flx_ng,flx_nmu,flx_nom
 !-- body
-   write(4,*) grd_wl
+   write(4,*) flx_wl
+   write(4,*) flx_mu
+   write(4,*) flx_om
    close(4)
   endif
 
