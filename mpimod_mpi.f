@@ -619,42 +619,42 @@ c-- scattering part vacancy
 c
 c-- scattering part zone
       call mpi_scatter(prt_tlyzsrc,prt_npartmax,MPI_INTEGER,
-     &     prt_particles%zsrc,prt_npartmax,MPI_INTEGER,impi0,
+     &     prt_particles%ix,prt_npartmax,MPI_INTEGER,impi0,
      &     MPI_COMM_WORLD,ierr)
 c
 c-- scattering part transport index
       call mpi_scatter(prt_tlyrtsrc,prt_npartmax,MPI_INTEGER,
-     &     prt_particles%rtsrc,prt_npartmax,MPI_INTEGER,impi0,
+     &     prt_particles%itype,prt_npartmax,MPI_INTEGER,impi0,
      &     MPI_COMM_WORLD,ierr)
 c
 c-- scattering part position
       call mpi_scatter(prt_tlyrsrc,prt_npartmax,MPI_REAL8,
-     &     prt_particles%rsrc,prt_npartmax,MPI_REAL8,impi0,
+     &     prt_particles%x,prt_npartmax,MPI_REAL8,impi0,
      &     MPI_COMM_WORLD,ierr)
 c
 c-- scattering part direction
       call mpi_scatter(prt_tlymusrc,prt_npartmax,MPI_REAL8,
-     &     prt_particles%musrc,prt_npartmax,MPI_REAL8,impi0,
+     &     prt_particles%mu,prt_npartmax,MPI_REAL8,impi0,
      &     MPI_COMM_WORLD,ierr)
 c
 c-- scattering part time
       call mpi_scatter(prt_tlytsrc,prt_npartmax,MPI_REAL8,
-     &     prt_particles%tsrc,prt_npartmax,MPI_REAL8,impi0,
+     &     prt_particles%t,prt_npartmax,MPI_REAL8,impi0,
      &     MPI_COMM_WORLD,ierr)
 c
 c-- scattering part energy
       call mpi_scatter(prt_tlyesrc,prt_npartmax,MPI_REAL8,
-     &     prt_particles%esrc,prt_npartmax,MPI_REAL8,impi0,
+     &     prt_particles%e,prt_npartmax,MPI_REAL8,impi0,
      &     MPI_COMM_WORLD,ierr)
 c
 c-- scattering part birth energy
       call mpi_scatter(prt_tlyebirth,prt_npartmax,MPI_REAL8,
-     &     prt_particles%ebirth,prt_npartmax,MPI_REAL8,impi0,
+     &     prt_particles%e0,prt_npartmax,MPI_REAL8,impi0,
      &     MPI_COMM_WORLD,ierr)
 c
 c-- scattering part wavelength
       call mpi_scatter(prt_tlywlsrc,prt_npartmax,MPI_REAL8,
-     &     prt_particles%wlsrc,prt_npartmax,MPI_REAL8,impi0,
+     &     prt_particles%wl,prt_npartmax,MPI_REAL8,impi0,
      &     MPI_COMM_WORLD,ierr)
 c
 c-- scattering rand() count
@@ -691,42 +691,42 @@ c-- gathering part vacancy
      &     ierr)
 c
 c-- gathering part zone
-      call mpi_gather(prt_particles%zsrc,prt_npartmax,MPI_INTEGER,
+      call mpi_gather(prt_particles%ix,prt_npartmax,MPI_INTEGER,
      &     prt_tlyzsrc,prt_npartmax,MPI_INTEGER,impi0,MPI_COMM_WORLD,
      &     ierr)
 c
 c-- gathering part transport index
-      call mpi_gather(prt_particles%zsrc,prt_npartmax,MPI_INTEGER,
+      call mpi_gather(prt_particles%ix,prt_npartmax,MPI_INTEGER,
      &     prt_tlyrtsrc,prt_npartmax,MPI_INTEGER,impi0,MPI_COMM_WORLD,
      &     ierr)
 c
 c-- gathering part position
-      call mpi_gather(prt_particles%rsrc,prt_npartmax,MPI_REAL8,
+      call mpi_gather(prt_particles%x,prt_npartmax,MPI_REAL8,
      &     prt_tlyrsrc,prt_npartmax,MPI_REAL8,impi0,MPI_COMM_WORLD,
      &     ierr)
 c
 c-- gathering part direction
-      call mpi_gather(prt_particles%musrc,prt_npartmax,MPI_REAL8,
+      call mpi_gather(prt_particles%mu,prt_npartmax,MPI_REAL8,
      &     prt_tlymusrc,prt_npartmax,MPI_REAL8,impi0,MPI_COMM_WORLD,
      &     ierr)
 c
 c-- gathering part time
-      call mpi_gather(prt_particles%tsrc,prt_npartmax,MPI_REAL8,
+      call mpi_gather(prt_particles%t,prt_npartmax,MPI_REAL8,
      &     prt_tlytsrc,prt_npartmax,MPI_REAL8,impi0,MPI_COMM_WORLD,
      &     ierr)
 c
 c-- gathering part energy
-      call mpi_gather(prt_particles%esrc,prt_npartmax,MPI_REAL8,
+      call mpi_gather(prt_particles%e,prt_npartmax,MPI_REAL8,
      &     prt_tlyesrc,prt_npartmax,MPI_REAL8,impi0,MPI_COMM_WORLD,
      &     ierr)
 c
 c-- gathering part birth energy
-      call mpi_gather(prt_particles%ebirth,prt_npartmax,MPI_REAL8,
+      call mpi_gather(prt_particles%e0,prt_npartmax,MPI_REAL8,
      &     prt_tlyebirth,prt_npartmax,MPI_REAL8,impi0,MPI_COMM_WORLD,
      &     ierr)
 c
 c-- gathering part wavelength
-      call mpi_gather(prt_particles%wlsrc,prt_npartmax,MPI_REAL8,
+      call mpi_gather(prt_particles%wl,prt_npartmax,MPI_REAL8,
      &     prt_tlywlsrc,prt_npartmax,MPI_REAL8,impi0,MPI_COMM_WORLD,
      &     ierr)
 c

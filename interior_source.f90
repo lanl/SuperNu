@@ -68,7 +68,7 @@ subroutine interior_source
      ijkused(i,j,k) = ijkused(i,j,k)+1
 
 !-- setting 1st cell index
-     ptcl%zsrc = i
+     ptcl%ix = i
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
@@ -76,7 +76,7 @@ subroutine interior_source
 !-- calculating particle time
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     ptcl%tsrc = tsp_t+r1*tsp_dt
+     ptcl%t = tsp_t+r1*tsp_dt
 
 !-- calculating wavelength
      denom2 = 0d0
@@ -111,7 +111,7 @@ subroutine interior_source
 !-- calculating position
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        ptcl%rsrc = (r1*grd_xarr(i+1)**3 + &
+        ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
 !-- setting IMC logical
         lhelp = ((grd_sig(i,1,1)+grd_cap(iig,i,1,1))*dx(i)* &
@@ -119,13 +119,13 @@ subroutine interior_source
 
 !-- if velocity-dependent, transforming direction
         if(lhelp.and.grd_isvelocity) then
-           x0 = ptcl%rsrc
+           x0 = ptcl%x
 !-- 1+dir*v/c
            cmffact = 1d0+mu0*x0/pc_c
 !-- mu
-           ptcl%musrc = (mu0+x0/pc_c)/cmffact
+           ptcl%mu = (mu0+x0/pc_c)/cmffact
         else
-           ptcl%musrc = mu0
+           ptcl%mu = mu0
         endif
 
 !-- 2D
@@ -134,7 +134,7 @@ subroutine interior_source
         ptcl%iy = j
 !-- calculating position
         r1 = rand()
-        ptcl%rsrc = sqrt(r1*grd_xarr(i+1)**2 + &
+        ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + &
              (1d0-r1)*grd_xarr(i)**2)
         r1 = rand()
         ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
@@ -148,18 +148,18 @@ subroutine interior_source
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
         if(lhelp.and.grd_isvelocity) then
-           x0 = ptcl%rsrc
+           x0 = ptcl%x
            y0 = ptcl%y
 !-- 1+dir*v/c
            cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
            azitrfm = atan2(sqrt(1d0-mu0**2)*sin(om0), &
                 sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
 !-- mu
-           ptcl%musrc = (mu0+y0/pc_c)/cmffact
-           if(ptcl%musrc>1d0) then
-              ptcl%musrc = 1d0
-           elseif(ptcl%musrc<-1d0) then
-              ptcl%musrc = -1d0
+           ptcl%mu = (mu0+y0/pc_c)/cmffact
+           if(ptcl%mu>1d0) then
+              ptcl%mu = 1d0
+           elseif(ptcl%mu<-1d0) then
+              ptcl%mu = -1d0
            endif
 !-- om
            if(azitrfm >= 0d0) then
@@ -168,7 +168,7 @@ subroutine interior_source
               ptcl%om = azitrfm+pc_pi2
            endif
         else
-           ptcl%musrc = mu0
+           ptcl%mu = mu0
            ptcl%om = om0
         endif
 
@@ -179,7 +179,7 @@ subroutine interior_source
         ptcl%iz = k
 !-- calculating position
         r1 = rand()
-        ptcl%rsrc = r1*grd_xarr(i+1) + (1d0-r1) * &
+        ptcl%x = r1*grd_xarr(i+1) + (1d0-r1) * &
              grd_xarr(i)
         r1 = rand()
         ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
@@ -196,7 +196,7 @@ subroutine interior_source
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
         if(lhelp.and.grd_isvelocity) then
-           x0 = ptcl%rsrc
+           x0 = ptcl%x
            y0 = ptcl%y
            z0 = ptcl%z
 !-- 1+dir*v/c
@@ -204,17 +204,17 @@ subroutine interior_source
            mu2 = sqrt(1d0-mu0**2)*sin(om0)
            cmffact = 1d0+(mu0*z0+mu1*x0+mu2*y0)/pc_c
 !-- mu
-           ptcl%musrc = (mu0+z0/pc_c)/cmffact
-           if(ptcl%musrc>1d0) then
-              ptcl%musrc = 1d0
-           elseif(ptcl%musrc<-1d0) then
-              ptcl%musrc = -1d0
+           ptcl%mu = (mu0+z0/pc_c)/cmffact
+           if(ptcl%mu>1d0) then
+              ptcl%mu = 1d0
+           elseif(ptcl%mu<-1d0) then
+              ptcl%mu = -1d0
            endif
 !-- om
            ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
            if(ptcl%om<0d0) ptcl%om = ptcl%om+pc_pi2
         else
-           ptcl%musrc = mu0
+           ptcl%mu = mu0
            ptcl%om = om0
         endif
 
@@ -223,23 +223,23 @@ subroutine interior_source
      if (lhelp) then
 !-- IMC
         if(grd_isvelocity) then
-           ptcl%esrc = ep0*cmffact
-           ptcl%ebirth = ep0*cmffact
-           ptcl%wlsrc = wl0/cmffact
+           ptcl%e = ep0*cmffact
+           ptcl%e0 = ep0*cmffact
+           ptcl%wl = wl0/cmffact
 !-- velocity effects accounting
            tot_evelo=tot_evelo+ep0*(1d0-cmffact)
         else
-           ptcl%esrc = ep0
-           ptcl%ebirth = ep0
-           ptcl%wlsrc = wl0
+           ptcl%e = ep0
+           ptcl%e0 = ep0
+           ptcl%wl = wl0
         endif
-        ptcl%rtsrc = 1
+        ptcl%itype = 1
      else
 !-- DDMC
-        ptcl%esrc = ep0
-        ptcl%ebirth = ep0
-        ptcl%wlsrc = wl0
-        ptcl%rtsrc = 2
+        ptcl%e = ep0
+        ptcl%e0 = ep0
+        ptcl%wl = wl0
+        ptcl%itype = 2
      endif
 !}}}
   enddo
@@ -275,7 +275,7 @@ subroutine interior_source
      ijkused(i,j,k) = ijkused(i,j,k)+1
 !
 !-- setting 1st cell index
-     ptcl%zsrc = i
+     ptcl%ix = i
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
@@ -283,7 +283,7 @@ subroutine interior_source
 !-- calculating particle time
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     ptcl%tsrc = tsp_t+r1*tsp_dt
+     ptcl%t = tsp_t+r1*tsp_dt
 
 !-- calculating wavelength
      denom2 = 0d0
@@ -332,7 +332,7 @@ subroutine interior_source
            r2 = rand()
            prt_tlyrand = prt_tlyrand+1
         enddo
-        ptcl%rsrc = x0
+        ptcl%x = x0
 !-- setting IMC logical
         lhelp = ((grd_sig(i,1,1)+grd_cap(iig,i,1,1))*dx(i)* &
              thelp < prt_tauddmc).or.(in_puretran)
@@ -343,9 +343,9 @@ subroutine interior_source
 !-- 1+dir*v/c
            cmffact = 1d0+mu0*x0/pc_c
 !-- mu
-           ptcl%musrc = (mu0+x0/pc_c)/cmffact
+           ptcl%mu = (mu0+x0/pc_c)/cmffact
         else
-           ptcl%musrc = mu0
+           ptcl%mu = mu0
         endif
 !}}}
 !-- 2D
@@ -370,7 +370,7 @@ subroutine interior_source
            r3 = r3*uur+(1.0-r3)*uul
            r2 = rand()
         enddo
-        ptcl%rsrc = x0
+        ptcl%x = x0
 !- source tilting in y
         r3 = 0d0
         r2 = 1d0
@@ -403,11 +403,11 @@ subroutine interior_source
            azitrfm = atan2(sqrt(1d0-mu0**2)*sin(om0), &
                 sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
 !-- mu
-           ptcl%musrc = (mu0+y0/pc_c)/cmffact
-           if(ptcl%musrc>1d0) then
-              ptcl%musrc = 1d0
-           elseif(ptcl%musrc<-1d0) then
-              ptcl%musrc = -1d0
+           ptcl%mu = (mu0+y0/pc_c)/cmffact
+           if(ptcl%mu>1d0) then
+              ptcl%mu = 1d0
+           elseif(ptcl%mu<-1d0) then
+              ptcl%mu = -1d0
            endif
 !-- om
            if(azitrfm >= 0d0) then
@@ -416,7 +416,7 @@ subroutine interior_source
               ptcl%om = azitrfm+pc_pi2
            endif
         else
-           ptcl%musrc = mu0
+           ptcl%mu = mu0
            ptcl%om = om0
         endif
 !}}}
@@ -440,7 +440,7 @@ subroutine interior_source
            r3 = r1*uur+(1d0-r1)*uul
            r2 = rand()
         enddo
-        ptcl%rsrc = r1*grd_xarr(i+1)+(1d0-r1)*grd_xarr(i)
+        ptcl%x = r1*grd_xarr(i+1)+(1d0-r1)*grd_xarr(i)
 
 !- source tilting in y
         r3 = 0d0
@@ -486,7 +486,7 @@ subroutine interior_source
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
         if(lhelp.and.grd_isvelocity) then
-           x0 = ptcl%rsrc
+           x0 = ptcl%x
            y0 = ptcl%y
            z0 = ptcl%z
 !-- 1+dir*v/c
@@ -494,17 +494,17 @@ subroutine interior_source
            mu2 = sqrt(1d0-mu0**2)*sin(om0)
            cmffact = 1d0+(mu0*z0+mu1*x0+mu2*y0)/pc_c
 !-- mu
-           ptcl%musrc = (mu0+z0/pc_c)/cmffact
-           if(ptcl%musrc>1d0) then
-              ptcl%musrc = 1d0
-           elseif(ptcl%musrc<-1d0) then
-              ptcl%musrc = -1d0
+           ptcl%mu = (mu0+z0/pc_c)/cmffact
+           if(ptcl%mu>1d0) then
+              ptcl%mu = 1d0
+           elseif(ptcl%mu<-1d0) then
+              ptcl%mu = -1d0
            endif
 !-- om
            ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
            if(ptcl%om<0d0) ptcl%om = ptcl%om+pc_pi2
         else
-           ptcl%musrc = mu0
+           ptcl%mu = mu0
            ptcl%om = om0
         endif
      endselect
@@ -513,23 +513,23 @@ subroutine interior_source
      if (lhelp) then
 !-- IMC
         if(grd_isvelocity) then
-           ptcl%esrc = ep0*cmffact
-           ptcl%ebirth = ep0*cmffact
-           ptcl%wlsrc = wl0/cmffact
+           ptcl%e = ep0*cmffact
+           ptcl%e0 = ep0*cmffact
+           ptcl%wl = wl0/cmffact
 !-- velocity effects accounting
            tot_evelo=tot_evelo+ep0*(1d0-cmffact)
         else
-           ptcl%esrc = ep0
-           ptcl%ebirth = ep0
-           ptcl%wlsrc = wl0
+           ptcl%e = ep0
+           ptcl%e0 = ep0
+           ptcl%wl = wl0
         endif
-        ptcl%rtsrc = 1
+        ptcl%itype = 1
      else
 !-- DDMC
-        ptcl%esrc = ep0
-        ptcl%ebirth = ep0
-        ptcl%wlsrc = wl0
-        ptcl%rtsrc = 2
+        ptcl%e = ep0
+        ptcl%e0 = ep0
+        ptcl%wl = wl0
+        ptcl%itype = 2
      endif
 
 !}}}

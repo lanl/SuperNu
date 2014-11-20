@@ -50,17 +50,17 @@ subroutine diffusion3(ptcl,isvacant)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
   dz(l) = grd_zarr(l+1) - grd_zarr(l)
 
-  ix => ptcl%zsrc
+  ix => ptcl%ix
   iy => ptcl%iy
   iz => ptcl%iz
-  x => ptcl%rsrc
+  x => ptcl%x
   y => ptcl%y
   z => ptcl%z
-  xi => ptcl%musrc
+  xi => ptcl%mu
   om => ptcl%om
-  ep => ptcl%esrc
-  ep0 => ptcl%ebirth
-  wl => ptcl%wlsrc
+  ep => ptcl%e
+  ep0 => ptcl%e0
+  wl => ptcl%wl
 !
 !-- shortcut
   dtinv = 1d0/tsp_dt
@@ -337,7 +337,7 @@ subroutine diffusion3(ptcl,isvacant)
 
   r1 = rand()
   tau = abs(log(r1)/(pc_c*denom))
-  tcensus = tsp_t+tsp_dt-ptcl%tsrc
+  tcensus = tsp_t+tsp_dt-ptcl%t
   ddmct = min(tau,tcensus)
 
 !
@@ -361,7 +361,7 @@ subroutine diffusion3(ptcl,isvacant)
   endif
 
 !-- updating particle time
-  ptcl%tsrc = ptcl%tsrc+ddmct
+  ptcl%t = ptcl%t+ddmct
 
 !-- stepping particle ------------------------------------
 !
@@ -523,7 +523,7 @@ subroutine diffusion3(ptcl,isvacant)
            return
         else
 !-- converting to IMC
-           ptcl%rtsrc = 1
+           ptcl%itype = 1
            grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- ix->ix-1
            ix = ix-1
@@ -658,7 +658,7 @@ subroutine diffusion3(ptcl,isvacant)
            return
         else
 !-- converting to IMC
-           ptcl%rtsrc = 1
+           ptcl%itype = 1
            grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- ix->ix+1
            ix = ix+1
@@ -793,7 +793,7 @@ subroutine diffusion3(ptcl,isvacant)
            return
         else
 !-- converting to IMC
-           ptcl%rtsrc = 1
+           ptcl%itype = 1
            grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- iy->iy-1
            iy = iy-1
@@ -928,7 +928,7 @@ subroutine diffusion3(ptcl,isvacant)
            return
         else
 !-- converting to IMC
-           ptcl%rtsrc = 1
+           ptcl%itype = 1
            grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- iy->iy+1
            iy = iy+1
@@ -1062,7 +1062,7 @@ subroutine diffusion3(ptcl,isvacant)
            return
         else
 !-- converting to IMC
-           ptcl%rtsrc = 1
+           ptcl%itype = 1
            grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- iz->iz-1
            iz = iz-1
@@ -1196,7 +1196,7 @@ subroutine diffusion3(ptcl,isvacant)
            return
         else
 !-- converting to IMC
-           ptcl%rtsrc = 1
+           ptcl%itype = 1
            grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- iz->iz+1
            iz = iz+1
@@ -1223,7 +1223,7 @@ subroutine diffusion3(ptcl,isvacant)
      if ((grd_sig(ix,iy,iz)+grd_cap(iiig,ix,iy,iz)) * &
           min(dx(ix),dy(iy),dz(iz)) &
           *thelp < prt_tauddmc) then
-        ptcl%rtsrc = 1
+        ptcl%itype = 1
         grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- direction sampled isotropically           
         r1 = rand()

@@ -34,16 +34,16 @@ subroutine transport3_gamgrey(ptcl)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
   dz(l) = grd_zarr(l+1) - grd_zarr(l)
 
-  ix => ptcl%zsrc
+  ix => ptcl%ix
   iy => ptcl%iy
   iz => ptcl%iz
-  x => ptcl%rsrc
+  x => ptcl%x
   y => ptcl%y
   z => ptcl%z
-  xi => ptcl%musrc
+  xi => ptcl%mu
   om => ptcl%om
-  ep => ptcl%esrc
-  ep0 => ptcl%ebirth
+  ep => ptcl%e
+  ep0 => ptcl%e0
 !
 !-- shortcut
   dtinv = 1d0/tsp_dt
@@ -104,7 +104,7 @@ subroutine transport3_gamgrey(ptcl)
   z = z + xi*d
 !
 !-- updating time
-  ptcl%tsrc = ptcl%tsrc + thelp*cinv*d
+  ptcl%t = ptcl%t + thelp*cinv*d
 !
 !-- updating transformation factors
   if(grd_isvelocity) then

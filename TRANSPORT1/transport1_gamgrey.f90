@@ -32,11 +32,11 @@ subroutine transport1_gamgrey(ptcl)
   real*8 :: dx
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
 
-  z => ptcl%zsrc
-  r => ptcl%rsrc
-  mu => ptcl%musrc
-  E => ptcl%esrc
-  E0 => ptcl%ebirth
+  z => ptcl%ix
+  r => ptcl%x
+  mu => ptcl%mu
+  E => ptcl%e
+  E0 => ptcl%e0
 !
 !-- shortcut
   dtinv = 1d0/dt

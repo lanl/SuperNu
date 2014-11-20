@@ -32,14 +32,14 @@ subroutine transport2_gamgrey(ptcl)
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
 
-  zr => ptcl%zsrc
+  zr => ptcl%ix
   zz => ptcl%iy
-  r => ptcl%rsrc
+  r => ptcl%x
   z => ptcl%y
-  xi => ptcl%musrc
+  xi => ptcl%mu
   om => ptcl%om
-  ep => ptcl%esrc
-  ep0 => ptcl%ebirth
+  ep => ptcl%e
+  ep0 => ptcl%e0
 !
 !-- shortcut
   dtinv = 1d0/tsp_dt

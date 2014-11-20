@@ -162,7 +162,7 @@ program supernu
 !
 !-- reset particle clocks
     if(tsp_it<=tsp_ntres) then
-      where(.not.prt_isvacant) prt_particles%tsrc = tsp_t
+      where(.not.prt_isvacant) prt_particles%t = tsp_t
     endif
 !
 !-- Update tsp_t etc

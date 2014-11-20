@@ -100,7 +100,7 @@ subroutine boundary_source
 !-- calculating particle time
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     ptcl%tsrc = tsp_t+r1*tsp_dt
+     ptcl%t = tsp_t+r1*tsp_dt
 
 !-- calculating wavelength
      denom2 = 0d0
@@ -135,10 +135,10 @@ subroutine boundary_source
 !-- 1D (outer surface)
      case(1)
 !-- calculating position
-        ptcl%rsrc = grd_xarr(i+1)
-        x0 = ptcl%rsrc
+        ptcl%x = grd_xarr(i+1)
+        x0 = ptcl%x
 !-- setting cell index
-        ptcl%zsrc = i
+        ptcl%ix = i
 !-- calculating albedo
         mfphelp = (grd_cap(iig,i,1,1)+grd_sig(i,1,1))*dx(i)*thelp
         P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
@@ -150,9 +150,9 @@ subroutine boundary_source
 !-- 1+dir*v/c
            cmffact = 1d0-mu0*x0/pc_c
 !-- mu
-           ptcl%musrc = (-mu0+x0/pc_c)/cmffact
+           ptcl%mu = (-mu0+x0/pc_c)/cmffact
         else
-           ptcl%musrc = -mu0
+           ptcl%mu = -mu0
         endif
 
 !-- 2D
@@ -161,8 +161,8 @@ subroutine boundary_source
         if(in_surfsrcloc=='down'.or.in_surfsrcloc=='up') then
 !-- flat surface
            r1 = rand()
-           ptcl%rsrc = sqrt(r1)*grd_xarr(grd_nx+1)
-           x0 = ptcl%rsrc
+           ptcl%x = sqrt(r1)*grd_xarr(grd_nx+1)
+           x0 = ptcl%x
            if(j==1) then
               ptcl%y = grd_yarr(j)
            else
@@ -171,8 +171,8 @@ subroutine boundary_source
            endif
            y0 = ptcl%y
 !-- setting cell index
-           ptcl%zsrc = binsrch(x0,grd_xarr,grd_nx+1,0)
-           i = ptcl%zsrc
+           ptcl%ix = binsrch(x0,grd_xarr,grd_nx+1,0)
+           i = ptcl%ix
            ptcl%iy = j
 !-- sampling direction helpers
            r1 = rand()
@@ -182,13 +182,13 @@ subroutine boundary_source
            mu2 = mu0
         else
 !-- curved surface
-           ptcl%rsrc = grd_xarr(grd_nx+1)
-           x0 = ptcl%rsrc
+           ptcl%x = grd_xarr(grd_nx+1)
+           x0 = ptcl%x
            r1 = rand()
            ptcl%y = r1*grd_yarr(grd_ny+1)+(1d0-r1)*grd_yarr(1)
            y0 = ptcl%y
 !-- setting cell index
-           ptcl%zsrc = i
+           ptcl%ix = i
            ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1,0)
            j = ptcl%iy
 !-- sampling direction helpers
@@ -217,16 +217,16 @@ subroutine boundary_source
            ptcl%om = atan2(sqrt(1d0-mu0**2)*sin(om0), &
                 sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
 !-- mu
-           ptcl%musrc = (mu0+y0/pc_c)/cmffact
-           if(ptcl%musrc>1d0) then
-              ptcl%musrc = 1d0
-           elseif(ptcl%musrc<-1d0) then
-              ptcl%musrc = -1d0
+           ptcl%mu = (mu0+y0/pc_c)/cmffact
+           if(ptcl%mu>1d0) then
+              ptcl%mu = 1d0
+           elseif(ptcl%mu<-1d0) then
+              ptcl%mu = -1d0
            endif
 !-- om
            if(ptcl%om < 0d0) ptcl%om=ptcl%om+pc_pi2
         else
-           ptcl%musrc = mu0
+           ptcl%mu = mu0
            ptcl%om = om0
         endif
 
@@ -236,12 +236,12 @@ subroutine boundary_source
         if(in_surfsrcloc=='in'.or.in_surfsrcloc=='out') then
 !-- x surface
            if(i==1) then
-              ptcl%rsrc = grd_xarr(i)
+              ptcl%x = grd_xarr(i)
            else
-              ptcl%rsrc = grd_xarr(i+1)
+              ptcl%x = grd_xarr(i+1)
               mu0 = -mu0
            endif
-           x0 = ptcl%rsrc
+           x0 = ptcl%x
            r1 = rand()
            ptcl%y = r1*grd_yarr(grd_ny+1)+(1d0-r1)*grd_yarr(1)
            y0 = ptcl%y
@@ -249,7 +249,7 @@ subroutine boundary_source
            ptcl%z = r1*grd_zarr(grd_nz+1)+(1d0-r1)*grd_zarr(1)
            z0 = ptcl%z
 !-- setting cell index
-           ptcl%zsrc = i
+           ptcl%ix = i
            ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1,0)
            j = ptcl%iy
            ptcl%iz = binsrch(z0,grd_zarr,grd_nz+1,0)
@@ -267,8 +267,8 @@ subroutine boundary_source
         elseif(in_surfsrcloc=='down'.or.in_surfsrcloc=='up') then
 !-- y surface
            r1 = rand()
-           ptcl%rsrc = r1*grd_xarr(grd_nx+1)+(1d0-r1)*grd_xarr(1)
-           x0 = ptcl%rsrc
+           ptcl%x = r1*grd_xarr(grd_nx+1)+(1d0-r1)*grd_xarr(1)
+           x0 = ptcl%x
            if(j==1) then
               ptcl%y = grd_yarr(j)
            else
@@ -280,8 +280,8 @@ subroutine boundary_source
            ptcl%z = r1*grd_zarr(grd_nz+1)+(1d0-r1)*grd_zarr(1)
            z0 = ptcl%z
 !-- setting cell index
-           ptcl%zsrc = binsrch(x0,grd_xarr,grd_nx+1,0)
-           i = ptcl%zsrc
+           ptcl%ix = binsrch(x0,grd_xarr,grd_nx+1,0)
+           i = ptcl%ix
            ptcl%iy = j
            ptcl%iz = binsrch(z0,grd_zarr,grd_nz+1,0)
            k = ptcl%iz
@@ -298,8 +298,8 @@ subroutine boundary_source
         else
 !-- z surface
            r1 = rand()
-           ptcl%rsrc = r1*grd_xarr(grd_nx+1)+(1d0-r1)*grd_xarr(1)
-           x0 = ptcl%rsrc
+           ptcl%x = r1*grd_xarr(grd_nx+1)+(1d0-r1)*grd_xarr(1)
+           x0 = ptcl%x
            r1 = rand()
            ptcl%y = r1*grd_yarr(grd_ny+1)+(1d0-r1)*grd_yarr(1)
            y0 = ptcl%y
@@ -311,8 +311,8 @@ subroutine boundary_source
            endif
            z0 = ptcl%z
 !-- setting cell index
-           ptcl%zsrc = binsrch(x0,grd_xarr,grd_nx+1,0)
-           i = ptcl%zsrc
+           ptcl%ix = binsrch(x0,grd_xarr,grd_nx+1,0)
+           i = ptcl%ix
            ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1,0)
            j = ptcl%iy
            ptcl%iz = k
@@ -343,17 +343,17 @@ subroutine boundary_source
            mu2 = sqrt(1d0-mu0**2)*sin(om0)
            cmffact = 1d0+(mu0*z0+mu1*x0+mu2*y0)/pc_c
 !-- mu
-           ptcl%musrc = (mu0+z0/pc_c)/cmffact
-           if(ptcl%musrc>1d0) then
-              ptcl%musrc = 1d0
-           elseif(ptcl%musrc<-1d0) then
-              ptcl%musrc = -1d0
+           ptcl%mu = (mu0+z0/pc_c)/cmffact
+           if(ptcl%mu>1d0) then
+              ptcl%mu = 1d0
+           elseif(ptcl%mu<-1d0) then
+              ptcl%mu = -1d0
            endif
 !-- om
            ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
            if(ptcl%om<0d0) ptcl%om = ptcl%om+pc_pi2
         else
-           ptcl%musrc = mu0
+           ptcl%mu = mu0
            ptcl%om = om0
         endif
      endselect
@@ -362,24 +362,24 @@ subroutine boundary_source
 !-- IMC
         if(grd_isvelocity) then
            tot_eext = tot_eext+esurfpart
-           ptcl%esrc = esurfpart*cmffact
-           ptcl%ebirth = esurfpart*cmffact
-           ptcl%wlsrc = wl0/cmffact
+           ptcl%e = esurfpart*cmffact
+           ptcl%e0 = esurfpart*cmffact
+           ptcl%wl = wl0/cmffact
 !-- velocity effects accounting
            tot_evelo=tot_evelo-esurfpart*(cmffact-1d0)
         else
-           ptcl%esrc = esurfpart
-           ptcl%ebirth = esurfpart
-           ptcl%wlsrc = wl0
+           ptcl%e = esurfpart
+           ptcl%e0 = esurfpart
+           ptcl%wl = wl0
         endif
-        ptcl%rtsrc = 1
+        ptcl%itype = 1
      else
 !-- DDMC
-        ptcl%esrc = P*esurfpart
-        ptcl%ebirth = P*esurfpart
-        tot_eext = tot_eext+ptcl%esrc
-        ptcl%wlsrc = wl0
-        ptcl%rtsrc = 2
+        ptcl%e = P*esurfpart
+        ptcl%e0 = P*esurfpart
+        tot_eext = tot_eext+ptcl%e
+        ptcl%wl = wl0
+        ptcl%itype = 2
      endif
 
 

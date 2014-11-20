@@ -52,15 +52,15 @@ subroutine diffusion2(ptcl,isvacant)
   dx2(l)= grd_xarr(l+1)**2-grd_xarr(l)**2
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
 
-  zr => ptcl%zsrc
+  zr => ptcl%ix
   zz => ptcl%iy
-  r => ptcl%rsrc
+  r => ptcl%x
   z => ptcl%y
-  xi => ptcl%musrc
+  xi => ptcl%mu
   om => ptcl%om
-  ep => ptcl%esrc
-  ep0 => ptcl%ebirth
-  wl => ptcl%wlsrc
+  ep => ptcl%e
+  ep0 => ptcl%e0
+  wl => ptcl%wl
 
 !--------------------------------------------------------------
 !
@@ -262,7 +262,7 @@ subroutine diffusion2(ptcl,isvacant)
 
   r1 = rand()
   tau = abs(log(r1)/(pc_c*denom))
-  tcensus = tsp_t+tsp_dt-ptcl%tsrc
+  tcensus = tsp_t+tsp_dt-ptcl%t
   ddmct = min(tau,tcensus)
 
 !
@@ -288,7 +288,7 @@ subroutine diffusion2(ptcl,isvacant)
   endif
 
 !-- updating particle time
-  ptcl%tsrc = ptcl%tsrc+ddmct
+  ptcl%t = ptcl%t+ddmct
 
 !-- stepping particle ------------------------------------
 !
@@ -379,7 +379,7 @@ subroutine diffusion2(ptcl,isvacant)
               wl = 1d0/(r1/grd_wl(iig+1)+(1d0-r1)/grd_wl(iig))
 !
 !-- method changed to IMC
-              ptcl%rtsrc = 1
+              ptcl%itype = 1
               grd_methodswap(zr,zz,1)=grd_methodswap(zr,zz,1)+1
 !
 !-- location set right bound of left cell
@@ -577,7 +577,7 @@ subroutine diffusion2(ptcl,isvacant)
               wl = 1d0/(r1/grd_wl(iig+1)+(1d0-r1)/grd_wl(iig))
 !
 !-- method changed to IMC
-              ptcl%rtsrc = 1
+              ptcl%itype = 1
               grd_methodswap(zr,zz,1)=grd_methodswap(zr,zz,1)+1
 !
 !-- location set right bound of left cell
@@ -760,7 +760,7 @@ subroutine diffusion2(ptcl,isvacant)
               wl = 1d0/(r1/grd_wl(iig+1)+(1d0-r1)/grd_wl(iig))
 !
 !-- method changed to IMC
-              ptcl%rtsrc = 1
+              ptcl%itype = 1
               grd_methodswap(zr,zz,1)=grd_methodswap(zr,zz,1)+1
 !
 !-- location set right bound of left cell
@@ -934,7 +934,7 @@ subroutine diffusion2(ptcl,isvacant)
               wl = 1d0/(r1/grd_wl(iig+1)+(1d0-r1)/grd_wl(iig))
 !
 !-- method changed to IMC
-              ptcl%rtsrc = 1
+              ptcl%itype = 1
               grd_methodswap(zr,zz,1)=grd_methodswap(zr,zz,1)+1
 !
 !-- location set right bound of left cell
@@ -1003,9 +1003,9 @@ subroutine diffusion2(ptcl,isvacant)
         if ((grd_sig(zr,zz,1)+grd_cap(g,zr,zz,1)) * &
              min(dx(zr),dy(zz)) &
              *thelp >= prt_tauddmc) then
-           ptcl%rtsrc = 2
+           ptcl%itype = 2
         else
-           ptcl%rtsrc = 1
+           ptcl%itype = 1
            grd_methodswap(zr,zz,1)=grd_methodswap(zr,zz,1)+1
 !-- direction sampled isotropically           
            r1 = rand()

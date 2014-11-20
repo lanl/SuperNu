@@ -34,15 +34,15 @@ subroutine transport2(ptcl,isvacant)
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
 
-  zr => ptcl%zsrc
+  zr => ptcl%ix
   zz => ptcl%iy
-  r => ptcl%rsrc
+  r => ptcl%x
   z => ptcl%y
-  xi => ptcl%musrc
+  xi => ptcl%mu
   om => ptcl%om
-  ep => ptcl%esrc
-  ep0 => ptcl%ebirth
-  wl => ptcl%wlsrc
+  ep => ptcl%e
+  ep0 => ptcl%e0
+  wl => ptcl%wl
 !
 !-- shortcut
   dtinv = 1d0/tsp_dt
@@ -77,7 +77,7 @@ subroutine transport2(ptcl,isvacant)
   endif
 !
 !-- calculating distance to census:
-  dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%tsrc)*thelpinv)
+  dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%t)*thelpinv)
 !
 !-- calculating distance to boundary:
 !-- to r-bound
@@ -191,7 +191,7 @@ subroutine transport2(ptcl,isvacant)
   endif
 
 !-- updating time
-  ptcl%tsrc = ptcl%tsrc + thelp*cinv*d
+  ptcl%t = ptcl%t + thelp*cinv*d
 !
 !-- updating transformation factors
   if(grd_isvelocity) then
@@ -347,7 +347,7 @@ subroutine transport2(ptcl,isvacant)
         if((grd_cap(ig,zr,zz,1)+grd_sig(zr,zz,1)) * &
              min(dx(zr),dy(zz))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
-           ptcl%rtsrc = 2
+           ptcl%itype = 2
            grd_methodswap(zr,zz,1)=grd_methodswap(zr,zz,1)+1
 !-- transforming to cmf
            if(grd_isvelocity) then
@@ -402,7 +402,7 @@ subroutine transport2(ptcl,isvacant)
 !-- sampling
            r1 = rand()
            if (r1 < ppl*(1d0+1.5d0*abs(xi))) then
-              ptcl%rtsrc = 2
+              ptcl%itype = 2
               grd_methodswap(zr,zz,1)=grd_methodswap(zr,zz,1)+1
               if(grd_isvelocity) then
                  ep = ep*elabfact
@@ -484,7 +484,7 @@ subroutine transport2(ptcl,isvacant)
 !-- sampling
            r1 = rand()
            if (r1 < ppr*(1d0+1.5d0*abs(xi))) then
-              ptcl%rtsrc = 2
+              ptcl%itype = 2
               grd_methodswap(zr,zz,1)=grd_methodswap(zr,zz,1)+1
               if(grd_isvelocity) then
                  ep = ep*elabfact
@@ -578,7 +578,7 @@ subroutine transport2(ptcl,isvacant)
 !-- sampling
            r1 = rand()
            if (r1 < ppl*(1d0+1.5d0*abs(mu0))) then
-              ptcl%rtsrc = 2
+              ptcl%itype = 2
               grd_methodswap(zr,zz,1)=grd_methodswap(zr,zz,1)+1
               if(grd_isvelocity) then
                  ep = ep*elabfact
@@ -663,7 +663,7 @@ subroutine transport2(ptcl,isvacant)
 !-- sampling
            r1 = rand()
            if (r1 < ppr*(1d0+1.5d0*abs(mu0))) then
-              ptcl%rtsrc = 2
+              ptcl%itype = 2
               grd_methodswap(zr,zz,1)=grd_methodswap(zr,zz,1)+1
               if(grd_isvelocity) then
                  ep = ep*elabfact
@@ -737,7 +737,7 @@ subroutine transport2(ptcl,isvacant)
      if ((grd_sig(zr,zz,1)+grd_cap(ig,zr,zz,1)) * &
           min(dx(zr),dy(zz))*thelp >= prt_tauddmc &
           .and..not.in_puretran) then
-        ptcl%rtsrc = 2
+        ptcl%itype = 2
         grd_methodswap(zr,zz,1)=grd_methodswap(zr,zz,1)+1
         if(grd_isvelocity) then
            ep = ep*elabfact

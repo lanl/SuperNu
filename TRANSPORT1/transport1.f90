@@ -36,12 +36,12 @@ subroutine transport1(ptcl,isvacant)
   real*8 :: dx
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
 
-  z => ptcl%zsrc
-  r => ptcl%rsrc
-  mu => ptcl%musrc
-  E => ptcl%esrc
-  E0 => ptcl%ebirth
-  wl => ptcl%wlsrc
+  z => ptcl%ix
+  r => ptcl%x
+  mu => ptcl%mu
+  E => ptcl%e
+  E0 => ptcl%e0
+  wl => ptcl%wl
 !
 !-- shortcut
   dtinv = 1d0/tsp_dt
@@ -127,7 +127,7 @@ subroutine transport1(ptcl,isvacant)
   endif
 !
 !-- distance to census = dcen
-  dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%tsrc)*thelpinv)
+  dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%t)*thelpinv)
 !
 !-- distance to Doppler shift = ddop
    if(grd_isvelocity.and.g<grd_ng) then
@@ -156,8 +156,8 @@ subroutine transport1(ptcl,isvacant)
   rold = r
   r = sqrt((1.0d0-mu**2)*r**2+(d+r*mu)**2)
 !  r = sqrt(r**2+d**2+2d0*d*r*mu)
-  told = ptcl%tsrc
-  ptcl%tsrc = ptcl%tsrc + thelp*d*cinv
+  told = ptcl%t
+  ptcl%t = ptcl%t + thelp*d*cinv
   muold = mu
   mu = (rold*mu+d)/r
 
@@ -222,7 +222,7 @@ subroutine transport1(ptcl,isvacant)
      if (((grd_sig(z,1,1)+grd_cap(g,z,1,1))*dx(z)* &
           thelp >= prt_tauddmc) &
           .and.(in_puretran.eqv..false.)) then
-        ptcl%rtsrc = 2
+        ptcl%itype = 2
         grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
         if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -233,7 +233,7 @@ subroutine transport1(ptcl,isvacant)
            wl = wl/(1.0-r*mu*cinv)
         endif
      else
-        ptcl%rtsrc = 1
+        ptcl%itype = 1
      endif
 !!}}}
   elseif (d == dthm) then  !physical scattering (Thomson-type)
@@ -336,7 +336,7 @@ subroutine transport1(ptcl,isvacant)
         if (((grd_sig(z,1,1)+grd_cap(g,z,1,1))*dx(z)* &
              thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
-           ptcl%rtsrc = 2
+           ptcl%itype = 2
            grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -347,7 +347,7 @@ subroutine transport1(ptcl,isvacant)
               wl = wl/(1.0-r*mu*cinv)
            endif
         else
-           ptcl%rtsrc = 1
+           ptcl%itype = 1
         endif
      endif
      !!}}}
@@ -394,7 +394,7 @@ subroutine transport1(ptcl,isvacant)
            P = ppl*(1.0+1.5*abs(mu))
 !--
            if (r1 < P) then
-              ptcl%rtsrc = 2
+              ptcl%itype = 2
               grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
               if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -434,7 +434,7 @@ subroutine transport1(ptcl,isvacant)
               ppl = 4d0/(3d0*help+6d0*pc_dext)
               P = ppl*(1.0+1.5*abs(mu))
               if (r1 < P) then
-                 ptcl%rtsrc = 2
+                 ptcl%itype = 2
                  grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
                  if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -484,7 +484,7 @@ subroutine transport1(ptcl,isvacant)
            P = ppr*(1.0+1.5*abs(mu))
 !--
            if (r1 < P) then
-              ptcl%rtsrc = 2
+              ptcl%itype = 2
               grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
               if(grd_isvelocity) then
 !-- velocity effects accounting

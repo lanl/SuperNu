@@ -48,12 +48,12 @@ subroutine diffusion1(ptcl,isvacant)
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dx3(l) = grd_xarr(l+1)**3 - grd_xarr(l)**3
 
-  z => ptcl%zsrc
-  r => ptcl%rsrc
-  mu => ptcl%musrc
-  E => ptcl%esrc
-  E0 => ptcl%ebirth
-  wl => ptcl%wlsrc
+  z => ptcl%ix
+  r => ptcl%x
+  mu => ptcl%mu
+  E => ptcl%e
+  E0 => ptcl%e0
+  wl => ptcl%wl
 
 !--------------------------------------------------------------
 !
@@ -214,7 +214,7 @@ subroutine diffusion1(ptcl,isvacant)
   r1 = rand()
   prt_tlyrand = prt_tlyrand+1
   tau = abs(log(r1)/(pc_c*denom))
-  tcensus = tsp_t+tsp_dt-ptcl%tsrc
+  tcensus = tsp_t+tsp_dt-ptcl%t
   ddmct = min(tau,tcensus)
 !
 !-- calculating energy depostion and density
@@ -240,7 +240,7 @@ subroutine diffusion1(ptcl,isvacant)
 
 
 !-- updating particle time
-  ptcl%tsrc = ptcl%tsrc+ddmct
+  ptcl%t = ptcl%t+ddmct
 
 
 !-- stepping particle ------------------------------------
@@ -333,7 +333,7 @@ subroutine diffusion1(ptcl,isvacant)
            wl = 1d0/(r1/grd_wl(iig+1)+(1d0-r1)/grd_wl(iig))
 !
 !-- method changed to IMC
-           ptcl%rtsrc = 1
+           ptcl%itype = 1
            grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
 !
 !-- location set right bound of left cell
@@ -504,7 +504,7 @@ subroutine diffusion1(ptcl,isvacant)
            wl = 1d0/(r1/grd_wl(iig+1)+(1d0-r1)/grd_wl(iig))
 !
 !-- method changed to IMC
-           ptcl%rtsrc = 1
+           ptcl%itype = 1
            grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
 !
 !-- location set left bound of right cell
@@ -566,9 +566,9 @@ subroutine diffusion1(ptcl,isvacant)
 
      if ((grd_sig(z,1,1)+grd_cap(g,z,1,1))*dx(z) &
           *thelp >= prt_tauddmc) then
-        ptcl%rtsrc = 2
+        ptcl%itype = 2
      else
-        ptcl%rtsrc = 1
+        ptcl%itype = 1
         grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
 !-- direction sampled isotropically           
         r1 = rand()

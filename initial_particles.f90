@@ -11,6 +11,7 @@ subroutine initial_particles
   !This subroutine instantiates the initial particles before
   !the first time step.
 !##################################################
+  type(packet),pointer :: ptcl
 !
   logical :: lhelp
   integer :: ig, i,j,k, iig, ipart
@@ -31,6 +32,7 @@ subroutine initial_particles
   k = 1
   ijkused = 0
   do ipart=1,prt_ninitnew
+     ptcl => prt_particles(ipart)
 
 !-- incrementing to next vacant cell
      loopk: do k=k,grd_nz
@@ -51,16 +53,16 @@ subroutine initial_particles
      ijkused(i,j,k) = ijkused(i,j,k)+1
 !
 !-- setting 1st cell index
-     prt_particles(ipart)%zsrc = i
+     ptcl%ix = i
 
 !-- setting particle index to not vacant
      prt_isvacant(ipart) = .false.
 !
 !-- calculating particle time
-     prt_particles(ipart)%tsrc = tsp_t
+     ptcl%t = tsp_t
 !
 !-- setting type
-     prt_particles(ipart)%rtsrc = 1
+     ptcl%itype = 1
 
 !-- calculating wavelength
      denom2 = 0d0
@@ -94,30 +96,30 @@ subroutine initial_particles
 !-- calculating position
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        prt_particles(ipart)%rsrc = (r1*grd_xarr(i+1)**3 + &
+        ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1d0-r1)*grd_xarr(i)**3)**(1d0/3d0)
 
 !-- if velocity-dependent, transforming direction
         if(grd_isvelocity) then
-           x0 = prt_particles(ipart)%rsrc
+           x0 = ptcl%x
 !-- 1+dir*v/c
            cmffact = 1d0+x0*mu0/pc_c
 !-- mu
-           prt_particles(ipart)%musrc = (mu0+x0/pc_c)/cmffact
+           ptcl%mu = (mu0+x0/pc_c)/cmffact
         else
-           prt_particles(ipart)%musrc = mu0
+           ptcl%mu = mu0
         endif
 
 !-- 2D
      case(2)
 !-- setting 2nd cell index
-        prt_particles(ipart)%iy = j
+        ptcl%iy = j
 !-- calculating position
         r1 = rand()
-        prt_particles(ipart)%rsrc = sqrt(r1*grd_xarr(i+1)**2 + &
+        ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + &
              (1d0-r1)*grd_xarr(i)**2)
         r1 = rand()
-        prt_particles(ipart)%y = r1*grd_yarr(j+1) + &
+        ptcl%y = r1*grd_yarr(j+1) + &
              (1d0-r1)*grd_yarr(j)
 
 !-- sampling azimuthal angle of direction
@@ -126,44 +128,44 @@ subroutine initial_particles
 
 !-- if velocity-dependent, transforming direction
         if(grd_isvelocity) then
-           x0 = prt_particles(ipart)%rsrc
-           y0 = prt_particles(ipart)%y
+           x0 = ptcl%x
+           y0 = ptcl%y
 !-- 1+dir*v/c
            cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
            azitrfm = atan2(sqrt(1d0-mu0**2)*sin(om0), &
                 sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
 !-- mu
-           prt_particles(ipart)%musrc = (mu0+y0/pc_c)/cmffact
-           if(prt_particles(ipart)%musrc>1d0) then
-              prt_particles(ipart)%musrc = 1d0
-           elseif(prt_particles(ipart)%musrc<-1d0) then
-              prt_particles(ipart)%musrc = -1d0
+           ptcl%mu = (mu0+y0/pc_c)/cmffact
+           if(ptcl%mu>1d0) then
+              ptcl%mu = 1d0
+           elseif(ptcl%mu<-1d0) then
+              ptcl%mu = -1d0
            endif
 !-- om
            if(azitrfm >= 0d0) then
-              prt_particles(ipart)%om = azitrfm
+              ptcl%om = azitrfm
            else
-              prt_particles(ipart)%om = azitrfm+pc_pi2
+              ptcl%om = azitrfm+pc_pi2
            endif
         else
-           prt_particles(ipart)%musrc = mu0
-           prt_particles(ipart)%om = om0
+           ptcl%mu = mu0
+           ptcl%om = om0
         endif
 
 !-- 3D
      case(3)
 !-- setting 2nd, 3rd cell index
-        prt_particles(ipart)%iy = j
-        prt_particles(ipart)%iz = k
+        ptcl%iy = j
+        ptcl%iz = k
 !-- calculating position
         r1 = rand()
-        prt_particles(ipart)%rsrc = r1*grd_xarr(i+1) + &
+        ptcl%x = r1*grd_xarr(i+1) + &
              (1d0-r1)*grd_xarr(i)
         r1 = rand()
-        prt_particles(ipart)%y = r1*grd_yarr(j+1) + &
+        ptcl%y = r1*grd_yarr(j+1) + &
              (1d0-r1)*grd_yarr(j)
         r1 = rand()
-        prt_particles(ipart)%z = r1*grd_zarr(k+1) + &
+        ptcl%z = r1*grd_zarr(k+1) + &
              (1d0-r1)*grd_zarr(k)
 
 !-- sampling azimuthal angle of direction
@@ -172,39 +174,39 @@ subroutine initial_particles
 
 !-- if velocity-dependent, transforming direction
         if(grd_isvelocity) then
-           x0 = prt_particles(ipart)%rsrc
-           y0 = prt_particles(ipart)%y
-           z0 = prt_particles(ipart)%z
+           x0 = ptcl%x
+           y0 = ptcl%y
+           z0 = ptcl%z
 !-- 1+dir*v/c
            mu1 = sqrt(1d0-mu0**2)*cos(om0)
            mu2 = sqrt(1d0-mu0**2)*sin(om0)
            cmffact = 1d0+(mu0*z0+mu1*x0+mu2*y0)/pc_c
 !-- mu
-           prt_particles(ipart)%musrc = (mu0+z0/pc_c)/cmffact
-           if(prt_particles(ipart)%musrc>1d0) then
-              prt_particles(ipart)%musrc = 1d0
-           elseif(prt_particles(ipart)%musrc<-1d0) then
-              prt_particles(ipart)%musrc = -1d0
+           ptcl%mu = (mu0+z0/pc_c)/cmffact
+           if(ptcl%mu>1d0) then
+              ptcl%mu = 1d0
+           elseif(ptcl%mu<-1d0) then
+              ptcl%mu = -1d0
            endif
 !-- om
-           prt_particles(ipart)%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
-           if(prt_particles(ipart)%om<0d0) prt_particles(ipart)%om = &
-                prt_particles(ipart)%om+pc_pi2
+           ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
+           if(ptcl%om<0d0) ptcl%om = &
+                ptcl%om+pc_pi2
         else
-           prt_particles(ipart)%musrc = mu0
-           prt_particles(ipart)%om = om0
+           ptcl%mu = mu0
+           ptcl%om = om0
         endif
      endselect
 
 !-- if velocity-dependent, transforming energy, wavelength
      if(grd_isvelocity) then
-        prt_particles(ipart)%esrc = ep0*cmffact
-        prt_particles(ipart)%ebirth = ep0*cmffact
-        prt_particles(ipart)%wlsrc = wl0/cmffact
+        ptcl%e = ep0*cmffact
+        ptcl%e0 = ep0*cmffact
+        ptcl%wl = wl0/cmffact
      else
-        prt_particles(ipart)%esrc = ep0
-        prt_particles(ipart)%ebirth = ep0
-        prt_particles(ipart)%wlsrc = wl0
+        ptcl%e = ep0
+        ptcl%e0 = ep0
+        ptcl%wl = wl0
      endif
 
   enddo !ipart

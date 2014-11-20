@@ -53,10 +53,10 @@ subroutine particle_advance_gamgrey
 ! write(6,*) 'gam: npart,nsfloor:',npart,nsfloor
 
 !--
-  zsrc => ptcl%zsrc
+  zsrc => ptcl%ix
   iy => ptcl%iy
   iz => ptcl%iz
-  esrc => ptcl%esrc
+  esrc => ptcl%e
 
 !-- unused
 !    real*8 :: tsrc
@@ -105,20 +105,20 @@ subroutine particle_advance_gamgrey
 !-- calculating position!{{{
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        ptcl%rsrc = (r1*grd_xarr(zsrc+1)**3 + &
+        ptcl%x = (r1*grd_xarr(zsrc+1)**3 + &
              (1.0-r1)*grd_xarr(zsrc)**3)**(1.0/3.0)
 !--
         if(grd_isvelocity) then
-           x0 = ptcl%rsrc
+           x0 = ptcl%x
            cmffact = 1d0+mu0*x0/pc_c !-- 1+dir*v/c
-           ptcl%musrc = (mu0+x0/pc_c)/cmffact
+           ptcl%mu = (mu0+x0/pc_c)/cmffact
         else
-           ptcl%musrc = mu0
+           ptcl%mu = mu0
         endif!}}}
      case(2)
 !-- calculating position!{{{
         r1 = rand()
-        ptcl%rsrc = sqrt(r1*grd_xarr(i+1)**2 + &
+        ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + &
              (1d0-r1)*grd_xarr(i)**2)
         r1 = rand()
         ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
@@ -128,18 +128,18 @@ subroutine particle_advance_gamgrey
         om0 = pc_pi2*r1
 !-- if velocity-dependent, transforming direction
         if(grd_isvelocity) then
-           x0 = ptcl%rsrc
+           x0 = ptcl%x
            y0 = ptcl%y
 !-- 1+dir*v/c
            cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
            azitrfm = atan2(sqrt(1d0-mu0**2)*sin(om0), &
                 sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
 !-- mu
-           ptcl%musrc = (mu0+y0/pc_c)/cmffact
-           if(ptcl%musrc>1d0) then
-              ptcl%musrc = 1d0
-           elseif(ptcl%musrc<-1d0) then
-              ptcl%musrc = -1d0
+           ptcl%mu = (mu0+y0/pc_c)/cmffact
+           if(ptcl%mu>1d0) then
+              ptcl%mu = 1d0
+           elseif(ptcl%mu<-1d0) then
+              ptcl%mu = -1d0
            endif
 !-- om
            if(azitrfm >= 0d0) then
@@ -148,7 +148,7 @@ subroutine particle_advance_gamgrey
               ptcl%om = azitrfm+pc_pi2
            endif
         else
-           ptcl%musrc = mu0
+           ptcl%mu = mu0
            ptcl%om = om0
         endif!}}}
      case(3)
@@ -157,7 +157,7 @@ subroutine particle_advance_gamgrey
         ptcl%iz = k
 !-- calculating position
         r1 = rand()
-        ptcl%rsrc = r1*grd_xarr(i+1) + (1d0-r1) * &
+        ptcl%x = r1*grd_xarr(i+1) + (1d0-r1) * &
              grd_xarr(i)
         r1 = rand()
         ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
@@ -170,7 +170,7 @@ subroutine particle_advance_gamgrey
         om0 = pc_pi2*r1
 !-- if velocity-dependent, transforming direction
         if(grd_isvelocity) then
-           x0 = ptcl%rsrc
+           x0 = ptcl%x
            y0 = ptcl%y
            z0 = ptcl%z
 !-- 1+dir*v/c
@@ -178,24 +178,24 @@ subroutine particle_advance_gamgrey
            mu2 = sqrt(1d0-mu0**2)*sin(om0)
            cmffact = 1d0+(mu0*z0+mu1*x0+mu2*y0)/pc_c
 !-- mu
-           ptcl%musrc = (mu0+z0/pc_c)/cmffact
-           if(ptcl%musrc>1d0) then
-              ptcl%musrc = 1d0
-           elseif(ptcl%musrc<-1d0) then
-              ptcl%musrc = -1d0
+           ptcl%mu = (mu0+z0/pc_c)/cmffact
+           if(ptcl%mu>1d0) then
+              ptcl%mu = 1d0
+           elseif(ptcl%mu<-1d0) then
+              ptcl%mu = -1d0
            endif
 !-- om
            ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
            if(ptcl%om<0d0) ptcl%om = ptcl%om+pc_pi2
         else
-           ptcl%musrc = mu0
+           ptcl%mu = mu0
            ptcl%om = om0
         endif!}}}
      endselect
 !
 !-- emission energy per particle
      esrc = grd_emitex(zsrc,iy,iz)/grd_nvol(zsrc,iy,iz)*cmffact
-     ptcl%ebirth = esrc
+     ptcl%e0 = esrc
 
 !-----------------------------------------------------------------------        
 !-- Advancing particle until census, absorption, or escape from domain
@@ -207,12 +207,12 @@ subroutine particle_advance_gamgrey
            call transport1_gamgrey(ptcl)
 !-- transformation factor
            if(grd_isvelocity) then
-              labfact = 1.0d0 - ptcl%musrc*ptcl%rsrc/pc_c
+              labfact = 1.0d0 - ptcl%mu*ptcl%x/pc_c
            else
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (esrc<1d-6*ptcl%ebirth .and. .not.prt_done) then
+           if (esrc<1d-6*ptcl%e0 .and. .not.prt_done) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
@@ -220,7 +220,7 @@ subroutine particle_advance_gamgrey
                  grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
               else
                  esrc = 2d0*esrc
-                 ptcl%ebirth = 2d0*ptcl%ebirth
+                 ptcl%e0 = 2d0*ptcl%e0
               endif
            endif
         enddo!}}}
@@ -229,13 +229,13 @@ subroutine particle_advance_gamgrey
            call transport2_gamgrey(ptcl)
 !-- transformation factor
            if(grd_isvelocity) then
-              labfact = 1d0-(ptcl%musrc*ptcl%y+sqrt(1d0-ptcl%musrc**2) * &
-                   cos(ptcl%om)*ptcl%rsrc)/pc_c
+              labfact = 1d0-(ptcl%mu*ptcl%y+sqrt(1d0-ptcl%mu**2) * &
+                   cos(ptcl%om)*ptcl%x)/pc_c
            else
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (esrc<1d-6*ptcl%ebirth .and. .not.prt_done) then
+           if (esrc<1d-6*ptcl%e0 .and. .not.prt_done) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
@@ -243,7 +243,7 @@ subroutine particle_advance_gamgrey
                  grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
               else
                  esrc = 2d0*esrc
-                 ptcl%ebirth = 2d0*ptcl%ebirth
+                 ptcl%e0 = 2d0*ptcl%e0
               endif
            endif
         enddo!}}}
@@ -252,13 +252,13 @@ subroutine particle_advance_gamgrey
            call transport3_gamgrey(ptcl)
 !-- transformation factor
            if(grd_isvelocity) then
-              labfact = 1d0-(ptcl%musrc*ptcl%z+sqrt(1d0-ptcl%musrc**2) * &
-                   (cos(ptcl%om)*ptcl%rsrc+sin(ptcl%om)*ptcl%y))/pc_c
+              labfact = 1d0-(ptcl%mu*ptcl%z+sqrt(1d0-ptcl%mu**2) * &
+                   (cos(ptcl%om)*ptcl%x+sin(ptcl%om)*ptcl%y))/pc_c
            else
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (esrc<1d-6*ptcl%ebirth .and. .not.prt_done) then
+           if (esrc<1d-6*ptcl%e0 .and. .not.prt_done) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
@@ -266,7 +266,7 @@ subroutine particle_advance_gamgrey
                  grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
               else
                  esrc = 2d0*esrc
-                 ptcl%ebirth = 2d0*ptcl%ebirth
+                 ptcl%e0 = 2d0*ptcl%e0
               endif
            endif
         enddo!}}}

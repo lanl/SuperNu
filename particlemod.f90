@@ -3,11 +3,11 @@ module particlemod
   implicit none
 
   type packet
-     real*8 :: rsrc, musrc, tsrc
-     real*8 :: y, z, om
-     real*8 :: esrc, ebirth, wlsrc
-     integer :: zsrc, rtsrc
-     integer :: iy, iz
+     real*8 :: x, y, z
+     real*8 :: mu, om, t
+     real*8 :: e, e0, wl
+     integer :: ix, iy, iz
+     integer :: itype
   end type packet
   type(packet),allocatable,target :: prt_particles(:)  !(prt_npartmax)
   logical,allocatable,target :: prt_isvacant(:)  !(prt_npartmax)
