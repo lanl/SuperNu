@@ -19,18 +19,14 @@ program supernu
 
   implicit none
 !***********************************************************************
-! Main routine
-!
-! todo:
-! - check wavelength units for bb and bf data
-! - fix gas_wl indexing BUG in physical_opacity
-!
+! TODO and wishlist:
+! - transport[123].f90: no check wl group bounds (drr 2014/11/20)
+! - interior_source: source tilting from source derivative (drr 2014/11/20)
 !***********************************************************************
   real*8 :: help
   real*8 :: t_elapsed
   integer :: ierr,ns,it,ncell
   integer,external :: memusg
-  logical :: lmpi0 = .false. !master rank flag
   real*8 :: t0,t1  !timing
 !
 !-- mpi initialization
@@ -48,8 +44,7 @@ program supernu
 !-- other tasks before packet propagation begins.
 !--
   if(impi==impi0) then
-    lmpi0 = .true. !master rank flag!{{{
-    call time(t0)
+    call time(t0)!{{{
 !-- startup message
     call banner
 !-- read runtime parameters
@@ -268,13 +263,13 @@ program supernu
 !=============
   call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
 !-- Print timing output.
-  if(lmpi0) then
-   call time(t1)
-   t_all = t1 - t0
-   call print_timing                 !print timing results
-   write(6,*)
-   write(6,*) 'SuperNu finished'
-   if(in_grab_stdout)write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
+  if(impi==impi0) then
+    call time(t1)
+    t_all = t1 - t0
+    call print_timing                 !print timing results
+    write(6,*)
+    write(6,*) 'SuperNu finished'
+    if(in_grab_stdout)write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
   endif
 !-- Clean up memory. (This help to locate memory leaks)
   call dealloc_all
