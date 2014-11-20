@@ -25,7 +25,7 @@ c-- grid geometry and dimensions
 c
 c-- outbound flux group and direction bins
       integer :: in_nflx(3) = [0, 1, 1]
-      real*8 :: in_wlminflx =   100d-8 !lower wavelength flux boundary [cm]
+      real*8 :: in_wlminflx =  1000d-8 !lower wavelength flux boundary [cm]
       real*8 :: in_wlmaxflx = 32000d-8 !upper wavelength flux boundary [cm]
 c
 c-- do read input structure file instead of specifying the stucture with input parameters
