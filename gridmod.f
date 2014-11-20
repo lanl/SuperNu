@@ -99,6 +99,11 @@ c
       allocate(grd_yarr(grd_ny+1))
       allocate(grd_zarr(grd_nz+1))
 c
+c-- shortcuts
+      nx = grd_nx
+      ny = grd_ny
+      nz = grd_nz
+c
 c-- print alloc size (keep this updated)
 c---------------------------------------
       if(ltalk) then
@@ -111,9 +116,6 @@ c---------------------------------------
       endif
 c
 c-- ndim=3 alloc
-      nx = grd_nx !shortcut
-      ny = grd_ny !shortcut
-      nz = grd_nz !shortcut
       allocate(grd_edep(nx,ny,nz))
       allocate(grd_siggrey(nx,ny,nz))
       allocate(grd_capgam(nx,ny,nz))
