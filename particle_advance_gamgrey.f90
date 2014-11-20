@@ -15,7 +15,7 @@ subroutine particle_advance_gamgrey
   !are being handled in separate subroutines but this may be changed to reduce
   !total subroutine calls in program.
 !##################################################
-  integer :: ipart, npart
+  integer :: ipart, npart, nsfloor
   integer,external :: binsrch
   real*8 :: r1
   integer :: i, j, k
@@ -45,9 +45,12 @@ subroutine particle_advance_gamgrey
   esq = sum(sqrt(grd_emitex))
   grd_nvol = nint(sqrt(grd_emitex)/esq*prt_ns)  !-- no source tilting yet
 !-- floor under particle per cell number
-  where(grd_emitex>0d0) grd_nvol = max(grd_nvol,100)
+  nsfloor = prt_ns/(grd_nx*grd_ny*grd_nz)
+  nsfloor = max(1,nsfloor/10)
+  where(grd_emitex>0d0) grd_nvol = max(grd_nvol,nsfloor)
 !-- total number of particles
   npart = sum(grd_nvol)
+! write(6,*) 'gam: npart,nsfloor:',npart,nsfloor
 
 !--
   zsrc => ptcl%zsrc

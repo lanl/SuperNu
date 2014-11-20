@@ -14,7 +14,7 @@ subroutine sourcenumbers(nmpi)
 !##################################################
 
   integer :: i,j,k
-  integer :: ihelp
+  integer :: ns,nsfloor
   real*8 :: etot
 ! tot_esurf for any new prt_particles from a surface source
 ! prt_nsurf = number of surface prt_particles
@@ -32,15 +32,11 @@ subroutine sourcenumbers(nmpi)
   prt_nsurf = nint(tot_esurf*prt_ns/etot)
   prt_nnew = prt_nsurf
 
+!-- floor under number of source particles
+  nsfloor = prt_ns/(grd_nx*grd_ny*grd_nz)  !uniform distribution
+  nsfloor = max(1,nsfloor/10)
+
   ! Calculating number of particles per cell (dd_nvol): loop
-  select case(in_igeom)
-  case(1)
-     ihelp = 50
-  case(2)
-     ihelp = 50/nmpi+1
-  case(3)
-     ihelp = 1
-  endselect
   prt_nexsrc=0
   do k = 1, grd_nz
   do j = 1, grd_ny
@@ -50,8 +46,8 @@ subroutine sourcenumbers(nmpi)
      if(grd_emit(i,j,k)<=0d0) then
         grd_nvol(i,j,k)=0
      else
-        grd_nvol(i,j,k)=nint(grd_emit(i,j,k)*prt_ns/etot) + &
-             ihelp
+        ns = nint(grd_emit(i,j,k)*prt_ns/etot) 
+        grd_nvol(i,j,k) = max(ns,nsfloor)
      endif
      prt_nnew = prt_nnew + grd_nvol(i,j,k)
 
@@ -59,13 +55,15 @@ subroutine sourcenumbers(nmpi)
      if(grd_emitex(i,j,k)<=0d0) then
         grd_nvolex(i,j,k)=0
      else
-        grd_nvolex(i,j,k)=nint(grd_emitex(i,j,k)*prt_ns/etot) + &
-             ihelp
+        ns = nint(grd_emitex(i,j,k)*prt_ns/etot)
+        grd_nvolex(i,j,k) = max(ns,nsfloor)
      endif
      prt_nexsrc = prt_nexsrc + grd_nvolex(i,j,k)
-     prt_nnew = prt_nnew + grd_nvolex(i,j,k)
   enddo
   enddo
   enddo
+
+!-- add to total
+  prt_nnew = prt_nnew + prt_nexsrc
 
 end subroutine sourcenumbers
