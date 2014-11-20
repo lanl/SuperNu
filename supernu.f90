@@ -26,8 +26,8 @@ program supernu
   real*8 :: help
   real*8 :: t_elapsed
   integer :: ierr,ns,nmax,it,ncell
-  integer,external :: memusg
   real*8 :: t0,t1  !timing
+  character(15) :: msg
 !
 !-- mpi initialization
   call mpi_init(ierr) !MPI
@@ -95,7 +95,8 @@ program supernu
     if(.not.in_noffopac) call ffxs_read_data           !free-free cross section data
 !
 !-- memory statistics
-    write(6,*) 'memusg: after setup:',memusg()
+    msg = 'post read:'
+    write(6,*) 'memusg: ',msg,memusg()
 !
     call time(t1)
     t_setup = t1-t0!}}}
@@ -152,6 +153,9 @@ program supernu
 !-- time step loop
 !=================
   if(impi==impi0) then
+     msg = 'post setup:'
+     write(6,*) 'memusg: ',msg,memusg()
+!
      write(6,*)
      write(6,*) "starting time loop:"
      write(6,*) "===================="
@@ -265,12 +269,19 @@ program supernu
   call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
 !-- Print timing output.
   if(impi==impi0) then
+!
+!-- print memory usage
+    msg = 'post loop:'
+    write(6,*)
+    write(6,*) 'memusg: ',msg,memusg()
+
+!-- print cpu timing usage
     call time(t1)
     t_all = t1 - t0
     call print_timing                 !print timing results
     write(6,*)
     write(6,*) 'SuperNu finished'
-    if(in_grabstdout)write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
+    if(in_grabstdout) write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
   endif
 !-- Clean up memory. (This help to locate memory leaks)
   call dealloc_all

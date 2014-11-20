@@ -32,21 +32,8 @@ in_srcmax = 4d24
 in_theav = 9d0
 in_nheav = 40
 
-!-- power law heat capacity values
-in_gas_cvcoef = 2d7
-in_gas_cvtpwr = 0d0
-in_gas_cvrpwr = 1d0
-
 !-- group absorption opacity structure type
 in_opacanaltype = 'none'
-
-!-- picket fence case
-in_suol = 'tstd'
-in_suolpick1 = 0.5d0
-
-!-- line case (disparity)
-in_ldisp1 = 1d0
-in_ldisp2 = 1d-4
 
 !-- group settings
 in_ng = 250
@@ -55,7 +42,7 @@ in_ngs = 0
 !-- particle numbers
 in_ns0 = 1000
 in_ns  = 1000
-in_prt_nmax = 10000000
+in_prt_nmax = 1000000
 
 !-- imc tally method
 in_isimcanlog = f

@@ -1,8 +1,8 @@
-      function memusg() result(mbrss)
+      function memusg() result(mbsize)
 c     -------------------------
-      use miscmod
+      use miscmod, only:warn
       implicit none
-      integer :: mbrss
+      integer :: mbsize(2)
 ************************************************************************
 * Read memory statistics from /proc file system.
 ************************************************************************
@@ -50,7 +50,7 @@ c
       logical,save :: skipwarn=.false.
 c
 c-- init
-      mbrss = -1  !-- return invalid number if error
+      mbsize = -1  !-- return invalid number if error
 c
 c-- read stat file
       inquire(file='/proc/self/stat',exist=exists)
@@ -61,7 +61,8 @@ c-- read stat file
       endif
 c-- read
       open(4,file='/proc/self/stat',action='read',status='old')
-      read(4,*,end=6) words !not all compilers read words shorter than len(words(i))from the file
+      read(4,*,end=6) stat
+*      read(4,*,end=6) words !not all compilers read words shorter than len(words(i))from the file
 *      read(4,'(a)',end=6) line
       close(4)
 *!     write(6,*) 'line'
@@ -108,7 +109,8 @@ c-- page size
        pagesize = nint(stat%vsize/dble(vss_pages))
       endif !pagesize
 c
-      mbrss = stat%rss*pagesize/1024**2
+      mbsize(1) = (stat%rss*pagesize)/1024**2
+      mbsize(2) = (stat%vsize)/1024**2
 c
       return
 c

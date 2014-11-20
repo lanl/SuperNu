@@ -79,7 +79,7 @@ c-- print alloc size (keep this updated)
 c---------------------------------------
       if(ltalk) then
        n = gas_ncell*(20 + (gas_nelem+3+5) + 2*gas_ng)/1024 !kB
-       write(6,*) 'ALLOC gas    :',n,"kB",n/1024,"MB",n/1024**2,"GB"
+       write(6,*) 'ALLOC gas      :',n,"kB",n/1024,"MB",n/1024**2,"GB"
       endif !ltalk
 c
 c-- ndim=1 alloc

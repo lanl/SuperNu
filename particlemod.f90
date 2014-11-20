@@ -81,7 +81,7 @@ module particlemod
 !-- print size only on master rank
     if(ltalk) then
       n = int(sizeof(prt_particles)/1024) !kB
-      write(6,*) 'ALLOC prt_particles:',n,"kB",n/1024,"MB",n/1024**2,"GB"
+      write(6,*) 'ALLOC particles:',n,"kB",n/1024,"MB",n/1024**2,"GB"
     endif
 
 !

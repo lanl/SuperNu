@@ -109,10 +109,10 @@ c---------------------------------------
       if(ltalk) then
        n = nx*ny*nz
        n = int((int(n,8)*(8*(11 + 6) + 4*5))/1024) !kB
-       write(6,*) 'ALLOC grid:',n,"kB",n/1024,"MB",n/1024**2,"GB"
+       write(6,*) 'ALLOC grd      :',n,"kB",n/1024,"MB",n/1024**2,"GB"
        n = nx*ny*nz
        n = int((int(n,8)*8*2*ng)/1024) !kB
-       write(6,*) 'ALLOC grd_cap:',n,"kB",n/1024,"MB",n/1024**2,"GB"
+       write(6,*) 'ALLOC grd_cap  :',n,"kB",n/1024,"MB",n/1024**2,"GB"
       endif
 c
 c-- ndim=3 alloc

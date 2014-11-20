@@ -6,6 +6,10 @@ c     --------------
 ************************************************************************
       interface
 c
+      function memusg() result(mbsize)
+      integer :: mbsize(2)
+      end function memusg
+c
       subroutine warn(source,mesg,sunt)
       character(*),intent(in) :: source
       character(*),intent(in) :: mesg
