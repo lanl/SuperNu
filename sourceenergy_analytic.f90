@@ -148,11 +148,11 @@ subroutine sourceenergy_analytic
      if(grd_ny>1) stop 'sourceenergy_analytic: manu: no 2D'
 !
 !-- radiation source
-     call generate_manuradsrc(in_totmass,in_sigcoef,tsp_t,tsp_dt)
+     call generate_manuradsrc(in_totmass,in_gas_capcoef,tsp_t,tsp_dt)
 !
 !--  NOW DONE IN SOURCEENERGY
 !!-- temperature source
-!     call generate_manutempsrc(in_totmass,in_sigcoef,tsp_t,tsp_dt)
+!     call generate_manutempsrc(in_totmass,in_gas_capcoef,tsp_t,tsp_dt)
 !     
      !}}}
   else

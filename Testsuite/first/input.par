@@ -20,9 +20,9 @@ in_novolsrc = f
 in_velout = 1d9
 in_totmass = 1d33
 !-- power law opacity values
-in_sigcoef = 0.1d0
-in_sigtpwr = 0d0
-in_sigrpwr = 1d0
+in_gas_capcoef = 0.1d0
+in_gas_captpwr = 0d0
+in_gas_caprpwr = 1d0
 !-- power law heat capacity values
 in_cvcoef = 2.321d14
 in_cvtpwr = 0d0

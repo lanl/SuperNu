@@ -22,7 +22,7 @@ subroutine sourceenergy(nmpi)
   
 !-- prepare manufactured solution temperature source
   if(in_srctype=='manu') then
-     call generate_manutempsrc(in_totmass,in_sigcoef,tsp_t,tsp_dt)
+     call generate_manutempsrc(in_totmass,in_gas_capcoef,tsp_t,tsp_dt)
   endif
 
   gas_emit = 0d0

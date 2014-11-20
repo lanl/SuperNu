@@ -97,13 +97,13 @@ c-- line specific group structure
       real*8 :: in_ldisp1 = 1d0  !loosely speaking, the analytic odd group line strength
       real*8 :: in_ldisp2 = 1d0  !loosely speaking, the analytic even group line strength
 c-- scattering terms:
-      real*8 :: in_sigcoefs = 0d0 !power law absorption opacity coefficient
-      real*8 :: in_sigtpwrs = 0d0 !power law absorption opacity temperature exponent
-      real*8 :: in_sigrpwrs = 0d0 !power law absorption opacity density exponent
+      real*8 :: in_gas_sigcoef = 0d0 !power law absorption opacity coefficient
+      real*8 :: in_gas_sigtpwr = 0d0 !power law absorption opacity temperature exponent
+      real*8 :: in_gas_sigrpwr = 0d0 !power law absorption opacity density exponent
 c-- absorption terms:
-      real*8 :: in_sigcoef = 0d0 !power law absorption opacity coefficient
-      real*8 :: in_sigtpwr = 0d0 !power law absorption opacity temperature exponent
-      real*8 :: in_sigrpwr = 0d0 !power law absorption opacity density exponent
+      real*8 :: in_gas_capcoef = 0d0 !power law absorption opacity coefficient
+      real*8 :: in_gas_captpwr = 0d0 !power law absorption opacity temperature exponent
+      real*8 :: in_gas_caprpwr = 0d0 !power law absorption opacity density exponent
 c
 c-- external source structure
       character(4) :: in_srctype = 'none'   !none|heav|strt|manu|surf: external source structure type
@@ -140,8 +140,8 @@ c-- runtime parameter namelist
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
      & in_noffopac,in_nothmson,in_noplanckweighting,in_opacmixrossel,
      & in_opacdump,in_pdensdump,
-     & in_sigcoefs,in_sigtpwrs,in_sigrpwrs,
-     & in_sigcoef,in_sigtpwr,in_sigrpwr,
+     & in_gas_sigcoef,in_gas_sigtpwr,in_gas_sigrpwr,
+     & in_gas_capcoef,in_gas_captpwr,in_gas_caprpwr,
      & in_cvcoef,in_cvtpwr,in_cvrpwr,
      & in_opacanaltype,in_suol,
      & in_suolpick1, in_ldisp1, in_ldisp2,
@@ -253,12 +253,12 @@ c
       call insertr(in_suolpick1,in_r,ir)
       call insertr(in_ldisp1,in_r,ir)
       call insertr(in_ldisp2,in_r,ir)
-      call insertr(in_sigcoefs,in_r,ir)
-      call insertr(in_sigtpwrs,in_r,ir)
-      call insertr(in_sigrpwrs,in_r,ir)
-      call insertr(in_sigcoef,in_r,ir)
-      call insertr(in_sigtpwr,in_r,ir)
-      call insertr(in_sigrpwr,in_r,ir)
+      call insertr(in_gas_sigcoef,in_r,ir)
+      call insertr(in_gas_sigtpwr,in_r,ir)
+      call insertr(in_gas_sigrpwr,in_r,ir)
+      call insertr(in_gas_capcoef,in_r,ir)
+      call insertr(in_gas_captpwr,in_r,ir)
+      call insertr(in_gas_caprpwr,in_r,ir)
       call insertc(in_srctype,in_c,ic)
       call insertc(in_surfsrcloc,in_c,ic)
       call insertc(in_surfsrcmu,in_c,ic)

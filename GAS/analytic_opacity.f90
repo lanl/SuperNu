@@ -25,8 +25,8 @@ subroutine analytic_opacity
   gas_sig = 0d0
 
   !Calculating grey scattering opacity
-  gas_sig = in_sigcoefs*gas_temp**in_sigtpwrs* &
-       gas_rho**in_sigrpwrs
+  gas_sig = in_gas_sigcoef*gas_temp**in_gas_sigtpwr* &
+       gas_rho**in_gas_sigrpwr
 
   !Calculating grouped Planck and Rosseland opacities
   if(in_opacanaltype=='none') then
@@ -35,8 +35,8 @@ subroutine analytic_opacity
      ! sigmaP = A*T^B*rho^C (A,B,C set in input.par)
      ! sigmaP_g, sigmaR_g = sigmaP for all g 
      ! Input wavelength grid not used
-     gas_capgrey = in_sigcoef*gas_temp**in_sigtpwr* &
-          gas_rho**in_sigrpwr
+     gas_capgrey = in_gas_capcoef*gas_temp**in_gas_captpwr* &
+          gas_rho**in_gas_caprpwr
      do i = 1, gas_ncell
         gas_cap(:,i) = gas_capgrey(i)
      enddo
@@ -47,8 +47,8 @@ subroutine analytic_opacity
      ! func_P(T,g) and func_R(T,g) are functions proportional to
      ! integral_g(1/nu^3)
      !
-     gas_capgrey = in_sigcoef*gas_temp**in_sigtpwr* &
-          gas_rho**in_sigrpwr
+     gas_capgrey = in_gas_capcoef*gas_temp**in_gas_captpwr* &
+          gas_rho**in_gas_caprpwr
      do i = 1, gas_ncell
         do ig = 1, gas_ng
             x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb)
@@ -70,8 +70,8 @@ subroutine analytic_opacity
      ! Input wavelength grid not used
      if(grd_ny>1) stop 'analytic_opacity: no 2D for opacanaltyp=pick'
      do i = 1, gas_ncell
-        gas_capgrey(i) = in_sigcoef*gas_temp(i)**in_sigtpwr* &
-             gas_rho(i)**in_sigrpwr     
+        gas_capgrey(i) = in_gas_capcoef*gas_temp(i)**in_gas_captpwr* &
+             gas_rho(i)**in_gas_caprpwr     
         if(in_suol=='tsta') then    !Case: A
            gas_cap(1,i) = gas_capgrey(i)
            gas_cap(2,i) = gas_capgrey(i)
@@ -93,8 +93,8 @@ subroutine analytic_opacity
      ! Highly structured line test: group opacities alternate in magnitude!{{{
      ! sigmaP = A*T^B*rho^C
      ! sigmaP_g = sigmaP*func_P(g), sigmaR_g = sigmaP
-     gas_capgrey = in_sigcoef*gas_temp**in_sigtpwr * &
-          gas_rho**in_sigrpwr
+     gas_capgrey = in_gas_capcoef*gas_temp**in_gas_captpwr * &
+          gas_rho**in_gas_caprpwr
      do i = 1, gas_ncell
         !
         !set odd group magnitudes (low)

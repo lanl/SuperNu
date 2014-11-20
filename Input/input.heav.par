@@ -45,14 +45,14 @@ in_cvtpwr = 0d0
 in_cvrpwr = 1d0
 
 !-- power law scattering opacity values
-in_sigcoefs = 0d0
-in_sigtpwrs = 0d0
-in_sigrpwrs = 0d0
+in_gas_sigcoef = 0d0
+in_gas_sigtpwr = 0d0
+in_gas_sigrpwr = 0d0
 
 !-- power law absorption opacity values
-in_sigcoef = 0.13d0
-in_sigtpwr = 0d0
-in_sigrpwr = 1d0
+in_gas_capcoef = 0.13d0
+in_gas_captpwr = 0d0
+in_gas_caprpwr = 1d0
 
 !-- group absorption opacity structure type
 in_opacanaltype = 'line'
