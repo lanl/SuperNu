@@ -51,7 +51,7 @@ c
 c-- particles
       integer :: in_ns = 0    !number of source particles generated per time step (total over all ranks)
       integer :: in_ns0 = 0   !number of initial particles at in_tfirst
-      integer :: in_npartmax = 0 !total number of particles allowed PER MPI RANK
+      integer :: in_prt_nmax = 0 !length of particle array
       logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
       logical :: in_isimcanlog = .false. !use analog IMC tally if true
       logical :: in_isddmcanlog = .true. !use analog DDMC tally if true
@@ -134,7 +134,7 @@ c-- runtime parameter namelist
      & in_ng,in_ngs,in_wldex,in_wlmin,in_wlmax,
      & in_totmass,in_velout,
      & in_consttemp,
-     & in_ns,in_ns0,in_npartmax,in_puretran,in_alpha,
+     & in_ns,in_ns0,in_prt_nmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,in_ntres,
      & in_grabstdout,in_nomp,
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
@@ -225,7 +225,7 @@ c
       call insertr(in_cvrpwr,in_r,ir)
       call inserti(in_ns,in_i,ii)
       call inserti(in_ns0,in_i,ii)
-      call inserti(in_npartmax,in_i,ii)
+      call inserti(in_prt_nmax,in_i,ii)
       call insertl(in_puretran,in_l,il)
       call insertl(in_isimcanlog,in_l,il)
       call insertl(in_isddmcanlog,in_l,il)
@@ -414,7 +414,7 @@ c
 c
       if(in_ns<=0) stop 'in_ns <= 0'
       if(in_ns0<0) stop 'in_ns0 < 0'
-      if(in_npartmax<=in_ns+in_ns0) stop 'in_npartmax invalid'
+      if(in_prt_nmax<=in_ns+in_ns0) stop 'in_prt_nmax invalid'
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
       if(in_taulump<in_tauddmc) stop 'in_taulump<in_tauddmc'
 c

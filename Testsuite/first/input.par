@@ -41,7 +41,7 @@ in_wldex = 1
 
 !-- particle numbers
 in_ns = 10000
-in_npartmax = 10000000
+in_prt_nmax = 10000000
 
 !-- opacity switches
 in_nobbopac = t

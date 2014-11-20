@@ -74,7 +74,7 @@ in_wlmax = 1.2398d-3
 !-- particle numbers
 in_ns0 = 0
 in_ns  = 100000
-in_npartmax = 10000000
+in_prt_nmax = 10000000
 
 !-- imc tally method
 in_isimcanlog = f

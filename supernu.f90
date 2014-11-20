@@ -25,7 +25,7 @@ program supernu
 !***********************************************************************
   real*8 :: help
   real*8 :: t_elapsed
-  integer :: ierr,ns,it,ncell
+  integer :: ierr,ns,nmax,it,ncell
   integer,external :: memusg
   real*8 :: t0,t1  !timing
 !
@@ -60,7 +60,8 @@ program supernu
 !
 !-- particle init
     ns = in_ns/nmpi
-    call particle_init(in_npartmax,ns,in_ns0,in_isimcanlog, &
+    nmax = in_prt_nmax/nmpi
+    call particle_init(nmax,ns,in_ns0,in_isimcanlog, &
          in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime)
 !
 !-- rand() count and prt restarts
