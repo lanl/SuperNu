@@ -11,7 +11,7 @@ c     ------------------
 ************************************************************************
 c-- write stdout to file
       character(80) :: in_comment = "" !why did I run this simulation?
-      logical :: in_grab_stdout = .false. !write stdout to file
+      logical :: in_grabstdout = .false. !write stdout to file
 c-- parallelization
       integer :: in_nomp = 1       !number of openmp threads
 c
@@ -24,9 +24,9 @@ c-- grid geometry and dimensions
       real*8 :: in_lz = 0d0  !spatial length of z-direction
 c
 c-- outbound flux group and direction bins
-      integer :: in_nflx(3) = [0, 1, 1]
-      real*8 :: in_wlminflx =  1000d-8 !lower wavelength flux boundary [cm]
-      real*8 :: in_wlmaxflx = 32000d-8 !upper wavelength flux boundary [cm]
+      integer :: in_flx_ndim(3) = [0, 1, 1]
+      real*8 :: in_flx_wlmin =  1000d-8 !lower wavelength flux boundary [cm]
+      real*8 :: in_flx_wlmax = 32000d-8 !upper wavelength flux boundary [cm]
 c
 c-- do read input structure file instead of specifying the stucture with input parameters
 c==================
@@ -136,7 +136,7 @@ c-- runtime parameter namelist
      & in_consttemp,
      & in_ns,in_ns0,in_npartmax,in_puretran,in_alpha,
      & in_tfirst,in_tlast,in_nt,in_ntres,
-     & in_grab_stdout,in_nomp,
+     & in_grabstdout,in_nomp,
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
      & in_noffopac,in_nothmson,in_noplanckweighting,in_opacmixrossel,
      & in_opacdump,in_pdensdump,
@@ -151,7 +151,7 @@ c-- runtime parameter namelist
      & in_tauddmc, in_dentype, in_noreadstruct,
      & in_norestart, in_taulump, in_tauvtime,
      & in_tempradinit, in_ismodimc,
-     & in_comment, in_noeos, in_nflx,in_wlminflx,in_wlmaxflx
+     & in_comment, in_noeos, in_flx_ndim,in_flx_wlmin,in_flx_wlmax
 c
 c-- pointers
 c
@@ -199,7 +199,7 @@ c-- init
       ir=0
       ic=0
 c
-      call insertl(in_grab_stdout,in_l,il)
+      call insertl(in_grabstdout,in_l,il)
       call inserti(in_nomp,in_i,ii)
       call inserti(in_igeom,in_i,ii)
       call inserti(in_ndim(1),in_i,ii)
@@ -208,11 +208,11 @@ c
       call insertr(in_lx,in_r,ir)
       call insertr(in_ly,in_r,ir)
       call insertr(in_lz,in_r,ir)
-      call inserti(in_nflx(1),in_i,ii)
-      call inserti(in_nflx(2),in_i,ii)
-      call inserti(in_nflx(3),in_i,ii)
-      call insertr(in_wlminflx,in_r,ir)
-      call insertr(in_wlmaxflx,in_r,ir)
+      call inserti(in_flx_ndim(1),in_i,ii)
+      call inserti(in_flx_ndim(2),in_i,ii)
+      call inserti(in_flx_ndim(3),in_i,ii)
+      call insertr(in_flx_wlmin,in_r,ir)
+      call insertr(in_flx_wlmax,in_r,ir)
       call insertl(in_noreadstruct,in_l,il)
       call insertl(in_isvelocity,in_l,il)
       call insertr(in_velout,in_r,ir)
@@ -353,7 +353,7 @@ c$    use omp_lib
 c$    integer :: i
 c
 c-- redirect stdout to file if selected
-      if(in_grab_stdout) then!{{{
+      if(in_grabstdout) then!{{{
        write(6,*) 'write stdout to fort.6'
        open(6,file='fort.6',action='write',status='replace',recl=3000,
      &   iostat=istat) !write stdout to file
@@ -376,12 +376,13 @@ c
        stop 'in_igeom invalid'
       case(1)
        if(in_ndim(2)>1 .or. in_ndim(3)>1) stop 'in_ndim invalid'
-       if(in_nflx(2)/=1 .or. in_nflx(3)/=1) stop 'in_nflx invalid'
-       if(in_srctype=='surf'.and.in_surfsrcloc/='out')
-     &    stop 'in_srctype and in_surfsrcloc invalid'
+       if(in_flx_ndim(2)/=1 .or. in_flx_ndim(3)/=1) stop
+     &   'in_flx_ndim invalid'
+       if(in_srctype=='surf'.and.in_surfsrcloc/='out') stop
+     &   'in_srctype and in_surfsrcloc invalid'
       case(2)
        if(in_ndim(3)>1) stop 'in_ndim invalid'
-       if(in_nflx(3)/=1) stop 'in_nflx invalid'
+       if(in_flx_ndim(3)/=1) stop 'in_flx_ndim invalid'
        if(in_srctype=='surf' .and.
      &      any((/'in  ','top ','botm'/)==in_surfsrcloc))
      &      stop 'in_srctype and in_surfsrcloc invalid'
@@ -509,7 +510,7 @@ c$omp end parallel
 c$    endif
       write(6,'(1x,a,2i5,i7)') 'nmpi,in_nomp,#threads        :',
      &  nmpi,in_nomp,nmpi*in_nomp
-      if(in_grab_stdout) then
+      if(in_grabstdout) then
        write(0,'(1x,a,2i5,i7)') 'nmpi,in_nomp,#threads        :',
      &   nmpi,in_nomp,nmpi*in_nomp
       endif!}}}!}}}

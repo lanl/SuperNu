@@ -2,7 +2,7 @@
 
 !-- misc
 in_nomp = 1
-in_grab_stdout = f
+in_grabstdout = f
 in_puretran = f
 in_noreadstruct = f
 in_norestart = t
@@ -23,7 +23,7 @@ in_dentype = 'mass'
 in_consttemp = 1d4
 
 !-- flux settings
-in_nflx = 250, 1, 1
+in_flx_ndim = 250, 1, 1
 
 !-- external source type
 in_srctype = 'none'

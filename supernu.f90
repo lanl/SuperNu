@@ -73,7 +73,7 @@ program supernu
 !
 !-- wlgrid (before grid setup)
     call wlgrid_setup(gas_ng)
-    call fluxgrid_setup(in_nflx,in_wlminflx,in_wlmaxflx)
+    call fluxgrid_setup(in_flx_ndim,in_flx_wlmin,in_flx_wlmax)
 !
 !-- read input structure
     if(.not.in_noreadstruct.and.in_isvelocity) then
@@ -269,7 +269,7 @@ program supernu
     call print_timing                 !print timing results
     write(6,*)
     write(6,*) 'SuperNu finished'
-    if(in_grab_stdout)write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
+    if(in_grabstdout)write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
   endif
 !-- Clean up memory. (This help to locate memory leaks)
   call dealloc_all
