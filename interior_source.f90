@@ -318,8 +318,8 @@ subroutine interior_source
         r2 = 1d0
         il = max(i-1,1)  !-- left neighbor
         ir = min(i+1,grd_nx)  !-- right neighbor
-        uul = .5d0*(grd_temp(il,1,1)**4 + grd_temp(i,1,1)**4)
-        uur = .5d0*(grd_temp(ir,1,1)**4 + grd_temp(i,1,1)**4)
+        uul = .5d0*(grd_emit(il,1,1) + grd_emit(i,1,1))
+        uur = .5d0*(grd_emit(ir,1,1) + grd_emit(i,1,1))
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -358,8 +358,8 @@ subroutine interior_source
         r2 = 1d0
         il = max(i-1,1)  !-- left neighbor
         ir = min(i+1,grd_nx)  !-- right neighbor
-        uul = .5d0*(grd_temp(il,j,1)**4 + grd_temp(i,j,1)**4)
-        uur = .5d0*(grd_temp(ir,j,1)**4 + grd_temp(i,j,1)**4)
+        uul = .5d0*(grd_emit(il,j,1) + grd_emit(i,j,1))
+        uur = .5d0*(grd_emit(ir,j,1) + grd_emit(i,j,1))
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -376,8 +376,8 @@ subroutine interior_source
         r2 = 1d0
         il = max(j-1,1)  !-- lower neighbor
         ir = min(j+1,grd_ny)  !-- upper neighbor
-        uul = .5d0*(grd_temp(i,il,1)**4 + grd_temp(i,j,1)**4)
-        uur = .5d0*(grd_temp(i,ir,1)**4 + grd_temp(i,j,1)**4)
+        uul = .5d0*(grd_emit(i,il,1) + grd_emit(i,j,1))
+        uur = .5d0*(grd_emit(i,ir,1) + grd_emit(i,j,1))
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -422,7 +422,7 @@ subroutine interior_source
 !}}}
 !-- 3D
      case(3)
-!-- setting 2nd,3rd cell index
+!-- setting 2nd,3rd cell index!{{{
         ptcl%iy = j
         ptcl%iz = k
 !-- source tilting in x
@@ -430,8 +430,8 @@ subroutine interior_source
         r2 = 1d0
         il = max(i-1,1)  !-- left neighbor
         ir = min(i+1,grd_nx)  !-- right neighbor
-        uul = .5d0*(grd_temp(il,j,k)**4 + grd_temp(i,j,k)**4)
-        uur = .5d0*(grd_temp(ir,j,k)**4 + grd_temp(i,j,k)**4)
+        uul = .5d0*(grd_emit(il,j,k) + grd_emit(i,j,k))
+        uur = .5d0*(grd_emit(ir,j,k) + grd_emit(i,j,k))
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -447,8 +447,8 @@ subroutine interior_source
         r2 = 1d0
         il = max(j-1,1)  !-- lower neighbor
         ir = min(j+1,grd_ny)  !-- upper neighbor
-        uul = .5d0*(grd_temp(i,il,k)**4 + grd_temp(i,j,k)**4)
-        uur = .5d0*(grd_temp(i,ir,k)**4 + grd_temp(i,j,k)**4)
+        uul = .5d0*(grd_emit(i,il,k) + grd_emit(i,j,k))
+        uur = .5d0*(grd_emit(i,ir,k) + grd_emit(i,j,k))
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -464,8 +464,8 @@ subroutine interior_source
         r2 = 1d0
         il = max(k-1,1)  !-- lower neighbor
         ir = min(k+1,grd_nz)  !-- upper neighbor
-        uul = .5d0*(grd_temp(i,j,il)**4 + grd_temp(i,j,k)**4)
-        uur = .5d0*(grd_temp(i,j,ir)**4 + grd_temp(i,j,k)**4)
+        uul = .5d0*(grd_emit(i,j,il) + grd_emit(i,j,k))
+        uur = .5d0*(grd_emit(i,j,ir) + grd_emit(i,j,k))
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -506,7 +506,7 @@ subroutine interior_source
         else
            ptcl%mu = mu0
            ptcl%om = om0
-        endif
+        endif!}}}
      endselect
 
 
