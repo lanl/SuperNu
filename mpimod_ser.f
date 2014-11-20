@@ -55,7 +55,7 @@ c-- domain decomposition
       grd_cap = reshape(gas_cap,[grd_ng,grd_nx,grd_ny,grd_nz])
       grd_sig = reshape(gas_sig,[grd_nx,grd_ny,grd_nz])
       grd_capgam = reshape(gas_capgam,[grd_nx,grd_ny,grd_nz])
-      grd_siggrey = reshape(gas_siggrey,[grd_nx,grd_ny,grd_nz])
+      grd_capgrey = reshape(gas_capgrey,[grd_nx,grd_ny,grd_nz])
       grd_fcoef = reshape(gas_fcoef,[grd_nx,grd_ny,grd_nz])
 
       end subroutine bcast_nonpermanent

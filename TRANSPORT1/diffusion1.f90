@@ -130,7 +130,7 @@ subroutine diffusion1(ptcl,isvacant)
   speclump = 0d0
   do ig = 1, glump
      iig = glumps(ig)
-     specig = grd_siggrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
+     specig = grd_capgrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
      speclump = speclump+specig
   enddo
   if(speclump>0d0.and.glump>1) then
@@ -146,7 +146,7 @@ subroutine diffusion1(ptcl,isvacant)
 !-- calculating lumped values
      do ig = 1, glump
         iig = glumps(ig)
-        specig = grd_siggrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
+        specig = grd_capgrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
 !-- emission lump
         emitlump = emitlump+grd_emitprob(iig,z,1,1)
 !-- Planck x-section lump
@@ -295,7 +295,7 @@ subroutine diffusion1(ptcl,isvacant)
            help = 1d0/opacleakllump
            do ig= 1, glump
               iig = glumps(ig)
-              specig = grd_siggrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
+              specig = grd_capgrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
 !-- calculating resolved leakage opacities
               if((grd_cap(iig,z-1,1,1)+ &
                    grd_sig(z-1,1,1))*dx(z-1)*thelp<prt_tauddmc) then
@@ -389,7 +389,7 @@ subroutine diffusion1(ptcl,isvacant)
            help = 1d0/opacleakrlump
            do ig = 1, glump
               iig=glumps(ig)
-              specig = grd_siggrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
+              specig = grd_capgrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
 !-- calculating resolved leakage opacities
               mfphelp = (grd_cap(iig,z,1,1)+grd_sig(z,1,1))*dx(z)*thelp
               ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
@@ -464,7 +464,7 @@ subroutine diffusion1(ptcl,isvacant)
            help = 1d0/opacleakrlump
            do ig= 1, glump
               iig = glumps(ig)
-              specig = grd_siggrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
+              specig = grd_capgrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
 !-- calculating resolved leakage opacities
               if((grd_cap(iig,z+1,1,1)+ &
                    grd_sig(z+1,1,1))*dx(z+1)*thelp<prt_tauddmc) then

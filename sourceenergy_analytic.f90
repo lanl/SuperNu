@@ -159,6 +159,6 @@ subroutine sourceenergy_analytic
      stop 'sourceenergy_analytic: in_srctype invalid'
   endif
 
-  !write(*,*) grd_siggrey(grd_nx), grd_cap(1,grd_nx)
+  !write(*,*) grd_capgrey(grd_nx), grd_cap(1,grd_nx)
 
 end subroutine sourceenergy_analytic

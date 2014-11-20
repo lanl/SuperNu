@@ -139,7 +139,7 @@ c
        endif
        tempalt = gas_temp
 c-- per gram
-       siggreyalt = gas_siggrey/gas_rho
+       siggreyalt = gas_capgrey/gas_rho
 !}}}
       endif
 c
@@ -231,7 +231,7 @@ c
 c
 c-- save previous values for gentile-fleck factor calculation in next iter
       tempalt = gas_temp
-      siggreyalt = gas_siggrey/gas_rho
+      siggreyalt = gas_capgrey/gas_rho
 c
       call time(t1)
       call timereg(t_gasupd,t1-t0)

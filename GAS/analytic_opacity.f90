@@ -20,7 +20,7 @@ subroutine analytic_opacity
   integer :: i, ig
   real*8 :: x1, x2  !unitless energy group bounds
 
-  gas_siggrey = 0d0
+  gas_capgrey = 0d0
   gas_cap = 0d0
   gas_sig = 0d0
 
@@ -35,10 +35,10 @@ subroutine analytic_opacity
      ! sigmaP = A*T^B*rho^C (A,B,C set in input.par)
      ! sigmaP_g, sigmaR_g = sigmaP for all g 
      ! Input wavelength grid not used
-     gas_siggrey = in_sigcoef*gas_temp**in_sigtpwr* &
+     gas_capgrey = in_sigcoef*gas_temp**in_sigtpwr* &
           gas_rho**in_sigrpwr
      do i = 1, gas_ncell
-        gas_cap(:,i) = gas_siggrey(i)
+        gas_cap(:,i) = gas_capgrey(i)
      enddo
 
   elseif(in_opacanaltype=='mono') then
@@ -47,19 +47,19 @@ subroutine analytic_opacity
      ! func_P(T,g) and func_R(T,g) are functions proportional to
      ! integral_g(1/nu^3)
      !
-     gas_siggrey = in_sigcoef*gas_temp**in_sigtpwr* &
+     gas_capgrey = in_sigcoef*gas_temp**in_sigtpwr* &
           gas_rho**in_sigrpwr
      do i = 1, gas_ncell
         do ig = 1, gas_ng
             x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb)
             x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb)
-            gas_cap(ig,i) = 0.5d0*gas_siggrey(i)*(x1+x2)/(x1*x2)**2
+            gas_cap(ig,i) = 0.5d0*gas_capgrey(i)*(x1+x2)/(x1*x2)**2
         enddo
-        gas_siggrey(i) = 0d0
+        gas_capgrey(i) = 0d0
         do ig = 1, gas_ng
            x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(i))
            x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i))
-           gas_siggrey(i) = gas_siggrey(i)+15d0*gas_cap(ig,i)* &
+           gas_capgrey(i) = gas_capgrey(i)+15d0*gas_cap(ig,i)* &
                 specint(x1,x2,3)/pc_pi**4
         enddo
      enddo!}}}
@@ -70,21 +70,21 @@ subroutine analytic_opacity
      ! Input wavelength grid not used
      if(grd_ny>1) stop 'analytic_opacity: no 2D for opacanaltyp=pick'
      do i = 1, gas_ncell
-        gas_siggrey(i) = in_sigcoef*gas_temp(i)**in_sigtpwr* &
+        gas_capgrey(i) = in_sigcoef*gas_temp(i)**in_sigtpwr* &
              gas_rho(i)**in_sigrpwr     
         if(in_suol=='tsta') then    !Case: A
-           gas_cap(1,i) = gas_siggrey(i)
-           gas_cap(2,i) = gas_siggrey(i)
+           gas_cap(1,i) = gas_capgrey(i)
+           gas_cap(2,i) = gas_capgrey(i)
         elseif(in_suol=='tstb') then  !Case: B
-           gas_cap(1,i) = 2d0*gas_siggrey(i)/11d0
-           gas_cap(2,i) = 20d0*gas_siggrey(i)/11d0
+           gas_cap(1,i) = 2d0*gas_capgrey(i)/11d0
+           gas_cap(2,i) = 20d0*gas_capgrey(i)/11d0
         elseif(in_suol=='tstc') then  !Case: C
-           gas_cap(1,i) = 2d0*gas_siggrey(i)/101d0
-           gas_cap(2,i) = 200d0*gas_siggrey(i)/101d0
+           gas_cap(1,i) = 2d0*gas_capgrey(i)/101d0
+           gas_cap(2,i) = 200d0*gas_capgrey(i)/101d0
 !-- added evacuated picket test
         elseif(in_suol=='tstd') then !Case: D (not in SuOlson)
            gas_cap(1,i) = 0d0
-           gas_cap(2,i) = 2d0*gas_siggrey(i)
+           gas_cap(2,i) = 2d0*gas_capgrey(i)
         else
            stop 'analytic_opacity: in_suol invalid'
         endif!}}}
@@ -93,25 +93,25 @@ subroutine analytic_opacity
      ! Highly structured line test: group opacities alternate in magnitude!{{{
      ! sigmaP = A*T^B*rho^C
      ! sigmaP_g = sigmaP*func_P(g), sigmaR_g = sigmaP
-     gas_siggrey = in_sigcoef*gas_temp**in_sigtpwr * &
+     gas_capgrey = in_sigcoef*gas_temp**in_sigtpwr * &
           gas_rho**in_sigrpwr
      do i = 1, gas_ncell
         !
         !set odd group magnitudes (low)
         do ig = 1, gas_ng, 2
-           gas_cap(ig,i) = gas_siggrey(i)*in_ldisp1
+           gas_cap(ig,i) = gas_capgrey(i)*in_ldisp1
         enddo
         !set even group magnitudes (high)
         do ig = 2, gas_ng, 2
-           gas_cap(ig,i) = gas_siggrey(i)*in_ldisp2
+           gas_cap(ig,i) = gas_capgrey(i)*in_ldisp2
         enddo
         !
         !calculate Planck, Rosseland opacities
-        gas_siggrey(i) = 0d0
+        gas_capgrey(i) = 0d0
         do ig = 1, gas_ng
            x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(i))
            x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i))
-           gas_siggrey(i) = gas_siggrey(i)+15d0*gas_cap(ig,i)* &
+           gas_capgrey(i) = gas_capgrey(i)+15d0*gas_cap(ig,i)* &
                 specint(x1,x2,3)/pc_pi**4
         enddo
         !

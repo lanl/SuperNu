@@ -43,7 +43,7 @@ c-- scattering coefficient
 c-- Gamma ray gray opacity
       real*8,allocatable :: gas_capgam(:) !(ncell)
 c-- Planck opacity (gray)
-      real*8,allocatable :: gas_siggrey(:)!(ncell)
+      real*8,allocatable :: gas_capgrey(:)!(ncell)
 c-- Fleck factor
       real*8,allocatable :: gas_fcoef(:)  !(ncell)
 c  
@@ -100,7 +100,7 @@ c-- ndim=1 alloc
 c   allocate(dd_opacleak(6,gas_ncell))
       allocate(gas_sig(gas_ncell))
       allocate(gas_capgam(gas_ncell))
-      allocate(gas_siggrey(gas_ncell))
+      allocate(gas_capgrey(gas_ncell))
       allocate(gas_fcoef(gas_ncell))
 c
       allocate(gas_eraddens(gas_ncell))

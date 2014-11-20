@@ -134,7 +134,7 @@ subroutine diffusion2(ptcl,isvacant)
   speclump = 0d0
   do ig = 1, glump
      iig = glumps(ig)
-     specig = grd_siggrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1)*capinv(iig)
+     specig = grd_capgrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1)*capinv(iig)
      speclump = speclump+specig
   enddo
   if(speclump>0d0.and.glump>1) then
@@ -150,7 +150,7 @@ subroutine diffusion2(ptcl,isvacant)
 !-- calculating lumped values
      do ig = 1, glump
         iig = glumps(ig)
-        specig = grd_siggrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1)*capinv(iig)
+        specig = grd_capgrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1)*capinv(iig)
 !-- emission lump
         emitlump = emitlump+grd_emitprob(iig,zr,zz,1)
 !-- Planck x-section lump
@@ -339,7 +339,7 @@ subroutine diffusion2(ptcl,isvacant)
               help = 1d0/opacleakllump
               do ig= 1, glump
                  iig = glumps(ig)
-                 specig = grd_siggrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1) * &
+                 specig = grd_capgrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1) * &
                       capinv(iig)
 !-- calculating resolved leakage opacities
                  if((grd_cap(iig,zr-1,zz,1) + &
@@ -479,7 +479,7 @@ subroutine diffusion2(ptcl,isvacant)
               help = 1d0/opacleakrlump
               do ig = 1, glump
                  iig=glumps(ig)
-                 specig = grd_siggrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1) * &
+                 specig = grd_capgrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1) * &
                       capinv(iig)
 !-- calculating resolved leakage opacities
                  mfphelp = (grd_cap(iig,zr,zz,1)+grd_sig(zr,zz,1)) * &
@@ -535,7 +535,7 @@ subroutine diffusion2(ptcl,isvacant)
               help = 1d0/opacleakrlump
               do ig= 1, glump
                  iig = glumps(ig)
-                 specig = grd_siggrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1) * &
+                 specig = grd_capgrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1) * &
                       capinv(iig)
 !-- calculating resolved leakage opacities
                  if((grd_cap(iig,zr+1,zz,1)+grd_sig(zr+1,zz,1)) * &
@@ -666,7 +666,7 @@ subroutine diffusion2(ptcl,isvacant)
               help = 1d0/opacleakdlump
               do ig = 1, glump
                  iig=glumps(ig)
-                 specig = grd_siggrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1) * &
+                 specig = grd_capgrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1) * &
                       capinv(iig)
 !-- calculating resolved leakage opacities
                  mfphelp = (grd_cap(iig,zr,zz,1)+grd_sig(zr,zz,1)) * &
@@ -720,7 +720,7 @@ subroutine diffusion2(ptcl,isvacant)
               help = 1d0/opacleakdlump
               do ig= 1, glump
                  iig = glumps(ig)
-                 specig = grd_siggrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1) * &
+                 specig = grd_capgrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1) * &
                       capinv(iig)
 !-- calculating resolved leakage opacities
                  if((grd_cap(iig,zr,zz-1,1)+grd_sig(zr,zz-1,1)) * &
@@ -841,7 +841,7 @@ subroutine diffusion2(ptcl,isvacant)
               help = 1d0/opacleakulump
               do ig = 1, glump
                  iig=glumps(ig)
-                 specig = grd_siggrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1) * &
+                 specig = grd_capgrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1) * &
                       capinv(iig)
 !-- calculating resolved leakage opacities
                  mfphelp = (grd_cap(iig,zr,zz,1)+grd_sig(zr,zz,1)) * &
@@ -894,7 +894,7 @@ subroutine diffusion2(ptcl,isvacant)
               help = 1d0/opacleakulump
               do ig= 1, glump
                  iig = glumps(ig)
-                 specig = grd_siggrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1) * &
+                 specig = grd_capgrey(zr,zz,1)*grd_emitprob(iig,zr,zz,1) * &
                       capinv(iig)
 !-- calculating resolved leakage opacities
                  if((grd_cap(iig,zr,zz+1,1)+grd_sig(zr,zz+1,1)) * &

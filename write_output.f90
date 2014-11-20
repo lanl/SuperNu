@@ -66,7 +66,7 @@ subroutine write_output
   close(4)
 
   open(unit=4,file='output.siggrey',position='append',recl=reclen2)
-  write(4,'(1p,10000e12.4)') grd_siggrey
+  write(4,'(1p,10000e12.4)') grd_capgrey
   close(4)
 
   open(unit=4,file='output.pcktstat',status='unknown',position=pos)

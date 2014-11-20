@@ -42,7 +42,7 @@ subroutine leakage_opacity1
 !-- finding lumpable groups
         if(grd_cap(ig,i,j,k)*dx(i)*thelp>=prt_taulump) then
 !-- summing lumpable Planck function integrals
-           speclump = speclump + grd_siggrey(i,j,k)*grd_emitprob(ig,i,j,k)/&
+           speclump = speclump + grd_capgrey(i,j,k)*grd_emitprob(ig,i,j,k)/&
                 grd_cap(ig,i,j,k)
         endif
      enddo !ig
@@ -51,7 +51,7 @@ subroutine leakage_opacity1
         if(grd_cap(ig,i,j,k)*dx(i)*thelp>=prt_taulump) then
 !
 !-- obtaining spectral weight
-           specval = grd_siggrey(i,j,k)*grd_emitprob(ig,i,j,k)/&
+           specval = grd_capgrey(i,j,k)*grd_emitprob(ig,i,j,k)/&
                 grd_cap(ig,i,j,k)
 !
 !

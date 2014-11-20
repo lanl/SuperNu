@@ -29,7 +29,7 @@ c-- gasmod
       deallocate(grd_cap)
       deallocate(grd_emitprob,grd_opacleak)
       deallocate(grd_eraddens)
-      if(impi==impi0) deallocate(grd_siggrey)
+      if(impi==impi0) deallocate(grd_capgrey)
       deallocate(grd_fcoef)
       deallocate(grd_sig)
       if(impi==impi0) deallocate(grd_capgam)

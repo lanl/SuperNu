@@ -400,8 +400,8 @@ c
        call mpi_gather(gas_capgam,gas_ncell,MPI_REAL8,
      &   grd_capgam,gas_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_GAS,ierr)
-       call mpi_gather(gas_siggrey,gas_ncell,MPI_REAL8,
-     &   grd_siggrey,gas_ncell,MPI_REAL8,
+       call mpi_gather(gas_capgrey,gas_ncell,MPI_REAL8,
+     &   grd_capgrey,gas_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_GAS,ierr)
        call mpi_gather(gas_fcoef,gas_ncell,MPI_REAL8,
      &   grd_fcoef,gas_ncell,MPI_REAL8,
@@ -432,7 +432,7 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(grd_capgam,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(grd_siggrey,n,MPI_REAL8,
+      call mpi_bcast(grd_capgrey,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(grd_fcoef,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)

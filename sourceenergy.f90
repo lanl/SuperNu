@@ -31,7 +31,7 @@ subroutine sourceenergy(nmpi)
   do i=1,gas_ncell
 !
 !-- thermal source
-     gas_emit(i) =  tsp_dt*gas_fcoef(i)*gas_siggrey(i)*pc_c* &
+     gas_emit(i) =  tsp_dt*gas_fcoef(i)*gas_capgrey(i)*pc_c* &
           gas_ur(i)*gas_vol(i)
 !
 !-- manufactured solution material source

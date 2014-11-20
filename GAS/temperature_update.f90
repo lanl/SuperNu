@@ -27,7 +27,7 @@ subroutine temperature_update
      do i=1,gas_ncell
         if(gas_bcoef(i)>0d0) then
            dtemp = gas_edep(i)/gas_vol(i) !new
-           dtemp = (dtemp - tsp_dt*gas_fcoef(i)*gas_siggrey(i)* &
+           dtemp = (dtemp - tsp_dt*gas_fcoef(i)*gas_capgrey(i)* &
                 pc_c*gas_ur(i))/gas_bcoef(i)
            dtemp2 = (gas_fcoef(i)/gas_bcoef(i))*tsp_dt* &
                 gas_matsrc(i)

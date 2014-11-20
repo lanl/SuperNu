@@ -31,7 +31,7 @@ c-- scattering coefficient
 c-- Gamma ray gray opacity
       real*8,allocatable :: grd_capgam(:,:,:) !(nx,ny,nz)
 c-- Planck opacity (gray)
-      real*8,allocatable :: grd_siggrey(:,:,:)!(nx,ny,nz)
+      real*8,allocatable :: grd_capgrey(:,:,:)!(nx,ny,nz)
 c-- Fleck factor
       real*8,allocatable :: grd_fcoef(:,:,:)  !(nx,ny,nz)
 
@@ -117,7 +117,7 @@ c---------------------------------------
 c
 c-- ndim=3 alloc
       allocate(grd_edep(nx,ny,nz))
-      allocate(grd_siggrey(nx,ny,nz))
+      allocate(grd_capgrey(nx,ny,nz))
       allocate(grd_capgam(nx,ny,nz))
       allocate(grd_sig(nx,ny,nz))
       allocate(grd_fcoef(nx,ny,nz))
