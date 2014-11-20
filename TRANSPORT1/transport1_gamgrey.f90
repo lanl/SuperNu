@@ -99,24 +99,11 @@ subroutine transport1_gamgrey(ptcl)
   !calculating energy deposition and density
   !
   if(.not.prt_isimcanlog) then
-        grd_edep(z,1,1)=grd_edep(z,1,1)+E*(1.0d0-exp( &
-             -grd_capgam(z,1,1)*siglabfact*d*thelp))*elabfact
-     !--
-     if(grd_capgam(z,1,1)*dx(z)*thelp>1d-6) then     
-        grd_eraddens(z,1,1) = grd_eraddens(z,1,1)+E* &
-             (1.0d0-exp(-siglabfact*grd_capgam(z,1,1)*d*thelp))* &
-             elabfact/(siglabfact*grd_capgam(z,1,1)*pc_c*dt)
-     else
-        grd_eraddens(z,1,1) = grd_eraddens(z,1,1)+E* &
-             elabfact*d*dcollabfact*cinv*dtinv
-     endif
+     grd_edep(z,1,1) = grd_edep(z,1,1)+E*(1.0d0-exp( &
+          -grd_capgam(z,1,1)*siglabfact*d*thelp))*elabfact
      !--
      E = E*exp(-grd_capgam(z,1,1)*siglabfact*d*thelp)
 
-  else
-     !
-     grd_eraddens(z,1,1) = grd_eraddens(z,1,1)+E* &
-          elabfact*d*dcollabfact*cinv*dtinv
   endif
 
 !-- transformation factor reset

@@ -18,7 +18,7 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
 !
   integer,external :: binsrch
   integer :: zzholder,zrholder
-  real*8 :: help, rold, zold, rtil, ztil
+  real*8 :: rold, zold, rtil, ztil
   integer :: ir,iz
 !-- statement functions
   integer :: l

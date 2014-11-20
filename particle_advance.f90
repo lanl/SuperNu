@@ -181,7 +181,7 @@ subroutine particle_advance
 
 !-- 1D
         case(1)
-           lhelp = (grd_sig(zsrc,1,1)+grd_cap(ig,zsrc,1,1)) * &
+           lhelp = (grd_sig(zsrc,1,1)+grd_cap(ig,zsrc,1,1)) * &!{{{
                 dx(zsrc)*help<prt_tauddmc
            if (lhelp) then
               if (ptcl%rtsrc == 2) then
@@ -214,7 +214,7 @@ subroutine particle_advance
 
 !-- 2D
         case(2)
-           lhelp = ((grd_sig(zsrc,iy,1)+grd_cap(ig,zsrc,iy,1)) * &
+           lhelp = ((grd_sig(zsrc,iy,1)+grd_cap(ig,zsrc,iy,1)) * & !{{{
                 min(dx(zsrc),dy(iy))*help < prt_tauddmc) &
                 .or.in_puretran
            if (lhelp) then
@@ -265,7 +265,7 @@ subroutine particle_advance
 
 !-- 3D
         case(3)
-           lhelp = ((grd_sig(zsrc,iy,iz)+grd_cap(ig,zsrc,iy,iz)) * &
+           lhelp = ((grd_sig(zsrc,iy,iz)+grd_cap(ig,zsrc,iy,iz)) * & !{{{
                 min(dx(zsrc),dy(iy),dz(iz))*help < prt_tauddmc) &
                 .or.in_puretran
            if (lhelp) then

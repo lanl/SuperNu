@@ -104,9 +104,6 @@ subroutine transport2(ptcl,isvacant)
            write(*,*) ((cos(om)*r)**2-r**2+grd_xarr(zr+1)**2)/(1d0-xi**2)
            stop 'transport2: invalid outer dbr'
         endif
-        if(dbr<0d0) write(0,*) 'dbr<0',dbr,r,z,om/pc_pi*180,xi, &
-           sin(om),cos(om), &
-           r*sin(om),grd_xarr(zr),grd_xarr(zr+1),r-grd_xarr(zr+1)
      endif
   endif
 
