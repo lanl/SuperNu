@@ -44,9 +44,9 @@ c-- temperature parameters
       real*8 :: in_tempradinit = 0d0 !initial radiation temperature.  Use grd_temp by default
 c
 c-- analytic heat capacity terms
-      real*8 :: in_cvcoef = 1d0 !power law heat capacity coefficient
-      real*8 :: in_cvtpwr = 0d0 !power law heat capacity temperature exponent
-      real*8 :: in_cvrpwr = 0d0 !power law heat capacity density exponent
+      real*8 :: in_gas_cvcoef = 1d0 !power law heat capacity coefficient
+      real*8 :: in_gas_cvtpwr = 0d0 !power law heat capacity temperature exponent
+      real*8 :: in_gas_cvrpwr = 0d0 !power law heat capacity density exponent
 c
 c-- particles
       integer :: in_ns = 0    !number of source particles generated per time step (total over all ranks)
@@ -142,7 +142,7 @@ c-- runtime parameter namelist
      & in_opacdump,in_pdensdump,
      & in_gas_sigcoef,in_gas_sigtpwr,in_gas_sigrpwr,
      & in_gas_capcoef,in_gas_captpwr,in_gas_caprpwr,
-     & in_cvcoef,in_cvtpwr,in_cvrpwr,
+     & in_gas_cvcoef,in_gas_cvtpwr,in_gas_cvrpwr,
      & in_opacanaltype,in_suol,
      & in_suolpick1, in_ldisp1, in_ldisp2,
      & in_srctype,in_theav,in_nheav,in_srcmax,
@@ -220,9 +220,9 @@ c
       call insertc(in_dentype,in_c,ic)
       call insertr(in_consttemp,in_r,ir)
       call insertr(in_tempradinit,in_r,ir)
-      call insertr(in_cvcoef,in_r,ir)
-      call insertr(in_cvtpwr,in_r,ir)
-      call insertr(in_cvrpwr,in_r,ir)
+      call insertr(in_gas_cvcoef,in_r,ir)
+      call insertr(in_gas_cvtpwr,in_r,ir)
+      call insertr(in_gas_cvrpwr,in_r,ir)
       call inserti(in_ns,in_i,ii)
       call inserti(in_ns0,in_i,ii)
       call inserti(in_prt_nmax,in_i,ii)

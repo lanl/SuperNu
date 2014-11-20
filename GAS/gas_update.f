@@ -93,8 +93,8 @@ c-- update density, heat capacity
 c================================
       gas_rho = gas_mass/gas_vol
 c-- Calculating power law heat capacity
-      gas_bcoef = in_cvcoef * gas_temp**in_cvtpwr *
-     &  gas_rho**in_cvrpwr
+      gas_bcoef = in_gas_cvcoef * gas_temp**in_gas_cvtpwr *
+     &  gas_rho**in_gas_cvrpwr
 c-- temperature
       gas_ur = pc_acoef*gas_temp**4
 c

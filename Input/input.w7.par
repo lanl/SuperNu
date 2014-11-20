@@ -33,9 +33,9 @@ in_theav = 9d0
 in_nheav = 40
 
 !-- power law heat capacity values
-in_cvcoef = 2d7
-in_cvtpwr = 0d0
-in_cvrpwr = 1d0
+in_gas_cvcoef = 2d7
+in_gas_cvtpwr = 0d0
+in_gas_cvrpwr = 1d0
 
 !-- group absorption opacity structure type
 in_opacanaltype = 'none'
