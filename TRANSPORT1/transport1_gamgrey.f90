@@ -63,7 +63,6 @@ subroutine transport1_gamgrey(ptcl)
   else
      db = abs(sqrt(grd_xarr(ix+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
   endif
-  if(db/=db) stop 'transport1_gamgrey: db nan'
 !
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
@@ -162,10 +161,8 @@ subroutine transport1_gamgrey(ptcl)
      else
         if (ix==1) then
            ix = ix+1
-           r = grd_xarr(ix)
         else
            ix = ix-1
-           r = grd_xarr(ix)
         endif
      endif!}}}
   endif
