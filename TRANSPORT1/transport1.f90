@@ -97,6 +97,7 @@ subroutine transport1(ptcl,isvacant)
   else
      db = abs(sqrt(grd_xarr(z+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
   endif
+  if(db/=db) stop 'transport1: db nan'
 !
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
