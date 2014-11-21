@@ -629,16 +629,12 @@ subroutine transport2(ptcl,isvacant)
                     om = azidotu
                  endif
               endif
+              r = grd_xarr(zr+1)
            endif
         else
 !-- IMC in outer cell
+           r = grd_xarr(zr+1)
            zr = zr + 1
-           if(abs(r-grd_xarr(zr))/grd_xarr(zr)<1d-10) then
-              r = grd_xarr(zr)
-           else
-              write(*,*) db, rold, r, grd_xarr(zr)
-              stop 'transport2: outer db'
-           endif
         endif
 !-- cos(om)<0
      else
@@ -714,17 +710,12 @@ subroutine transport2(ptcl,isvacant)
                     om = azidotu
                  endif
               endif
+              r = grd_xarr(zr)
            endif
         else
 !-- IMC in inner cell
+           r = grd_xarr(zr)
            zr = zr - 1
-           if(abs(r-grd_xarr(zr+1))/grd_xarr(zr+1)<1d-10) then
-              r = grd_xarr(zr+1)
-           else
-              write(*,*) db, rold, r, grd_xarr(zr+1), sin(om)
-              write(*,*) zr, grd_xarr(zr+1)/rold
-              stop 'transport2: inner db'
-           endif
         endif
      endif
 

@@ -229,8 +229,8 @@ subroutine transport2_gamgrey(ptcl)
            prt_done = .true.
 !-- IMC in upper cell
         else
+           z = grd_yarr(zz+1)
            zz = zz+1
-           z = grd_yarr(zz)
         endif
 !-- xi<0
      else
@@ -240,8 +240,8 @@ subroutine transport2_gamgrey(ptcl)
            prt_done = .true.
 !-- IMC in lower cell
         else
+           z = grd_yarr(zz)
            zz = zz-1
-           z = grd_yarr(zz+1)
         endif
      endif
 
@@ -255,12 +255,8 @@ subroutine transport2_gamgrey(ptcl)
            prt_done = .true.
 !-- IMC in outer cell
         else
+           r = grd_xarr(zr+1)
            zr = zr + 1
-           if(abs(r-grd_xarr(zr))/grd_xarr(zr)<1d-10) then
-              r = grd_xarr(zr)
-           else
-              stop 'transport2_gamgrey: outer db'
-           endif
         endif
 !-- cos(om)<0
      else
@@ -268,12 +264,8 @@ subroutine transport2_gamgrey(ptcl)
            stop 'transport2_gamgrey: cos(om)<0 and zr=1'
         endif
 !-- IMC in inner cell
+        r = grd_xarr(zr)
         zr = zr - 1
-        if(abs(r-grd_xarr(zr+1))/grd_xarr(zr+1)<1d-10) then
-           r = grd_xarr(zr+1)
-        else
-           stop 'transport2_gamgrey: inner db'
-        endif
      endif
 
   endif

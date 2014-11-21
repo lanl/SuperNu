@@ -240,6 +240,11 @@ subroutine particle_advance_gamgrey
      case(2)
         do while (.not.prt_done)!{{{
            call transport2_gamgrey(ptcl)
+!-- verify position
+           if(.not.prt_done .and. (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
+              write(0,*) 'prt_adv_ggrey: not in cell', &
+                 ix,x,grd_xarr(ix),grd_xarr(ix+1),ptcl%mu
+           endif
 !-- transformation factor
            if(grd_isvelocity) then
               labfact = 1d0-(ptcl%mu*ptcl%y+sqrt(1d0-ptcl%mu**2) * &

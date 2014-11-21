@@ -525,8 +525,4 @@ subroutine transport1(ptcl,isvacant)
 !
   endif
 
-if(.not.prt_done .and. ptcl%itype==1 .and. (r>grd_xarr(ix+1) .or. r<grd_xarr(ix))) &
-   write(0,*) 'tr1',ix,r,grd_xarr(ix),grd_xarr(ix+1),mu,&
-   d,dcol,dthm,db,dcen,ddop
-
 end subroutine transport1
