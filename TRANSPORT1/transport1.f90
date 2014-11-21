@@ -142,14 +142,14 @@ subroutine transport1(ptcl,isvacant)
 !     ddop = pc_c*(1d0-mu*r*cinv)*(1d0-&
 !          grd_wl(g)*log(grd_wl(g+1)/grd_wl(g))/(grd_wl(g+1)-grd_wl(g)))
 !     write(*,*) pc_c*(wl/grd_wl(g+1)-1d0)+r*mu
-      ddop = abs(pc_c*(1d0-wl/grd_wl(g+1))-r*mu)
+     ddop = abs(pc_c*(1d0-wl/grd_wl(g+1))-r*mu)
   else
      ddop = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
   endif
 !
 !-- minimum distance = d
-!  if(tsp_it==29) write(*,*) dcol,dthm,db,dcen,ddop
   d = min(dcol,dthm,db,dcen,ddop)
+  if(d<0d0) stop 'transport1: negative distance'
 !
 !== END OF DISTANCE CALCULATIONS
 !
@@ -458,6 +458,7 @@ subroutine transport1(ptcl,isvacant)
               endif
            else
               z = z+1
+              r = grd_xarr(z)
            endif
         elseif (((grd_sig(z-1,1,1)+grd_cap(g,z-1,1,1))*dx(z-1) &
              *thelp >= prt_tauddmc) &
@@ -496,6 +497,7 @@ subroutine transport1(ptcl,isvacant)
                  wl = wl/elabfact
               endif
               z = z-1
+              r = grd_xarr(z+1)
            else
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
@@ -509,6 +511,7 @@ subroutine transport1(ptcl,isvacant)
         ! End of check
         else
            z = z-1
+           r = grd_xarr(z+1)
         endif
      endif!}}}
   elseif (d == dcen) then

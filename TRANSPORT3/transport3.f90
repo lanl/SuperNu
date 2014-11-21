@@ -86,16 +86,22 @@ subroutine transport3(ptcl,isvacant)
   if(mu==0d0) then
      dbx = 2d0*pc_c*tsp_dt*thelpinv
   else
+     if((grd_xarr(ix)-x)/mu>0d0.and.(grd_xarr(ix+1)-x)/mu>0d0) stop &
+          'transport3: x val out of cell'
      dbx = max((grd_xarr(ix)-x)/mu,(grd_xarr(ix+1)-x)/mu)
   endif
   if(eta==0d0) then
      dby = 2d0*pc_c*tsp_dt*thelpinv
   else
+     if((grd_yarr(iy)-y)/eta>0d0.and.(grd_yarr(iy+1)-y)/eta>0d0) stop &
+          'transport3: y val out of cell'
      dby = max((grd_yarr(iy)-y)/eta,(grd_yarr(iy+1)-y)/eta)
   endif
   if(xi==0d0) then
      dbz = 2d0*pc_c*tsp_dt*thelpinv
   else
+     if((grd_zarr(iz)-z)/xi>0d0.and.(grd_zarr(iz+1)-z)/xi>0d0) stop &
+          'transport3: z val out of cell'
      dbz = max((grd_zarr(iz)-z)/xi,(grd_zarr(iz+1)-z)/xi)
   endif
 !
@@ -309,8 +315,10 @@ subroutine transport3(ptcl,isvacant)
 
      if(mu>=0d0) then
         ihelp = 1
+        x = grd_xarr(ix+1)
      else
         ihelp = -1
+        x = grd_xarr(ix)
      endif
 
      if((grd_cap(ig,ix+ihelp,iy,iz)+grd_sig(ix+ihelp,iy,iz)) * &
@@ -375,8 +383,10 @@ subroutine transport3(ptcl,isvacant)
 
      if(eta>=0d0) then
         ihelp = 1
+        y = grd_yarr(iy+1)
      else
         ihelp = -1
+        y = grd_yarr(iy)
      endif
 
      if((grd_cap(ig,ix,iy+ihelp,iz)+grd_sig(ix,iy+ihelp,iz)) * &
@@ -441,8 +451,10 @@ subroutine transport3(ptcl,isvacant)
 
      if(xi>=0d0) then
         ihelp = 1
+        z = grd_zarr(iz+1)
      else
         ihelp = -1
+        z = grd_zarr(iz)
      endif
 
      if((grd_cap(ig,ix,iy,iz+ihelp)+grd_sig(ix,iy,iz+ihelp)) * &

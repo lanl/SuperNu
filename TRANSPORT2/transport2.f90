@@ -106,6 +106,7 @@ subroutine transport2(ptcl,isvacant)
         endif
      endif
   endif
+  if(dbr/=dbr) stop 'transport2: dbr nan'
 
 !-- to z-bound
   if(xi>0d0) then
@@ -114,9 +115,13 @@ subroutine transport2(ptcl,isvacant)
         write(*,*) zz, grd_yarr(zz+1), z, xi
         stop 'upward dbz'
      endif
+     if((grd_yarr(zz)-z)/xi>0d0) stop &
+          'transport2: z below cell'
   elseif(xi<0d0) then
      dbz = (grd_yarr(zz)-z)/xi
      if(dbz<0d0) stop 'downward dbz'
+     if((grd_yarr(zz+1)-z)/xi>0d0) stop &
+          'transport2: z above cell'
   else
 !-- making greater than dcen
      dbz = 2d0*pc_c*tsp_dt*thelpinv
@@ -133,6 +138,7 @@ subroutine transport2(ptcl,isvacant)
 !-- making greater than dcen
      dthm = 2d0*pc_c*tsp_dt*thelpinv
   endif
+  if(dthm/=dthm) stop 'transport2: dthm nan'
 !
 !-- calculating distance to effective collision:
   if(grd_cap(ig,zr,zz,1)<=0d0) then
@@ -150,6 +156,7 @@ subroutine transport2(ptcl,isvacant)
 !-- making greater than dcen
      dcol = 2d0*pc_c*tsp_dt*thelpinv
   endif
+  if(dcol/=dcol) stop 'transport2: dthm nan'
 !
 !-- calculating distance to Doppler shift
   if(grd_isvelocity.and.ig<grd_ng) then
@@ -164,7 +171,7 @@ subroutine transport2(ptcl,isvacant)
 !
 !-- finding minimum distance
   d = min(dcen,db,dthm,dcol,ddop)
-  if(any((/dcen,dbz,dbr,dthm,dcol,ddop/)<0d0)) then
+  if(d<0d0) then
      write(*,*) dcen,dbz,dbr,dthm,dcol,ddop
      stop 'transport2: negative distance'
   endif
@@ -440,6 +447,7 @@ subroutine transport2(ptcl,isvacant)
         else
 !-- IMC in upper cell
            zz = zz+1
+           z = grd_yarr(zz)
         endif
 !-- xi<0
      else
@@ -522,6 +530,7 @@ subroutine transport2(ptcl,isvacant)
         else
 !-- IMC in lower cell
            zz = zz-1
+           z = grd_yarr(zz+1)
         endif
      endif
 

@@ -68,16 +68,22 @@ subroutine transport3_gamgrey(ptcl)
   if(mu==0d0) then
      dbx = 2d0*pc_c*tsp_dt*thelpinv
   else
+     if((grd_xarr(ix)-x)/mu>0d0.and.(grd_xarr(ix+1)-x)/mu>0d0) stop &
+          'transport3_gamgrey: x val out of cell'
      dbx = max((grd_xarr(ix)-x)/mu,(grd_xarr(ix+1)-x)/mu)
   endif
   if(eta==0d0) then
      dby = 2d0*pc_c*tsp_dt*thelpinv
   else
+     if((grd_yarr(iy)-y)/eta>0d0.and.(grd_yarr(iy+1)-y)/eta>0d0) stop &
+          'transport3_gamgrey: y val out of cell'
      dby = max((grd_yarr(iy)-y)/eta,(grd_yarr(iy+1)-y)/eta)
   endif
   if(xi==0d0) then
      dbz = 2d0*pc_c*tsp_dt*thelpinv
   else
+     if((grd_zarr(iz)-z)/xi>0d0.and.(grd_zarr(iz+1)-z)/xi>0d0) stop &
+          'transport3_gamgrey: z val out of cell'
      dbz = max((grd_zarr(iz)-z)/xi,(grd_zarr(iz+1)-z)/xi)
   endif
 !
@@ -94,9 +100,7 @@ subroutine transport3_gamgrey(ptcl)
 !
 !-- finding minimum distance
   d = min(dbx,dby,dbz,dcol)
-  if(any((/dbx,dby,dbz,dcol/)<0d0)) then
-     stop 'transport3_gamgrey: negative distance'
-  endif
+  if(d<0d0) stop 'transport3_gamgrey: negative distance'
 
 !-- updating position
   x = x + mu*d
@@ -210,8 +214,10 @@ subroutine transport3_gamgrey(ptcl)
 
      if(mu>=0d0) then
         ihelp = 1
+        x = grd_xarr(ix+1)
      else
         ihelp = -1
+        x = grd_xarr(ix)
      endif
 !-- IMC in adjacent cell
      ix = ix+ihelp
@@ -221,8 +227,10 @@ subroutine transport3_gamgrey(ptcl)
 
      if(eta>=0d0) then
         ihelp = 1
+        y = grd_yarr(iy+1)
      else
         ihelp = -1
+        y = grd_yarr(iy)
      endif
 !-- IMC in adjacent cell
      iy = iy+ihelp
@@ -232,12 +240,13 @@ subroutine transport3_gamgrey(ptcl)
 
      if(xi>=0d0) then
         ihelp = 1
+        z = grd_zarr(iz+1)
      else
         ihelp = -1
+        z = grd_zarr(iz)
      endif
 !-- IMC in adjacent cell
      iz = iz+ihelp
-
   else
      stop 'transport3_gamgrey: invalid distance'
   endif
