@@ -21,7 +21,7 @@ subroutine temperature_update
 !-- calculating temperature
   if(allocated(gas_temppreset)) then
 !-- apply read-in temperature profile
-   gas_temp = gas_temppreset(:,tsp_it)
+     gas_temp = gas_temppreset(:,tsp_it)
   else
 !!-- calculate temp correction
      do i=1,gas_ncell

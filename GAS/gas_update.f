@@ -1,4 +1,4 @@
-      subroutine gas_update(irank)
+      subroutine gas_update(impi)
 c     -------------------------------
       use gridmod
       use physconstmod
@@ -10,7 +10,7 @@ c     -------------------------------
       use inputparmod
       use timingmod
       implicit none
-      integer,intent(in) :: irank
+      integer,intent(in) :: impi
 ************************************************************************
 * Update the part of the gas grid that depends on time and temperature.
 * The non-changing part is computed in gas_setup.
@@ -71,8 +71,8 @@ c
 c
 c-- update volume
 c========================================
-      l1 = irank*gas_ncell + 1
-      l2 = (irank+1)*gas_ncell
+      l1 = impi*gas_ncell + 1
+      l2 = (impi+1)*gas_ncell
       l = 0
       ll = 0
       do k=1,grd_nz
@@ -97,6 +97,12 @@ c-- Calculating power law heat capacity
      &  gas_rho**in_gas_cvrpwr
 c-- temperature
       gas_ur = pc_acoef*gas_temp**4
+c
+c-- sanity check temperatures
+      if(any(gas_temp /= gas_temp)) then
+       write(0,*) impi,gas_temp
+       stop 'gas_temp NaN'
+      endif
 c
 c
 c-- totals

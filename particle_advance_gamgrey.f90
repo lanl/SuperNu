@@ -19,8 +19,8 @@ subroutine particle_advance_gamgrey
   integer,external :: binsrch
   real*8 :: r1
   integer :: i, j, k
-  integer,pointer :: zsrc, iy, iz
-  real*8,pointer :: esrc
+  integer,pointer :: ix, iy, iz
+  real*8,pointer :: e
   real*8 :: t0,t1  !timing
   real*8 :: labfact, cmffact, azitrfm, mu1, mu2
   real*8 :: esq
@@ -53,10 +53,10 @@ subroutine particle_advance_gamgrey
 ! write(6,*) 'gam: npart,nsfloor:',npart,nsfloor
 
 !--
-  zsrc => ptcl%ix
+  ix => ptcl%ix
   iy => ptcl%iy
   iz => ptcl%iz
-  esrc => ptcl%e
+  e => ptcl%e
 
 !-- unused
 !    real*8 :: tsrc
@@ -87,12 +87,12 @@ subroutine particle_advance_gamgrey
      if(k==grd_nz+1) stop 'prt_adv_gamgrey: particle generation error3'
 !
 !-- adopt position
-     zsrc = i
+     ix = i
      iy = j
      iz = k
 !
 !-- decrease particle-in-cell counter
-     ijkused(zsrc,iy,iz) = ijkused(zsrc,iy,iz) + 1
+     ijkused(ix,iy,iz) = ijkused(ix,iy,iz) + 1
 
 !-- calculating direction cosine (comoving)
      r1 = rand()
@@ -105,8 +105,8 @@ subroutine particle_advance_gamgrey
 !-- calculating position!{{{
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        ptcl%x = (r1*grd_xarr(zsrc+1)**3 + &
-             (1.0-r1)*grd_xarr(zsrc)**3)**(1.0/3.0)
+        ptcl%x = (r1*grd_xarr(ix+1)**3 + &
+             (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
 !--
         if(grd_isvelocity) then
            x0 = ptcl%x
@@ -194,8 +194,8 @@ subroutine particle_advance_gamgrey
      endselect
 !
 !-- emission energy per particle
-     esrc = grd_emitex(zsrc,iy,iz)/grd_nvol(zsrc,iy,iz)*cmffact
-     ptcl%e0 = esrc
+     e = grd_emitex(ix,iy,iz)/grd_nvol(ix,iy,iz)*cmffact
+     ptcl%e0 = e
 
 !-----------------------------------------------------------------------        
 !-- Advancing particle until census, absorption, or escape from domain
@@ -212,14 +212,14 @@ subroutine particle_advance_gamgrey
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (esrc<1d-6*ptcl%e0 .and. .not.prt_done) then
+           if (e<1d-6*ptcl%e0 .and. .not.prt_done) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  prt_done = .true.
-                 grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
+                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
               else
-                 esrc = 2d0*esrc
+                 e = 2d0*e
                  ptcl%e0 = 2d0*ptcl%e0
               endif
            endif
@@ -235,14 +235,14 @@ subroutine particle_advance_gamgrey
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (esrc<1d-6*ptcl%e0 .and. .not.prt_done) then
+           if (e<1d-6*ptcl%e0 .and. .not.prt_done) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  prt_done = .true.
-                 grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
+                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
               else
-                 esrc = 2d0*esrc
+                 e = 2d0*e
                  ptcl%e0 = 2d0*ptcl%e0
               endif
            endif
@@ -258,14 +258,14 @@ subroutine particle_advance_gamgrey
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (esrc<1d-6*ptcl%e0 .and. .not.prt_done) then
+           if (e<1d-6*ptcl%e0 .and. .not.prt_done) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  prt_done = .true.
-                 grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
+                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
               else
-                 esrc = 2d0*esrc
+                 e = 2d0*e
                  ptcl%e0 = 2d0*ptcl%e0
               endif
            endif

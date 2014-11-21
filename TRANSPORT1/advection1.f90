@@ -1,4 +1,4 @@
-subroutine advection1(pretrans,ig,zsrc,rsrc)
+subroutine advection1(pretrans,ig,ix,r)
   use timestepmod
   use gridmod
   use particlemod
@@ -6,8 +6,8 @@ subroutine advection1(pretrans,ig,zsrc,rsrc)
   implicit none
   logical,intent(in) :: pretrans
   integer,intent(in) :: ig
-  integer,intent(inout) :: zsrc
-  real*8,intent(inout) :: rsrc
+  integer,intent(inout) :: ix
+  real*8,intent(inout) :: r
 !-----------------------------------------------------------------------
 ! This routine computes the advection of IMC particles through the
 ! velocity grid.  It is geometry dependent
@@ -27,14 +27,14 @@ subroutine advection1(pretrans,ig,zsrc,rsrc)
 !
 !-- different values are used before and after transport
   if(pretrans) then
-    rsrc = rsrc*tsp_t/(tsp_t+alph2*tsp_dt)
+    r = r*tsp_t/(tsp_t+alph2*tsp_dt)
   else
-    rsrc = rsrc*(tsp_t + alph2*tsp_dt)/(tsp_t+tsp_dt)
+    r = r*(tsp_t + alph2*tsp_dt)/(tsp_t+tsp_dt)
   endif
 !
-  if (rsrc < grd_xarr(zsrc)) then
+  if (r < grd_xarr(ix)) then
 !
-    zholder = binsrch(rsrc,grd_xarr,grd_nx+1,0)
+    zholder = binsrch(r,grd_xarr,grd_nx+1,0)
 !
     if(.not.in_puretran.and.partstopper) then
        zfdiff = -1
@@ -43,7 +43,7 @@ subroutine advection1(pretrans,ig,zsrc,rsrc)
        else
           help = 1d0
        endif
-       do ir = zsrc-1,zholder,-1
+       do ir = ix-1,zholder,-1
           if((grd_sig(ir,1,1)+grd_cap(ig,ir,1,1))*dx(ir) &
                *help>=prt_tauddmc) then
              zfdiff = ir
@@ -52,14 +52,14 @@ subroutine advection1(pretrans,ig,zsrc,rsrc)
        enddo
        if(zfdiff.ne.-1) then
 !--
-          zsrc = zfdiff+1
-          rsrc = grd_xarr(zsrc)
+          ix = zfdiff+1
+          r = grd_xarr(ix)
 !--
        else
-          zsrc = zholder
+          ix = zholder
        endif
     else
-      zsrc = zholder
+      ix = zholder
     endif
 !
   endif

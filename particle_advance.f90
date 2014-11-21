@@ -29,8 +29,8 @@ subroutine particle_advance
 ! real*8 :: xx0, bmax
 ! real*8 :: uul, uur, uumax, r0,r2,r3
   logical,pointer :: isvacant
-  integer, pointer :: zsrc, iy, iz
-  real*8, pointer :: rsrc,y,z, musrc, esrc, wlsrc, om
+  integer, pointer :: ix, iy, iz
+  real*8, pointer :: x,y,z, mu, e, wl, om
   real*8 :: t0,t1  !timing
   real*8 :: labfact, cmffact, azitrfm, mu1, mu2
 !
@@ -71,11 +71,11 @@ subroutine particle_advance
      npckt = npckt + 1
 !
 !-- assigning pointers to corresponding particle properties
-     zsrc => ptcl%ix
-     wlsrc => ptcl%wl
-     rsrc => ptcl%x
-     musrc => ptcl%mu
-     esrc => ptcl%e
+     ix => ptcl%ix
+     wl => ptcl%wl
+     x => ptcl%x
+     mu => ptcl%mu
+     e => ptcl%e
      select case(in_igeom)
 
 !-- 1D
@@ -84,7 +84,7 @@ subroutine particle_advance
         iz => one
 !-- 1-dir*v/c
         if(grd_isvelocity.and.ptcl%itype==1) then
-           labfact = 1d0-rsrc*musrc/pc_c
+           labfact = 1d0-x*mu/pc_c
         endif
 
 !-- 2D
@@ -95,8 +95,8 @@ subroutine particle_advance
         om => ptcl%om
 !-- 1-dir*v/c
         if(grd_isvelocity.and.ptcl%itype==1) then
-           labfact = 1d0-(musrc*y+sqrt(1d0-musrc**2) * &
-                cos(om)*rsrc)/pc_c
+           labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
+                cos(om)*x)/pc_c
         endif
 
 !-- 3D
@@ -108,9 +108,9 @@ subroutine particle_advance
         om => ptcl%om
 !-- 1-dir*v/c
         if(grd_isvelocity.and.ptcl%itype==1) then
-           mu1 = sqrt(1d0-musrc**2)*cos(om)
-           mu2 = sqrt(1d0-musrc**2)*sin(om)
-           labfact = 1d0-(musrc*z+mu1*rsrc+mu2*y)/pc_c
+           mu1 = sqrt(1d0-mu**2)*cos(om)
+           mu2 = sqrt(1d0-mu**2)*sin(om)
+           labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c
         endif
      endselect
 
@@ -119,9 +119,9 @@ subroutine particle_advance
      ! Looking up group
      if(ptcl%itype==1) then
         if(grd_isvelocity) then!{{{
-           ig = binsrch(wlsrc/labfact,grd_wl,grd_ng+1,in_ng)
+           ig = binsrch(wl/labfact,grd_wl,grd_ng+1,in_ng)
         else
-           ig = binsrch(wlsrc,grd_wl,grd_ng+1,in_ng)
+           ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)
         endif
         !
         if(ig>grd_ng.or.ig<1) then
@@ -129,16 +129,16 @@ subroutine particle_advance
            if(ig>grd_ng) then
               ig=grd_ng
               if(grd_isvelocity) then
-                 wlsrc=grd_wl(grd_ng+1)*labfact
+                 wl=grd_wl(grd_ng+1)*labfact
               else
-                 wlsrc=grd_wl(grd_ng+1)
+                 wl=grd_wl(grd_ng+1)
               endif
            elseif(ig<1) then
               ig=1
               if(grd_isvelocity) then
-                 wlsrc=grd_wl(1)*labfact
+                 wl=grd_wl(1)*labfact
               else
-                 wlsrc=grd_wl(1)
+                 wl=grd_wl(1)
               endif
            else
               write(*,*) 'domain leak!!'
@@ -148,16 +148,16 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        ig = binsrch(wlsrc,grd_wl,grd_ng+1,in_ng)!{{{
+        ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)!{{{
         !
         if(ig>grd_ng.or.ig<1) then
            !particle out of wlgrid bound
            if(ig>grd_ng) then
               ig=grd_ng
-              wlsrc=grd_wl(grd_ng+1)
+              wl=grd_wl(grd_ng+1)
            elseif(ig<1) then
               ig=1
-              wlsrc=grd_wl(1)
+              wl=grd_wl(1)
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
@@ -181,69 +181,69 @@ subroutine particle_advance
 
 !-- 1D
         case(1)
-           lhelp = (grd_sig(zsrc,1,1)+grd_cap(ig,zsrc,1,1)) * &!{{{
-                dx(zsrc)*help<prt_tauddmc
+           lhelp = (grd_sig(ix,1,1)+grd_cap(ig,ix,1,1)) * &!{{{
+                dx(ix)*help<prt_tauddmc
            if (lhelp) then
               if (ptcl%itype == 2) then
 !-- DDMC -> IMC
-                 grd_methodswap(zsrc,1,1)=grd_methodswap(zsrc,1,1)+1
+                 grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
 !-- sampling position uniformly
                  r1 =  rand()
                  prt_tlyrand = prt_tlyrand+1
-                 rsrc = (r1*grd_xarr(zsrc+1)**3 + &
-                      (1.0-r1)*grd_xarr(zsrc)**3)**(1.0/3.0)
+                 x = (r1*grd_xarr(ix+1)**3 + &
+                      (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
 !-- sampling angle isotropically
                  r1 = rand()
                  prt_tlyrand = prt_tlyrand+1
-                 musrc = 1.0 - 2.0*r1
+                 mu = 1.0 - 2.0*r1
                  if(grd_isvelocity) then
 !-- 1+dir*v/c
-                    cmffact = 1d0+rsrc*musrc/pc_c
+                    cmffact = 1d0+x*mu/pc_c
 !-- mu
-                    musrc = (musrc+rsrc/pc_c)/cmffact
+                    mu = (mu+x/pc_c)/cmffact
 !-- 1-dir*v/c
-                    labfact = 1d0-rsrc*musrc/pc_c
+                    labfact = 1d0-x*mu/pc_c
                  endif
               endif
            else
               if(ptcl%itype==1) then
 !-- IMC -> DDMC
-                 grd_methodswap(zsrc,1,1)=grd_methodswap(zsrc,1,1)+1
+                 grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
               endif
            endif!}}}
 
 !-- 2D
         case(2)
-           lhelp = ((grd_sig(zsrc,iy,1)+grd_cap(ig,zsrc,iy,1)) * & !{{{
-                min(dx(zsrc),dy(iy))*help < prt_tauddmc) &
+           lhelp = ((grd_sig(ix,iy,1)+grd_cap(ig,ix,iy,1)) * & !{{{
+                min(dx(ix),dy(iy))*help < prt_tauddmc) &
                 .or.in_puretran
            if (lhelp) then
               if (ptcl%itype == 2) then
 !-- DDMC -> IMC
-                 grd_methodswap(zsrc,iy,1)=grd_methodswap(zsrc,iy,1)+1
+                 grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
 !-- sampling position uniformly
                  r1 =  rand()
-                 rsrc = sqrt(r1*grd_xarr(zsrc+1)**2 + &
-                      (1d0-r1)*grd_xarr(zsrc)**2)
+                 x = sqrt(r1*grd_xarr(ix+1)**2 + &
+                      (1d0-r1)*grd_xarr(ix)**2)
                  r1 = rand()
                  y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
 !-- sampling direction values
                  r1 = rand()
                  om = pc_pi2*r1
                  r1 = rand()
-                 musrc = 1d0 - 2d0*r1
+                 mu = 1d0 - 2d0*r1
                  if(grd_isvelocity) then
 !-- 1+dir*v/c
-                    cmffact = 1d0+(musrc*y+sqrt(1d0-musrc**2) * &
-                         cos(om)*rsrc)/pc_c
-                    azitrfm = atan2(sqrt(1d0-musrc**2)*sin(om) , &
-                         sqrt(1d0-musrc**2)*cos(om)+rsrc/pc_c)
+                    cmffact = 1d0+(mu*y+sqrt(1d0-mu**2) * &
+                         cos(om)*x)/pc_c
+                    azitrfm = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                         sqrt(1d0-mu**2)*cos(om)+x/pc_c)
 !-- mu
-                    musrc = (musrc+y/pc_c)/cmffact
-                    if(musrc>1d0) then
-                       musrc = 1d0
-                    elseif(musrc<-1d0) then
-                       musrc = -1d0
+                    mu = (mu+y/pc_c)/cmffact
+                    if(mu>1d0) then
+                       mu = 1d0
+                    elseif(mu<-1d0) then
+                       mu = -1d0
                     endif
 !-- om
                     if(azitrfm >= 0d0) then
@@ -252,29 +252,29 @@ subroutine particle_advance
                        om = azitrfm+pc_pi2
                     endif
 !-- 1-dir*v/c
-                    labfact = 1d0-(musrc*y+sqrt(1d0-musrc**2) * &
-                         cos(om)*rsrc)/pc_c
+                    labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
+                         cos(om)*x)/pc_c
                  endif
               endif
            else
               if(ptcl%itype==1) then
 !-- IMC -> DDMC
-                 grd_methodswap(zsrc,iy,1)=grd_methodswap(zsrc,iy,1)+1
+                 grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
               endif
            endif!}}}
 
 !-- 3D
         case(3)
-           lhelp = ((grd_sig(zsrc,iy,iz)+grd_cap(ig,zsrc,iy,iz)) * & !{{{
-                min(dx(zsrc),dy(iy),dz(iz))*help < prt_tauddmc) &
+           lhelp = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz)) * & !{{{
+                min(dx(ix),dy(iy),dz(iz))*help < prt_tauddmc) &
                 .or.in_puretran
            if (lhelp) then
               if (ptcl%itype == 2) then
 !-- DDMC -> IMC
-                 grd_methodswap(zsrc,iy,iz)=grd_methodswap(zsrc,iy,iz)+1
+                 grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- sampling position uniformly
                  r1 =  rand()
-                 rsrc = r1*grd_xarr(zsrc+1)+(1d0-r1)*grd_xarr(zsrc)
+                 x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
                  r1 = rand()
                  y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
                  r1 = rand()
@@ -283,30 +283,30 @@ subroutine particle_advance
                  r1 = rand()
                  om = pc_pi2*r1
                  r1 = rand()
-                 musrc = 1d0 - 2d0*r1
+                 mu = 1d0 - 2d0*r1
                  if(grd_isvelocity) then
 !-- 1+dir*v/c
-                    mu1 = sqrt(1d0-musrc**2)*cos(om)
-                    mu2 = sqrt(1d0-musrc**2)*sin(om)
-                    cmffact = 1d0+(musrc*z+mu1*rsrc+mu2*y)/pc_c
+                    mu1 = sqrt(1d0-mu**2)*cos(om)
+                    mu2 = sqrt(1d0-mu**2)*sin(om)
+                    cmffact = 1d0+(mu*z+mu1*x+mu2*y)/pc_c
 !-- mu
-                    musrc = (musrc+z/pc_c)/cmffact
-                    if(musrc>1d0) then
-                       musrc = 1d0
-                    elseif(musrc<-1d0) then
-                       musrc = -1d0
+                    mu = (mu+z/pc_c)/cmffact
+                    if(mu>1d0) then
+                       mu = 1d0
+                    elseif(mu<-1d0) then
+                       mu = -1d0
                     endif
 !-- om
-                    om = atan2(mu2+y/pc_c,mu1+rsrc/pc_c)
+                    om = atan2(mu2+y/pc_c,mu1+x/pc_c)
                     if(om<0d0) om = om+pc_pi2
 !-- 1-dir*v/c
-                    labfact = 1d0-(musrc*z+mu1*rsrc+mu2*y)/pc_c
+                    labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c
                  endif
               endif
            else
               if(ptcl%itype==1) then
 !-- IMC -> DDMC
-                 grd_methodswap(zsrc,iy,iz)=grd_methodswap(zsrc,iy,iz)+1
+                 grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
               endif
            endif!}}}
 
@@ -317,24 +317,24 @@ subroutine particle_advance
 !-- DDMC -> IMC
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
-              wlsrc = 1d0/(r1/grd_wl(ig+1)+(1d0-r1)/grd_wl(ig))
+              wl = 1d0/(r1/grd_wl(ig+1)+(1d0-r1)/grd_wl(ig))
               if(grd_isvelocity) then
 !-- velocity effects accounting
-                 tot_evelo=tot_evelo+esrc*(1d0-1d0/labfact)
+                 tot_evelo=tot_evelo+e*(1d0-1d0/labfact)
 !
-                 esrc = esrc/labfact
+                 e = e/labfact
                  ptcl%e0 = ptcl%e0/labfact
-                 wlsrc = wlsrc*labfact
+                 wl = wl*labfact
               endif
            endif
            ptcl%itype = 1
         else
            if(ptcl%itype==1.and.grd_isvelocity) then
 !-- IMC -> DDMC
-              tot_evelo = tot_evelo+esrc*(1d0-labfact)
-              esrc = esrc*labfact
+              tot_evelo = tot_evelo+e*(1d0-labfact)
+              e = e*labfact
               ptcl%e0 = ptcl%e0*labfact
-              wlsrc = wlsrc/labfact
+              wl = wl/labfact
            endif
            ptcl%itype = 2
         endif!}}}
@@ -343,25 +343,25 @@ subroutine particle_advance
 !-- looking up group
      if(ptcl%itype==1) then
         if(grd_isvelocity) then!{{{
-           ig = binsrch(wlsrc/labfact,grd_wl,grd_ng+1,in_ng)
+           ig = binsrch(wl/labfact,grd_wl,grd_ng+1,in_ng)
         else
-           ig = binsrch(wlsrc,grd_wl,grd_ng+1,in_ng)
+           ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)
         endif
         if(ig>grd_ng.or.ig<1) then
            !particle out of wlgrid energy bound
            if(ig>grd_ng) then
               ig=grd_ng
               if(grd_isvelocity) then
-                 wlsrc=grd_wl(grd_ng+1)*labfact
+                 wl=grd_wl(grd_ng+1)*labfact
               else
-                 wlsrc=grd_wl(grd_ng+1)
+                 wl=grd_wl(grd_ng+1)
               endif
            elseif(ig<1) then
               ig=1
               if(grd_isvelocity) then
-                 wlsrc=grd_wl(1)*labfact
+                 wl=grd_wl(1)*labfact
               else
-                 wlsrc=grd_wl(1)
+                 wl=grd_wl(1)
               endif
            else
               write(*,*) 'domain leak!!'
@@ -371,16 +371,16 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        ig = binsrch(wlsrc,grd_wl,grd_ng+1,in_ng)!{{{
+        ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)!{{{
         !
         if(ig>grd_ng.or.ig<1) then
            !particle out of wlgrid bound
            if(ig>grd_ng) then
               ig=grd_ng
-              wlsrc=grd_wl(grd_ng+1)
+              wl=grd_wl(grd_ng+1)
            elseif(ig<1) then
               ig=1
-              wlsrc=grd_wl(1)
+              wl=grd_wl(1)
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
@@ -396,13 +396,13 @@ subroutine particle_advance
         select case(in_igeom)
 !-- 1D
         case(1)
-           call advection1(.true.,ig,zsrc,rsrc)
+           call advection1(.true.,ig,ix,x)
 !-- 2D
         case(2)
-           call advection2(.true.,ig,zsrc,iy,rsrc,y)
+           call advection2(.true.,ig,ix,iy,x,y)
 !-- 3D
         case(3)
-           call advection3(.true.,ig,zsrc,iy,iz,rsrc,y,z)
+           call advection3(.true.,ig,ix,iy,iz,x,y,z)
         endselect
      endif
      endif
@@ -425,25 +425,25 @@ subroutine particle_advance
            endif
 !-- transformation factor
            if(grd_isvelocity .and. ptcl%itype==1) then
-              labfact = 1.0d0 - musrc*rsrc/pc_c
+              labfact = 1.0d0 - mu*x/pc_c
            else
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (esrc<1d-6*ptcl%e0 .and. .not.isvacant) then
+           if (e<1d-6*ptcl%e0 .and. .not.isvacant) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  isvacant = .true.
                  prt_done = .true.
-                 grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
+                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
 !-- velocity effects accounting
-                 if(ptcl%itype==1) tot_evelo = tot_evelo + esrc*(1d0-labfact)
+                 if(ptcl%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
               else
 !-- weight addition accounted for in external source
-                 tot_eext = tot_eext + esrc
+                 tot_eext = tot_eext + e
 !
-                 esrc = 2d0*esrc
+                 e = 2d0*e
                  ptcl%e0 = 2d0*ptcl%e0
               endif
            endif
@@ -461,26 +461,26 @@ subroutine particle_advance
            endif
 !-- transformation factor
            if(grd_isvelocity .and. ptcl%itype==1) then
-              labfact = 1d0-(musrc*y+sqrt(1d0-musrc**2) * &
-                   cos(om)*rsrc)/pc_c
+              labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
+                   cos(om)*x)/pc_c
            else
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (esrc<1d-6*ptcl%e0 .and. .not.isvacant) then
+           if (e<1d-6*ptcl%e0 .and. .not.isvacant) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  isvacant = .true.
                  prt_done = .true.
-                 grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
+                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
 !-- velocity effects accounting
-                 if(ptcl%itype==1) tot_evelo = tot_evelo + esrc*(1d0-labfact)
+                 if(ptcl%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
               else
 !-- weight addition accounted for in external source
-                 tot_eext = tot_eext + esrc
+                 tot_eext = tot_eext + e
 !
-                 esrc = 2d0*esrc
+                 e = 2d0*e
                  ptcl%e0 = 2d0*ptcl%e0
               endif
            endif
@@ -498,26 +498,26 @@ subroutine particle_advance
            endif
 !-- transformation factor
            if(grd_isvelocity .and. ptcl%itype==1) then
-              labfact = 1d0-(musrc*z+sqrt(1d0-musrc**2) * &
-                   (cos(om)*rsrc+sin(om)*y))/pc_c
+              labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &
+                   (cos(om)*x+sin(om)*y))/pc_c
            else
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (esrc<1d-6*ptcl%e0 .and. .not.isvacant) then
+           if (e<1d-6*ptcl%e0 .and. .not.isvacant) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  isvacant = .true.
                  prt_done = .true.
-                 grd_edep(zsrc,iy,iz) = grd_edep(zsrc,iy,iz) + esrc*labfact
+                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
 !-- velocity effects accounting
-                 if(ptcl%itype==1) tot_evelo = tot_evelo + esrc*(1d0-labfact)
+                 if(ptcl%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
               else
 !-- weight addition accounted for in external source
-                 tot_eext = tot_eext + esrc
+                 tot_eext = tot_eext + e
 !
-                 esrc = 2d0*esrc
+                 e = 2d0*e
                  ptcl%e0 = 2d0*ptcl%e0
               endif
            endif
@@ -533,13 +533,13 @@ subroutine particle_advance
      ! Redshifting DDMC particle energy weights and wavelengths
      if(ptcl%itype == 2.and.grd_isvelocity) then
 !-- redshifting energy weight!{{{
-        tot_evelo=tot_evelo+esrc*(1d0-exp(-tsp_dt/tsp_t))
-        esrc = esrc*exp(-tsp_dt/tsp_t)
+        tot_evelo=tot_evelo+e*(1d0-exp(-tsp_dt/tsp_t))
+        e = e*exp(-tsp_dt/tsp_t)
         ptcl%e0 = ptcl%e0*exp(-tsp_dt/tsp_t)
         !
 !
 !-- find group
-        ig = binsrch(wlsrc,grd_wl,grd_ng+1,in_ng)
+        ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)
         !
         if(ig>grd_ng.or.ig<1) then
            !particle out of wlgrid energy bound
@@ -554,13 +554,13 @@ subroutine particle_advance
         if(ig<grd_ng) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           x1 = grd_cap(ig,zsrc,iy,iz)
+           x1 = grd_cap(ig,ix,iy,iz)
            x2 = grd_wl(ig)/(pc_c*tsp_t*(grd_wl(ig+1)-grd_wl(ig)))
            if(r1<x2/(x1+x2)) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
-              wlsrc = 1d0/(r1/grd_wl(ig+1)+(1d0-r1)/grd_wl(ig))
-              wlsrc = wlsrc*exp(tsp_dt/tsp_t)
+              wl = 1d0/(r1/grd_wl(ig+1)+(1d0-r1)/grd_wl(ig))
+              wl = wl*exp(tsp_dt/tsp_t)
            endif
         endif
         !!}}}
@@ -571,25 +571,25 @@ subroutine particle_advance
      ! Looking up group
      if(ptcl%itype==1) then
         if(grd_isvelocity) then!{{{
-           ig = binsrch(wlsrc/labfact,grd_wl,grd_ng+1,in_ng)
+           ig = binsrch(wl/labfact,grd_wl,grd_ng+1,in_ng)
         else
-           ig = binsrch(wlsrc,grd_wl,grd_ng+1,in_ng)
+           ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)
         endif
         if(ig>grd_ng.or.ig<1) then
            !particle out of wlgrid energy bound
            if(ig>grd_ng) then
               ig=grd_ng
               if(grd_isvelocity) then
-                 wlsrc=grd_wl(grd_ng+1)*labfact
+                 wl=grd_wl(grd_ng+1)*labfact
               else
-                 wlsrc=grd_wl(grd_ng+1)
+                 wl=grd_wl(grd_ng+1)
               endif
            elseif(ig<1) then
               ig=1
               if(grd_isvelocity) then
-                 wlsrc=grd_wl(1)*labfact
+                 wl=grd_wl(1)*labfact
               else
-                 wlsrc=grd_wl(1)
+                 wl=grd_wl(1)
               endif
            else
               write(*,*) 'domain leak!!'
@@ -599,16 +599,16 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        ig = binsrch(wlsrc,grd_wl,grd_ng+1,in_ng)!{{{
+        ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)!{{{
         !
         if(ig>grd_ng.or.ig<1) then
            !particle out of wlgrid bound
            if(ig>grd_ng) then
               ig=grd_ng
-              wlsrc=grd_wl(grd_ng+1)
+              wl=grd_wl(grd_ng+1)
            elseif(ig<1) then
               ig=1
-              wlsrc=grd_wl(1)
+              wl=grd_wl(1)
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
@@ -623,13 +623,13 @@ subroutine particle_advance
         select case(in_igeom)
 !-- 1D
         case(1)
-           call advection1(.false.,ig,zsrc,rsrc)
+           call advection1(.false.,ig,ix,x)
 !-- 2D
         case(2)
-           call advection2(.false.,ig,zsrc,iy,rsrc,y)
+           call advection2(.false.,ig,ix,iy,x,y)
 !-- 3D
         case(3)
-           call advection3(.false.,ig,zsrc,iy,iz,rsrc,y,z)
+           call advection3(.false.,ig,ix,iy,iz,x,y,z)
         endselect
      endif
      endif
@@ -639,15 +639,15 @@ subroutine particle_advance
 !-- radiation energy at census
      if(grd_isvelocity) then
         if(ptcl%itype==2) then
-           tot_erad = tot_erad + esrc
+           tot_erad = tot_erad + e
         else
-           tot_erad = tot_erad + esrc !*(1d0-musrc*rsrc/pc_c)
+           tot_erad = tot_erad + e !*(1d0-mu*x/pc_c)
 !-- velocity effects accounting
-!           tot_evelo=tot_evelo+esrc*musrc*rsrc/pc_c
+!           tot_evelo=tot_evelo+e*mu*x/pc_c
 !
         endif
      else
-        tot_erad = tot_erad + esrc
+        tot_erad = tot_erad + e
      endif
 
      endif
@@ -670,16 +670,16 @@ subroutine particle_advance
 end subroutine particle_advance
 
 
-              !wlsrc = 0.5d0*(grd_wl(ig)+grd_wl(ig+1))
+              !wl = 0.5d0*(grd_wl(ig)+grd_wl(ig+1))
               !r1 = rand()
 !           prt_tlyrand = prt_tlyrand+1
-              !wlsrc=grd_wl(ig)*(1d0-r1)+grd_wl(ig+1)*r1
+              !wl=grd_wl(ig)*(1d0-r1)+grd_wl(ig+1)*r1
               !
 !               r1 = rand()
 !           prt_tlyrand = prt_tlyrand+1
-!               if(r1<grd_cap(ig,zsrc,1,1)/(grd_cap(ig,zsrc,1,1)+grd_sig(zsrc,1,1))) then
-!                  x1 = pc_h*pc_c/(grd_wl(ig+1)*pc_kb*grd_temp(zsrc,1,1))
-!                  x2 = pc_h*pc_c/(grd_wl(ig)*pc_kb*grd_temp(zsrc,1,1))
+!               if(r1<grd_cap(ig,ix,1,1)/(grd_cap(ig,ix,1,1)+grd_sig(ix,1,1))) then
+!                  x1 = pc_h*pc_c/(grd_wl(ig+1)*pc_kb*grd_temp(ix,1,1))
+!                  x2 = pc_h*pc_c/(grd_wl(ig)*pc_kb*grd_temp(ix,1,1))
 !                  if (x2<pc_plkpk) then
 !                     bmax = x2**3/(exp(x2)-1d0)
 !                  elseif (x1>pc_plkpk) then
@@ -699,5 +699,5 @@ end subroutine particle_advance
 !           prt_tlyrand = prt_tlyrand+1
 !                     xx0 = (1d0-r1)*x1+r1*x2
 !                  enddo
-!                  wlsrc = pc_h*pc_c/(xx0*pc_kb*grd_temp(zsrc,1,1))
+!                  wl = pc_h*pc_c/(xx0*pc_kb*grd_temp(ix,1,1))
 !               else

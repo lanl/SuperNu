@@ -44,7 +44,7 @@ c
 *     integer :: i,j,n,m
 *     character(300) :: line
 c
-      character(30) :: words(24)
+*     character(30) :: words(24)
 *     character(30),allocatable :: words(:)
       logical :: exists
       logical,save :: skipwarn=.false.

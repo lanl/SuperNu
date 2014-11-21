@@ -25,14 +25,14 @@ subroutine transport1_gamgrey(ptcl)
   real*8 :: dtinv
   real*8 :: help
 
-  integer,pointer :: z
+  integer,pointer :: ix
   real*8,pointer :: r, mu, E, E0
 !-- statement function
   integer :: l
   real*8 :: dx
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
 
-  z => ptcl%ix
+  ix => ptcl%ix
   r => ptcl%x
   mu => ptcl%mu
   E => ptcl%e
@@ -56,20 +56,21 @@ subroutine transport1_gamgrey(ptcl)
 !== DISTANCE CALCULATIONS
 !
 !-- distance to boundary = db
-  if (z == 1) then
-     db = abs(sqrt(grd_xarr(z+1)**2-(1.0-mu**2)*r**2)-mu*r)
-  elseif (mu < -sqrt(1.0d0-(grd_xarr(z)/r)**2)) then
-     db = abs(sqrt(grd_xarr(z)**2-(1.0d0-mu**2)*r**2)+mu*r)
+  if (ix == 1) then
+     db = abs(sqrt(grd_xarr(ix+1)**2-(1.0-mu**2)*r**2)-mu*r)
+  elseif (mu < -sqrt(1.0d0-(grd_xarr(ix)/r)**2)) then
+     db = abs(sqrt(grd_xarr(ix)**2-(1.0d0-mu**2)*r**2)+mu*r)
   else
-     db = abs(sqrt(grd_xarr(z+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
+     db = abs(sqrt(grd_xarr(ix+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
   endif
+  if(db/=db) stop 'transport1_gamgrey: db nan'
 !
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
-     if(grd_capgam(z,1,1)>0d0) then
+     if(grd_capgam(ix,1,1)>0d0) then
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        dcol = abs(log(r1)/(grd_capgam(z,1,1)*dcollabfact))
+        dcol = abs(log(r1)/(grd_capgam(ix,1,1)*dcollabfact))
      else
         dcol = 2d0*abs(pc_c*dt*thelpinv) !> dcen
      endif
@@ -85,7 +86,8 @@ subroutine transport1_gamgrey(ptcl)
 !
 !-- position, angle, time update  
   rold = r
-  r = sqrt((1.0d0-mu**2)*r**2+(d+r*mu)**2)
+  r = sqrt((1.0d0-mu**2)*r**2 + (d+r*mu)**2)
+! r = min(r,grd_xarr(grd_nx+1))
 !  r = sqrt(r**2+d**2+2d0*d*r*mu)
   muold = mu
   mu = (rold*mu+d)/r
@@ -99,10 +101,10 @@ subroutine transport1_gamgrey(ptcl)
   !calculating energy deposition and density
   !
   if(.not.prt_isimcanlog) then
-     grd_edep(z,1,1) = grd_edep(z,1,1)+E*(1.0d0-exp( &
-          -grd_capgam(z,1,1)*siglabfact*d*thelp))*elabfact
+     grd_edep(ix,1,1) = grd_edep(ix,1,1)+E*(1.0d0-exp( &
+          -grd_capgam(ix,1,1)*siglabfact*d*thelp))*elabfact
      !--
-     E = E*exp(-grd_capgam(z,1,1)*siglabfact*d*thelp)
+     E = E*exp(-grd_capgam(ix,1,1)*siglabfact*d*thelp)
 
   endif
 
@@ -119,7 +121,7 @@ subroutine transport1_gamgrey(ptcl)
      prt_tlyrand = prt_tlyrand+1
      if(r1<=1d0.and.prt_isimcanlog) then
         prt_done = .true.
-        grd_edep(z,1,1) = grd_edep(z,1,1) + E*elabfact
+        grd_edep(ix,1,1) = grd_edep(ix,1,1) + E*elabfact
 !-- velocity effects accounting
 !
      else
@@ -144,7 +146,7 @@ subroutine transport1_gamgrey(ptcl)
      !!}}}
   elseif (d == db) then   !------boundary crossing ----
      if (mu>=0.0d0) then!{{{
-        if (z == grd_nx) then
+        if (ix == grd_nx) then
            prt_done = .true.
 !
 !-- outbound luminosity tally
@@ -153,25 +155,17 @@ subroutine transport1_gamgrey(ptcl)
            flx_gamluminos(1,1) = flx_gamluminos(1,1)+E*dtinv
            flx_gamlumdev(1,1) = flx_gamlumdev(1,1)+(E*dtinv)**2
            flx_gamlumnum(1,1) = flx_gamlumnum(1,1)+1
-        ! Checking if DDMC region right
-           r1 = rand()
-           prt_tlyrand = prt_tlyrand+1
-           r2 = rand()
-           prt_tlyrand = prt_tlyrand+1
-           mu = -max(r1,r2)
-           if(grd_isvelocity) then
-              mu = (mu+r*cinv)/(1.0+r*mu*cinv)
-           endif
-        ! End of check
         else
-           z = z+1
-           r = grd_xarr(z)
+           ix = ix+1
+           r = grd_xarr(ix)
         endif
      else
-        if (z==1) then
-           z = z+1
+        if (ix==1) then
+           ix = ix+1
+           r = grd_xarr(ix)
         else
-           z = z-1
+           ix = ix-1
+           r = grd_xarr(ix)
         endif
      endif!}}}
   endif

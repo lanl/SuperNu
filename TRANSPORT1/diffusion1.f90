@@ -85,7 +85,6 @@ subroutine diffusion1(ptcl,isvacant)
      endif
   endif
 
-
 !-- lump testing ---------------------------------------------
 !
   glump = 0
@@ -234,7 +233,7 @@ subroutine diffusion1(ptcl,isvacant)
      else
         grd_eraddens(z,1,1) = grd_eraddens(z,1,1)+E*ddmct*dtinv
      endif
-     E=E*exp(-grd_fcoef(z,1,1)*caplump*pc_c*ddmct)
+     E = E*exp(-grd_fcoef(z,1,1)*caplump*pc_c*ddmct)
 !!}}}
   endif
 
@@ -590,7 +589,7 @@ subroutine diffusion1(ptcl,isvacant)
            wl = wl*(1.0-r*mu*cinv)
         endif
      endif
-
-  endif!}}}
+!}}}
+  endif
 
 end subroutine diffusion1
