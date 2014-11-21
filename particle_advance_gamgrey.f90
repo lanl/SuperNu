@@ -20,7 +20,7 @@ subroutine particle_advance_gamgrey
   real*8 :: r1
   integer :: i, j, k
   integer,pointer :: ix, iy, iz
-  real*8,pointer :: e,x
+  real*8,pointer :: e,x,y
   real*8 :: t0,t1  !timing
   real*8 :: labfact, cmffact, azitrfm, mu1, mu2
   real*8 :: esq
@@ -58,6 +58,7 @@ subroutine particle_advance_gamgrey
   iz => ptcl%iz
   e => ptcl%e
   x => ptcl%x
+  y => ptcl%y
 
 !-- unused
 !    real*8 :: tsrc
@@ -241,9 +242,15 @@ subroutine particle_advance_gamgrey
         do while (.not.prt_done)!{{{
            call transport2_gamgrey(ptcl)
 !-- verify position
-           if(.not.prt_done .and. (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
-              write(0,*) 'prt_adv_ggrey: not in cell', &
-                 ix,x,grd_xarr(ix),grd_xarr(ix+1),ptcl%mu
+           if(.not.prt_done) then
+              if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
+                write(0,*) 'prt_adv_ggrey: r not in cell', &
+                   ix,x,grd_xarr(ix),grd_xarr(ix+1),ptcl%mu
+              endif
+              if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
+                write(0,*) 'prt_adv_ggrey: r not in cell', &
+                   iy,y,grd_yarr(iy),grd_yarr(iy+1),ptcl%mu
+              endif
            endif
 !-- transformation factor
            if(grd_isvelocity) then
