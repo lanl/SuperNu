@@ -91,13 +91,13 @@ subroutine transport2_gamgrey(ptcl)
      if(dbz<0d0) then
         stop 'upward dbz'
      if((grd_yarr(zz)-z)/xi>0d0) stop &
-          'transport2: z below cell'
+          'transport2_gamgrey: z below cell'
      endif
   elseif(xi<0d0) then
      dbz = (grd_yarr(zz)-z)/xi
      if(dbz<0d0) stop 'downward dbz'
      if((grd_yarr(zz+1)-z)/xi>0d0) stop &
-          'transport2: z above cell'
+          'transport2_gamgrey: z above cell'
   else
 !-- making greater than dcen
      dbz = 2d0*pc_c*tsp_dt*thelpinv

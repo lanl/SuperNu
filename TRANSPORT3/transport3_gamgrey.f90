@@ -69,21 +69,21 @@ subroutine transport3_gamgrey(ptcl)
      dbx = 2d0*pc_c*tsp_dt*thelpinv
   else
      if((grd_xarr(ix)-x)/mu>0d0.and.(grd_xarr(ix+1)-x)/mu>0d0) stop &
-          'transport3: x val out of cell'
+          'transport3_gamgrey: x val out of cell'
      dbx = max((grd_xarr(ix)-x)/mu,(grd_xarr(ix+1)-x)/mu)
   endif
   if(eta==0d0) then
      dby = 2d0*pc_c*tsp_dt*thelpinv
   else
      if((grd_yarr(iy)-y)/eta>0d0.and.(grd_yarr(iy+1)-y)/eta>0d0) stop &
-          'transport3: y val out of cell'
+          'transport3_gamgrey: y val out of cell'
      dby = max((grd_yarr(iy)-y)/eta,(grd_yarr(iy+1)-y)/eta)
   endif
   if(xi==0d0) then
      dbz = 2d0*pc_c*tsp_dt*thelpinv
   else
      if((grd_zarr(iz)-z)/xi>0d0.and.(grd_zarr(iz+1)-z)/xi>0d0) stop &
-          'transport3: z val out of cell'
+          'transport3_gamgrey: z val out of cell'
      dbz = max((grd_zarr(iz)-z)/xi,(grd_zarr(iz+1)-z)/xi)
   endif
 !
