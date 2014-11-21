@@ -63,6 +63,8 @@ subroutine transport1_gamgrey(ptcl)
   else
      db = abs(sqrt(grd_xarr(ix+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
   endif
+!-- sanity check
+  if(db/=db) stop 'transport1_gamgrey: db/=db'
 !
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
@@ -86,7 +88,6 @@ subroutine transport1_gamgrey(ptcl)
 !-- position, angle, time update  
   rold = r
   r = sqrt((1.0d0-mu**2)*r**2 + (d+r*mu)**2)
-! r = min(r,grd_xarr(grd_nx+1))
 !  r = sqrt(r**2+d**2+2d0*d*r*mu)
   muold = mu
   mu = (rold*mu+d)/r
@@ -155,13 +156,15 @@ subroutine transport1_gamgrey(ptcl)
            flx_gamlumdev(1,1) = flx_gamlumdev(1,1)+(E*dtinv)**2
            flx_gamlumnum(1,1) = flx_gamlumnum(1,1)+1
         else
+           r = grd_xarr(ix+1)
            ix = ix+1
-           r = grd_xarr(ix)
         endif
      else
         if (ix==1) then
+           r = grd_xarr(ix+1)
            ix = ix+1
         else
+           r = grd_xarr(ix)
            ix = ix-1
         endif
      endif!}}}

@@ -97,7 +97,8 @@ subroutine transport1(ptcl,isvacant)
   else
      db = abs(sqrt(grd_xarr(ix+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
   endif
-  if(db/=db) stop 'transport1: db nan'
+!-- sanity check
+  if(db/=db) stop 'transport1: db/=db'
 !
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
@@ -131,7 +132,7 @@ subroutine transport1(ptcl,isvacant)
   dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%t)*thelpinv)
 !
 !-- distance to Doppler shift = ddop
-   if(grd_isvelocity.and.g<grd_ng) then
+  if(grd_isvelocity.and.g<grd_ng) then
 !      r1 = rand()
 !      prt_tlyrand=prt_tlyrand+1
 !      ddop = pc_c*tsp_t*(grd_wl(g+1)-grd_wl(g))*abs(log(r1))/(grd_wl(g)*dcollabfact)
@@ -157,6 +158,7 @@ subroutine transport1(ptcl,isvacant)
   rold = r
   r = sqrt((1.0d0-mu**2)*r**2+(d+r*mu)**2)
 !  r = sqrt(r**2+d**2+2d0*d*r*mu)
+!
   told = ptcl%t
   ptcl%t = ptcl%t + thelp*d*cinv
   muold = mu
@@ -415,11 +417,12 @@ subroutine transport1(ptcl,isvacant)
               if(grd_isvelocity) then
                  mu = (mu+r*cinv)/(1.0+r*mu*cinv)
               endif
+              r = grd_xarr(ix+1)
            endif
         ! End of check
         else
+           r = grd_xarr(ix+1)
            ix = ix+1
-           r = grd_xarr(ix)
         endif
      else
         if (ix==1) then
@@ -455,10 +458,11 @@ subroutine transport1(ptcl,isvacant)
                  if(grd_isvelocity) then
                     mu = (mu+r*cinv)/(1.0+r*mu*cinv)
                  endif
+                 r = grd_xarr(ix+1)
               endif
            else
+              r = grd_xarr(ix+1)
               ix = ix+1
-              r = grd_xarr(ix)
            endif
         elseif (((grd_sig(ix-1,1,1)+grd_cap(g,ix-1,1,1))*dx(ix-1) &
              *thelp >= prt_tauddmc) &
@@ -497,7 +501,6 @@ subroutine transport1(ptcl,isvacant)
                  wl = wl/elabfact
               endif
               ix = ix-1
-              r = grd_xarr(ix+1)
            else
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
@@ -507,11 +510,12 @@ subroutine transport1(ptcl,isvacant)
               if(grd_isvelocity) then
                  mu = (mu+r*cinv)/(1.0+r*mu*cinv)
               endif
+              r = grd_xarr(ix)
            endif
         ! End of check
         else
+           r = grd_xarr(ix)
            ix = ix-1
-           r = grd_xarr(ix+1)
         endif
      endif!}}}
   elseif (d == dcen) then
@@ -520,5 +524,9 @@ subroutine transport1(ptcl,isvacant)
 !     tot_erad = tot_erad + E*elabfact
 !
   endif
+
+if(.not.prt_done .and. ptcl%itype==1 .and. (r>grd_xarr(ix+1) .or. r<grd_xarr(ix))) &
+   write(0,*) 'tr1',ix,r,grd_xarr(ix),grd_xarr(ix+1),mu,&
+   d,dcol,dthm,db,dcen,ddop
 
 end subroutine transport1

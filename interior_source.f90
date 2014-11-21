@@ -113,6 +113,9 @@ subroutine interior_source
         prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(i+1))
+        ptcl%x = max(ptcl%x,grd_xarr(i))
 !-- setting IMC logical
         lhelp = ((grd_sig(i,1,1)+grd_cap(iig,i,1,1))*dx(i)* &
              thelp < prt_tauddmc).or.(in_puretran)
@@ -139,6 +142,9 @@ subroutine interior_source
         r1 = rand()
         ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
              grd_yarr(j)
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(i+1))
+        ptcl%x = max(ptcl%x,grd_xarr(i))
 !-- sampling azimuthal angle of direction
         r1 = rand()
         om0 = pc_pi2*r1

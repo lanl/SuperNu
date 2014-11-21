@@ -20,7 +20,7 @@ subroutine particle_advance_gamgrey
   real*8 :: r1
   integer :: i, j, k
   integer,pointer :: ix, iy, iz
-  real*8,pointer :: e
+  real*8,pointer :: e,x
   real*8 :: t0,t1  !timing
   real*8 :: labfact, cmffact, azitrfm, mu1, mu2
   real*8 :: esq
@@ -57,6 +57,7 @@ subroutine particle_advance_gamgrey
   iy => ptcl%iy
   iz => ptcl%iz
   e => ptcl%e
+  x => ptcl%x
 
 !-- unused
 !    real*8 :: tsrc
@@ -107,6 +108,9 @@ subroutine particle_advance_gamgrey
         prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(ix+1)**3 + &
              (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(ix+1))
+        ptcl%x = max(ptcl%x,grd_xarr(ix))
 !--
         if(grd_isvelocity) then
            x0 = ptcl%x
@@ -120,6 +124,10 @@ subroutine particle_advance_gamgrey
         r1 = rand()
         ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + &
              (1d0-r1)*grd_xarr(i)**2)
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(ix+1))
+        ptcl%x = max(ptcl%x,grd_xarr(ix))
+!
         r1 = rand()
         ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
              grd_yarr(j)
@@ -205,6 +213,11 @@ subroutine particle_advance_gamgrey
      case(1)
         do while (.not.prt_done)!{{{
            call transport1_gamgrey(ptcl)
+!-- verify position
+           if(.not.prt_done .and. (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
+              write(0,*) 'prt_adv_ggrey: not in cell', &
+                 ix,x,grd_xarr(ix),grd_xarr(ix+1),ptcl%mu
+           endif
 !-- transformation factor
            if(grd_isvelocity) then
               labfact = 1.0d0 - ptcl%mu*ptcl%x/pc_c

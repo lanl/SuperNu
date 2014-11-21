@@ -192,6 +192,9 @@ subroutine particle_advance
                  prt_tlyrand = prt_tlyrand+1
                  x = (r1*grd_xarr(ix+1)**3 + &
                       (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
+!-- must be inside cell
+                 x = min(x,grd_xarr(ix+1))
+                 x = max(x,grd_xarr(ix))
 !-- sampling angle isotropically
                  r1 = rand()
                  prt_tlyrand = prt_tlyrand+1
@@ -225,6 +228,9 @@ subroutine particle_advance
                  r1 =  rand()
                  x = sqrt(r1*grd_xarr(ix+1)**2 + &
                       (1d0-r1)*grd_xarr(ix)**2)
+!-- must be inside cell
+                 x = min(x,grd_xarr(ix+1))
+                 x = max(x,grd_xarr(ix))
                  r1 = rand()
                  y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
 !-- sampling direction values
@@ -422,6 +428,11 @@ subroutine particle_advance
            else
               nddmc = nddmc + 1
               call diffusion1(ptcl,isvacant)
+           endif
+!-- verify position
+           if(ptcl%itype==1 .and. .not.prt_done .and. &
+                  (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
+              write(0,*) 'prt_adv: not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
            endif
 !-- transformation factor
            if(grd_isvelocity .and. ptcl%itype==1) then

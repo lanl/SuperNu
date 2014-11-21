@@ -574,9 +574,12 @@ subroutine diffusion1(ptcl,isvacant)
         prt_tlyrand = prt_tlyrand+1
         mu = 1.0-2.0*r1
 !-- position sampled uniformly
-         r1 = rand()
-         prt_tlyrand = prt_tlyrand+1
-         r = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        r = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
+!-- must be inside cell
+        r = min(r,grd_xarr(ix+1))
+        r = max(r,grd_xarr(ix))
 !-- doppler and aberration corrections
         if(grd_isvelocity) then
            mu = (mu+r*cinv)/(1.0+r*mu*cinv)
