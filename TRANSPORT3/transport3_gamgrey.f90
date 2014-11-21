@@ -216,48 +216,39 @@ subroutine transport3_gamgrey(ptcl)
 
      if(mu>=0d0) then
         ihelp = 1
+        x = grd_xarr(ix+1)
      else
         ihelp = -1
+        x = grd_xarr(ix)
      endif
 !-- IMC in adjacent cell
      ix = ix+ihelp
-     if(ihelp==1) then
-        x = grd_xarr(ix)
-     else
-        x = grd_xarr(ix+1)
-     endif
 !
 !-- y-bound
   elseif(d==dby) then
 
      if(eta>=0d0) then
         ihelp = 1
+        y = grd_yarr(iy+1)
      else
         ihelp = -1
+        y = grd_yarr(iy)
      endif
 !-- IMC in adjacent cell
      iy = iy+ihelp
-     if(ihelp==1) then
-        y = grd_yarr(iy)
-     else
-        y = grd_yarr(iy+1)
-     endif
 !
 !-- z-bound
   elseif(d==dbz) then
 
      if(xi>=0d0) then
         ihelp = 1
+        z = grd_zarr(iz+1)
      else
         ihelp = -1
+        z = grd_zarr(iz)
      endif
 !-- IMC in adjacent cell
      iz = iz+ihelp
-     if(ihelp==1) then
-        z = grd_zarr(iz)
-     else
-        z = grd_zarr(iz+1)
-     endif
   else
      stop 'transport3_gamgrey: invalid distance'
   endif

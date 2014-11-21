@@ -315,8 +315,10 @@ subroutine transport3(ptcl,isvacant)
 
      if(mu>=0d0) then
         ihelp = 1
+        x = grd_xarr(ix+1)
      else
         ihelp = -1
+        x = grd_xarr(ix)
      endif
 
      if((grd_cap(ig,ix+ihelp,iy,iz)+grd_sig(ix+ihelp,iy,iz)) * &
@@ -324,11 +326,6 @@ subroutine transport3(ptcl,isvacant)
           .or.in_puretran) then
 !-- IMC in adjacent cell
         ix = ix+ihelp
-        if(ihelp==1) then
-           x = grd_xarr(ix)
-        else
-           x = grd_xarr(ix+1)
-        endif
      else
 !-- DDMC in adjacent cell
         if(grd_isvelocity) then
@@ -386,8 +383,10 @@ subroutine transport3(ptcl,isvacant)
 
      if(eta>=0d0) then
         ihelp = 1
+        y = grd_yarr(iy+1)
      else
         ihelp = -1
+        y = grd_yarr(iy)
      endif
 
      if((grd_cap(ig,ix,iy+ihelp,iz)+grd_sig(ix,iy+ihelp,iz)) * &
@@ -395,11 +394,6 @@ subroutine transport3(ptcl,isvacant)
           .or.in_puretran) then
 !-- IMC in adjacent cell
         iy = iy+ihelp
-        if(ihelp==1) then
-           y = grd_yarr(iy)
-        else
-           y = grd_yarr(iy+1)
-        endif
      else
 !-- DDMC in adjacent cell
         if(grd_isvelocity) then
@@ -457,8 +451,10 @@ subroutine transport3(ptcl,isvacant)
 
      if(xi>=0d0) then
         ihelp = 1
+        z = grd_zarr(iz+1)
      else
         ihelp = -1
+        z = grd_zarr(iz)
      endif
 
      if((grd_cap(ig,ix,iy,iz+ihelp)+grd_sig(ix,iy,iz+ihelp)) * &
@@ -466,11 +462,6 @@ subroutine transport3(ptcl,isvacant)
           .or.in_puretran) then
 !-- IMC in adjacent cell
         iz = iz+ihelp
-        if(ihelp==1) then
-           z = grd_zarr(iz)
-        else
-           z = grd_zarr(iz+1)
-        endif
      else
 !-- DDMC in adjacent cell
         if(grd_isvelocity) then
