@@ -471,9 +471,13 @@ subroutine particle_advance
               call diffusion2(ptcl,isvacant)
            endif
 !-- verify position
-           if(ptcl%itype==1 .and. .not.prt_done .and. &
-                  (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
-              write(0,*) 'prt_adv: not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
+           if(ptcl%itype==1 .and. .not.prt_done) then
+              if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
+                 write(0,*) 'prt_adv: r not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
+              endif
+              if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
+                 write(0,*) 'prt_adv: z not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
+              endif
            endif
 !-- transformation factor
            if(grd_isvelocity .and. ptcl%itype==1) then

@@ -89,10 +89,6 @@ subroutine transport2(ptcl,isvacant)
 !-- inner boundary
         dbr = abs(r*cos(om)/sqrt(1d0-xi**2) &
              +sqrt(((cos(om)*r)**2-r**2+grd_xarr(zr)**2)/(1d0-xi**2)))
-        if(dbr/=dbr) then
-           write(*,*) ((cos(om)*r)**2-r**2+grd_xarr(zr)**2)/(1d0-xi**2)
-           stop 'transport2: invalid inner dbr'
-        endif
      elseif(abs(grd_xarr(zr+1)-r)<1d-15*r .and. cos(om)>0d0) then
 !-- on outer boundary moving out
         dbr = 0d0
@@ -100,10 +96,6 @@ subroutine transport2(ptcl,isvacant)
 !-- outer boundary
         dbr = -r*cos(om)/sqrt(1d0-xi**2) &
              + sqrt(((cos(om)*r)**2 + grd_xarr(zr+1)**2-r**2)/(1d0-xi**2))
-        if(dbr/=dbr) then
-           write(*,*) ((cos(om)*r)**2-r**2+grd_xarr(zr+1)**2)/(1d0-xi**2)
-           stop 'transport2: invalid outer dbr'
-        endif
      endif
   endif
   if(dbr/=dbr) stop 'transport2: dbr nan'
@@ -111,17 +103,8 @@ subroutine transport2(ptcl,isvacant)
 !-- to z-bound
   if(xi>0d0) then
      dbz = (grd_yarr(zz+1)-z)/xi
-     if(dbz<0d0) then
-        write(*,*) zz, grd_yarr(zz+1), z, xi
-        stop 'upward dbz'
-     endif
-     if((grd_yarr(zz)-z)/xi>0d0) stop &
-          'transport2: z below cell'
   elseif(xi<0d0) then
      dbz = (grd_yarr(zz)-z)/xi
-     if(dbz<0d0) stop 'downward dbz'
-     if((grd_yarr(zz+1)-z)/xi>0d0) stop &
-          'transport2: z above cell'
   else
 !-- making greater than dcen
      dbz = 2d0*pc_c*tsp_dt*thelpinv
@@ -443,11 +426,13 @@ subroutine transport2(ptcl,isvacant)
                     om = azidotu
                  endif
               endif
+!-- fix position at boundary
+              z = grd_yarr(zz+1)
            endif
         else
 !-- IMC in upper cell
+           z = grd_yarr(zz+1)
            zz = zz+1
-           z = grd_yarr(zz)
         endif
 !-- xi<0
      else
@@ -526,11 +511,13 @@ subroutine transport2(ptcl,isvacant)
                     om = azidotu
                  endif
               endif
+!-- fix position at boundary
+              z = grd_yarr(zz)
            endif
         else
 !-- IMC in lower cell
+           z = grd_yarr(zz)
            zz = zz-1
-           z = grd_yarr(zz+1)
         endif
      endif
 
