@@ -40,7 +40,7 @@ subroutine diffusion1(ptcl,isvacant)
   real*8 :: dtinv,capinv(grd_ng)
   real*8 :: help
 
-  integer,pointer :: z
+  integer,pointer :: ix
   real*8,pointer :: r, mu, E, E0, wl
 !-- statement function
   integer :: l
@@ -48,7 +48,7 @@ subroutine diffusion1(ptcl,isvacant)
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dx3(l) = grd_xarr(l+1)**3 - grd_xarr(l)**3
 
-  z => ptcl%ix
+  ix => ptcl%ix
   r => ptcl%x
   mu => ptcl%mu
   E => ptcl%e
@@ -59,7 +59,7 @@ subroutine diffusion1(ptcl,isvacant)
 !
 !-- shortcut
   dtinv = 1d0/tsp_dt
-  capinv = 1d0/grd_cap(:,z,1,1)
+  capinv = 1d0/grd_cap(:,ix,1,1)
 
 !
 !-- set expansion helper
@@ -92,9 +92,9 @@ subroutine diffusion1(ptcl,isvacant)
   glumps = 0
 !
 !-- find lumpable groups
-  if(grd_cap(g,z,1,1)*dx(z)*thelp>=prt_taulump) then
+  if(grd_cap(g,ix,1,1)*dx(ix)*thelp>=prt_taulump) then
      do ig = 1, g-1
-        if(grd_cap(ig,z,1,1)*dx(z) &
+        if(grd_cap(ig,ix,1,1)*dx(ix) &
              *thelp >= prt_taulump) then
            glump=glump+1
            glumps(glump)=ig
@@ -104,7 +104,7 @@ subroutine diffusion1(ptcl,isvacant)
         endif
      enddo
      do ig = g, grd_ng
-        if(grd_cap(ig,z,1,1)*dx(z) &
+        if(grd_cap(ig,ix,1,1)*dx(ix) &
              *thelp >= prt_taulump) then
            glump=glump+1
            glumps(glump)=ig
@@ -129,7 +129,7 @@ subroutine diffusion1(ptcl,isvacant)
   speclump = 0d0
   do ig = 1, glump
      iig = glumps(ig)
-     specig = grd_capgrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
+     specig = grd_capgrey(ix,1,1)*grd_emitprob(iig,ix,1,1)*capinv(iig)
      speclump = speclump+specig
   enddo
   if(speclump>0d0.and.glump>1) then
@@ -145,58 +145,58 @@ subroutine diffusion1(ptcl,isvacant)
 !-- calculating lumped values
      do ig = 1, glump
         iig = glumps(ig)
-        specig = grd_capgrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
+        specig = grd_capgrey(ix,1,1)*grd_emitprob(iig,ix,1,1)*capinv(iig)
 !-- emission lump
-        emitlump = emitlump+grd_emitprob(iig,z,1,1)
+        emitlump = emitlump+grd_emitprob(iig,ix,1,1)
 !-- Planck x-section lump
-        caplump = caplump+specig*grd_cap(iig,z,1,1)*speclump
+        caplump = caplump+specig*grd_cap(iig,ix,1,1)*speclump
      enddo
 !-- leakage opacities
-     opacleakllump = grd_opacleak(1,z,1,1)
-     opacleakrlump = grd_opacleak(2,z,1,1)
+     opacleakllump = grd_opacleak(1,ix,1,1)
+     opacleakrlump = grd_opacleak(2,ix,1,1)
   else
 !
 !-- calculating unlumped values
-     emitlump = grd_emitprob(g,z,1,1)
-     caplump = grd_cap(g,z,1,1)
+     emitlump = grd_emitprob(g,ix,1,1)
+     caplump = grd_cap(g,ix,1,1)
 !-- inward
-     if(z==1) then
+     if(ix==1) then
         opacleakllump = 0d0
-     elseif((grd_cap(g,z-1,1,1)+ &
-          grd_sig(z-1,1,1))*dx(z-1)*thelp<prt_tauddmc) then
+     elseif((grd_cap(g,ix-1,1,1)+ &
+          grd_sig(ix-1,1,1))*dx(ix-1)*thelp<prt_tauddmc) then
 !-- DDMC interface
-        mfphelp = (grd_cap(g,z,1,1)+grd_sig(z,1,1))*dx(z)*thelp
+        mfphelp = (grd_cap(g,ix,1,1)+grd_sig(ix,1,1))*dx(ix)*thelp
         ppl = 4d0/(3d0*mfphelp+6d0*pc_dext)
-        opacleakllump= 1.5d0*ppl*(thelp*grd_xarr(z))**2/ &
-             (thelp**3*dx3(z))
+        opacleakllump= 1.5d0*ppl*(thelp*grd_xarr(ix))**2/ &
+             (thelp**3*dx3(ix))
      else
 !-- DDMC interior
-        mfphelp = ((grd_sig(z,1,1)+grd_cap(g,z,1,1))*dx(z)+&
-             (grd_sig(z-1,1,1)+grd_cap(g,z-1,1,1))*dx(z-1))*thelp
-        opacleakllump=2.0d0*(thelp*grd_xarr(z))**2/ &
-             (mfphelp*thelp**3*dx3(z))
+        mfphelp = ((grd_sig(ix,1,1)+grd_cap(g,ix,1,1))*dx(ix)+&
+             (grd_sig(ix-1,1,1)+grd_cap(g,ix-1,1,1))*dx(ix-1))*thelp
+        opacleakllump=2.0d0*(thelp*grd_xarr(ix))**2/ &
+             (mfphelp*thelp**3*dx3(ix))
      endif
 !
 !-- outward
-     if(z==grd_nx) then
+     if(ix==grd_nx) then
         lhelp = .true.
      else
-        lhelp = (grd_cap(g,z+1,1,1)+ &
-           grd_sig(z+1,1,1))*dx(z+1)*thelp<prt_tauddmc
+        lhelp = (grd_cap(g,ix+1,1,1)+ &
+           grd_sig(ix+1,1,1))*dx(ix+1)*thelp<prt_tauddmc
      endif
 !
      if(lhelp) then
 !-- DDMC interface
-        mfphelp = (grd_cap(g,z,1,1)+grd_sig(z,1,1))*dx(z)*thelp
+        mfphelp = (grd_cap(g,ix,1,1)+grd_sig(ix,1,1))*dx(ix)*thelp
         ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
-        opacleakrlump=1.5d0*ppr*(thelp*grd_xarr(z+1))**2/ &
-             (thelp**3*dx3(z))
+        opacleakrlump=1.5d0*ppr*(thelp*grd_xarr(ix+1))**2/ &
+             (thelp**3*dx3(ix))
      else
 !-- DDMC interior
-        mfphelp = ((grd_sig(z,1,1)+grd_cap(g,z,1,1))*dx(z)+&
-             (grd_sig(z+1,1,1)+grd_cap(g,z+1,1,1))*dx(z+1))*thelp
-        opacleakrlump=2.0d0*(thelp*grd_xarr(z+1))**2/ &
-             (mfphelp*thelp**3*dx3(z))
+        mfphelp = ((grd_sig(ix,1,1)+grd_cap(g,ix,1,1))*dx(ix)+&
+             (grd_sig(ix+1,1,1)+grd_cap(g,ix+1,1,1))*dx(ix+1))*thelp
+        opacleakrlump=2.0d0*(thelp*grd_xarr(ix+1))**2/ &
+             (mfphelp*thelp**3*dx3(ix))
      endif
   endif
 !
@@ -205,9 +205,9 @@ subroutine diffusion1(ptcl,isvacant)
 
 !-- calculate time to census or event
   denom = opacleakllump+opacleakrlump+&
-       (1d0-alpeff)*(1d0-emitlump)*(1d0-grd_fcoef(z,1,1))*caplump
+       (1d0-alpeff)*(1d0-emitlump)*(1d0-grd_fcoef(ix,1,1))*caplump
   if(prt_isddmcanlog) then
-     denom = denom+grd_fcoef(z,1,1)*caplump
+     denom = denom+grd_fcoef(ix,1,1)*caplump
   endif
 
   r1 = rand()
@@ -219,21 +219,21 @@ subroutine diffusion1(ptcl,isvacant)
 !-- calculating energy depostion and density
   !
   if(prt_isddmcanlog) then
-     grd_eraddens(z,1,1)= grd_eraddens(z,1,1)+E*ddmct*dtinv
+     grd_eraddens(ix,1,1)= grd_eraddens(ix,1,1)+E*ddmct*dtinv
   else
-     grd_edep(z,1,1) = grd_edep(z,1,1)+E*(1d0-exp(-grd_fcoef(z,1,1) &!{{{
+     grd_edep(ix,1,1) = grd_edep(ix,1,1)+E*(1d0-exp(-grd_fcoef(ix,1,1) &!{{{
           *caplump*pc_c*ddmct))
 !--
-     if(grd_fcoef(z,1,1)*caplump*dx(z)*thelp>1d-6) then
-        help = 1d0/(grd_fcoef(z,1,1)*caplump)
-        grd_eraddens(z,1,1)= &
-             grd_eraddens(z,1,1)+E* &
-             (1d0-exp(-grd_fcoef(z,1,1)*caplump*pc_c*ddmct))* &
+     if(grd_fcoef(ix,1,1)*caplump*dx(ix)*thelp>1d-6) then
+        help = 1d0/(grd_fcoef(ix,1,1)*caplump)
+        grd_eraddens(ix,1,1)= &
+             grd_eraddens(ix,1,1)+E* &
+             (1d0-exp(-grd_fcoef(ix,1,1)*caplump*pc_c*ddmct))* &
              help*cinv*dtinv
      else
-        grd_eraddens(z,1,1) = grd_eraddens(z,1,1)+E*ddmct*dtinv
+        grd_eraddens(ix,1,1) = grd_eraddens(ix,1,1)+E*ddmct*dtinv
      endif
-     E = E*exp(-grd_fcoef(z,1,1)*caplump*pc_c*ddmct)
+     E = E*exp(-grd_fcoef(ix,1,1)*caplump*pc_c*ddmct)
 !!}}}
   endif
 
@@ -248,7 +248,7 @@ subroutine diffusion1(ptcl,isvacant)
 !-- check for census
   if (ddmct /= tau) then
      prt_done = .true.
-     grd_numcensus(z,1,1)=grd_numcensus(z,1,1)+1
+     grd_numcensus(ix,1,1)=grd_numcensus(ix,1,1)+1
      return
   endif
 
@@ -265,7 +265,7 @@ subroutine diffusion1(ptcl,isvacant)
 
 !-- absorption probability
   if(prt_isddmcanlog) then
-     PA = grd_fcoef(z,1,1)*caplump*help
+     PA = grd_fcoef(ix,1,1)*caplump*help
   else
      PA = 0d0
   endif
@@ -274,14 +274,14 @@ subroutine diffusion1(ptcl,isvacant)
   if(r1>=0d0 .and. r1<PA) then
      isvacant = .true.
      prt_done = .true.
-     grd_edep(z,1,1) = grd_edep(z,1,1)+E
+     grd_edep(ix,1,1) = grd_edep(ix,1,1)+E
 
 
 !-- left leakage sample
   elseif (r1>=PA .and. r1<PA+PL) then
 !{{{
 !-- checking if at inner bound
-     if (z == 1) then
+     if (ix == 1) then
         stop 'diffusion1: non-physical inward leakage'
 
 !-- sample adjacent group (assumes aligned g bounds)
@@ -294,21 +294,21 @@ subroutine diffusion1(ptcl,isvacant)
            help = 1d0/opacleakllump
            do ig= 1, glump
               iig = glumps(ig)
-              specig = grd_capgrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
+              specig = grd_capgrey(ix,1,1)*grd_emitprob(iig,ix,1,1)*capinv(iig)
 !-- calculating resolved leakage opacities
-              if((grd_cap(iig,z-1,1,1)+ &
-                   grd_sig(z-1,1,1))*dx(z-1)*thelp<prt_tauddmc) then
+              if((grd_cap(iig,ix-1,1,1)+ &
+                   grd_sig(ix-1,1,1))*dx(ix-1)*thelp<prt_tauddmc) then
 !-- DDMC interface
-                 mfphelp = (grd_cap(iig,z,1,1)+grd_sig(z,1,1))*dx(z)*thelp
+                 mfphelp = (grd_cap(iig,ix,1,1)+grd_sig(ix,1,1))*dx(ix)*thelp
                  ppl = 4d0/(3d0*mfphelp+6d0*pc_dext)
-                 resopacleakl = 1.5d0*ppl*(thelp*grd_xarr(z))**2/ &
-                      (thelp**3*dx3(z))
+                 resopacleakl = 1.5d0*ppl*(thelp*grd_xarr(ix))**2/ &
+                      (thelp**3*dx3(ix))
               else
 !-- IMC interface
-                 mfphelp = ((grd_sig(z,1,1)+grd_cap(iig,z,1,1))*dx(z)+&
-                      (grd_sig(z-1,1,1)+grd_cap(iig,z-1,1,1))*dx(z-1))*thelp
-                 resopacleakl = 2.0d0*(thelp*grd_xarr(z))**2/ &
-                      (mfphelp*thelp**3*dx3(z))
+                 mfphelp = ((grd_sig(ix,1,1)+grd_cap(iig,ix,1,1))*dx(ix)+&
+                      (grd_sig(ix-1,1,1)+grd_cap(iig,ix-1,1,1))*dx(ix-1))*thelp
+                 resopacleakl = 2.0d0*(thelp*grd_xarr(ix))**2/ &
+                      (mfphelp*thelp**3*dx3(ix))
               endif
               if((r1>=denom2).and. &
                    (r1<denom2+specig*resopacleakl*speclump*help)) exit
@@ -319,9 +319,9 @@ subroutine diffusion1(ptcl,isvacant)
         endif
 
 
-        if((grd_sig(z-1,1,1)+grd_cap(iig,z-1,1,1))*dx(z-1) &
+        if((grd_sig(ix-1,1,1)+grd_cap(iig,ix-1,1,1))*dx(ix-1) &
              *thelp >= prt_tauddmc) then
-           z = z-1
+           ix = ix-1
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
            wl = 1d0/(r1/grd_wl(iig+1)+(1d0-r1)/grd_wl(iig))
@@ -333,12 +333,12 @@ subroutine diffusion1(ptcl,isvacant)
 !
 !-- method changed to IMC
            ptcl%itype = 1
-           grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
+           grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
 !
 !-- location set right bound of left cell
-           r = grd_xarr(z)
+           r = grd_xarr(ix)
 !-- current particle cell set to 1 left
-           z = z-1
+           ix = ix-1
 !
 !-- particl angle sampled from isotropic b.c. inward
            r1 = rand()
@@ -371,7 +371,7 @@ subroutine diffusion1(ptcl,isvacant)
   elseif (r1>=PA+PL .and. r1<PA+PL+PR) then
 !!{{{
 !-- checking if at outer bound
-     if (z == grd_nx) then
+     if (ix == grd_nx) then
         isvacant = .true.
         prt_done = .true.
         tot_eright = tot_eright+E
@@ -388,12 +388,12 @@ subroutine diffusion1(ptcl,isvacant)
            help = 1d0/opacleakrlump
            do ig = 1, glump
               iig=glumps(ig)
-              specig = grd_capgrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
+              specig = grd_capgrey(ix,1,1)*grd_emitprob(iig,ix,1,1)*capinv(iig)
 !-- calculating resolved leakage opacities
-              mfphelp = (grd_cap(iig,z,1,1)+grd_sig(z,1,1))*dx(z)*thelp
+              mfphelp = (grd_cap(iig,ix,1,1)+grd_sig(ix,1,1))*dx(ix)*thelp
               ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
-              resopacleakr = 1.5d0*ppr*(thelp*grd_xarr(z+1))**2/ &
-                   (thelp**3*dx3(z))
+              resopacleakr = 1.5d0*ppr*(thelp*grd_xarr(ix+1))**2/ &
+                   (thelp**3*dx3(ix))
               if((r1>=denom2).and. &
                    (r1<denom2+specig*resopacleakr*speclump*help)) exit
               denom2 = denom2+specig*resopacleakr*speclump*help
@@ -463,21 +463,21 @@ subroutine diffusion1(ptcl,isvacant)
            help = 1d0/opacleakrlump
            do ig= 1, glump
               iig = glumps(ig)
-              specig = grd_capgrey(z,1,1)*grd_emitprob(iig,z,1,1)*capinv(iig)
+              specig = grd_capgrey(ix,1,1)*grd_emitprob(iig,ix,1,1)*capinv(iig)
 !-- calculating resolved leakage opacities
-              if((grd_cap(iig,z+1,1,1)+ &
-                   grd_sig(z+1,1,1))*dx(z+1)*thelp<prt_tauddmc) then
+              if((grd_cap(iig,ix+1,1,1)+ &
+                   grd_sig(ix+1,1,1))*dx(ix+1)*thelp<prt_tauddmc) then
 !-- DDMC interface
-                 mfphelp = (grd_cap(iig,z,1,1)+grd_sig(z,1,1))*dx(z)*thelp
+                 mfphelp = (grd_cap(iig,ix,1,1)+grd_sig(ix,1,1))*dx(ix)*thelp
                  ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
-                 resopacleakr = 1.5d0*ppr*(thelp*grd_xarr(z+1))**2/ &
-                      (thelp**3*dx3(z))
+                 resopacleakr = 1.5d0*ppr*(thelp*grd_xarr(ix+1))**2/ &
+                      (thelp**3*dx3(ix))
               else
 !-- IMC interface
-                 mfphelp = ((grd_sig(z,1,1)+grd_cap(iig,z,1,1))*dx(z)+&
-                      (grd_sig(z+1,1,1)+grd_cap(iig,z+1,1,1))*dx(z+1))*thelp
-                 resopacleakr = 2.0d0*(thelp*grd_xarr(z+1))**2/ &
-                      (mfphelp*thelp**3*dx3(z))
+                 mfphelp = ((grd_sig(ix,1,1)+grd_cap(iig,ix,1,1))*dx(ix)+&
+                      (grd_sig(ix+1,1,1)+grd_cap(iig,ix+1,1,1))*dx(ix+1))*thelp
+                 resopacleakr = 2.0d0*(thelp*grd_xarr(ix+1))**2/ &
+                      (mfphelp*thelp**3*dx3(ix))
               endif
               if((r1>=denom2).and. &
                    (r1<denom2+specig*resopacleakr*speclump*help)) exit
@@ -488,10 +488,10 @@ subroutine diffusion1(ptcl,isvacant)
         endif
 
 
-        if((grd_sig(z+1,1,1)+grd_cap(iig,z+1,1,1))*dx(z+1) &
+        if((grd_sig(ix+1,1,1)+grd_cap(iig,ix+1,1,1))*dx(ix+1) &
              *thelp >= prt_tauddmc) then
 !
-           z = z+1
+           ix = ix+1
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
            wl = 1d0/(r1/grd_wl(iig+1)+(1d0-r1)/grd_wl(iig))
@@ -504,12 +504,12 @@ subroutine diffusion1(ptcl,isvacant)
 !
 !-- method changed to IMC
            ptcl%itype = 1
-           grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
+           grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
 !
 !-- location set left bound of right cell
-           r = grd_xarr(z+1)
+           r = grd_xarr(ix+1)
 !-- current particle cell set 1 right
-           z = z+1
+           ix = ix+1
 !
 !--  particl angle sampled from isotropic b.c. outward
            r1 = rand()
@@ -542,7 +542,7 @@ subroutine diffusion1(ptcl,isvacant)
 !         denom2 = 0d0!{{{
 !         do ig = grd_ng,glump+1,-1
 !            iig=glumps(ig)
-!            denom2 = denom2+grd_emitprob(iig,z,1,1)
+!            denom2 = denom2+grd_emitprob(iig,ix,1,1)
 !         enddo
 
      denom2 = 1d0-emitlump
@@ -554,8 +554,8 @@ subroutine diffusion1(ptcl,isvacant)
 
      do ig = grd_ng,glump+1,-1
         iig=glumps(ig)
-        if((r1>=denom3).and.(r1<denom3+grd_emitprob(iig,z,1,1)*help)) exit
-        denom3 = denom3+grd_emitprob(iig,z,1,1)*help
+        if((r1>=denom3).and.(r1<denom3+grd_emitprob(iig,ix,1,1)*help)) exit
+        denom3 = denom3+grd_emitprob(iig,ix,1,1)*help
      enddo
 !
      g = iig
@@ -563,12 +563,12 @@ subroutine diffusion1(ptcl,isvacant)
      prt_tlyrand = prt_tlyrand+1
      wl = 1d0/((1d0-r1)/grd_wl(g) + r1/grd_wl(g+1))
 
-     if ((grd_sig(z,1,1)+grd_cap(g,z,1,1))*dx(z) &
+     if ((grd_sig(ix,1,1)+grd_cap(g,ix,1,1))*dx(ix) &
           *thelp >= prt_tauddmc) then
         ptcl%itype = 2
      else
         ptcl%itype = 1
-        grd_methodswap(z,1,1)=grd_methodswap(z,1,1)+1
+        grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
 !-- direction sampled isotropically           
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
@@ -576,7 +576,7 @@ subroutine diffusion1(ptcl,isvacant)
 !-- position sampled uniformly
          r1 = rand()
          prt_tlyrand = prt_tlyrand+1
-         r = (r1*grd_xarr(z+1)**3 + (1.0-r1)*grd_xarr(z)**3)**(1.0/3.0)
+         r = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
 !-- doppler and aberration corrections
         if(grd_isvelocity) then
            mu = (mu+r*cinv)/(1.0+r*mu*cinv)
