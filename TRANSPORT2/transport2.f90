@@ -440,6 +440,7 @@ subroutine transport2(ptcl,isvacant)
         else
 !-- IMC in upper cell
            zz = zz+1
+           z = grd_yarr(zz)
         endif
 !-- xi<0
      else
@@ -522,6 +523,7 @@ subroutine transport2(ptcl,isvacant)
         else
 !-- IMC in lower cell
            zz = zz-1
+           z = grd_yarr(zz+1)
         endif
      endif
 

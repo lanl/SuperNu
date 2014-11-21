@@ -68,16 +68,22 @@ subroutine transport3_gamgrey(ptcl)
   if(mu==0d0) then
      dbx = 2d0*pc_c*tsp_dt*thelpinv
   else
+     if((grd_xarr(ix)-x)/mu>0d0.and.(grd_xarr(ix+1)-x)/mu>0d0) stop &
+          'transport3: x val out of cell'
      dbx = max((grd_xarr(ix)-x)/mu,(grd_xarr(ix+1)-x)/mu)
   endif
   if(eta==0d0) then
      dby = 2d0*pc_c*tsp_dt*thelpinv
   else
+     if((grd_yarr(iy)-y)/eta>0d0.and.(grd_yarr(iy+1)-y)/eta>0d0) stop &
+          'transport3: y val out of cell'
      dby = max((grd_yarr(iy)-y)/eta,(grd_yarr(iy+1)-y)/eta)
   endif
   if(xi==0d0) then
      dbz = 2d0*pc_c*tsp_dt*thelpinv
   else
+     if((grd_zarr(iz)-z)/xi>0d0.and.(grd_zarr(iz+1)-z)/xi>0d0) stop &
+          'transport3: z val out of cell'
      dbz = max((grd_zarr(iz)-z)/xi,(grd_zarr(iz+1)-z)/xi)
   endif
 !
@@ -215,6 +221,11 @@ subroutine transport3_gamgrey(ptcl)
      endif
 !-- IMC in adjacent cell
      ix = ix+ihelp
+     if(ihelp==1) then
+        x = grd_xarr(ix)
+     else
+        x = grd_xarr(ix+1)
+     endif
 !
 !-- y-bound
   elseif(d==dby) then
@@ -226,6 +237,11 @@ subroutine transport3_gamgrey(ptcl)
      endif
 !-- IMC in adjacent cell
      iy = iy+ihelp
+     if(ihelp==1) then
+        y = grd_yarr(iy)
+     else
+        y = grd_yarr(iy+1)
+     endif
 !
 !-- z-bound
   elseif(d==dbz) then
@@ -237,7 +253,11 @@ subroutine transport3_gamgrey(ptcl)
      endif
 !-- IMC in adjacent cell
      iz = iz+ihelp
-
+     if(ihelp==1) then
+        z = grd_zarr(iz)
+     else
+        z = grd_zarr(iz+1)
+     endif
   else
      stop 'transport3_gamgrey: invalid distance'
   endif

@@ -225,6 +225,7 @@ subroutine transport2_gamgrey(ptcl)
 !-- IMC in upper cell
         else
            zz = zz+1
+           z = grd_yarr(zz)
         endif
 !-- xi<0
      else
@@ -235,6 +236,7 @@ subroutine transport2_gamgrey(ptcl)
 !-- IMC in lower cell
         else
            zz = zz-1
+           z = grd_yarr(zz+1)
         endif
      endif
 

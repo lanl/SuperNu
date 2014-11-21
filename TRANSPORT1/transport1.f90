@@ -148,8 +148,11 @@ subroutine transport1(ptcl,isvacant)
 
 !
 !-- sanity check
-  if((/dcol,dthm,db,dcen,ddop/)/=(/dcol,dthm,db,dcen,ddop/)) stop &
-       'transport1: nan distance'
+  if(db/=db) stop 'transport1: db is nan'
+  if(dcol/=dcol) stop 'transport1: dcol is nan'
+  if(dthm/=dthm) stop 'transport1: dthm is nan'
+  if(dcen/=dcen) stop 'transport1: dcen is nan'
+  if(ddop/=ddop) stop 'transport1: ddop is nan'
   if(any((/dcol,dthm,db,dcen,ddop/)<0d0)) stop &
        'transport1: negative distance'
 !
