@@ -26,7 +26,7 @@ subroutine diffusion3(ptcl,isvacant)
   real*8 :: r1, r2, thelp
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus
-  real*8 :: elabfact, mu, eta
+  real*8 :: elabfact, xi, eta
 !-- lumped quantities
   real*8 :: emitlump, speclump
   real*8 :: caplump
@@ -42,7 +42,7 @@ subroutine diffusion3(ptcl,isvacant)
   real*8 :: help, alb, eps, beta
 !
   integer,pointer :: ix,iy,iz
-  real*8,pointer :: x,y,z,xi,om,ep,ep0,wl
+  real*8,pointer :: x,y,z,mu,om,e,e0,wl
 !-- statement functions
   integer :: l
   real*8 :: dx,dy,dz
@@ -56,10 +56,10 @@ subroutine diffusion3(ptcl,isvacant)
   x => ptcl%x
   y => ptcl%y
   z => ptcl%z
-  xi => ptcl%mu
+  mu => ptcl%mu
   om => ptcl%om
-  ep => ptcl%e
-  ep0 => ptcl%e0
+  e => ptcl%e
+  e0 => ptcl%e0
   wl => ptcl%wl
 !
 !-- shortcut
@@ -343,21 +343,21 @@ subroutine diffusion3(ptcl,isvacant)
 !
 !-- calculating energy depostion and density
   if(prt_isddmcanlog) then
-     grd_eraddens(ix,iy,iz)= grd_eraddens(ix,iy,iz)+ep*ddmct*dtinv
+     grd_eraddens(ix,iy,iz)= grd_eraddens(ix,iy,iz)+e*ddmct*dtinv
   else
-     grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz)+ep * &
+     grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz)+e * &
           (1d0-exp(-grd_fcoef(ix,iy,iz)*caplump*pc_c*ddmct))
      if(grd_fcoef(ix,iy,iz)*caplump*min(dx(ix),dy(iy),dz(iz)) * &
           thelp>1d-6) then
         help = 1d0/(grd_fcoef(ix,iy,iz)*caplump)
         grd_eraddens(ix,iy,iz)= &
-             grd_eraddens(ix,iy,iz)+ep* &
+             grd_eraddens(ix,iy,iz)+e* &
              (1d0-exp(-grd_fcoef(ix,iy,iz)*caplump*pc_c*ddmct))* &
              help*cinv*dtinv
      else
-        grd_eraddens(ix,iy,iz) = grd_eraddens(ix,iy,iz)+ep*ddmct*dtinv
+        grd_eraddens(ix,iy,iz) = grd_eraddens(ix,iy,iz)+e*ddmct*dtinv
      endif
-     ep=ep*exp(-grd_fcoef(ix,iy,iz)*caplump*pc_c*ddmct)
+     e=e*exp(-grd_fcoef(ix,iy,iz)*caplump*pc_c*ddmct)
   endif
 
 !-- updating particle time
@@ -392,7 +392,7 @@ subroutine diffusion3(ptcl,isvacant)
   if(r1>=0d0 .and. r1<pa) then
      isvacant = .true.
      prt_done = .true.
-     grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz)+ep
+     grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz)+e
      return
 
 !-- ix->ix-1 leakage
@@ -467,44 +467,44 @@ subroutine diffusion3(ptcl,isvacant)
 !-- sampling direction
         r1 = rand()
         r2 = rand()
-        mu = -max(r1,r2)
+        xi = -max(r1,r2)
         r1 = rand()
-        eta = sqrt(1d0-mu**2)*cos(pc_pi2*r1)
-        xi = sqrt(1d0-mu**2)*sin(pc_pi2*r1)
-        om = atan2(eta,mu)
+        eta = sqrt(1d0-xi**2)*cos(pc_pi2*r1)
+        mu = sqrt(1d0-xi**2)*sin(pc_pi2*r1)
+        om = atan2(eta,xi)
         if(om<0d0) om=om+pc_pi2
         if(grd_isvelocity) then
-           elabfact = 1d0+(x*mu+y*eta+z*xi)*cinv
+           elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
         else
            elabfact = 1d0
         endif
 !-- changing from comoving frame to observer frame
         if(grd_isvelocity) then
-!-- transforming xi to lab
-           xi = (xi+z*cinv)/elabfact
-           if(xi>1d0) then
-              xi = 1d0
-           elseif(xi<-1d0) then
-              xi = -1d0
+!-- transforming mu to lab
+           mu = (mu+z*cinv)/elabfact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
            endif
 !-- transforming om to lab
-           om = atan2(eta+y*cinv,mu+x*cinv)
+           om = atan2(eta+y*cinv,xi+x*cinv)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wl to lab
            wl = wl/elabfact
 !-- transforming energy weights to lab
-           ep = ep*elabfact
-           ep0 = ep0*elabfact
+           e = e*elabfact
+           e0 = e0*elabfact
         endif
         if(ix==1) then
 !-- escaping at ix=1
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+ep
+           tot_eright = tot_eright+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
-           imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
            iiig = binsrch(wl,flx_wl,flx_ng+1,0)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
@@ -516,9 +516,9 @@ subroutine diffusion3(ptcl,isvacant)
               endif
            endif
            flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+&
-                ep*dtinv
+                e*dtinv
            flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+&
-                (ep*dtinv)**2
+                (e*dtinv)**2
            flx_lumnum(iiig,imu,iom)=flx_lumnum(iiig,imu,iom)+1
            return
         else
@@ -602,44 +602,44 @@ subroutine diffusion3(ptcl,isvacant)
 !-- sampling direction
         r1 = rand()
         r2 = rand()
-        mu = max(r1,r2)
+        xi = max(r1,r2)
         r1 = rand()
-        eta = sqrt(1d0-mu**2)*cos(pc_pi2*r1)
-        xi = sqrt(1d0-mu**2)*sin(pc_pi2*r1)
-        om = atan2(eta,mu)
+        eta = sqrt(1d0-xi**2)*cos(pc_pi2*r1)
+        mu = sqrt(1d0-xi**2)*sin(pc_pi2*r1)
+        om = atan2(eta,xi)
         if(om<0d0) om=om+pc_pi2
         if(grd_isvelocity) then
-           elabfact = 1d0+(x*mu+y*eta+z*xi)*cinv
+           elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
         else
            elabfact = 1d0
         endif
 !-- changing from comoving frame to observer frame
         if(grd_isvelocity) then
-!-- transforming xi to lab
-           xi = (xi+z*cinv)/elabfact
-           if(xi>1d0) then
-              xi = 1d0
-           elseif(xi<-1d0) then
-              xi = -1d0
+!-- transforming mu to lab
+           mu = (mu+z*cinv)/elabfact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
            endif
 !-- transforming om to lab
-           om = atan2(eta+y*cinv,mu+x*cinv)
+           om = atan2(eta+y*cinv,xi+x*cinv)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wl to lab
            wl = wl/elabfact
 !-- transforming energy weights to lab
-           ep = ep*elabfact
-           ep0 = ep0*elabfact
+           e = e*elabfact
+           e0 = e0*elabfact
         endif
         if(ix==grd_nx) then
 !-- escaping at ix=nx
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+ep
+           tot_eright = tot_eright+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
-           imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
            iiig = binsrch(wl,flx_wl,flx_ng+1,0)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
@@ -651,9 +651,9 @@ subroutine diffusion3(ptcl,isvacant)
               endif
            endif
            flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+&
-                ep*dtinv
+                e*dtinv
            flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+&
-                (ep*dtinv)**2
+                (e*dtinv)**2
            flx_lumnum(iiig,imu,iom)=flx_lumnum(iiig,imu,iom)+1
            return
         else
@@ -739,42 +739,42 @@ subroutine diffusion3(ptcl,isvacant)
         r2 = rand()
         eta = -max(r1,r2)
         r1 = rand()
-        mu = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
-        xi = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
-        om = atan2(eta,mu)
+        xi = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
+        mu = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
+        om = atan2(eta,xi)
         if(om<0d0) om=om+pc_pi2
         if(grd_isvelocity) then
-           elabfact = 1d0+(x*mu+y*eta+z*xi)*cinv
+           elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
         else
            elabfact = 1d0
         endif
 !-- changing from comoving frame to observer frame
         if(grd_isvelocity) then
-!-- transforming xi to lab
-           xi = (xi+z*cinv)/elabfact
-           if(xi>1d0) then
-              xi = 1d0
-           elseif(xi<-1d0) then
-              xi = -1d0
+!-- transforming mu to lab
+           mu = (mu+z*cinv)/elabfact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
            endif
 !-- transforming om to lab
-           om = atan2(eta+y*cinv,mu+x*cinv)
+           om = atan2(eta+y*cinv,xi+x*cinv)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wl to lab
            wl = wl/elabfact
 !-- transforming energy weights to lab
-           ep = ep*elabfact
-           ep0 = ep0*elabfact
+           e = e*elabfact
+           e0 = e0*elabfact
         endif
         if(iy==1) then
 !-- escaping at iy=1
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+ep
+           tot_eright = tot_eright+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
-           imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
            iiig = binsrch(wl,flx_wl,flx_ng+1,0)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
@@ -786,9 +786,9 @@ subroutine diffusion3(ptcl,isvacant)
               endif
            endif
            flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+&
-                ep*dtinv
+                e*dtinv
            flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+&
-                (ep*dtinv)**2
+                (e*dtinv)**2
            flx_lumnum(iiig,imu,iom)=flx_lumnum(iiig,imu,iom)+1
            return
         else
@@ -874,42 +874,42 @@ subroutine diffusion3(ptcl,isvacant)
         r2 = rand()
         eta = max(r1,r2)
         r1 = rand()
-        mu = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
-        xi = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
-        om = atan2(eta,mu)
+        xi = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
+        mu = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
+        om = atan2(eta,xi)
         if(om<0d0) om=om+pc_pi2
         if(grd_isvelocity) then
-           elabfact = 1d0+(x*mu+y*eta+z*xi)*cinv
+           elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
         else
            elabfact = 1d0
         endif
 !-- changing from comoving frame to observer frame
         if(grd_isvelocity) then
-!-- transforming xi to lab
-           xi = (xi+z*cinv)/elabfact
-           if(xi>1d0) then
-              xi = 1d0
-           elseif(xi<-1d0) then
-              xi = -1d0
+!-- transforming mu to lab
+           mu = (mu+z*cinv)/elabfact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
            endif
 !-- transforming om to lab
-           om = atan2(eta+y*cinv,mu+x*cinv)
+           om = atan2(eta+y*cinv,xi+x*cinv)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wl to lab
            wl = wl/elabfact
 !-- transforming energy weights to lab
-           ep = ep*elabfact
-           ep0 = ep0*elabfact
+           e = e*elabfact
+           e0 = e0*elabfact
         endif
         if(iy==grd_ny) then
 !-- escaping at iy=ny
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+ep
+           tot_eright = tot_eright+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
-           imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
            iiig = binsrch(wl,flx_wl,flx_ng+1,0)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
@@ -921,9 +921,9 @@ subroutine diffusion3(ptcl,isvacant)
               endif
            endif
            flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+&
-                ep*dtinv
+                e*dtinv
            flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+&
-                (ep*dtinv)**2
+                (e*dtinv)**2
            flx_lumnum(iiig,imu,iom)=flx_lumnum(iiig,imu,iom)+1
            return
         else
@@ -1007,43 +1007,43 @@ subroutine diffusion3(ptcl,isvacant)
 !-- sampling direction
         r1 = rand()
         r2 = rand()
-        xi = -max(r1,r2)
+        mu = -max(r1,r2)
         r1 = rand()
         om = pc_pi2*r1
-        mu = sqrt(1d0-xi**2)*cos(om)
-        eta = sqrt(1d0-xi**2)*sin(om)
+        xi = sqrt(1d0-mu**2)*cos(om)
+        eta = sqrt(1d0-mu**2)*sin(om)
         if(grd_isvelocity) then
-           elabfact = 1d0+(x*mu+y*eta+z*xi)*cinv
+           elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
         else
            elabfact = 1d0
         endif
 !-- changing from comoving frame to observer frame
         if(grd_isvelocity) then
-!-- transforming xi to lab
-           xi = (xi+z*cinv)/elabfact
-           if(xi>1d0) then
-              xi = 1d0
-           elseif(xi<-1d0) then
-              xi = -1d0
+!-- transforming mu to lab
+           mu = (mu+z*cinv)/elabfact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
            endif
 !-- transforming om to lab
-           om = atan2(eta+y*cinv,mu+x*cinv)
+           om = atan2(eta+y*cinv,xi+x*cinv)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wl to lab
            wl = wl/elabfact
 !-- transforming energy weights to lab
-           ep = ep*elabfact
-           ep0 = ep0*elabfact
+           e = e*elabfact
+           e0 = e0*elabfact
         endif
         if(iz==1) then
 !-- escaping at iz=1
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+ep
+           tot_eright = tot_eright+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
-           imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
            iiig = binsrch(wl,flx_wl,flx_ng+1,0)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
@@ -1055,9 +1055,9 @@ subroutine diffusion3(ptcl,isvacant)
               endif
            endif
            flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+&
-                ep*dtinv
+                e*dtinv
            flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+&
-                (ep*dtinv)**2
+                (e*dtinv)**2
            flx_lumnum(iiig,imu,iom)=flx_lumnum(iiig,imu,iom)+1
            return
         else
@@ -1141,43 +1141,43 @@ subroutine diffusion3(ptcl,isvacant)
 !-- sampling direction
         r1 = rand()
         r2 = rand()
-        xi = max(r1,r2)
+        mu = max(r1,r2)
         r1 = rand()
         om = pc_pi2*r1
-        mu = sqrt(1d0-xi**2)*cos(om)
-        eta = sqrt(1d0-xi**2)*sin(om)
+        xi = sqrt(1d0-mu**2)*cos(om)
+        eta = sqrt(1d0-mu**2)*sin(om)
         if(grd_isvelocity) then
-           elabfact = 1d0+(x*mu+y*eta+z*xi)*cinv
+           elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
         else
            elabfact = 1d0
         endif
 !-- changing from comoving frame to observer frame
         if(grd_isvelocity) then
-!-- transforming xi to lab
-           xi = (xi+z*cinv)/elabfact
-           if(xi>1d0) then
-              xi = 1d0
-           elseif(xi<-1d0) then
-              xi = -1d0
+!-- transforming mu to lab
+           mu = (mu+z*cinv)/elabfact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
            endif
 !-- transforming om to lab
-           om = atan2(eta+y*cinv,mu+x*cinv)
+           om = atan2(eta+y*cinv,xi+x*cinv)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wl to lab
            wl = wl/elabfact
 !-- transforming energy weights to lab
-           ep = ep*elabfact
-           ep0 = ep0*elabfact
+           e = e*elabfact
+           e0 = e0*elabfact
         endif
         if(iz==grd_nz) then
 !-- escaping at iz=1
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+ep
+           tot_eright = tot_eright+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
-           imu = binsrch(xi,flx_mu,flx_nmu+1,0)
+           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
            iiig = binsrch(wl,flx_wl,flx_ng+1,0)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
@@ -1189,9 +1189,9 @@ subroutine diffusion3(ptcl,isvacant)
               endif
            endif
            flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+&
-                ep*dtinv
+                e*dtinv
            flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+&
-                (ep*dtinv)**2
+                (e*dtinv)**2
            flx_lumnum(iiig,imu,iom)=flx_lumnum(iiig,imu,iom)+1
            return
         else
@@ -1227,11 +1227,11 @@ subroutine diffusion3(ptcl,isvacant)
         grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- direction sampled isotropically           
         r1 = rand()
-        xi = 1d0 - 2d0*r1
+        mu = 1d0 - 2d0*r1
         r1 = rand()
         om = pc_pi2*r1
-        mu = sqrt(1d0-xi**2)*cos(om)
-        eta = sqrt(1d0-xi**2)*sin(om)
+        xi = sqrt(1d0-mu**2)*cos(om)
+        eta = sqrt(1d0-mu**2)*sin(om)
 !-- position sampled uniformly
         r1 = rand()
         x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
@@ -1242,21 +1242,21 @@ subroutine diffusion3(ptcl,isvacant)
 !-- doppler and aberration corrections
         if(grd_isvelocity) then
 !-- calculating transformation factors
-           elabfact = 1d0+(x*mu+y*eta+z*xi)*cinv
+           elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
 !-- transforming z-axis direction cosine to lab
-           xi = (xi+z*cinv)/elabfact
-           if(xi>1d0) then
-              xi = 1d0
-           elseif(xi<-1d0) then
-              xi = -1d0
+           mu = (mu+z*cinv)/elabfact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
            endif
-           om = atan2(eta+y*cinv,mu+x*cinv)
+           om = atan2(eta+y*cinv,xi+x*cinv)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wavelength to lab
            wl = wl/elabfact
 !-- transforming energy weights to lab
-           ep = ep*elabfact
-           ep0 = ep0*elabfact
+           e = e*elabfact
+           e0 = e0*elabfact
         endif
      endif
 

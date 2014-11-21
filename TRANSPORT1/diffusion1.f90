@@ -41,7 +41,7 @@ subroutine diffusion1(ptcl,isvacant)
   real*8 :: help
 
   integer,pointer :: ix
-  real*8,pointer :: r, mu, E, E0, wl
+  real*8,pointer :: r, mu, e, e0, wl
 !-- statement function
   integer :: l
   real*8 :: dx,dx3
@@ -51,8 +51,8 @@ subroutine diffusion1(ptcl,isvacant)
   ix => ptcl%ix
   r => ptcl%x
   mu => ptcl%mu
-  E => ptcl%e
-  E0 => ptcl%e0
+  e => ptcl%e
+  e0 => ptcl%e0
   wl => ptcl%wl
 
 !--------------------------------------------------------------
@@ -219,21 +219,21 @@ subroutine diffusion1(ptcl,isvacant)
 !-- calculating energy depostion and density
   !
   if(prt_isddmcanlog) then
-     grd_eraddens(ix,1,1)= grd_eraddens(ix,1,1)+E*ddmct*dtinv
+     grd_eraddens(ix,1,1)= grd_eraddens(ix,1,1)+e*ddmct*dtinv
   else
-     grd_edep(ix,1,1) = grd_edep(ix,1,1)+E*(1d0-exp(-grd_fcoef(ix,1,1) &!{{{
+     grd_edep(ix,1,1) = grd_edep(ix,1,1)+e*(1d0-exp(-grd_fcoef(ix,1,1) &!{{{
           *caplump*pc_c*ddmct))
 !--
      if(grd_fcoef(ix,1,1)*caplump*dx(ix)*thelp>1d-6) then
         help = 1d0/(grd_fcoef(ix,1,1)*caplump)
         grd_eraddens(ix,1,1)= &
-             grd_eraddens(ix,1,1)+E* &
+             grd_eraddens(ix,1,1)+e* &
              (1d0-exp(-grd_fcoef(ix,1,1)*caplump*pc_c*ddmct))* &
              help*cinv*dtinv
      else
-        grd_eraddens(ix,1,1) = grd_eraddens(ix,1,1)+E*ddmct*dtinv
+        grd_eraddens(ix,1,1) = grd_eraddens(ix,1,1)+e*ddmct*dtinv
      endif
-     E = E*exp(-grd_fcoef(ix,1,1)*caplump*pc_c*ddmct)
+     e = e*exp(-grd_fcoef(ix,1,1)*caplump*pc_c*ddmct)
 !!}}}
   endif
 
@@ -274,7 +274,7 @@ subroutine diffusion1(ptcl,isvacant)
   if(r1>=0d0 .and. r1<PA) then
      isvacant = .true.
      prt_done = .true.
-     grd_edep(ix,1,1) = grd_edep(ix,1,1)+E
+     grd_edep(ix,1,1) = grd_edep(ix,1,1)+e
 
 
 !-- left leakage sample
@@ -352,10 +352,10 @@ subroutine diffusion1(ptcl,isvacant)
               mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
               help = 1d0/(1.0-r*mu*cinv)
-              tot_evelo=tot_evelo+E*(1d0 - help)
+              tot_evelo=tot_evelo+e*(1d0 - help)
 !
-              E = E*help
-              E0 = E0*help
+              e = e*help
+              e0 = e0*help
               wl = wl*(1.0-r*mu*cinv)
            endif
 !
@@ -374,7 +374,7 @@ subroutine diffusion1(ptcl,isvacant)
      if (ix == grd_nx) then
         isvacant = .true.
         prt_done = .true.
-        tot_eright = tot_eright+E
+        tot_eright = tot_eright+e
 !-- outbound luminosity tally
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
@@ -420,9 +420,9 @@ subroutine diffusion1(ptcl,isvacant)
               endif
            endif
            flx_luminos(iig,1,1) = flx_luminos(iig,1,1)+&
-                E*dtinv*help
+                e*dtinv*help
            flx_lumdev(iig,1,1) = flx_lumdev(iig,1,1)+&
-                (E*dtinv*help)**2
+                (e*dtinv*help)**2
            flx_lumnum(iig,1,1) = flx_lumnum(iig,1,1)+1
         else
            r1 = rand()
@@ -446,9 +446,9 @@ subroutine diffusion1(ptcl,isvacant)
               endif
            endif
            flx_luminos(iig,1,1) = flx_luminos(iig,1,1)+&
-                E*dtinv*help
+                e*dtinv*help
            flx_lumdev(iig,1,1) = flx_lumdev(iig,1,1)+&
-                (E*dtinv*help)**2
+                (e*dtinv*help)**2
            flx_lumnum(iig,1,1) = flx_lumnum(iig,1,1)+1
         endif
 !
@@ -523,10 +523,10 @@ subroutine diffusion1(ptcl,isvacant)
               mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
               help = 1d0/(1.0-r*mu*cinv)
-              tot_evelo=tot_evelo+E*(1d0 - help)
+              tot_evelo=tot_evelo+e*(1d0 - help)
 !
-              E = E*help
-              E0 = E0*help
+              e = e*help
+              e0 = e0*help
               wl = wl*(1.0-r*mu*cinv)
            endif
 !
@@ -585,10 +585,10 @@ subroutine diffusion1(ptcl,isvacant)
            mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
            help = 1d0/(1.0-r*mu*cinv)
-           tot_evelo=tot_evelo+E*(1d0 - help)
+           tot_evelo=tot_evelo+e*(1d0 - help)
 !
-           E = E*help
-           E0 = E0*help
+           e = e*help
+           e0 = e0*help
            wl = wl*(1.0-r*mu*cinv)
         endif
      endif

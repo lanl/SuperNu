@@ -1,4 +1,4 @@
-subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
+subroutine advection2(pretrans,ig,ix,iy,x,y)
   use timestepmod
   use gridmod
   use particlemod
@@ -6,8 +6,8 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
   implicit none
   logical,intent(in) :: pretrans
   integer,intent(in) :: ig
-  integer,intent(inout) :: zrsrc,zzsrc
-  real*8,intent(inout) :: rsrc,zsrc
+  integer,intent(inout) :: ix,iy
+  real*8,intent(inout) :: x,y
 !-----------------------------------------------------------------------
 ! This routine computes the advection of IMC particles through the
 ! velocity grid in cylindrical geometry.
@@ -17,8 +17,8 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
   logical,parameter :: partstopper = .true.
 !
   integer,external :: binsrch
-  integer :: zzholder,zrholder
-  real*8 :: rold, zold, rtil, ztil
+  integer :: iyholder,ixholder
+  real*8 :: xold, yold, xtil, ytil
   integer :: ir,iz
 !-- statement functions
   integer :: l
@@ -27,62 +27,62 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
 
 !-- storing initial position
-  rold = rsrc
-  zold = zsrc
+  xold = x
+  yold = y
 !-- setting tentative new position
   if(pretrans) then
-     rsrc = rsrc*tsp_t/(tsp_t+alph2*tsp_dt)
-     zsrc = zsrc*tsp_t/(tsp_t+alph2*tsp_dt)
+     x = x*tsp_t/(tsp_t+alph2*tsp_dt)
+     y = y*tsp_t/(tsp_t+alph2*tsp_dt)
   else
-     rsrc = rsrc*(tsp_t+alph2*tsp_dt)/(tsp_t+tsp_dt)
-     zsrc = zsrc*(tsp_t+alph2*tsp_dt)/(tsp_t+tsp_dt)
+     x = x*(tsp_t+alph2*tsp_dt)/(tsp_t+tsp_dt)
+     y = y*(tsp_t+alph2*tsp_dt)/(tsp_t+tsp_dt)
   endif
 
-  if(rsrc<grd_xarr(zrsrc).or.abs(zsrc) < &
-       min(abs(grd_yarr(zzsrc)),abs(grd_yarr(zzsrc+1)))) then
+  if(x<grd_xarr(ix).or.abs(y) < &
+       min(abs(grd_yarr(iy)),abs(grd_yarr(iy+1)))) then
 !-- finding tentative new index
-     zrholder = binsrch(rsrc,grd_xarr,grd_nx+1,0)
-     zzholder = binsrch(zsrc,grd_yarr,grd_ny+1,0)
+     ixholder = binsrch(x,grd_xarr,grd_nx+1,0)
+     iyholder = binsrch(y,grd_yarr,grd_ny+1,0)
 !-- checking if DDMC is active
      if(.not.in_puretran.and.partstopper) then
-        ir = zrsrc
-        iz = zzsrc
+        ir = ix
+        iz = iy
 
         if(iz>grd_ny/2) then
 !-- z>0
-           do while(iz>zzholder.or.ir>zrholder)
+           do while(iz>iyholder.or.ir>ixholder)
 !-- moving towards tentative index
-              if(zold>0d0) then
-                 rtil = (rold/zold)*grd_yarr(iz)
+              if(yold>0d0) then
+                 xtil = (xold/yold)*grd_yarr(iz)
               else
-                 rtil = rsrc
+                 xtil = x
               endif
-              if(rold>0d0) then
-                 ztil = (zold/rold)*grd_xarr(ir)
+              if(xold>0d0) then
+                 ytil = (yold/xold)*grd_xarr(ir)
               else
-                 ztil = zsrc
+                 ytil = y
               endif
 !
-              if(rtil<grd_xarr(ir)) then
+              if(xtil<grd_xarr(ir)) then
 
 !-- meeting inner radial bound
                  if((grd_sig(ir-1,iz,1)+grd_cap(ig,ir-1,iz,1)) * &
                       min(dy(iz),dx(ir-1)) * &
                       tsp_t >= prt_tauddmc) then
-                    rsrc = grd_xarr(ir)
-                    zsrc = ztil
+                    x = grd_xarr(ir)
+                    y = ytil
                     exit
                  else
                     ir=ir-1
                  endif
-              elseif(ztil<grd_yarr(iz)) then
+              elseif(ytil<grd_yarr(iz)) then
 
 !-- meeting lower z-axis bound
                  if((grd_sig(ir,iz-1,1)+grd_cap(ig,ir,iz-1,1)) * &
                       min(dy(iz-1),dx(ir)) * &
                       tsp_t >= prt_tauddmc) then
-                    zsrc = grd_yarr(iz)
-                    rsrc = rtil
+                    y = grd_yarr(iz)
+                    x = xtil
                     exit
                  else
                     iz = iz-1
@@ -94,39 +94,39 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
 
 !
 !-- z<0
-           do while(iz<zzholder.or.ir>zrholder)
+           do while(iz<iyholder.or.ir>ixholder)
 !-- moving towards tentative index
-              if(zold<0d0) then
-                 rtil = (rold/zold)*grd_yarr(iz+1)
+              if(yold<0d0) then
+                 xtil = (xold/yold)*grd_yarr(iz+1)
               else
-                 rtil = rsrc
+                 xtil = x
               endif
-              if(rold>0d0) then
-                 ztil = (zold/rold)*grd_xarr(ir)
+              if(xold>0d0) then
+                 ytil = (yold/xold)*grd_xarr(ir)
               else
-                 ztil = zsrc
+                 ytil = y
               endif
 !
-              if(rtil<grd_xarr(ir)) then
+              if(xtil<grd_xarr(ir)) then
 
 !-- meeting inner radial bound
                  if((grd_sig(ir-1,iz,1)+grd_cap(ig,ir-1,iz,1)) * &
                       min(dy(iz),dx(ir-1)) * &
                       tsp_t >= prt_tauddmc) then
-                    rsrc = grd_xarr(ir)
-                    zsrc = ztil
+                    x = grd_xarr(ir)
+                    y = ytil
                     exit
                  else
                     ir=ir-1
                  endif
-              elseif(ztil>grd_yarr(iz+1)) then
+              elseif(ytil>grd_yarr(iz+1)) then
 
 !-- meeting upper z-axis bound (z<0)
                  if((grd_sig(ir,iz+1,1)+grd_cap(ig,ir,iz+1,1)) * &
                       min(dy(iz+1),dx(ir)) * &
                       tsp_t >= prt_tauddmc) then
-                    zsrc = grd_yarr(iz+1)
-                    rsrc = rtil
+                    y = grd_yarr(iz+1)
+                    x = xtil
                     exit
                  else
                     iz = iz+1
@@ -134,13 +134,13 @@ subroutine advection2(pretrans,ig,zrsrc,zzsrc,rsrc,zsrc)
               endif
            enddo
         endif
-        zrsrc = ir
-        zzsrc = iz
+        ix = ir
+        iy = iz
 
      else
 !-- DDMC inactive, setting index to tentative value
-        zrsrc = zrholder
-        zzsrc = zzholder
+        ix = ixholder
+        iy = iyholder
      endif
   endif
 

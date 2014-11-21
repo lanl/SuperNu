@@ -30,7 +30,7 @@ subroutine transport1(ptcl,isvacant)
   real*8 :: ppl, ppr
 
   integer,pointer :: ix
-  real*8,pointer :: r, mu, E, E0, wl
+  real*8,pointer :: r, mu, e, e0, wl
 !-- statement function
   integer :: l
   real*8 :: dx
@@ -39,8 +39,8 @@ subroutine transport1(ptcl,isvacant)
   ix => ptcl%ix
   r => ptcl%x
   mu => ptcl%mu
-  E => ptcl%e
-  E0 => ptcl%e0
+  e => ptcl%e
+  e0 => ptcl%e0
   wl => ptcl%wl
 !
 !-- shortcut
@@ -173,24 +173,24 @@ subroutine transport1(ptcl,isvacant)
   !calculating energy deposition and density
   !
   if(.not.prt_isimcanlog) then
-        grd_edep(ix,1,1)=grd_edep(ix,1,1)+E*(1.0d0-exp(-grd_fcoef(ix,1,1) &
+        grd_edep(ix,1,1)=grd_edep(ix,1,1)+e*(1.0d0-exp(-grd_fcoef(ix,1,1) &
              *grd_cap(g,ix,1,1)*siglabfact*d*thelp))*elabfact
      !--
      if(grd_fcoef(ix,1,1)*grd_cap(g,ix,1,1)*dx(ix)*thelp>1d-6) then     
-        grd_eraddens(ix,1,1) = grd_eraddens(ix,1,1)+E* &
+        grd_eraddens(ix,1,1) = grd_eraddens(ix,1,1)+e* &
              (1.0d0-exp(-grd_fcoef(ix,1,1)*siglabfact*grd_cap(g,ix,1,1)*d*thelp))* &
              elabfact/(grd_fcoef(ix,1,1)*siglabfact*grd_cap(g,ix,1,1)*pc_c*tsp_dt)
      else
-        grd_eraddens(ix,1,1) = grd_eraddens(ix,1,1)+E* &
+        grd_eraddens(ix,1,1) = grd_eraddens(ix,1,1)+e* &
              elabfact*d*dcollabfact*cinv*dtinv
      endif
      !--
-!     E = E*exp(-grd_fcoef(ix)*grd_cap(g,ix)*d*dcollabfact)
-     E = E*exp(-grd_fcoef(ix,1,1)*grd_cap(g,ix,1,1)*siglabfact*d*thelp)
+!     e = e*exp(-grd_fcoef(ix)*grd_cap(g,ix)*d*dcollabfact)
+     e = e*exp(-grd_fcoef(ix,1,1)*grd_cap(g,ix,1,1)*siglabfact*d*thelp)
 
   else
      !
-     grd_eraddens(ix,1,1) = grd_eraddens(ix,1,1)+E* &
+     grd_eraddens(ix,1,1) = grd_eraddens(ix,1,1)+e* &
           elabfact*d*dcollabfact*cinv*dtinv
   endif
 
@@ -229,10 +229,10 @@ subroutine transport1(ptcl,isvacant)
         grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
         if(grd_isvelocity) then
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+E*r*mu*cinv
+           tot_evelo=tot_evelo+e*r*mu*cinv
 !
-           E = E*(1.0-r*mu*cinv)
-           E0 = E0*(1.0-r*mu*cinv)
+           e = e*(1.0-r*mu*cinv)
+           e0 = e0*(1.0-r*mu*cinv)
            wl = wl/(1.0-r*mu*cinv)
         endif
      else
@@ -251,10 +251,10 @@ subroutine transport1(ptcl,isvacant)
         mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
         help = 1d0/(1.0-mu*r*cinv)
-        tot_evelo=tot_evelo+E*(1d0-elabfact*help)
+        tot_evelo=tot_evelo+e*(1d0-elabfact*help)
 !
-        E = E*elabfact*help
-!        E0 = E0*elabfact/(1.0-mu*r*cinv)
+        e = e*elabfact*help
+!        e0 = e0*elabfact/(1.0-mu*r*cinv)
         wl = wl*(1.0-mu*r*cinv)/elabfact
      endif
      !
@@ -266,9 +266,9 @@ subroutine transport1(ptcl,isvacant)
      if(r1<=grd_fcoef(ix,1,1).and.prt_isimcanlog) then
         isvacant = .true.
         prt_done = .true.
-        grd_edep(ix,1,1) = grd_edep(ix,1,1) + E*elabfact
+        grd_edep(ix,1,1) = grd_edep(ix,1,1) + e*elabfact
 !-- velocity effects accounting
-        tot_evelo = tot_evelo+E*(1d0-elabfact)
+        tot_evelo = tot_evelo+e*(1d0-elabfact)
 !
      else
         r1 = rand()
@@ -281,9 +281,9 @@ subroutine transport1(ptcl,isvacant)
            mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
            help = 1d0/(1.0-mu*r*cinv)
-           tot_evelo=tot_evelo+E*(1d0-elabfact*help)
+           tot_evelo=tot_evelo+e*(1d0-elabfact*help)
 !
-           E = E*elabfact*help
+           e = e*elabfact*help
 !           wl = wl*(1.0-mu*r*cinv)/elabfact
            
         endif
@@ -298,7 +298,7 @@ subroutine transport1(ptcl,isvacant)
         enddo
         g = iig
         !(rev 121): calculating radiation energy tally per group
-        !grd_eraddens(ix)=grd_eraddens(ix)+E*elabfact
+        !grd_eraddens(ix)=grd_eraddens(ix)+e*elabfact
         !-------------------------------------------------------
         ! sampling comoving wavelength in group
         r1 = rand()
@@ -343,10 +343,10 @@ subroutine transport1(ptcl,isvacant)
            grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
-              tot_evelo = tot_evelo+E*r*mu*cinv
+              tot_evelo = tot_evelo+e*r*mu*cinv
 !
-              E = E*(1.0-r*mu*cinv)
-              E0 = E0*(1.0-r*mu*cinv)
+              e = e*(1.0-r*mu*cinv)
+              e0 = e0*(1.0-r*mu*cinv)
               wl = wl/(1.0-r*mu*cinv)
            endif
         else
@@ -377,11 +377,11 @@ subroutine transport1(ptcl,isvacant)
 !
 !-- outbound luminosity tally
 !-- velocity effects accounting
-           tot_evelo = tot_evelo+E*(1d0-elabfact)
+           tot_evelo = tot_evelo+e*(1d0-elabfact)
 !
-           tot_eright = tot_eright+E*elabfact
-           flx_luminos(g,1,1) = flx_luminos(g,1,1)+E*dtinv
-           flx_lumdev(g,1,1) = flx_lumdev(g,1,1)+(E*dtinv)**2
+           tot_eright = tot_eright+e*elabfact
+           flx_luminos(g,1,1) = flx_luminos(g,1,1)+e*dtinv
+           flx_lumdev(g,1,1) = flx_lumdev(g,1,1)+(e*dtinv)**2
            flx_lumnum(g,1,1) = flx_lumnum(g,1,1)+1
         ! Checking if DDMC region right
         elseif (((grd_sig(ix+1,1,1)+grd_cap(g,ix+1,1,1))*dx(ix+1) &
@@ -401,10 +401,10 @@ subroutine transport1(ptcl,isvacant)
               grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
               if(grd_isvelocity) then
 !-- velocity effects accounting
-                 tot_evelo=tot_evelo+E*(1d0-elabfact)
+                 tot_evelo=tot_evelo+e*(1d0-elabfact)
 !
-                 E = E*elabfact
-                 E0 = E0*elabfact
+                 e = e*elabfact
+                 e0 = e0*elabfact
                  wl = wl/elabfact
               endif
               ix = ix+1
@@ -442,10 +442,10 @@ subroutine transport1(ptcl,isvacant)
                  grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
                  if(grd_isvelocity) then
 !-- velocity effects accounting
-                    tot_evelo=tot_evelo+E*(1d0-elabfact)
+                    tot_evelo=tot_evelo+e*(1d0-elabfact)
 !
-                    E = E*elabfact
-                    E0 = E0*elabfact
+                    e = e*elabfact
+                    e0 = e0*elabfact
                     wl = wl/elabfact
                  endif
                  ix = ix+1
@@ -473,15 +473,15 @@ subroutine transport1(ptcl,isvacant)
               mu = (mu-r*cinv)/(1.0-r*mu*cinv)
 !-- amplification
 !
-!              E0=E0*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r*cinv)
-!              E = E*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r*cinv)
+!              e0=e0*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r*cinv)
+!              e = e*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r*cinv)
               if(mu<0d0) then
 !-- velocity effects accounting
                  help = 1d0/abs(mu)
-                 tot_evelo = tot_evelo-E*2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv
+                 tot_evelo = tot_evelo-e*2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv
 !
-                 E0 = E0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv)
-                 E = E*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv)
+                 e0 = e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv)
+                 e = e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv)
               endif
 !--
            endif
@@ -494,10 +494,10 @@ subroutine transport1(ptcl,isvacant)
               grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
               if(grd_isvelocity) then
 !-- velocity effects accounting
-                 tot_evelo = tot_evelo+E*(1d0-elabfact)
+                 tot_evelo = tot_evelo+e*(1d0-elabfact)
 !
-                 E = E*elabfact
-                 E0 = E0*elabfact
+                 e = e*elabfact
+                 e0 = e0*elabfact
                  wl = wl/elabfact
               endif
               ix = ix-1
@@ -521,7 +521,7 @@ subroutine transport1(ptcl,isvacant)
   elseif (d == dcen) then
      prt_done = .true.
      grd_numcensus(ix,1,1) = grd_numcensus(ix,1,1)+1
-!     tot_erad = tot_erad + E*elabfact
+!     tot_erad = tot_erad + e*elabfact
 !
   endif
 

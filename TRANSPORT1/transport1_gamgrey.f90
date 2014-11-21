@@ -26,7 +26,7 @@ subroutine transport1_gamgrey(ptcl)
   real*8 :: help
 
   integer,pointer :: ix
-  real*8,pointer :: r, mu, E, E0
+  real*8,pointer :: r, mu, e, e0
 !-- statement function
   integer :: l
   real*8 :: dx
@@ -35,8 +35,8 @@ subroutine transport1_gamgrey(ptcl)
   ix => ptcl%ix
   r => ptcl%x
   mu => ptcl%mu
-  E => ptcl%e
-  E0 => ptcl%e0
+  e => ptcl%e
+  e0 => ptcl%e0
 !
 !-- shortcut
   dtinv = 1d0/dt
@@ -101,10 +101,10 @@ subroutine transport1_gamgrey(ptcl)
   !calculating energy deposition and density
   !
   if(.not.prt_isimcanlog) then
-     grd_edep(ix,1,1) = grd_edep(ix,1,1)+E*(1.0d0-exp( &
+     grd_edep(ix,1,1) = grd_edep(ix,1,1)+e*(1.0d0-exp( &
           -grd_capgam(ix,1,1)*siglabfact*d*thelp))*elabfact
      !--
-     E = E*exp(-grd_capgam(ix,1,1)*siglabfact*d*thelp)
+     e = e*exp(-grd_capgam(ix,1,1)*siglabfact*d*thelp)
 
   endif
 
@@ -121,7 +121,7 @@ subroutine transport1_gamgrey(ptcl)
      prt_tlyrand = prt_tlyrand+1
      if(r1<=1d0.and.prt_isimcanlog) then
         prt_done = .true.
-        grd_edep(ix,1,1) = grd_edep(ix,1,1) + E*elabfact
+        grd_edep(ix,1,1) = grd_edep(ix,1,1) + e*elabfact
 !-- velocity effects accounting
 !
      else
@@ -136,7 +136,7 @@ subroutine transport1_gamgrey(ptcl)
 !-- velocity effects accounting
            help = 1d0/(1.0-mu*r*cinv)
 !
-           E = E*elabfact*help
+           e = e*elabfact*help
            
         endif
 !
@@ -152,8 +152,8 @@ subroutine transport1_gamgrey(ptcl)
 !-- outbound luminosity tally
 !-- velocity effects accounting
 !
-           flx_gamluminos(1,1) = flx_gamluminos(1,1)+E*dtinv
-           flx_gamlumdev(1,1) = flx_gamlumdev(1,1)+(E*dtinv)**2
+           flx_gamluminos(1,1) = flx_gamluminos(1,1)+e*dtinv
+           flx_gamlumdev(1,1) = flx_gamlumdev(1,1)+(e*dtinv)**2
            flx_gamlumnum(1,1) = flx_gamlumnum(1,1)+1
         else
            r = grd_xarr(ix+1)
