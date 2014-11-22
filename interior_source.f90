@@ -99,7 +99,7 @@ subroutine interior_source
      mu0 = 1d0-2d0*r1
 
 !-- calculating particle energy
-     ep0 = grd_emitex(i,j,k)/real(grd_nvolex(i,j,k))
+     ep0 = grd_emitex(i,j,k)/dble(grd_nvolex(i,j,k))
      tot_eext=tot_eext+ep0
 
 !
@@ -310,7 +310,7 @@ subroutine interior_source
      mu0 = 1d0-2d0*r1
 
 !-- calculating particle energy
-     ep0 = grd_emit(i,j,k)/real(grd_nvol(i,j,k))
+     ep0 = grd_emit(i,j,k)/dble(grd_nvol(i,j,k))
 
 !
 !-- selecting geometry

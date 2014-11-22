@@ -17,7 +17,7 @@ subroutine transport1_gamgrey(ptcl)
   real*8,parameter :: cinv = 1d0/pc_c
   real*8,parameter :: dt = pc_year !give grey transport infinite time
 !
-  real*8 :: r1, r2, thelp,thelpinv
+  real*8 :: r1, thelp,thelpinv
   real*8 :: db, dcol, d
   real*8 :: siglabfact, dcollabfact, elabfact
   real*8 :: rold, muold

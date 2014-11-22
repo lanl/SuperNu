@@ -55,7 +55,7 @@ c========================================
       integer,allocatable :: grd_nvolinit(:,:,:) !(nx,ny,nz) number of initial (t=tfirst) particles per cell
 c      
       real*8,allocatable :: grd_emit(:,:,:) !(nx,ny,nz) amount of fictitious thermal energy emitted per cell in a time step
-      real*8,allocatable :: grd_emitex(:,:,:) !(nx,ny,nz) amount of external energy emitted per cell per group in a time step
+      real*8,allocatable :: grd_emitex(:,:,:) !(nx,ny,nz) amount of external energy emitted per cell in a time step
       real*8,allocatable :: grd_evolinit(:,:,:) !(nx,ny,nz) amount of initial energy per cell per group
 c
       real*8,allocatable :: grd_temp(:,:,:) !(nx,ny,nz)
@@ -122,8 +122,8 @@ c-- ndim=3 alloc
       allocate(grd_sig(nx,ny,nz))
       allocate(grd_fcoef(nx,ny,nz))
       allocate(grd_eraddens(nx,ny,nz))
-      allocate(grd_temp(nx,ny,nz))  !cell average temperature
-      allocate(grd_vol(nx,ny,nz))  !cell average temperature
+      allocate(grd_temp(nx,ny,nz))
+      allocate(grd_vol(nx,ny,nz))
 c
       allocate(grd_emit(nx,ny,nz))
       allocate(grd_emitex(nx,ny,nz))
@@ -141,7 +141,7 @@ c-- ndim=4 alloc
       allocate(grd_opacleak(6,nx,ny,nz))
 c-- ndim=4 alloc
       allocate(grd_emitprob(ng,nx,ny,nz))
-      allocate(grd_cap(ng,nx,ny,nz)) !Line+Cont extinction coeff
+      allocate(grd_cap(ng,nx,ny,nz))
 c!}}}
       end subroutine grid_init
 c

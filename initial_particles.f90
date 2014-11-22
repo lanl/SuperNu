@@ -85,7 +85,7 @@ subroutine initial_particles
      mu0 = 1d0-2d0*r1
 
 !-- calculating particle energy
-     ep0 = grd_evolinit(i,j,k)/real(grd_nvolinit(i,j,k))
+     ep0 = grd_evolinit(i,j,k)/dble(grd_nvolinit(i,j,k))
 
 !
 !-- selecting geometry

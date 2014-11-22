@@ -13,7 +13,7 @@ c     ----------------------------------------------
       integer :: mm, im
 
       mm = 100
-      dx = (t2-t1)/real(2*mm)
+      dx = (t2-t1)/dble(2*mm)
       
       ss = 0.0
       if (t2 .ne. 0.0) then

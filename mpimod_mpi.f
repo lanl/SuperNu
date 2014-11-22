@@ -296,7 +296,7 @@ c     -------------------------------------!{{{
       integer :: group_world,group_gas
 c
 c-- find minimum number of cells per rank
-      ncprmin = ceiling(ncell/real(nmpi))
+      ncprmin = ceiling(ncell/dble(nmpi))
       do ncpr=ncprmin,2*ncprmin
        if(mod(ncell,ncpr)==0) exit
       enddo
