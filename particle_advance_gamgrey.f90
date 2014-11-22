@@ -20,7 +20,7 @@ subroutine particle_advance_gamgrey(nmpi)
   real*8 :: r1
   integer :: i, j, k, ii, iimpi
   integer,pointer :: ix, iy, iz
-  real*8,pointer :: e,x,y
+  real*8,pointer :: x,y,z,mu,om,e,e0
   real*8 :: t0,t1  !timing
   real*8 :: labfact, cmffact, azitrfm, mu1, mu2
   real*8 :: etot,pwr
@@ -84,9 +84,13 @@ subroutine particle_advance_gamgrey(nmpi)
   ix => ptcl%ix
   iy => ptcl%iy
   iz => ptcl%iz
-  e => ptcl%e
   x => ptcl%x
   y => ptcl%y
+  z => ptcl%z
+  mu => ptcl%mu
+  om => ptcl%om
+  e => ptcl%e
+  e0 => ptcl%e0
 !-- unused
 !    real*8 :: tsrc
 !    real*8 :: wlsrc
@@ -117,104 +121,104 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- calculating position!{{{
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        ptcl%x = (r1*grd_xarr(ix+1)**3 + &
+        x = (r1*grd_xarr(ix+1)**3 + &
              (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
 !-- must be inside cell
-        ptcl%x = min(ptcl%x,grd_xarr(ix+1))
-        ptcl%x = max(ptcl%x,grd_xarr(ix))
+        x = min(x,grd_xarr(ix+1))
+        x = max(x,grd_xarr(ix))
 !--
         if(grd_isvelocity) then
-           x0 = ptcl%x
+           x0 = x
            cmffact = 1d0+mu0*x0/pc_c !-- 1+dir*v/c
-           ptcl%mu = (mu0+x0/pc_c)/cmffact
+           mu = (mu0+x0/pc_c)/cmffact
         else
-           ptcl%mu = mu0
+           mu = mu0
         endif!}}}
      case(2)
 !-- calculating position!{{{
         r1 = rand()
-        ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + &
+        x = sqrt(r1*grd_xarr(i+1)**2 + &
              (1d0-r1)*grd_xarr(i)**2)
 !-- must be inside cell
-        ptcl%x = min(ptcl%x,grd_xarr(ix+1))
-        ptcl%x = max(ptcl%x,grd_xarr(ix))
+        x = min(x,grd_xarr(ix+1))
+        x = max(x,grd_xarr(ix))
 !
         r1 = rand()
-        ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
+        y = r1*grd_yarr(j+1) + (1d0-r1) * &
              grd_yarr(j)
 !-- sampling azimuthal angle of direction
         r1 = rand()
         om0 = pc_pi2*r1
 !-- if velocity-dependent, transforming direction
         if(grd_isvelocity) then
-           x0 = ptcl%x
-           y0 = ptcl%y
+           x0 = x
+           y0 = y
 !-- 1+dir*v/c
            cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
            azitrfm = atan2(sqrt(1d0-mu0**2)*sin(om0), &
                 sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
 !-- mu
-           ptcl%mu = (mu0+y0/pc_c)/cmffact
-           if(ptcl%mu>1d0) then
-              ptcl%mu = 1d0
-           elseif(ptcl%mu<-1d0) then
-              ptcl%mu = -1d0
+           mu = (mu0+y0/pc_c)/cmffact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
            endif
 !-- om
            if(azitrfm >= 0d0) then
-              ptcl%om = azitrfm
+              om = azitrfm
            else
-              ptcl%om = azitrfm+pc_pi2
+              om = azitrfm+pc_pi2
            endif
         else
-           ptcl%mu = mu0
-           ptcl%om = om0
+           mu = mu0
+           om = om0
         endif!}}}
      case(3)
 !-- setting 2nd,3rd cell index!{{{
-        ptcl%iy = j
-        ptcl%iz = k
+        iy = j
+        iz = k
 !-- calculating position
         r1 = rand()
-        ptcl%x = r1*grd_xarr(i+1) + (1d0-r1) * &
+        x = r1*grd_xarr(i+1) + (1d0-r1) * &
              grd_xarr(i)
         r1 = rand()
-        ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
+        y = r1*grd_yarr(j+1) + (1d0-r1) * &
              grd_yarr(j)
         r1 = rand()
-        ptcl%z = r1*grd_zarr(k+1) + (1d0-r1) * &
+        z = r1*grd_zarr(k+1) + (1d0-r1) * &
              grd_zarr(k)
 !-- sampling azimuthal angle of direction
         r1 = rand()
         om0 = pc_pi2*r1
 !-- if velocity-dependent, transforming direction
         if(grd_isvelocity) then
-           x0 = ptcl%x
-           y0 = ptcl%y
-           z0 = ptcl%z
+           x0 = x
+           y0 = y
+           z0 = z
 !-- 1+dir*v/c
            mu1 = sqrt(1d0-mu0**2)*cos(om0)
            mu2 = sqrt(1d0-mu0**2)*sin(om0)
            cmffact = 1d0+(mu0*z0+mu1*x0+mu2*y0)/pc_c
 !-- mu
-           ptcl%mu = (mu0+z0/pc_c)/cmffact
-           if(ptcl%mu>1d0) then
-              ptcl%mu = 1d0
-           elseif(ptcl%mu<-1d0) then
-              ptcl%mu = -1d0
+           mu = (mu0+z0/pc_c)/cmffact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
            endif
 !-- om
-           ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
-           if(ptcl%om<0d0) ptcl%om = ptcl%om+pc_pi2
+           om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
+           if(om<0d0) om = om+pc_pi2
         else
-           ptcl%mu = mu0
-           ptcl%om = om0
+           mu = mu0
+           om = om0
         endif!}}}
      endselect
 !
 !-- emission energy per particle
      e = grd_emitex(ix,iy,iz)/nemit*cmffact
-     ptcl%e0 = e
+     e0 = e
 
 !-----------------------------------------------------------------------
 !-- Advancing particle until census, absorption, or escape from domain
@@ -227,16 +231,16 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- verify position
            if(.not.prt_done .and. (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
               write(0,*) 'prt_adv_ggrey: not in cell', &
-                 ix,x,grd_xarr(ix),grd_xarr(ix+1),ptcl%mu
+                 ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
            endif
 !-- transformation factor
            if(grd_isvelocity) then
-              labfact = 1.0d0 - ptcl%mu*ptcl%x/pc_c
+              labfact = 1.0d0 - mu*x/pc_c
            else
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (e<1d-6*ptcl%e0 .and. .not.prt_done) then
+           if (e<1d-6*e0 .and. .not.prt_done) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
@@ -244,7 +248,7 @@ subroutine particle_advance_gamgrey(nmpi)
                  grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
               else
                  e = 2d0*e
-                 ptcl%e0 = 2d0*ptcl%e0
+                 e0 = 2d0*e0
               endif
            endif
         enddo!}}}
@@ -255,22 +259,22 @@ subroutine particle_advance_gamgrey(nmpi)
            if(.not.prt_done) then
               if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
                 write(0,*) 'prt_adv_ggrey: r not in cell', &
-                   ix,x,grd_xarr(ix),grd_xarr(ix+1),ptcl%mu
+                   ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
               endif
               if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
                 write(0,*) 'prt_adv_ggrey: r not in cell', &
-                   iy,y,grd_yarr(iy),grd_yarr(iy+1),ptcl%mu
+                   iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
               endif
            endif
 !-- transformation factor
            if(grd_isvelocity) then
-              labfact = 1d0-(ptcl%mu*ptcl%y+sqrt(1d0-ptcl%mu**2) * &
-                   cos(ptcl%om)*ptcl%x)/pc_c
+              labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
+                   cos(om)*x)/pc_c
            else
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (e<1d-6*ptcl%e0 .and. .not.prt_done) then
+           if (e<1d-6*e0 .and. .not.prt_done) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
@@ -278,7 +282,7 @@ subroutine particle_advance_gamgrey(nmpi)
                  grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
               else
                  e = 2d0*e
-                 ptcl%e0 = 2d0*ptcl%e0
+                 e0 = 2d0*e0
               endif
            endif
         enddo!}}}
@@ -287,13 +291,13 @@ subroutine particle_advance_gamgrey(nmpi)
            call transport3_gamgrey(ptcl)
 !-- transformation factor
            if(grd_isvelocity) then
-              labfact = 1d0-(ptcl%mu*ptcl%z+sqrt(1d0-ptcl%mu**2) * &
-                   (cos(ptcl%om)*ptcl%x+sin(ptcl%om)*ptcl%y))/pc_c
+              labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &
+                   (cos(om)*x+sin(om)*y))/pc_c
            else
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (e<1d-6*ptcl%e0 .and. .not.prt_done) then
+           if (e<1d-6*e0 .and. .not.prt_done) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
@@ -301,7 +305,7 @@ subroutine particle_advance_gamgrey(nmpi)
                  grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
               else
                  e = 2d0*e
-                 ptcl%e0 = 2d0*ptcl%e0
+                 e0 = 2d0*e0
               endif
            endif
         enddo!}}}
