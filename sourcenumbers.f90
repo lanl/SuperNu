@@ -1,5 +1,5 @@
 subroutine sourcenumbers
-
+!{{{
   use mpimod
   use totalsmod
   use gridmod
@@ -15,9 +15,10 @@ subroutine sourcenumbers
 
   integer :: i,j,k,iimpi
   real*8 :: base
-  integer :: nsbase,n
-  integer*8 :: nstot,nsavail,ndone
-  real*8 :: esqrt,einv,pwr,edone,e,invn
+  integer :: n,ndone
+  real*8,parameter :: basefrac=.1d0
+  integer*8 :: nstot,nsavail,nsbase
+  real*8 :: etot,einv,pwr,edone,en,invn
   integer :: nemit,nvol,nvolex
 ! tot_esurf for any new prt_particles from a surface source
 ! prt_nsurf = number of surface prt_particles
@@ -29,20 +30,19 @@ subroutine sourcenumbers
 !-- total particle number
   nstot = nmpi*int(prt_ns,8)
 
-!-- esqrt
-  esqrt = sum(grd_emit**pwr) + sum(grd_emitex**pwr) + tot_esurf**pwr
-  einv = 1d0/esqrt
+!-- etot
+  etot = sum(grd_emit**pwr) + sum(grd_emitex**pwr) + tot_esurf**pwr
 
 !-- calculating number of boundary particles (if any)
-  prt_nsurf = nint(tot_esurf**pwr*nstot/esqrt)
+  prt_nsurf = nint(tot_esurf**pwr*nstot/etot)
 
 !-- base (flat,constant) particle number per cell over ALL RANKS
-  base = dble(nstot - prt_nsurf)/(grd_nx*grd_ny*grd_nz)  !uniform distribution
-  base = base/10d0
+  n = count(grd_emit>0d0 .or. grd_emitex>0d0)  !number of cells with nonzero energy
+  base = dble(nstot - prt_nsurf)/n  !uniform distribution
+  base = basefrac*base
 
 !-- number of particles available for proportional distribution
-  n = count(grd_emit>0d0 .or. grd_emitex>0d0)  !number of cells with nonzero energy
-  nsbase = int(n*base)  !total number of base particles
+  nsbase = int(n*base,8)  !total number of base particles
   nsavail = nstot - nsbase - prt_nsurf
 
 
@@ -50,16 +50,17 @@ subroutine sourcenumbers
   edone = 0d0
   ndone = 0
   invn = 1d0/(nsavail + nsbase)
+  einv = 1d0/etot
   do k=1,grd_nz
   do j=1,grd_ny
   do i=1,grd_nx
-     e = grd_emit(i,j,k)**pwr + grd_emitex(i,j,k)**pwr
-     if(e==0d0) cycle
+     en = grd_emit(i,j,k)**pwr + grd_emitex(i,j,k)**pwr
+     if(en==0d0) cycle
 !-- continuously guide the rounding towards the correct cumulative value
-     n = int(e*nsavail*einv + base)  !round down
+     n = int(en*nsavail*einv + base)  !round down
      if(edone*einv>ndone*invn) n = n + 1  !round up
      grd_nvol(i,j,k) = n
-     edone = edone + e
+     edone = edone + en
      ndone = ndone + n
   enddo
   enddo
@@ -82,13 +83,13 @@ subroutine sourcenumbers
   enddo
   enddo
   enddo
-
+!}}}
 end subroutine sourcenumbers
 
 
 
 subroutine sourcenumbers_roundrobin(iimpi,evol,evolex,ntot,mvol,nvol,nvolex)
-  use mpimod
+  use mpimod!{{{
   implicit none
   integer,intent(inout) :: iimpi
   real*8,intent(in) :: evol,evolex
@@ -123,5 +124,5 @@ subroutine sourcenumbers_roundrobin(iimpi,evol,evolex,ntot,mvol,nvol,nvolex)
      iimpi = iimpi + 1
      if(iimpi==nmpi) iimpi = 0
   enddo
-
+!}}}
 end subroutine sourcenumbers_roundrobin

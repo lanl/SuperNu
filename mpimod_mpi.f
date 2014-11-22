@@ -460,7 +460,6 @@ c
       snd3 = grd_edep
       call mpi_allreduce(snd3,grd_edep,n,MPI_REAL8,MPI_SUM,
      &  MPI_COMM_WORLD,ierr)
-      grd_edep = grd_edep/dble(nmpi)
 c!}}}
       end subroutine allreduce_gammaenergy
 c

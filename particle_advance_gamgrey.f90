@@ -1,4 +1,4 @@
-subroutine particle_advance_gamgrey
+subroutine particle_advance_gamgrey(nmpi)
 
   use particlemod
   use gridmod
@@ -7,6 +7,7 @@ subroutine particle_advance_gamgrey
   use timingmod
   use fluxmod
   implicit none
+  integer,intent(in) :: nmpi
 !##################################################
   !This subroutine propagates all existing particles that are not vacant
   !during a time step.  Particles may generally undergo a physical interaction
@@ -15,17 +16,21 @@ subroutine particle_advance_gamgrey
   !are being handled in separate subroutines but this may be changed to reduce
   !total subroutine calls in program.
 !##################################################
-  integer :: ipart, npart, nsfloor
-  integer,external :: binsrch
+  integer :: ipart, npart
+  integer :: nhere, nemit, ndmy
   real*8 :: r1
-  integer :: i, j, k
+  integer :: i, j, k, ii, iimpi
   integer,pointer :: ix, iy, iz
   real*8,pointer :: e,x,y
   real*8 :: t0,t1  !timing
   real*8 :: labfact, cmffact, azitrfm, mu1, mu2
-  real*8 :: esq
+  real*8 :: etot,pwr
   real*8 :: om0, mu0, x0, y0, z0
-  integer, dimension(grd_nx,grd_ny,grd_nz) :: ijkused
+!
+  real*8,parameter :: basefrac=.1d0
+  real*8 :: base,edone,einv,invn,en
+  integer :: n,ndone
+  integer*8 :: nstot,nsavail,nsbase
 !-- hardware
 !
   type(packet),target :: ptcl
@@ -35,22 +40,46 @@ subroutine particle_advance_gamgrey
   flx_gamlumdev = 0.0
   flx_gamlumnum = 0
 !
-!--(rev. 121)
   grd_eraddens = 0d0
-!--
   grd_numcensus = 0
-  
-  call time(t0)
 
-  esq = sum(sqrt(grd_emitex))
-  grd_nvol = nint(sqrt(grd_emitex)/esq*prt_ns)  !-- no source tilting yet
-!-- floor under particle per cell number
-  nsfloor = prt_ns/(grd_nx*grd_ny*grd_nz)
-  nsfloor = max(1,nsfloor/10)
-  where(grd_emitex>0d0) grd_nvol = max(grd_nvol,nsfloor)
-!-- total number of particles
-  npart = sum(grd_nvol)
-! write(6,*) 'gam: npart,nsfloor:',npart,nsfloor
+!-- shortcut
+  pwr = in_srcepwr
+
+!-- total particle number
+  nstot = nmpi*int(prt_ns,8)
+
+!-- total energy (converted by pwr)
+  etot = sum(grd_emitex**pwr)
+
+!-- base (flat,constant) particle number per cell over ALL RANKS
+  n = count(grd_emitex>0d0)  !number of cells that emit
+  base = dble(nstot)/n  !uniform distribution
+  base = basefrac*base
+
+!-- number of particles available for proportional distribution
+  nsbase = int(n*base,8)  !total number of base particles
+  nsavail = nstot - nsbase
+
+!-- total particle number per cell
+  edone = 0d0
+  ndone = 0
+  invn = 1d0/nstot
+  einv = 1d0/etot
+  do k=1,grd_nz
+  do j=1,grd_ny
+  do i=1,grd_nx
+     en = grd_emitex(i,j,k)**pwr
+     if(en==0d0) cycle
+!-- continuously guide the rounding towards the correct cumulative value
+     n = int(en*nsavail*einv + base)  !round down
+     if(edone*einv>ndone*invn) n = n + 1  !round up
+     grd_nvol(i,j,k) = n
+     edone = edone + en
+     ndone = ndone + n
+  enddo
+  enddo
+  enddo
 
 !--
   ix => ptcl%ix
@@ -59,42 +88,24 @@ subroutine particle_advance_gamgrey
   e => ptcl%e
   x => ptcl%x
   y => ptcl%y
-
 !-- unused
 !    real*8 :: tsrc
 !    real*8 :: wlsrc
 !    integer :: rtsrc
 
-!-- start from the left
-  i = 1
-  j = 1
-  k = 1
-  ijkused = 0
+  call time(t0)
 
-! Propagating all particles that are not considered vacant: loop
-  do ipart=1,npart
-!
-!-- find cell in which to generate the particle
-     loop_k: do k=k,grd_nz
-        do j=j,grd_ny
-           do i=i,grd_nx
-             if(ijkused(i,j,k)<grd_nvol(i,j,k)) exit loop_k !still particles left to generate
-           enddo
-           i = 1
-        enddo
-        j = 1
-     enddo loop_k
-     if(i==grd_nx+1) stop 'prt_adv_gamgrey: particle generation error1'
-     if(j==grd_ny+1) stop 'prt_adv_gamgrey: particle generation error2'
-     if(k==grd_nz+1) stop 'prt_adv_gamgrey: particle generation error3'
-!
+  iimpi = 0
+  do k=1,grd_nz
+  do j=1,grd_ny
+  do i=1,grd_nx
+     call sourcenumbers_roundrobin(iimpi,grd_emitex(i,j,k), &
+        0d0,grd_nvol(i,j,k),nemit,nhere,ndmy)
+  do ii=1,nhere
 !-- adopt position
      ix = i
      iy = j
      iz = k
-!
-!-- decrease particle-in-cell counter
-     ijkused(ix,iy,iz) = ijkused(ix,iy,iz) + 1
 
 !-- calculating direction cosine (comoving)
      r1 = rand()
@@ -203,10 +214,10 @@ subroutine particle_advance_gamgrey
      endselect
 !
 !-- emission energy per particle
-     e = grd_emitex(ix,iy,iz)/grd_nvol(ix,iy,iz)*cmffact
+     e = grd_emitex(ix,iy,iz)/nemit*cmffact
      ptcl%e0 = e
 
-!-----------------------------------------------------------------------        
+!-----------------------------------------------------------------------
 !-- Advancing particle until census, absorption, or escape from domain
      prt_done=.false.
 !
@@ -297,11 +308,12 @@ subroutine particle_advance_gamgrey
         enddo!}}}
      endselect
 
-  enddo !ipart
+  enddo !ii
+  enddo !i
+  enddo !j
+  enddo !k
 
   call time(t1)
-  t_pckt_stat = t1-t0  !register timing
   call timereg(t_pcktgam, t1-t0)
-
 
 end subroutine particle_advance_gamgrey

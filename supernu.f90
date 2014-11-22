@@ -192,9 +192,13 @@ program supernu
 
 !-- grey gamma ray transport
     if(in_srctype=='none' .and. .not.in_novolsrc) then
-       call particle_advance_gamgrey
+       call particle_advance_gamgrey(nmpi)
        call allreduce_gammaenergy !MPI
-!      grd_edep = grd_emitex  !-- testing: local deposition
+!-- testing: local deposition
+!      grd_edep = grd_emitex
+!-- testing: dump integral numbers
+!      if(impi==impi0) write(6,*) 'source:', &
+!         sum(grd_emitex),sum(grd_edep),sum(grd_edep)/sum(grd_emitex)
        call sourceenergy_gamma
     endif
 
