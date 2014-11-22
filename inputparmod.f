@@ -112,6 +112,7 @@ c-- external source structure
       integer :: in_nheav = 0   !outer cell bound if heaviside ('heav') source
       real*8 :: in_theav = 0d0 !duration of heaviside source
       real*8 :: in_srcmax = 0d0 !peak source strength
+      real*8 :: in_srcepwr = 1d0 !source particle number-energy slope, 1 is linear, equal number of packets per erg.
 c
 c-- misc
       character(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
@@ -145,7 +146,7 @@ c-- runtime parameter namelist
      & in_gas_cvcoef,in_gas_cvtpwr,in_gas_cvrpwr,
      & in_opacanaltype,in_suol,
      & in_suolpick1, in_ldisp1, in_ldisp2,
-     & in_srctype,in_theav,in_nheav,in_srcmax,
+     & in_srctype,in_theav,in_nheav,in_srcmax,in_srcepwr,
      & in_surfsrcloc,in_surfsrcmu,
      & in_isimcanlog, in_isddmcanlog,
      & in_tauddmc, in_dentype, in_noreadstruct,
@@ -265,6 +266,7 @@ c
       call inserti(in_nheav,in_i,ii)
       call insertr(in_theav,in_r,ir)
       call insertr(in_srcmax,in_r,ir)
+      call insertr(in_srcepwr,in_r,ir)
       call insertc(in_opacdump,in_c,ic)
       call insertc(in_pdensdump,in_c,ic)
       call insertl(in_noeos,in_l,il)

@@ -19,30 +19,22 @@ in_ndim = 64, 1, 1
 in_isvelocity = t
 in_dentype = 'mass'
 
+!-- flux grid
+in_flx_ndim = 150, 1, 1
+
 !-- flat structures
 in_consttemp = 1d4
-
-!-- flux settings
-in_flx_ndim = 250, 1, 1
-
-!-- external source type
-in_srctype = 'none'
-in_srcmax = 4d24
-!-- heaviside case
-in_theav = 9d0
-in_nheav = 40
-
-!-- group absorption opacity structure type
-in_opacanaltype = 'none'
 
 !-- group settings
 in_ng = 250
 in_ngs = 0
+in_opacmixrossel = 0
+in_wldex = 0
 
 !-- particle numbers
-in_ns0 = 1000
 in_ns  = 1000
 in_prt_nmax = 1000000
+in_srcepwr = .5d0
 
 !-- imc tally method
 in_isimcanlog = f
