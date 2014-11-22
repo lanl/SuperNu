@@ -96,9 +96,9 @@ c-- write output on master rank only
 c-- header
        if(.not.lexist) then
          write(4,'("#",30a12)') 't_gasupd','t_eos',
-     &   't_opac','t_bb','t_bf','t_ff','t_pcktgam',
-     &   't_pmin','t_pmea','t_pmax',
-     &   't_pcktnpckt','t_pcktnddmc','t_pcktnimc'
+     &   't_opac','t_bb','t_bf','t_ff','t_pgam',
+     &   't_pmin','t_pmean','t_pmax',
+     &   'n_pckt','n_ddmc','n_imc'
        endif
 c-- body
        write(4,'(1x,30g12.2)') registers(2,:)

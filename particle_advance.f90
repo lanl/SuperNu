@@ -679,44 +679,8 @@ subroutine particle_advance
   call timereg(t_pcktnpckt, dble(npckt))
   call timereg(t_pcktnddmc, dble(nddmc))
   call timereg(t_pcktnimc, dble(nimc))
-  npckt = 0
-  nddmc = 0
-  nimc = 0
   !write(6,*) eleft, eright
 
   tot_eext = tot_eext-tot_eleft-tot_eright
 
 end subroutine particle_advance
-
-
-              !wl = 0.5d0*(grd_wl(ig)+grd_wl(ig+1))
-              !r1 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-              !wl=grd_wl(ig)*(1d0-r1)+grd_wl(ig+1)*r1
-              !
-!               r1 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-!               if(r1<grd_cap(ig,ix,1,1)/(grd_cap(ig,ix,1,1)+grd_sig(ix,1,1))) then
-!                  x1 = pc_h*pc_c/(grd_wl(ig+1)*pc_kb*grd_temp(ix,1,1))
-!                  x2 = pc_h*pc_c/(grd_wl(ig)*pc_kb*grd_temp(ix,1,1))
-!                  if (x2<pc_plkpk) then
-!                     bmax = x2**3/(exp(x2)-1d0)
-!                  elseif (x1>pc_plkpk) then
-!                     bmax = x1**3/(exp(x1)-1d0)
-!                  else
-!                     bmax = pc_plkpk
-!                  endif
-!                  r1 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-!                  r2 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-!                  xx0 = (1d0-r1)*x1+r1*x2
-!                  do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
-!                     r1 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-!                     r2 = rand()
-!           prt_tlyrand = prt_tlyrand+1
-!                     xx0 = (1d0-r1)*x1+r1*x2
-!                  enddo
-!                  wl = pc_h*pc_c/(xx0*pc_kb*grd_temp(ix,1,1))
-!               else

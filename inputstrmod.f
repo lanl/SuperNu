@@ -26,30 +26,131 @@ c
       contains
 c
 c
+c
       subroutine read_inputstr(igeom,ndim)
-c     -------------------------------------!{{{
+c     -----------------------------------!{{{
+      use physconstmod
+      use gasmod, only:gas_ini56,gas_ico56
+      use miscmod
       implicit none
       integer,intent(in) :: igeom
       integer,intent(in) :: ndim(3)
 ************************************************************************
-* wrapper around routines for different geometries
+* Read the input structure file
 ************************************************************************
+      integer :: i,ierr,nx,ny,nz,nx_r,ny_r,nz_r,ini56,nvar
+      character(2) :: dmy
+      character(8),allocatable :: labl(:)
+      real*8,allocatable :: raw(:,:)
+      real*8 :: mni56
+c
+c-- copy
+      nx = ndim(1)
+      ny = ndim(2)
+      nz = ndim(3)
+c
+c-- open file
+      open(4,file=fname,status='old',iostat=ierr)
+      if(ierr/=0) stop 'read_inputstr: file missing: input.str'
+c
+c-- read dimensions
+      read(4,*)
+      read(4,*,iostat=ierr) dmy, nx_r,ny_r,nz_r,str_nabund
+      if(ierr/=0) stop 'read_inputstr: input.str fmt err: dimensions'
+c-- verify dimension
+      if(nx_r/=nx) stop 'read_inputstr: incompatible nx dimension'
+      if(ny_r/=ny) stop 'read_inputstr: incompatible ny dimension'
+      if(nz_r/=nz) stop 'read_inputstr: incompatible ny dimension'
+c
+c-- nvar
       select case(igeom)
       case(1)
-       call read_inputstr1(ndim)
+       nvar = 2
       case(2)
-       call read_inputstr2(ndim)
+       nvar = 5
       case(3)
-       call read_inputstr3(ndim)
+       nvar = 7
       case default
-       stop 'read_inputstr: invalid igeom'
-      endselect
+       stop 'read_inputstr: igeom invalid'
+      end select
 c
-c-- allocate remaining arrays
-      if(.not.allocated(str_yleft)) allocate(str_yleft(2))
-      if(.not.allocated(str_zleft)) allocate(str_zleft(2))
+c-- allocate label arrays
+      allocate(str_abundlabl(str_nabund))
+      allocate(labl(nvar))
+c
+c-- read labels
+      read(4,*,iostat=ierr) dmy, labl, str_abundlabl
+      if(ierr/=0) stop 'read_inputstr: input.str fmt err: col labels'
+c
+c-- allocate data arrays
+      allocate(str_xleft(nx+1))
+      allocate(str_yleft(ny+1))
+      allocate(str_zleft(nz+1))
+      allocate(str_mass(nx,ny,nz))
+      allocate(str_massfr(str_nabund,nx,ny,nz))
+      allocate(raw(nvar+str_nabund,nx*ny*nz))
+c
+c-- read body
+      read(4,*,iostat=ierr) raw
+      if(ierr/=0) stop 'read_inputstr: input.str format err: body'
+      read(4,*,iostat=ierr) dmy
+      if(ierr/=-1) stop 'read_inputstr: input.str body too long'
+c
+c-- transer data to final arrays
+c-- first dim
+      if(igeom==1) then
+       str_xleft(1) = 0d0
+       str_xleft(2:) = raw(1,:nx)
+      else
+       str_xleft(1) = raw(1,1)
+       str_xleft(2:) = raw(2,:nx)
+      endif
+c-- second dim
+      if(igeom>1) then
+       str_yleft(1) = raw(3,1)
+       do i=1,ny
+        str_yleft(i+1) = raw(4,nx*(i-1)+1)
+       enddo
+      endif
+c-- third dim
+      if(igeom>2) then
+       str_zleft(1) = raw(5,1)
+       do i=1,nz
+        str_zleft(i+1) = raw(6,nx*ny*(i-1)+1)
+       enddo
+      endif
+c-- mass
+      str_mass(:,:,:) = reshape(raw(nvar,:),[nx,ny,nz])
+      str_massfr(:,:,:,:) =reshape(raw(nvar+1:,:),[str_nabund,nx,ny,nz])
+c
+c-- close file
+      close(4)
+      deallocate(raw)
+c
+c-- convert abundlabl to element codes
+      call elnam2elcode(ini56)
+c
+c-- ni56 mass
+      if(ini56>0) then
+       mni56 = sum(str_massfr(ini56,:,:,:)*str_mass)
+      else
+       mni56 = 0d0
+      endif
+!c-- kinetic energy
+!      ekin = 
+c
+c-- output
+      write(6,*)
+      write(6,*) 'input structure:'
+      write(6,*) '===================='
+      write(6,*) 'igeom :',igeom
+      write(6,*) 'ndim  :',nx,ny,nz
+      write(6,*) 'mass  :', sum(str_mass)/pc_msun, 'Msun'
+      write(6,*) 'm_ni56:', mni56/pc_msun, 'Msun'
+!     write(6,*) 'e_kin :', ekin, 'erg'
 c!}}}
       end subroutine read_inputstr
+c
 c
 c
       subroutine generate_inputstr(igeom)
@@ -75,202 +176,6 @@ c-- allocate remaining arrays
       if(.not.allocated(str_zleft)) allocate(str_zleft(2))
 c!}}}
       end subroutine generate_inputstr
-c
-c
-c
-c
-      subroutine read_inputstr1(ndim)
-c     -----------------------------------!{{{
-      use physconstmod
-      use gasmod, only:gas_ini56,gas_ico56
-      use miscmod
-      implicit none
-      integer,intent(in) :: ndim(3)
-************************************************************************
-* Read the input structure file
-************************************************************************
-      integer :: ierr,nx,nx_r,ini56
-      character(2) :: dmy
-      character(8) :: labl(2)
-      real*8,allocatable :: raw(:,:)
-      real*8 :: help
-c
-c-- copy
-      nx = ndim(1)
-c
-c-- open file
-      open(4,file=fname,status='old',iostat=ierr)
-      if(ierr/=0) stop 'read_inputstr1: file missing: input.str'
-c
-c-- read dimensions
-      read(4,*)
-      read(4,*,iostat=ierr) dmy,nx_r,str_nabund
-      if(ierr/=0) stop 'read_inputstr1: input.str fmt err: dimensions'
-c-- verify dimension
-      if(nx_r/=nx) stop 'read_inputstr1: incompatible nx dimension'
-c
-c-- allocate arrays
-      allocate(str_xleft(nx+1))
-      allocate(str_mass(nx,1,1))
-      allocate(str_massfr(str_nabund,nx,1,1))
-      allocate(str_abundlabl(str_nabund))
-      allocate(raw(str_nabund+2,nx))
-c
-c-- read labels
-      read(4,*,iostat=ierr) dmy, labl, str_abundlabl
-      if(ierr/=0) stop 'read_inputstr1: input.str fmt err: col labels'
-c
-c-- read body
-      read(4,*,iostat=ierr) raw
-      if(ierr/=0) stop 'read_inputstr1: input.str format err: body'
-c
-c-- transer data to final arrays
-      str_xleft(1) = 0d0
-      str_xleft(2:) = raw(1,:)
-      str_mass(:,1,1) = raw(2,:)
-      str_massfr(:,:,1,1) = raw(3:,:)
-c
-c-- close file
-      close(4)
-      deallocate(raw)
-c
-c-- convert abundlabl to element codes
-      call elnam2elcode(ini56)
-c
-c-- output
-      write(6,*)
-      write(6,*) 'input structure 1D:'
-      write(6,*) '===================='
-      write(6,*) 'mass  :', sum(str_mass)/pc_msun, 'Msun'
-c-- ni56 mass
-      if(ini56>0) then
-       help = sum(str_massfr(ini56,:,:,:)*str_mass)
-      else
-       help = 0d0
-      endif
-      write(6,*) 'm_ni56:', help/pc_msun, 'Msun'
-c!}}}
-      end subroutine read_inputstr1
-c
-c
-      subroutine read_inputstr2(ndim)
-c     -----------------------------------!{{{
-      use physconstmod
-      use gasmod, only:gas_ini56,gas_ico56
-      use miscmod
-      implicit none
-      integer,intent(in) :: ndim(3)
-************************************************************************
-* Read the input structure file
-************************************************************************
-      integer :: ierr,nx,ny,nx_r,ny_r,nz_r,ini56,j
-      character(2) :: dmy
-      character(8) :: labl(5)
-      real*8,allocatable :: raw(:,:)
-      real*8 :: help
-c
-c-- copy
-      nx = ndim(1)
-      ny = ndim(2)
-c
-c-- open file
-      open(4,file=fname,status='old',iostat=ierr)
-      if(ierr/=0) stop 'read_inputstr2: file missing: input.str'
-c
-c-- read dimensions
-      read(4,*)
-      read(4,*,iostat=ierr) dmy, nx_r,ny_r,nz_r,str_nabund
-      if(ierr/=0) stop 'read_inputstr2: input.str fmt err: dimensions'
-c-- verify dimension
-      if(nx_r/=nx) stop 'read_inputstr2: incompatible nx dimension'
-      if(ny_r/=ny) stop 'read_inputstr2: incompatible ny dimension'
-c
-c-- allocate arrays
-      allocate(str_xleft(nx+1))
-      allocate(str_yleft(ny+1))
-      allocate(str_mass(nx,ny,1))
-      allocate(str_massfr(str_nabund,nx,ny,1))
-      allocate(str_abundlabl(str_nabund))
-      allocate(raw(5+str_nabund,nx*ny))
-c
-c-- read labels
-      read(4,*,iostat=ierr) dmy, labl, str_abundlabl
-      if(ierr/=0) stop 'read_inputstr2: input.str fmt err: col labels'
-c
-c-- read body
-      read(4,*,iostat=ierr) raw
-      if(ierr/=0) stop 'read_inputstr2: input.str format err: body'
-c
-c-- transer data to final arrays
-      str_xleft(1) = raw(1,1)
-      str_xleft(2:) = raw(2,:nx)
-      str_yleft(1) = raw(3,1)
-      do j=1,ny
-       str_yleft(j+1) = raw(4,nx*(j-1)+1)
-      enddo
-      str_mass(:,:,1) = reshape(raw(5,:),[nx,ny])
-      str_massfr(:,:,:,1) = reshape(raw(6:,:),[str_nabund,nx,ny])
-c
-c-- close file
-      close(4)
-      deallocate(raw)
-c
-c-- convert abundlabl to element codes
-      call elnam2elcode(ini56)
-c
-c-- output
-      write(6,*)
-      write(6,*) 'input structure 2D:'
-      write(6,*) '===================='
-      write(6,*) 'mass  :', sum(str_mass)/pc_msun, 'Msun'
-c-- ni56 mass
-      if(ini56>0) then
-       help = sum(str_massfr(ini56,:,:,:)*str_mass)
-      else
-       help = 0d0
-      endif
-      write(6,*) 'm_ni56:', help/pc_msun, 'Msun'
-c
-      deallocate(str_abundlabl)
-c!}}}
-      end subroutine read_inputstr2
-c
-c
-      subroutine read_inputstr3(ndim)
-c     -----------------------------------!{{{
-      use physconstmod
-      use gasmod, only:gas_ini56,gas_ico56
-      use miscmod
-      implicit none
-      integer,intent(in) :: ndim(3)
-************************************************************************
-* Read the input structure file
-************************************************************************
-      integer :: ini56
-      real*8 :: help
-c
-c-- dummy
-      stop 'read_inputstr3 is a stub'
-      write(6,*) ndim !use ndim so compiler doesn't complain
-c
-c-- convert abundlabl to element codes
-      call elnam2elcode(ini56)
-c
-c-- output
-      write(6,*)
-      write(6,*) 'input structure 3D:'
-      write(6,*) '===================='
-      write(6,*) 'mass  :', sum(str_mass)/pc_msun, 'Msun'
-c-- ni56 mass
-      if(ini56>0) then
-       help = sum(str_massfr(ini56,:,:,:)*str_mass)
-      else
-       help = 0d0
-      endif
-      write(6,*) 'm_ni56:', help/pc_msun, 'Msun'
-c!}}}
-      end subroutine read_inputstr3
-c
 c
 c
 c
