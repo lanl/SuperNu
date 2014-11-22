@@ -217,13 +217,18 @@ program supernu
 
 !-- advance particles
     call particle_advance
+!   write(0,*) it,impi,t_pckt_stat(1)
 
 !-- collect particle results from all workers
     call reduce_tally !MPI
 !
 !-- print packet advance load-balancing info
     !if(impi==impi0) write(6,'(1x,a,3(f9.2,"s"))') 'packets time(min|mean|max):',t_pckt_stat
-    if(impi==impi0) call timereg(t_pckt_allrank,t_pckt_stat(3))  !register particle advance timing
+    if(impi==impi0) then
+       call timereg(t_pcktmin,t_pckt_stat(1))
+       call timereg(t_pcktmea,t_pckt_stat(2))
+       call timereg(t_pcktmax,t_pckt_stat(3))
+    endif
 
 !-- collect data necessary for restart (tobe written by impi0)
     if(.not.in_norestart) call collect_restart_data !MPI

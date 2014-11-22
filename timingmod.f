@@ -12,7 +12,7 @@ c-- one-time events
       real*8 :: t_setup
       real*8 :: t_all
 c
-      integer,private,parameter :: mreg = 12
+      integer,private,parameter :: mreg = 13
       real*8,private,target :: registers(3,mreg)
 c
 c-- global-flow time registers:
@@ -23,8 +23,9 @@ c-- global-flow time registers:
       real*8,pointer :: t_bf(:) !bound-free opacity
       real*8,pointer :: t_ff(:) !bound-free opacity
 c-- packet transport
-      real*8,pointer :: t_pckt_allrank(:) !collect the max runtimes across all ranks
-      real*8,pointer :: t_pckt(:)
+      real*8,pointer :: t_pcktmin(:) !collect the max runtimes across all ranks
+      real*8,pointer :: t_pcktmea(:)
+      real*8,pointer :: t_pcktmax(:)
       real*8,pointer :: t_pcktgam(:)  !gamma transport
       real*8,pointer :: t_pcktnpckt(:)
       real*8,pointer :: t_pcktnddmc(:)
@@ -48,11 +49,12 @@ c     ----------------------
       t_ff =>     registers(:,6)    !bound-free opacity
 c--
       t_pcktgam =>      registers(:, 7)
-      t_pckt_allrank => registers(:, 8)  !collect the max runtimes across all ranks
-      t_pckt =>         registers(:, 9)
-      t_pcktnpckt =>    registers(:,10)
-      t_pcktnddmc =>    registers(:,11)
-      t_pcktnimc =>     registers(:,12)
+      t_pcktmin =>      registers(:, 8)  !collect the max runtimes across all ranks
+      t_pcktmea =>      registers(:, 9)  !collect the mean runtimes across all ranks
+      t_pcktmax =>      registers(:,10)  !collect the min runtimes across all ranks
+      t_pcktnpckt =>    registers(:,11)
+      t_pcktnddmc =>    registers(:,12)
+      t_pcktnimc =>     registers(:,13)
       end subroutine timing_init
 c
 c
@@ -95,7 +97,7 @@ c-- header
        if(.not.lexist) then
          write(4,'("#",30a12)') 't_gasupd','t_eos',
      &   't_opac','t_bb','t_bf','t_ff','t_pcktgam',
-     &   't_p_allrank','t_pckt',
+     &   't_pmin','t_pmea','t_pmax',
      &   't_pcktnpckt','t_pcktnddmc','t_pcktnimc'
        endif
 c-- body
@@ -122,8 +124,8 @@ c     ------------------------
       write(6,1) 'opacity (bb|bf|ff):',t_opac(i),t_bb(i),t_bf(i),t_ff(i)
       write(6,*) '----------------------------'
       write(6,1) 'setup             :',t_setup
-      write(6,1) 'gas-grid update   :',t_gasupd(i)
-      write(6,1) 'packet transport  :',t_pckt_allrank(i)
+      write(6,1) 'gas update        :',t_gasupd(i)
+      write(6,1) 'packet transport  :',t_pcktmax(i)
       write(6,*) '----------------------------'
       write(6,1) 'all               :',t_all
 1     format(1x,a,4f9.1)

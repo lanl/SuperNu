@@ -676,7 +676,6 @@ subroutine particle_advance
 
   call time(t1)
   t_pckt_stat = t1-t0  !register timing
-  call timereg(t_pckt, t1-t0)
   call timereg(t_pcktnpckt, dble(npckt))
   call timereg(t_pcktnddmc, dble(nddmc))
   call timereg(t_pcktnimc, dble(nimc))
