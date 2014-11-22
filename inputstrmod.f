@@ -144,7 +144,7 @@ c-- output
       write(6,*) 'input structure:'
       write(6,*) '===================='
       write(6,*) 'igeom :',igeom
-      write(6,*) 'ndim  :',nx,ny,nz
+      write(6,*) 'ndim  :',nx,ny,nz, nx*nx*nz
       write(6,*) 'mass  :', sum(str_mass)/pc_msun, 'Msun'
       write(6,*) 'm_ni56:', mni56/pc_msun, 'Msun'
 !     write(6,*) 'e_kin :', ekin, 'erg'
