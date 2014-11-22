@@ -205,7 +205,7 @@ program supernu
     call leakage_opacity
 
 !-- number of source prt_particles per cell
-    call sourcenumbers(nmpi)
+    call sourcenumbers
 !-- Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
     allocate(prt_vacantarr(prt_nnew))
     call vacancies
@@ -213,7 +213,6 @@ program supernu
     call boundary_source
 !-- Calculating properties of prt_particles emitted in domain interior
     call interior_source
-    
     deallocate(prt_vacantarr)
 
 !-- advance particles

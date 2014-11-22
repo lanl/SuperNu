@@ -51,7 +51,6 @@ c
 c-- packet number and energy distribution
 c========================================
       integer,allocatable :: grd_nvol(:,:,:) !(nx,ny,nz) number of thermal source particles generated per cell
-      integer,allocatable :: grd_nvolex(:,:,:) !(nx,ny,nz) number of external source particles generated per cell
       integer,allocatable :: grd_nvolinit(:,:,:) !(nx,ny,nz) number of initial (t=tfirst) particles per cell
 c      
       real*8,allocatable :: grd_emit(:,:,:) !(nx,ny,nz) amount of fictitious thermal energy emitted per cell in a time step
@@ -131,7 +130,6 @@ c
 c
 c-- ndim=3 integer
       allocate(grd_nvol(nx,ny,nz))
-      allocate(grd_nvolex(nx,ny,nz))
       allocate(grd_nvolinit(nx,ny,nz))
 c
       allocate(grd_methodswap(nx,ny,nz))

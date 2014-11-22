@@ -16,8 +16,9 @@ subroutine interior_source
   !particle loop (2nd).
 !##################################################
   logical :: lhelp
-  integer :: i,j,k,il,ir,ipart,ivac,ig,iig
-  integer, dimension(grd_nx,grd_ny,grd_nz) :: ijkused
+  integer :: i,j,k,il,ir,ipart,ivac,ig,iig,ii
+  integer :: nhere,ndmy,iimpi,nemit
+  real*8 :: pwr
   real*8 :: r1, r2, r3, uul, uur, uumax
   real*8 :: om0, mu0, x0, y0, z0, ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, thelp
@@ -36,36 +37,26 @@ subroutine interior_source
      thelp = 1d0
   endif
 
-  i = 1
-  j = 1
-  k = 1
-  ijkused = 0
-  !Volume particle instantiation: loop
-  !Loop run over the number of new particles that aren't surface source
-  !particles.
+!-- shortcut
+  pwr = in_srcepwr
+
   x1=1d0/grd_wl(grd_ng+1)
   x2=1d0/grd_wl(1)
-  do ipart = prt_nsurf+1, prt_nsurf+prt_nexsrc
-     ivac = prt_vacantarr(ipart)!{{{
-     ptcl => prt_particles(ivac)
-!
-!-- check for available particle space to populate in cell
-     loop_k: do k=k,grd_nz
-        do j=j,grd_ny
-           do i=i,grd_nx
-              lhelp = ijkused(i,j,k)<grd_nvolex(i,j,k)
-              if (lhelp) exit loop_k
-           enddo
-           i = 1
-        enddo
-        j = 1
-     enddo loop_k
-!
-!-- sanity check
-     if(.not.lhelp) stop 'interior_source (1): invalid particle'
 
-!-- increasing cell occupancy
-     ijkused(i,j,k) = ijkused(i,j,k)+1
+!Volume particle instantiation: loop
+!Loop run over the number of new particles that aren't surface source
+!particles.
+  ipart = prt_nsurf
+  iimpi = 0
+  do k=1,grd_nz
+  do j=1,grd_ny
+  do i=1,grd_nx
+     call sourcenumbers_roundrobin(iimpi,grd_emit(i,j,k)**pwr, &
+        grd_emitex(i,j,k)**pwr,grd_nvol(i,j,k),nemit,ndmy,nhere)
+  do ii=1,nhere
+     ipart = ipart + 1!{{{
+     ivac = prt_vacantarr(ipart)
+     ptcl => prt_particles(ivac)
 
 !-- setting 1st cell index
      ptcl%ix = i
@@ -99,7 +90,7 @@ subroutine interior_source
      mu0 = 1d0-2d0*r1
 
 !-- calculating particle energy
-     ep0 = grd_emitex(i,j,k)/dble(grd_nvolex(i,j,k))
+     ep0 = grd_emitex(i,j,k)/dble(grd_nvol(i,j,k)-nemit)
      tot_eext=tot_eext+ep0
 
 !
@@ -248,37 +239,24 @@ subroutine interior_source
         ptcl%itype = 2
      endif
 !}}}
-  enddo
+  enddo !ipart
+  enddo !i
+  enddo !j
+  enddo !k
+  if(ipart/=prt_nsurf+prt_nexsrc) stop 'interior_source: n/=nexecsrc'
   
 
 !-- Thermal volume particle instantiation: loop
-  i = 1
-  j = 1
-  k = 1
-  ijkused = 0
-
-  do ipart = prt_nsurf+prt_nexsrc+1, prt_nnew
-     ivac = prt_vacantarr(ipart)!{{{
+  iimpi = 0
+  do k=1,grd_nz
+  do j=1,grd_ny
+  do i=1,grd_nx
+     call sourcenumbers_roundrobin(iimpi,grd_emit(i,j,k)**pwr, &
+        grd_emitex(i,j,k)**pwr,grd_nvol(i,j,k),nemit,nhere,ndmy)
+  do ii=1,nhere
+     ipart = ipart + 1!{{{
+     ivac = prt_vacantarr(ipart)
      ptcl => prt_particles(ivac)
-
-!
-!-- check for available particle space to populate in cell
-     loop2_k: do k=k,grd_nz
-        do j=j,grd_ny
-           do i=i,grd_nx
-              lhelp = ijkused(i,j,k)<grd_nvol(i,j,k)
-              if (lhelp) exit loop2_k
-           enddo
-           i = 1
-        enddo
-        j = 1
-     enddo loop2_k
-!
-!-- sanity check
-     if(.not.lhelp) stop 'interior_source (2): invalid particle'
-
-!-- increasing cell occupancy
-     ijkused(i,j,k) = ijkused(i,j,k)+1
 !
 !-- setting 1st cell index
      ptcl%ix = i
@@ -310,7 +288,7 @@ subroutine interior_source
      mu0 = 1d0-2d0*r1
 
 !-- calculating particle energy
-     ep0 = grd_emit(i,j,k)/dble(grd_nvol(i,j,k))
+     ep0 = grd_emit(i,j,k)/dble(nemit)
 
 !
 !-- selecting geometry
@@ -539,7 +517,11 @@ subroutine interior_source
      endif
 
 !}}}
-  enddo
+  enddo !ipart
+  enddo !i
+  enddo !j
+  enddo !k
+  if(ipart/=prt_nnew) stop 'interior_source: n/=nnew'
 
 
 end subroutine interior_source

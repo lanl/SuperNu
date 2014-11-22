@@ -33,7 +33,7 @@ c-- gasmod
       deallocate(grd_fcoef)
       deallocate(grd_sig)
       if(impi==impi0) deallocate(grd_capgam)
-      deallocate(grd_emit,grd_emitex,grd_nvol,grd_nvolex)
+      deallocate(grd_emit,grd_emitex,grd_nvol)
       deallocate(grd_evolinit,grd_nvolinit)
 c-- particlemod
       if(impi==impi0.and..not.in_norestart) deallocate(prt_tlyrandarr)

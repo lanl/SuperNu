@@ -531,12 +531,14 @@ c
       snd3f = flx_luminos
       call mpi_reduce(snd3f,flx_luminos,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      flx_luminos = flx_luminos/dble(nmpi)
+      flx_luminos = flx_luminos
 c
       snd3f = flx_lumdev
       call mpi_reduce(snd3f,flx_lumdev,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
+c-- does the 1/dble(nmpi) still belong here?
       flx_lumdev = flx_lumdev/dble(nmpi)
+c     flx_lumdev = flx_lumdev
 c
 c-- dim==3
       n = nx*ny*nz
@@ -551,12 +553,12 @@ c
       snd3 = grd_edep
       call mpi_reduce(snd3,grd_edep,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      grd_edep = grd_edep/dble(nmpi)
+      grd_edep = grd_edep
 c
       snd3 = grd_eraddens
       call mpi_reduce(snd3,grd_eraddens,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      grd_eraddens = grd_eraddens/dble(nmpi)
+      grd_eraddens = grd_eraddens
 c
 c-- scatter
       if(impi_gas>=0) then
