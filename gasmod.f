@@ -33,9 +33,9 @@ c
 
 c== DD copies
 c-- Probability of emission in a given zone and group
-      real*8,allocatable :: gas_emitprob(:,:) !(gas_ng,ncell)
+      real*4,allocatable :: gas_emitprob(:,:) !(gas_ng,ncell)
 c-- Line+Cont extinction coeff
-      real*8,allocatable :: gas_cap(:,:) !(gas_ng,ncell)
+      real*4,allocatable :: gas_cap(:,:) !(gas_ng,ncell)
 c-- leakage opacities
 c     real*8,allocatable :: dd_opacleak(:,:) !(6,ncell)
 c-- scattering coefficient
@@ -78,7 +78,7 @@ c
 c-- print alloc size (keep this updated)
 c---------------------------------------
       if(ltalk) then
-       n = gas_ncell*(20 + (gas_nelem+3+5) + 2*gas_ng)/1024 !kB
+       n = gas_ncell*8*(20 + (gas_nelem+3+5) + gas_ng)/1024 !kB
        write(6,*) 'ALLOC gas      :',n,"kB",n/1024,"MB",n/1024**2,"GB"
       endif !ltalk
 c

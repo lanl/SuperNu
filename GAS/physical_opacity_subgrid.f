@@ -136,7 +136,7 @@ c
        if(any(cap(:,:ngs)==0d0)) call warn('opacity_calc','cap==0')
 c
 c-- planck average
-       gas_cap(ig,:) = sum(cap(:,:ngs),dim=2)/ngs !assume evenly spaced subgroup bins
+       gas_cap(ig,:) = sngl(sum(cap(:,:ngs),dim=2)/ngs) !assume evenly spaced subgroup bins
 c
 c
        if(in_noplanckweighting) then
@@ -161,17 +161,17 @@ c-- calculate Planck function weighted Rosseland
 c
 c-- combine planck and rosseland averages
        help = in_opacmixrossel
-       gas_cap(ig,:) = (1d0-help)*gas_cap(ig,:) +
-     &   help*capros(ig,:)
+       gas_cap(ig,:) = sngl((1d0-help)*gas_cap(ig,:) +
+     &   help*capros(ig,:))
       enddo !ig
 c
 c-- sanity check
       l = 0
       do i=1,gas_ncell
        do ig=1,gas_ng
-        if(gas_cap(ig,i)<=0d0) l = ior(l,1)
+        if(gas_cap(ig,i)<=0.) l = ior(l,1)
         if(gas_cap(ig,i)/=gas_cap(ig,i)) l = ior(l,2)
-        if(gas_cap(ig,i)>huge(help)) l = ior(l,4)
+        if(gas_cap(ig,i)>huge(gas_cap)) l = ior(l,4)
        enddo !ig
       enddo !i
       if(l/=iand(l,1)) call warn('opacity_calc','some cap<=0')

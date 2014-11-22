@@ -21,7 +21,7 @@ subroutine analytic_opacity
   real*8 :: x1, x2  !unitless energy group bounds
 
   gas_capgrey = 0d0
-  gas_cap = 0d0
+  gas_cap = 0.
   gas_sig = 0d0
 
   !Calculating grey scattering opacity
@@ -38,7 +38,7 @@ subroutine analytic_opacity
      gas_capgrey = in_gas_capcoef*gas_temp**in_gas_captpwr* &
           gas_rho**in_gas_caprpwr
      do i = 1, gas_ncell
-        gas_cap(:,i) = gas_capgrey(i)
+        gas_cap(:,i) = sngl(gas_capgrey(i))
      enddo
 
   elseif(in_opacanaltype=='mono') then
@@ -53,7 +53,7 @@ subroutine analytic_opacity
         do ig = 1, gas_ng
             x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb)
             x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb)
-            gas_cap(ig,i) = 0.5d0*gas_capgrey(i)*(x1+x2)/(x1*x2)**2
+            gas_cap(ig,i) = sngl(0.5d0*gas_capgrey(i)*(x1+x2)/(x1*x2)**2)
         enddo
         gas_capgrey(i) = 0d0
         do ig = 1, gas_ng
@@ -73,18 +73,18 @@ subroutine analytic_opacity
         gas_capgrey(i) = in_gas_capcoef*gas_temp(i)**in_gas_captpwr* &
              gas_rho(i)**in_gas_caprpwr     
         if(in_suol=='tsta') then    !Case: A
-           gas_cap(1,i) = gas_capgrey(i)
-           gas_cap(2,i) = gas_capgrey(i)
+           gas_cap(1,i) = sngl(gas_capgrey(i))
+           gas_cap(2,i) = sngl(gas_capgrey(i))
         elseif(in_suol=='tstb') then  !Case: B
-           gas_cap(1,i) = 2d0*gas_capgrey(i)/11d0
-           gas_cap(2,i) = 20d0*gas_capgrey(i)/11d0
+           gas_cap(1,i) = sngl(2d0*gas_capgrey(i)/11d0)
+           gas_cap(2,i) = sngl(20d0*gas_capgrey(i)/11d0)
         elseif(in_suol=='tstc') then  !Case: C
-           gas_cap(1,i) = 2d0*gas_capgrey(i)/101d0
-           gas_cap(2,i) = 200d0*gas_capgrey(i)/101d0
+           gas_cap(1,i) = sngl(2d0*gas_capgrey(i)/101d0)
+           gas_cap(2,i) = sngl(200d0*gas_capgrey(i)/101d0)
 !-- added evacuated picket test
         elseif(in_suol=='tstd') then !Case: D (not in SuOlson)
-           gas_cap(1,i) = 0d0
-           gas_cap(2,i) = 2d0*gas_capgrey(i)
+           gas_cap(1,i) = sngl(0d0)
+           gas_cap(2,i) = sngl(2d0*gas_capgrey(i))
         else
            stop 'analytic_opacity: in_suol invalid'
         endif!}}}
@@ -99,11 +99,11 @@ subroutine analytic_opacity
         !
         !set odd group magnitudes (low)
         do ig = 1, gas_ng, 2
-           gas_cap(ig,i) = gas_capgrey(i)*in_ldisp1
+           gas_cap(ig,i) = sngl(gas_capgrey(i)*in_ldisp1)
         enddo
         !set even group magnitudes (high)
         do ig = 2, gas_ng, 2
-           gas_cap(ig,i) = gas_capgrey(i)*in_ldisp2
+           gas_cap(ig,i) = sngl(gas_capgrey(i)*in_ldisp2)
         enddo
         !
         !calculate Planck, Rosseland opacities

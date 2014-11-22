@@ -28,7 +28,6 @@ c-- ffxs
       real*8 :: gg,u,gff,help
       real*8 :: yend,dydx,dy !extrapolation
       integer :: iu,igg
-      real*8 :: cap1(gas_ncell)
 c-- bfxs
       integer :: il,ig,iz,ii,ie
       real*8 :: en,xs,wl
@@ -67,12 +66,11 @@ c-- bound-bound
         enddo !i
        enddo !iz
 c
-       ig = 0
-c$omp parallel do
-c$omp& schedule(static)
-c$omp& private(iz,ii,wl0,dwl,wlinv,phi,caphelp,expfac,ocggrnd,cap1)
-c$omp& firstprivate(ig)
+c$omp parallel
+c$omp& private(wl0,iz,ii,dwl,wlinv,phi,ocggrnd,expfac,caphelp,ig)
 c$omp& shared(grndlev,hckt,cap)
+       ig = 0
+c$omp do schedule(static)
        do il=1,bb_nline
         wl0 = bb_xs(il)%wl0*pc_ang  !in cm
         iz = bb_xs(il)%iz
@@ -95,20 +93,18 @@ c-- evaluate caphelp
          ocggrnd = grndlev(i,ii,iz)
 c-- oc high enough to be significant?
 *        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
-         if(ocggrnd<=0d0) then
-          caphelp = 0d0
-         else
-          expfac = 1d0 - exp(-hckt(i)*wlinv)
-          caphelp = phi*bb_xs(il)%gxs*ocggrnd*
-     &      exp(-bb_xs(il)%chilw*hckt(i))*expfac
-!         if(caphelp==0.) write(6,*) 'cap0',cap(i,ig),phi,
-!    &      bb_xs(il)%gxs,ocggrnd,exp(-bb_xs(il)%chilw*hckt(i)),expfac
-         endif
-         cap1(i) = caphelp
+         if(ocggrnd<=0d0) cycle
+         expfac = 1d0 - exp(-hckt(i)*wlinv)
+         caphelp = phi*bb_xs(il)%gxs*ocggrnd*
+     &     exp(-bb_xs(il)%chilw*hckt(i))*expfac
+!        if(caphelp==0.) write(6,*) 'cap0',cap(i,ig),phi,
+!    &     bb_xs(il)%gxs,ocggrnd,exp(-bb_xs(il)%chilw*hckt(i)),expfac
+         cap(i,ig) = cap(i,ig) + caphelp
         enddo !i
-        cap(:,ig) = cap(:,ig) + cap1
        enddo !il
-c$omp end parallel do!}}}
+c$omp end do
+c$omp end parallel
+c!}}}
       endif !in_nobbopac
 c
       call time(t1)
@@ -158,14 +154,12 @@ c-- simple variant: nearest data grid point
        lwarn = .true.
 c$omp parallel do
 c$omp& schedule(static)
-c$omp& private(wl,wlinv,u,iu,help,cap1,gg,igg,gff,yend,dydx,dy)
-c$omp& firstprivate(lwarn)
-c$omp& shared(hckt,hlparr,cap)
+c$omp& private(wl,wlinv,u,iu,help,gg,igg,gff,yend,dydx,dy)
+c$omp& shared(lwarn,hckt,hlparr,cap)
        do ig=1,gas_ng
         wl = gas_wl(ig)  !in cm
         wlinv = 1d0/wl  !in cm
 c-- gcell loop
-        cap1 = 0d0
         do i=1,gas_ncell
          u = hckt(i)*wlinv
          iu = nint(10d0*(log10(u) + 4d0)) + 1
@@ -201,11 +195,10 @@ c-- asymptotic value
            endif
           endif
 c-- cross section
-          cap1(i) = cap1(i) +
+          cap(i,ig) = cap(i,ig) +
      &      help*gff*iz**2*gas_natom1fr(iz,i)
          enddo !iz
         enddo !i
-        cap(:,ig) = cap(:,ig) + cap1
        enddo !ig
 c$omp end parallel do
 c!}}}
@@ -213,15 +206,15 @@ c!}}}
 c
       call time(t3)
 c
-      gas_cap = transpose(cap)
+      gas_cap = transpose(sngl(cap))
 c
 c-- sanity check
       m = 0
       do i=1,gas_ncell
        do ig=1,gas_ng
-        if(gas_cap(ig,i)<=0d0) m = ior(m,1)
+        if(gas_cap(ig,i)<=0.) m = ior(m,1)
         if(gas_cap(ig,i)/=gas_cap(ig,i)) m = ior(m,2)
-        if(gas_cap(ig,i)>huge(help)) m = ior(m,4)
+        if(gas_cap(ig,i)>huge(gas_cap)) m = ior(m,4)
        enddo !ig
       enddo !i
       if(m/=iand(m,1)) call warn('opacity_calc','some cap<=0')
