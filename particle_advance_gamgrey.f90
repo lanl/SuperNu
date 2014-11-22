@@ -16,7 +16,6 @@ subroutine particle_advance_gamgrey(nmpi)
   !are being handled in separate subroutines but this may be changed to reduce
   !total subroutine calls in program.
 !##################################################
-  integer :: ipart, npart
   integer :: nhere, nemit, ndmy
   real*8 :: r1
   integer :: i, j, k, ii, iimpi

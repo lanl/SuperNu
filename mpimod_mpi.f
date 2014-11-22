@@ -407,8 +407,8 @@ c
      &   grd_fcoef,gas_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_GAS,ierr)
 c
-       call mpi_gather(gas_emitprob,gas_ng*gas_ncell,MPI_REAL,
-     &   grd_emitprob,gas_ng*gas_ncell,MPI_REAL,
+       call mpi_gather(gas_emitprob,gas_ng*gas_ncell,MPI_REAL8,
+     &   grd_emitprob,gas_ng*gas_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_GAS,ierr)
        call mpi_gather(gas_cap,gas_ng*gas_ncell,MPI_REAL,
      &   grd_cap,gas_ng*gas_ncell,MPI_REAL,
@@ -437,7 +437,7 @@ c
       call mpi_bcast(grd_fcoef,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      call mpi_bcast(grd_emitprob,gas_ng*n,MPI_REAL,
+      call mpi_bcast(grd_emitprob,gas_ng*n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(grd_cap,gas_ng*n,MPI_REAL,
      &  impi0,MPI_COMM_WORLD,ierr)

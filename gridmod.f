@@ -19,7 +19,7 @@ c
 
 
 c-- Probability of emission in a given zone and group
-      real*4,allocatable :: grd_emitprob(:,:,:,:) !(ng,nx,ny,nz)
+      real*8,allocatable :: grd_emitprob(:,:,:,:) !(ng,nx,ny,nz)
 c-- Line+Cont extinction coeff
       real*4,allocatable :: grd_cap(:,:,:,:) !(ng,nx,ny,nz)
 c-- leakage opacities
@@ -110,7 +110,7 @@ c---------------------------------------
        n = int((int(n,8)*(8*(11 + 6) + 4*5))/1024) !kB
        write(6,*) 'ALLOC grd      :',n,"kB",n/1024,"MB",n/1024**2,"GB"
        n = nx*ny*nz
-       n = int((int(n,8)*4*2*ng)/1024) !kB
+       n = int((int(n,8)*(4+8)*ng)/1024) !kB
        write(6,*) 'ALLOC grd_cap  :',n,"kB",n/1024,"MB",n/1024**2,"GB"
       endif
 c
