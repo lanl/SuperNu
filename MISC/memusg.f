@@ -7,7 +7,6 @@ c     -------------------------
 * Read memory statistics from /proc file system.
 ************************************************************************
       integer,parameter :: commwidth=10
-      integer :: istat
 c
 c-- /proc/self/stat file data
       type statdata
@@ -38,9 +37,11 @@ c-- /proc/self/stat file data
       end type statdata
       type(statdata) :: stat
 c
+      integer :: istat
+c
 c-- /proc/self/statm file data
-      integer :: vss_pages,rss_pages
       integer,save :: pagesize=0
+      integer :: vss_pages,rss_pages
 c
 *     integer :: i,j,n,m
 *     character(300) :: line
@@ -48,30 +49,43 @@ c
 *     character(30) :: words(24)
 *     character(30),allocatable :: words(:)
       logical :: exists
-      logical,save :: skipwarn=.false.
+      logical,save :: fail=.false.
 c
-c-- init
+c-- invalid by default
       mbsize = -1  !-- return invalid number if error
 c
-c-- read stat file
-      inquire(file='/proc/self/stat',exist=exists)
-      if(.not.exists .and. .not.skipwarn) then
-       call warn('memusg','file missing: /proc/self/stat,no mem info')
-       skipwarn = .true.
-       return
+c-- quick exit
+      if(fail) return
+c
+c-- read statm file
+      if(pagesize==0) then
+       open(4,file='/proc/self/statm',status='old',iostat=istat)
+       if(istat==0) read(4,*,iostat=istat) vss_pages,rss_pages
+       close(4)
+c
+c-- check status
+       if(istat/=0) then
+        fail = .true.
+        call warn('memusg','read error: /proc/self/statm')
+        return
+       endif
       endif
-c-- read
-      open(4,file='/proc/self/stat',action='read',status='old')
-      read(4,*,iostat=istat) stat
-*      read(4,*,end=6) words !not all compilers read words shorter than len(words(i))from the file
-*      read(4,'(a)',end=6) line
+c
+c-- read stat file
+      open(4,file='/proc/self/stat',status='old',iostat=istat)
+      if(istat==0) read(4,*,iostat=istat) stat
       close(4)
 c
-c-- return if failed
+c-- check status
       if(istat/=0) then
-       write(0,*) 'error reading /proc/self/stat'
+       fail = .true.
+       call warn('memusg','read error: /proc/self/stat')
        return
       endif
+c
+c-- pagesize
+      if(pagesize==0) pagesize = nint(stat%vsize/dble(vss_pages))
+c
 *!     write(6,*) 'line'
 *!     write(6,*) line
 *c-- count the number of words
@@ -99,30 +113,7 @@ c-- return if failed
 *!     write(6,*) 'stat'
 *!     write(6,*) stat
 c
-c-- read statm file
-      if(pagesize==0) then
-       inquire(file='/proc/self/statm',exist=exists)
-       if(.not.exists .and. .not.skipwarn) then
-        call warn('memusg','file missing:/proc/self/stat,no mem info')
-        skipwarn = .true.
-        return
-       endif
-c-- read
-       open(4,file='/proc/self/statm',action='read',status='old')
-       read(4,*) vss_pages,rss_pages
-       close(4)
-c
-c-- page size
-       pagesize = nint(stat%vsize/dble(vss_pages))
-      endif !pagesize
-c
       mbsize(1) = (stat%rss*pagesize)/1024**2
       mbsize(2) = (stat%vsize)/1024**2
-c
-      return
-c
- 6    call warn('memusg','read error: eof: /proc/self/stat')
-      close(4)
-      skipwarn = .true.
 c
       end function memusg
