@@ -7,6 +7,7 @@ c     -------------------------
 * Read memory statistics from /proc file system.
 ************************************************************************
       integer,parameter :: commwidth=10
+      integer :: istat
 c
 c-- /proc/self/stat file data
       type statdata
@@ -61,10 +62,16 @@ c-- read stat file
       endif
 c-- read
       open(4,file='/proc/self/stat',action='read',status='old')
-      read(4,*,end=6) stat
+      read(4,*,iostat=istat) stat
 *      read(4,*,end=6) words !not all compilers read words shorter than len(words(i))from the file
 *      read(4,'(a)',end=6) line
       close(4)
+c
+c-- return if failed
+      if(istat/=0) then
+       write(0,*) 'error reading /proc/self/stat'
+       return
+      endif
 *!     write(6,*) 'line'
 *!     write(6,*) line
 *c-- count the number of words
