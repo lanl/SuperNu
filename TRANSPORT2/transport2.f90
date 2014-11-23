@@ -372,7 +372,7 @@ subroutine transport2(ptcl,isvacant)
            endif
 !-- tallying outbound luminosity
            flx_luminos(ig,imu,1) = flx_luminos(ig,imu,1)+e*dtinv
-           flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(e0*dtinv)**2
+           flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(e*dtinv)**2
            flx_lumnum(ig,imu,1) = flx_lumnum(ig,imu,1)+1
 !-- checking if above cell is DDMC
         elseif((grd_cap(ig,ix,iy+1,1)+grd_sig(ix,iy+1,1)) * &
@@ -456,7 +456,7 @@ subroutine transport2(ptcl,isvacant)
            endif
 !-- tallying outbound luminosity
            flx_luminos(ig,imu,1) = flx_luminos(ig,imu,1)+e*dtinv
-           flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(e0*dtinv)**2
+           flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(e*dtinv)**2
            flx_lumnum(ig,imu,1) = flx_lumnum(ig,imu,1)+1
 !-- checking if lower cell is DDMC
         elseif((grd_cap(ig,ix,iy-1,1)+grd_sig(ix,iy-1,1)) * &
@@ -545,7 +545,7 @@ subroutine transport2(ptcl,isvacant)
            endif
 !-- tallying outbound luminosity
            flx_luminos(ig,imu,1) = flx_luminos(ig,imu,1)+e*dtinv
-           flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(e0*dtinv)**2
+           flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(e*dtinv)**2
            flx_lumnum(ig,imu,1) = flx_lumnum(ig,imu,1)+1
 !-- checking if outer cell is DDMC
         elseif((grd_cap(ig,ix+1,iy,1)+grd_sig(ix+1,iy,1)) * &
