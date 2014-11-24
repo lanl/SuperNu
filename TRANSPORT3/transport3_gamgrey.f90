@@ -16,6 +16,7 @@ subroutine transport3_gamgrey(ptcl)
   !corresponding DDMC diffusion routine.
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
+  real*8,parameter :: dt = pc_year !give grey transport infinite time
   integer, external :: binsrch
 
   logical :: loutx,louty,loutz
@@ -46,7 +47,7 @@ subroutine transport3_gamgrey(ptcl)
   e0 => ptcl%e0
 !
 !-- shortcut
-  dtinv = 1d0/tsp_dt
+  dtinv = 1d0/dt
 !-- projections
   eta = sqrt(1d0-mu**2)*sin(om)
   xi = sqrt(1d0-mu**2)*cos(om)
@@ -66,21 +67,21 @@ subroutine transport3_gamgrey(ptcl)
 !
 !-- boundary distances
   if(xi==0d0) then
-     dbx = 2d0*pc_c*tsp_dt*thelpinv
+     dbx = 2d0*pc_c*dt*thelpinv
   else
      if((grd_xarr(ix)-x)/xi>0d0.and.(grd_xarr(ix+1)-x)/xi>0d0) stop &
           'transport3_gamgrey: x val out of cell'
      dbx = max((grd_xarr(ix)-x)/xi,(grd_xarr(ix+1)-x)/xi)
   endif
   if(eta==0d0) then
-     dby = 2d0*pc_c*tsp_dt*thelpinv
+     dby = 2d0*pc_c*dt*thelpinv
   else
      if((grd_yarr(iy)-y)/eta>0d0.and.(grd_yarr(iy+1)-y)/eta>0d0) stop &
           'transport3_gamgrey: y val out of cell'
      dby = max((grd_yarr(iy)-y)/eta,(grd_yarr(iy+1)-y)/eta)
   endif
   if(mu==0d0) then
-     dbz = 2d0*pc_c*tsp_dt*thelpinv
+     dbz = 2d0*pc_c*dt*thelpinv
   else
      if((grd_zarr(iz)-z)/mu>0d0.and.(grd_zarr(iz+1)-z)/mu>0d0) stop &
           'transport3_gamgrey: z val out of cell'
@@ -89,13 +90,13 @@ subroutine transport3_gamgrey(ptcl)
 !
 !-- effective collision distance
   if(grd_capgam(ix,iy,iz)<=0d0) then
-     dcol = 2d0*pc_c*tsp_dt*thelpinv
+     dcol = 2d0*pc_c*dt*thelpinv
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
      r1 = rand()
      dcol = -log(r1)*thelpinv/(elabfact*grd_capgam(ix,iy,iz))
   else
-     dcol = 2d0*pc_c*tsp_dt*thelpinv
+     dcol = 2d0*pc_c*dt*thelpinv
   endif
 !
 !-- finding minimum distance
@@ -106,9 +107,7 @@ subroutine transport3_gamgrey(ptcl)
   x = x + xi*d
   y = y + eta*d
   z = z + mu*d
-!
-!-- updating time
-  ptcl%t = ptcl%t + thelp*cinv*d
+
 !
 !-- updating transformation factors
   if(grd_isvelocity) then
@@ -128,7 +127,7 @@ subroutine transport3_gamgrey(ptcl)
              (1.0d0-exp(-elabfact* &
              grd_capgam(ix,iy,iz)*d*thelp))* &
              elabfact/(elabfact * &
-             grd_capgam(ix,iy,iz)*pc_c*tsp_dt)
+             grd_capgam(ix,iy,iz)*pc_c*dt)
      else
 !-- analog energy density
         grd_eraddens(ix,iy,iz)=grd_eraddens(ix,iy,iz)+e*elabfact* &
@@ -173,9 +172,6 @@ subroutine transport3_gamgrey(ptcl)
 !-- x,y lab direction cosines
         eta = sqrt(1d0-mu**2)*sin(om)
         xi = sqrt(1d0-mu**2)*cos(om)
-!-- energy weight
-        e = e*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
-        e0 = e0*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
      endif
   elseif(any([dbx,dby,dbz]==d)) then
 !-- checking if escaped domain
@@ -190,7 +186,7 @@ subroutine transport3_gamgrey(ptcl)
         imu = binsrch(mu,flx_mu,flx_nmu+1,0)
 !-- tallying outbound luminosity
         flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e*dtinv
-        flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+(e0*dtinv)**2
+        flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+(e*dtinv)**2
         flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1
         return
      endif
@@ -206,6 +202,10 @@ subroutine transport3_gamgrey(ptcl)
 !-- adding comoving energy to deposition energy
         grd_edep(ix,iy,iz)=grd_edep(ix,iy,iz)+e*elabfact
         return
+     else
+!-- energy weight
+        e = e*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
+        e0 = e0*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
      endif
 
 !

@@ -140,7 +140,7 @@ subroutine transport3(ptcl,isvacant)
 !
 !-- finding minimum distance
   d = min(dcen,dbx,dby,dbz,dthm,dcol,ddop)
-  if(any((/dcen,dbx,dby,dbz,dthm,dcol,ddop/)<0d0)) then
+  if(d<0d0) then
      write(*,*) dcen,dbx,dby,dbz,dthm,dcol,ddop
      stop 'transport3: negative distance'
   endif
@@ -224,9 +224,6 @@ subroutine transport3(ptcl,isvacant)
 !-- x,y lab direction cosines
         eta = sqrt(1d0-mu**2)*sin(om)
         xi = sqrt(1d0-mu**2)*cos(om)
-!-- energy weight
-        e = e*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
-        e0 = e0*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
      endif
   elseif(any([dbx,dby,dbz]==d)) then
 !-- checking if escaped domain
@@ -264,6 +261,9 @@ subroutine transport3(ptcl,isvacant)
      if(grd_isvelocity) then
 !-- lab wavelength
         wl = wl*(1d0-(mu*z+eta*y+xi*x)*cinv)/elabfact
+!-- energy weight
+        e = e*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
+        e0 = e0*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
      endif
 
 !
@@ -293,6 +293,9 @@ subroutine transport3(ptcl,isvacant)
 !-- transforming to lab
         if(grd_isvelocity) then
            wl = wl*(1d0-(mu*z+eta*y+xi*x)*cinv)
+!-- energy weight
+           e = e*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
+           e0 = e0*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
         endif
 !-- checking for DDMC in new group
         if((grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &

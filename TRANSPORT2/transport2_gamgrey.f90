@@ -15,12 +15,14 @@ subroutine transport2_gamgrey(ptcl)
   !corresponding DDMC diffusion routine.
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
+  real*8,parameter :: dt = pc_year !give grey transport infinite time
   integer, external :: binsrch
 
-  integer :: imu
-  real*8 :: dirdotu
-  real*8 :: dtinv, elabfact, thelp, thelpinv 
-  real*8 :: dcol,db,dbr,dbz,d
+  logical :: loutx,louty
+  integer :: imu, ihelp
+  real*8 :: elabfact, dirdotu
+  real*8 :: dtinv, thelp, thelpinv 
+  real*8 :: dcol,dbx,dby,d
   real*8 :: rold, zold, omold
   real*8 :: r1
 
@@ -42,7 +44,7 @@ subroutine transport2_gamgrey(ptcl)
   e0 => ptcl%e0
 !
 !-- shortcut
-  dtinv = 1d0/tsp_dt
+  dtinv = 1d0/dt
 !
 !-- setting vel-grid helper variables
   if(grd_isvelocity) then
@@ -63,73 +65,68 @@ subroutine transport2_gamgrey(ptcl)
 !-- to x-bound
   if(abs(mu)==1d0) then
 !-- making greater than dcen
-     dbr = 2d0*pc_c*tsp_dt*thelpinv
+     dbx = 2d0*pc_c*dt*thelpinv
   else
      if(abs(sin(om))<grd_xarr(ix)/x .and. cos(om)<0d0) then
 !-- inner boundary
-        dbr = abs(x*cos(om)/sqrt(1d0-mu**2) &
+        dbx = abs(x*cos(om)/sqrt(1d0-mu**2) &
              +sqrt(((cos(om)*x)**2-x**2+grd_xarr(ix)**2)/(1d0-mu**2)))
-        if(dbr/=dbr) then
-           stop 'transport2_gamgrey: invalid inner dbr'
+        if(dbx/=dbx) then
+           stop 'transport2_gamgrey: invalid inner dbx'
         endif
      elseif(abs(grd_xarr(ix+1)-x)<1d-15*x .and. cos(om)>0d0) then
 !-- on outer boundary moving out
-        dbr = 0d0
+        dbx = 0d0
      else
 !-- outer boundary
-        dbr = -x*cos(om)/sqrt(1d0-mu**2) &
+        dbx = -x*cos(om)/sqrt(1d0-mu**2) &
              + sqrt(((cos(om)*x)**2 + grd_xarr(ix+1)**2-x**2)/(1d0-mu**2))
-        if(dbr/=dbr) then
-           stop 'transport2_gamgrey: invalid outer dbr'
+        if(dbx/=dbx) then
+           stop 'transport2_gamgrey: invalid outer dbx'
         endif
      endif
   endif
-  if(dbr/=dbr) stop 'transport2_gamgrey: dbr nan'
+  if(dbx/=dbx) stop 'transport2_gamgrey: dbx nan'
 
 !-- to y-bound
   if(mu>0d0) then
-     dbz = (grd_yarr(iy+1)-y)/mu
-     if(dbz<0d0) then
-        stop 'upward dbz'
+     dby = (grd_yarr(iy+1)-y)/mu
+     if(dby<0d0) then
+        stop 'upward dby'
      if((grd_yarr(iy)-y)/mu>0d0) stop &
           'transport2_gamgrey: y below cell'
      endif
   elseif(mu<0d0) then
-     dbz = (grd_yarr(iy)-y)/mu
-     if(dbz<0d0) stop 'downward dbz'
+     dby = (grd_yarr(iy)-y)/mu
+     if(dby<0d0) stop 'downward dby'
      if((grd_yarr(iy+1)-y)/mu>0d0) stop &
           'transport2_gamgrey: y above cell'
   else
 !-- making greater than dcen
-     dbz = 2d0*pc_c*tsp_dt*thelpinv
+     dby = 2d0*pc_c*dt*thelpinv
   endif
 
-!-- finding minim boundary distance
-  db = min(dbr,dbz)
 !
 !-- calculating distance to effective collision:
   if(grd_capgam(ix,iy,1)<=0d0) then
 !-- making greater than dcen
-     dcol = 2d0*pc_c*tsp_dt*thelpinv
+     dcol = 2d0*pc_c*dt*thelpinv
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
      r1 = rand()
      dcol = -log(r1)*thelpinv/(elabfact*grd_capgam(ix,iy,1))
   else
 !-- making greater than dcen
-     dcol = 2d0*pc_c*tsp_dt*thelpinv
+     dcol = 2d0*pc_c*dt*thelpinv
   endif
 !
 !-- finding minimum distance
-  d = min(db,dcol)
-  if(any((/dbz,dbr,dcol/)<0d0)) then
-     stop 'transport2_gamgrey: negative distance'
-  endif
-!
-!-- using min distance to stream particle to event location
+  d = min(dbx,dby,dcol)
+  if(d<0d0) stop 'transport2_gamgrey: negative distance'
+
+!-- updating position
   rold = x
   zold = y
-!-- updating position
   x = sqrt(rold**2+(1d0-mu**2)*d**2+2d0*rold*sqrt(1d0-mu**2)*d*cos(om))
   y = zold+mu*d
 !-- updating azimuthal direction
@@ -151,9 +148,6 @@ subroutine transport2_gamgrey(ptcl)
   if(grd_isvelocity) then
      dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
      elabfact = 1d0 - dirdotu*cinv
-  else
-     dirdotu = 0d0
-     elabfact = 1d0
   endif
 
 !
@@ -174,7 +168,50 @@ subroutine transport2_gamgrey(ptcl)
 !
 !-- checking which event occurs from min distance
 
-!-- distance to effective collision
+!-- common manipulations for collisions
+  if(d==dcol) then
+!-- resampling direction
+     r1 = rand()
+     mu = 1d0 - 2d0*r1
+     r1 = rand()
+     om = pc_pi2*r1
+!-- checking velocity dependence
+     if(grd_isvelocity) then
+!-- calculating transformation factors
+        dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+        om = atan2(sqrt(1d0-mu**2)*sin(om), &
+             sqrt(1d0-mu**2)*cos(om)+x*cinv)
+!-- transforming to lab:
+!-- y-cosine
+        mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
+        if(mu>1d0) then
+           mu = 1d0
+        elseif(mu<-1d0) then
+           mu = -1d0
+        endif
+!-- azimuthal direction angle
+        if(om<0d0) om=om+pc_pi2
+!-- recalculating dirdotu
+        dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+     endif
+  elseif(any([dbx,dby]==d)) then
+!-- checking if escapted domain
+     loutx = d==dbx.and.(sqrt(1d0-mu**2)*cos(om)>=0d0.and.ix==grd_nx)
+     louty = d==dby.and.((mu>=0d0.and.iy==grd_ny).or.(mu<0.and.iy==1))
+     if(loutx.or.louty) then
+!-- ending particle
+        prt_done = .true.
+!-- retrieving lab frame flux group, polar bin
+        imu = binsrch(mu,flx_mu,flx_nmu+1,0)
+!-- tallying outbound luminosity
+        flx_gamluminos(imu,1) = flx_gamluminos(imu,1)+e*dtinv
+        flx_gamlumdev(imu,1) = flx_gamlumdev(imu,1)+(e*dtinv)**2
+        flx_gamlumnum(imu,1) = flx_gamlumnum(imu,1)+1
+        return
+     endif
+  endif
+
+!-- effective collision
   if(d==dcol) then
 !-- checking if analog!{{{
      if(prt_isimcanlog) then
@@ -185,97 +222,42 @@ subroutine transport2_gamgrey(ptcl)
         grd_edep(ix,iy,1) = grd_edep(ix,iy,1) + e*elabfact
      else
 !-- effectively scattered:
-!-- resampling direction
-        r1 = rand()
-        mu = 1d0 - 2d0*r1
-        r1 = rand()
-        om = pc_pi2*r1
-!-- checking velocity dependence
-        if(grd_isvelocity) then
-!-- calculating transformation factors
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming to lab:
-!-- y-cosine
-           mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
-!-- azimuthal direction angle
-           if(om<0d0) om=om+pc_pi2
-!-- recalculating dirdotu
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
 !-- transforming to cmf, then to lab:
 !-- energy weight
-           e = e*elabfact/(1d0-dirdotu*cinv)
-           e0 = e0*elabfact/(1d0-dirdotu*cinv)
-        endif
+        e = e*elabfact/(1d0-dirdotu*cinv)
+        e0 = e0*elabfact/(1d0-dirdotu*cinv)
      endif!}}}
 
 !
-!-- distance to y-boundary
-  elseif(d==dbz) then
-     if(mu>=0d0) then
-!-- checking if particle escapes top
-        if(iy == grd_ny) then
-!-- ending particle
-           prt_done = .true.
-!-- IMC in upper cell
-        else
-           y = grd_yarr(iy+1)
-           iy = iy+1
-        endif
-!-- mu<0
-     else
-!-- checking if particle escapes bottom
-        if(iy == 1) then
-!-- ending particle
-           prt_done = .true.
-!-- IMC in lower cell
-        else
-           y = grd_yarr(iy)
-           iy = iy-1
-        endif
-     endif
+!-- x-bound
+  elseif(d==dbx) then
 
-!
-!-- distance to x-boundary
-  elseif(d==dbr) then
      if(cos(om)>=0d0) then
-!-- checking if particle escapes at outer radius
-        if(ix == grd_nx) then
-!-- ending particle
-           prt_done = .true.
-!-- IMC in outer cell
-        else
-           x = grd_xarr(ix+1)
-           ix = ix + 1
-        endif
-!-- cos(om)<0
+        ihelp = 1
+        x = grd_xarr(ix+1)
      else
-        if(ix==1) then
-           stop 'transport2_gamgrey: cos(om)<0 and ix=1'
-        endif
-!-- IMC in inner cell
+        if(ix==1) stop &
+             'transport2_gamgrey: cos(om)<0 and ix=1'
+        ihelp = -1
         x = grd_xarr(ix)
-        ix = ix - 1
      endif
-
-  endif
-
+!-- IMC in adjacent cell
+     ix = ix+ihelp
 !
-!-- tally particles that leave domain
-  if(prt_done .and. (d==dbr .or. d==dbz)) then
-!-- retrieving lab frame flux group and polar bin
-     imu = binsrch(mu,flx_mu,flx_nmu+1,0)
-!-- tallying outbound luminosity
-     flx_gamluminos(imu,1) = flx_gamluminos(imu,1)+e*dtinv
-     flx_gamlumdev(imu,1) = flx_gamlumdev(imu,1)+(e0*dtinv)**2
-     flx_gamlumnum(imu,1) = flx_gamlumnum(imu,1)+1
-  endif
+!-- y-bound
+  elseif(d==dby) then
 
+     if(mu>=0d0) then
+        ihelp = 1
+        y = grd_yarr(iy+1)
+     else
+        ihelp = -1
+        y = grd_yarr(iy)
+     endif
+!-- IMC in adjacent cell
+     iy = iy+ihelp
+  else
+     stop 'transport2_gamgrey: invalid distance'
+  endif
 
 end subroutine transport2_gamgrey

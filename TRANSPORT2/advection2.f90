@@ -18,17 +18,21 @@ subroutine advection2(pretrans,ig,ix,iy,x,y)
 !
   integer,external :: binsrch
   integer :: iyholder,ixholder
-  real*8 :: xold, yold, xtil, ytil
-  integer :: ir,iz
+  real*8 :: rold,xold,yold,rx,ry
+  real*8 :: help
+  integer :: i,j
+  integer :: imove,nmove
 !-- statement functions
   integer :: l
-  real*8 :: dx,dy
+  real*8 :: dx,dy,ymag
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
+  ymag(l) = min(abs(grd_yarr(l)),abs(grd_yarr(l+1)))
 
 !-- storing initial position
   xold = x
   yold = y
+  rold = sqrt(x**2+y**2)
 !-- setting tentative new position
   if(pretrans) then
      x = x*tsp_t/(tsp_t+alph2*tsp_dt)
@@ -38,104 +42,79 @@ subroutine advection2(pretrans,ig,ix,iy,x,y)
      y = y*(tsp_t+alph2*tsp_dt)/(tsp_t+tsp_dt)
   endif
 
-  if(x<grd_xarr(ix).or.abs(y) < &
-       min(abs(grd_yarr(iy)),abs(grd_yarr(iy+1)))) then
+  if(x<grd_xarr(ix).or.abs(y)<ymag(iy)) then
+!
+!-- sanity check
+     if(xold==0d0.and.yold==0d0) &
+          stop 'advection2: invalid position update'
 !-- finding tentative new index
      ixholder = binsrch(x,grd_xarr,grd_nx+1,0)
      iyholder = binsrch(y,grd_yarr,grd_ny+1,0)
 !-- checking if DDMC is active
      if(.not.in_puretran.and.partstopper) then
-        ir = ix
-        iz = iy
+!-- initializing tracking cells
+        i = ix
+        j = iy
+        help = 0d0
+!-- number of cell moves
+        nmove = ix-ixholder+abs(iy-iyholder)
+        do imove=1,nmove
 
-        if(iz>grd_ny/2) then
-!-- z>0
-           do while(iz>iyholder.or.ir>ixholder)
-!-- moving towards tentative index
-              if(yold>0d0) then
-                 xtil = (xold/yold)*grd_yarr(iz)
-              else
-                 xtil = x
-              endif
-              if(xold>0d0) then
-                 ytil = (yold/xold)*grd_xarr(ir)
-              else
-                 ytil = y
-              endif
-!
-              if(xtil<grd_xarr(ir)) then
+!-- speed at grid edges
+           if(xold==0d0) then
+              rx = 0d0
+           else
+              rx = rold*grd_xarr(i)/xold
+           endif
+           if(yold==0d0) then
+              ry = 0d0
+           else
+              ry = rold*ymag(j)/abs(yold)
+           endif
 
-!-- meeting inner radial bound
-                 if((grd_sig(ir-1,iz,1)+grd_cap(ig,ir-1,iz,1)) * &
-                      min(dy(iz),dx(ir-1)) * &
-                      tsp_t >= prt_tauddmc) then
-                    x = grd_xarr(ir)
-                    y = ytil
+!-- using min displacement to move index
+           help = max(rx,ry)
+
+!-- x-edge
+           if(help == rx) then
+              if((grd_sig(i-1,j,1)+grd_cap(ig,i-1,j,1)) * &
+                   min(dy(j),dx(i-1))*tsp_t >= prt_tauddmc) then
+                 x = grd_xarr(i)
+                 y = (yold/xold)*grd_xarr(i)
+                 exit
+              else
+                 i = i-1
+              endif
+
+!-- y-edge
+           else
+              if(ymag(j)==abs(grd_yarr(j+1))) then
+!-- y<0
+                 if((grd_sig(i,j+1,1)+grd_cap(ig,i,j+1,1)) * &
+                      min(dy(j+1),dx(i))*tsp_t >= &
+                      prt_tauddmc) then
+                    x = (xold/yold)*grd_yarr(j+1)
+                    y = grd_yarr(j+1)
                     exit
                  else
-                    ir=ir-1
+                    j = j+1
                  endif
-              elseif(ytil<grd_yarr(iz)) then
-
-!-- meeting lower z-axis bound
-                 if((grd_sig(ir,iz-1,1)+grd_cap(ig,ir,iz-1,1)) * &
-                      min(dy(iz-1),dx(ir)) * &
-                      tsp_t >= prt_tauddmc) then
-                    y = grd_yarr(iz)
-                    x = xtil
-                    exit
-                 else
-                    iz = iz-1
-                 endif
-              endif
-           enddo
-!
-        else
-
-!
-!-- z<0
-           do while(iz<iyholder.or.ir>ixholder)
-!-- moving towards tentative index
-              if(yold<0d0) then
-                 xtil = (xold/yold)*grd_yarr(iz+1)
               else
-                 xtil = x
-              endif
-              if(xold>0d0) then
-                 ytil = (yold/xold)*grd_xarr(ir)
-              else
-                 ytil = y
-              endif
-!
-              if(xtil<grd_xarr(ir)) then
-
-!-- meeting inner radial bound
-                 if((grd_sig(ir-1,iz,1)+grd_cap(ig,ir-1,iz,1)) * &
-                      min(dy(iz),dx(ir-1)) * &
-                      tsp_t >= prt_tauddmc) then
-                    x = grd_xarr(ir)
-                    y = ytil
+!-- y>0
+                 if((grd_sig(i,j-1,1)+grd_cap(ig,i,j-1,1)) * &
+                      min(dy(j-1),dx(i))*tsp_t >= &
+                      prt_tauddmc) then
+                    x = (xold/yold)*grd_yarr(j)
+                    y = grd_yarr(j)
                     exit
                  else
-                    ir=ir-1
-                 endif
-              elseif(ytil>grd_yarr(iz+1)) then
-
-!-- meeting upper z-axis bound (z<0)
-                 if((grd_sig(ir,iz+1,1)+grd_cap(ig,ir,iz+1,1)) * &
-                      min(dy(iz+1),dx(ir)) * &
-                      tsp_t >= prt_tauddmc) then
-                    y = grd_yarr(iz+1)
-                    x = xtil
-                    exit
-                 else
-                    iz = iz+1
+                    j = j-1
                  endif
               endif
-           enddo
-        endif
-        ix = ir
-        iy = iz
+           endif
+        enddo
+        ix = i
+        iy = j
 
      else
 !-- DDMC inactive, setting index to tentative value
