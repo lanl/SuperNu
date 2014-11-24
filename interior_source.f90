@@ -22,7 +22,7 @@ subroutine interior_source
   real*8 :: r1, r2, r3, uul, uur, uumax
   real*8 :: om0, mu0, x0, y0, z0, ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, thelp
-  real*8 :: cmffact,azitrfm,mu1,mu2
+  real*8 :: cmffact,mu1,mu2
   type(packet),pointer :: ptcl
 !-- statement functions
   integer :: l
@@ -149,20 +149,16 @@ subroutine interior_source
            y0 = ptcl%y
 !-- 1+dir*v/c
            cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
-           azitrfm = atan2(sqrt(1d0-mu0**2)*sin(om0), &
+!-- om
+           ptcl%om = atan2(sqrt(1d0-mu0**2)*sin(om0), &
                 sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
+           if(ptcl%om<0d0) ptcl%om=ptcl%om+pc_pi2
 !-- mu
            ptcl%mu = (mu0+y0/pc_c)/cmffact
            if(ptcl%mu>1d0) then
               ptcl%mu = 1d0
            elseif(ptcl%mu<-1d0) then
               ptcl%mu = -1d0
-           endif
-!-- om
-           if(azitrfm >= 0d0) then
-              ptcl%om = azitrfm
-           else
-              ptcl%om = azitrfm+pc_pi2
            endif
         else
            ptcl%mu = mu0
@@ -384,20 +380,16 @@ subroutine interior_source
         if(lhelp.and.grd_isvelocity) then
 !-- 1+dir*v/c
            cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
-           azitrfm = atan2(sqrt(1d0-mu0**2)*sin(om0), &
+!-- om
+           ptcl%om = atan2(sqrt(1d0-mu0**2)*sin(om0), &
                 sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
+           if(ptcl%om<0d0) ptcl%om=ptcl%om+pc_pi2
 !-- mu
            ptcl%mu = (mu0+y0/pc_c)/cmffact
            if(ptcl%mu>1d0) then
               ptcl%mu = 1d0
            elseif(ptcl%mu<-1d0) then
               ptcl%mu = -1d0
-           endif
-!-- om
-           if(azitrfm >= 0d0) then
-              ptcl%om = azitrfm
-           else
-              ptcl%om = azitrfm+pc_pi2
            endif
         else
            ptcl%mu = mu0

@@ -32,7 +32,7 @@ subroutine particle_advance
   integer, pointer :: ix, iy, iz
   real*8, pointer :: x,y,z, mu, e, wl, om
   real*8 :: t0,t1  !timing
-  real*8 :: labfact, cmffact, azitrfm, mu1, mu2
+  real*8 :: labfact, cmffact, mu1, mu2
 !
   type(packet),pointer :: ptcl
 !
@@ -242,20 +242,16 @@ subroutine particle_advance
 !-- 1+dir*v/c
                     cmffact = 1d0+(mu*y+sqrt(1d0-mu**2) * &
                          cos(om)*x)/pc_c
-                    azitrfm = atan2(sqrt(1d0-mu**2)*sin(om) , &
+!-- om
+                    om = atan2(sqrt(1d0-mu**2)*sin(om) , &
                          sqrt(1d0-mu**2)*cos(om)+x/pc_c)
+                    if(om<0d0) om=om+pc_pi2
 !-- mu
                     mu = (mu+y/pc_c)/cmffact
                     if(mu>1d0) then
                        mu = 1d0
                     elseif(mu<-1d0) then
                        mu = -1d0
-                    endif
-!-- om
-                    if(azitrfm >= 0d0) then
-                       om = azitrfm
-                    else
-                       om = azitrfm+pc_pi2
                     endif
 !-- 1-dir*v/c
                     labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
