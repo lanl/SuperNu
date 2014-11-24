@@ -190,7 +190,7 @@ subroutine transport3_gamgrey(ptcl)
         imu = binsrch(mu,flx_mu,flx_nmu+1,0)
 !-- tallying outbound luminosity
         flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e*dtinv
-        flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+(e0*dtinv)**2
+        flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+(e*dtinv)**2
         flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1
         return
      endif
