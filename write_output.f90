@@ -7,7 +7,7 @@ subroutine write_output
   use fluxmod
   implicit none
 
-  integer :: j
+  integer :: j,k
   logical :: lexist
   integer :: reclenf, reclen2
   character(16), save :: pos='rewind', fstat='replace'
@@ -31,43 +31,49 @@ subroutine write_output
   write(4,*) tsp_t
   close(4)
 
-  open(unit=4,file='output.pcktstat',status='unknown',position=pos)
-  write(4,'(3es16.8)') t_pckt_stat
-  close(4)
-
   open(unit=4,file='output.conserve',status='unknown',position=pos)
   write(4,*) tot_eerror
   close(4)
 
 !
 !-- flux arrays
-  open(unit=4,file='output.LumNum',status=fstat,position='append',recl=reclenf)
-  do i=1,flx_nmu
-  do j=1,flx_nom
-     write(4,'(10000i12)') flx_lumnum(:,i,j)
+!==============
+  open(unit=4,file='output.Lum',status=fstat,position='append',recl=reclenf)
+  do j=1,flx_nmu
+  do k=1,flx_nom
+     write(4,'(1p,10000e12.4)') sngl(flx_luminos(:,j,k)) !prevent fortran number truncation, e.g. 1.1234-123
   enddo
   enddo
   close(4)
 
-  open(unit=4,file='output.Lum',status=fstat,position='append',recl=reclenf)
-  where(flx_luminos<1d-99) flx_luminos = 1d-99  !prevent non-universal number representation, e.g. 1.1234-123
-  do i=1,flx_nmu
-  do j=1,flx_nom
-     write(4,'(1p,10000e12.4)') flx_luminos
+  open(unit=4,file='output.LumNum',status=fstat,position='append',recl=reclenf)
+  do j=1,flx_nmu
+  do k=1,flx_nom
+     write(4,'(10000i12)') flx_lumnum(:,j,k)
   enddo
   enddo
   close(4)
 
   open(unit=4,file='output.devLum',status=fstat,position='append',recl=reclenf)
-  do i=1,flx_nmu
-  do j=1,flx_nom
-     write(4,'(1p,10000e12.4)') flx_lumdev/flx_luminos
+  do j=1,flx_nmu
+  do k=1,flx_nom
+     write(4,'(1p,10000e12.4)') flx_lumdev(:,j,k)/flx_luminos(:,j,k)
+  enddo
+  enddo
+  close(4)
+!
+!-- gamma flux
+  open(unit=4,file='output.gamLum',status=fstat,position='append',recl=reclenf)
+  do j=1,flx_nmu
+  do k=1,flx_nom
+     write(4,'(1p,10000e12.4)') sngl(flx_gamluminos(j,k)) !prevent fortran number truncation, e.g. 1.1234-123
   enddo
   enddo
   close(4)
 
 !
 !-- grid arrays
+!==============
   open(unit=4,file='output.methodswap',status=fstat,position='append',recl=reclen2)
   do j=1,grd_ny
   do k=1,grd_nz
@@ -96,6 +102,14 @@ subroutine write_output
   do j=1,grd_ny
   do k=1,grd_nz
      write(4,'(1p,10000e12.4)') grd_eraddens(:,j,k)/grd_vol(:,j,k)
+  enddo
+  enddo
+  close(4)
+
+  open(unit=4,file='output.gamdep',position='append',recl=reclen2)
+  do j=1,grd_ny
+  do k=1,grd_nz
+     write(4,'(1p,10000e12.4)') grd_edepgam(:,j,k)
   enddo
   enddo
   close(4)
