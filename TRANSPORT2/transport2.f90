@@ -569,15 +569,8 @@ subroutine transport2(ptcl,isvacant)
               mu0 = -max(r1,r2)
               r1 = rand()
               mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
-              om = atan2(sqrt(max(1d0-mu**2-mu0**2,0d0)),mu0)
-              if(om<0d0) then
-                 om = om+pc_pi2
-              endif
-!-- extending azimuthal sample
-              r1 = rand()
-              if(r1 < 0.5d0) then
-                 om = pc_pi2-om
-              endif
+              om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
+              if(om<0d0) om = om+pc_pi2
               if(grd_isvelocity) then
                  dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
                  om = atan2(sqrt(1d0-mu**2)*sin(om), &
@@ -642,15 +635,8 @@ subroutine transport2(ptcl,isvacant)
               mu0 = max(r1,r2)
               r1 = rand()
               mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
-              om = atan2(sqrt(max(1d0-mu**2-mu0**2,0d0)),mu0)
-              if(om<0d0) then
-                 om = om+pc_pi2
-              endif
-!-- extending azimuthal sample
-              r1 = rand()
-              if(r1 < 0.5d0) then
-                 om = pc_pi2-om
-              endif
+              om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
+              if(om<0d0) om = om+pc_pi2
               if(grd_isvelocity) then
                  dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
                  om = atan2(sqrt(1d0-mu**2)*sin(om), &
