@@ -9,14 +9,13 @@ subroutine write_output
 
   integer :: j
   logical :: lexist
-  integer :: reclen, reclen2
+  integer :: reclenf, reclen2
   character(16), save :: pos='rewind', fstat='replace'
 !
-  reclen = flx_ng*flx_nmu*flx_nom*12
-  reclen2 = grd_nx*grd_ny*grd_nz*12
+  reclenf = flx_ng*12
+  reclen2 = grd_nx*12
 
   inquire(file='output.wlgrid',exist=lexist)
-
   if(.not.lexist) then
    open(unit=4,file='output.wlgrid',status='unknown',position=pos)
 !-- header: dimension
@@ -32,49 +31,85 @@ subroutine write_output
   write(4,*) tsp_t
   close(4)
 
-  open(unit=4,file='output.LumNum',status=fstat,position='append',recl=reclen)
-  write(4,'(10000i12)') flx_lumnum
-  close(4)
-
-  open(unit=4,file='output.methodswap',status=fstat,position='append',recl=reclen2)
-  write(4,'(10000i12)') grd_methodswap
-  close(4)
-
-  open(unit=4,file='output.Lum',status=fstat,position='append',recl=reclen)
-  where(flx_luminos<1d-99) flx_luminos = 1d-99  !prevent non-universal number representation, e.g. 1.1234-123
-  write(4,'(1p,10000e12.4)') flx_luminos
-  close(4)
-
-  open(unit=4,file='output.devLum',status=fstat,position='append',recl=reclen)
-  write(4,'(1p,10000e12.4)') flx_lumdev/flx_luminos
-  close(4)
-
-  open(unit=4,file='output.temp',status=fstat,position='append',recl=reclen2)
-  write(4,'(1p,10000e12.4)') grd_temp
-  close(4)
-
-  open(unit=4,file='output.grd_fcoef',position='append',recl=reclen2)
-  write(4,'(1p,10000e12.4)') grd_fcoef
-  close(4)
-
-  open(unit=4,file='output.eraddens',position='append',recl=reclen2)
-  write(4,'(1p,10000e12.4)') grd_eraddens/grd_vol
+  open(unit=4,file='output.pcktstat',status='unknown',position=pos)
+  write(4,'(3es16.8)') t_pckt_stat
   close(4)
 
   open(unit=4,file='output.conserve',status='unknown',position=pos)
   write(4,*) tot_eerror
   close(4)
 
-  open(unit=4,file='output.siggrey',position='append',recl=reclen2)
-  write(4,'(1p,10000e12.4)') grd_capgrey
-  close(4)
-
-  open(unit=4,file='output.pcktstat',status='unknown',position=pos)
-  do j = 1, 3
-     write(4,'(es16.8)',advance='no') t_pckt_stat(j)
+!
+!-- flux arrays
+  open(unit=4,file='output.LumNum',status=fstat,position='append',recl=reclenf)
+  do i=1,flx_nmu
+  do j=1,flx_nom
+     write(4,'(10000i12)') flx_lumnum(:,i,j)
+  enddo
   enddo
   close(4)
 
+  open(unit=4,file='output.Lum',status=fstat,position='append',recl=reclenf)
+  where(flx_luminos<1d-99) flx_luminos = 1d-99  !prevent non-universal number representation, e.g. 1.1234-123
+  do i=1,flx_nmu
+  do j=1,flx_nom
+     write(4,'(1p,10000e12.4)') flx_luminos
+  enddo
+  enddo
+  close(4)
+
+  open(unit=4,file='output.devLum',status=fstat,position='append',recl=reclenf)
+  do i=1,flx_nmu
+  do j=1,flx_nom
+     write(4,'(1p,10000e12.4)') flx_lumdev/flx_luminos
+  enddo
+  enddo
+  close(4)
+
+!
+!-- grid arrays
+  open(unit=4,file='output.methodswap',status=fstat,position='append',recl=reclen2)
+  do j=1,grd_ny
+  do k=1,grd_nz
+     write(4,'(10000i12)') grd_methodswap
+  enddo
+  enddo
+  close(4)
+
+  open(unit=4,file='output.temp',status=fstat,position='append',recl=reclen2)
+  do j=1,grd_ny
+  do k=1,grd_nz
+     write(4,'(1p,10000e12.4)') grd_temp(:,j,k)
+  enddo
+  enddo
+  close(4)
+
+  open(unit=4,file='output.grd_fcoef',position='append',recl=reclen2)
+  do j=1,grd_ny
+  do k=1,grd_nz
+     write(4,'(1p,10000e12.4)') grd_fcoef(:,j,k)
+  enddo
+  enddo
+  close(4)
+
+  open(unit=4,file='output.eraddens',position='append',recl=reclen2)
+  do j=1,grd_ny
+  do k=1,grd_nz
+     write(4,'(1p,10000e12.4)') grd_eraddens(:,j,k)/grd_vol(:,j,k)
+  enddo
+  enddo
+  close(4)
+
+  open(unit=4,file='output.siggrey',position='append',recl=reclen2)
+  do j=1,grd_ny
+  do k=1,grd_nz
+     write(4,'(1p,10000e12.4)') grd_capgrey(:,j,k)
+  enddo
+  enddo
+  close(4)
+
+!
+!-- after the first iteration open files in append mode
   pos='append'
   fstat='old'
 
