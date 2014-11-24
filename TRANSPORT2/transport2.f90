@@ -256,10 +256,11 @@ subroutine transport2(ptcl,isvacant)
      endif
   elseif(any([dbx,dby]==d)) then
 !-- checking if escapted domain
-     loutx = d==dbx.and.(sqrt(1d0-mu**2)*cos(om)>=0d0.and.ix==grd_nx)
+     loutx = d==dbx.and.(cos(om)>=0d0.and.ix==grd_nx)
      louty = d==dby.and.((mu>=0d0.and.iy==grd_ny).or.(mu<0.and.iy==1))
      if(loutx.or.louty) then
 !-- ending particle
+        isvacant = .true.
         prt_done = .true.
 !-- retrieving lab frame flux group, polar bin
         imu = binsrch(mu,flx_mu,flx_nmu+1,0)
