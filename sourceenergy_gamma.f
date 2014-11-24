@@ -19,6 +19,6 @@ c-- gamma deposition is energy source
       grd_emit = grd_emit + grd_edep
 c
 c-- save for output purposes
-      grd_edepgam = sngl(grd_edep)
+      grd_edepgam = grd_edep
 c
       end subroutine sourceenergy_gamma

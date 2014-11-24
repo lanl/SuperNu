@@ -38,7 +38,7 @@ c-- Fleck factor
 
 c-- energy absorbed by material
       real*8,allocatable :: grd_edep(:,:,:)   !(nx,ny,nz)
-      real*4,allocatable :: grd_edepgam(:,:,:)   !(nx,ny,nz) !for output only
+      real*8,allocatable :: grd_edepgam(:,:,:)   !(nx,ny,nz) !for output only
 c-- radiation energy density in tsp_dt
       real*8,allocatable :: grd_eraddens(:,:,:) !(nx,ny,nz)
 
@@ -108,7 +108,7 @@ c-- print alloc size (keep this updated)
 c---------------------------------------
       if(ltalk) then
        n = nx*ny*nz
-       n = int((int(n,8)*(8*(11+6) + 4*(5+1)))/1024) !kB
+       n = int((int(n,8)*(8*(12+6) + 4*(5)))/1024) !kB
        write(6,*) 'ALLOC grd      :',n,"kB",n/1024,"MB",n/1024**2,"GB"
        n = nx*ny*nz
        n = int((int(n,8)*(4+8)*ng)/1024) !kB

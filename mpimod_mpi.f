@@ -530,12 +530,10 @@ c
       snd3f = flx_luminos
       call mpi_reduce(snd3f,flx_luminos,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      flx_luminos = flx_luminos
 c
       snd3f = flx_lumdev
       call mpi_reduce(snd3f,flx_lumdev,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      flx_lumdev = flx_lumdev
 c
 c-- dim==3
       n = nx*ny*nz
@@ -550,12 +548,10 @@ c
       snd3 = grd_edep
       call mpi_reduce(snd3,grd_edep,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      grd_edep = grd_edep
 c
       snd3 = grd_eraddens
       call mpi_reduce(snd3,grd_eraddens,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-      grd_eraddens = grd_eraddens
 c
 c-- scatter
       if(impi_gas>=0) then
