@@ -70,7 +70,7 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
              abs(iz-izholder)
         do imove=1,nmove
 
-!-- radial displacements toward grid planes
+!-- speed at grid planes
            if(xold==0d0) then
               rx = 0d0
            else
@@ -91,7 +91,7 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
            help = max(rx,ry,rz)
 
 !-- x-plane
-           if(rx == help) then
+           if(help == rx) then
               if(xmag(i)==abs(grd_xarr(i+1))) then
 !-- x<0
                  if((grd_sig(i+1,j,k)+grd_cap(ig,i+1,j,k)) * &
@@ -119,7 +119,7 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
               endif
 
 !-- y-plane
-           elseif(ry == help) then
+           elseif(help == ry) then
               if(ymag(j)==abs(grd_yarr(j+1))) then
 !-- y<0
                  if((grd_sig(i,j+1,k)+grd_cap(ig,i,j+1,k)) * &
@@ -147,7 +147,7 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
               endif
 
 !-- z-plane
-           elseif(rz == help) then
+           elseif(help == rz) then
               if(zmag(k)==abs(grd_zarr(k+1))) then
 !-- z<0
                  if((grd_sig(i,j,k+1)+grd_cap(ig,i,j,k+1)) * &
