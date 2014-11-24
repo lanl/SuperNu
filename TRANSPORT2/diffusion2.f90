@@ -26,7 +26,7 @@ subroutine diffusion2(ptcl,isvacant)
   real*8 :: r1, r2, thelp, mu0
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus
-  real*8 :: elabfact, dirdotu, azidotu
+  real*8 :: elabfact, dirdotu
   real*8 :: PU, PD, PR, PL, PA
 !-- lumped quantities -----------------------------------------
 
@@ -408,7 +408,7 @@ subroutine diffusion2(ptcl,isvacant)
 !-- doppler and aberration corrections
               if(grd_isvelocity) then
                  dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 azidotu = atan2(sqrt(1d0-mu**2)*sin(om), &
+                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
                       sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming y-axis direction cosine to lab
                  mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
@@ -418,11 +418,7 @@ subroutine diffusion2(ptcl,isvacant)
                     mu = -1d0
                  endif
 !-- transforming azimuthal angle to lab
-                 if(azidotu<0d0) then
-                    om = azidotu+pc_pi2
-                 else
-                    om = azidotu
-                 endif
+                 if(om<0d0) om=om+pc_pi2
 !-- transforming wavelength to lab
                  wl = wl/(1d0+dirdotu*cinv)
 !-- transforming energy weights to lab
@@ -606,7 +602,7 @@ subroutine diffusion2(ptcl,isvacant)
 !-- doppler and aberration corrections
               if(grd_isvelocity) then
                  dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 azidotu = atan2(sqrt(1d0-mu**2)*sin(om), &
+                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
                       sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming y-axis direction cosine to lab
                  mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
@@ -616,11 +612,7 @@ subroutine diffusion2(ptcl,isvacant)
                     mu = -1d0
                  endif
 !-- transforming azimuthal angle to lab
-                 if(azidotu<0d0) then
-                    om = azidotu+pc_pi2
-                 else
-                    om = azidotu
-                 endif
+                 if(om<0d0) om=om+pc_pi2
 !-- transforming wavelength to lab
                  wl = wl/(1d0+dirdotu*cinv)
 !-- transforming energy weights to lab
@@ -780,7 +772,7 @@ subroutine diffusion2(ptcl,isvacant)
 !-- doppler and aberration corrections
               if(grd_isvelocity) then
                  dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 azidotu = atan2(sqrt(1d0-mu**2)*sin(om), &
+                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
                       sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming y-axis direction cosine to lab
                  mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
@@ -790,11 +782,7 @@ subroutine diffusion2(ptcl,isvacant)
                     mu = -1d0
                  endif
 !-- transforming azimuthal angle to lab
-                 if(azidotu<0d0) then
-                    om = azidotu+pc_pi2
-                 else
-                    om = azidotu
-                 endif
+                 if(om<0d0) om=om+pc_pi2
 !-- transforming wavelength to lab
                  wl = wl/(1d0+dirdotu*cinv)
 !-- transforming energy weights to lab
@@ -954,7 +942,7 @@ subroutine diffusion2(ptcl,isvacant)
 !-- doppler and aberration corrections
               if(grd_isvelocity) then
                  dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 azidotu = atan2(sqrt(1d0-mu**2)*sin(om), &
+                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
                       sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming y-axis direction cosine to lab
                  mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
@@ -964,11 +952,7 @@ subroutine diffusion2(ptcl,isvacant)
                     mu = -1d0
                  endif
 !-- transforming azimuthal angle to lab
-                 if(azidotu<0d0) then
-                    om = azidotu+pc_pi2
-                 else
-                    om = azidotu
-                 endif
+                 if(om<0d0) om=om+pc_pi2
 !-- transforming wavelength to lab
                  wl = wl/(1d0+dirdotu*cinv)
 !-- transforming energy weights to lab
@@ -1022,7 +1006,7 @@ subroutine diffusion2(ptcl,isvacant)
            if(grd_isvelocity) then
 !-- calculating transformation factors
               dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-              azidotu = atan2(sqrt(1d0-mu**2)*sin(om), &
+              om = atan2(sqrt(1d0-mu**2)*sin(om), &
                    sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming y-axis direction cosine to lab
               mu = (mu+y/pc_c)/(1d0+dirdotu/pc_c)
@@ -1032,11 +1016,7 @@ subroutine diffusion2(ptcl,isvacant)
                  mu = -1d0
               endif
 !-- transforming azimuthal angle to lab
-              if(azidotu<0d0) then
-                 om = azidotu+pc_pi2
-              else
-                 om = azidotu
-              endif
+              if(om<0d0) om=om+pc_pi2
 !-- transforming wavelength to lab
               wl = wl/(1d0+dirdotu*cinv)
 !-- transforming energy weights to lab

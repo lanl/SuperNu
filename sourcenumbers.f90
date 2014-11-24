@@ -24,6 +24,9 @@ subroutine sourcenumbers
 ! prt_nsurf = number of surface prt_particles
 ! prt_nnew = total number of new prt_particles~=prt_ns
 
+!-- initialize volume numbers
+  grd_nvol=0
+
 !-- shortcut
   pwr = in_srcepwr
 

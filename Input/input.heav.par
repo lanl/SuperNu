@@ -17,8 +17,8 @@ in_alpha = 1d0
 in_ismodimc = f
 
 !-- grid settings
-in_igeom = 1
-in_ndim = 50, 1, 1
+in_igeom = 2
+in_ndim = 16, 32, 1
 in_isvelocity = t
 in_novolsrc = f
 in_velout = 1d9
@@ -37,7 +37,7 @@ in_srctype = 'heav'
 in_srcmax = 4d24
 !-- heaviside case
 in_theav = 9d0
-in_nheav = 40
+in_nheav = 13
 
 !-- power law heat capacity values
 in_gas_cvcoef = 2d7

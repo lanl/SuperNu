@@ -18,7 +18,7 @@ subroutine transport2_gamgrey(ptcl)
   integer, external :: binsrch
 
   integer :: imu
-  real*8 :: dirdotu, azidotu
+  real*8 :: dirdotu
   real*8 :: dtinv, elabfact, thelp, thelpinv 
   real*8 :: dcol,db,dbr,dbz,d
   real*8 :: rold, zold, omold
@@ -194,7 +194,7 @@ subroutine transport2_gamgrey(ptcl)
         if(grd_isvelocity) then
 !-- calculating transformation factors
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           azidotu = atan2(sqrt(1d0-mu**2)*sin(om), &
+           om = atan2(sqrt(1d0-mu**2)*sin(om), &
                 sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming to lab:
 !-- y-cosine
@@ -205,11 +205,7 @@ subroutine transport2_gamgrey(ptcl)
               mu = -1d0
            endif
 !-- azimuthal direction angle
-           if(azidotu<0d0) then
-              om = azidotu+pc_pi2
-           else
-              om = azidotu
-           endif
+           if(om<0d0) om=om+pc_pi2
 !-- recalculating dirdotu
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
 !-- transforming to cmf, then to lab:

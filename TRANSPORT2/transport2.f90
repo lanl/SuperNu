@@ -20,7 +20,7 @@ subroutine transport2(ptcl,isvacant)
   integer, external :: binsrch
 
   integer :: ig, imu
-  real*8 :: dirdotu, azidotu, mu0
+  real*8 :: dirdotu, mu0
   real*8 :: dtinv, elabfact, thelp, thelpinv 
   real*8 :: dcen,dcol,dthm,db,dbr,dbz,ddop,d
   real*8 :: rold, zold, omold, ppl, ppr, help
@@ -246,7 +246,7 @@ subroutine transport2(ptcl,isvacant)
      if(grd_isvelocity) then
 !-- calculating transformation factors
         dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-        azidotu = atan2(sqrt(1d0-mu**2)*sin(om), &
+        om = atan2(sqrt(1d0-mu**2)*sin(om), &
              sqrt(1d0-mu**2)*cos(om)+x/pc_c)
 !-- transforming to lab:
 !-- y-cosine
@@ -257,11 +257,7 @@ subroutine transport2(ptcl,isvacant)
            mu = -1d0
         endif
 !-- azimuthal direction angle
-        if(azidotu<0d0) then
-           om = azidotu+pc_pi2
-        else
-           om = azidotu
-        endif
+        if(om<0d0) om=om+pc_pi2
 !-- recalculating dirdotu
         dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
 !-- transforming to cmf, then to lab:
@@ -296,7 +292,7 @@ subroutine transport2(ptcl,isvacant)
         if(grd_isvelocity) then
 !-- calculating transformation factors
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           azidotu = atan2(sqrt(1d0-mu**2)*sin(om), &
+           om = atan2(sqrt(1d0-mu**2)*sin(om), &
                 sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming to lab:
 !-- y-cosine
@@ -307,11 +303,7 @@ subroutine transport2(ptcl,isvacant)
               mu = -1d0
            endif
 !-- azimuthal direction angle
-           if(azidotu<0d0) then
-              om = azidotu+pc_pi2
-           else
-              om = azidotu
-           endif
+           if(om<0d0) om=om+pc_pi2
 !-- recalculating dirdotu
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
 !-- transforming to cmf, then to lab:
@@ -378,7 +370,7 @@ subroutine transport2(ptcl,isvacant)
         elseif((grd_cap(ig,ix,iy+1,1)+grd_sig(ix,iy+1,1)) * &
              min(dx(ix),dy(iy+1))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
-!-- transforming y-cosine to lab
+!-- transforming y-cosine to cmf
            if(grd_isvelocity) then
               mu = (mu-y*cinv)/elabfact
               if(mu>1d0) then
@@ -410,7 +402,7 @@ subroutine transport2(ptcl,isvacant)
               om = pc_pi2*r1
               if(grd_isvelocity) then
                  dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 azidotu = atan2(sqrt(1d0-mu**2)*sin(om), &
+                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
                       sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming y-axis direction cosine to lab
                  mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
@@ -420,11 +412,7 @@ subroutine transport2(ptcl,isvacant)
                     mu = -1d0
                  endif
 !-- transforming azimuthal angle to lab
-                 if(azidotu<0d0) then
-                    om = azidotu+pc_pi2
-                 else
-                    om = azidotu
-                 endif
+                 if(om<0d0) om=om+pc_pi2
               endif
 !-- fix position at boundary
               y = grd_yarr(iy+1)
@@ -462,7 +450,7 @@ subroutine transport2(ptcl,isvacant)
         elseif((grd_cap(ig,ix,iy-1,1)+grd_sig(ix,iy-1,1)) * &
              min(dx(ix),dy(iy-1))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
-!-- transforming y-cosine to lab
+!-- transforming y-cosine to cmf
            if(grd_isvelocity) then
               mu = (mu-y*cinv)/elabfact
               if(mu>1d0) then
@@ -495,7 +483,7 @@ subroutine transport2(ptcl,isvacant)
               om = pc_pi2*r1
               if(grd_isvelocity) then
                  dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 azidotu = atan2(sqrt(1d0-mu**2)*sin(om), &
+                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
                       sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming y-axis direction cosine to lab
                  mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
@@ -505,11 +493,7 @@ subroutine transport2(ptcl,isvacant)
                     mu = -1d0
                  endif
 !-- transforming azimuthal angle to lab
-                 if(azidotu<0d0) then
-                    om = azidotu+pc_pi2
-                 else
-                    om = azidotu
-                 endif
+                 if(om<0d0) om=om+pc_pi2
               endif
 !-- fix position at boundary
               y = grd_yarr(iy)
@@ -553,13 +537,9 @@ subroutine transport2(ptcl,isvacant)
              .and..not.in_puretran) then
 !-- transforming x-cosine to cmf
            if(grd_isvelocity) then
-              azidotu = atan2(sqrt(1d0-mu**2)*sin(om), &
+              om = atan2(sqrt(1d0-mu**2)*sin(om), &
                    sqrt(1d0-mu**2)*cos(om)-x*cinv)
-              if(azidotu<0d0) then
-                 om = azidotu+pc_pi2
-              else
-                 om = azidotu
-              endif
+              if(om<0d0) om=om+pc_pi2
               mu = (mu-y*cinv)/elabfact
               if(mu>1d0) then
                  mu = 1d0
@@ -600,7 +580,7 @@ subroutine transport2(ptcl,isvacant)
               endif
               if(grd_isvelocity) then
                  dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 azidotu = atan2(sqrt(1d0-mu**2)*sin(om), &
+                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
                       sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming y-axis direction cosine to lab
                  mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
@@ -610,11 +590,7 @@ subroutine transport2(ptcl,isvacant)
                     mu = -1d0
                  endif
 !-- transforming azimuthal angle to lab
-                 if(azidotu<0d0) then
-                    om = azidotu+pc_pi2
-                 else
-                    om = azidotu
-                 endif
+                 if(om<0d0) om=om+pc_pi2
               endif
               x = grd_xarr(ix+1)
            endif
@@ -634,13 +610,9 @@ subroutine transport2(ptcl,isvacant)
              .and..not.in_puretran) then
 !-- transforming x-cosine to cmf
            if(grd_isvelocity) then
-              azidotu = atan2(sqrt(1d0-mu**2)*sin(om), &
+              om = atan2(sqrt(1d0-mu**2)*sin(om), &
                    sqrt(1d0-mu**2)*cos(om)-x*cinv)
-              if(azidotu<0d0) then
-                 om = azidotu+pc_pi2
-              else
-                 om = azidotu
-              endif
+              if(om<0d0) om=om+pc_pi2
               mu = (mu-y*cinv)/elabfact
               if(mu>1d0) then
                  mu = 1d0
@@ -681,7 +653,7 @@ subroutine transport2(ptcl,isvacant)
               endif
               if(grd_isvelocity) then
                  dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 azidotu = atan2(sqrt(1d0-mu**2)*sin(om), &
+                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
                       sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming y-axis direction cosine to lab
                  mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
@@ -691,11 +663,7 @@ subroutine transport2(ptcl,isvacant)
                     mu = -1d0
                  endif
 !-- transforming azimuthal angle to lab
-                 if(azidotu<0d0) then
-                    om = azidotu+pc_pi2
-                 else
-                    om = azidotu
-                 endif
+                 if(om<0d0) om=om+pc_pi2
               endif
               x = grd_xarr(ix)
            endif
