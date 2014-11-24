@@ -15,6 +15,18 @@ subroutine write_output
   reclenf = flx_ng*12
   reclen2 = grd_nx*12
 
+  inquire(file='output.grid',exist=lexist)
+  if(.not.lexist) then
+   open(unit=4,file='output.grid',status='unknown',position=pos)
+!-- header: dimension
+   write(4,*) "#",grd_nx,grd_ny,grd_nz
+!-- body
+   write(4,*) grd_xarr
+   write(4,*) grd_yarr
+   write(4,*) grd_zarr
+   close(4)
+  endif
+
   inquire(file='output.wlgrid',exist=lexist)
   if(.not.lexist) then
    open(unit=4,file='output.wlgrid',status='unknown',position=pos)
