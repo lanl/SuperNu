@@ -376,7 +376,7 @@ subroutine diffusion3(ptcl,isvacant)
 
 !-- otherwise, perform event
   r1 = rand()
-  help = 1/denom
+  help = 1d0/denom
 
 !-- leakage probabilities
   probleak=opacleak*help
