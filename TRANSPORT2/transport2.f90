@@ -19,11 +19,12 @@ subroutine transport2(ptcl,isvacant)
   real*8,parameter :: cinv = 1d0/pc_c
   integer, external :: binsrch
 
-  integer :: ig, imu
-  real*8 :: dirdotu, mu0
-  real*8 :: dtinv, elabfact, thelp, thelpinv 
-  real*8 :: dcen,dcol,dthm,db,dbr,dbz,ddop,d
-  real*8 :: rold, zold, omold, ppl, ppr, help
+  logical :: loutx,louty
+  integer :: ig, imu, ihelp
+  real*8 :: elabfact, dirdotu, mu0
+  real*8 :: dtinv, thelp, thelpinv, help
+  real*8 :: dcen,dcol,dthm,dbx,dby,ddop,d
+  real*8 :: rold, zold, omold
   real*8 :: r1, r2, denom2
 
   integer,pointer :: ix,iy
@@ -75,45 +76,42 @@ subroutine transport2(ptcl,isvacant)
         stop 'transport2 (1): particle group invalid'
      endif
   endif
-!
-!-- calculating distance to census:
+
+!-- census distance
   dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%t)*thelpinv)
 !
-!-- calculating distance to boundary:
+!-- boundary distances
 !-- to x-bound
   if(abs(mu)==1d0) then
 !-- making greater than dcen
-     dbr = 2d0*pc_c*tsp_dt*thelpinv
+     dbx = 2d0*pc_c*tsp_dt*thelpinv
   else
      if(abs(sin(om))<grd_xarr(ix)/x .and. cos(om)<0d0) then
 !-- inner boundary
-        dbr = abs(x*cos(om)/sqrt(1d0-mu**2) &
+        dbx = abs(x*cos(om)/sqrt(1d0-mu**2) &
              +sqrt(((cos(om)*x)**2-x**2+grd_xarr(ix)**2)/(1d0-mu**2)))
      elseif(abs(grd_xarr(ix+1)-x)<1d-15*x .and. cos(om)>0d0) then
 !-- on outer boundary moving out
-        dbr = 0d0
+        dbx = 0d0
      else
 !-- outer boundary
-        dbr = -x*cos(om)/sqrt(1d0-mu**2) &
+        dbx = -x*cos(om)/sqrt(1d0-mu**2) &
              + sqrt(((cos(om)*x)**2 + grd_xarr(ix+1)**2-x**2)/(1d0-mu**2))
      endif
   endif
-  if(dbr/=dbr) stop 'transport2: dbr nan'
+  if(dbx/=dbx) stop 'transport2: dbx nan'
 
 !-- to y-bound
   if(mu>0d0) then
-     dbz = (grd_yarr(iy+1)-y)/mu
+     dby = (grd_yarr(iy+1)-y)/mu
   elseif(mu<0d0) then
-     dbz = (grd_yarr(iy)-y)/mu
+     dby = (grd_yarr(iy)-y)/mu
   else
 !-- making greater than dcen
-     dbz = 2d0*pc_c*tsp_dt*thelpinv
+     dby = 2d0*pc_c*tsp_dt*thelpinv
   endif
-
-!-- finding minim boundary distance
-  db = min(dbr,dbz)
 !
-!-- calculating distance to Thomson scattering:
+!-- Thomson scattering distance
   if(grd_sig(ix,iy,1)>0d0) then
      r1 = rand()
      dthm = -log(r1)*thelpinv/(elabfact*grd_sig(ix,iy,1))
@@ -123,7 +121,7 @@ subroutine transport2(ptcl,isvacant)
   endif
   if(dthm/=dthm) stop 'transport2: dthm nan'
 !
-!-- calculating distance to effective collision:
+!-- effective collision distance
   if(grd_cap(ig,ix,iy,1)<=0d0) then
 !-- making greater than dcen
      dcol = 2d0*pc_c*tsp_dt*thelpinv
@@ -141,7 +139,7 @@ subroutine transport2(ptcl,isvacant)
   endif
   if(dcol/=dcol) stop 'transport2: dthm nan'
 !
-!-- calculating distance to Doppler shift
+!-- Doppler shift distance
   if(grd_isvelocity.and.ig<grd_ng) then
      ddop = pc_c*(elabfact-wl/grd_wl(ig+1))
      if(ddop<0d0) then
@@ -153,16 +151,15 @@ subroutine transport2(ptcl,isvacant)
   endif
 !
 !-- finding minimum distance
-  d = min(dcen,db,dthm,dcol,ddop)
+  d = min(dcen,dbx,dby,dthm,dcol,ddop)
   if(d<0d0) then
-     write(*,*) dcen,dbz,dbr,dthm,dcol,ddop
+     write(*,*) dcen,dby,dbx,dthm,dcol,ddop
      stop 'transport2: negative distance'
   endif
 !
-!-- using min distance to stream particle to event location
+!-- updating position
   rold = x
   zold = y
-!-- updating position
   x = sqrt(rold**2+(1d0-mu**2)*d**2+2d0*rold*sqrt(1d0-mu**2)*d*cos(om))
   y = zold+mu*d
 !-- updating azimuthal direction
@@ -179,7 +176,7 @@ subroutine transport2(ptcl,isvacant)
      write(*,*) d, x, rold, omold, om, mu
      stop 'transport2: om is nan'
   endif
-
+!
 !-- updating time
   ptcl%t = ptcl%t + thelp*cinv*d
 !
@@ -187,12 +184,8 @@ subroutine transport2(ptcl,isvacant)
   if(grd_isvelocity) then
      dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
      elabfact = 1d0 - dirdotu*cinv
-  else
-     dirdotu = 0d0
-     elabfact = 1d0
   endif
 
-!
 !-- tallying energy densities
   if(prt_isimcanlog) then
 !-- analog energy density
@@ -228,15 +221,15 @@ subroutine transport2(ptcl,isvacant)
 !-- checking which event occurs from min distance
 
 !
-!-- distance to census
+!-- census
   if(d==dcen) then
-!-- censusing particle
      prt_done = .true.
      grd_numcensus(ix,iy,1) = grd_numcensus(ix,iy,1)+1
+     return
+  endif
 
-!
-!-- distance to Thomson scatter
-  elseif(d==dthm) then
+!-- common manipulations for collisions
+  if(d==dthm.or.d==dcol) then
 !-- resampling direction
      r1 = rand()
      mu = 1d0 - 2d0*r1
@@ -260,7 +253,38 @@ subroutine transport2(ptcl,isvacant)
         if(om<0d0) om=om+pc_pi2
 !-- recalculating dirdotu
         dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-!-- transforming to cmf, then to lab:
+     endif
+  elseif(any([dbx,dby]==d)) then
+!-- checking if escapted domain
+     loutx = d==dbx.and.(sqrt(1d0-mu**2)*cos(om)>=0d0.and.ix==grd_nx)
+     louty = d==dby.and.((mu>=0d0.and.iy==grd_ny).or.(mu<0.and.iy==1))
+     if(loutx.or.louty) then
+!-- ending particle
+        prt_done = .true.
+!-- retrieving lab frame flux group, polar bin
+        imu = binsrch(mu,flx_mu,flx_nmu+1,0)
+        ig = binsrch(wl,flx_wl,flx_ng+1,0)
+!-- checking group bounds
+        if(ig>flx_ng.or.ig<1) then
+           if(ig>flx_ng) then
+              ig=flx_ng
+           else
+              ig=1
+           endif
+        endif
+!-- tallying outbound luminosity
+        flx_luminos(ig,imu,1) = flx_luminos(ig,imu,1)+e*dtinv
+        flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(e*dtinv)**2
+        flx_lumnum(ig,imu,1) = flx_lumnum(ig,imu,1)+1
+        return
+     endif
+  endif
+
+!
+!-- Thomson scatter
+  if(d==dthm) then
+!-- checking velocity dependence
+     if(grd_isvelocity) then
 !-- wavelength
         wl = wl*(1d0-dirdotu*cinv)/elabfact
 !-- energy weight
@@ -269,48 +293,19 @@ subroutine transport2(ptcl,isvacant)
      endif
 
 !
-!-- distance to effective collision
+!-- effective collision
   elseif(d==dcol) then
-!-- sampling
      r1 = rand()
 !-- checking if analog
      if(prt_isimcanlog.and.r1<=grd_fcoef(ix,iy,1)) then
-!-- effective absorption:
-!-- ending particle
+!-- effective absorption
         isvacant=.true.
         prt_done=.true.
 !-- adding comoving energy to deposition energy
         grd_edep(ix,iy,1) = grd_edep(ix,iy,1) + e*elabfact
+        return
      else
-!-- effectively scattered:
-!-- resampling direction
-        r1 = rand()
-        mu = 1d0 - 2d0*r1
-        r1 = rand()
-        om = pc_pi2*r1
-!-- checking velocity dependence
-        if(grd_isvelocity) then
-!-- calculating transformation factors
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming to lab:
-!-- y-cosine
-           mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
-!-- azimuthal direction angle
-           if(om<0d0) om=om+pc_pi2
-!-- recalculating dirdotu
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-!-- transforming to cmf, then to lab:
-!-- energy weight
-           e = e*elabfact/(1d0-dirdotu*cinv)
-           e0 = e0*elabfact/(1d0-dirdotu*cinv)
-        endif
+!-- effective scattering
 !-- redistributing wavelength
         denom2 = 0d0
         r1 = rand()
@@ -324,6 +319,9 @@ subroutine transport2(ptcl,isvacant)
 !-- transforming to lab
         if(grd_isvelocity) then
            wl = wl*(1d0-dirdotu*cinv)
+!-- energy weight
+           e = e*elabfact/(1d0-dirdotu*cinv)
+           e0 = e0*elabfact/(1d0-dirdotu*cinv)
         endif
 !-- checking if DDMC in new group
         if((grd_cap(ig,ix,iy,1)+grd_sig(ix,iy,1)) * &
@@ -341,327 +339,147 @@ subroutine transport2(ptcl,isvacant)
      endif
 
 !
-!-- distance to y-boundary
-  elseif(d==dbz) then
-     if(mu>=0d0) then
-!-- checking if particle escapes top
-        if(iy == grd_ny) then
-!-- ending particle
-           isvacant = .true.
-           prt_done = .true.
-!-- retrieving lab frame flux group and polar bin
-           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
-           ig = binsrch(wl,flx_wl,flx_ng+1,0)
-!-- checking group bounds
-           if(ig>flx_ng.or.ig<1) then
-              if(ig>flx_ng) then
-                 ig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 ig=1
-                 wl=flx_wl(1)
-              endif
-           endif
-!-- tallying outbound luminosity
-           flx_luminos(ig,imu,1) = flx_luminos(ig,imu,1)+e*dtinv
-           flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(e*dtinv)**2
-           flx_lumnum(ig,imu,1) = flx_lumnum(ig,imu,1)+1
-!-- checking if above cell is DDMC
-        elseif((grd_cap(ig,ix,iy+1,1)+grd_sig(ix,iy+1,1)) * &
-             min(dx(ix),dy(iy+1))*thelp >= prt_tauddmc &
-             .and..not.in_puretran) then
-!-- transforming y-cosine to cmf
-           if(grd_isvelocity) then
-              mu = (mu-y*cinv)/elabfact
-              if(mu>1d0) then
-                 mu = 1d0
-              elseif(mu<-1d0) then
-                 mu = -1d0
-              endif
-           endif
-           help = (grd_cap(ig,ix,iy+1,1)+grd_sig(ix,iy+1,1))*dy(iy+1)*thelp
-           ppl = 4d0/(3d0*help+6d0*pc_dext)
-!-- sampling
-           r1 = rand()
-           if (r1 < ppl*(1d0+1.5d0*abs(mu))) then
-              ptcl%itype = 2
-              grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
-              if(grd_isvelocity) then
-                 e = e*elabfact
-                 e0 = e0*elabfact
-                 wl = wl/elabfact
-              endif
-              iy = iy + 1
-           else
-!-- resampling y-cosine
-              r1 = rand()
-              r2 = rand()
-              mu = -max(r1,r2)
-!-- resampling azimuthal
-              r1 = rand()
-              om = pc_pi2*r1
-              if(grd_isvelocity) then
-                 dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                      sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming y-axis direction cosine to lab
-                 mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-                 if(mu>1d0) then
-                    mu = 1d0
-                 elseif(mu<-1d0) then
-                    mu = -1d0
-                 endif
-!-- transforming azimuthal angle to lab
-                 if(om<0d0) om=om+pc_pi2
-              endif
-!-- fix position at boundary
-              y = grd_yarr(iy+1)
-           endif
-        else
-!-- IMC in upper cell
-           y = grd_yarr(iy+1)
-           iy = iy+1
-        endif
-!-- mu<0
-     else
-!-- checking if particle escapes bottom
-        if(iy == 1) then
-!-- ending particle
-           isvacant = .true.
-           prt_done = .true.
-!-- retrieving lab frame flux group and polar bin
-           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
-           ig = binsrch(wl,flx_wl,flx_ng+1,0)
-!-- checking group bounds
-           if(ig>flx_ng.or.ig<1) then
-              if(ig>flx_ng) then
-                 ig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 ig=1
-                 wl=flx_wl(1)
-              endif
-           endif
-!-- tallying outbound luminosity
-           flx_luminos(ig,imu,1) = flx_luminos(ig,imu,1)+e*dtinv
-           flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(e*dtinv)**2
-           flx_lumnum(ig,imu,1) = flx_lumnum(ig,imu,1)+1
-!-- checking if lower cell is DDMC
-        elseif((grd_cap(ig,ix,iy-1,1)+grd_sig(ix,iy-1,1)) * &
-             min(dx(ix),dy(iy-1))*thelp >= prt_tauddmc &
-             .and..not.in_puretran) then
-!-- transforming y-cosine to cmf
-           if(grd_isvelocity) then
-              mu = (mu-y*cinv)/elabfact
-              if(mu>1d0) then
-                 mu = 1d0
-              elseif(mu<-1d0) then
-                 mu = -1d0
-              endif
-           endif
-           help = (grd_cap(ig,ix,iy-1,1)+grd_sig(ix,iy-1,1)) * &
-                dy(iy-1)*thelp
-           ppr = 4d0/(3d0*help+6d0*pc_dext)
-!-- sampling
-           r1 = rand()
-           if (r1 < ppr*(1d0+1.5d0*abs(mu))) then
-              ptcl%itype = 2
-              grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
-              if(grd_isvelocity) then
-                 e = e*elabfact
-                 e0 = e0*elabfact
-                 wl = wl/elabfact
-              endif
-              iy = iy - 1
-           else
-!-- resampling y-cosine
-              r1 = rand()
-              r2 = rand()
-              mu = max(r1,r2)
-!-- resampling azimuthal
-              r1 = rand()
-              om = pc_pi2*r1
-              if(grd_isvelocity) then
-                 dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                      sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming y-axis direction cosine to lab
-                 mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-                 if(mu>1d0) then
-                    mu = 1d0
-                 elseif(mu<-1d0) then
-                    mu = -1d0
-                 endif
-!-- transforming azimuthal angle to lab
-                 if(om<0d0) om=om+pc_pi2
-              endif
-!-- fix position at boundary
-              y = grd_yarr(iy)
-           endif
-        else
-!-- IMC in lower cell
-           y = grd_yarr(iy)
-           iy = iy-1
-        endif
-     endif
+!-- x-bound
+  elseif(d==dbx) then
 
-!
-!-- distance to x-boundary
-  elseif(d==dbr) then
      if(cos(om)>=0d0) then
-!-- checking if particle escapes at outer radius
-        if(ix == grd_nx) then
-!-- ending particle
-           isvacant = .true.
-           prt_done = .true.
-!-- retrieving lab frame flux group and polar bin
-           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
-           ig = binsrch(wl,flx_wl,flx_ng+1,0)
-!-- checking group bounds
-           if(ig>flx_ng.or.ig<1) then
-              if(ig>flx_ng) then
-                 ig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 ig=1
-                 wl=flx_wl(1)
-              endif
-           endif
-!-- tallying outbound luminosity
-           flx_luminos(ig,imu,1) = flx_luminos(ig,imu,1)+e*dtinv
-           flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(e*dtinv)**2
-           flx_lumnum(ig,imu,1) = flx_lumnum(ig,imu,1)+1
-!-- checking if outer cell is DDMC
-        elseif((grd_cap(ig,ix+1,iy,1)+grd_sig(ix+1,iy,1)) * &
-             min(dx(ix+1),dy(iy))*thelp >= prt_tauddmc &
-             .and..not.in_puretran) then
-!-- transforming x-cosine to cmf
-           if(grd_isvelocity) then
-              om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                   sqrt(1d0-mu**2)*cos(om)-x*cinv)
-              if(om<0d0) om=om+pc_pi2
-              mu = (mu-y*cinv)/elabfact
-              if(mu>1d0) then
-                 mu = 1d0
-              elseif(mu<-1d0) then
-                 mu = -1d0
-              endif
-           endif
-!-- x-cosine
-           mu0 = sqrt(1d0-mu**2)*cos(om)
-           help = (grd_cap(ig,ix+1,iy,1)+grd_sig(ix+1,iy,1))*dx(ix+1)*thelp
-           ppl = 4d0/(3d0*help+6d0*pc_dext)
-!-- sampling
-           r1 = rand()
-           if (r1 < ppl*(1d0+1.5d0*abs(mu0))) then
-              ptcl%itype = 2
-              grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
-              if(grd_isvelocity) then
-                 e = e*elabfact
-                 e0 = e0*elabfact
-                 wl = wl/elabfact
-              endif
-              ix = ix + 1
-           else
-!-- resampling direction
-              r1 = rand()
-              r2 = rand()
-              mu0 = -max(r1,r2)
-              r1 = rand()
-              mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
-              om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
-              if(om<0d0) om = om+pc_pi2
-              if(grd_isvelocity) then
-                 dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                      sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming y-axis direction cosine to lab
-                 mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-                 if(mu>1d0) then
-                    mu = 1d0
-                 elseif(mu<-1d0) then
-                    mu = -1d0
-                 endif
-!-- transforming azimuthal angle to lab
-                 if(om<0d0) om=om+pc_pi2
-              endif
-              x = grd_xarr(ix+1)
-           endif
-        else
-!-- IMC in outer cell
-           x = grd_xarr(ix+1)
-           ix = ix + 1
-        endif
-!-- cos(om)<0
+        ihelp = 1
+        x = grd_xarr(ix+1)
      else
-        if(ix==1) then
-           write(*,*) om, omold, x, rold, db
-           stop 'transport2: cos(om)<0 and ix=1'
+        if(ix==1) stop &
+             'transport2_gamgrey: cos(om)<0 and ix=1'
+        ihelp = -1
+        x = grd_xarr(ix)
+     endif
+
+     if((grd_cap(ig,ix+ihelp,iy,1)+grd_sig(ix+ihelp,iy,1)) * &
+          min(dx(ix+ihelp),dy(iy))*thelp < prt_tauddmc &
+          .or.in_puretran) then
+!-- IMC in adjacent cell
+        ix = ix+ihelp
+     else
+!-- DDMC in adjacent cell
+        if(grd_isvelocity) then
+           om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                sqrt(1d0-mu**2)*cos(om)-x*cinv)
+           if(om<0d0) om=om+pc_pi2
+           mu = (mu-y*cinv)/elabfact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
+           endif
         endif
-        if((grd_cap(ig,ix-1,iy,1)+grd_sig(ix-1,iy,1)) * &
-             min(dx(ix-1),dy(iy))*thelp >= prt_tauddmc &
-             .and..not.in_puretran) then
-!-- transforming x-cosine to cmf
+!-- x-cosine
+        mu0 = sqrt(1d0-mu**2)*cos(om)
+        help = (grd_cap(ig,ix+ihelp,iy,1)+grd_sig(ix+ihelp,iy,1)) * &
+             dx(ix+ihelp)*thelp
+        help = 4d0/(3d0*help+6d0*pc_dext)
+!-- sampling
+        r1 = rand()
+        if (r1 < help*(1d0+1.5d0*abs(mu0))) then
+           ptcl%itype = 2
+           grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
            if(grd_isvelocity) then
+              e = e*elabfact
+              e0 = e0*elabfact
+              wl = wl/elabfact
+           endif
+           ix = ix + ihelp
+        else
+           r1 = rand()
+           r2 = rand()
+           mu0 = -ihelp*max(r1,r2)
+           r1 = rand()
+!-- resampling y-cosine
+           mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
+!-- resampling azimuthal
+           om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
+           if(om<0d0) om=om+pc_pi2
+           if(grd_isvelocity) then
+              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
               om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                   sqrt(1d0-mu**2)*cos(om)-x*cinv)
-              if(om<0d0) om=om+pc_pi2
-              mu = (mu-y*cinv)/elabfact
+                   sqrt(1d0-mu**2)*cos(om)+x*cinv)
+!-- transforming mu to lab
+              mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
               if(mu>1d0) then
                  mu = 1d0
               elseif(mu<-1d0) then
                  mu = -1d0
               endif
+!-- transforming om to lab
+              if(om<0d0) om=om+pc_pi2
            endif
-!-- x-cosine
-           mu0 = sqrt(1d0-mu**2)*cos(om)
-           help = (grd_cap(ig,ix-1,iy,1)+grd_sig(ix-1,iy,1))*dx(ix-1)*thelp
-           ppr = 4d0/(3d0*help+6d0*pc_dext)
-!-- sampling
-           r1 = rand()
-           if (r1 < ppr*(1d0+1.5d0*abs(mu0))) then
-              ptcl%itype = 2
-              grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
-              if(grd_isvelocity) then
-                 e = e*elabfact
-                 e0 = e0*elabfact
-                 wl = wl/elabfact
-              endif
-              ix = ix - 1
-           else
-!-- resampling direction
-              r1 = rand()
-              r2 = rand()
-              mu0 = max(r1,r2)
-              r1 = rand()
-              mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
-              om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
-              if(om<0d0) om = om+pc_pi2
-              if(grd_isvelocity) then
-                 dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                      sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming y-axis direction cosine to lab
-                 mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-                 if(mu>1d0) then
-                    mu = 1d0
-                 elseif(mu<-1d0) then
-                    mu = -1d0
-                 endif
-!-- transforming azimuthal angle to lab
-                 if(om<0d0) om=om+pc_pi2
-              endif
-              x = grd_xarr(ix)
-           endif
-        else
-!-- IMC in inner cell
-           x = grd_xarr(ix)
-           ix = ix - 1
         endif
      endif
 
 !
-!-- distance to doppler shift
+!-- y-bound
+  elseif(d==dby) then
+
+     if(mu>=0d0) then
+        ihelp = 1
+        y = grd_yarr(iy+1)
+     else
+        ihelp = -1
+        y = grd_yarr(iy)
+     endif
+
+     if((grd_cap(ig,ix,iy+ihelp,1)+grd_sig(ix,iy+ihelp,1)) * &
+          min(dx(ix),dy(iy+ihelp))*thelp < prt_tauddmc &
+          .or.in_puretran) then
+!-- IMC in adjacent cell
+        iy = iy+ihelp
+     else
+        if(grd_isvelocity) then
+!-- transforming y-cosine to cmf
+           mu = (mu-y*cinv)/elabfact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
+           endif
+        endif
+        help = (grd_cap(ig,ix,iy+ihelp,1)+grd_sig(ix,iy+ihelp,1)) * &
+             dy(iy+ihelp)*thelp
+        help = 4d0/(3d0*help+6d0*pc_dext)
+!-- sampling
+        r1 = rand()
+        if (r1 < help*(1d0+1.5d0*abs(mu))) then
+           ptcl%itype = 2
+           grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
+           if(grd_isvelocity) then
+              e = e*elabfact
+              e0 = e0*elabfact
+              wl = wl/elabfact
+           endif
+           iy = iy + ihelp
+        else
+           r1 = rand()
+           r2 = rand()
+           mu = -ihelp*max(r1,r2)
+!-- resampling azimuthal
+           r1 = rand()
+           om = pc_pi2*r1
+           if(grd_isvelocity) then
+              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+              om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                   sqrt(1d0-mu**2)*cos(om)+x*cinv)
+!-- transforming mu to lab
+              mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
+              if(mu>1d0) then
+                 mu = 1d0
+              elseif(mu<-1d0) then
+                 mu = -1d0
+              endif
+!-- transforming om to lab
+              if(om<0d0) om=om+pc_pi2
+           endif
+        endif
+     endif
+
+!
+!-- Doppler shift
   elseif(d==ddop) then
      if(.not.grd_isvelocity) stop 'transport2: ddop and no velocity'
      if(ig<grd_ng) then
@@ -686,7 +504,8 @@ subroutine transport2(ptcl,isvacant)
            wl = wl/elabfact
         endif
      endif
+  else
+     stop 'transport2: invalid distance'
   endif
-
 
 end subroutine transport2
