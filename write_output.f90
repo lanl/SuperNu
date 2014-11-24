@@ -77,7 +77,7 @@ subroutine write_output
   open(unit=4,file='output.methodswap',status=fstat,position='append',recl=reclen2)
   do j=1,grd_ny
   do k=1,grd_nz
-     write(4,'(10000i12)') grd_methodswap
+     write(4,'(10000i12)') grd_methodswap(:,j,k)
   enddo
   enddo
   close(4)
