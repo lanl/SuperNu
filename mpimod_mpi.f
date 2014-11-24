@@ -535,9 +535,7 @@ c
       snd3f = flx_lumdev
       call mpi_reduce(snd3f,flx_lumdev,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-c-- does the 1/dble(nmpi) still belong here?
-      flx_lumdev = flx_lumdev/dble(nmpi)
-c     flx_lumdev = flx_lumdev
+      flx_lumdev = flx_lumdev
 c
 c-- dim==3
       n = nx*ny*nz
