@@ -42,6 +42,9 @@ subroutine particle_advance_gamgrey(nmpi)
   grd_eraddens = 0d0
   grd_numcensus = 0
 
+!-- initializing volume numbers
+  grd_nvol=0
+
 !-- shortcut
   pwr = in_srcepwr
 
