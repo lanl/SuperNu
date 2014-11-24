@@ -194,10 +194,8 @@ subroutine boundary_source
 !-- sampling direction helpers
            r1 = rand()
            mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
-           om0 = atan2(sqrt(max(1d0-mu1**2-mu0**2,0d0)),-mu0)
+           om0 = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),-mu0)
            if(om0<0d0) om0=om0+pc_pi2
-           r1 = rand()
-           if(r1<0.5d0) om0=pc_pi2-om0
 !-- setting albedo helpers
            help = dx(i)
            mu2 = mu0
