@@ -248,7 +248,7 @@ subroutine transport3(ptcl,isvacant)
         endif
 !-- tallying outbound luminosity
         flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+e*dtinv
-        flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+(e0*dtinv)**2
+        flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+(e*dtinv)**2
         flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1
         return
      endif
@@ -400,7 +400,7 @@ subroutine transport3(ptcl,isvacant)
      else
 !-- DDMC in adjacent cell
         if(grd_isvelocity) then
-!-- transforming x-cosine to cmf
+!-- transforming y-cosine to cmf
            eta = (eta-y*cinv)/elabfact
            if(eta>1d0) then
               eta = 1
@@ -468,7 +468,7 @@ subroutine transport3(ptcl,isvacant)
      else
 !-- DDMC in adjacent cell
         if(grd_isvelocity) then
-!-- transforming x-cosine to cmf
+!-- transforming z-cosine to cmf
            mu = (mu-z*cinv)/elabfact
            if(mu>1d0) then
               mu = 1
