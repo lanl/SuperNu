@@ -787,7 +787,7 @@ subroutine diffusion2(ptcl,isvacant)
         enddo
 !
         r1 = rand()
-        wl = 1d0/((1d0-r1)/grd_wl(ig) + r1/grd_wl(ig+1))
+        wl = 1d0/((1d0-r1)/grd_wl(iiig) + r1/grd_wl(iiig+1))
 
         if ((grd_sig(ix,iy,1)+grd_cap(iiig,ix,iy,1)) * &
              min(dx(ix),dy(iy)) &
