@@ -316,170 +316,194 @@ subroutine diffusion2(ptcl,isvacant)
      grd_edep(ix,iy,1) = grd_edep(ix,iy,1)+e
      return
 
-!-- inward leakage sample
+!-- ix->ix-1 leakage
   elseif (r1>=pa.and.r1<pa+probleak(1)) then
 
-!-- checking if at inner bound
-        if (ix == 1) then
-           stop 'diffusion1: non-physical inward leakage'
+!-- sanity check
+     if (ix == 1) stop 'diffusion1: non-physical inward leakage'
 
-!-- sample adjacent group (assumes aligned ig bounds)
-        else
-           if(speclump>0d0) then
-              r1 = rand()
-              denom2 = 0d0
-              help = 1d0/opacleak(1)
-              do iig= 1, glump
-                 iiig = glumps(iig)
-                 specig = grd_capgrey(ix,iy,1)*grd_emitprob(iiig,ix,iy,1) * &
-                      capinv(iiig)
+!-- sample next group
+     if(speclump>0d0) then
+        r1 = rand()
+        denom2 = 0d0
+        help = 1d0/opacleak(1)
+        do iig= 1, glump
+           iiig = glumps(iig)
+           specig = grd_capgrey(ix,iy,1)*grd_emitprob(iiig,ix,iy,1) * &
+                capinv(iiig)
 !-- calculating resolved leakage opacities
-                 if((grd_cap(iiig,ix-1,iy,1) + &
-                      grd_sig(ix-1,iy,1))*min(dx(ix-1),dy(iy)) * &
-                      thelp<prt_tauddmc) then
+           if((grd_cap(iiig,ix-1,iy,1) + &
+                grd_sig(ix-1,iy,1))*min(dx(ix-1),dy(iy)) * &
+                thelp<prt_tauddmc) then
 !-- IMC interface
-                    mfphelp = (grd_cap(iiig,ix,iy,1)+grd_sig(ix,iy,1)) * &
-                         dx(ix)*thelp
-                    pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
-                    resopacleak = pp*(thelp*grd_xarr(ix))/ &
-                         (thelp**2*dx2(ix))
-                 else
+              mfphelp = (grd_cap(iiig,ix,iy,1)+grd_sig(ix,iy,1)) * &
+                   dx(ix)*thelp
+              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              resopacleak = pp*(thelp*grd_xarr(ix))/ &
+                   (thelp**2*dx2(ix))
+           else
 !-- DDMC interface
-                    mfphelp = ((grd_sig(ix,iy,1)+grd_cap(iiig,ix,iy,1)) * &
-                         dx(ix)+(grd_sig(ix-1,iy,1) + &
-                         grd_cap(iiig,ix-1,iy,1))*dx(ix-1))*thelp
-                    resopacleak = (4d0/3d0)*(thelp*grd_xarr(ix))/ &
-                         (mfphelp*thelp**2*dx2(ix))
-                 endif
-                 if((r1>=denom2).and. &
-                      (r1<denom2+specig*resopacleak*speclump*help)) exit
-                 denom2 = denom2+specig*resopacleak*speclump*help
-              enddo
-           else
-              iiig = ig
+              mfphelp = ((grd_sig(ix,iy,1)+grd_cap(iiig,ix,iy,1)) * &
+                   dx(ix)+(grd_sig(ix-1,iy,1) + &
+                   grd_cap(iiig,ix-1,iy,1))*dx(ix-1))*thelp
+              resopacleak = (4d0/3d0)*(thelp*grd_xarr(ix))/ &
+                   (mfphelp*thelp**2*dx2(ix))
            endif
+           if((r1>=denom2).and. &
+                (r1<denom2+specig*resopacleak*speclump*help)) exit
+           denom2 = denom2+specig*resopacleak*speclump*help
+        enddo
+     else
+        iiig = ig
+     endif
 
-!-- updating properties
-           if((grd_sig(ix-1,iy,1)+grd_cap(iiig,ix-1,iy,1)) * &
-                min(dx(ix-1),dy(iy))*thelp>=prt_tauddmc) then
-              ix = ix-1
-              r1 = rand()
-              wl = 1d0/(r1/grd_wl(iiig+1)+(1d0-r1)/grd_wl(iiig))
-              ig = iiig
-           else
-              r1 = rand()
-              wl = 1d0/(r1/grd_wl(iiig+1)+(1d0-r1)/grd_wl(iiig))
-!
-!-- method changed to IMC
-              ptcl%itype = 1
-              grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
-!
-!-- location set right bound of left cell
-              r1 = rand()
-              y = grd_yarr(iy)*(1d0-r1)+grd_yarr(iy+1)*r1
-              x = grd_xarr(ix)
+!-- sampling wavelength
+     r1 = rand()
+     wl = 1d0/(r1/grd_wl(iiig+1)+(1d0-r1)/grd_wl(iiig))
 
-!-- current particle cell set to 1 left
-              ix = ix-1
-!-- particl angle sampled from isotropic b.c. inward
-              r1 = rand()
-              r2 = rand()
-              mu0 = -max(r1,r2)
-              r1 = rand()
-              mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
-              om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
-              if(om<0d0) om = om+pc_pi2
-!-- doppler and aberration corrections
-              if(grd_isvelocity) then
-                 dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                      sqrt(1d0-mu**2)*cos(om)+x*cinv)
+!-- checking adjacent
+     lhelp = (grd_cap(iiig,ix-1,iy,1)+grd_sig(ix-1,iy,1)) * &
+                min(dx(ix-1),dy(iy))*thelp<prt_tauddmc
+
+     if(.not.lhelp) then
+!-- ix->ix-1
+        ix = ix-1
+     else
+!-- sampling x,y
+        x = grd_xarr(ix)
+        r1 = rand()
+        y = grd_yarr(iy)*(1d0-r1)+grd_yarr(iy+1)*r1
+!-- sampling direction
+        r1 = rand()
+        r2 = rand()
+        mu0 = -max(r1,r2)
+        r1 = rand()
+        mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
+        om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
+        if(om<0d0) om = om+pc_pi2
+        if(grd_isvelocity) then
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming y-axis direction cosine to lab
-                 mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-                 if(mu>1d0) then
-                    mu = 1d0
-                 elseif(mu<-1d0) then
-                    mu = -1d0
-                 endif
-!-- transforming azimuthal angle to lab
-                 if(om<0d0) om=om+pc_pi2
-!-- transforming wavelength to lab
-                 wl = wl/(1d0+dirdotu*cinv)
-!-- transforming energy weights to lab
-                 e = e*(1d0+dirdotu*cinv)
-                 e0 = e0*(1d0+dirdotu*cinv)
-              endif
-!
-!-- group reset
-              ig = iiig
-!
+           mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
            endif
+!-- transforming azimuthal angle to lab
+           if(om<0d0) om=om+pc_pi2
+!-- transforming wavelength to lab
+           wl = wl/(1d0+dirdotu*cinv)
+!-- transforming energy weights to lab
+           e = e*(1d0+dirdotu*cinv)
+           e0 = e0*(1d0+dirdotu*cinv)
+        endif
+!-- converting to IMC
+        ptcl%itype = 1
+        grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
+!-- ix->ix-1
+        ix = ix-1
+     endif
 
-        endif!}}}
+!-- ix->ix+1 leakage
+  elseif (r1>=pa+probleak(1).and.r1<pa+sum(probleak(1:2))) then
 
-!
-!-- outward leakage sample
-     elseif (r1>=pa+probleak(1).and.r1<pa+sum(probleak(1:2))) then
-!!{{{
-!-- checking if at outer bound
-        if (ix == grd_nx) then
+!-- sampling next group
+     if(speclump>0d0) then
+        r1 = rand()
+        denom2 = 0d0
+        help = 1d0/opacleak(2)
+        do iig = 1, glump
+           iiig=glumps(iig)
+           specig = grd_capgrey(ix,iy,1)*grd_emitprob(iiig,ix,iy,1) * &
+                capinv(iiig)
+!-- calculating resolved leakage opacities
+           if(ix==grd_nx) then
+              lhelp = .true.
+           else
+              lhelp = (grd_cap(iiig,ix+1,iy,1)+grd_sig(ix+1,iy,1)) * &
+                   min(dx(ix+1),dy(iy))*thelp<prt_tauddmc
+           endif
+           if(lhelp) then
+!-- IMC interface or boundary
+              mfphelp = (grd_cap(iiig,ix,iy,1)+grd_sig(ix,iy,1)) * &
+                   dx(ix)*thelp
+              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              resopacleak = pp*(thelp*grd_xarr(ix+1))/ &
+                   (thelp**2*dx2(ix))
+           else
+!-- DDMC interface
+              mfphelp = ((grd_sig(ix,iy,1)+grd_cap(iiig,ix,iy,1)) * &
+                   dx(ix)+&
+                   (grd_sig(ix+1,iy,1)+grd_cap(iiig,ix+1,iy,1)) * &
+                   dx(ix+1))*thelp
+              resopacleak = (4d0/3d0)*(thelp*grd_xarr(ix+1))/ &
+                   (mfphelp*thelp**2*dx2(ix))
+           endif
+           if((r1>=denom2).and. &
+                (r1<denom2+specig*resopacleak*speclump*help)) exit
+           denom2 = denom2+specig*resopacleak*speclump*help
+        enddo
+     else
+        iiig = ig
+     endif
+
+!-- sampling wavlength
+     r1 = rand()
+     wl=1d0/(r1/grd_wl(iiig+1) + (1d0-r1)/grd_wl(iiig))
+
+!-- checking adjacent
+     if(ix==grd_nx) then
+        lhelp = .true.
+     else
+        lhelp = (grd_cap(iiig,ix+1,iy,1)+grd_sig(ix+1,iy,1)) * &
+             min(dx(ix+1),dy(iy))*thelp<prt_tauddmc
+     endif
+
+     if(.not.lhelp) then
+!-- ix->ix+1
+        ix = ix+1
+     else
+!-- sampling x,y
+        x = grd_xarr(ix+1)
+        r1 = rand()
+        y = grd_yarr(iy)*(1d0-r1)+grd_yarr(iy+1)*r1
+!-- sampling direction
+        r1 = rand()
+        r2 = rand()
+        mu0 = max(r1,r2)
+        r1 = rand()
+        mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
+        om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
+        if(om<0d0) om=om+pc_pi2
+        if(grd_isvelocity) then
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           elabfact = 1d0+dirdotu*cinv
+           om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                sqrt(1d0-mu**2)*cos(om)+x*cinv)
+!-- transforming mu to lab
+           mu = (mu+y*cinv)/elabfact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
+           endif
+!-- transforming om to lab
+           if(om<0d0) om=om+pc_pi2
+!-- transforming wavelength to lab
+           wl = wl/elabfact
+!-- transforming energy weights to lab
+           e = e*elabfact
+           e0 = e0*elabfact
+        endif
+        if (ix==grd_nx) then
+!-- escaping at ix=nx
            isvacant = .true.
            prt_done = .true.
            tot_eright = tot_eright+e
-!-- outbound luminosity tally
-!-- sampling x, y
-           r1 = rand()
-           y = grd_yarr(iy)*(1d0-r1)+grd_yarr(iy+1)*r1
-           x = grd_xarr(grd_nx+1)
-!-- sampling direction
-           r1 = rand()
-           r2 = rand()
-           mu0 = max(r1,r2)
-           r1 = rand()
-           mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
-           om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
-           if(om<0d0) om = om+pc_pi2
-           if(grd_isvelocity) then
-              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-              elabfact = 1d0+dirdotu*cinv
-           else
-              elabfact = 1d0
-           endif
-!-- determining outbound group
-           if(speclump>0d0) then
-              r1 = rand()
-              denom2 = 0d0
-              help = 1d0/opacleak(2)
-              do iig = 1, glump
-                 iiig=glumps(iig)
-                 specig = grd_capgrey(ix,iy,1)*grd_emitprob(iiig,ix,iy,1) * &
-                      capinv(iiig)
-!-- calculating resolved leakage opacities
-                 mfphelp = (grd_cap(iiig,ix,iy,1)+grd_sig(ix,iy,1)) * &
-                      dx(ix)*thelp
-                 pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
-                 resopacleak = pp*(thelp*grd_xarr(ix+1))/ &
-                      (thelp**2*dx2(ix))
-                 if((r1>=denom2).and. &
-                      (r1<denom2+specig*resopacleak*speclump*help)) exit
-                 denom2 = denom2+specig*resopacleak*speclump*help
-              enddo
-           else
-              iiig = ig
-           endif
-!-- sampling outbound wavlength
-           r1 = rand()
-           wl=1d0/(r1/grd_wl(iiig+1) + (1d0-r1)/grd_wl(iiig))
-!-- changing from comoving frame to observer frame
-           if(grd_isvelocity) then
-              mu = (mu+y*cinv)/elabfact
-              if(mu>1d0) then
-                 mu = 1d0
-              elseif(mu<-1d0) then
-                 mu = -1d0
-              endif
-              wl = wl/elabfact
-           endif
+!-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            imu = binsrch(mu,flx_mu,flx_nmu+1,0)
            iiig = binsrch(wl,flx_wl,flx_ng+1,0)
@@ -493,167 +517,113 @@ subroutine diffusion2(ptcl,isvacant)
               endif
            endif
            flx_luminos(iiig,imu,1)=flx_luminos(iiig,imu,1)+&
-                e*dtinv*elabfact
+                e*dtinv
            flx_lumdev(iiig,imu,1)=flx_lumdev(iiig,imu,1)+&
-                (e*dtinv*elabfact)**2
+                (e*dtinv)**2
            flx_lumnum(iiig,imu,1)=flx_lumnum(iiig,imu,1)+1
-
+           return
         else
-!-- outward leaking in domain
-!
-!-- sample adjacent group (assumes aligned ig bounds)
-           if(speclump>0d0) then
-              r1 = rand()
-              denom2 = 0d0
-              help = 1d0/opacleak(2)
-              do iig= 1, glump
-                 iiig = glumps(iig)
-                 specig = grd_capgrey(ix,iy,1)*grd_emitprob(iiig,ix,iy,1) * &
-                      capinv(iiig)
-!-- calculating resolved leakage opacities
-                 if((grd_cap(iiig,ix+1,iy,1)+grd_sig(ix+1,iy,1)) * &
-                      min(dx(ix+1),dy(iy))*thelp<prt_tauddmc) then
-!-- IMC interface
-                    mfphelp = (grd_cap(iiig,ix,iy,1)+grd_sig(ix,iy,1)) * &
-                         dx(ix)*thelp
-                    pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
-                    resopacleak = pp*(thelp*grd_xarr(ix+1))/ &
-                         (thelp**2*dx2(ix))
-                 else
-!-- DDMC interface
-                    mfphelp = ((grd_sig(ix,iy,1)+grd_cap(iiig,ix,iy,1)) * &
-                         dx(ix)+&
-                         (grd_sig(ix+1,iy,1)+grd_cap(iiig,ix+1,iy,1)) * &
-                         dx(ix+1))*thelp
-                    resopacleak = (4d0/3d0)*(thelp*grd_xarr(ix+1))/ &
-                         (mfphelp*thelp**2*dx2(ix))
-                 endif
-                 if((r1>=denom2).and. &
-                      (r1<denom2+specig*resopacleak*speclump*help)) exit
-                 denom2 = denom2+specig*resopacleak*speclump*help
-              enddo
-           else
-              iiig = ig
-           endif
-
-!-- updating particle properties
-           if((grd_sig(ix+1,iy,1)+grd_cap(iiig,ix+1,iy,1)) * &
-                min(dx(ix+1),dy(iy)) &
-                *thelp >= prt_tauddmc) then
-              ix = ix+1
-              r1 = rand()
-              wl = 1d0/(r1/grd_wl(iiig+1)+(1d0-r1)/grd_wl(iiig))
-              ig = iiig
-           else
 !-- converting to IMC
-              r1 = rand()
-              wl = 1d0/(r1/grd_wl(iiig+1)+(1d0-r1)/grd_wl(iiig))
-!
-!-- method changed to IMC
-              ptcl%itype = 1
-              grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
-!
-!-- location set right bound of left cell
-              r1 = rand()
-              y = grd_yarr(iy)*(1d0-r1)+grd_yarr(iy+1)*r1
-              x = grd_xarr(ix+1)
-
-!-- current particle cell set to 1 left
-              ix = ix+1
-!-- particl angle sampled from isotropic b.c. inward
-              r1 = rand()
-              r2 = rand()
-              mu0 = max(r1,r2)
-              r1 = rand()
-              mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
-              om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
-              if(om<0d0) om = om+pc_pi2
-!-- doppler and aberration corrections
-              if(grd_isvelocity) then
-                 dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                      sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming y-axis direction cosine to lab
-                 mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-                 if(mu>1d0) then
-                    mu = 1d0
-                 elseif(mu<-1d0) then
-                    mu = -1d0
-                 endif
-!-- transforming azimuthal angle to lab
-                 if(om<0d0) om=om+pc_pi2
-!-- transforming wavelength to lab
-                 wl = wl/(1d0+dirdotu*cinv)
-!-- transforming energy weights to lab
-                 e = e*(1d0+dirdotu*cinv)
-                 e0 = e0*(1d0+dirdotu*cinv)
-              endif
-!
-!-- group reset
-              ig = iiig
-!
-           endif
+           ptcl%itype = 1
+           grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
+!-- ix->ix+1
+           ix = ix+1
         endif
+     endif
 
-!
-!-- downward leakage sample
-     elseif(r1>=pa+sum(probleak(1:2)).and.r1<pa+sum(probleak(1:3))) then
+!-- iy->iy-1 leakage
+  elseif(r1>=pa+sum(probleak(1:2)).and.r1<pa+sum(probleak(1:3))) then
 
-!-- checking if at outer bound
-        if (iy == 1) then
+!-- sampling next group
+     if(speclump>0d0) then
+        r1 = rand()
+        denom2 = 0d0
+        help = 1d0/opacleak(3)
+        do iig= 1, glump
+           iiig = glumps(iig)
+           specig = grd_capgrey(ix,iy,1)*grd_emitprob(iiig,ix,iy,1) * &
+                capinv(iiig)
+!-- calculating resolved leakage opacities
+           if(iy==1) then
+              lhelp = .true.
+           else
+              lhelp = (grd_cap(iiig,ix,iy-1,1)+grd_sig(ix,iy-1,1)) * &
+                   min(dx(ix),dy(iy-1))*thelp<prt_tauddmc
+           endif
+           if(lhelp) then
+!-- IMC interface or boundary
+              mfphelp = (grd_cap(iiig,ix,iy,1)+grd_sig(ix,iy,1)) * &
+                   dy(iy)*thelp
+              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              resopacleak = 0.5d0*pp/(thelp*dy(iy))
+           else
+!-- DDMC interface
+              mfphelp = ((grd_sig(ix,iy,1)+grd_cap(iiig,ix,iy,1)) * &
+                   dy(iy)+&
+                   (grd_sig(ix,iy-1,1)+grd_cap(iiig,ix,iy-1,1)) * &
+                   dy(iy-1))*thelp
+              resopacleak = (2d0/3d0)/(mfphelp*thelp*dy(iy))
+           endif
+           if((r1>=denom2).and. &
+                (r1<denom2+specig*resopacleak*speclump*help)) exit
+           denom2 = denom2+specig*resopacleak*speclump*help
+        enddo
+     else
+        iiig = ig
+     endif
+
+!-- sampling wavlength
+     r1 = rand()
+     wl=1d0/(r1/grd_wl(iiig+1) + (1d0-r1)/grd_wl(iiig))
+
+!-- checking adjacent
+     if(iy==1) then
+        lhelp = .true.
+     else
+        lhelp = (grd_cap(iiig,ix,iy-1,1)+grd_sig(ix,iy-1,1)) * &
+             min(dx(ix),dy(iy-1))*thelp<prt_tauddmc
+     endif
+
+     if(.not.lhelp) then
+!-- iy->iy-1
+        iy = iy-1
+     else
+!-- sampling x,y
+        r1 = rand()
+        x = sqrt(grd_xarr(ix)**2*(1d0-r1)+grd_xarr(ix+1)**2*r1)
+        y = grd_yarr(iy)
+!-- sampling direction
+        r1 = rand()
+        r2 = rand()
+        mu = -max(r1,r2)
+        r1 = rand()
+        om = pc_pi2*r1
+        if(grd_isvelocity) then
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           elabfact = 1d0+dirdotu*cinv
+           om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                sqrt(1d0-mu**2)*cos(om)+x*cinv)
+!-- transforming y-axis direction cosine to lab
+           mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
+           endif
+!-- transforming om to lab
+           if(om<0d0) om=om+pc_pi2
+!-- transforming wl to lab
+           wl = wl/elabfact
+!-- transforming energy weights to lab
+           e = e*elabfact
+           e0 = e0*elabfact
+        endif
+        if (iy==1) then
+!-- escaping at iy=1
            isvacant = .true.
            prt_done = .true.
            tot_eright = tot_eright+e
-!-- outbound luminosity tally
-!-- sampling x, y
-           r1 = rand()
-           x = sqrt(grd_xarr(ix)**2*(1d0-r1)+grd_xarr(ix+1)**2*r1)
-           y = grd_yarr(iy)
-!-- sampling direction
-           r1 = rand()
-           r2 = rand()
-           mu = -max(r1,r2)
-           r1 = rand()
-           om = pc_pi2*r1
-           if(grd_isvelocity) then
-              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-              elabfact = 1d0+dirdotu*cinv
-           else
-              elabfact = 1d0
-           endif
-           if(speclump>0d0) then
-              r1 = rand()
-              denom2 = 0d0
-              help = 1d0/opacleak(3)
-              do iig = 1, glump
-                 iiig=glumps(iig)
-                 specig = grd_capgrey(ix,iy,1)*grd_emitprob(iiig,ix,iy,1) * &
-                      capinv(iiig)
-!-- calculating resolved leakage opacities
-                 mfphelp = (grd_cap(iiig,ix,iy,1)+grd_sig(ix,iy,1)) * &
-                      dy(iy)*thelp
-                 pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
-                 resopacleak = 0.5d0*pp/(thelp*dy(iy))
-                 if((r1>=denom2).and. &
-                      (r1<denom2+specig*resopacleak*speclump*help)) exit
-                 denom2 = denom2+specig*resopacleak*speclump*help
-              enddo
-           else
-              iiig = ig
-           endif
-!-- sampling outbound wavlength
-           r1 = rand()
-           wl=1d0/(r1/grd_wl(iiig+1) + (1d0-r1)/grd_wl(iiig))
-!-- changing from comoving frame to observer frame
-           if(grd_isvelocity) then
-              mu = (mu+y*cinv)/elabfact
-              if(mu>1d0) then
-                 mu = 1d0
-              elseif(mu<-1d0) then
-                 mu = -1d0
-              endif
-              wl = wl/elabfact
-           endif
+!-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            imu = binsrch(mu,flx_mu,flx_nmu+1,0)
            iiig = binsrch(wl,flx_wl,flx_ng+1,0)
@@ -667,163 +637,114 @@ subroutine diffusion2(ptcl,isvacant)
               endif
            endif
            flx_luminos(iiig,imu,1)=flx_luminos(iiig,imu,1)+&
-                e*dtinv*elabfact
+                e*dtinv
            flx_lumdev(iiig,imu,1)=flx_lumdev(iiig,imu,1)+&
-                (e*dtinv*elabfact)**2
+                (e*dtinv)**2
            flx_lumnum(iiig,imu,1)=flx_lumnum(iiig,imu,1)+1
-
+           return
         else
-
-!-- sample adjacent group (assumes aligned ig bounds)
-           if(speclump>0d0) then
-              r1 = rand()
-              denom2 = 0d0
-              help = 1d0/opacleak(3)
-              do iig= 1, glump
-                 iiig = glumps(iig)
-                 specig = grd_capgrey(ix,iy,1)*grd_emitprob(iiig,ix,iy,1) * &
-                      capinv(iiig)
-!-- calculating resolved leakage opacities
-                 if((grd_cap(iiig,ix,iy-1,1)+grd_sig(ix,iy-1,1)) * &
-                      min(dx(ix),dy(iy-1))*thelp<prt_tauddmc) then
-!-- IMC interface
-                    mfphelp = (grd_cap(iiig,ix,iy,1)+grd_sig(ix,iy,1)) * &
-                         dy(iy)*thelp
-                    pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
-                    resopacleak = 0.5d0*pp/(thelp*dy(iy))
-                 else
-!-- DDMC interface
-                    mfphelp = ((grd_sig(ix,iy,1)+grd_cap(iiig,ix,iy,1)) * &
-                         dy(iy)+&
-                         (grd_sig(ix,iy-1,1)+grd_cap(iiig,ix,iy-1,1)) * &
-                         dy(iy-1))*thelp
-                    resopacleak = (2d0/3d0)/(mfphelp*thelp*dy(iy))
-                 endif
-                 if((r1>=denom2).and. &
-                      (r1<denom2+specig*resopacleak*speclump*help)) exit
-                 denom2 = denom2+specig*resopacleak*speclump*help
-              enddo
-           else
-              iiig = ig
-           endif
-
-!-- updating particle properties
-           if((grd_sig(ix,iy-1,1)+grd_cap(iiig,ix,iy-1,1)) * &
-                min(dx(ix),dy(iy-1)) &
-                *thelp >= prt_tauddmc) then
-              iy = iy-1
-              r1 = rand()
-              wl = 1d0/(r1/grd_wl(iiig+1)+(1d0-r1)/grd_wl(iiig))
-              ig = iiig
-           else
 !-- converting to IMC
-              r1 = rand()
-              wl = 1d0/(r1/grd_wl(iiig+1)+(1d0-r1)/grd_wl(iiig))
-!
-!-- method changed to IMC
-              ptcl%itype = 1
-              grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
-!
-!-- location set right bound of left cell
-              r1 = rand()
-              x = sqrt(grd_xarr(ix)**2*(1d0-r1)+grd_xarr(ix+1)**2*r1)
-              y = grd_yarr(iy)
-
-!-- current particle cell set to 1 left
-              iy = iy-1
-!-- particl angle sampled from isotropic b.c. inward
-              r1 = rand()
-              r2 = rand()
-              mu = -max(r1,r2)
-              r1 = rand()
-              om = pc_pi2*r1
-
-!-- doppler and aberration corrections
-              if(grd_isvelocity) then
-                 dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                      sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming y-axis direction cosine to lab
-                 mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-                 if(mu>1d0) then
-                    mu = 1d0
-                 elseif(mu<-1d0) then
-                    mu = -1d0
-                 endif
-!-- transforming azimuthal angle to lab
-                 if(om<0d0) om=om+pc_pi2
-!-- transforming wavelength to lab
-                 wl = wl/(1d0+dirdotu*cinv)
-!-- transforming energy weights to lab
-                 e = e*(1d0+dirdotu*cinv)
-                 e0 = e0*(1d0+dirdotu*cinv)
-              endif
-!
-!-- group reset
-              ig = iiig
-!
-           endif
+           ptcl%itype = 1
+           grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
+!-- iy->iy-1
+           iy = iy-1
         endif
+     endif
 
-!
-!-- upward leakage sample
-     elseif(r1>=pa+sum(probleak(1:3)).and.r1<pa+sum(probleak(1:4))) then
+!-- iy->iy+1 leakage
+  elseif(r1>=pa+sum(probleak(1:3)).and.r1<pa+sum(probleak(1:4))) then
 
-!-- checking if at outer bound
+!-- sampling next group
+     if(speclump>0d0) then
+        r1 = rand()
+        denom2 = 0d0
+        help = 1d0/opacleak(4)
+        do iig= 1, glump
+           iiig = glumps(iig)
+           specig = grd_capgrey(ix,iy,1)*grd_emitprob(iiig,ix,iy,1) * &
+                capinv(iiig)
+!-- calculating resolved leakage opacities
+           if(iy==grd_ny) then
+              lhelp = .true.
+           else
+              lhelp = (grd_cap(iiig,ix,iy+1,1)+grd_sig(ix,iy+1,1)) * &
+                   min(dx(ix),dy(iy+1))*thelp<prt_tauddmc
+           endif
+           if(lhelp) then
+!-- IMC interface or boundary
+              mfphelp = (grd_cap(iiig,ix,iy,1)+grd_sig(ix,iy,1)) * &
+                   dy(iy)*thelp
+              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              resopacleak = 0.5d0*pp/(thelp*dy(iy))
+           else
+!-- DDMC interface
+              mfphelp = ((grd_sig(ix,iy,1)+grd_cap(iiig,ix,iy,1)) * &
+                   dy(iy)+&
+                   (grd_sig(ix,iy+1,1)+grd_cap(iiig,ix,iy+1,1)) * &
+                   dy(iy+1))*thelp
+              resopacleak = (2d0/3d0)/(mfphelp*thelp*dy(iy))
+           endif
+           if((r1>=denom2).and. &
+                (r1<denom2+specig*resopacleak*speclump*help)) exit
+           denom2 = denom2+specig*resopacleak*speclump*help
+        enddo
+     else
+        iiig = ig
+     endif
+
+!-- sampling wavelength
+     r1 = rand()
+     wl = 1d0/(r1/grd_wl(iiig+1)+(1d0-r1)/grd_wl(iiig))
+
+!-- checking adjacent
+     if(iy==grd_ny) then
+        lhelp = .true.
+     else
+        lhelp = (grd_cap(iiig,ix,iy+1,1)+grd_sig(ix,iy+1,1)) * &
+             min(dx(ix),dy(iy+1))*thelp<prt_tauddmc
+     endif
+
+     if(.not.lhelp) then
+!-- iy->iy+1
+        iy = iy+1
+     else
+!-- sampling x,y
+        r1 = rand()
+        x = sqrt(grd_xarr(ix)**2*(1d0-r1)+grd_xarr(ix+1)**2*r1)
+        y = grd_yarr(iy+1)
+!-- sampling direction
+        r1 = rand()
+        r2 = rand()
+        mu = max(r1,r2)
+        r1 = rand()
+        om = pc_pi2*r1
+!-- doppler and aberration corrections
+        if(grd_isvelocity) then
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           elabfact = 1d0+dirdotu*cinv
+           om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                sqrt(1d0-mu**2)*cos(om)+x*cinv)
+!-- transforming mu to lab
+           mu = (mu+y*cinv)/elabfact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
+           endif
+!-- transforming om to lab
+           if(om<0d0) om=om+pc_pi2
+!-- transforming wl to lab
+           wl = wl/elabfact
+!-- transforming energy weights to lab
+           e = e*elabfact
+           e0 = e0*elabfact
+        endif
         if (iy == grd_ny) then
+!-- escaping at iy=ny
            isvacant = .true.
            prt_done = .true.
            tot_eright = tot_eright+e
-!-- outbound luminosity tally
-!-- sampling x, y
-           r1 = rand()
-           x = sqrt(grd_xarr(ix)**2*(1d0-r1)+grd_xarr(ix+1)**2*r1)
-           y = grd_yarr(iy+1)
-!-- sampling direction
-           r1 = rand()
-           r2 = rand()
-           mu = max(r1,r2)
-           r1 = rand()
-           om = pc_pi2*r1
-           if(grd_isvelocity) then
-              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-              elabfact = 1d0+dirdotu*cinv
-           else
-              elabfact = 1d0
-           endif
-!-- determining outbound group
-           if(speclump>0d0) then
-              r1 = rand()
-              denom2 = 0d0
-              help = 1d0/opacleak(4)
-              do iig = 1, glump
-                 iiig=glumps(iig)
-                 specig = grd_capgrey(ix,iy,1)*grd_emitprob(iiig,ix,iy,1) * &
-                      capinv(iiig)
-!-- calculating resolved leakage opacities
-                 mfphelp = (grd_cap(iiig,ix,iy,1)+grd_sig(ix,iy,1)) * &
-                      dy(iy)*thelp
-                 pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
-                 resopacleak = 0.5d0*pp/(thelp*dy(iy))
-                 if((r1>=denom2).and. &
-                      (r1<denom2+specig*resopacleak*speclump*help)) exit
-                 denom2 = denom2+specig*resopacleak*speclump*help
-              enddo
-           else
-              iiig = ig
-           endif
-           r1 = rand()
-           wl=1d0/(r1/grd_wl(iiig+1) + (1d0-r1)/grd_wl(iiig))
-!-- changing from comoving frame to observer frame
-           if(grd_isvelocity) then
-              mu = (mu+y*cinv)/elabfact
-              if(mu>1d0) then
-                 mu = 1d0
-              elseif(mu<-1d0) then
-                 mu = -1d0
-              endif
-              wl = wl/elabfact
-           endif
+!-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            imu = binsrch(mu,flx_mu,flx_nmu+1,0)
            iiig = binsrch(wl,flx_wl,flx_ng+1,0)
@@ -837,106 +758,22 @@ subroutine diffusion2(ptcl,isvacant)
               endif
            endif
            flx_luminos(iiig,imu,1)=flx_luminos(iiig,imu,1)+&
-                e*dtinv*elabfact
+                e*dtinv
            flx_lumdev(iiig,imu,1)=flx_lumdev(iiig,imu,1)+&
-                (e*dtinv*elabfact)**2
+                (e*dtinv)**2
            flx_lumnum(iiig,imu,1)=flx_lumnum(iiig,imu,1)+1
-
+           return
         else
-
-!-- sample adjacent group (assumes aligned ig bounds)
-           if(speclump>0d0) then
-              r1 = rand()
-              denom2 = 0d0
-              help = 1d0/opacleak(4)
-              do iig= 1, glump
-                 iiig = glumps(iig)
-                 specig = grd_capgrey(ix,iy,1)*grd_emitprob(iiig,ix,iy,1) * &
-                      capinv(iiig)
-!-- calculating resolved leakage opacities
-                 if((grd_cap(iiig,ix,iy+1,1)+grd_sig(ix,iy+1,1)) * &
-                      min(dx(ix),dy(iy+1))*thelp<prt_tauddmc) then
-!-- IMC interface
-                    mfphelp = (grd_cap(iiig,ix,iy,1)+grd_sig(ix,iy,1)) * &
-                         dy(iy)*thelp
-                    pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
-                    resopacleak = 0.5d0*pp/(thelp*dy(iy))
-                 else
-!-- DDMC interface
-                    mfphelp = ((grd_sig(ix,iy,1)+grd_cap(iiig,ix,iy,1)) * &
-                         dy(iy)+&
-                         (grd_sig(ix,iy+1,1)+grd_cap(iiig,ix,iy+1,1)) * &
-                         dy(iy+1))*thelp
-                    resopacleak = (2d0/3d0)/(mfphelp*thelp*dy(iy))
-                 endif
-                 if((r1>=denom2).and. &
-                      (r1<denom2+specig*resopacleak*speclump*help)) exit
-                 denom2 = denom2+specig*resopacleak*speclump*help
-              enddo
-           else
-              iiig = ig
-           endif
-
-!-- updating particle properties
-           if((grd_sig(ix,iy+1,1)+grd_cap(iiig,ix,iy+1,1)) * &
-                min(dx(ix),dy(iy+1)) &
-                *thelp >= prt_tauddmc) then
-              iy = iy+1
-              r1 = rand()
-              wl = 1d0/(r1/grd_wl(iiig+1)+(1d0-r1)/grd_wl(iiig))
-              ig = iiig
-           else
 !-- converting to IMC
-              r1 = rand()
-              wl = 1d0/(r1/grd_wl(iiig+1)+(1d0-r1)/grd_wl(iiig))
-!
-!-- method changed to IMC
-              ptcl%itype = 1
-              grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
-!
-!-- location set right bound of left cell
-              r1 = rand()
-              x = sqrt(grd_xarr(ix)**2*(1d0-r1)+grd_xarr(ix+1)**2*r1)
-              y = grd_yarr(iy+1)
-
-!-- current particle cell set to 1 left
-              iy = iy+1
-!-- particl angle sampled from isotropic b.c. inward
-              r1 = rand()
-              r2 = rand()
-              mu = max(r1,r2)
-              r1 = rand()
-              om = pc_pi2*r1
-
-!-- doppler and aberration corrections
-              if(grd_isvelocity) then
-                 dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-                 om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                      sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming y-axis direction cosine to lab
-                 mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-                 if(mu>1d0) then
-                    mu = 1d0
-                 elseif(mu<-1d0) then
-                    mu = -1d0
-                 endif
-!-- transforming azimuthal angle to lab
-                 if(om<0d0) om=om+pc_pi2
-!-- transforming wavelength to lab
-                 wl = wl/(1d0+dirdotu*cinv)
-!-- transforming energy weights to lab
-                 e = e*(1d0+dirdotu*cinv)
-                 e0 = e0*(1d0+dirdotu*cinv)
-              endif
-!
-!-- group reset
-              ig = iiig
-!
-           endif
+           ptcl%itype = 1
+           grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
+!-- iy->iy+1
+           iy = iy+1
         endif
+     endif
 
 !-- effective scattering
-     else
+  else
         denom2 = 1d0-emitlump
         help = 1d0/denom2
 !
@@ -949,15 +786,12 @@ subroutine diffusion2(ptcl,isvacant)
            denom3 = denom3+grd_emitprob(iiig,ix,iy,1)*help
         enddo
 !
-        ig = iiig
         r1 = rand()
         wl = 1d0/((1d0-r1)/grd_wl(ig) + r1/grd_wl(ig+1))
 
-        if ((grd_sig(ix,iy,1)+grd_cap(ig,ix,iy,1)) * &
+        if ((grd_sig(ix,iy,1)+grd_cap(iiig,ix,iy,1)) * &
              min(dx(ix),dy(iy)) &
-             *thelp >= prt_tauddmc) then
-           ptcl%itype = 2
-        else
+             *thelp < prt_tauddmc) then
            ptcl%itype = 1
            grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
 !-- direction sampled isotropically           
@@ -993,6 +827,7 @@ subroutine diffusion2(ptcl,isvacant)
               e0 = e0*(1d0+dirdotu*cinv)
            endif
         endif
+
      endif
 
 
