@@ -510,10 +510,17 @@ c-- dim==0
       call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      tot_erad = rcvvec(1)
-      tot_eout = rcvvec(2)
-      tot_eext = rcvvec(3)
-      tot_evelo = rcvvec(4)
+      if(impi==impi0) then
+         tot_erad = rcvvec(1)
+         tot_eout = rcvvec(2)
+         tot_eext = rcvvec(3)
+         tot_evelo = rcvvec(4)
+      else
+         tot_erad = 0d0
+         tot_eout = 0d0
+         tot_eext = 0d0
+         tot_evelo = 0d0
+      endif
       deallocate(sndvec)
       deallocate(rcvvec)
 
