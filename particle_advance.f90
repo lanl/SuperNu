@@ -48,12 +48,6 @@ subroutine particle_advance
   grd_edep = 0d0
   grd_eraddens = 0d0
   tot_erad = 0d0
-  tot_ein = 0d0
-  tot_eout = 0d0
-  tot_edown = 0d0
-  tot_eup = 0d0
-  tot_ebotm = 0d0
-  tot_etop = 0d0
 
   flx_luminos = 0d0
   flx_lumdev = 0d0
@@ -685,9 +679,6 @@ subroutine particle_advance
   call timereg(t_pcktnpckt, dble(npckt))
   call timereg(t_pcktnddmc, dble(nddmc))
   call timereg(t_pcktnimc, dble(nimc))
-  !write(6,*) eleft, eright
 
-  tot_eext = tot_eext-tot_ein-tot_eout - &
-       tot_edown-tot_eup-tot_ebotm-tot_etop
 
 end subroutine particle_advance
