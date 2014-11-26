@@ -42,93 +42,96 @@ subroutine advection2(pretrans,ig,ix,iy,x,y)
      y = y*(tsp_t+alph2*tsp_dt)/(tsp_t+tsp_dt)
   endif
 
-  if(x<grd_xarr(ix).or.abs(y)<ymag(iy)) then
+!-- nothing to do
+  if(x>=grd_xarr(ix) .and. abs(y)>=ymag(iy)) return
+
 !
 !-- sanity check
-     if(xold==0d0.and.yold==0d0) &
-          stop 'advection2: invalid position update'
+  if(xold==0d0.and.yold==0d0) &
+       stop 'advection2: invalid position update'
+
 !-- finding tentative new index
-     ixholder = binsrch(x,grd_xarr,grd_nx+1,0)
-     iyholder = binsrch(y,grd_yarr,grd_ny+1,0)
+  ixholder = binsrch(x,grd_xarr,grd_nx+1,0)
+  iyholder = binsrch(y,grd_yarr,grd_ny+1,0)
 !--correcting new index
-!-- on y axis
-     if(x==0d0) ixholder = ix
-!-- on x axis
-     if(y==0d0) iyholder = iy
-!-- moved to negative y-line (unlikely)
-     if(y<0d0.and.any(grd_yarr==y)) iyholder=iyholder-1
+  if(x==0d0) ixholder = ix !-- on y axis
+  if(y==0d0) iyholder = iy !-- on x axis
+  if(y<0d0.and.grd_yarr(iy)==y) iyholder=iyholder-1 !-- moved to negative y-line (rare)
 
-!-- checking if DDMC is active
-     if(.not.in_puretran.and.partstopper) then
+!
+!-- quick exit if DDMC is active
+  if(in_puretran .or. .not.partstopper) then
+!-- DDMC inactive, setting index to tentative value
+     ix = ixholder
+     iy = iyholder
+     return
+  endif
+
+!
+!-- DDMC active
 !-- initializing tracking cells
-        i = ix
-        j = iy
-        help = 0d0
-!-- number of cell moves
-        nmove = ix-ixholder+abs(iy-iyholder)
-        do imove=1,nmove
+  i = ix
+  j = iy
+  help = 0d0
 
+!-- number of cell moves
+  nmove = ix-ixholder+abs(iy-iyholder)
+
+  do imove=1,nmove
 !-- speed at grid edges
-           if(xold==0d0) then
-              rx = 0d0
-           else
-              rx = rold*grd_xarr(i)/xold
-           endif
-           if(yold==0d0) then
-              ry = 0d0
-           else
-              ry = rold*ymag(j)/abs(yold)
-           endif
+     if(xold==0d0) then
+        rx = 0d0
+     else
+        rx = rold*grd_xarr(i)/xold
+     endif
+     if(yold==0d0) then
+        ry = 0d0
+     else
+        ry = rold*ymag(j)/abs(yold)
+     endif
 
 !-- using min displacement to move index
-           help = max(rx,ry)
+     help = max(rx,ry)
 
 !-- x-edge
-           if(help == rx) then
-              if((grd_sig(i-1,j,1)+grd_cap(ig,i-1,j,1)) * &
-                   min(dy(j),dx(i-1))*tsp_t >= prt_tauddmc) then
-                 x = grd_xarr(i)
-                 y = (yold/xold)*grd_xarr(i)
-                 exit
-              else
-                 i = i-1
-              endif
-
+     if(help == rx) then
+        if((grd_sig(i-1,j,1)+grd_cap(ig,i-1,j,1)) * &!{{{
+             min(dy(j),dx(i-1))*tsp_t >= prt_tauddmc) then
+           x = grd_xarr(i)
+           y = (yold/xold)*grd_xarr(i)
+           exit
+        else
+           i = i-1
+        endif
+!}}}
 !-- y-edge
-           else
-              if(ymag(j)==abs(grd_yarr(j+1))) then
-!-- y<0
-                 if((grd_sig(i,j+1,1)+grd_cap(ig,i,j+1,1)) * &
-                      min(dy(j+1),dx(i))*tsp_t >= &
-                      prt_tauddmc) then
-                    x = (xold/yold)*grd_yarr(j+1)
-                    y = grd_yarr(j+1)
-                    exit
-                 else
-                    j = j+1
-                 endif
-              else
-!-- y>0
-                 if((grd_sig(i,j-1,1)+grd_cap(ig,i,j-1,1)) * &
-                      min(dy(j-1),dx(i))*tsp_t >= &
-                      prt_tauddmc) then
-                    x = (xold/yold)*grd_yarr(j)
-                    y = grd_yarr(j)
-                    exit
-                 else
-                    j = j-1
-                 endif
-              endif
-           endif
-        enddo
-        ix = i
-        iy = j
-
      else
-!-- DDMC inactive, setting index to tentative value
-        ix = ixholder
-        iy = iyholder
+        if(ymag(j)==abs(grd_yarr(j+1))) then!{{{
+!-- y<0
+           if((grd_sig(i,j+1,1)+grd_cap(ig,i,j+1,1)) * &
+                min(dy(j+1),dx(i))*tsp_t >= &
+                prt_tauddmc) then
+              x = (xold/yold)*grd_yarr(j+1)
+              y = grd_yarr(j+1)
+              exit
+           else
+              j = j+1
+           endif
+        else
+!-- y>0
+           if((grd_sig(i,j-1,1)+grd_cap(ig,i,j-1,1)) * &
+                min(dy(j-1),dx(i))*tsp_t >= &
+                prt_tauddmc) then
+              x = (xold/yold)*grd_yarr(j)
+              y = grd_yarr(j)
+              exit
+           else
+              j = j-1
+           endif
+        endif!}}}
      endif
-  endif
+  enddo
+  ix = i
+  iy = j
 
 end subroutine advection2
