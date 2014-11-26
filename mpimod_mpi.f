@@ -481,6 +481,8 @@ c     -----------------------!{{{
       real*8,allocatable :: sndvec(:),rcvvec(:)
       integer :: isnd3(nx,ny,nz),isnd3f(flx_ng,flx_nmu,flx_nom)
       real*8 :: snd3(nx,ny,nz),snd3f(flx_ng,flx_nmu,flx_nom)
+      integer :: isnd3g(flx_nmu,flx_nom)
+      real*8 :: snd3g(flx_nmu,flx_nom)
       real*8 :: help
 
 c
@@ -521,7 +523,20 @@ c-- continue with relevant ranks only
       deallocate(sndvec)
       deallocate(rcvvec)
 c
-c-- dim==1
+c-- flux dim==2
+      isnd3g = flx_gamluminos
+      call mpi_reduce(isnd3g,flx_gamlumnum,n,MPI_INTEGER,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      snd3g = flx_gamluminos
+      call mpi_reduce(snd3g,flx_gamluminos,n,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      snd3g = flx_gamlumdev
+      call mpi_reduce(snd3g,flx_gamlumdev,n,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+c-- flux dim==3
       n = flx_ng*flx_nmu*flx_nom
       isnd3f = flx_lumnum
       call mpi_reduce(isnd3f,flx_lumnum,n,MPI_INTEGER,MPI_SUM,
