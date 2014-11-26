@@ -512,6 +512,18 @@ subroutine particle_advance
               nddmc = nddmc + 1
               call diffusion3(ptcl,isvacant)
            endif
+!-- verify position
+           if(ptcl%itype==1 .and. .not.prt_done) then
+              if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
+                 write(0,*) 'prt_adv: x not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu,om
+              endif
+              if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
+                 write(0,*) 'prt_adv: y not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu,om
+              endif
+              if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
+                 write(0,*) 'prt_adv: z not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu,om
+              endif
+           endif
 !-- transformation factor
            if(grd_isvelocity .and. ptcl%itype==1) then
               labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &

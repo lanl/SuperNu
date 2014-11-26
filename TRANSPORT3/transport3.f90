@@ -86,22 +86,16 @@ subroutine transport3(ptcl,isvacant)
   if(xi==0d0) then
      dbx = 2d0*pc_c*tsp_dt*thelpinv
   else
-     if((grd_xarr(ix)-x)/xi>0d0.and.(grd_xarr(ix+1)-x)/xi>0d0) stop &
-          'transport3: x val out of cell'
      dbx = max((grd_xarr(ix)-x)/xi,(grd_xarr(ix+1)-x)/xi)
   endif
   if(eta==0d0) then
      dby = 2d0*pc_c*tsp_dt*thelpinv
   else
-     if((grd_yarr(iy)-y)/eta>0d0.and.(grd_yarr(iy+1)-y)/eta>0d0) stop &
-          'transport3: y val out of cell'
      dby = max((grd_yarr(iy)-y)/eta,(grd_yarr(iy+1)-y)/eta)
   endif
   if(mu==0d0) then
      dbz = 2d0*pc_c*tsp_dt*thelpinv
   else
-     if((grd_zarr(iz)-z)/mu>0d0.and.(grd_zarr(iz+1)-z)/mu>0d0) stop &
-          'transport3: z val out of cell'
      dbz = max((grd_zarr(iz)-z)/mu,(grd_zarr(iz+1)-z)/mu)
   endif
 !
@@ -141,7 +135,7 @@ subroutine transport3(ptcl,isvacant)
 !-- finding minimum distance
   d = min(dcen,dbx,dby,dbz,dthm,dcol,ddop)
   if(d<0d0) then
-     write(*,*) dcen,dbx,dby,dbz,dthm,dcol,ddop
+     write(*,*) dcen,dbx,dby,dbz,dthm,dcol,ddop,ix,iy,iz,x,y,z,xi,eta,mu
      stop 'transport3: negative distance'
   endif
 
