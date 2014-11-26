@@ -502,7 +502,7 @@ subroutine diffusion2(ptcl,isvacant)
 !-- escaping at ix=nx
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            imu = binsrch(mu,flx_mu,flx_nmu+1,0)
@@ -622,7 +622,7 @@ subroutine diffusion2(ptcl,isvacant)
 !-- escaping at iy=1
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            imu = binsrch(mu,flx_mu,flx_nmu+1,0)
@@ -743,7 +743,7 @@ subroutine diffusion2(ptcl,isvacant)
 !-- escaping at iy=ny
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            imu = binsrch(mu,flx_mu,flx_nmu+1,0)

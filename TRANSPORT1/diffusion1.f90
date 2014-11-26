@@ -374,7 +374,7 @@ subroutine diffusion1(ptcl,isvacant)
      if (ix == grd_nx) then
         isvacant = .true.
         prt_done = .true.
-        tot_eright = tot_eright+e
+        tot_eout = tot_eout+e
 !-- outbound luminosity tally
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1

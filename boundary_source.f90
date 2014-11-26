@@ -27,11 +27,6 @@ subroutine boundary_source
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
   dz(l) = grd_zarr(l+1) - grd_zarr(l)
 
-!
-  tot_eleft = 0d0
-  tot_eright = 0d0
-!
-
   esurfpart = tot_esurf/dble(prt_nsurf)
 
   if(grd_isvelocity) then

@@ -500,7 +500,7 @@ subroutine diffusion3(ptcl,isvacant)
 !-- escaping at ix=1
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
@@ -635,7 +635,7 @@ subroutine diffusion3(ptcl,isvacant)
 !-- escaping at ix=nx
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
@@ -770,7 +770,7 @@ subroutine diffusion3(ptcl,isvacant)
 !-- escaping at iy=1
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
@@ -905,7 +905,7 @@ subroutine diffusion3(ptcl,isvacant)
 !-- escaping at iy=ny
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
@@ -1039,7 +1039,7 @@ subroutine diffusion3(ptcl,isvacant)
 !-- escaping at iz=1
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
@@ -1173,7 +1173,7 @@ subroutine diffusion3(ptcl,isvacant)
 !-- escaping at iz=1
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)

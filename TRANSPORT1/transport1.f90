@@ -379,7 +379,7 @@ subroutine transport1(ptcl,isvacant)
 !-- velocity effects accounting
            tot_evelo = tot_evelo+e*(1d0-elabfact)
 !
-           tot_eright = tot_eright+e*elabfact
+           tot_eout = tot_eout+e*elabfact
            flx_luminos(g,1,1) = flx_luminos(g,1,1)+e*dtinv
            flx_lumdev(g,1,1) = flx_lumdev(g,1,1)+(e*dtinv)**2
            flx_lumnum(g,1,1) = flx_lumnum(g,1,1)+1
