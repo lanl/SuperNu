@@ -835,7 +835,7 @@ subroutine diffusion2(ptcl,isvacant)
 !-- transforming wavelength to lab
               wl = wl/(1d0+dirdotu*cinv)
 !-- velocity effects accounting
-              tot_evelo=tot_evelo+e*(1d0-elabfact)
+              tot_evelo=tot_evelo-e*dirdotu*cinv
 !
 !-- transforming energy weights to lab
               e = e*(1d0+dirdotu*cinv)

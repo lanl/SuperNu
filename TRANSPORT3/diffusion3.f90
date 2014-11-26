@@ -1188,7 +1188,7 @@ subroutine diffusion3(ptcl,isvacant)
            e0 = e0*elabfact
         endif
         if(iz==grd_nz) then
-!-- escaping at iz=1
+!-- escaping at iz=nz
            isvacant = .true.
            prt_done = .true.
            tot_eout = tot_eout+e

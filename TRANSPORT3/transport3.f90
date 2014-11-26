@@ -241,6 +241,8 @@ subroutine transport3(ptcl,isvacant)
               ig=1
            endif
         endif
+!-- tallying outbound energy
+        tot_eout = tot_eout+e
 !-- tallying outbound luminosity
         flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+e*dtinv
         flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+(e*dtinv)**2
