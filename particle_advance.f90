@@ -181,8 +181,9 @@ subroutine particle_advance
 
 !-- 1D
         case(1)
-           lhelp = (grd_sig(ix,1,1)+grd_cap(ig,ix,1,1)) * &!{{{
-                dx(ix)*help<prt_tauddmc
+           lhelp = ((grd_sig(ix,1,1)+grd_cap(ig,ix,1,1)) * &!{{{
+                dx(ix)*help<prt_tauddmc) &
+                .or.in_puretran
            if (lhelp) then
               if (ptcl%itype == 2) then
 !-- DDMC -> IMC
@@ -330,17 +331,19 @@ subroutine particle_advance
                  ptcl%e0 = ptcl%e0/labfact
                  wl = wl*labfact
               endif
+              ptcl%itype = 1
            endif
-           ptcl%itype = 1
         else
-           if(ptcl%itype==1.and.grd_isvelocity) then
+           if(ptcl%itype==1) then
 !-- IMC -> DDMC
-              tot_evelo = tot_evelo+e*(1d0-labfact)
-              e = e*labfact
-              ptcl%e0 = ptcl%e0*labfact
-              wl = wl/labfact
+              if(grd_isvelocity) then
+                 tot_evelo = tot_evelo+e*(1d0-labfact)
+                 e = e*labfact
+                 ptcl%e0 = ptcl%e0*labfact
+                 wl = wl/labfact
+              endif
+              ptcl%itype = 2
            endif
-           ptcl%itype = 2
         endif!}}}
      endif 
 !
