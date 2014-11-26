@@ -318,7 +318,7 @@ subroutine diffusion2(ptcl,isvacant)
 
 !-- ix->ix-1 leakage
   elseif (r1>=pa.and.r1<pa+probleak(1)) then
-
+!{{{
 !-- sanity check
      if (ix == 1) stop 'diffusion1: non-physical inward leakage'
 
@@ -409,10 +409,10 @@ subroutine diffusion2(ptcl,isvacant)
 !-- ix->ix-1
         ix = ix-1
      endif
-
+!}}}
 !-- ix->ix+1 leakage
   elseif (r1>=pa+probleak(1).and.r1<pa+sum(probleak(1:2))) then
-
+!{{{
 !-- sampling next group
      if(speclump>0d0) then
         r1 = rand()
@@ -536,10 +536,10 @@ subroutine diffusion2(ptcl,isvacant)
            ix = ix+1
         endif
      endif
-
+!}}}
 !-- iy->iy-1 leakage
   elseif(r1>=pa+sum(probleak(1:2)).and.r1<pa+sum(probleak(1:3))) then
-
+!{{{
 !-- sampling next group
      if(speclump>0d0) then
         r1 = rand()
@@ -659,10 +659,10 @@ subroutine diffusion2(ptcl,isvacant)
            iy = iy-1
         endif
      endif
-
+!}}}
 !-- iy->iy+1 leakage
   elseif(r1>=pa+sum(probleak(1:3)).and.r1<pa+sum(probleak(1:4))) then
-
+!{{{
 !-- sampling next group
      if(speclump>0d0) then
         r1 = rand()
@@ -783,67 +783,67 @@ subroutine diffusion2(ptcl,isvacant)
            iy = iy+1
         endif
      endif
-
+!}}}
 !-- effective scattering
   else
-        denom2 = 1d0-emitlump
-        help = 1d0/denom2
+     denom2 = 1d0-emitlump
+     help = 1d0/denom2
 !
-        denom3 = 0d0
-        r1 = rand()
+     denom3 = 0d0
+     r1 = rand()
 
-        do iig = grd_ng,glump+1,-1
-           iiig=glumps(iig)
-           if((r1>=denom3).and.(r1<denom3+grd_emitprob(iiig,ix,iy,1)*help)) exit
-           denom3 = denom3+grd_emitprob(iiig,ix,iy,1)*help
-        enddo
+     do iig = grd_ng,glump+1,-1
+        iiig=glumps(iig)
+        if((r1>=denom3).and.(r1<denom3+grd_emitprob(iiig,ix,iy,1)*help)) exit
+        denom3 = denom3+grd_emitprob(iiig,ix,iy,1)*help
+     enddo
 !
-        r1 = rand()
-        wl = 1d0/((1d0-r1)/grd_wl(iiig) + r1/grd_wl(iiig+1))
+     r1 = rand()
+     wl = 1d0/((1d0-r1)/grd_wl(iiig) + r1/grd_wl(iiig+1))
 
-        if ((grd_sig(ix,iy,1)+grd_cap(iiig,ix,iy,1)) * &
-             min(dx(ix),dy(iy)) &
-             *thelp < prt_tauddmc) then
-           ptcl%itype = 1
-           grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
+     if ((grd_sig(ix,iy,1)+grd_cap(iiig,ix,iy,1)) * &
+          min(dx(ix),dy(iy)) &
+          *thelp < prt_tauddmc) then
+        ptcl%itype = 1
+        grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
 !-- direction sampled isotropically           
-           r1 = rand()
-           mu = 1d0 - 2d0*r1
-           r1 = rand()
-           om = pc_pi2*r1
+        r1 = rand()
+        mu = 1d0 - 2d0*r1
+        r1 = rand()
+        om = pc_pi2*r1
 !-- position sampled uniformly
-           r1 = rand()
-           x = sqrt(r1*grd_xarr(ix+1)**2+(1d0-r1)*grd_xarr(ix)**2)
-           r1 = rand()
-           y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
+        r1 = rand()
+        x = sqrt(r1*grd_xarr(ix+1)**2+(1d0-r1)*grd_xarr(ix)**2)
+        r1 = rand()
+        y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
 
 !-- doppler and aberration corrections
-           if(grd_isvelocity) then
+        if(grd_isvelocity) then
 !-- calculating transformation factors
-              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-              om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                   sqrt(1d0-mu**2)*cos(om)+x*cinv)
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming y-axis direction cosine to lab
-              mu = (mu+y/pc_c)/(1d0+dirdotu/pc_c)
-              if(mu>1d0) then
-                 mu = 1d0
-              elseif(mu<-1d0) then
-                 mu = -1d0
-              endif
+           mu = (mu+y/pc_c)/(1d0+dirdotu/pc_c)
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
+           endif
 !-- transforming azimuthal angle to lab
-              if(om<0d0) om=om+pc_pi2
+           if(om<0d0) om=om+pc_pi2
 !-- transforming wavelength to lab
-              wl = wl/(1d0+dirdotu*cinv)
+           wl = wl/(1d0+dirdotu*cinv)
 !-- velocity effects accounting
-              tot_evelo=tot_evelo+e*(1d0-elabfact)
+           tot_evelo=tot_evelo+e*(1d0-elabfact)
 !
 !-- transforming energy weights to lab
-              e = e*(1d0+dirdotu*cinv)
-              e0 = e0*(1d0+dirdotu*cinv)
-           endif
+           e = e*(1d0+dirdotu*cinv)
+           e0 = e0*(1d0+dirdotu*cinv)
         endif
-
      endif
+
+  endif
 
 
 

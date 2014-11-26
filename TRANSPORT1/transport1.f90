@@ -19,7 +19,7 @@ subroutine transport1(ptcl,isvacant)
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
 !
-  integer :: ig, iig, g, binsrch
+  integer :: ig, binsrch
   real*8 :: r1, r2, thelp,thelpinv
   real*8 :: db, dcol, dcen, dthm, ddop, d
   real*8 :: siglabfact, dcollabfact, elabfact
@@ -60,21 +60,21 @@ subroutine transport1(ptcl,isvacant)
 !
 !-- calculating current group (rev. 120)
   if(grd_isvelocity) then
-     g = binsrch(wl/(1.0d0-r*mu*cinv),grd_wl,grd_ng+1,in_ng)
+     ig = binsrch(wl/(1.0d0-r*mu*cinv),grd_wl,grd_ng+1,in_ng)
   else
-     g = binsrch(wl,grd_wl,grd_ng+1,in_ng)
+     ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)
   endif
-  if(g>grd_ng.or.g<1) then
+  if(ig>grd_ng.or.ig<1) then
      !particle out of wlgrid energy bound
-     if(g>grd_ng) then
-        g=grd_ng
+     if(ig>grd_ng) then
+        ig=grd_ng
         if(grd_isvelocity) then
            wl=grd_wl(grd_ng+1)*(1.0d0-r*mu*cinv)
         else
            wl=grd_wl(grd_ng+1)
         endif
-     elseif(g<1) then
-        g=1
+     elseif(ig<1) then
+        ig=1
         if(grd_isvelocity) then
            wl=grd_wl(1)*(1.0d0-r*mu*cinv)
         else
@@ -102,18 +102,18 @@ subroutine transport1(ptcl,isvacant)
 !
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
-     if(grd_cap(g,ix,1,1)>0d0) then
+     if(grd_cap(ig,ix,1,1)>0d0) then
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        dcol = abs(log(r1)/(grd_cap(g,ix,1,1)*dcollabfact))
+        dcol = abs(log(r1)/(grd_cap(ig,ix,1,1)*dcollabfact))
      else
         dcol = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
      endif
   else
-     if((1.0d0-grd_fcoef(ix,1,1))*grd_cap(g,ix,1,1)>0.0d0) then
+     if((1.0d0-grd_fcoef(ix,1,1))*grd_cap(ig,ix,1,1)>0.0d0) then
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        dcol = abs(log(r1)/((1.0d0-grd_fcoef(ix,1,1))*grd_cap(g,ix,1,1)*dcollabfact))
+        dcol = abs(log(r1)/((1.0d0-grd_fcoef(ix,1,1))*grd_cap(ig,ix,1,1)*dcollabfact))
      else
         dcol = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
      endif
@@ -132,18 +132,18 @@ subroutine transport1(ptcl,isvacant)
   dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%t)*thelpinv)
 !
 !-- distance to Doppler shift = ddop
-  if(grd_isvelocity.and.g<grd_ng) then
+  if(grd_isvelocity.and.ig<grd_ng) then
 !      r1 = rand()
 !      prt_tlyrand=prt_tlyrand+1
-!      ddop = pc_c*tsp_t*(grd_wl(g+1)-grd_wl(g))*abs(log(r1))/(grd_wl(g)*dcollabfact)
-!     wl = r1*grd_wl(g)+(1d0-r1)*grd_wl(g+1) !uniform sample
-!      wl=1d0/(r1/grd_wl(g+1) + (1d0-r1)/grd_wl(g))  !reciprocal sample
+!      ddop = pc_c*tsp_t*(grd_wl(ig+1)-grd_wl(ig))*abs(log(r1))/(grd_wl(ig)*dcollabfact)
+!     wl = r1*grd_wl(ig)+(1d0-r1)*grd_wl(ig+1) !uniform sample
+!      wl=1d0/(r1/grd_wl(ig+1) + (1d0-r1)/grd_wl(ig))  !reciprocal sample
 !      wl=wl*(1d0-mu*r*cinv)
-!      ddop = pc_c*(1d0-mu*r*cinv)*(1d0-wl/(1d0-mu*r*cinv*grd_wl(g+1)))
+!      ddop = pc_c*(1d0-mu*r*cinv)*(1d0-wl/(1d0-mu*r*cinv*grd_wl(ig+1)))
 !     ddop = pc_c*(1d0-mu*r*cinv)*(1d0-&
-!          grd_wl(g)*log(grd_wl(g+1)/grd_wl(g))/(grd_wl(g+1)-grd_wl(g)))
-!     write(*,*) pc_c*(wl/grd_wl(g+1)-1d0)+r*mu
-     ddop = abs(pc_c*(1d0-wl/grd_wl(g+1))-r*mu)
+!          grd_wl(ig)*log(grd_wl(ig+1)/grd_wl(ig))/(grd_wl(ig+1)-grd_wl(ig)))
+!     write(*,*) pc_c*(wl/grd_wl(ig+1)-1d0)+r*mu
+     ddop = abs(pc_c*(1d0-wl/grd_wl(ig+1))-r*mu)
   else
      ddop = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
   endif
@@ -174,19 +174,19 @@ subroutine transport1(ptcl,isvacant)
   !
   if(.not.prt_isimcanlog) then
         grd_edep(ix,1,1)=grd_edep(ix,1,1)+e*(1.0d0-exp(-grd_fcoef(ix,1,1) &
-             *grd_cap(g,ix,1,1)*siglabfact*d*thelp))*elabfact
+             *grd_cap(ig,ix,1,1)*siglabfact*d*thelp))*elabfact
      !--
-     if(grd_fcoef(ix,1,1)*grd_cap(g,ix,1,1)*dx(ix)*thelp>1d-6) then     
+     if(grd_fcoef(ix,1,1)*grd_cap(ig,ix,1,1)*dx(ix)*thelp>1d-6) then     
         grd_eraddens(ix,1,1) = grd_eraddens(ix,1,1)+e* &
-             (1.0d0-exp(-grd_fcoef(ix,1,1)*siglabfact*grd_cap(g,ix,1,1)*d*thelp))* &
-             elabfact/(grd_fcoef(ix,1,1)*siglabfact*grd_cap(g,ix,1,1)*pc_c*tsp_dt)
+             (1.0d0-exp(-grd_fcoef(ix,1,1)*siglabfact*grd_cap(ig,ix,1,1)*d*thelp))* &
+             elabfact/(grd_fcoef(ix,1,1)*siglabfact*grd_cap(ig,ix,1,1)*pc_c*tsp_dt)
      else
         grd_eraddens(ix,1,1) = grd_eraddens(ix,1,1)+e* &
              elabfact*d*dcollabfact*cinv*dtinv
      endif
      !--
-!     e = e*exp(-grd_fcoef(ix)*grd_cap(g,ix)*d*dcollabfact)
-     e = e*exp(-grd_fcoef(ix,1,1)*grd_cap(g,ix,1,1)*siglabfact*d*thelp)
+!     e = e*exp(-grd_fcoef(ix)*grd_cap(ig,ix)*d*dcollabfact)
+     e = e*exp(-grd_fcoef(ix,1,1)*grd_cap(ig,ix,1,1)*siglabfact*d*thelp)
 
   else
      !
@@ -206,13 +206,13 @@ subroutine transport1(ptcl,isvacant)
 !     r1 = rand()!{{{
 !     prt_tlyrand=prt_tlyrand+1
 !-- redshifting
-     if(g<grd_ng) then
-        g = g+1
+     if(ig<grd_ng) then
+        ig = ig+1
 !-- lab frame wavelength
-!     wl = r1*grd_wl(g)+(1d0-r1)*grd_wl(g+1) !uniform sample
-!        wl=1d0/(r1/grd_wl(g+1) + (1d0-r1)/grd_wl(g))  !reciprocal sample
+!     wl = r1*grd_wl(ig)+(1d0-r1)*grd_wl(ig+1) !uniform sample
+!        wl=1d0/(r1/grd_wl(ig+1) + (1d0-r1)/grd_wl(ig))  !reciprocal sample
 !        wl = wl*(1d0-mu*r*cinv)
-        wl = (grd_wl(g)+1d-6*(grd_wl(g+1)-grd_wl(g)))*(1d0-mu*r*cinv)
+        wl = (grd_wl(ig)+1d-6*(grd_wl(ig+1)-grd_wl(ig)))*(1d0-mu*r*cinv)
      else
         r1 = rand()
         prt_tlyrand=prt_tlyrand+1
@@ -222,7 +222,7 @@ subroutine transport1(ptcl,isvacant)
 !        wl = grd_wl(grd_ng+1)*(1d0-mu*r*cinv)
      endif
 !-- check if ddmc region
-     if (((grd_sig(ix,1,1)+grd_cap(g,ix,1,1))*dx(ix)* &
+     if (((grd_sig(ix,1,1)+grd_cap(ig,ix,1,1))*dx(ix)* &
           thelp >= prt_tauddmc) &
           .and.(in_puretran.eqv..false.)) then
         ptcl%itype = 2
@@ -291,25 +291,23 @@ subroutine transport1(ptcl,isvacant)
         denom2 = 0.0
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        do ig = 1, grd_ng
-           iig = ig
+        do ig = 1, grd_ng-1
            if ((r1>=denom2).and.(r1<denom2+grd_emitprob(ig,ix,1,1))) exit
            denom2 = denom2+grd_emitprob(ig,ix,1,1)
         enddo
-        g = iig
         !(rev 121): calculating radiation energy tally per group
         !grd_eraddens(ix)=grd_eraddens(ix)+e*elabfact
         !-------------------------------------------------------
         ! sampling comoving wavelength in group
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        wl = 1d0/((1d0-r1)/grd_wl(g)+r1/grd_wl(g+1))
-        !wl = (1d0-r1)*grd_wl(g)+r1*grd_wl(g+1)
-        !wl = 0.5d0*(grd_wl(g)+grd_wl(g+1))
+        wl = 1d0/((1d0-r1)/grd_wl(ig)+r1/grd_wl(ig+1))
+        !wl = (1d0-r1)*grd_wl(ig)+r1*grd_wl(ig+1)
+        !wl = 0.5d0*(grd_wl(ig)+grd_wl(ig+1))
         !
         ! sampling sub-group Planck function:
-!         x1 = pc_h*pc_c/(grd_wl(g+1)*pc_kb*grd_temp(ix))
-!         x2 = pc_h*pc_c/(grd_wl(g)*pc_kb*grd_temp(ix))
+!         x1 = pc_h*pc_c/(grd_wl(ig+1)*pc_kb*grd_temp(ix))
+!         x2 = pc_h*pc_c/(grd_wl(ig)*pc_kb*grd_temp(ix))
 !         if (x2<pc_plkpk) then
 !            bmax = x2**3/(exp(x2)-1d0)
 !         elseif (x1>pc_plkpk) then
@@ -336,7 +334,7 @@ subroutine transport1(ptcl,isvacant)
 !-- converting comoving wavelength to lab frame wavelength
            wl = wl*(1.0-r*mu*cinv)
         endif
-        if (((grd_sig(ix,1,1)+grd_cap(g,ix,1,1))*dx(ix)* &
+        if (((grd_sig(ix,1,1)+grd_cap(ig,ix,1,1))*dx(ix)* &
              thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
            ptcl%itype = 2
@@ -357,20 +355,20 @@ subroutine transport1(ptcl,isvacant)
   elseif (d == db) then   !------boundary crossing ----
      if (mu>=0.0d0) then!{{{
         if (ix == grd_nx) then
-!           if(g/=1) then
+!           if(ig/=1) then
            isvacant = .true.
            prt_done = .true.
 !
 !-- retrieve lab frame flux group
-           g = binsrch(wl,flx_wl,flx_ng+1,0)
+           ig = binsrch(wl,flx_wl,flx_ng+1,0)
 !
 !-- check group bounds
-           if(g>flx_ng.or.g<1) then
-              if(g>flx_ng) then
-                 g=flx_ng
+           if(ig>flx_ng.or.ig<1) then
+              if(ig>flx_ng) then
+                 ig=flx_ng
                  wl=flx_wl(flx_ng+1)
               else
-                 g=1
+                 ig=1
                  wl=flx_wl(1)
               endif
            endif
@@ -380,11 +378,11 @@ subroutine transport1(ptcl,isvacant)
            tot_evelo = tot_evelo+e*(1d0-elabfact)
 !
            tot_eout = tot_eout+e*elabfact
-           flx_luminos(g,1,1) = flx_luminos(g,1,1)+e*dtinv
-           flx_lumdev(g,1,1) = flx_lumdev(g,1,1)+(e*dtinv)**2
-           flx_lumnum(g,1,1) = flx_lumnum(g,1,1)+1
+           flx_luminos(ig,1,1) = flx_luminos(ig,1,1)+e*dtinv
+           flx_lumdev(ig,1,1) = flx_lumdev(ig,1,1)+(e*dtinv)**2
+           flx_lumnum(ig,1,1) = flx_lumnum(ig,1,1)+1
         ! Checking if DDMC region right
-        elseif (((grd_sig(ix+1,1,1)+grd_cap(g,ix+1,1,1))*dx(ix+1) &
+        elseif (((grd_sig(ix+1,1,1)+grd_cap(ig,ix+1,1,1))*dx(ix+1) &
              *thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()
@@ -392,7 +390,7 @@ subroutine transport1(ptcl,isvacant)
            if(grd_isvelocity) then
               mu = (mu-r*cinv)/(1.0-r*mu*cinv)
            endif
-           help = (grd_cap(g,ix+1,1,1)+grd_sig(ix+1,1,1))*dx(ix+1)*thelp
+           help = (grd_cap(ig,ix+1,1,1)+grd_sig(ix+1,1,1))*dx(ix+1)*thelp
            ppl = 4d0/(3d0*help+6d0*pc_dext)
            P = ppl*(1.0+1.5*abs(mu))
 !--
@@ -426,7 +424,7 @@ subroutine transport1(ptcl,isvacant)
         endif
      else
         if (ix==1) then
-           if (((grd_sig(ix+1,1,1)+grd_cap(g,ix+1,1,1))*dx(ix+1) &
+           if (((grd_sig(ix+1,1,1)+grd_cap(ig,ix+1,1,1))*dx(ix+1) &
                 *thelp >= prt_tauddmc) &
                 .and.(in_puretran.eqv..false.)) then
               r1 = rand()
@@ -434,7 +432,7 @@ subroutine transport1(ptcl,isvacant)
               if(grd_isvelocity) then
                  mu = (mu-r*cinv)/(1.0-r*mu*cinv)
               endif
-              help = (grd_cap(g,ix+1,1,1)+grd_sig(ix+1,1,1))*dx(ix+1)*thelp
+              help = (grd_cap(ig,ix+1,1,1)+grd_sig(ix+1,1,1))*dx(ix+1)*thelp
               ppl = 4d0/(3d0*help+6d0*pc_dext)
               P = ppl*(1.0+1.5*abs(mu))
               if (r1 < P) then
@@ -464,7 +462,7 @@ subroutine transport1(ptcl,isvacant)
               r = grd_xarr(ix+1)
               ix = ix+1
            endif
-        elseif (((grd_sig(ix-1,1,1)+grd_cap(g,ix-1,1,1))*dx(ix-1) &
+        elseif (((grd_sig(ix-1,1,1)+grd_cap(ig,ix-1,1,1))*dx(ix-1) &
              *thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()
@@ -485,7 +483,7 @@ subroutine transport1(ptcl,isvacant)
               endif
 !--
            endif
-           help = (grd_cap(g,ix-1,1,1)+grd_sig(ix-1,1,1))*dx(ix-1)*thelp
+           help = (grd_cap(ig,ix-1,1,1)+grd_sig(ix-1,1,1))*dx(ix-1)*thelp
            ppr = 4d0/(3d0*help+6d0*pc_dext)
            P = ppr*(1.0+1.5*abs(mu))
 !--

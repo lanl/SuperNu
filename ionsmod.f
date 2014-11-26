@@ -208,6 +208,7 @@ c
 c
 c-- repeat saha solver until convergence in nelec is achieved
 c--
+      iprev = 0
       do iconv=1,nconv !max number of convergence iterations
        sahac2 = 2d0/(nelec*ndens)*sahac !constant for saha_nelec
 c-- solve saha equations for each element
@@ -242,7 +243,7 @@ c-- overshoot
 c-- newton raphson, but not aways perfect, as it may repeatedly minimize one side, instead of close bracket
         ihelp = maxloc(abs(nec%err(:)),dim=1) !sides are flipping, newton-raphson works
         help = abs(nec%err(1)/nec%err(2))
-        if((iconv==2 .or. ihelp/=iprev) .and.
+        if((ihelp/=iprev) .and.
      &    help<1d5 .and. help>1d-5) then !bigger error is to too big
          ynew = 0d0 !perfect newton raphson
         else !sides are not flipping, depart from pure newton-raphson

@@ -68,6 +68,9 @@ subroutine particle_advance
      isvacant => prt_isvacant(ipart)
      ptcl => prt_particles(ipart)
      npckt = npckt + 1
+
+!-- default, recalculated for isvelocity and itype==1
+     labfact = 1d0
 !
 !-- assigning pointers to corresponding particle properties
      ix => ptcl%ix

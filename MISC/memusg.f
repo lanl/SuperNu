@@ -48,7 +48,6 @@ c
 c
 *     character(30) :: words(24)
 *     character(30),allocatable :: words(:)
-      logical :: exists
       logical,save :: fail=.false.
 c
 c-- invalid by default

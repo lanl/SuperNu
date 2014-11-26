@@ -74,6 +74,7 @@ c$omp&   dirty)
 c$omp& shared(grndlev,hckt,cap)
        ig = 0
        dirty = .true.
+       phi = 0d0
 c$omp do schedule(static)
        do il=1,bb_nline
         wl0 = bb_xs(il)%wl0*pc_ang  !in cm

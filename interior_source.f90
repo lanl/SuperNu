@@ -16,7 +16,7 @@ subroutine interior_source
   !particle loop (2nd).
 !##################################################
   logical :: lhelp
-  integer :: i,j,k,il,ir,ipart,ivac,ig,iig,ii
+  integer :: i,j,k,il,ir,ipart,ivac,ig,ii
   integer :: nhere,ndmy,iimpi,nemit
   real*8 :: pwr
   real*8 :: r1, r2, r3, uul, uur, uumax
@@ -63,6 +63,9 @@ subroutine interior_source
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
+
+!-- default, recalculated for isvelocity and itype==1
+     cmffact = 1d0
 !
 !-- calculating particle time
      r1 = rand()
@@ -73,16 +76,15 @@ subroutine interior_source
      denom2 = 0d0
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     do ig = 1, grd_ng
+     do ig = 1, grd_ng-1
         x3=1d0/grd_wl(ig+1)
         x4=1d0/grd_wl(ig)
-        iig = ig
         if(r1>=denom2.and.r1<denom2+(x4-x3)/(x2-x1)) exit
         denom2 = denom2+(x4-x3)/(x2-x1)
      enddo
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     wl0 = 1d0/((1d0-r1)/grd_wl(iig)+r1/grd_wl(iig+1))
+     wl0 = 1d0/((1d0-r1)/grd_wl(ig)+r1/grd_wl(ig+1))
 
 !-- calculating direction cosine (comoving)
      r1 = rand()
@@ -99,7 +101,7 @@ subroutine interior_source
 
 !-- 1D
      case(1)
-!-- calculating position
+!-- calculating position!{{{
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
@@ -108,7 +110,7 @@ subroutine interior_source
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,1,1)+grd_cap(iig,i,1,1))*dx(i)* &
+        lhelp = ((grd_sig(i,1,1)+grd_cap(ig,i,1,1))*dx(i)* &
              thelp < prt_tauddmc).or.(in_puretran)
 
 !-- if velocity-dependent, transforming direction
@@ -118,13 +120,15 @@ subroutine interior_source
            cmffact = 1d0+mu0*x0/pc_c
 !-- mu
            ptcl%mu = (mu0+x0/pc_c)/cmffact
+           ptcl%itype = 1 !IMC
         else
+           ptcl%itype = 2 !DDMC
            ptcl%mu = mu0
         endif
-
+!}}}
 !-- 2D
      case(2)
-!-- setting 2nd cell index
+!-- setting 2nd cell index!{{{
         ptcl%iy = j
 !-- calculating position
         r1 = rand()
@@ -140,7 +144,7 @@ subroutine interior_source
         r1 = rand()
         om0 = pc_pi2*r1
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,j,1)+grd_cap(iig,i,j,1)) * &
+        lhelp = ((grd_sig(i,j,1)+grd_cap(ig,i,j,1)) * &
              min(dx(i),dy(j))*thelp < prt_tauddmc) &
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
@@ -160,14 +164,16 @@ subroutine interior_source
            elseif(ptcl%mu<-1d0) then
               ptcl%mu = -1d0
            endif
+           ptcl%itype = 1 !IMC
         else
            ptcl%mu = mu0
            ptcl%om = om0
+           ptcl%itype = 2 !DDMC
         endif
-
+!}}}
 !-- 3D
      case(3)
-!-- setting 2nd,3rd cell index
+!-- setting 2nd,3rd cell index!{{{
         ptcl%iy = j
         ptcl%iz = k
 !-- calculating position
@@ -184,7 +190,7 @@ subroutine interior_source
         r1 = rand()
         om0 = pc_pi2*r1
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,j,k)+grd_cap(iig,i,j,k)) * &
+        lhelp = ((grd_sig(i,j,k)+grd_cap(ig,i,j,k)) * &
              min(dx(i),dy(j),dz(k))*thelp < prt_tauddmc) &
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
@@ -206,34 +212,20 @@ subroutine interior_source
 !-- om
            ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
            if(ptcl%om<0d0) ptcl%om = ptcl%om+pc_pi2
+           ptcl%itype = 1 !IMC
         else
            ptcl%mu = mu0
            ptcl%om = om0
+           ptcl%itype = 2 !DDMC
         endif
-
+!}}}
      endselect
 
-     if (lhelp) then
-!-- IMC
-        if(grd_isvelocity) then
-           ptcl%e = ep0*cmffact
-           ptcl%e0 = ep0*cmffact
-           ptcl%wl = wl0/cmffact
+     ptcl%e = ep0*cmffact
+     ptcl%e0 = ep0*cmffact
+     ptcl%wl = wl0/cmffact
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+ep0*(1d0-cmffact)
-        else
-           ptcl%e = ep0
-           ptcl%e0 = ep0
-           ptcl%wl = wl0
-        endif
-        ptcl%itype = 1
-     else
-!-- DDMC
-        ptcl%e = ep0
-        ptcl%e0 = ep0
-        ptcl%wl = wl0
-        ptcl%itype = 2
-     endif
+     tot_evelo=tot_evelo+ep0*(1d0-cmffact)
 !}}}
   enddo !ipart
   enddo !i
@@ -259,6 +251,12 @@ subroutine interior_source
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
+
+!-- default, recalculated for isvelocity and itype==1
+     cmffact = 1d0
+
+!-- default IMC, reset if DDMC
+     ptcl%itype = 1
 !
 !-- calculating particle time
      r1 = rand()
@@ -269,14 +267,13 @@ subroutine interior_source
      denom2 = 0d0
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1     
-     do ig = 1, grd_ng
-        iig = ig
+     do ig = 1, grd_ng-1
         if (r1>=denom2.and.r1<denom2+grd_emitprob(ig,i,j,k)) exit
         denom2 = denom2+grd_emitprob(ig,i,j,k)
      enddo
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     wl0 = 1d0/((1d0-r1)/grd_wl(iig)+r1/grd_wl(iig+1))
+     wl0 = 1d0/((1d0-r1)/grd_wl(ig)+r1/grd_wl(ig+1))
 
 !-- calculating direction cosine (comoving)
      r1 = rand()
@@ -314,9 +311,9 @@ subroutine interior_source
         enddo
         ptcl%x = x0
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,1,1)+grd_cap(iig,i,1,1))*dx(i)* &
+        lhelp = ((grd_sig(i,1,1)+grd_cap(ig,i,1,1))*dx(i)* &
              thelp < prt_tauddmc).or.(in_puretran)
-!write(0,*) i,grd_sig(i,1,1),grd_cap(iig,i,1,1),dx(i),thelp,prt_tauddmc
+!write(0,*) i,grd_sig(i,1,1),grd_cap(ig,i,1,1),dx(i),thelp,prt_tauddmc
 
 !-- if velocity-dependent, transforming direction
         if (lhelp.and.grd_isvelocity) then
@@ -324,8 +321,10 @@ subroutine interior_source
            cmffact = 1d0+mu0*x0/pc_c
 !-- mu
            ptcl%mu = (mu0+x0/pc_c)/cmffact
+           ptcl%itype = 1 !IMC
         else
            ptcl%mu = mu0
+           ptcl%itype = 2 !DDMC
         endif
 !}}}
 !-- 2D
@@ -373,7 +372,7 @@ subroutine interior_source
         om0 = pc_pi2*r1
 
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,j,1)+grd_cap(iig,i,j,1)) * &
+        lhelp = ((grd_sig(i,j,1)+grd_cap(ig,i,j,1)) * &
              min(dx(i),dy(j))*thelp < prt_tauddmc) &
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
@@ -391,9 +390,11 @@ subroutine interior_source
            elseif(ptcl%mu<-1d0) then
               ptcl%mu = -1d0
            endif
+           ptcl%itype = 1 !IMC
         else
            ptcl%mu = mu0
            ptcl%om = om0
+           ptcl%itype = 2 !DDMC
         endif
 !}}}
 !-- 3D
@@ -457,7 +458,7 @@ subroutine interior_source
         r1 = rand()
         om0 = pc_pi2*r1
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,j,k)+grd_cap(iig,i,j,k)) * &
+        lhelp = ((grd_sig(i,j,k)+grd_cap(ig,i,j,k)) * &
              min(dx(i),dy(j),dz(k))*thelp < prt_tauddmc) &
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
@@ -479,34 +480,20 @@ subroutine interior_source
 !-- om
            ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
            if(ptcl%om<0d0) ptcl%om = ptcl%om+pc_pi2
+           ptcl%itype = 1 !IMC
         else
            ptcl%mu = mu0
            ptcl%om = om0
+           ptcl%itype = 2 !DDMC
         endif!}}}
      endselect
 
-
-     if (lhelp) then
-!-- IMC
-        if(grd_isvelocity) then
-           ptcl%e = ep0*cmffact
-           ptcl%e0 = ep0*cmffact
-           ptcl%wl = wl0/cmffact
+!-- transformation into lab frame (in static grids cmffact==1d0)
+     ptcl%e = ep0*cmffact
+     ptcl%e0 = ep0*cmffact
+     ptcl%wl = wl0/cmffact
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+ep0*(1d0-cmffact)
-        else
-           ptcl%e = ep0
-           ptcl%e0 = ep0
-           ptcl%wl = wl0
-        endif
-        ptcl%itype = 1
-     else
-!-- DDMC
-        ptcl%e = ep0
-        ptcl%e0 = ep0
-        ptcl%wl = wl0
-        ptcl%itype = 2
-     endif
+     tot_evelo=tot_evelo+ep0*(1d0-cmffact)
 
 !}}}
   enddo !ipart

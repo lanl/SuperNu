@@ -99,6 +99,9 @@ subroutine particle_advance_gamgrey(nmpi)
 !    real*8 :: wlsrc
 !    integer :: rtsrc
 
+!-- default, in case .not.grd_isvelocity
+  cmffact = 1d0
+
   call time(t0)
 
   iimpi = 0
