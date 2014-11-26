@@ -396,6 +396,9 @@ subroutine diffusion2(ptcl,isvacant)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wavelength to lab
            wl = wl/(1d0+dirdotu*cinv)
+!-- velocity effects accounting
+           tot_evelo=tot_evelo-e*dirdotu*cinv
+!
 !-- transforming energy weights to lab
            e = e*(1d0+dirdotu*cinv)
            e0 = e0*(1d0+dirdotu*cinv)
@@ -494,6 +497,9 @@ subroutine diffusion2(ptcl,isvacant)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wavelength to lab
            wl = wl/elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
 !-- transforming energy weights to lab
            e = e*elabfact
            e0 = e0*elabfact
@@ -614,6 +620,9 @@ subroutine diffusion2(ptcl,isvacant)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wl to lab
            wl = wl/elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
 !-- transforming energy weights to lab
            e = e*elabfact
            e0 = e0*elabfact
@@ -735,6 +744,9 @@ subroutine diffusion2(ptcl,isvacant)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wl to lab
            wl = wl/elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
 !-- transforming energy weights to lab
            e = e*elabfact
            e0 = e0*elabfact
@@ -822,6 +834,9 @@ subroutine diffusion2(ptcl,isvacant)
               if(om<0d0) om=om+pc_pi2
 !-- transforming wavelength to lab
               wl = wl/(1d0+dirdotu*cinv)
+!-- velocity effects accounting
+              tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
 !-- transforming energy weights to lab
               e = e*(1d0+dirdotu*cinv)
               e0 = e0*(1d0+dirdotu*cinv)
