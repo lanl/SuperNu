@@ -302,6 +302,8 @@ subroutine particle_advance
                     om = atan2(mu2+y/pc_c,mu1+x/pc_c)
                     if(om<0d0) om = om+pc_pi2
 !-- 1-dir*v/c
+                    mu1 = sqrt(1d0-mu**2)*cos(om)
+                    mu2 = sqrt(1d0-mu**2)*sin(om)
                     labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c
                  endif
               endif
