@@ -375,11 +375,15 @@ c     ------------------------!{{{
       use totalsmod
       use particlemod
       use timestepmod
+      use timingmod
       implicit none
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
 ************************************************************************
+      real*8 :: t0,t1
       integer :: n
+c
+      call time(t0)
 c
 c-- gather
       if(impi_gas>=0) then
@@ -441,6 +445,9 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(grd_cap,gas_ng*n,MPI_REAL,
      &  impi0,MPI_COMM_WORLD,ierr)
+c
+      call time(t1)
+      call timereg(t_mpibcast, t1-t0)
 c!}}}
       end subroutine bcast_nonpermanent
 c
@@ -449,17 +456,24 @@ c
       subroutine allreduce_gammaenergy
 c     ------------------------!{{{
       use gridmod,nx=>grd_nx,ny=>grd_ny,nz=>grd_nz
+      use timingmod
       implicit none
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
 ************************************************************************
       integer :: n
       real*8 :: snd3(nx,ny,nz)
+      real*8 :: t0,t1
+c
+      call time(t0)
 c
       n = nx*ny*nz
       snd3 = grd_edep
       call mpi_allreduce(snd3,grd_edep,n,MPI_REAL8,MPI_SUM,
      &  MPI_COMM_WORLD,ierr)
+c
+      call time(t1)
+      call timereg(t_mpigamma, t1-t0)
 c!}}}
       end subroutine allreduce_gammaenergy
 c
@@ -484,7 +498,9 @@ c     -----------------------!{{{
       integer :: isnd3g(flx_nmu,flx_nom)
       real*8 :: snd3g(flx_nmu,flx_nom)
       real*8 :: help
-
+      real*8 :: t0,t1
+c
+      call time(t0)
 c
 c-- dim==0
       n = 5
@@ -588,6 +604,9 @@ c-- timing statistics
       help = t_pckt_stat(3)
       call mpi_reduce(help,t_pckt_stat(3),1,MPI_REAL8,MPI_MAX,
      &  impi0,MPI_COMM_WORLD,ierr)
+c
+      call time(t1)
+      call timereg(t_mpireduc, t1-t0)
 c!}}}
       end subroutine reduce_tally
 c

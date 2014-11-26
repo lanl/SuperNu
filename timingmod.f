@@ -12,7 +12,7 @@ c-- one-time events
       real*8 :: t_setup
       real*8 :: t_all
 c
-      integer,private,parameter :: mreg = 13
+      integer,private,parameter :: mreg = 16
       real*8,private,target :: registers(3,mreg)
 c
 c-- global-flow time registers:
@@ -22,6 +22,10 @@ c-- global-flow time registers:
       real*8,pointer :: t_bb(:) !bound-bound opacity
       real*8,pointer :: t_bf(:) !bound-free opacity
       real*8,pointer :: t_ff(:) !bound-free opacity
+c-- communication
+      real*8,pointer :: t_mpibcast(:)
+      real*8,pointer :: t_mpigamma(:)
+      real*8,pointer :: t_mpireduc(:)
 c-- packet transport
       real*8,pointer :: t_pcktmin(:) !collect the max runtimes across all ranks
       real*8,pointer :: t_pcktmea(:)
@@ -48,13 +52,17 @@ c     ----------------------
       t_bf =>     registers(:,5)    !bound-free opacity
       t_ff =>     registers(:,6)    !bound-free opacity
 c--
-      t_pcktgam =>      registers(:, 7)
-      t_pcktmin =>      registers(:, 8)  !collect the max runtimes across all ranks
-      t_pcktmea =>      registers(:, 9)  !collect the mean runtimes across all ranks
-      t_pcktmax =>      registers(:,10)  !collect the min runtimes across all ranks
-      t_pcktnpckt =>    registers(:,11)
-      t_pcktnddmc =>    registers(:,12)
-      t_pcktnimc =>     registers(:,13)
+      t_mpibcast => registers(:,7)
+      t_mpigamma => registers(:,8)
+      t_mpireduc => registers(:,9)
+c--
+      t_pcktgam =>      registers(:,10)
+      t_pcktmin =>      registers(:,11)  !collect the max runtimes across all ranks
+      t_pcktmea =>      registers(:,12)  !collect the mean runtimes across all ranks
+      t_pcktmax =>      registers(:,13)  !collect the min runtimes across all ranks
+      t_pcktnpckt =>    registers(:,14)
+      t_pcktnddmc =>    registers(:,15)
+      t_pcktnimc =>     registers(:,16)
       end subroutine timing_init
 c
 c
@@ -96,8 +104,9 @@ c-- write output on master rank only
 c-- header
        if(.not.lexist) then
          write(4,'("#",30a12)') 't_gasupd','t_eos',
-     &   't_opac','t_bb','t_bf','t_ff','t_pgam',
-     &   't_pmin','t_pmean','t_pmax',
+     &   't_opac','t_bb','t_bf','t_ff',
+     &   't_mpibcast','t_mpigamma','t_mpireduc',
+     &   't_pgam','t_pmin','t_pmean','t_pmax',
      &   'n_pckt','n_ddmc','n_imc'
        endif
 c-- body
@@ -122,6 +131,9 @@ c     ------------------------
       write(6,*) '============================'
       write(6,1) 'EOS               :',t_eos(i)
       write(6,1) 'opacity (bb|bf|ff):',t_opac(i),t_bb(i),t_bf(i),t_ff(i)
+      write(6,*) '----------------------------'
+      write(6,1) 'mpi (bc|gam|red)  :',t_mpibcast(i),t_mpigamma(i),
+     &                                 t_mpireduc(i)
       write(6,*) '----------------------------'
       write(6,1) 'setup             :',t_setup
       write(6,1) 'gas update        :',t_gasupd(i)
