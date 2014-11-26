@@ -131,7 +131,7 @@ $(SUBDIRS):
 #-- inc files
 ifeq ($(VERSIONPY), version.py)
   version.inc: version.py $(VERSIONDEP)
-	python2 -B version.inc.py
+	@python2 -B version.inc.py
 	@echo "      data build_date /'$(DATE)'/" >>$@
 else
   version.inc: version_dummy.inc $(VERSIONDEP)

@@ -30,9 +30,11 @@ c-- ffxs
       integer :: iu,igg
 c-- bfxs
       integer :: il,ig,iz,ii,ie
+      logical :: dirty
       real*8 :: en,xs,wl
 c-- bbxs
-      real*8 :: phi,ocggrnd,expfac,wl0,dwl
+      real*8 :: phi,ocggrnd,wl0,dwl
+      real*8 :: expfac(gas_ncell)
       real*8 :: caphelp
 c-- temporary cap array in the right order
       real*8 :: cap(gas_ncell,gas_ng)
@@ -67,9 +69,11 @@ c-- bound-bound
        enddo !iz
 c
 c$omp parallel
-c$omp& private(wl0,iz,ii,dwl,wlinv,phi,ocggrnd,expfac,caphelp,ig)
+c$omp& private(wl0,iz,ii,wl,wlinv,dwl,phi,ocggrnd,expfac,caphelp,ig,
+c$omp&   dirty)
 c$omp& shared(grndlev,hckt,cap)
        ig = 0
+       dirty = .true.
 c$omp do schedule(static)
        do il=1,bb_nline
         wl0 = bb_xs(il)%wl0*pc_ang  !in cm
@@ -78,25 +82,34 @@ c$omp do schedule(static)
 c-- ig pointer
         do ig=ig,gas_ng
          if(gas_wl(ig+1)>wl0) exit
+         dirty = .true.
         enddo !ig
 c-- line in group
         if(ig<1) cycle
         if(ig>gas_ng) cycle !can't exit in omp
-        dwl = gas_wl(ig+1) - gas_wl(ig)  !in cm
 c
-        wlinv = 1d0/wl0  !in cm
+c-- update
+        if(dirty) then
+         dirty = .false.
+         wl = .5*(gas_wl(ig) + gas_wl(ig+1))
+         wlinv = 1d0/wl
+         dwl = gas_wl(ig+1) - gas_wl(ig)  !in cm
+c-- approximate expfac
+         expfac = 1d0 - exp(-hckt*wlinv)
+c-- approximate profile function
+         phi = wl**2/(dwl*pc_c)
+        endif
+c
 c-- profile function
-!old    phi = gas_ng*wlhelp*wl0/pc_c !line profile
-        phi = wl0**2/(dwl*pc_c)
-c-- evaluate caphelp
+*       phi = wl0**2/(dwl*pc_c)  !exact phi
+c
+c-- evaluate cap
         do i=1,gas_ncell
          ocggrnd = grndlev(i,ii,iz)
-c-- oc high enough to be significant?
-*        if(ocggrnd<=1d-30) cycle !todo: is this _always_ low enoug? It is in the few tests I did.
          if(ocggrnd<=0d0) cycle
-         expfac = 1d0 - exp(-hckt(i)*wlinv)
+*        expfac = 1d0 - exp(-hckt(i)/wl0)  !exact expfac
          caphelp = phi*bb_xs(il)%gxs*ocggrnd*
-     &     exp(-bb_xs(il)%chilw*hckt(i))*expfac
+     &     exp(-bb_xs(il)%chilw*hckt(i))*expfac(i)
 !        if(caphelp==0.) write(6,*) 'cap0',cap(i,ig),phi,
 !    &     bb_xs(il)%gxs,ocggrnd,exp(-bb_xs(il)%chilw*hckt(i)),expfac
          cap(i,ig) = cap(i,ig) + caphelp
