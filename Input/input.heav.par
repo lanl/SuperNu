@@ -37,7 +37,7 @@ in_srctype = 'heav'
 in_srcmax = 4d24
 !-- heaviside case
 in_theav = 9d0
-in_nheav = 40
+in_nheav = 13
 
 !-- power law heat capacity values
 in_gas_cvcoef = 2d7

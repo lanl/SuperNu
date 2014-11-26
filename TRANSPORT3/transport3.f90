@@ -6,6 +6,7 @@ subroutine transport3(ptcl,isvacant)
   use particlemod
   use inputparmod
   use fluxmod
+  use totalsmod
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
@@ -255,9 +256,13 @@ subroutine transport3(ptcl,isvacant)
      if(grd_isvelocity) then
 !-- lab wavelength
         wl = wl*(1d0-(mu*z+eta*y+xi*x)*cinv)/elabfact
+        help = elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
+!-- velocity effects accounting
+        tot_evelo=tot_evelo+e*(1d0-help)
+!
 !-- energy weight
-        e = e*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
-        e0 = e0*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
+        e = e*help
+        e0 = e0*help
      endif
 
 !
@@ -287,9 +292,13 @@ subroutine transport3(ptcl,isvacant)
 !-- transforming to lab
         if(grd_isvelocity) then
            wl = wl*(1d0-(mu*z+eta*y+xi*x)*cinv)
+           help = elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-help)
+!
 !-- energy weight
-           e = e*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
-           e0 = e0*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
+           e = e*help
+           e0 = e0*help
         endif
 !-- checking for DDMC in new group
         if((grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
@@ -299,6 +308,9 @@ subroutine transport3(ptcl,isvacant)
            grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- transforming to cmf
            if(grd_isvelocity) then
+!-- velocity effects accounting
+              tot_evelo=tot_evelo+e*(mu*z+eta*y+xi*x)*cinv
+!
               e = e*(1d0-(mu*z+eta*y+xi*x)*cinv)
               e0 = e0*(1d0-(mu*z+eta*y+xi*x)*cinv)
               wl = wl/(1d0-(mu*z+eta*y+xi*x)*cinv)
@@ -343,6 +355,9 @@ subroutine transport3(ptcl,isvacant)
            ptcl%itype = 2
            grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
            if(grd_isvelocity) then
+!-- velocity effects accounting
+              tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
               e = e*elabfact
               e0 = e0*elabfact
               wl = wl/elabfact
@@ -411,6 +426,9 @@ subroutine transport3(ptcl,isvacant)
            ptcl%itype = 2
            grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
            if(grd_isvelocity) then
+!-- velocity effects accounting
+              tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
               e = e*elabfact
               e0 = e0*elabfact
               wl = wl/elabfact
@@ -479,6 +497,9 @@ subroutine transport3(ptcl,isvacant)
            ptcl%itype = 2
            grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
            if(grd_isvelocity) then
+!-- velocity effects accounting
+              tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
               e = e*elabfact
               e0 = e0*elabfact
               wl = wl/elabfact
@@ -530,6 +551,9 @@ subroutine transport3(ptcl,isvacant)
         ptcl%itype = 2
         grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
         if(grd_isvelocity) then
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
            e = e*elabfact
            e0 = e0*elabfact
            wl = wl/elabfact
