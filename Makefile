@@ -38,7 +38,10 @@ LIBRARIES := GRID/grid.a GAS/gas.a TRANSPORT1/transport1.a MISC/misc.a \
 SUBDIRS := $(dir $(LIBRARIES))
 SUBCLEAN = $(addsuffix .clean, $(SUBDIRS))
 
+SUPERNUDEP := supernu.o $(MODULES) $(FILES) $(LIBRARIES)
+
 VERSIONPY := $(wildcard version.py)
+VERSIONDEP := $(filter-out banner.o, $(SUPERNUDEP))
 DATE := $(shell date)
 
 #-- Testsuite
@@ -54,7 +57,7 @@ TESTS := $(addprefix $(TESTDIR),$(TESTS))
 # TARGETS
 ########################################################################
 # Utility targets (ignore corresponding file names)
-.PHONY: all clean $(SUBDIRS) $(SUBCLEAN) prepare_run check run runmpi ready_run $(TESTS) version.inc
+.PHONY: all clean $(SUBDIRS) $(SUBCLEAN) prepare_run check run runmpi ready_run $(TESTS)
 
 all: $(MODULES)
 	$(MAKE) $(SUBDIRS)
@@ -103,7 +106,7 @@ Makefile.compiler:
 
 #
 #-- program
-supernu: supernu.o $(MODULES) $(FILES) $(LIBRARIES)
+supernu: $(SUPERNUDEP)
 
 #
 #-- libraries
@@ -127,13 +130,13 @@ $(SUBDIRS):
 #
 #-- inc files
 ifeq ($(VERSIONPY), version.py)
-  version.inc: #$(VERSIONPY)
-	@python2 -B version.inc.py
-	@echo "     &  '$(DATE)' /" >>$@
+  version.inc: version.py $(VERSIONDEP)
+	python2 -B version.inc.py
+	@echo "      data build_date /'$(DATE)'/" >>$@
 else
-  version.inc: #version_dummy.inc
+  version.inc: version_dummy.inc $(VERSIONDEP)
 	@cp -vu version_dummy.inc version.inc
-	@echo "     &  '$(DATE)' /" >>$@
+	@echo "      data build_date /'$(DATE)'/" >>$@
 endif
 
 #
