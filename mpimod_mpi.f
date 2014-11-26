@@ -311,7 +311,7 @@ c-- sanity check
 c
 c-- output
       if(impi==impi0) write(6,*) "GAS comm tasks:",
-     &  nmpi_gas,nmpi_gas/dble(nmpi)
+     &  nmpi_gas,ncpr,nmpi_gas/dble(nmpi)
 c
       forall(i=1:nmpi_gas) ranks(i) = i-1 !start counting at 0
 c
@@ -540,7 +540,7 @@ c-- continue with relevant ranks only
       deallocate(rcvvec)
 c
 c-- flux dim==2
-      isnd3g = flx_gamluminos
+      isnd3g = flx_gamlumnum
       call mpi_reduce(isnd3g,flx_gamlumnum,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
