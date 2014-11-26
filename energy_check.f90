@@ -10,8 +10,8 @@ subroutine energy_check
 !-----------------------------------------------------
 
 
-  tot_eerror = (tot_eextav-tot_eveloav-tot_erad-tot_emat)/&
-       tot_eextav
+  tot_eerror = (tot_eext-tot_evelo-tot_eout - &
+       tot_erad-tot_emat)/tot_eext
 
 
 

@@ -44,16 +44,15 @@ subroutine particle_advance
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
   dz(l) = grd_zarr(l+1) - grd_zarr(l)
 
-  grd_edep = 0.0
-  tot_erad = 0.0
-  flx_luminos = 0.0
-  flx_lumdev = 0.0
+!-- energy tallies
+  grd_edep = 0d0
+  grd_eraddens = 0d0
+  tot_erad = 0d0
+
+  flx_luminos = 0d0
+  flx_lumdev = 0d0
   flx_lumnum = 0
   grd_methodswap = 0
-!
-!--(rev. 121)
-  grd_eraddens =0d0
-!--
   grd_numcensus = 0
   
   call time(t0)
@@ -337,7 +336,9 @@ subroutine particle_advance
            if(ptcl%itype==1) then
 !-- IMC -> DDMC
               if(grd_isvelocity) then
+!-- velocity effects accounting
                  tot_evelo = tot_evelo+e*(1d0-labfact)
+!
                  e = e*labfact
                  ptcl%e0 = ptcl%e0*labfact
                  wl = wl/labfact
@@ -667,23 +668,9 @@ subroutine particle_advance
      endif
      endif
 
-     if(.not.isvacant) then
-!
 !-- radiation energy at census
-     if(grd_isvelocity) then
-        if(ptcl%itype==2) then
-           tot_erad = tot_erad + e
-        else
-           tot_erad = tot_erad + e !*(1d0-mu*x/pc_c)
-!-- velocity effects accounting
-!           tot_evelo=tot_evelo+e*mu*x/pc_c
-!
-        endif
-     else
-        tot_erad = tot_erad + e
-     endif
+     if(.not.isvacant) tot_erad = tot_erad + e
 
-     endif
 
   enddo !ipart
 
@@ -692,8 +679,6 @@ subroutine particle_advance
   call timereg(t_pcktnpckt, dble(npckt))
   call timereg(t_pcktnddmc, dble(nddmc))
   call timereg(t_pcktnimc, dble(nimc))
-  !write(6,*) eleft, eright
 
-  tot_eext = tot_eext-tot_eleft-tot_eright
 
 end subroutine particle_advance

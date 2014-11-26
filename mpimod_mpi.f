@@ -503,25 +503,17 @@ c
       call time(t0)
 c
 c-- dim==0
-      n = 5
+      n = 4
       allocate(sndvec(n))
       allocate(rcvvec(n))
-      sndvec = (/tot_erad,tot_eright,tot_eleft,tot_eext,tot_evelo/)
+      sndvec = (/tot_erad,tot_eout,tot_eext,tot_evelo/)
       call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      if(impi==impi0) then
-       tot_erad = rcvvec(1)/dble(nmpi)
-       tot_eright = rcvvec(2)/dble(nmpi)
-       tot_eleft = rcvvec(3)/dble(nmpi)
-       tot_eextav = rcvvec(4)/dble(nmpi)
-       tot_eveloav = rcvvec(5)/dble(nmpi)
-      else
-       tot_erad = 0d0
-       tot_eright = 0d0
-       tot_eleft = 0d0
-c-- rtw: can't copy back 0 to eext or evelo.
-      endif !impi
+      tot_erad = rcvvec(1)
+      tot_eout = rcvvec(2)
+      tot_eext = rcvvec(3)
+      tot_evelo = rcvvec(4)
       deallocate(sndvec)
       deallocate(rcvvec)
 

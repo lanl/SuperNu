@@ -492,6 +492,9 @@ subroutine diffusion3(ptcl,isvacant)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wl to lab
            wl = wl/elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
 !-- transforming energy weights to lab
            e = e*elabfact
            e0 = e0*elabfact
@@ -500,7 +503,7 @@ subroutine diffusion3(ptcl,isvacant)
 !-- escaping at ix=1
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
@@ -627,6 +630,9 @@ subroutine diffusion3(ptcl,isvacant)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wl to lab
            wl = wl/elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
 !-- transforming energy weights to lab
            e = e*elabfact
            e0 = e0*elabfact
@@ -635,7 +641,7 @@ subroutine diffusion3(ptcl,isvacant)
 !-- escaping at ix=nx
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
@@ -762,6 +768,9 @@ subroutine diffusion3(ptcl,isvacant)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wl to lab
            wl = wl/elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
 !-- transforming energy weights to lab
            e = e*elabfact
            e0 = e0*elabfact
@@ -770,7 +779,7 @@ subroutine diffusion3(ptcl,isvacant)
 !-- escaping at iy=1
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
@@ -897,6 +906,9 @@ subroutine diffusion3(ptcl,isvacant)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wl to lab
            wl = wl/elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
 !-- transforming energy weights to lab
            e = e*elabfact
            e0 = e0*elabfact
@@ -905,7 +917,7 @@ subroutine diffusion3(ptcl,isvacant)
 !-- escaping at iy=ny
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
@@ -1031,6 +1043,9 @@ subroutine diffusion3(ptcl,isvacant)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wl to lab
            wl = wl/elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
 !-- transforming energy weights to lab
            e = e*elabfact
            e0 = e0*elabfact
@@ -1039,7 +1054,7 @@ subroutine diffusion3(ptcl,isvacant)
 !-- escaping at iz=1
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
@@ -1165,6 +1180,9 @@ subroutine diffusion3(ptcl,isvacant)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wl to lab
            wl = wl/elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
 !-- transforming energy weights to lab
            e = e*elabfact
            e0 = e0*elabfact
@@ -1173,7 +1191,7 @@ subroutine diffusion3(ptcl,isvacant)
 !-- escaping at iz=1
            isvacant = .true.
            prt_done = .true.
-           tot_eright = tot_eright+e
+           tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
            iom = binsrch(om,flx_om,flx_nom+1,0)
@@ -1254,6 +1272,9 @@ subroutine diffusion3(ptcl,isvacant)
            if(om<0d0) om=om+pc_pi2
 !-- transforming wavelength to lab
            wl = wl/elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
 !-- transforming energy weights to lab
            e = e*elabfact
            e0 = e0*elabfact

@@ -75,9 +75,6 @@ c
       use gridmod
       use gasmod
 c
-      tot_eextav = tot_eext
-      tot_eveloav = tot_evelo
-c
       gas_edep = reshape(grd_edep,[grd_nx*grd_ny*grd_nz])
       gas_eraddens = reshape(grd_eraddens,[grd_nx*grd_ny*grd_nz])
       end subroutine reduce_tally
