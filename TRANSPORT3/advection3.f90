@@ -63,11 +63,11 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
   izholder = binsrch(z,grd_zarr,grd_nz+1,0)
 !-- correcting new index
   if(x==0d0) ixholder = ix !-- on yz plane
-  if(x<0d0.and.grd_xarr(ix)==x) ixholder=ixholder-1 !-- moved to negative x-plane (rare)
+  if(x<0d0.and.grd_xarr(ixholder)==x) ixholder=ixholder-1 !-- moved to negative x-plane (rare)
   if(y==0d0) iyholder = iy !-- on xz plane
-  if(y<0d0.and.grd_yarr(iy)==y) iyholder=iyholder-1 !-- moved to negative y-plane (rare)
+  if(y<0d0.and.grd_yarr(iyholder)==y) iyholder=iyholder-1 !-- moved to negative y-plane (rare)
   if(z==0d0) izholder = iz !-- on xy plane
-  if(z<0d0.and.grd_zarr(iz)==z) izholder=izholder-1 !-- moved to negative z-plane (rare)
+  if(z<0d0.and.grd_zarr(izholder)==z) izholder=izholder-1 !-- moved to negative z-plane (rare)
 
 !
 !-- quick exit if DDMC is active

@@ -56,7 +56,7 @@ subroutine advection2(pretrans,ig,ix,iy,x,y)
 !--correcting new index
   if(x==0d0) ixholder = ix !-- on y axis
   if(y==0d0) iyholder = iy !-- on x axis
-  if(y<0d0.and.grd_yarr(iy)==y) iyholder=iyholder-1 !-- moved to negative y-line (rare)
+  if(y<0d0.and.grd_yarr(iyholder)==y) iyholder=iyholder-1 !-- moved to negative y-line (rare)
 
 !
 !-- quick exit if DDMC is active
