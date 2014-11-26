@@ -31,7 +31,7 @@ c     -------------------------------
       real*8 :: natom1fr(gas_ncell,-2:-1) !todo: memory storage order?
       real*8 :: natom2fr(gas_ncell,-2:-1)
 c-- previous values
-      real*8,allocatable,save :: tempalt(:),siggreyalt(:)
+      real*8,allocatable,save :: tempalt(:),capgreyalt(:)
 !     real*8 :: hlparr(grd_nx),hlparrdd(gas_ncell)
 c-- timing
       real*8 :: t0,t1
@@ -136,16 +136,18 @@ c
         endif
         call opacity_planckmean
        endif
-c-- change back
-       gas_temp = gas_temp/dtempfrac
 c
+c-- save
        if(.not.allocated(tempalt)) then
         allocate(tempalt(gas_ncell))
-        allocate(siggreyalt(gas_ncell))
+        allocate(capgreyalt(gas_ncell))
        endif
        tempalt = gas_temp
 c-- per gram
-       siggreyalt = gas_capgrey/gas_rho
+       capgreyalt = gas_capgrey/gas_rho
+c
+c-- change back
+       gas_temp = gas_temp/dtempfrac
 !}}}
       endif
 c
@@ -230,14 +232,14 @@ c-- close file
 c
 c
 c-- Calculating Fleck factor, leakage opacities
-      call fleck_factor(tempalt,siggreyalt)
+      call fleck_factor(tempalt,capgreyalt)
 c-- Calculating emission probabilities for each group in each cell
       call emission_probability
 c
 c
 c-- save previous values for gentile-fleck factor calculation in next iter
       tempalt = gas_temp
-      siggreyalt = gas_capgrey/gas_rho
+      capgreyalt = gas_capgrey/gas_rho
 c
       call time(t1)
       call timereg(t_gasupd,t1-t0)

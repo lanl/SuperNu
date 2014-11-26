@@ -127,7 +127,7 @@ subroutine write_output
   enddo
   close(4)
 
-  open(unit=4,file='output.siggrey',position='append',recl=reclen2)
+  open(unit=4,file='output.capgrey',position='append',recl=reclen2)
   do j=1,grd_ny
   do k=1,grd_nz
      write(4,'(1p,10000e12.4)') grd_capgrey(:,j,k)
