@@ -540,6 +540,7 @@ c-- continue with relevant ranks only
       deallocate(rcvvec)
 c
 c-- flux dim==2
+      n = flx_nmu*flx_nom
       isnd3g = flx_gamlumnum
       call mpi_reduce(isnd3g,flx_gamlumnum,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)

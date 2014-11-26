@@ -143,8 +143,7 @@ c-- save
         allocate(capgreyalt(gas_ncell))
        endif
        tempalt = gas_temp
-c-- per gram
-       capgreyalt = gas_capgrey/gas_rho
+       capgreyalt = gas_capgrey/gas_rho !per gram
 c
 c-- change back
        gas_temp = gas_temp/dtempfrac

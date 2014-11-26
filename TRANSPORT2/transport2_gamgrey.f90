@@ -21,7 +21,7 @@ subroutine transport2_gamgrey(ptcl)
   logical :: loutx,louty
   integer :: imu, ihelp
   real*8 :: elabfact, dirdotu
-  real*8 :: dtinv, thelp, thelpinv 
+  real*8 :: thelp, thelpinv 
   real*8 :: dcol,dbx,dby,d
   real*8 :: rold, zold, omold
   real*8 :: r1
@@ -42,9 +42,6 @@ subroutine transport2_gamgrey(ptcl)
   om => ptcl%om
   e => ptcl%e
   e0 => ptcl%e0
-!
-!-- shortcut
-  dtinv = 1d0/dt
 !
 !-- setting vel-grid helper variables
   if(grd_isvelocity) then
@@ -204,8 +201,8 @@ subroutine transport2_gamgrey(ptcl)
 !-- retrieving lab frame flux group, polar bin
         imu = binsrch(mu,flx_mu,flx_nmu+1,0)
 !-- tallying outbound luminosity
-        flx_gamluminos(imu,1) = flx_gamluminos(imu,1)+e*dtinv
-        flx_gamlumdev(imu,1) = flx_gamlumdev(imu,1)+(e*dtinv)**2
+        flx_gamluminos(imu,1) = flx_gamluminos(imu,1)+e/tsp_dt
+        flx_gamlumdev(imu,1) = flx_gamlumdev(imu,1)+(e/tsp_dt)**2
         flx_gamlumnum(imu,1) = flx_gamlumnum(imu,1)+1
         return
      endif

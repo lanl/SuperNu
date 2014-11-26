@@ -138,11 +138,11 @@ program supernu
 !
 !-- reading restart rand() count
   if(tsp_ntres>1.and..not.in_norestart) then
-    call scatter_restart_data !MPI
+     call scatter_restart_data !MPI
 !-- mimicking end of tsp reset
-    prt_tlyrand = 0
+     prt_tlyrand = 0
   else
-    prt_tlyrand = 1
+     prt_tlyrand = 1
   endif
 !
 !-- instantiating initial particles (if any)
@@ -167,7 +167,7 @@ program supernu
 !
 !-- reset particle clocks
     if(tsp_it<=tsp_ntres) then
-      where(.not.prt_isvacant) prt_particles%t = tsp_t
+       where(.not.prt_isvacant) prt_particles%t = tsp_t
     endif
 !
 !-- Update tsp_t etc
@@ -279,17 +279,17 @@ program supernu
   if(impi==impi0) then
 !
 !-- print memory usage
-    msg = 'post loop:'
-    write(6,*)
-    write(6,*) 'memusg: ',msg,memusg()
+     msg = 'post loop:'
+     write(6,*)
+     write(6,*) 'memusg: ',msg,memusg()
 
 !-- print cpu timing usage
-    call time(t1)
-    t_all = t1 - t0
-    call print_timing                 !print timing results
-    write(6,*)
-    write(6,*) 'SuperNu finished'
-    if(in_grabstdout) write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
+     call time(t1)
+     t_all = t1 - t0
+     call print_timing                 !print timing results
+     write(6,*)
+     write(6,*) 'SuperNu finished'
+     if(in_grabstdout) write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
   endif
 !-- Clean up memory. (This help to locate memory leaks)
   call dealloc_all

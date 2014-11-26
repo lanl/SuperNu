@@ -22,7 +22,6 @@ subroutine transport1_gamgrey(ptcl)
   real*8 :: siglabfact, dcollabfact, elabfact
   real*8 :: rold, muold
 ! real*8 :: x1, x2, xx0
-  real*8 :: dtinv
   real*8 :: help
 
   integer,pointer :: ix
@@ -37,9 +36,6 @@ subroutine transport1_gamgrey(ptcl)
   mu => ptcl%mu
   e => ptcl%e
   e0 => ptcl%e0
-!
-!-- shortcut
-  dtinv = 1d0/dt
 
   if(grd_isvelocity) then
      siglabfact = 1.0d0 - mu*r*cinv
@@ -152,8 +148,8 @@ subroutine transport1_gamgrey(ptcl)
 !-- outbound luminosity tally
 !-- velocity effects accounting
 !
-           flx_gamluminos(1,1) = flx_gamluminos(1,1)+e*dtinv
-           flx_gamlumdev(1,1) = flx_gamlumdev(1,1)+(e*dtinv)**2
+           flx_gamluminos(1,1) = flx_gamluminos(1,1)+e/tsp_dt
+           flx_gamlumdev(1,1) = flx_gamlumdev(1,1)+(e/tsp_dt)**2
            flx_gamlumnum(1,1) = flx_gamlumnum(1,1)+1
         else
            r = grd_xarr(ix+1)

@@ -22,7 +22,7 @@ subroutine transport3_gamgrey(ptcl)
   logical :: loutx,louty,loutz
   integer :: imu, iom, ihelp
   real*8 :: elabfact, eta, xi
-  real*8 :: dtinv, thelp, thelpinv
+  real*8 :: thelp, thelpinv
   real*8 :: dcol,dbx,dby,dbz,d
   real*8 :: r1
 
@@ -46,8 +46,6 @@ subroutine transport3_gamgrey(ptcl)
   e => ptcl%e
   e0 => ptcl%e0
 !
-!-- shortcut
-  dtinv = 1d0/dt
 !-- projections
   eta = sqrt(1d0-mu**2)*sin(om)
   xi = sqrt(1d0-mu**2)*cos(om)
@@ -115,24 +113,7 @@ subroutine transport3_gamgrey(ptcl)
   endif
 
 !-- tallying energy densities
-  if(prt_isimcanlog) then
-!-- analog energy density
-     grd_eraddens(ix,iy,iz)=grd_eraddens(ix,iy,iz)+e*elabfact* &
-          d*thelp*cinv*dtinv
-  else
-!-- nonanalog energy density
-     if(grd_capgam(ix,iy,iz)* &
-          min(dx(ix),dy(iy),dz(iz))*thelp>1d-6) then
-        grd_eraddens(ix,iy,iz) = grd_eraddens(ix,iy,iz)+e* &
-             (1.0d0-exp(-elabfact* &
-             grd_capgam(ix,iy,iz)*d*thelp))* &
-             elabfact/(elabfact * &
-             grd_capgam(ix,iy,iz)*pc_c*dt)
-     else
-!-- analog energy density
-        grd_eraddens(ix,iy,iz)=grd_eraddens(ix,iy,iz)+e*elabfact* &
-             d*thelp*cinv*dtinv
-     endif
+  if(.not.prt_isimcanlog) then
 !-- depositing nonanalog absorbed energy
      grd_edep(ix,iy,iz)=grd_edep(ix,iy,iz)+e* &
           (1d0-exp(-grd_capgam(ix,iy,iz)* &
@@ -185,8 +166,8 @@ subroutine transport3_gamgrey(ptcl)
         iom = binsrch(om,flx_om,flx_nom+1,0)
         imu = binsrch(mu,flx_mu,flx_nmu+1,0)
 !-- tallying outbound luminosity
-        flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e*dtinv
-        flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+(e*dtinv)**2
+        flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e/tsp_dt
+        flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+(e/tsp_dt)**2
         flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1
         return
      endif

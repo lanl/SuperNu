@@ -35,8 +35,8 @@ subroutine particle_advance_gamgrey(nmpi)
   type(packet),target :: ptcl
 
   grd_edep = 0d0
-  flx_gamluminos = 0.0
-  flx_gamlumdev = 0.0
+  flx_gamluminos = 0d0
+  flx_gamlumdev = 0d0
   flx_gamlumnum = 0
 !
   grd_eraddens = 0d0
