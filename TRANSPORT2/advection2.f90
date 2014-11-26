@@ -50,6 +50,14 @@ subroutine advection2(pretrans,ig,ix,iy,x,y)
 !-- finding tentative new index
      ixholder = binsrch(x,grd_xarr,grd_nx+1,0)
      iyholder = binsrch(y,grd_yarr,grd_ny+1,0)
+!--correcting new index
+!-- on y axis
+     if(x==0d0) ixholder = ix
+!-- on x axis
+     if(y==0d0) iyholder = iy
+!-- moved to negative y-line (unlikely)
+     if(y<0d0.and.any(grd_yarr==y)) iyholder=iyholder-1
+
 !-- checking if DDMC is active
      if(.not.in_puretran.and.partstopper) then
 !-- initializing tracking cells

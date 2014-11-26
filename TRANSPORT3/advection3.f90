@@ -58,6 +58,20 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
      ixholder = binsrch(x,grd_xarr,grd_nx+1,0)
      iyholder = binsrch(y,grd_yarr,grd_ny+1,0)
      izholder = binsrch(z,grd_zarr,grd_nz+1,0)
+!-- correcting new index
+!-- on yz plane
+     if(x==0d0) ixholder = ix
+!-- moved to negative x-plane (unlikely)
+     if(x<0d0.and.any(grd_xarr==x)) ixholder=ixholder-1
+!-- on xz plane
+     if(y==0d0) iyholder = iy
+!-- moved to negative y-plane (unlikely)
+     if(y<0d0.and.any(grd_yarr==y)) iyholder=iyholder-1
+!-- on xy plane
+     if(z==0d0) izholder = iz
+!-- moved to negative z-plane (unlikely)
+     if(z<0d0.and.any(grd_zarr==z)) izholder=izholder-1
+
 !-- checking if DDMC is active
      if(.not.in_puretran.and.partstopper) then
 !-- initializing tracking cells
