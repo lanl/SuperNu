@@ -24,43 +24,50 @@ subroutine advection1(pretrans,ig,ix,r)
   integer :: l
   real*8 :: dx
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
+
 !
-!-- different values are used before and after transport
+!-- setting tentative new position
   if(pretrans) then
     r = r*tsp_t/(tsp_t+alph2*tsp_dt)
   else
     r = r*(tsp_t + alph2*tsp_dt)/(tsp_t+tsp_dt)
   endif
+
 !
-  if (r < grd_xarr(ix)) then
+!-- nothing to do
+  if (r>=grd_xarr(ix)) return
+
 !
-    zholder = binsrch(r,grd_xarr,grd_nx+1,0)
+!-- finding tentative new index
+  zholder = binsrch(r,grd_xarr,grd_nx+1,0)
+
 !
-    if(.not.in_puretran.and.partstopper) then
-       zfdiff = -1
-       if(grd_isvelocity) then
-          help = tsp_t
-       else
-          help = 1d0
-       endif
-       do ir = ix-1,zholder,-1
-          if((grd_sig(ir,1,1)+grd_cap(ig,ir,1,1))*dx(ir) &
-               *help>=prt_tauddmc) then
-             zfdiff = ir
-             exit
-          endif
-       enddo
-       if(zfdiff.ne.-1) then
-!--
-          ix = zfdiff+1
-          r = grd_xarr(ix)
-!--
-       else
-          ix = zholder
-       endif
-    else
-      ix = zholder
-    endif
-!
+!-- quick exit if DDMC is active
+  if(in_puretran .or. .not.partstopper) then
+    ix = zholder
+    return
   endif
+
+  zfdiff = -1
+  if(grd_isvelocity) then
+     help = tsp_t
+  else
+     help = 1d0
+  endif
+  do ir = ix-1,zholder,-1
+     if((grd_sig(ir,1,1)+grd_cap(ig,ir,1,1))*dx(ir) &
+          *help>=prt_tauddmc) then
+        zfdiff = ir
+        exit
+     endif
+  enddo
+
+!--
+  if(zfdiff.ne.-1) then
+     ix = zfdiff+1
+     r = grd_xarr(ix)
+  else
+     ix = zholder
+  endif
+
 end subroutine advection1
