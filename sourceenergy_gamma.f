@@ -1,6 +1,8 @@
       subroutine sourceenergy_gamma
 c     -----------------------------
+      use mpimod
       use gridmod
+      use totalsmod
 !     use timestepmod
       implicit none
 ************************************************************************
@@ -20,5 +22,8 @@ c-- gamma deposition is energy source
 c
 c-- save for output purposes
       grd_edepgam = grd_edep
+c
+c-- add gamma radiation source tot total
+      if(impi==impi0) tot_eext = tot_eext + sum(grd_edep)
 c
       end subroutine sourceenergy_gamma

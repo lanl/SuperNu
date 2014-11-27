@@ -503,10 +503,11 @@ c
       call time(t0)
 c
 c-- dim==0
-      n = 4
+      n = 6
       allocate(sndvec(n))
       allocate(rcvvec(n))
-      sndvec = (/tot_erad,tot_eout,tot_eext,tot_evelo/)
+      sndvec = [tot_erad,tot_eout,tot_eext,tot_evelo,tot_emat,
+     &  tot_eext0]
       call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -515,8 +516,10 @@ c-- copy back
          tot_eout = rcvvec(2)
          tot_eext = rcvvec(3)
          tot_evelo = rcvvec(4)
+         tot_emat = rcvvec(5)
+         tot_eext0 = rcvvec(6)
       else
-         tot_erad = 0d0
+c-- zero out cumulative values on all other ranks to avoid double counting.
          tot_eout = 0d0
          tot_eext = 0d0
          tot_evelo = 0d0
@@ -524,19 +527,6 @@ c-- copy back
       deallocate(sndvec)
       deallocate(rcvvec)
 
-      n = 2
-      allocate(sndvec(n))
-      allocate(rcvvec(n))
-      sndvec = (/tot_eext,tot_emat/)
-c-- continue with relevant ranks only
-      if(impi_gas>=0) then
-       call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
-     &   impi0,MPI_COMM_GAS,ierr)
-      endif
-      tot_eext = rcvvec(1)
-      tot_emat = rcvvec(2)
-      deallocate(sndvec)
-      deallocate(rcvvec)
 c
 c-- flux dim==2
       n = flx_nmu*flx_nom

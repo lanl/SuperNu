@@ -1,5 +1,5 @@
-      subroutine gas_update(impi)
-c     -------------------------------
+      subroutine gas_update(impi,it)
+c     ------------------------------
       use gridmod
       use physconstmod
       use miscmod
@@ -10,7 +10,7 @@ c     -------------------------------
       use inputparmod
       use timingmod
       implicit none
-      integer,intent(in) :: impi
+      integer,intent(in) :: impi,it
 ************************************************************************
 * Update the part of the gas grid that depends on time and temperature.
 * The non-changing part is computed in gas_setup.
@@ -20,9 +20,9 @@ c     -------------------------------
 * - LTE EOS: ionization balance and electron density
 * - opacities
 ************************************************************************
-      logical,save :: first=.true.
+      logical,save :: lfirst=.true.
       logical :: do_output,lexist
-      integer :: i,j,k,l,ll,it,istat
+      integer :: i,j,k,l,ll,istat
       integer :: l1,l2
 *     integer :: j,k,l
       real*8 :: help
@@ -30,6 +30,7 @@ c     -------------------------------
       real*8 :: dtempfrac = 0.99d0
       real*8 :: natom1fr(gas_ncell,-2:-1) !todo: memory storage order?
       real*8 :: natom2fr(gas_ncell,-2:-1)
+      real*8 :: nisource0(gas_ncell)
 c-- previous values
       real*8,allocatable,save :: tempalt(:),capgreyalt(:)
 !     real*8 :: hlparr(grd_nx),hlparrdd(gas_ncell)
@@ -43,6 +44,26 @@ c-- nuclear decay
 c================
 c-- Get ni56 and co56 abundances on begin and end of the time step.!{{{
 c-- The difference between these two has decayed.
+c
+c-- initial decay, prior to first time step
+      if(tsp_it==1 .and. grd_isvelocity.and.in_srctype=='none') then
+       call update_natomfr(0d0)!{{{
+       forall(ll=-2:-1) natom1fr(:,ll) = gas_natom1fr(ll,:)
+c-- end of time step
+       call update_natomfr(tsp_t)
+       forall(ll=-2:-1) natom2fr(:,ll) = gas_natom1fr(ll,:)
+c-- energy deposition
+       nisource0 =  !per average atom (mix of stable and unstable)
+     &   (natom1fr(:,gas_ini56) - natom2fr(:,gas_ini56)) *
+     &     (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
+     &   (natom1fr(:,gas_ico56) - natom2fr(:,gas_ico56)) *
+     &     pc_qhl_co56
+c-- total, units=ergs
+       nisource0 = nisource0 * gas_natom
+       tot_eext0 = sum(nisource0)!}}}
+      endif
+c
+c-- current time step
       if(grd_isvelocity.and.in_srctype=='none') then
 c-- beginning of time step
        help = tsp_t
@@ -65,6 +86,14 @@ c-- energy deposition
      &     pc_qhl_co56
 c-- total, units=ergs
        gas_nisource = gas_nisource * gas_natom
+c
+c-- We assume that half of the source energy goes into doppler losses
+c-- the other half into heating the radiation field.
+c-- We keep adding nisource/2 until the radiation field converges.
+c-- The doppler losses are then equal to nisource/2.  We give two full
+c-- nisource shots to bring the radiation field up to speed and help
+c-- converge more quickly.
+       if(it<1 .and. it>in_ntres+1) gas_nisource = gas_nisource*.5
       endif
 !}}}
 c
@@ -107,20 +136,18 @@ c
 c
 c-- totals
 c=========
-c-- add initial thermal input to dd_eext
-      if(tsp_it==1) then
-       tot_eext = sum(gas_bcoef*gas_temp*gas_vol)
-      endif
 !-- total comoving material energy
       tot_emat = sum(gas_bcoef*gas_temp*gas_vol)
+c-- add initial thermal input to dd_eext
+      if(tsp_it==1) then
+       tot_eext = tot_eext + tot_emat  !was initialized either in totalsmod or in totals_startup
+      endif
 c
 c
 c
 c-- compute the starting tempurature derivative in the fleck factor
-      if(first .or. in_opacanaltype/='none') then
-       first = .false.!{{{
-c
-c-- temporarily change
+      if(lfirst .or. in_opacanaltype/='none') then
+c-- temporarily change!{{{
        gas_temp = dtempfrac*gas_temp
        if(in_opacanaltype=='none') then
         if(.not.in_noeos) call eos_update(.false.)
@@ -188,7 +215,7 @@ c-- read header
         read(4,*,iostat=istat)
         if(istat/=0) stop 'read_opac: file empty: input.opac'
 c-- read each cell individually
-        do it=1,tsp_it
+        do j=1,tsp_it
 c-- skip delimiter
          read(4,*,iostat=istat)
          if(istat/=0) stop 'read_opac: delimiter error: input.opac'
@@ -197,7 +224,7 @@ c-- read data
           read(4,*,iostat=istat) help,gas_sig(i),gas_cap(:,i)
           if(istat/=0) stop 'read_opac: body error: input.opac'
          enddo !i
-        enddo !it
+        enddo !j
         close(4)
         write(6,*) 'read_opac: read successfully'
 !}}}
@@ -239,6 +266,8 @@ c
 c-- save previous values for gentile-fleck factor calculation in next iter
       tempalt = gas_temp
       capgreyalt = gas_capgrey/gas_rho
+c
+      lfirst = .false.
 c
       call time(t1)
       call timereg(t_gasupd,t1-t0)

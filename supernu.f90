@@ -8,6 +8,7 @@ program supernu
   use particlemod
   use physconstmod
   use miscmod
+  use totalsmod
 
   use inputstrmod
   use fluxmod
@@ -101,55 +102,47 @@ program supernu
     call time(t1)
     t_setup = t1-t0!}}}
   endif !impi
-!
-!-- MPI
+
   call bcast_permanent !MPI
+
 
 !-- setup spatial grid
   call grid_init(impi==impi0,gas_ng,gas_wl,in_igeom,in_ndim,in_isvelocity)
   call grid_setup(gas_wl)
-
   call mpi_setup_communicators(product(in_ndim)) !MPI
-!--
   ncell = product(in_ndim)/nmpi_gas
   call scatter_inputstruct(in_ndim,ncell) !MPI
 
-!
 !-- setup gas
   if(impi_gas>=0) call gas_init(impi==impi0,ncell)
   if(impi_gas>=0) call gas_setup(impi==impi0)
-
-!
-!-- initialize flux tally arrays (rtw: separated from fluxgrid_setup)
+!-- setup flux
   call flux_alloc
-!
+
 !-- initial radiation energy
   call initialnumbers
 
-!
 !-- allocate arrays of sizes retreived in bcast_permanent
   if(impi_gas>=0) call ion_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
   call particle_alloc(impi==impi0,in_norestart,nmpi)
 
-!
 !-- initialize random number generator, use different seeds for each rank
   if(in_nomp==0) stop 'supernu: in_nomp == 0'
   help = rand(in_nomp*impi)
-!
+
 !-- reading restart rand() count
   if(tsp_ntres>1.and..not.in_norestart) then
      call scatter_restart_data !MPI
-!-- mimicking end of tsp reset
-     prt_tlyrand = 0
+     prt_tlyrand = 0 !mimicking end of tsp reset
   else
      prt_tlyrand = 1
   endif
-!
+
 !-- instantiating initial particles (if any)
   call initial_particles
-!
-!
-!
+
+
+
 !-- time step loop
 !=================
   if(impi==impi0) then
@@ -163,110 +156,97 @@ program supernu
 !
   do it=in_ntres,tsp_nt
 !-- allow negative and zero it for temperature initialization purposes!{{{
-    tsp_it = max(it,1)
-!
-!-- reset particle clocks
-    if(tsp_it<=tsp_ntres) then
-       where(.not.prt_isvacant) prt_particles%t = tsp_t
-    endif
-!
+     tsp_it = max(it,1)
+
 !-- Update tsp_t etc
-    call timestep_update(tsp_dt)  !tsp_dt is being set here, any value can be passed
-!
-!-- updating prt_tauddmc and prt_taulump
-    call tau_update
+     call timestep_update(tsp_dt)  !tsp_dt is being set here, any value can be passed
+     call tau_update !updating prt_tauddmc and prt_taulump
 
-    if(impi==impi0) write(6,'(1x,a,i5,f8.3,"d",i12)') 'timestep:',it, &
-         tsp_t/pc_day,count(.not.prt_isvacant)
-
+!-- write timestep
+     help = merge(tot_eerror,tot_erad,it>1)
+     if(impi==impi0) write(6,'(1x,a,i5,f8.3,"d",i10,1p,2e10.2)') 'timestep:', &
+        it,tsp_t/pc_day,count(.not.prt_isvacant),help
 
 !-- update all non-permanent variables
-    call grid_update(tsp_t)
-    if(impi_gas>=0) call gas_update(impi)
-!-- energy to be instantiated by source prt_particles per cell in this timestep
-    if(impi_gas>=0) call sourceenergy(nmpi)
+     call grid_update(tsp_t)
+     if(impi_gas>=0) call gas_update(impi,it)
+     if(impi_gas>=0) call sourceenergy(nmpi) !energy to be instantiated per cell in this timestep
 
-!
+
 !-- gather from gas workers and broadcast to world ranks
-    call bcast_nonpermanent !MPI
+     call bcast_nonpermanent !MPI
+
 
 !-- grey gamma ray transport
-    if(in_srctype=='none' .and. .not.in_novolsrc) then
-       call particle_advance_gamgrey(nmpi)
-       call allreduce_gammaenergy !MPI
+     if(in_srctype=='none' .and. .not.in_novolsrc) then
+        call particle_advance_gamgrey(nmpi)
+        call allreduce_gammaenergy !MPI
 !-- testing: local deposition
-!      grd_edep = grd_emitex
+!       grd_edep = grd_emitex
 !-- testing: dump integral numbers
-!      if(impi==impi0) write(6,*) 'source:', &
-!         sum(grd_emitex),sum(grd_edep),sum(grd_edep)/sum(grd_emitex)
-       call sourceenergy_gamma
-    endif
+!       if(impi==impi0) write(6,*) 'source:', &
+!          sum(grd_emitex),sum(grd_edep),sum(grd_edep)/sum(grd_emitex)
+        call sourceenergy_gamma
+     endif
 
-!-- Calculating gas_emitex from analytic distribution
-    call sourceenergy_analytic
+     call sourceenergy_analytic !gas_emitex from analytic distribution
+     call leakage_opacity       !IMC-DDMC albedo coefficients and DDMC leakage opacities
+     call sourcenumbers         !number of source prt_particles per cell
 
-!-- Calculating IMC-DDMC albedo coefficients and DDMC leakage opacities
-    call leakage_opacity
-
-!-- number of source prt_particles per cell
-    call sourcenumbers
-!-- Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
-    allocate(prt_vacantarr(prt_nnew))
-    call vacancies
-!-- Calculating properties of prt_particles on domain boundary
-    call boundary_source
-!-- Calculating properties of prt_particles emitted in domain interior
-    call interior_source
-    deallocate(prt_vacantarr)
+     allocate(prt_vacantarr(prt_nnew))
+     call vacancies             !Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
+     call boundary_source       !properties of prt_particles on domain boundary
+     call interior_source       !properties of prt_particles emitted in domain interior
+     deallocate(prt_vacantarr)
 
 !-- advance particles
-    call particle_advance
-!   write(0,*) it,impi,t_pckt_stat(1)
+     if(tsp_it<=tsp_ntres) where(.not.prt_isvacant) prt_particles%t = tsp_t !reset particle clocks
+     call particle_advance
+     call reduce_tally !MPI !collect particle results from all workers
 
-!-- collect particle results from all workers
-    call reduce_tally !MPI
-!
 !-- print packet advance load-balancing info
-    !if(impi==impi0) write(6,'(1x,a,3(f9.2,"s"))') 'packets time(min|mean|max):',t_pckt_stat
-    if(impi==impi0) then
-       call timereg(t_pcktmin,t_pckt_stat(1))
-       call timereg(t_pcktmea,t_pckt_stat(2))
-       call timereg(t_pcktmax,t_pckt_stat(3))
-    endif
+     !if(impi==impi0) write(6,'(1x,a,3(f9.2,"s"))') 'packets time(min|mean|max):',t_pckt_stat
+     if(impi==impi0) then
+        call timereg(t_pcktmin,t_pckt_stat(1))
+        call timereg(t_pcktmea,t_pckt_stat(2))
+        call timereg(t_pcktmax,t_pckt_stat(3))
+     endif
 
 !-- collect data necessary for restart (tobe written by impi0)
-    if(.not.in_norestart) call collect_restart_data !MPI
+     if(.not.in_norestart) call collect_restart_data !MPI
 
 !-- update temperature
-    if(impi_gas>=0) call temperature_update
-    call reduce_gastemp !MPI
+     if(impi_gas>=0) call temperature_update
+     call reduce_gastemp !MPI
 
-!
+
 !-- output
-    if(impi==impi0) then
+     if(impi==impi0) then
 !-- luminosity statistics!{{{
-      where(flx_lumnum>0) flx_lumdev = ( &
-         (flx_lumdev/flx_lumnum - (flx_luminos/flx_lumnum)**2) * &
-         flx_lumnum/dble(flx_lumnum - 1) )**.5d0
-!-- check energy (particle weight) is accounted
-      call energy_check
+        where(flx_lumnum>0) flx_lumdev = ( &
+           (flx_lumdev/flx_lumnum - (flx_luminos/flx_lumnum)**2) * &
+           flx_lumnum/dble(flx_lumnum - 1) )**.5d0
+!
+!-- total energy startup values and energy conservation
+        if(it<1) call totals_startup
+        call totals_error !check energy (particle weight) is accounted
+
 !-- write output
-      if(it>0) call write_output
-!
+        if(it>0) call write_output
 !-- restart writers
-      if(.not.in_norestart .and. it>0) then
-         call write_restart_file !-- temp
-         call write_restart_randcount !-- rand() count
-         call write_restart_particles !-- particle properties of current time step
-      endif
-!!}}}
-    endif !impi
-!
+        if(.not.in_norestart .and. it>0) then
+           call write_restart_file !temp
+           call write_restart_randcount !rand() count
+           call write_restart_particles !particle properties of current time step
+        endif
+!!}} }
+     endif !impi
+
 !-- reset rand counters
-    prt_tlyrand = 0
-!
+     prt_tlyrand = 0
+
 !-- write timestep timing to file
-    if(it>0) call timing_timestep(impi)
+     if(it>0) call timing_timestep(impi)
 !!}}}
   enddo !tsp_it
 !
@@ -286,12 +266,12 @@ program supernu
 !-- print cpu timing usage
      call time(t1)
      t_all = t1 - t0
-     call print_timing                 !print timing results
+     call print_timing  !print timing results
      write(6,*)
      write(6,*) 'SuperNu finished'
      if(in_grabstdout) write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
   endif
-!-- Clean up memory. (This help to locate memory leaks)
+!-- Clean up memory. (This helps to locate memory leaks)
   call dealloc_all
   call mpi_finalize(ierr) !MPI
 

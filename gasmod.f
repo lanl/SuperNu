@@ -94,6 +94,7 @@ c-- ndim=1 alloc
       allocate(gas_natom(gas_ncell))
       allocate(gas_nelec(gas_ncell))
       allocate(gas_matsrc(gas_ncell))
+      gas_nisource = 0d0
       gas_ye = .5d0
       gas_nelec = 1d0
       gas_matsrc = 0d0

@@ -93,7 +93,6 @@ subroutine interior_source
 
 !-- calculating particle energy
      ep0 = grd_emitex(i,j,k)/dble(grd_nvol(i,j,k)-nemit)
-     tot_eext=tot_eext+ep0
 
 !
 !-- selecting geometry
