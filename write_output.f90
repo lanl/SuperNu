@@ -48,6 +48,10 @@ subroutine write_output
   write(4,*) tot_eerror
   close(4)
 
+  open(unit=4,file='output.totals',status='unknown',position=pos)
+  write(4,*) tot_erad,tot_emat,tot_eext,tot_eout,tot_evelo
+  close(4)
+
 !
 !-- flux arrays
 !==============
