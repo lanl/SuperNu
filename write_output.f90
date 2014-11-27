@@ -8,48 +8,48 @@ subroutine write_output
   implicit none
 
   integer :: j,k
-  logical :: lexist
   integer :: reclenf, reclen2
+  logical,save :: lfirst=.true.
   character(16), save :: pos='rewind', fstat='replace'
 !
   reclenf = flx_ng*12
   reclen2 = grd_nx*12
 
-  inquire(file='output.grid',exist=lexist)
-  if(.not.lexist) then
-   open(unit=4,file='output.grid',status='unknown',position=pos)
+!
+!-- write once
+!=============
+  if(lfirst) then
+     open(unit=4,file='output.grid',status='replace')
 !-- header: dimension
-   write(4,*) "#",grd_igeom
-   write(4,*) "#",grd_nx,grd_ny,grd_nz
+     write(4,*) "#",grd_igeom
+     write(4,*) "#",grd_nx,grd_ny,grd_nz
 !-- body
-   write(4,*) grd_xarr
-   write(4,*) grd_yarr
-   write(4,*) grd_zarr
-   close(4)
+     write(4,*) grd_xarr
+     write(4,*) grd_yarr
+     write(4,*) grd_zarr
+     close(4)
+
+     open(unit=4,file='output.wlgrid',status='replace')
+!-- header: dimension
+     write(4,*) "#",flx_ng,flx_nmu,flx_nom
+!-- body
+     write(4,*) flx_wl
+     write(4,*) flx_mu
+     write(4,*) flx_om
+     close(4)
   endif
 
-  inquire(file='output.wlgrid',exist=lexist)
-  if(.not.lexist) then
-   open(unit=4,file='output.wlgrid',status='unknown',position=pos)
-!-- header: dimension
-   write(4,*) "#",flx_ng,flx_nmu,flx_nom
-!-- body
-   write(4,*) flx_wl
-   write(4,*) flx_mu
-   write(4,*) flx_om
-   close(4)
-  endif
-
-  open(unit=4,file='output.tsp_time',status='unknown',position=pos)
+!
+!-- scalars
+!==========
+  open(unit=4,file='output.tsp_time',status=fstat,position=pos)
+  if(lfirst) write(4,*) "#",tsp_nt
   write(4,*) tsp_t
   close(4)
 
-  open(unit=4,file='output.conserve',status='unknown',position=pos)
-  write(4,*) tot_eerror
-  close(4)
-
-  open(unit=4,file='output.totals',status='unknown',position=pos)
-  write(4,*) tot_erad,tot_emat,tot_eext,tot_eout,tot_evelo
+  open(unit=4,file='output.totals',status=fstat,position=pos)
+  if(lfirst) write(4,'("#",10a12)') 'error','erad','emat','eext','eout','evelo'
+  write(4,'(1p,10e12.4)') tot_eerror,tot_erad,tot_emat,tot_eext,tot_eout,tot_evelo
   close(4)
 
 !
@@ -141,8 +141,9 @@ subroutine write_output
 
 !
 !-- after the first iteration open files in append mode
-  pos='append'
-  fstat='old'
+  lfirst = .false.
+  pos = 'append'
+  fstat = 'old'
 
 
 end subroutine write_output
