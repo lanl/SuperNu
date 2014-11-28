@@ -148,7 +148,7 @@ c$omp& shared(gas_void,grndlev,cap)
           ie = iz - ii + 1
           xs = bfxs(iz,ie,en)
           if(xs==0d0) cycle
-          forall(i=1:gas_ncell,gas_void(i))
+          forall(i=1:gas_ncell,.not.gas_void(i))
      &      cap(i,ig) = cap(i,ig) +
      &      xs*pc_mbarn*grndlev(i,ii,iz)
          enddo !ie
