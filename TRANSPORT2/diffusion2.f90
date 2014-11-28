@@ -153,10 +153,7 @@ subroutine diffusion2(ptcl,isvacant)
         caplump = caplump+specig*grd_cap(iiig,ix,iy,1)*speclump
      enddo
 !-- leakage opacities
-     opacleak(1) = grd_opacleak(1,ix,iy,1)
-     opacleak(2) = grd_opacleak(2,ix,iy,1)
-     opacleak(3) = grd_opacleak(3,ix,iy,1)
-     opacleak(4) = grd_opacleak(4,ix,iy,1)
+     opacleak = grd_opacleak(:4,ix,iy,1)
   else
 !
 !-- calculating unlumped values

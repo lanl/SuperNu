@@ -284,7 +284,7 @@ subroutine transport3(ptcl,isvacant)
 !-- redistributing wavelength
         denom2 = 0d0
         r1 = rand()
-        do ig = 1, grd_ng
+        do ig=1,grd_ng-1
            if ((r1>=denom2).and.(r1<denom2+grd_emitprob(ig,ix,iy,iz))) exit
            denom2 = denom2+grd_emitprob(ig,ix,iy,iz)
         enddo
