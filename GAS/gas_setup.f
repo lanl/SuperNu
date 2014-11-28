@@ -17,6 +17,9 @@ c
 c-- agnostic mass setup
       gas_mass = str_massdd
 c
+c-- flag void cells
+      gas_void = gas_mass<=0d0
+c
 c-- temperature
       if(in_srctype=='manu') then
        call init_manutemp
@@ -79,7 +82,7 @@ c     -------------------------
       real*8 :: help
 c
       do i=1,gas_ncell
-c!{{{
+       if(gas_void(i)) cycle!{{{
 c-- sanity test
        if(all(mass0fr(1:,i)==0d0)) stop
      &    'massfr2natomfr: all mass fractions zero'
