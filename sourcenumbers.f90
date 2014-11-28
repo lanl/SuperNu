@@ -35,6 +35,7 @@ subroutine sourcenumbers
 
 !-- etot
   etot = sum(grd_emit**pwr) + sum(grd_emitex**pwr) + tot_esurf**pwr
+  if(etot/=etot) stop 'sourcenumber: etot nan'
 
 !-- calculating number of boundary particles (if any)
   prt_nsurf = nint(tot_esurf**pwr*nstot/etot)
@@ -105,7 +106,16 @@ subroutine sourcenumbers_roundrobin(iimpi,evol,evolex,ntot,mvol,nvol,nvolex)
 !-----------------------------------------------------------------------
   real*8 :: help
   integer :: n,l
-
+!
+!-- quick exit
+  if(evol+evolex==0d0) then
+     mvol = 0
+     nvol = 0
+     nvolex = 0
+     return
+  endif
+!
+!-- 
   help = evol/(evol + evolex)
   mvol = nint(ntot*help)
   nvolex = ntot - mvol

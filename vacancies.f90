@@ -15,6 +15,7 @@ subroutine vacancies
   ivac = 0
 
 !-- Filling prt_vacantarr with particle index of vacant particles: loop
+  if(prt_nnew > prt_npartmax) stop 'vacancies: nnew>npartmax'
   do ipart=1,prt_npartmax
      if(.not.prt_isvacant(ipart)) cycle
      ivac = ivac+1

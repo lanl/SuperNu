@@ -17,6 +17,9 @@ c-- dump whole profile (1D only)
 !     &   grd_edep(i,1,1)/grd_emitex(i,1,1)
 !      enddo
 c
+c-- sanity check energy deposition
+      if(any(grd_edep<0d0)) stop 'sourceenergy_gamma: negative energy'
+c
 c-- gamma deposition is energy source
       grd_emit = grd_emit + grd_edep
 c
