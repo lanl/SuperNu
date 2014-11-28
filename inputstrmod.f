@@ -60,7 +60,7 @@ c-- read dimensions
 c-- verify dimension
       if(nx_r/=nx) stop 'read_inputstr: incompatible nx dimension'
       if(ny_r/=ny) stop 'read_inputstr: incompatible ny dimension'
-      if(nz_r/=nz) stop 'read_inputstr: incompatible ny dimension'
+      if(nz_r/=nz) stop 'read_inputstr: incompatible nz dimension'
 c
 c-- allocate label arrays
       nvar = ncol - str_nabund
@@ -84,6 +84,9 @@ c-- read body
       if(ierr/=0) stop 'read_inputstr: input.str format err: body'
       read(4,*,iostat=ierr) dmy
       if(ierr/=-1) stop 'read_inputstr: input.str body too long'
+c
+c-- validity check
+      if(any(raw/=raw)) stop 'read_inputstr: nan in input'
 c
 c-- transer data to final arrays
 c-- first dim
