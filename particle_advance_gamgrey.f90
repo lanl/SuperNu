@@ -53,6 +53,7 @@ subroutine particle_advance_gamgrey(nmpi)
 
 !-- total energy (converted by pwr)
   etot = sum(grd_emitex**pwr)
+  if(etot/=etot) stop 'particle_advance_gamgrey: etot nan'
 
 !-- base (flat,constant) particle number per cell over ALL RANKS
   n = count(grd_emitex>0d0)  !number of cells that emit
