@@ -38,7 +38,7 @@ c     -----------------------------------!{{{
 ************************************************************************
 * Read the input structure file
 ************************************************************************
-      integer :: i,ierr,nx,ny,nz,nx_r,ny_r,nz_r,ini56,nvar
+      integer :: i,ierr,nx,ny,nz,nx_r,ny_r,nz_r,ini56,nvar,ncol,imass
       character(2) :: dmy
       character(8),allocatable :: labl(:)
       real*8,allocatable :: raw(:,:)
@@ -55,26 +55,15 @@ c-- open file
 c
 c-- read dimensions
       read(4,*)
-      read(4,*,iostat=ierr) dmy, nx_r,ny_r,nz_r,str_nabund
+      read(4,*,iostat=ierr) dmy, nx_r,ny_r,nz_r,ncol,str_nabund
       if(ierr/=0) stop 'read_inputstr: input.str fmt err: dimensions'
 c-- verify dimension
       if(nx_r/=nx) stop 'read_inputstr: incompatible nx dimension'
       if(ny_r/=ny) stop 'read_inputstr: incompatible ny dimension'
       if(nz_r/=nz) stop 'read_inputstr: incompatible ny dimension'
 c
-c-- nvar
-      select case(igeom)
-      case(1)
-       nvar = 2
-      case(2)
-       nvar = 5
-      case(3)
-       nvar = 7
-      case default
-       stop 'read_inputstr: igeom invalid'
-      end select
-c
 c-- allocate label arrays
+      nvar = ncol - str_nabund
       allocate(str_abundlabl(str_nabund))
       allocate(labl(nvar))
 c
@@ -88,7 +77,7 @@ c-- allocate data arrays
       allocate(str_zleft(nz+1))
       allocate(str_mass(nx,ny,nz))
       allocate(str_massfr(str_nabund,nx,ny,nz))
-      allocate(raw(nvar+str_nabund,nx*ny*nz))
+      allocate(raw(ncol,nx*ny*nz))
 c
 c-- read body
       read(4,*,iostat=ierr) raw
@@ -119,8 +108,15 @@ c-- third dim
         str_zleft(i+1) = raw(6,nx*ny*(i-1)+1)
        enddo
       endif
-c-- mass
-      str_mass(:,:,:) = reshape(raw(nvar,:),[nx,ny,nz])
+c-- var pointers
+      imass = 0
+      do i=1,nvar
+       if(lcase(trim(labl(i)))=='mass') imass = i
+      enddo
+      if(imass==0) stop 'read_inputstr: mass label not found'
+c-- vars
+      str_mass(:,:,:) = reshape(raw(imass,:),[nx,ny,nz])
+c-- abundances
       str_massfr(:,:,:,:) =reshape(raw(nvar+1:,:),[str_nabund,nx,ny,nz])
 c
 c-- close file
