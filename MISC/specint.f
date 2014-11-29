@@ -1,18 +1,24 @@
-      elemental function specint(t1,t2,n) result(ss)
+      elemental function specint(t1,t2,n,m) result(ss)
 c     ----------------------------------------------
       implicit none
       real*8 :: ss
-      integer, intent(in) :: n
-      real*8, intent(in) :: t1, t2
+      integer,intent(in) :: n
+      real*8,intent(in) :: t1,t2
+      integer,intent(in),optional :: m
 !#########################################
 ! For n=3, this function integrates normalized
 ! Planck spectrum from 0 to t
 ! Generally, n>=2
 !#########################################
-      real*8 :: dx, dd, x
-      integer :: mm, im
+      real*8 :: dx,dd,x
+      integer :: mm,im
 
-      mm = 100
+      if(present(m)) then
+        mm = m
+      else
+        mm = 100
+      endif
+
       dx = (t2-t1)/dble(2*mm)
       
       ss = 0.0

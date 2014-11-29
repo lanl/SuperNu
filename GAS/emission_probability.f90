@@ -1,6 +1,7 @@
 subroutine emission_probability
 
   use inputparmod
+  use timingmod
   use gasmod
   use physconstmod
   use miscmod, only:specint
@@ -11,7 +12,9 @@ subroutine emission_probability
 !-----------------------
 
   integer :: i,ig
-  real*8 :: x1, x2
+  real*8 :: x1, x2,t0,t1
+
+  call time(t0)
 
 !-- init
   gas_emitprob = 0d0
@@ -34,12 +37,16 @@ subroutine emission_probability
               if(gas_capgrey(i)<=0d0) then
 !                gas_emitprob(ig,i) = 0d0  !-- not necessary
               else
-                 gas_emitprob(ig,i) = 15d0*specint(x1,x2,3)*gas_cap(ig,i)/ &
+!-- use the same specint resolution as in opacity_planckmean!
+                 gas_emitprob(ig,i) = 15d0*specint(x1,x2,3,10)*gas_cap(ig,i)/ &
                       (gas_capgrey(i)*pc_pi**4)
               endif
            enddo !ig
         enddo !i
      endif
   endif
+
+  call time(t1)
+  call timereg(t_emitp,t1-t0)
 
 end subroutine emission_probability

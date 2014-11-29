@@ -12,13 +12,14 @@ c-- one-time events
       real*8 :: t_setup
       real*8 :: t_all
 c
-      integer,private,parameter :: mreg = 16
+      integer,private,parameter :: mreg = 17
       real*8,private,target :: registers(3,mreg)
 c
 c-- global-flow time registers:
-      real*8,pointer :: t_gasupd(:) !update gas grid
+      real*8,pointer :: t_gasupd(:) !update gas
       real*8,pointer :: t_eos(:) !equation of state
-      real*8,pointer :: t_opac(:) !bound-bound opacity
+      real*8,pointer :: t_emitp(:) !emission probability
+      real*8,pointer :: t_opac(:) !all opacity
       real*8,pointer :: t_bb(:) !bound-bound opacity
       real*8,pointer :: t_bf(:) !bound-free opacity
       real*8,pointer :: t_ff(:) !bound-free opacity
@@ -45,24 +46,25 @@ c
       subroutine timing_init
 c     ----------------------
       implicit none
-      t_gasupd => registers(:,1) !update gas grid
-      t_eos =>    registers(:,2)   !equation of state
-      t_opac =>   registers(:,3)    !bound-bound opacity
-      t_bb =>     registers(:,4)    !bound-bound opacity
-      t_bf =>     registers(:,5)    !bound-free opacity
-      t_ff =>     registers(:,6)    !bound-free opacity
+      t_gasupd => registers(:,1)
+      t_eos =>    registers(:,2)
+      t_emitp =>  registers(:,3)
+      t_opac =>   registers(:,4)
+      t_bb =>     registers(:,5)
+      t_bf =>     registers(:,6)
+      t_ff =>     registers(:,7)
 c--
-      t_mpibcast => registers(:,7)
-      t_mpigamma => registers(:,8)
-      t_mpireduc => registers(:,9)
+      t_mpibcast => registers(:,8)
+      t_mpigamma => registers(:,9)
+      t_mpireduc => registers(:,10)
 c--
-      t_pcktgam =>      registers(:,10)
-      t_pcktmin =>      registers(:,11)  !collect the max runtimes across all ranks
-      t_pcktmea =>      registers(:,12)  !collect the mean runtimes across all ranks
-      t_pcktmax =>      registers(:,13)  !collect the min runtimes across all ranks
-      t_pcktnpckt =>    registers(:,14)
-      t_pcktnddmc =>    registers(:,15)
-      t_pcktnimc =>     registers(:,16)
+      t_pcktgam =>      registers(:,11)
+      t_pcktmin =>      registers(:,12)  !collect the max runtimes across all ranks
+      t_pcktmea =>      registers(:,13)  !collect the mean runtimes across all ranks
+      t_pcktmax =>      registers(:,14)  !collect the min runtimes across all ranks
+      t_pcktnpckt =>    registers(:,15)
+      t_pcktnddmc =>    registers(:,16)
+      t_pcktnimc =>     registers(:,17)
       end subroutine timing_init
 c
 c
@@ -103,7 +105,7 @@ c-- write output on master rank only
        if(istat/=0) stop 'timing_timestep: file open error'
 c-- header
        if(.not.lexist) then
-         write(4,'("#",30a12)') 't_gasupd','t_eos',
+         write(4,'("#",30a12)') 't_gasupd','t_eos','t_emitp',
      &   't_opac','t_bb','t_bf','t_ff',
      &   't_mpibcast','t_mpigamma','t_mpireduc',
      &   't_pgam','t_pmin','t_pmean','t_pmax',

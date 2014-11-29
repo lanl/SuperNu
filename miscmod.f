@@ -21,10 +21,11 @@ c
       character(len(input_string)) :: output_string
       end function lcase
 c
-      elemental function specint(t1,t2,n) result(ss)
+      elemental function specint(t1,t2,n,m) result(ss)
       real*8 :: ss
-      integer, intent(in) :: n
-      real*8, intent(in) :: t1, t2
+      integer,intent(in) :: n
+      real*8,intent(in) :: t1,t2
+      integer,intent(in),optional :: m
       end function specint
 
       end interface
