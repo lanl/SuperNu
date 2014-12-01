@@ -56,24 +56,24 @@ subroutine write_output
 !-- flux arrays
 !==============
   open(unit=4,file='output.Lum',status=fstat,position='append',recl=reclenf)
-  do j=1,flx_nmu
   do k=1,flx_nom
+  do j=1,flx_nmu
      write(4,'(1p,10000e12.4)') merge(flx_luminos(:,j,k),0d0,flx_luminos(:,j,k)>1d-99) !prevent fortran number truncation, e.g. 1.1234-123
   enddo
   enddo
   close(4)
 
   open(unit=4,file='output.LumNum',status=fstat,position='append',recl=reclenf)
-  do j=1,flx_nmu
   do k=1,flx_nom
+  do j=1,flx_nmu
      write(4,'(10000i12)') flx_lumnum(:,j,k)
   enddo
   enddo
   close(4)
 
   open(unit=4,file='output.devLum',status=fstat,position='append',recl=reclenf)
-  do j=1,flx_nmu
   do k=1,flx_nom
+  do j=1,flx_nmu
      write(4,'(1p,10000e12.4)') flx_lumdev(:,j,k)/flx_luminos(:,j,k)
   enddo
   enddo
@@ -81,8 +81,8 @@ subroutine write_output
 !
 !-- gamma flux
   open(unit=4,file='output.gamLum',status=fstat,position='append',recl=reclenf)
-  do j=1,flx_nmu
   do k=1,flx_nom
+  do j=1,flx_nmu
      write(4,'(1p,10000e12.4)') merge(flx_gamluminos(j,k),0d0,flx_gamluminos(j,k)>1d-99) !prevent fortran number truncation, e.g. 1.1234-123
   enddo
   enddo
@@ -92,48 +92,48 @@ subroutine write_output
 !-- grid arrays
 !==============
   open(unit=4,file='output.methodswap',status=fstat,position='append',recl=reclen2)
-  do j=1,grd_ny
   do k=1,grd_nz
+  do j=1,grd_ny
      write(4,'(10000i12)') grd_methodswap(:,j,k)
   enddo
   enddo
   close(4)
 
   open(unit=4,file='output.temp',status=fstat,position='append',recl=reclen2)
-  do j=1,grd_ny
   do k=1,grd_nz
+  do j=1,grd_ny
      write(4,'(1p,10000e12.4)') grd_temp(:,j,k)
   enddo
   enddo
   close(4)
 
   open(unit=4,file='output.grd_fcoef',position='append',recl=reclen2)
-  do j=1,grd_ny
   do k=1,grd_nz
+  do j=1,grd_ny
      write(4,'(1p,10000e12.4)') grd_fcoef(:,j,k)
   enddo
   enddo
   close(4)
 
   open(unit=4,file='output.eraddens',position='append',recl=reclen2)
-  do j=1,grd_ny
   do k=1,grd_nz
+  do j=1,grd_ny
      write(4,'(1p,10000e12.4)') grd_eraddens(:,j,k)/grd_vol(:,j,k)
   enddo
   enddo
   close(4)
 
   open(unit=4,file='output.gamdep',position='append',recl=reclen2)
-  do j=1,grd_ny
   do k=1,grd_nz
+  do j=1,grd_ny
      write(4,'(1p,10000e12.4)') grd_edepgam(:,j,k)
   enddo
   enddo
   close(4)
 
   open(unit=4,file='output.capgrey',position='append',recl=reclen2)
-  do j=1,grd_ny
   do k=1,grd_nz
+  do j=1,grd_ny
      write(4,'(1p,10000e12.4)') grd_capgrey(:,j,k)
   enddo
   enddo
