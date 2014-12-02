@@ -49,12 +49,13 @@ c-- adopt partial masses from input file
       elseif(.not.in_novolsrc) then
         mass0fr(28,:) = 1d0 !stable+unstable Ni abundance
         mass0fr(-1,:) = 1d0
-      else
-       stop 'gg_setup: no input.str and in_novolsrc=true!'
+!      else
+!       stop 'gg_setup: no input.str and in_novolsrc=true!'
       endif
 c
 c-- convert mass fractions to # atoms
-      call massfr2natomfr(mass0fr)
+      if(.not.in_noreadstruct.or..not.in_novolsrc) 
+     &     call massfr2natomfr(mass0fr)
 c
 c-- output
 C$$$      write(6,*) 'mass fractions'

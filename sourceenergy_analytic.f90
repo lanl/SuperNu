@@ -95,6 +95,9 @@ subroutine sourceenergy_analytic
               endif
            enddo
            enddo
+!-- adjusting bulk source energy
+!           grd_emitex=grd_emitex*in_srcmax*tsp_dt*pc_pi43*help**3 / &
+!                sum(grd_emitex)
 
 !-- 3D
         case(3)
@@ -126,6 +129,9 @@ subroutine sourceenergy_analytic
            enddo
            enddo
            enddo
+!-- adjusting bulk source energy
+!           grd_emitex=grd_emitex*in_srcmax*tsp_dt*pc_pi43*help**3 / &
+!                sum(grd_emitex)
         endselect
      endif
 !-- no temp source for heav (matsrc=0.0)

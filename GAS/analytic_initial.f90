@@ -2,6 +2,7 @@ subroutine analytic_initial
 
   use gridmod
   use gasmod
+  use timestepmod
   use inputparmod
   use physconstmod
   use manufacmod
@@ -21,6 +22,7 @@ subroutine analytic_initial
   trad = in_tempradinit
 !
 !-- map radiation temperature to grd_evolinit
+  call grid_volume(in_igeom,grd_isvelocity,tsp_t)
   grd_evolinit = pc_acoef*trad**4 * grd_vol
 !--
 !
