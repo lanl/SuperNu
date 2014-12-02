@@ -139,6 +139,14 @@ subroutine write_output
   enddo
   close(4)
 
+  open(unit=4,file='output.sig',position='append',recl=reclen2)
+  do k=1,grd_nz
+  do j=1,grd_ny
+     write(4,'(1p,10000e12.4)') grd_sig(:,j,k)
+  enddo
+  enddo
+  close(4)
+
 !
 !-- after the first iteration open files in append mode
   lfirst = .false.
