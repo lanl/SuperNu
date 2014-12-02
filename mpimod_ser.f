@@ -32,9 +32,11 @@ c
 ************************************************************************
 c
       allocate(str_massdd(ncell))
-      if(str_nabund>0) allocate(str_massfrdd(str_nabund,ncell))
-      str_massdd = reshape(str_mass,[ncell])
-      str_massfrdd = reshape(str_massfr,[str_nabund,ncell])!}}}
+      if(str_nabund>0) then
+       allocate(str_massfrdd(str_nabund,ncell))
+       str_massfrdd = reshape(str_massfr,[str_nabund,ncell])
+      endif
+      str_massdd = reshape(str_mass,[ncell]) !}}}
       end subroutine scatter_inputstruct
 c
 c
