@@ -79,7 +79,7 @@ program supernu
 !
 !-- read input structure
     if(.not.in_noreadstruct.and.in_isvelocity) then
-      call read_inputstr(in_igeom,in_ndim)
+      call read_inputstr(in_igeom,in_ndim,in_voidcorners)
     else
 !== generate_inputstr development in progress
       call generate_inputstr(in_igeom)

@@ -33,6 +33,7 @@ c==================
       logical :: in_noreadstruct = .false.
 c-- special grid
       logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
+      logical :: in_voidcorners = .false.  !zero mass in cells outside central sphere in domain
 c-- specify the atmospheric stratification
       real*8 :: in_velout = 0d0  !cm/s, velocity of outer bound
       real*8 :: in_totmass = 0d0  !g
@@ -130,7 +131,7 @@ c
 c-- runtime parameter namelist
       namelist /inputpars/
      & in_igeom,in_ndim,
-     & in_isvelocity,in_novolsrc,
+     & in_isvelocity,in_voidcorners,in_novolsrc,
      & in_lx,in_ly,in_lz,
      & in_ng,in_ngs,in_wldex,in_wlmin,in_wlmax,
      & in_totmass,in_velout,
@@ -216,6 +217,7 @@ c
       call insertr(in_flx_wlmax,in_r,ir)
       call insertl(in_noreadstruct,in_l,il)
       call insertl(in_isvelocity,in_l,il)
+      call insertl(in_voidcorners,in_l,il)
       call insertr(in_velout,in_r,ir)
       call insertr(in_totmass,in_r,ir)
       call insertc(in_dentype,in_c,ic)
@@ -405,6 +407,8 @@ c
        if(in_velout>0d0) 
      &      stop 'static grid: use in_lx,in_ly,in_lz, not in_velout'
       endif
+c
+      if(in_voidcorners .and. in_igeom==1) stop 'voidcorners && igeom=1'
 c
       if(in_ng==0) then
        if(in_wldex<1) stop 'in_wldex invalid'

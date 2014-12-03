@@ -20,6 +20,9 @@ c-- domain decomposition
 c
       character(8),allocatable,private :: str_abundlabl(:) !(nabund)
 c
+      integer,private :: nx,ny,nz
+      integer,private :: igeom
+c
       save
       public
 c
@@ -27,24 +30,32 @@ c
 c
 c
 c
-      subroutine read_inputstr(igeom,ndim)
-c     -----------------------------------!{{{
+      subroutine read_inputstr(igeomin,ndim,lvoidcorners)
+c     ---------------------------------------------------!{{{
       use physconstmod
       use gasmod, only:gas_ini56,gas_ico56
       use miscmod
       implicit none
-      integer,intent(in) :: igeom
+      integer,intent(in) :: igeomin
       integer,intent(in) :: ndim(3)
+      logical,intent(in) :: lvoidcorners
 ************************************************************************
 * Read the input structure file
 ************************************************************************
-      integer :: i,ierr,nx,ny,nz,nx_r,ny_r,nz_r,ini56,nvar,ncol,imass
+      integer :: i,j,k,ierr,nx_r,ny_r,nz_r,ini56,nvar,ncol,imass,nvoid
       character(2) :: dmy
       character(8),allocatable :: labl(:)
       real*8,allocatable :: raw(:,:)
       real*8 :: mni56
+      real*8 :: r,rs
+c-- statement functions
+      real*8 :: x,y,z
+      x(i) = .5d0*(str_xleft(i+1) + str_xleft(i))
+      y(i) = .5d0*(str_yleft(i+1) + str_yleft(i))
+      z(i) = .5d0*(str_zleft(i+1) + str_zleft(i))
 c
 c-- copy
+      igeom = igeomin
       nx = ndim(1)
       ny = ndim(2)
       nz = ndim(3)
@@ -103,6 +114,8 @@ c-- second dim
        do i=1,ny
         str_yleft(i+1) = raw(4,nx*(i-1)+1)
        enddo
+      else
+       str_yleft = 0d0
       endif
 c-- third dim
       if(igeom>2) then
@@ -110,6 +123,8 @@ c-- third dim
        do i=1,nz
         str_zleft(i+1) = raw(6,nx*ny*(i-1)+1)
        enddo
+      else
+       str_zleft = 0d0
       endif
 c-- var pointers
       imass = 0
@@ -128,6 +143,32 @@ c-- close file
 c
 c-- convert abundlabl to element codes
       call elnam2elcode(ini56)
+c
+c
+c-- Zero out the cell mass in the corners of the domain
+c======================================================
+c-- sphere radius
+      if(igeom>1) rs = min(str_xleft(nx+1),str_yleft(ny+1))
+      if(igeom>2) rs = min(rs,str_zleft(nz+1))
+c
+c-- void cells
+      nvoid = 0
+      if(lvoidcorners .and. igeom>1) then
+       do k=1,nz
+       do j=1,ny
+       do i=1,nx
+        r = sqrt(x(i)**2 + y(j)**2 + z(k)**2)
+        if(r>rs) then
+         nvoid = nvoid + 1
+         str_mass(i,j,k) = 0d0
+        endif
+       enddo
+       enddo
+       enddo
+       write(6,*) '# corner cells voided:', nvoid
+      endif !lvoidcorners
+c
+c-- output
 c
 c-- ni56 mass
       if(ini56>0) then
@@ -152,13 +193,14 @@ c!}}}
 c
 c
 c
-      subroutine generate_inputstr(igeom)
+      subroutine generate_inputstr(igeomin)
 c     ---------------------------------------------!{{{
       implicit none
-      integer,intent(in) :: igeom
+      integer,intent(in) :: igeomin
 ************************************************************************
 * wrapper around routines for different geometries
 ************************************************************************
+      igeom = igeomin
       select case(igeom)
       case(1)
        call generate_inputstr1
@@ -186,11 +228,13 @@ c
 * if in_noreadstruct==.true.
 ************************************************************************
       real*8,allocatable :: rout(:) !(nx+1)
-      integer :: i,nx
+      integer :: i
       real*8 :: help, dx
 c
 c-- 1D size
       nx = in_ndim(1)
+      ny = 1
+      nz = 1
 c
 c-- verifications (input.par)
       if(in_velout<=0d0.and.in_isvelocity)
@@ -244,12 +288,13 @@ c
 ************************************************************************
       real*8,allocatable :: xout(:) !(nx+1)
       real*8,allocatable :: yout(:) !(ny+1)
-      integer :: i,j,nx,ny
+      integer :: i,j
       real*8 :: helpx,helpy, dx,dy,rmax
 c
 c-- 2D size
       nx = in_ndim(1)
       ny = in_ndim(2)
+      nz = 1
 c
 c-- verifications (input.par)
       if(in_velout<=0d0.and.in_isvelocity)
@@ -347,7 +392,7 @@ c
       real*8,allocatable :: xout(:) !(nx+1)
       real*8,allocatable :: yout(:) !(ny+1)
       real*8,allocatable :: zout(:) !(nz+1)
-      integer :: i,j,k,nx,ny,nz
+      integer :: i,j,k
       real*8 :: helpx,helpy,helpz, dx,dy,dz,rmax
 c
 c-- 3D size
