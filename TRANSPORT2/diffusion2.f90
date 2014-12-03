@@ -397,7 +397,7 @@ subroutine diffusion2(ptcl,isvacant)
 !-- transforming wavelength to lab
            wl = wl*(1d0-dirdotu*cinv)
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+e*(1d-help)
+           tot_evelo=tot_evelo+e*(1d0-help)
 !
 !-- transforming energy weights to lab
            e = e*help
@@ -486,7 +486,7 @@ subroutine diffusion2(ptcl,isvacant)
            om = atan2(sqrt(1d0-mu**2)*sin(om), &
                 sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming mu to lab
-           mu = (mu+y*cinv)/elabfact
+           mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
            if(mu>1d0) then
               mu = 1d0
            elseif(mu<-1d0) then
