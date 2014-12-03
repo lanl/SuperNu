@@ -391,14 +391,17 @@ subroutine diffusion2(ptcl,isvacant)
            endif
 !-- transforming azimuthal angle to lab
            if(om<0d0) om=om+pc_pi2
+!-- DIRDOTU LAB RESET
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           help = 1d0/(1d0-dirdotu*cinv)
 !-- transforming wavelength to lab
-           wl = wl/(1d0+dirdotu*cinv)
+           wl = wl*(1d0-dirdotu*cinv)
 !-- velocity effects accounting
-           tot_evelo=tot_evelo-e*dirdotu*cinv
+           tot_evelo=tot_evelo+e*(1d-help)
 !
 !-- transforming energy weights to lab
-           e = e*(1d0+dirdotu*cinv)
-           e0 = e0*(1d0+dirdotu*cinv)
+           e = e*help
+           e0 = e0*help
         endif
 !-- converting to IMC
         ptcl%itype = 1
@@ -480,7 +483,6 @@ subroutine diffusion2(ptcl,isvacant)
         if(om<0d0) om=om+pc_pi2
         if(grd_isvelocity) then
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           elabfact = 1d0+dirdotu*cinv
            om = atan2(sqrt(1d0-mu**2)*sin(om), &
                 sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming mu to lab
@@ -492,14 +494,17 @@ subroutine diffusion2(ptcl,isvacant)
            endif
 !-- transforming om to lab
            if(om<0d0) om=om+pc_pi2
+!-- DIRDOTU LAB RESET
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           help = 1d0/(1d0-dirdotu*cinv)
 !-- transforming wavelength to lab
-           wl = wl/elabfact
+           wl = wl*(1d0-dirdotu*cinv)
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+e*(1d0-elabfact)
+           tot_evelo=tot_evelo+e*(1d0-help)
 !
 !-- transforming energy weights to lab
-           e = e*elabfact
-           e0 = e0*elabfact
+           e = e*help
+           e0 = e0*help
         endif
         if (ix==grd_nx) then
 !-- escaping at ix=nx
@@ -603,7 +608,6 @@ subroutine diffusion2(ptcl,isvacant)
         om = pc_pi2*r1
         if(grd_isvelocity) then
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           elabfact = 1d0+dirdotu*cinv
            om = atan2(sqrt(1d0-mu**2)*sin(om), &
                 sqrt(1d0-mu**2)*cos(om)+x*cinv)
 !-- transforming y-axis direction cosine to lab
@@ -615,14 +619,17 @@ subroutine diffusion2(ptcl,isvacant)
            endif
 !-- transforming om to lab
            if(om<0d0) om=om+pc_pi2
+!-- DIRDOTU LAB RESET
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           help = 1d0/(1d0-dirdotu*cinv)
 !-- transforming wl to lab
-           wl = wl/elabfact
+           wl = wl*(1d0-dirdotu*cinv)
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+e*(1d0-elabfact)
+           tot_evelo=tot_evelo+e*(1d0-help)
 !
 !-- transforming energy weights to lab
-           e = e*elabfact
-           e0 = e0*elabfact
+           e = e*help
+           e0 = e0*help
         endif
         if (iy==1) then
 !-- escaping at iy=1
@@ -739,14 +746,17 @@ subroutine diffusion2(ptcl,isvacant)
            endif
 !-- transforming om to lab
            if(om<0d0) om=om+pc_pi2
+!-- DIRDOTU LAB RESET
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           help = 1d0/(1d0-dirdotu*cinv)
 !-- transforming wl to lab
-           wl = wl/elabfact
+           wl = wl*(1d0-dirdotu*cinv)
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+e*(1d0-elabfact)
+           tot_evelo=tot_evelo+e*(1d0-help)
 !
 !-- transforming energy weights to lab
-           e = e*elabfact
-           e0 = e0*elabfact
+           e = e*help
+           e0 = e0*help
         endif
         if (iy == grd_ny) then
 !-- escaping at iy=ny
@@ -829,14 +839,17 @@ subroutine diffusion2(ptcl,isvacant)
            endif
 !-- transforming azimuthal angle to lab
            if(om<0d0) om=om+pc_pi2
-!-- transforming wavelength to lab
-           wl = wl/(1d0+dirdotu*cinv)
+!-- DIRDOTU LAB RESET
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           help = 1d0/(1d0-dirdotu*cinv)
+!-- transforming wl to lab
+           wl = wl*(1d0-dirdotu*cinv)
 !-- velocity effects accounting
-           tot_evelo = tot_evelo-e*dirdotu*cinv
+           tot_evelo=tot_evelo+e*(1d0-help)
 !
 !-- transforming energy weights to lab
-           e = e*(1d0+dirdotu*cinv)
-           e0 = e0*(1d0+dirdotu*cinv)
+           e = e*help
+           e0 = e0*help
         endif
      endif
 

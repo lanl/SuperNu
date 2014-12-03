@@ -485,14 +485,19 @@ subroutine diffusion3(ptcl,isvacant)
 !-- transforming om to lab
            om = atan2(eta+y*cinv,xi+x*cinv)
            if(om<0d0) om=om+pc_pi2
+!-- ELABFACT LAB RESET
+           xi = sqrt(1d0-mu**2)*cos(om)
+           eta= sqrt(1d0-mu**2)*sin(om)
+           elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
+           help = 1d0/elabfact
 !-- transforming wl to lab
-           wl = wl/elabfact
+           wl = wl*elabfact
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+e*(1d0-elabfact)
+           tot_evelo=tot_evelo+e*(1d0-help)
 !
 !-- transforming energy weights to lab
-           e = e*elabfact
-           e0 = e0*elabfact
+           e = e*help
+           e0 = e0*help
         endif
         if(ix==1) then
 !-- escaping at ix=1
@@ -623,14 +628,19 @@ subroutine diffusion3(ptcl,isvacant)
 !-- transforming om to lab
            om = atan2(eta+y*cinv,xi+x*cinv)
            if(om<0d0) om=om+pc_pi2
+!-- ELABFACT LAB RESET
+           xi = sqrt(1d0-mu**2)*cos(om)
+           eta= sqrt(1d0-mu**2)*sin(om)
+           elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
+           help = 1d0/elabfact
 !-- transforming wl to lab
-           wl = wl/elabfact
+           wl = wl*elabfact
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+e*(1d0-elabfact)
+           tot_evelo=tot_evelo+e*(1d0-help)
 !
 !-- transforming energy weights to lab
-           e = e*elabfact
-           e0 = e0*elabfact
+           e = e*help
+           e0 = e0*help
         endif
         if(ix==grd_nx) then
 !-- escaping at ix=nx
@@ -761,14 +771,19 @@ subroutine diffusion3(ptcl,isvacant)
 !-- transforming om to lab
            om = atan2(eta+y*cinv,xi+x*cinv)
            if(om<0d0) om=om+pc_pi2
+!-- ELABFACT LAB RESET
+           xi = sqrt(1d0-mu**2)*cos(om)
+           eta= sqrt(1d0-mu**2)*sin(om)
+           elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
+           help = 1d0/elabfact
 !-- transforming wl to lab
-           wl = wl/elabfact
+           wl = wl*elabfact
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+e*(1d0-elabfact)
+           tot_evelo=tot_evelo+e*(1d0-help)
 !
 !-- transforming energy weights to lab
-           e = e*elabfact
-           e0 = e0*elabfact
+           e = e*help
+           e0 = e0*help
         endif
         if(iy==1) then
 !-- escaping at iy=1
@@ -899,14 +914,19 @@ subroutine diffusion3(ptcl,isvacant)
 !-- transforming om to lab
            om = atan2(eta+y*cinv,xi+x*cinv)
            if(om<0d0) om=om+pc_pi2
+!-- ELABFACT LAB RESET
+           xi = sqrt(1d0-mu**2)*cos(om)
+           eta= sqrt(1d0-mu**2)*sin(om)
+           elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
+           help = 1d0/elabfact
 !-- transforming wl to lab
-           wl = wl/elabfact
+           wl = wl*elabfact
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+e*(1d0-elabfact)
+           tot_evelo=tot_evelo+e*(1d0-help)
 !
 !-- transforming energy weights to lab
-           e = e*elabfact
-           e0 = e0*elabfact
+           e = e*help
+           e0 = e0*help
         endif
         if(iy==grd_ny) then
 !-- escaping at iy=ny
@@ -1036,14 +1056,19 @@ subroutine diffusion3(ptcl,isvacant)
 !-- transforming om to lab
            om = atan2(eta+y*cinv,xi+x*cinv)
            if(om<0d0) om=om+pc_pi2
+!-- ELABFACT LAB RESET
+           xi = sqrt(1d0-mu**2)*cos(om)
+           eta= sqrt(1d0-mu**2)*sin(om)
+           elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
+           help = 1d0/elabfact
 !-- transforming wl to lab
-           wl = wl/elabfact
+           wl = wl*elabfact
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+e*(1d0-elabfact)
+           tot_evelo=tot_evelo+e*(1d0-help)
 !
 !-- transforming energy weights to lab
-           e = e*elabfact
-           e0 = e0*elabfact
+           e = e*help
+           e0 = e0*help
         endif
         if(iz==1) then
 !-- escaping at iz=1
@@ -1173,14 +1198,19 @@ subroutine diffusion3(ptcl,isvacant)
 !-- transforming om to lab
            om = atan2(eta+y*cinv,xi+x*cinv)
            if(om<0d0) om=om+pc_pi2
+!-- ELABFACT LAB RESET
+           xi = sqrt(1d0-mu**2)*cos(om)
+           eta= sqrt(1d0-mu**2)*sin(om)
+           elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
+           help = 1d0/elabfact
 !-- transforming wl to lab
-           wl = wl/elabfact
+           wl = wl*elabfact
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+e*(1d0-elabfact)
+           tot_evelo=tot_evelo+e*(1d0-help)
 !
 !-- transforming energy weights to lab
-           e = e*elabfact
-           e0 = e0*elabfact
+           e = e*help
+           e0 = e0*help
         endif
         if(iz==grd_nz) then
 !-- escaping at iz=nz
@@ -1265,14 +1295,19 @@ subroutine diffusion3(ptcl,isvacant)
            endif
            om = atan2(eta+y*cinv,xi+x*cinv)
            if(om<0d0) om=om+pc_pi2
-!-- transforming wavelength to lab
-           wl = wl/elabfact
+!-- ELABFACT LAB RESET
+           xi = sqrt(1d0-mu**2)*cos(om)
+           eta= sqrt(1d0-mu**2)*sin(om)
+           elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
+           help = 1d0/elabfact
+!-- transforming wl to lab
+           wl = wl*elabfact
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+e*(1d0-elabfact)
+           tot_evelo=tot_evelo+e*(1d0-help)
 !
 !-- transforming energy weights to lab
-           e = e*elabfact
-           e0 = e0*elabfact
+           e = e*help
+           e0 = e0*help
         endif
      endif
 
