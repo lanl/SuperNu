@@ -22,7 +22,7 @@ subroutine particle_advance_gamgrey(nmpi)
   integer,pointer :: ix, iy, iz
   real*8,pointer :: x,y,z,mu,om,e,e0
   real*8 :: t0,t1  !timing
-  real*8 :: labfact, cmffact, mu1, mu2
+  real*8 :: labfact, cmffact, mu1, mu2, gm
   real*8 :: etot,pwr
   real*8 :: om0, mu0, x0, y0, z0
 !
