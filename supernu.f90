@@ -194,12 +194,12 @@ program supernu
      call sourcenumbers         !number of source prt_particles per cell
 
      if(prt_nnew>0) then
-       allocate(prt_vacantarr(prt_nnew))
-       call vacancies             !Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
-       call boundary_source       !properties of prt_particles on domain boundary
-       call interior_source       !properties of prt_particles emitted in domain interior
-       deallocate(prt_vacantarr)
-    endif
+        allocate(prt_vacantarr(prt_nnew))
+        call vacancies             !Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
+        call boundary_source       !properties of prt_particles on domain boundary
+        call interior_source       !properties of prt_particles emitted in domain interior
+        deallocate(prt_vacantarr)
+     endif
 
 !-- advance particles
      if(tsp_it<=tsp_ntres) where(.not.prt_isvacant) prt_particles%t = tsp_t !reset particle clocks
@@ -241,7 +241,7 @@ program supernu
            call write_restart_randcount !rand() count
            call write_restart_particles !particle properties of current time step
         endif
-!!}} }
+!!}}}
      endif !impi
 
 !-- reset rand counters
