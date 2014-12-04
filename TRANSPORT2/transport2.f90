@@ -22,7 +22,7 @@ subroutine transport2(ptcl,isvacant)
 
   logical :: loutx,louty
   integer :: ig, imu, ihelp
-  real*8 :: elabfact, dirdotu, mu0
+  real*8 :: elabfact, dirdotu, mu0, gm
   real*8 :: dtinv, thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,ddop,d
   real*8 :: rold, zold, omold
@@ -240,18 +240,15 @@ subroutine transport2(ptcl,isvacant)
      if(grd_isvelocity) then
 !-- calculating transformation factors
         dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-        om = atan2(sqrt(1d0-mu**2)*sin(om), &
-             sqrt(1d0-mu**2)*cos(om)+x/pc_c)
-!-- transforming to lab:
-!-- y-cosine
-        mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-        if(mu>1d0) then
-           mu = 1d0
-        elseif(mu<-1d0) then
-           mu = -1d0
-        endif
+        gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
 !-- azimuthal direction angle
+        om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+             sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
+             (1d0+gm*dirdotu*cinv/(gm+1d0)))
         if(om<0d0) om=om+pc_pi2
+!-- y-projection
+        mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
+             (gm*(1d0+dirdotu*cinv))
 !-- recalculating dirdotu
         dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
      endif
@@ -375,15 +372,15 @@ subroutine transport2(ptcl,isvacant)
      else
 !-- DDMC in adjacent cell
         if(grd_isvelocity) then
-           om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                sqrt(1d0-mu**2)*cos(om)-x*cinv)
+           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+!-- azimuthal direction angle
+           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                sqrt(1d0-mu**2)*cos(om)-gm*x*cinv * &
+                (1d0-gm*dirdotu*cinv/(gm+1d0)))
            if(om<0d0) om=om+pc_pi2
-           mu = (mu-y*cinv)/elabfact
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
+!-- y-projection
+           mu = (mu-gm*y*cinv*(1d0-gm*dirdotu*cinv/(1d0+gm))) / &
+                (gm*(1d0-dirdotu*cinv))
         endif
 !-- x-cosine
         mu0 = sqrt(1d0-mu**2)*cos(om)
@@ -416,17 +413,15 @@ subroutine transport2(ptcl,isvacant)
            if(om<0d0) om=om+pc_pi2
            if(grd_isvelocity) then
               dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-              om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                   sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming mu to lab
-              mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-              if(mu>1d0) then
-                 mu = 1d0
-              elseif(mu<-1d0) then
-                 mu = -1d0
-              endif
-!-- transforming om to lab
+              gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+!-- azimuthal direction angle
+              om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                   sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
+                   (1d0+gm*dirdotu*cinv/(gm+1d0)))
               if(om<0d0) om=om+pc_pi2
+!-- y-projection
+              mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
+                   (gm*(1d0+dirdotu*cinv))
            endif
         endif
      endif
@@ -450,13 +445,10 @@ subroutine transport2(ptcl,isvacant)
         iy = iy+ihelp
      else
         if(grd_isvelocity) then
-!-- transforming y-cosine to cmf
-           mu = (mu-y*cinv)/elabfact
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
+           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+!-- y-projection
+           mu = (mu-gm*y*cinv*(1d0-gm*dirdotu*cinv/(1d0+gm))) / &
+                (gm*(1d0-dirdotu*cinv))
         endif
         help = (grd_cap(ig,ix,iy+ihelp,1)+grd_sig(ix,iy+ihelp,1)) * &
              dy(iy+ihelp)*thelp
@@ -484,17 +476,15 @@ subroutine transport2(ptcl,isvacant)
            om = pc_pi2*r1
            if(grd_isvelocity) then
               dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-              om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                   sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming mu to lab
-              mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-              if(mu>1d0) then
-                 mu = 1d0
-              elseif(mu<-1d0) then
-                 mu = -1d0
-              endif
-!-- transforming om to lab
+              gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+!-- azimuthal direction angle
+              om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                   sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
+                   (1d0+gm*dirdotu*cinv/(gm+1d0)))
               if(om<0d0) om=om+pc_pi2
+!-- y-projection
+              mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
+                   (gm*(1d0+dirdotu*cinv))
            endif
         endif
      endif
