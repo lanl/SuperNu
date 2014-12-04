@@ -20,7 +20,7 @@ subroutine initial_particles
   real*8 :: denom2, mu1, mu2
   real*8 :: r1
   real*8 :: wl1,wl2,wl3,wl4
-  real*8 :: cmffact
+  real*8 :: cmffact,gm
 
 !-- helper quantities
   wl1=1d0/grd_wl(grd_ng+1)
@@ -132,17 +132,15 @@ subroutine initial_particles
            y0 = ptcl%y
 !-- 1+dir*v/c
            cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
+           gm = 1d0/sqrt(1d0-(x0**2+y0**2)/pc_c**2)
 !-- om
            ptcl%om = atan2(sqrt(1d0-mu0**2)*sin(om0), &
-                sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
+                sqrt(1d0-mu0**2)*cos(om0)+(gm*x0/pc_c) * &
+                (1d0+gm*(cmffact-1d0)/(gm+1d0)))
            if(ptcl%om<0d0) ptcl%om=ptcl%om+pc_pi2
 !-- mu
-           ptcl%mu = (mu0+y0/pc_c)/cmffact
-           if(ptcl%mu>1d0) then
-              ptcl%mu = 1d0
-           elseif(ptcl%mu<-1d0) then
-              ptcl%mu = -1d0
-           endif
+           ptcl%mu = (mu0+(gm*y0/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
+                (gm*cmffact)
         else
            ptcl%mu = mu0
            ptcl%om = om0

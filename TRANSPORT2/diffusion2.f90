@@ -26,7 +26,7 @@ subroutine diffusion2(ptcl,isvacant)
   real*8 :: r1, r2, thelp, mu0
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus
-  real*8 :: elabfact, dirdotu
+  real*8 :: elabfact, dirdotu, gm
 !-- lumped quantities
   real*8 :: emitlump, speclump
   real*8 :: caplump
@@ -380,17 +380,15 @@ subroutine diffusion2(ptcl,isvacant)
         if(om<0d0) om = om+pc_pi2
         if(grd_isvelocity) then
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming y-axis direction cosine to lab
-           mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
-!-- transforming azimuthal angle to lab
+           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+!-- azimuthal direction angle
+           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
+                (1d0+gm*dirdotu*cinv/(gm+1d0)))
            if(om<0d0) om=om+pc_pi2
+!-- y-projection
+           mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
+                (gm*(1d0+dirdotu*cinv))
 !-- DIRDOTU LAB RESET
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
            help = 1d0/(1d0-dirdotu*cinv)
@@ -483,17 +481,15 @@ subroutine diffusion2(ptcl,isvacant)
         if(om<0d0) om=om+pc_pi2
         if(grd_isvelocity) then
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming mu to lab
-           mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
-!-- transforming om to lab
+           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+!-- azimuthal direction angle
+           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
+                (1d0+gm*dirdotu*cinv/(gm+1d0)))
            if(om<0d0) om=om+pc_pi2
+!-- y-projection
+           mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
+                (gm*(1d0+dirdotu*cinv))
 !-- DIRDOTU LAB RESET
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
            help = 1d0/(1d0-dirdotu*cinv)
@@ -608,17 +604,15 @@ subroutine diffusion2(ptcl,isvacant)
         om = pc_pi2*r1
         if(grd_isvelocity) then
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming y-axis direction cosine to lab
-           mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
-!-- transforming om to lab
+           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+!-- azimuthal direction angle
+           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
+                (1d0+gm*dirdotu*cinv/(gm+1d0)))
            if(om<0d0) om=om+pc_pi2
+!-- y-projection
+           mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
+                (gm*(1d0+dirdotu*cinv))
 !-- DIRDOTU LAB RESET
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
            help = 1d0/(1d0-dirdotu*cinv)
@@ -734,18 +728,15 @@ subroutine diffusion2(ptcl,isvacant)
 !-- doppler and aberration corrections
         if(grd_isvelocity) then
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           elabfact = 1d0+dirdotu*cinv
-           om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming mu to lab
-           mu = (mu+y*cinv)/elabfact
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
-!-- transforming om to lab
+           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+!-- azimuthal direction angle
+           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
+                (1d0+gm*dirdotu*cinv/(gm+1d0)))
            if(om<0d0) om=om+pc_pi2
+!-- y-projection
+           mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
+                (gm*(1d0+dirdotu*cinv))
 !-- DIRDOTU LAB RESET
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
            help = 1d0/(1d0-dirdotu*cinv)
@@ -828,17 +819,15 @@ subroutine diffusion2(ptcl,isvacant)
         if(grd_isvelocity) then
 !-- calculating transformation factors
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           om = atan2(sqrt(1d0-mu**2)*sin(om), &
-                sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming y-axis direction cosine to lab
-           mu = (mu+y/pc_c)/(1d0+dirdotu/pc_c)
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
-!-- transforming azimuthal angle to lab
+           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+!-- azimuthal direction angle
+           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
+                (1d0+gm*dirdotu*cinv/(gm+1d0)))
            if(om<0d0) om=om+pc_pi2
+!-- y-projection
+           mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
+                (gm*(1d0+dirdotu*cinv))
 !-- DIRDOTU LAB RESET
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
            help = 1d0/(1d0-dirdotu*cinv)

@@ -22,7 +22,7 @@ subroutine particle_advance_gamgrey(nmpi)
   integer,pointer :: ix, iy, iz
   real*8,pointer :: x,y,z,mu,om,e,e0
   real*8 :: t0,t1  !timing
-  real*8 :: labfact, cmffact, mu1, mu2
+  real*8 :: labfact, cmffact, mu1, mu2, gm
   real*8 :: etot,pwr
   real*8 :: om0, mu0, x0, y0, z0
 !
@@ -162,17 +162,15 @@ subroutine particle_advance_gamgrey(nmpi)
            y0 = y
 !-- 1+dir*v/c
            cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
+           gm = 1d0/sqrt(1d0-(x**2+y**2)/pc_c**2)
 !-- om
-           om = atan2(sqrt(1d0-mu0**2)*sin(om0), &
-                sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
+           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                sqrt(1d0-mu**2)*cos(om)+(gm*x/pc_c) * &
+                (1d0+gm*(cmffact-1d0)/(gm+1d0)))
            if(om<0d0) om=om+pc_pi2
 !-- mu
-           mu = (mu0+y0/pc_c)/cmffact
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
+           mu = (mu+(gm*y/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
+                (gm*cmffact)
         else
            mu = mu0
            om = om0

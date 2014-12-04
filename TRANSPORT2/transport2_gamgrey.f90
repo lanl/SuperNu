@@ -20,7 +20,7 @@ subroutine transport2_gamgrey(ptcl)
 
   logical :: loutx,louty
   integer :: imu, ihelp
-  real*8 :: elabfact, dirdotu
+  real*8 :: elabfact, dirdotu, gm
   real*8 :: thelp, thelpinv 
   real*8 :: dcol,dbx,dby,d
   real*8 :: rold, zold, omold
@@ -176,18 +176,15 @@ subroutine transport2_gamgrey(ptcl)
      if(grd_isvelocity) then
 !-- calculating transformation factors
         dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-        om = atan2(sqrt(1d0-mu**2)*sin(om), &
-             sqrt(1d0-mu**2)*cos(om)+x*cinv)
-!-- transforming to lab:
-!-- y-cosine
-        mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
-        if(mu>1d0) then
-           mu = 1d0
-        elseif(mu<-1d0) then
-           mu = -1d0
-        endif
+        gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
 !-- azimuthal direction angle
+        om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+             sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
+             (1d0+gm*dirdotu*cinv/(gm+1d0)))
         if(om<0d0) om=om+pc_pi2
+!-- y-projection
+        mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
+             (gm*(1d0+dirdotu*cinv))
 !-- recalculating dirdotu
         dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
      endif
