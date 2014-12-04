@@ -20,7 +20,7 @@ subroutine transport2_gamgrey(ptcl)
 
   logical :: loutx,louty
   integer :: imu, ihelp
-  real*8 :: elabfact, dirdotu
+  real*8 :: elabfact, dirdotu, gm
   real*8 :: thelp, thelpinv 
   real*8 :: dcol,dbx,dby,d
   real*8 :: rold, zold, omold

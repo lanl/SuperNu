@@ -14,7 +14,7 @@ subroutine boundary_source
   real*8 :: r1, r2, P, mu0, x0,y0,z0, esurfpart, wl0, om0
   real*8 :: denom2, wl1, wl2, thelp, mfphelp, help, mu1, mu2
   real*8 :: srftemp = 1d4
-  real*8 :: cmffact, alb,beta,eps
+  real*8 :: cmffact, alb,beta,eps,gm
   type(packet),pointer :: ptcl
   integer, external :: binsrch
   real*8, dimension(grd_ng) :: emitsurfprobg  !surface emission probabilities 
@@ -207,17 +207,15 @@ subroutine boundary_source
         if(lhelp.and.grd_isvelocity) then
 !-- 1+dir*v/c
            cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
-           ptcl%om = atan2(sqrt(1d0-mu0**2)*sin(om0), &
-                sqrt(1d0-mu0**2)*cos(om0)+x0/pc_c)
-!-- mu
-           ptcl%mu = (mu0+y0/pc_c)/cmffact
-           if(ptcl%mu>1d0) then
-              ptcl%mu = 1d0
-           elseif(ptcl%mu<-1d0) then
-              ptcl%mu = -1d0
-           endif
+           gm = 1d0/sqrt(1d0-(x0**2+y0**2)/pc_c**2)
 !-- om
-           if(ptcl%om < 0d0) ptcl%om=ptcl%om+pc_pi2
+           ptcl%om = atan2(sqrt(1d0-mu0**2)*sin(om0), &
+                sqrt(1d0-mu0**2)*cos(om0)+(gm*x0/pc_c) * &
+                (1d0+gm*(cmffact-1d0)/(gm+1d0)))
+           if(ptcl%om<0d0) ptcl%om=ptcl%om+pc_pi2
+!-- mu
+           ptcl%mu = (mu0+(gm*y0/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
+                (gm*cmffact)
         else
            ptcl%mu = mu0
            ptcl%om = om0
