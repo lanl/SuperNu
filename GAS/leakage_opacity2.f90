@@ -15,6 +15,7 @@ subroutine leakage_opacity2
   integer :: i,j,k, ig
   real*8 :: thelp, help, x1, x2
   real*8 :: speclump, specval
+  real*8 :: specarr(grd_ng)
   real*8 :: ppl, ppr
 !-- statement functions
   integer :: l
@@ -40,25 +41,21 @@ subroutine leakage_opacity2
   do i=1,grd_nx
 !
 !-- initializing Planck integral
-     speclump = 0d0
      do ig=1,grd_ng
         x1 = pc_h*pc_c/(grd_wl(ig+1)*pc_kb*grd_temp(i,j,k))
         x2 = pc_h*pc_c/(grd_wl(ig)*pc_kb*grd_temp(i,j,k))
 !-- finding lumpable groups
         if(grd_cap(ig,i,j,k)*min(dx(i),dy(j))*thelp < prt_taulump) cycle
 !-- summing lumpable Planck function integrals
-        speclump = speclump + specint(x1,x2,3,10)
+        specarr(ig) = specint(x1,x2,3,10)
      enddo !ig
-     speclump = 1d0/speclump
+     speclump = 1d0/sum(specarr)
 !-- lumping opacity
      do ig=1,grd_ng
         if(grd_cap(ig,i,j,k)*min(dx(i),dy(j))*thelp < prt_taulump) cycle
 !
-        x1 = pc_h*pc_c/(grd_wl(ig+1)*pc_kb*grd_temp(i,j,k))
-        x2 = pc_h*pc_c/(grd_wl(ig)*pc_kb*grd_temp(i,j,k))
-!
 !-- obtaining spectral weight
-        specval = specint(x1,x2,3,10)
+        specval = specarr(ig)
 !
 !-- calculating inward leakage opacity
         if(i==1) then

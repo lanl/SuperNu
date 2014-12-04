@@ -1,42 +1,42 @@
-      elemental function specint(t1,t2,n,m) result(ss)
-c     ----------------------------------------------
+      elemental function specint(x1,x2,m,nn) result(ss)
+c     -------------------------------------------------
       implicit none
       real*8 :: ss
-      integer,intent(in) :: n
-      real*8,intent(in) :: t1,t2
-      integer,intent(in),optional :: m
+      integer,intent(in) :: m
+      real*8,intent(in) :: x1,x2
+      integer,intent(in),optional :: nn
 !#########################################
-! For n=3, this function integrates normalized
+! For m=3, this function integrates normalized
 ! Planck spectrum from 0 to t
-! Generally, n>=2
+! Generally, m>=2
 !#########################################
-      real*8 :: dx,dd,x
-      integer :: mm,im
-
-      if(present(m)) then
-        mm = m
+      integer :: n,i
+      real*8 :: h,x
+c
+      if (x2 == 0.0) return
+c
+      if(present(nn)) then
+        n = nn
       else
-        mm = 100
+        n = 100
       endif
-
-      dx = (t2-t1)/dble(2*mm)
-      
-      ss = 0.0
-      if (t2 .ne. 0.0) then
-       do im = 1, mm
-        x = (2*im-1)*dx+t1
-        dd = (x**n)/(exp(x)-1.0)
-        ss = ss+4.0*dd*dx/3.0
-       enddo
-       do im = 1, mm-1
-        x = 2*im*dx+t1
-        dd = (x**n)/(exp(x)-1.0)
-        ss = ss+2.0*dd*dx/3.0
-       enddo
-       dd = (t2**n)/(exp(t2)-1.0)
-       ss = ss+dx*dd/3.0
-      endif
-      !x = (t2+t1)/2d0
-      !dd = (x**n)/(exp(x)-1d0)
-      !ss = (t2-t1)*dd
+c
+      h = (x2-x1)/n
+c      
+      ss = x1**m/(exp(x1) - 1d0) + x2**m/(exp(x2) - 1d0)
+c
+      do i=1,n,2
+       x = x1 + i*h
+       ss = ss + 4d0*x**m/(exp(x) - 1d0)
+      enddo
+      do i=2,n-1,2
+       x = x1 + i*h
+       ss = ss + 2d0*x**m/(exp(x) - 1d0)
+      enddo
+c
+      ss = ss*h/3d0
+c
+      !x = (x2+x1)/2d0
+      !dd = (x**m)/(exp(x)-1d0)
+      !ss = (x2-x1)*dd
       end function specint
