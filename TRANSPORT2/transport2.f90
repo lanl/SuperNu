@@ -27,7 +27,6 @@ subroutine transport2(ptcl,isvacant)
   real*8 :: dcen,dcol,dthm,dbx,dby,ddop,d
   real*8 :: rold, zold, omold
   real*8 :: r1, r2, denom2
-  real*8 :: mur,omr,mur0,vx,vy
 
   integer,pointer :: ix,iy
   real*8,pointer :: x,y,mu,om,e,e0,wl
@@ -238,25 +237,23 @@ subroutine transport2(ptcl,isvacant)
      r1 = rand()
      om = pc_pi2*r1
 !-- checking velocity dependence
-     if(grd_isvelocity.and..not.(x==0d0.and.y==0d0)) then
-!-- EXPERIMENTAL
-!-- finding comoving direction wrt velocity
-        help=1d0/sqrt(x**2+y**2)
-        vx=x*help
-        vy=y*help
-        mur0=mu*vy+sqrt(1d0-mu**2)*cos(om)*vx
-        omr=atan2(mu*vx-sqrt(1d0-mu**2)*cos(om)*vy , &
-             sqrt(1d0-mu**2)*sin(om))
-        if(omr<0d0) omr=omr+pc_pi2
-!-- transforming to lab
-        help=1d0/help
-        mur = (mur0+help*cinv)/(1d0+mur0*help*cinv)
-        mu=sqrt(1d0-mur**2)*sin(omr)*vx+mur*vy
-        om=atan2(sqrt(1d0-mur**2)*cos(omr) , &
-             sqrt(max(1d0-mu**2-(1d0-mur**2)*cos(omr)**2,0d0)))
+     if(grd_isvelocity) then
+!-- calculating transformation factors
+        dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+        om = atan2(sqrt(1d0-mu**2)*sin(om), &
+             sqrt(1d0-mu**2)*cos(om)+x/pc_c)
+!-- transforming to lab:
+!-- y-cosine
+        mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
+        if(mu>1d0) then
+           mu = 1d0
+        elseif(mu<-1d0) then
+           mu = -1d0
+        endif
+!-- azimuthal direction angle
         if(om<0d0) om=om+pc_pi2
-!-- DIRDOTU LAB RESET
-        dirdotu=mur*sqrt(x**2+y**2)
+!-- recalculating dirdotu
+        dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
      endif
   elseif(any([dbx,dby]==d)) then
 !-- checking if escapted domain
@@ -377,23 +374,16 @@ subroutine transport2(ptcl,isvacant)
         ix = ix+ihelp
      else
 !-- DDMC in adjacent cell
-        if(grd_isvelocity.and..not.(x==0d0.and.y==0d0)) then
-!-- EXPERIMENTAL
-!-- finding lab direction wrt velocity
-           help=1d0/sqrt(x**2+y**2)
-           vx=x*help
-           vy=y*help
-           mur=mu*vy+sqrt(1d0-mu**2)*cos(om)*vx
-           omr=atan2(mu*vx-sqrt(1d0-mu**2)*cos(om)*vy , &
-                sqrt(1d0-mu**2)*sin(om))
-           if(omr<0d0) omr=omr+pc_pi2
-!-- transforming to cmf
-           help=1d0/help
-           mur0 = (mur-help*cinv)/(1d0-mur*help*cinv)
-           mu=sqrt(1d0-mur0**2)*sin(omr)*vx+mur0*vy
-           om=atan2(sqrt(1d0-mur0**2)*cos(omr) , &
-                sqrt(max(1d0-mu**2-(1d0-mur0**2)*cos(omr)**2,0d0)))
+        if(grd_isvelocity) then
+           om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                sqrt(1d0-mu**2)*cos(om)-x*cinv)
            if(om<0d0) om=om+pc_pi2
+           mu = (mu-y*cinv)/elabfact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
+           endif
         endif
 !-- x-cosine
         mu0 = sqrt(1d0-mu**2)*cos(om)
@@ -424,22 +414,18 @@ subroutine transport2(ptcl,isvacant)
 !-- resampling azimuthal
            om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
            if(om<0d0) om=om+pc_pi2
-           if(grd_isvelocity.and..not.(x==0d0.and.y==0d0)) then
-!-- EXPERIMENTAL
-!-- finding comoving direction wrt velocity
-              help=1d0/sqrt(x**2+y**2)
-              vx=x*help
-              vy=y*help
-              mur0=mu*vy+sqrt(1d0-mu**2)*cos(om)*vx
-              omr=atan2(mu*vx-sqrt(1d0-mu**2)*cos(om)*vy , &
-                   sqrt(1d0-mu**2)*sin(om))
-              if(omr<0d0) omr=omr+pc_pi2
-!-- transforming to lab
-              help=1d0/help
-              mur = (mur0+help*cinv)/(1d0+mur0*help*cinv)
-              mu=sqrt(1d0-mur**2)*sin(omr)*vx+mur*vy
-              om=atan2(sqrt(1d0-mur**2)*cos(omr) , &
-                   sqrt(max(1d0-mu**2-(1d0-mur**2)*cos(omr)**2,0d0)))
+           if(grd_isvelocity) then
+              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+              om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                   sqrt(1d0-mu**2)*cos(om)+x*cinv)
+!-- transforming mu to lab
+              mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
+              if(mu>1d0) then
+                 mu = 1d0
+              elseif(mu<-1d0) then
+                 mu = -1d0
+              endif
+!-- transforming om to lab
               if(om<0d0) om=om+pc_pi2
            endif
         endif
@@ -463,20 +449,14 @@ subroutine transport2(ptcl,isvacant)
 !-- IMC in adjacent cell
         iy = iy+ihelp
      else
-        if(grd_isvelocity.and..not.(x==0d0.and.y==0d0)) then
-!-- EXPERIMENTAL
-!-- finding lab direction wrt velocity
-           help=1d0/sqrt(x**2+y**2)
-           vx=x*help
-           vy=y*help
-           mur=mu*vy+sqrt(1d0-mu**2)*cos(om)*vx
-           omr=atan2(mu*vx-sqrt(1d0-mu**2)*cos(om)*vy , &
-                sqrt(1d0-mu**2)*sin(om))
-           if(omr<0d0) omr=omr+pc_pi2
-!-- transforming to cmf
-           help=1d0/help
-           mur0 = (mur-help*cinv)/(1d0-mur*help*cinv)
-           mu=sqrt(1d0-mur0**2)*sin(omr)*vx+mur0*vy
+        if(grd_isvelocity) then
+!-- transforming y-cosine to cmf
+           mu = (mu-y*cinv)/elabfact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
+           endif
         endif
         help = (grd_cap(ig,ix,iy+ihelp,1)+grd_sig(ix,iy+ihelp,1)) * &
              dy(iy+ihelp)*thelp
@@ -502,22 +482,18 @@ subroutine transport2(ptcl,isvacant)
 !-- resampling azimuthal
            r1 = rand()
            om = pc_pi2*r1
-           if(grd_isvelocity.and..not.(x==0d0.and.y==0d0)) then
-!-- EXPERIMENTAL
-!-- finding comoving direction wrt velocity
-              help=1d0/sqrt(x**2+y**2)
-              vx=x*help
-              vy=y*help
-              mur0=mu*vy+sqrt(1d0-mu**2)*cos(om)*vx
-              omr=atan2(mu*vx-sqrt(1d0-mu**2)*cos(om)*vy , &
-                   sqrt(1d0-mu**2)*sin(om))
-              if(omr<0d0) omr=omr+pc_pi2
-!-- transforming to lab
-              help=1d0/help
-              mur = (mur0+help*cinv)/(1d0+mur0*help*cinv)
-              mu=sqrt(1d0-mur**2)*sin(omr)*vx+mur*vy
-              om=atan2(sqrt(1d0-mur**2)*cos(omr) , &
-                   sqrt(max(1d0-mu**2-(1d0-mur**2)*cos(omr)**2,0d0)))
+           if(grd_isvelocity) then
+              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+              om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                   sqrt(1d0-mu**2)*cos(om)+x*cinv)
+!-- transforming mu to lab
+              mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
+              if(mu>1d0) then
+                 mu = 1d0
+              elseif(mu<-1d0) then
+                 mu = -1d0
+              endif
+!-- transforming om to lab
               if(om<0d0) om=om+pc_pi2
            endif
         endif

@@ -26,7 +26,7 @@ subroutine diffusion2(ptcl,isvacant)
   real*8 :: r1, r2, thelp, mu0
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus
-  real*8 :: dirdotu
+  real*8 :: elabfact, dirdotu
 !-- lumped quantities
   real*8 :: emitlump, speclump
   real*8 :: caplump
@@ -39,7 +39,7 @@ subroutine diffusion2(ptcl,isvacant)
   integer :: glump, gunlump
   integer :: glumps(grd_ng)
   real*8 :: dtinv,capinv(grd_ng)
-  real*8 :: help,mur,omr,mur0,vx,vy
+  real*8 :: help
 
   integer,pointer :: ix,iy
   real*8,pointer :: x,y,mu,om,e,e0,wl
@@ -378,25 +378,21 @@ subroutine diffusion2(ptcl,isvacant)
         mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
         om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
         if(om<0d0) om = om+pc_pi2
-        if(grd_isvelocity.and..not.(x==0d0.and.y==0d0)) then
-!-- EXPERIMENTAL
-!-- finding comoving direction wrt velocity
-           help=1d0/sqrt(x**2+y**2)
-           vx=x*help
-           vy=y*help
-           mur0=mu*vy+sqrt(1d0-mu**2)*cos(om)*vx
-           omr=atan2(mu*vx-sqrt(1d0-mu**2)*cos(om)*vy , &
-                sqrt(1d0-mu**2)*sin(om))
-           if(omr<0d0) omr=omr+pc_pi2
-!-- transforming to lab
-           help=1d0/help
-           mur = (mur0+help*cinv)/(1d0+mur0*help*cinv)
-           mu=sqrt(1d0-mur**2)*sin(omr)*vx+mur*vy
-           om=atan2(sqrt(1d0-mur**2)*cos(omr) , &
-                sqrt(max(1d0-mu**2-(1d0-mur**2)*cos(omr)**2,0d0)))
+        if(grd_isvelocity) then
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                sqrt(1d0-mu**2)*cos(om)+x*cinv)
+!-- transforming y-axis direction cosine to lab
+           mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
+           endif
+!-- transforming azimuthal angle to lab
            if(om<0d0) om=om+pc_pi2
 !-- DIRDOTU LAB RESET
-           dirdotu=mur*sqrt(x**2+y**2)
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
            help = 1d0/(1d0-dirdotu*cinv)
 !-- transforming wavelength to lab
            wl = wl*(1d0-dirdotu*cinv)
@@ -485,25 +481,21 @@ subroutine diffusion2(ptcl,isvacant)
         mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
         om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
         if(om<0d0) om=om+pc_pi2
-        if(grd_isvelocity.and..not.(x==0d0.and.y==0d0)) then
-!-- EXPERIMENTAL
-!-- finding comoving direction wrt velocity
-           help=1d0/sqrt(x**2+y**2)
-           vx=x*help
-           vy=y*help
-           mur0=mu*vy+sqrt(1d0-mu**2)*cos(om)*vx
-           omr=atan2(mu*vx-sqrt(1d0-mu**2)*cos(om)*vy , &
-                sqrt(1d0-mu**2)*sin(om))
-           if(omr<0d0) omr=omr+pc_pi2
-!-- transforming to lab
-           help=1d0/help
-           mur = (mur0+help*cinv)/(1d0+mur0*help*cinv)
-           mu=sqrt(1d0-mur**2)*sin(omr)*vx+mur*vy
-           om=atan2(sqrt(1d0-mur**2)*cos(omr) , &
-                sqrt(max(1d0-mu**2-(1d0-mur**2)*cos(omr)**2,0d0)))
+        if(grd_isvelocity) then
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                sqrt(1d0-mu**2)*cos(om)+x*cinv)
+!-- transforming mu to lab
+           mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
+           endif
+!-- transforming om to lab
            if(om<0d0) om=om+pc_pi2
 !-- DIRDOTU LAB RESET
-           dirdotu=mur*sqrt(x**2+y**2)
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
            help = 1d0/(1d0-dirdotu*cinv)
 !-- transforming wavelength to lab
            wl = wl*(1d0-dirdotu*cinv)
@@ -614,25 +606,21 @@ subroutine diffusion2(ptcl,isvacant)
         mu = -max(r1,r2)
         r1 = rand()
         om = pc_pi2*r1
-        if(grd_isvelocity.and..not.(x==0d0.and.y==0d0)) then
-!-- EXPERIMENTAL
-!-- finding comoving direction wrt velocity
-           help=1d0/sqrt(x**2+y**2)
-           vx=x*help
-           vy=y*help
-           mur0=mu*vy+sqrt(1d0-mu**2)*cos(om)*vx
-           omr=atan2(mu*vx-sqrt(1d0-mu**2)*cos(om)*vy , &
-                sqrt(1d0-mu**2)*sin(om))
-           if(omr<0d0) omr=omr+pc_pi2
-!-- transforming to lab
-           help=1d0/help
-           mur = (mur0+help*cinv)/(1d0+mur0*help*cinv)
-           mu=sqrt(1d0-mur**2)*sin(omr)*vx+mur*vy
-           om=atan2(sqrt(1d0-mur**2)*cos(omr) , &
-                sqrt(max(1d0-mu**2-(1d0-mur**2)*cos(omr)**2,0d0)))
+        if(grd_isvelocity) then
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                sqrt(1d0-mu**2)*cos(om)+x*cinv)
+!-- transforming y-axis direction cosine to lab
+           mu = (mu+y*cinv)/(1d0+dirdotu*cinv)
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
+           endif
+!-- transforming om to lab
            if(om<0d0) om=om+pc_pi2
 !-- DIRDOTU LAB RESET
-           dirdotu=mur*sqrt(x**2+y**2)
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
            help = 1d0/(1d0-dirdotu*cinv)
 !-- transforming wl to lab
            wl = wl*(1d0-dirdotu*cinv)
@@ -744,25 +732,22 @@ subroutine diffusion2(ptcl,isvacant)
         r1 = rand()
         om = pc_pi2*r1
 !-- doppler and aberration corrections
-        if(grd_isvelocity.and..not.(x==0d0.and.y==0d0)) then
-!-- EXPERIMENTAL
-!-- finding comoving direction wrt velocity
-           help=1d0/sqrt(x**2+y**2)
-           vx=x*help
-           vy=y*help
-           mur0=mu*vy+sqrt(1d0-mu**2)*cos(om)*vx
-           omr=atan2(mu*vx-sqrt(1d0-mu**2)*cos(om)*vy , &
-                sqrt(1d0-mu**2)*sin(om))
-           if(omr<0d0) omr=omr+pc_pi2
-!-- transforming to lab
-           help=1d0/help
-           mur = (mur0+help*cinv)/(1d0+mur0*help*cinv)
-           mu=sqrt(1d0-mur**2)*sin(omr)*vx+mur*vy
-           om=atan2(sqrt(1d0-mur**2)*cos(omr) , &
-                sqrt(max(1d0-mu**2-(1d0-mur**2)*cos(omr)**2,0d0)))
+        if(grd_isvelocity) then
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           elabfact = 1d0+dirdotu*cinv
+           om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                sqrt(1d0-mu**2)*cos(om)+x*cinv)
+!-- transforming mu to lab
+           mu = (mu+y*cinv)/elabfact
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
+           endif
+!-- transforming om to lab
            if(om<0d0) om=om+pc_pi2
 !-- DIRDOTU LAB RESET
-           dirdotu=mur*sqrt(x**2+y**2)
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
            help = 1d0/(1d0-dirdotu*cinv)
 !-- transforming wl to lab
            wl = wl*(1d0-dirdotu*cinv)
@@ -840,25 +825,22 @@ subroutine diffusion2(ptcl,isvacant)
         y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
 
 !-- doppler and aberration corrections
-        if(grd_isvelocity.and..not.(x==0d0.and.y==0d0)) then
-!-- EXPERIMENTAL
-!-- finding comoving direction wrt velocity
-           help=1d0/sqrt(x**2+y**2)
-           vx=x*help
-           vy=y*help
-           mur0=mu*vy+sqrt(1d0-mu**2)*cos(om)*vx
-           omr=atan2(mu*vx-sqrt(1d0-mu**2)*cos(om)*vy , &
-                sqrt(1d0-mu**2)*sin(om))
-           if(omr<0d0) omr=omr+pc_pi2
-!-- transforming to lab
-           help=1d0/help
-           mur = (mur0+help*cinv)/(1d0+mur0*help*cinv)
-           mu=sqrt(1d0-mur**2)*sin(omr)*vx+mur*vy
-           om=atan2(sqrt(1d0-mur**2)*cos(omr) , &
-                sqrt(max(1d0-mu**2-(1d0-mur**2)*cos(omr)**2,0d0)))
+        if(grd_isvelocity) then
+!-- calculating transformation factors
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+           om = atan2(sqrt(1d0-mu**2)*sin(om), &
+                sqrt(1d0-mu**2)*cos(om)+x*cinv)
+!-- transforming y-axis direction cosine to lab
+           mu = (mu+y/pc_c)/(1d0+dirdotu/pc_c)
+           if(mu>1d0) then
+              mu = 1d0
+           elseif(mu<-1d0) then
+              mu = -1d0
+           endif
+!-- transforming azimuthal angle to lab
            if(om<0d0) om=om+pc_pi2
 !-- DIRDOTU LAB RESET
-           dirdotu=mur*sqrt(x**2+y**2)
+           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
            help = 1d0/(1d0-dirdotu*cinv)
 !-- transforming wl to lab
            wl = wl*(1d0-dirdotu*cinv)

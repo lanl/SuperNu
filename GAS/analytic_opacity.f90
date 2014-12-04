@@ -60,7 +60,7 @@ subroutine analytic_opacity
            x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(i))
            x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i))
            gas_capgrey(i) = gas_capgrey(i)+15d0*gas_cap(ig,i)* &
-                specint(x1,x2,3)/pc_pi**4
+                specint(x1,x2,3,10)/pc_pi**4
         enddo
      enddo!}}}
   elseif(in_opacanaltype=='pick') then
@@ -112,7 +112,7 @@ subroutine analytic_opacity
            x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(i))
            x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i))
            gas_capgrey(i) = gas_capgrey(i)+15d0*gas_cap(ig,i)* &
-                specint(x1,x2,3)/pc_pi**4
+                specint(x1,x2,3,10)/pc_pi**4
         enddo
         !
      enddo!}}}
