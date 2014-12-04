@@ -147,13 +147,13 @@ c
 c
 c-- Zero out the cell mass in the corners of the domain
 c======================================================
-c-- sphere radius
-      if(igeom>1) rs = min(str_xleft(nx+1),str_yleft(ny+1))
-      if(igeom>2) rs = min(rs,str_zleft(nz+1))
-c
 c-- void cells
       nvoid = 0
       if(lvoidcorners .and. igeom>1) then
+c-- sphere radius
+       rs = min(str_xleft(nx+1),str_yleft(ny+1))
+       if(igeom>2) rs = min(rs,str_zleft(nz+1))
+c
        do k=1,nz
        do j=1,ny
        do i=1,nx

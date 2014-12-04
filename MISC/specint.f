@@ -13,6 +13,7 @@ c     -------------------------------------------------
       integer :: n,i
       real*8 :: h,x
 c
+      ss = 0d0
       if (x2 == 0.0) return
 c
       if(present(nn)) then
