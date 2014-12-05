@@ -458,14 +458,14 @@ subroutine transport2(ptcl,isvacant)
 !-- y-projection
            mu = (mu-gm*y*cinv*(1d0-gm*dirdotu*cinv/(1d0+gm))) / &
                 (gm*(1d0-dirdotu*cinv))
-           if(mu<0d0) then
+           if((mu<0d0.and.y>0d0).or.(mu>0d0.and.y<0d0)) then
               help=1d0/abs(mu)
 !-- velocity effects accounting
               tot_evelo=tot_evelo-e*2d0 * &
                    (0.55d0*help-1.25d0*abs(mu))*y*cinv
 !
-              e0=e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*y*cinv)
-              e=e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*y*cinv)
+              e0=e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*abs(y)*cinv)
+              e=e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*abs(y)*cinv)
            endif
         endif
         help = (grd_cap(ig,ix,iy+ihelp,1)+grd_sig(ix,iy+ihelp,1)) * &
