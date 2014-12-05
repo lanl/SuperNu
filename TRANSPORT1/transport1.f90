@@ -386,14 +386,6 @@ subroutine transport1(ptcl,isvacant)
            prt_tlyrand = prt_tlyrand+1
            if(grd_isvelocity) then
               mu = (mu-r*cinv)/(1.0-r*mu*cinv)
-              if(mu>0d0) then
-!-- velocity effects accounting
-                 help = 1d0/mu
-                 tot_evelo = tot_evelo+e*2d0*(0.55d0*help-1.25d0*mu)*r*cinv
-!
-                 e0 = e0*(1d0-2d0*(0.55d0*help-1.25d0*mu)*r*cinv)
-                 e = e*(1d0-2d0*(0.55d0*help-1.25d0*mu)*r*cinv)
-              endif
            endif
            help = (grd_cap(ig,ix+1,1,1)+grd_sig(ix+1,1,1))*dx(ix+1)*thelp
            ppl = 4d0/(3d0*help+6d0*pc_dext)
@@ -436,14 +428,6 @@ subroutine transport1(ptcl,isvacant)
               prt_tlyrand = prt_tlyrand+1
               if(grd_isvelocity) then
                  mu = (mu-r*cinv)/(1.0-r*mu*cinv)
-                 if(mu>0d0) then
-!-- velocity effects accounting
-                    help = 1d0/mu
-                    tot_evelo = tot_evelo+e*2d0*(0.55d0*help-1.25d0*mu)*r*cinv
-!
-                    e0 = e0*(1d0-2d0*(0.55d0*help-1.25d0*mu)*r*cinv)
-                    e = e*(1d0-2d0*(0.55d0*help-1.25d0*mu)*r*cinv)
-                 endif
               endif
               help = (grd_cap(ig,ix+1,1,1)+grd_sig(ix+1,1,1))*dx(ix+1)*thelp
               ppl = 4d0/(3d0*help+6d0*pc_dext)
