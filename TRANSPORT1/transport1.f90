@@ -473,6 +473,9 @@ subroutine transport1(ptcl,isvacant)
               if(mu<0d0) then
 !-- velocity effects accounting
                  help = 1d0/abs(mu)
+!-- truncate singularity emperially determined
+!-- value of 1000 starts to add noise to W7 spectra
+                 help = min(100d0, help)
                  tot_evelo = tot_evelo-e*2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv
 !
                  e0 = e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv)

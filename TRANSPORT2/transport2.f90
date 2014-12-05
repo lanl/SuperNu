@@ -386,10 +386,12 @@ subroutine transport2(ptcl,isvacant)
         mu0 = sqrt(1d0-mu**2)*cos(om)
         if(grd_isvelocity.and.mu0<0d0) then
            help=1d0/abs(mu0)
+!-- truncate singularity emperially determined
+!-- value of 1000 starts to add noise to W7 spectra
+           help = min(100d0, help)
 !-- velocity effects accounting
            tot_evelo=tot_evelo-e*2d0 * &
                 (0.55d0*help-1.25d0*abs(mu0))*x*cinv
-!
            e0=e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu0))*x*cinv)
            e=e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu0))*x*cinv)
         endif
@@ -460,12 +462,15 @@ subroutine transport2(ptcl,isvacant)
                 (gm*(1d0-dirdotu*cinv))
            if((mu<0d0.and.y>0d0).or.(mu>0d0.and.y<0d0)) then
               help=1d0/abs(mu)
+!-- truncate singularity emperially determined
+!-- value of 1000 starts to add noise to W7 spectra
+              help = min(100d0, help)
 !-- velocity effects accounting
               tot_evelo=tot_evelo-e*2d0 * &
-                   (0.55d0*help-1.25d0*abs(mu))*y*cinv
+                   (0.55d0*help-1.25d0*abs(mu))*abs(y)*cinv
 !
-              e0=e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*abs(y)*cinv)
-              e=e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*abs(y)*cinv)
+              e0=e0*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(mu))*abs(y)*cinv)
+              e=e*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(mu))*abs(y)*cinv)
            endif
         endif
         help = (grd_cap(ig,ix,iy+ihelp,1)+grd_sig(ix,iy+ihelp,1)) * &
