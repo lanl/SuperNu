@@ -384,6 +384,15 @@ subroutine transport2(ptcl,isvacant)
         endif
 !-- x-cosine
         mu0 = sqrt(1d0-mu**2)*cos(om)
+        if(grd_isvelocity.and.mu0/=0d0) then
+           help=1d0/abs(mu0)
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*ihelp*2d0 * &
+                (0.55d0*help-1.25d0*abs(mu0))*x*cinv
+!
+           e0=e0*(1d0-ihelp*2d0*(0.55d0*help-1.25d0*abs(mu0))*x*cinv)
+           e=e*(1d0-ihelp*2d0*(0.55d0*help-1.25d0*abs(mu0))*x*cinv)
+        endif
         help = (grd_cap(ig,ix+ihelp,iy,1)+grd_sig(ix+ihelp,iy,1)) * &
              dx(ix+ihelp)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
@@ -449,6 +458,15 @@ subroutine transport2(ptcl,isvacant)
 !-- y-projection
            mu = (mu-gm*y*cinv*(1d0-gm*dirdotu*cinv/(1d0+gm))) / &
                 (gm*(1d0-dirdotu*cinv))
+           if(mu/=0d0) then
+              help=1d0/abs(mu)
+!-- velocity effects accounting
+              tot_evelo=tot_evelo+e*ihelp*2d0 * &
+                   (0.55d0*help-1.25d0*abs(mu))*y*cinv
+!
+              e0=e0*(1d0-ihelp*2d0*(0.55d0*help-1.25d0*abs(mu))*y*cinv)
+              e=e*(1d0-ihelp*2d0*(0.55d0*help-1.25d0*abs(mu))*y*cinv)
+           endif
         endif
         help = (grd_cap(ig,ix,iy+ihelp,1)+grd_sig(ix,iy+ihelp,1)) * &
              dy(iy+ihelp)*thelp
