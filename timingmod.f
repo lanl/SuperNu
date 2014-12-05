@@ -128,6 +128,11 @@ c     ------------------------
 * Print the timing totals
 ************************************************************************
       integer,parameter :: i=3 !total runtime timing
+      real*8 :: tmpi,taccounted
+c
+      tmpi = t_mpibcast(i)+t_mpigamma(i)+t_mpireduc(i)
+      taccounted = tmpi+t_setup+t_gasupd(i)+t_opacleak(i)+t_pcktmax(i)
+c
       write(6,*)
       write(6,*) 'timing results:'
       write(6,*) '============================'
@@ -137,10 +142,10 @@ c     ------------------------
       write(6,1) 'setup             :',t_setup
       write(6,1) 'gas update        :',t_gasupd(i)
       write(6,1) 'gas opacleak      :',t_opacleak(i)
-      write(6,1) 'mpi (bc|gam|red)  :',
-     &   t_mpibcast(i)+t_mpigamma(i)+t_mpireduc(i),
-     &   t_mpibcast(i),t_mpigamma(i),t_mpireduc(i)
+      write(6,1) 'mpi (bc|gam|red)  :',tmpi,
+     &  t_mpibcast(i),t_mpigamma(i),t_mpireduc(i)
       write(6,1) 'packet transport  :',t_pcktmax(i)
+      write(6,1) 'unaccounted       :',t_all - taccounted
       write(6,*) '----------------------------'
       write(6,1) 'all               :',t_all
 1     format(1x,a,4f9.1)

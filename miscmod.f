@@ -28,11 +28,11 @@ c
       integer,intent(in),optional :: m
       end function specint
 c
-      pure function specint3(xarr,n) result(ss)
+      pure function specint3(xarr,n,mode) result(ss)
 c     -----------------------------------------
       real*8 :: ss(n-1)
       real*8,intent(in) :: xarr(n)
-      integer,intent(in) :: n
+      integer,intent(in) :: n,mode
       end function specint3
 
       end interface
