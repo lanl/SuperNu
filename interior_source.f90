@@ -1,5 +1,6 @@
 subroutine interior_source
 
+  use miscmod
   use gridmod
   use totalsmod
   use timestepmod
@@ -23,6 +24,8 @@ subroutine interior_source
   real*8 :: om0, mu0, x0, y0, z0, ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, thelp
   real*8 :: cmffact,mu1,mu2,gm
+  real*8,parameter :: specfact=15d0/pc_pi**4
+  real*8 :: emitprob(grd_ng)
   type(packet),pointer :: ptcl
 !-- statement functions
   integer :: l
@@ -238,6 +241,11 @@ subroutine interior_source
   do i=1,grd_nx
      call sourcenumbers_roundrobin(iimpi,grd_emit(i,j,k)**pwr, &
         grd_emitex(i,j,k)**pwr,grd_nvol(i,j,k),nemit,nhere,ndmy)
+     if(nhere<1) cycle
+!-- integrate planck function over each group
+     emitprob = specint3(pc_h*pc_c/(grd_wl*pc_kb*grd_temp(i,j,k)),grd_ng+1,1)
+     emitprob = emitprob*specfact*grd_cap(:,i,j,k)/grd_capgrey(i,j,k)
+!
   do ii=1,nhere
      ipart = ipart + 1!{{{
      ivac = prt_vacantarr(ipart)
@@ -265,8 +273,8 @@ subroutine interior_source
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1     
      do ig = 1, grd_ng-1
-        if (r1>=denom2.and.r1<denom2+grd_emitprob(ig,i,j,k)) exit
-        denom2 = denom2+grd_emitprob(ig,i,j,k)
+        if (r1>=denom2.and.r1<denom2+emitprob(ig)) exit
+        denom2 = denom2+emitprob(ig)
      enddo
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
