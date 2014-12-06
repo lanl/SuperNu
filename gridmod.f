@@ -7,6 +7,9 @@ c
       integer :: grd_ng=0
       real*8,allocatable :: grd_wl(:),grd_wlinv(:)
 c
+      integer :: grd_nep=0 !number of emission probability bins
+      integer :: grd_nepg=0 !number of groups per emission probability bin
+c
       integer :: grd_nx=0
       integer :: grd_ny=0
       integer :: grd_nz=0
@@ -19,7 +22,7 @@ c
 
 
 c-- Probability of emission in a given zone and group
-      real*8,allocatable :: grd_emitprob(:,:,:,:) !(ng,nx,ny,nz)
+      real*8,allocatable :: grd_emitprob(:,:,:,:) !(nep,nx,ny,nz)
 c-- Line+Cont extinction coeff
       real*4,allocatable :: grd_cap(:,:,:,:) !(ng,nx,ny,nz)
 c-- leakage opacities
@@ -90,6 +93,10 @@ c
       grd_wl = wlarr
       grd_wlinv = 1d0/wlarr
 c
+c-- emission probability
+      grd_nep = nint(sqrt(dble(ng)))
+      grd_nepg = ceiling(ng/dble(grd_nep))
+c
       grd_nx = ndim(1)
       grd_ny = ndim(2)
       grd_nz = ndim(3)
@@ -140,8 +147,8 @@ c
 c
 c-- ndim=4 alloc
       allocate(grd_opacleak(6,nx,ny,nz))
+      allocate(grd_emitprob(grd_nep,nx,ny,nz))
 c-- ndim=4 alloc
-      allocate(grd_emitprob(ng,nx,ny,nz))
       allocate(grd_cap(ng,nx,ny,nz))
 c!}}}
       end subroutine grid_init

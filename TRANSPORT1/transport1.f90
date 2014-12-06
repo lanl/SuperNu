@@ -1,5 +1,6 @@
 subroutine transport1(ptcl,isvacant)
 
+  use miscmod
   use gridmod
   use totalsmod
   use timestepmod
@@ -28,6 +29,11 @@ subroutine transport1(ptcl,isvacant)
   real*8 :: dtinv
   real*8 :: help
   real*8 :: ppl, ppr
+!
+  integer :: iep,nepg,igp1
+  real*8 :: specval(grd_nepg)
+  real*8 :: emitprob
+  real*8,parameter :: specconsti=pc_pi**4/15d0 !convert specint to planck, inverted
 
   integer,pointer :: ix
   real*8,pointer :: r, mu, e, e0, wl
@@ -281,7 +287,7 @@ subroutine transport1(ptcl,isvacant)
            mu = (mu+r*cinv)/(1.0+r*mu*cinv)
 !-- velocity effects accounting
            help = 1d0/(1.0-mu*r*cinv)
-           tot_evelo=tot_evelo+e*(1d0-elabfact*help)
+           tot_evelo = tot_evelo+e*(1d0-elabfact*help)
 !
            e = e*elabfact*help
 !           wl = wl*(1.0-mu*r*cinv)/elabfact
@@ -291,14 +297,33 @@ subroutine transport1(ptcl,isvacant)
         denom2 = 0.0
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        do ig = 1, grd_ng-1
-           if ((r1>=denom2).and.(r1<denom2+grd_emitprob(ig,ix,1,1))) exit
-           denom2 = denom2+grd_emitprob(ig,ix,1,1)
+!old    do ig = 1, grd_ng-1
+!old       if ((r1>=denom2).and.(r1<denom2+grd_emitprob(ig,ix,1,1))) exit
+!old       denom2 = denom2+grd_emitprob(ig,ix,1,1)
+!old    enddo
+!
+!-- search unnormalized cumulative emission probability values
+        r1 = r1*specconsti*grd_capgrey(ix,1,1)
+        iep = binsrch(r1,grd_emitprob(:,ix,1,1),grd_nep)
+        ig = iep*grd_nepg + 1
+        igp1 = min(ig + grd_nepg, grd_ng)
+        nepg = igp1 - ig + 1
+        specval(:nepg) = specint3(pc_h*pc_c*grd_wlinv(ig:igp1) / &
+             (pc_kb*grd_temp(ix,1,1)),2,1)
+!
+!-- step up until target r1 is reached
+        l = 0
+        emitprob = grd_emitprob(iep,ix,1,1)
+        do ig=ig,igp1
+           l = l + 1
+           emitprob = emitprob + specval(l)*grd_cap(ig,ix,1,1)
+           if(emitprob>r1) exit
         enddo
-        !(rev 121): calculating radiation energy tally per group
+        if(ig>igp1) stop 'transport1: ig not valid'
+!(rev 121): calculating radiation energy tally per group
         !grd_eraddens(ix)=grd_eraddens(ix)+e*elabfact
-        !-------------------------------------------------------
-        ! sampling comoving wavelength in group
+!-------------------------------------------------------
+! sampling comoving wavelength in group
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
         wl = 1d0/((1d0-r1)/grd_wl(ig)+r1/grd_wl(ig+1))
