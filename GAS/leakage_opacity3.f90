@@ -41,7 +41,7 @@ subroutine leakage_opacity3
   do i=1,grd_nx
 !
 !-- initializing Planck integral vectorized
-     specarr = specint3(pc_h*pc_c/(grd_wl*pc_kb*grd_temp(i,j,k)),grd_ng+1,1)
+     specarr = specint3(pc_h*pc_c*grd_wlinv/(pc_kb*grd_temp(i,j,k)),grd_ng+1,1)
      help = min(dx(i),dy(j),dz(k))*thelp
      speclump = 1d0/sum(specarr,grd_cap(:,i,j,k)*help>=prt_taulump)
 !-- lumping opacity

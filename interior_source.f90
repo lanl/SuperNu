@@ -43,8 +43,8 @@ subroutine interior_source
 !-- shortcut
   pwr = in_srcepwr
 
-  x1=1d0/grd_wl(grd_ng+1)
-  x2=1d0/grd_wl(1)
+  x1=grd_wlinv(grd_ng+1)
+  x2=grd_wlinv(1)
 
 !Volume particle instantiation: loop
 !Loop run over the number of new particles that aren't surface source
@@ -80,14 +80,14 @@ subroutine interior_source
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
      do ig = 1, grd_ng-1
-        x3=1d0/grd_wl(ig+1)
-        x4=1d0/grd_wl(ig)
+        x3=grd_wlinv(ig+1)
+        x4=grd_wlinv(ig)
         if(r1>=denom2.and.r1<denom2+(x4-x3)/(x2-x1)) exit
         denom2 = denom2+(x4-x3)/(x2-x1)
      enddo
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     wl0 = 1d0/((1d0-r1)/grd_wl(ig)+r1/grd_wl(ig+1))
+     wl0 = 1d0/((1d0-r1)*grd_wlinv(ig)+r1*grd_wlinv(ig+1))
 
 !-- calculating direction cosine (comoving)
      r1 = rand()
@@ -243,7 +243,7 @@ subroutine interior_source
         grd_emitex(i,j,k)**pwr,grd_nvol(i,j,k),nemit,nhere,ndmy)
      if(nhere<1) cycle
 !-- integrate planck function over each group
-     emitprob = specint3(pc_h*pc_c/(grd_wl*pc_kb*grd_temp(i,j,k)),grd_ng+1,1)
+     emitprob = specint3(pc_h*pc_c*grd_wl/(pc_kb*grd_temp(i,j,k)),grd_ng+1,1)
      emitprob = emitprob*specfact*grd_cap(:,i,j,k)/grd_capgrey(i,j,k)
 !
   do ii=1,nhere
@@ -278,7 +278,7 @@ subroutine interior_source
      enddo
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     wl0 = 1d0/((1d0-r1)/grd_wl(ig)+r1/grd_wl(ig+1))
+     wl0 = 1d0/((1d0-r1)*grd_wlinv(ig)+r1*grd_wlinv(ig+1))
 
 !-- calculating direction cosine (comoving)
      r1 = rand()
@@ -500,6 +500,7 @@ subroutine interior_source
 
 !}}}
   enddo !ipart
+!
   enddo !i
   enddo !j
   enddo !k

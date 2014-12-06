@@ -5,7 +5,7 @@ c
       integer :: grd_igeom = 0
 c
       integer :: grd_ng=0
-      real*8,allocatable :: grd_wl(:)
+      real*8,allocatable :: grd_wl(:),grd_wlinv(:)
 c
       integer :: grd_nx=0
       integer :: grd_ny=0
@@ -86,8 +86,9 @@ c
       grd_igeom = igeom
 c
       grd_ng = ng
-      allocate(grd_wl(ng+1))
+      allocate(grd_wl(ng+1),grd_wlinv(ng+1))
       grd_wl = wlarr
+      grd_wlinv = 1d0/wlarr
 c
       grd_nx = ndim(1)
       grd_ny = ndim(2)
