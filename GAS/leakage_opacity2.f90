@@ -14,7 +14,6 @@ subroutine leakage_opacity2
   logical :: lhelp
   integer :: i,j,k, ig
   real*8 :: thelp, help
-! real*8 :: x1, x2
   real*8 :: speclump, specval
   real*8 :: specarr(grd_ng)
   real*8 :: ppl, ppr
@@ -40,19 +39,6 @@ subroutine leakage_opacity2
   do k=1,grd_nz
   do j=1,grd_ny
   do i=1,grd_nx
-!!
-!!-- initializing Planck integral
-!     speclump = 0d0
-!     do ig=1,grd_ng
-!!-- finding lumpable groups
-!        if(grd_cap(ig,i,j,k)*min(dx(i),dy(j))*thelp < prt_taulump) cycle
-!!-- summing lumpable Planck function integrals
-!        x1 = pc_h*pc_c/(grd_wl(ig+1)*pc_kb*grd_temp(i,j,k))
-!        x2 = pc_h*pc_c/(grd_wl(ig)*pc_kb*grd_temp(i,j,k))
-!        specarr(ig) = specint(x1,x2,3,10)
-!        speclump = speclump + specarr(ig)
-!     enddo !ig
-!     speclump = 1d0/speclump
 !
 !-- initializing Planck integral vectorized
      specarr = specint3(pc_h*pc_c/(grd_wl*pc_kb*grd_temp(i,j,k)),grd_ng+1,1)
