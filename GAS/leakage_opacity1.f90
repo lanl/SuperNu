@@ -40,17 +40,14 @@ subroutine leakage_opacity1
 !
 !-- initializing Planck integral vectorized
      specarr = specint3(pc_h*pc_c/(grd_wl*pc_kb*grd_temp(i,j,k)),grd_ng+1,1)
-     help = min(dx(i),dy(j))*thelp
+     help = dx(i)*thelp
      speclump = 1d0/sum(specarr,grd_cap(:,i,j,k)*help>=prt_taulump)
 !-- lumping opacity
      do ig=1,grd_ng
         if(grd_cap(ig,i,j,k)*dx(i)*thelp < prt_taulump) cycle
 !
-        x1 = pc_h*pc_c/(grd_wl(ig+1)*pc_kb*grd_temp(i,j,k))
-        x2 = pc_h*pc_c/(grd_wl(ig)*pc_kb*grd_temp(i,j,k))
-!
 !-- obtaining spectral weight
-        specval = specint(x1,x2,3,10)
+        specval = specarr(ig)
 !
 !-- calculating inward leakage opacity
         if(i==1) then
