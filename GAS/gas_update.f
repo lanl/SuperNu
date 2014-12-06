@@ -259,6 +259,8 @@ c
 c
 c-- Calculating Fleck factor, leakage opacities
       call fleck_factor(tempalt,capgreyalt)
+c-- Calculating emission probabilities for each group in each cell
+      call emission_probability
 c
 c
 c-- save previous values for gentile-fleck factor calculation in next iter

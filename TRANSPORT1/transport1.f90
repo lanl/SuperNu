@@ -294,32 +294,45 @@ subroutine transport1(ptcl,isvacant)
            
         endif
 !
-        denom2 = 0.0
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
+!
+!-- sample wavelength old
+!old    denom2 = 0.0
 !old    do ig = 1, grd_ng-1
 !old       if ((r1>=denom2).and.(r1<denom2+grd_emitprob(ig,ix,1,1))) exit
 !old       denom2 = denom2+grd_emitprob(ig,ix,1,1)
 !old    enddo
 !
+!-- sample wavelength
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+!
 !-- search unnormalized cumulative emission probability values
+        help = r1 !DEBUG
         r1 = r1*specconsti*grd_capgrey(ix,1,1)
-        iep = binsrch(r1,grd_emitprob(:,ix,1,1),grd_nep)
+        iep = binsrch(r1,grd_emitprob2(:,ix,1,1),grd_nep)
         ig = iep*grd_nepg + 1
-        igp1 = min(ig + grd_nepg, grd_ng)
+        igp1 = min(ig + grd_nepg - 1, grd_ng)
         nepg = igp1 - ig + 1
-        specval(:nepg) = specint3(pc_h*pc_c*grd_wlinv(ig:igp1) / &
-             (pc_kb*grd_temp(ix,1,1)),2,1)
+        specval(:nepg) = specint3(pc_h*pc_c*grd_wlinv(ig:igp1+1) / &
+             (pc_kb*grd_temp(ix,1,1)),nepg+1,1)
+!
+!-- start value
+        if(iep==0) then
+           emitprob = 0d0
+        else
+           emitprob = grd_emitprob2(iep,ix,1,1)
+        endif
 !
 !-- step up until target r1 is reached
         l = 0
-        emitprob = grd_emitprob(iep,ix,1,1)
-        do ig=ig,igp1
+        do ig=ig,igp1-1
            l = l + 1
            emitprob = emitprob + specval(l)*grd_cap(ig,ix,1,1)
            if(emitprob>r1) exit
         enddo
-        if(ig>igp1) stop 'transport1: ig not valid'
+        if(ig>grd_ng) stop 'transport1: ig not valid'
 !(rev 121): calculating radiation energy tally per group
         !grd_eraddens(ix)=grd_eraddens(ix)+e*elabfact
 !-------------------------------------------------------

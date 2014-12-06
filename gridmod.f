@@ -22,7 +22,8 @@ c
 
 
 c-- Probability of emission in a given zone and group
-      real*8,allocatable :: grd_emitprob(:,:,:,:) !(nep,nx,ny,nz)
+      real*8,allocatable :: grd_emitprob(:,:,:,:) !(ng,nx,ny,nz)
+      real*8,allocatable :: grd_emitprob2(:,:,:,:) !(nep,nx,ny,nz)
 c-- Line+Cont extinction coeff
       real*4,allocatable :: grd_cap(:,:,:,:) !(ng,nx,ny,nz)
 c-- leakage opacities
@@ -95,7 +96,7 @@ c
 c
 c-- emission probability
       grd_nep = nint(sqrt(dble(ng)))
-      grd_nepg = ceiling(ng/dble(grd_nep))
+      grd_nepg = ceiling(ng/(grd_nep + 1d0))
 c
       grd_nx = ndim(1)
       grd_ny = ndim(2)
@@ -147,7 +148,8 @@ c
 c
 c-- ndim=4 alloc
       allocate(grd_opacleak(6,nx,ny,nz))
-      allocate(grd_emitprob(grd_nep,nx,ny,nz))
+      allocate(grd_emitprob2(grd_nep,nx,ny,nz))
+      allocate(grd_emitprob(grd_ng,nx,ny,nz))
 c-- ndim=4 alloc
       allocate(grd_cap(ng,nx,ny,nz))
 c!}}}
