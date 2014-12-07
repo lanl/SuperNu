@@ -1,5 +1,6 @@
 subroutine diffusion1(ptcl,isvacant)
 
+  use groupmod
   use gridmod
   use timestepmod
   use physconstmod
@@ -37,7 +38,7 @@ subroutine diffusion1(ptcl,isvacant)
   real*8 :: resopacleakl, resopacleakr
   integer :: glump, gunlump
   integer :: glumps(grd_ng)
-  real*8 :: dtinv,capinv(grd_ng)
+  real*8 :: dtinv,tempinv,capinv(grd_ng)
   real*8 :: help
 
   integer,pointer :: ix
@@ -60,6 +61,7 @@ subroutine diffusion1(ptcl,isvacant)
 !-- shortcut
   dtinv = 1d0/tsp_dt
   capinv = 1d0/grd_cap(:,ix,1,1)
+  tempinv = 1d0/grd_temp(ix,1,1)
 
 !
 !-- set expansion helper
@@ -129,7 +131,7 @@ subroutine diffusion1(ptcl,isvacant)
   speclump = 0d0
   do ig = 1, glump
      iig = glumps(ig)
-     specig = grd_capgrey(ix,1,1)*grd_emitprob(iig,ix,1,1)*capinv(iig)
+     specig = specint0(iig,tempinv)
      speclump = speclump+specig
   enddo
   if(speclump>0d0.and.glump>1) then
@@ -144,9 +146,9 @@ subroutine diffusion1(ptcl,isvacant)
   if(speclump>0d0) then
      do ig = 1, glump!{{{
         iig = glumps(ig)
-        specig = grd_capgrey(ix,1,1)*grd_emitprob(iig,ix,1,1)*capinv(iig)
+        specig = specint0(iig,tempinv)
 !-- emission lump
-        emitlump = emitlump+grd_emitprob(iig,ix,1,1)
+        emitlump = emitlump + specig/(grd_capgrey(ix,1,1)*capinv(iig))
 !-- Planck x-section lump
         caplump = caplump+specig*grd_cap(iig,ix,1,1)*speclump
      enddo
@@ -156,7 +158,7 @@ subroutine diffusion1(ptcl,isvacant)
 !!}}}
 !-- calculating unlumped values
   else
-     emitlump = grd_emitprob(g,ix,1,1)!{{{
+     emitlump = specint0(g,tempinv)/(grd_capgrey(ix,1,1)*capinv(g))!{{{
      caplump = grd_cap(g,ix,1,1)
 !-- inward
      if(ix==1) then
@@ -292,7 +294,7 @@ subroutine diffusion1(ptcl,isvacant)
            help = 1d0/opacleakllump
            do ig= 1, glump
               iig = glumps(ig)
-              specig = grd_capgrey(ix,1,1)*grd_emitprob(iig,ix,1,1)*capinv(iig)
+              specig = specint0(iig,tempinv)
 !-- calculating resolved leakage opacities
               if((grd_cap(iig,ix-1,1,1)+ &
                    grd_sig(ix-1,1,1))*dx(ix-1)*thelp<prt_tauddmc) then
@@ -386,7 +388,7 @@ subroutine diffusion1(ptcl,isvacant)
            help = 1d0/opacleakrlump
            do ig = 1, glump
               iig=glumps(ig)
-              specig = grd_capgrey(ix,1,1)*grd_emitprob(iig,ix,1,1)*capinv(iig)
+              specig = specint0(iig,tempinv)
 !-- calculating resolved leakage opacities
               mfphelp = (grd_cap(iig,ix,1,1)+grd_sig(ix,1,1))*dx(ix)*thelp
               ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
@@ -461,7 +463,7 @@ subroutine diffusion1(ptcl,isvacant)
            help = 1d0/opacleakrlump
            do ig= 1, glump
               iig = glumps(ig)
-              specig = grd_capgrey(ix,1,1)*grd_emitprob(iig,ix,1,1)*capinv(iig)
+              specig = specint0(iig,tempinv)
 !-- calculating resolved leakage opacities
               if((grd_cap(iig,ix+1,1,1)+ &
                    grd_sig(ix+1,1,1))*dx(ix+1)*thelp<prt_tauddmc) then
@@ -537,14 +539,9 @@ subroutine diffusion1(ptcl,isvacant)
 
 !-- effective scattering sample
   else
-!         denom2 = 0d0!{{{
-!         do ig = grd_ng,glump+1,-1
-!            iig=glumps(ig)
-!            denom2 = denom2+grd_emitprob(iig,ix,1,1)
-!         enddo
-
+!{{{
      denom2 = 1d0-emitlump
-     help = 1d0/denom2
+     denom2 = 1d0/denom2
 !
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
@@ -552,8 +549,9 @@ subroutine diffusion1(ptcl,isvacant)
      denom3 = 0d0
      do ig = grd_ng,glump+1,-1
         iig=glumps(ig)
-        if((r1>=denom3).and.(r1<denom3+grd_emitprob(iig,ix,1,1)*help)) exit
-        denom3 = denom3+grd_emitprob(iig,ix,1,1)*help
+        help = specint0(iig,tempinv)/(grd_capgrey(ix,1,1)*capinv(iig))
+        if((r1>=denom3).and.(r1<denom3+help*denom2)) exit
+        denom3 = denom3+help*denom2
      enddo
 !
      g = iig
