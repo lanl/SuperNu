@@ -34,6 +34,7 @@ c     ---------------------------------------!{{{
 ************************************************************************
 * Calculate x**3/(exp(x) - 1), where x = h*c/(wl*k*T)
 ************************************************************************
+      real*8,parameter :: ftpi4=15d0/pc_pi**4
       real*8,parameter :: hck=pc_h*pc_c/pc_kb
       real*8 :: x,dx
 c
@@ -41,7 +42,7 @@ c
       dx = x*abs(grp_wlinv(ig+1) - grp_wlinv(ig))
       x = x*.5d0*(grp_wlinv(ig+1) + grp_wlinv(ig))
 c
-      specint0 = dx * x**3/(exp(x) - 1d0)
+      specint0 = ftpi4 * dx * x**3/(exp(x) - 1d0)
 c!}}}
       end function specint0
 c
@@ -57,6 +58,7 @@ c     -----------------------------------------------!{{{
 * Integrate normalized Planck spectrum using Newton-Cotes formulae of
 * different degrees.
 ************************************************************************
+      real*8,parameter :: ftpi4=15d0/pc_pi**4
       real*8,parameter :: hck=pc_h*pc_c/pc_kb
       real*8,parameter :: one6th=1d0/6d0
       real*8,parameter :: one90th=1d0/90d0
@@ -101,6 +103,8 @@ c-- invalid
       case default
        ss = 0d0
       endselect
+c
+      ss = ss * ftpi4
 c
       contains
 c
