@@ -3,6 +3,7 @@ program supernu
   use mpimod
   use inputparmod
   use timestepmod
+  use groupmod
   use gridmod
   use gasmod
   use particlemod
@@ -23,6 +24,9 @@ program supernu
 ! TODO and wishlist:
 ! - transport[123].f90: no check wl group bounds (drr 2014/11/20)
 ! - interior_source: source tilting from source derivative (drr 2014/11/20)
+! - grd_wl|gas_wl => grp_wl
+! - 1/wl => wlinv
+! - grd_temp => grd_tempinv
 !***********************************************************************
   real*8 :: help
   real*8 :: t_elapsed
@@ -108,6 +112,7 @@ program supernu
 
 !-- setup spatial grid
   call grid_init(impi==impi0,gas_ng,gas_wl,in_igeom,in_ndim,in_isvelocity)
+  call group_init(gas_ng,gas_wl)
   call grid_setup(gas_wl)
   call mpi_setup_communicators(product(in_ndim)) !MPI
   ncell = product(in_ndim)/nmpi_gas

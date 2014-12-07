@@ -60,6 +60,7 @@ subroutine emission_probability2
   use inputparmod
   use timingmod
   use gridmod
+  use groupmod
   use physconstmod
   use miscmod, only:specint
   implicit none
@@ -71,7 +72,7 @@ subroutine emission_probability2
   integer :: i,ig,igp1,j,k,iep,nepg
   real*8 :: t0,t1
   real*8 :: help
-  real*8 :: specarr(grd_ng)
+  real*8 :: specarr(grp_ng)
 
   call time(t0)
 
@@ -83,7 +84,7 @@ subroutine emission_probability2
      do i=1,grd_nx
         grd_emitprob2(1,i,j,k) = in_suolpick1*grd_cap(1,i,j,k)
         grd_emitprob2(2,i,j,k) = (1d0 - in_suolpick1)*grd_cap(2,i,j,k)
-        grd_emitprob2(3:grd_ng,i,j,k) = 0d0  !-- not necessary
+        grd_emitprob2(3:grp_ng,i,j,k) = 0d0  !-- not necessary
      enddo !i
      enddo !j
      enddo !k
@@ -91,7 +92,7 @@ subroutine emission_probability2
   endif
 
 !-- one group
-  if(grd_ng==1) then
+  if(grp_ng==1) then
      grd_emitprob2 = 1d0
      return
   endif
@@ -101,12 +102,12 @@ subroutine emission_probability2
   do j=1,grd_ny
   do i=1,grd_nx
 !-- piecewise integration of planck function
-     specarr = specint3(pc_h*pc_c*grd_wlinv/(pc_kb*grd_temp(i,j,k)),grd_ng+1,1)
+     specarr = specintv(1d0/grd_temp(i,j,k),1)
 !-- cumulative sum of unnormalized emission probability
      ig = 1
      help = 0d0
      do iep=1,grd_nep
-        nepg = min(iep*grd_nepg,grd_ng) - ig + 1
+        nepg = min(iep*grd_nepg,grp_ng) - ig + 1
         igp1 = ig + nepg - 1
         help = help + sum(specarr(ig:igp1)*grd_cap(ig:igp1,i,j,k))
         grd_emitprob2(iep,i,j,k) = help
@@ -115,7 +116,6 @@ subroutine emission_probability2
   enddo !i
   enddo !j
   enddo !k
-write(0,*) 15d0*grd_emitprob2(:,1,1,1)/(pc_pi**4*grd_capgrey(1,1,1))
 
   call time(t1)
   call timereg(t_emitp,t1-t0)

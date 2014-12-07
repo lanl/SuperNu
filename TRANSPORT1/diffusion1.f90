@@ -140,10 +140,9 @@ subroutine diffusion1(ptcl,isvacant)
 !
   emitlump = 0d0
   caplump = 0d0
-  if(speclump>0d0) then
-!
 !-- calculating lumped values
-     do ig = 1, glump
+  if(speclump>0d0) then
+     do ig = 1, glump!{{{
         iig = glumps(ig)
         specig = grd_capgrey(ix,1,1)*grd_emitprob(iig,ix,1,1)*capinv(iig)
 !-- emission lump
@@ -154,10 +153,10 @@ subroutine diffusion1(ptcl,isvacant)
 !-- leakage opacities
      opacleakllump = grd_opacleak(1,ix,1,1)
      opacleakrlump = grd_opacleak(2,ix,1,1)
-  else
-!
+!!}}}
 !-- calculating unlumped values
-     emitlump = grd_emitprob(g,ix,1,1)
+  else
+     emitlump = grd_emitprob(g,ix,1,1)!{{{
      caplump = grd_cap(g,ix,1,1)
 !-- inward
      if(ix==1) then
@@ -197,7 +196,7 @@ subroutine diffusion1(ptcl,isvacant)
              (grd_sig(ix+1,1,1)+grd_cap(g,ix+1,1,1))*dx(ix+1))*thelp
         opacleakrlump=2.0d0*(thelp*grd_xarr(ix+1))**2/ &
              (mfphelp*thelp**3*dx3(ix))
-     endif
+     endif!}}}
   endif
 !
 !-------------------------------------------------------------
@@ -217,7 +216,6 @@ subroutine diffusion1(ptcl,isvacant)
   ddmct = min(tau,tcensus)
 !
 !-- calculating energy depostion and density
-  !
   if(prt_isddmcanlog) then
      grd_eraddens(ix,1,1)= grd_eraddens(ix,1,1)+e*ddmct*dtinv
   else
@@ -548,10 +546,10 @@ subroutine diffusion1(ptcl,isvacant)
      denom2 = 1d0-emitlump
      help = 1d0/denom2
 !
-     denom3 = 0d0
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
 
+     denom3 = 0d0
      do ig = grd_ng,glump+1,-1
         iig=glumps(ig)
         if((r1>=denom3).and.(r1<denom3+grd_emitprob(iig,ix,1,1)*help)) exit

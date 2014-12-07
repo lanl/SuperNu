@@ -22,7 +22,7 @@ PROGRAMS := supernu
 
 MODULES := elemdatamod.o physconstmod.o mpimod.o \
   miscmod.o ionsmod.o ffxsmod.o bfxsmod.o bbxsmod.o \
-  inputparmod.o timestepmod.o gridmod.o gasmod.o inputstrmod.o \
+  inputparmod.o timestepmod.o groupmod.o gridmod.o gasmod.o inputstrmod.o \
   particlemod.o timingmod.o manufacmod.o fluxmod.o totalsmod.o
 
 FILES := sourceenergy.o sourceenergy_analytic.o sourceenergy_gamma.o \
@@ -33,8 +33,8 @@ FILES := sourceenergy.o sourceenergy_analytic.o sourceenergy_gamma.o \
   initialnumbers.o initial_particles.o tau_update.o \
   banner.o
 
-LIBRARIES := GRID/grid.a GAS/gas.a TRANSPORT1/transport1.a MISC/misc.a \
-  TRANSPORT2/transport2.a TRANSPORT3/transport3.a
+LIBRARIES := TRANSPORT1/transport1.a TRANSPORT2/transport2.a TRANSPORT3/transport3.a \
+  GAS/gas.a  GRID/grid.a MISC/misc.a
 SUBDIRS := $(dir $(LIBRARIES))
 SUBCLEAN = $(addsuffix .clean, $(SUBDIRS))
 

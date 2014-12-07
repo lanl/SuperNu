@@ -1,6 +1,7 @@
 subroutine interior_source
 
   use miscmod
+  use groupmod
   use gridmod
   use totalsmod
   use timestepmod
@@ -25,7 +26,7 @@ subroutine interior_source
   real*8 :: denom2,x1,x2,x3,x4, thelp
   real*8 :: cmffact,mu1,mu2,gm
   real*8,parameter :: specconst=15d0/pc_pi**4
-  real*8 :: emitprob(grd_ng)
+  real*8 :: emitprob(grp_ng)
   type(packet),pointer :: ptcl
 !-- statement functions
   integer :: l
@@ -43,8 +44,8 @@ subroutine interior_source
 !-- shortcut
   pwr = in_srcepwr
 
-  x1=grd_wlinv(grd_ng+1)
-  x2=grd_wlinv(1)
+  x1=grp_wlinv(grp_ng+1)
+  x2=grp_wlinv(1)
 
 !Volume particle instantiation: loop
 !Loop run over the number of new particles that aren't surface source
@@ -79,15 +80,15 @@ subroutine interior_source
      denom2 = 0d0
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     do ig = 1, grd_ng-1
-        x3=grd_wlinv(ig+1)
-        x4=grd_wlinv(ig)
+     do ig = 1, grp_ng-1
+        x3=grp_wlinv(ig+1)
+        x4=grp_wlinv(ig)
         if(r1>=denom2.and.r1<denom2+(x4-x3)/(x2-x1)) exit
         denom2 = denom2+(x4-x3)/(x2-x1)
      enddo
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     wl0 = 1d0/((1d0-r1)*grd_wlinv(ig)+r1*grd_wlinv(ig+1))
+     wl0 = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
 
 !-- calculating direction cosine (comoving)
      r1 = rand()
@@ -243,7 +244,7 @@ subroutine interior_source
         grd_emitex(i,j,k)**pwr,grd_nvol(i,j,k),nemit,nhere,ndmy)
      if(nhere<1) cycle
 !-- integrate planck function over each group
-     emitprob = specint3(pc_h*pc_c*grd_wlinv/(pc_kb*grd_temp(i,j,k)),grd_ng+1,1)
+     emitprob = specintv(1d0/grd_temp(i,j,k),1)
      emitprob = emitprob*specconst*grd_cap(:,i,j,k)/grd_capgrey(i,j,k)
 !
   do ii=1,nhere
@@ -272,13 +273,13 @@ subroutine interior_source
      denom2 = 0d0
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1     
-     do ig = 1, grd_ng-1
+     do ig = 1, grp_ng-1
         if (r1>=denom2.and.r1<denom2+emitprob(ig)) exit
         denom2 = denom2+emitprob(ig)
      enddo
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     wl0 = 1d0/((1d0-r1)*grd_wlinv(ig)+r1*grd_wlinv(ig+1))
+     wl0 = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
 
 !-- calculating direction cosine (comoving)
      r1 = rand()

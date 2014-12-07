@@ -20,7 +20,8 @@ subroutine transport1(ptcl,isvacant)
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
 !
-  integer :: ig, binsrch
+  integer :: ig
+  integer,external :: binsrch, emitgroup
   real*8 :: r1, r2, thelp,thelpinv
   real*8 :: db, dcol, dcen, dthm, ddop, d
   real*8 :: siglabfact, dcollabfact, elabfact
@@ -29,11 +30,6 @@ subroutine transport1(ptcl,isvacant)
   real*8 :: dtinv
   real*8 :: help
   real*8 :: ppl, ppr
-!
-  integer :: iep,nepg,igp1
-  real*8 :: specval(grd_nepg)
-  real*8 :: emitprob
-  real*8,parameter :: specconsti=pc_pi**4/15d0 !convert specint to planck, inverted
 
   integer,pointer :: ix
   real*8,pointer :: r, mu, e, e0, wl
@@ -294,9 +290,10 @@ subroutine transport1(ptcl,isvacant)
            
         endif
 !
+!-- sample wavelength
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-!
+        ig = emitgroup(ix,1,1,r1)
 !-- sample wavelength old
 !old    denom2 = 0.0
 !old    do ig = 1, grd_ng-1
@@ -304,35 +301,6 @@ subroutine transport1(ptcl,isvacant)
 !old       denom2 = denom2+grd_emitprob(ig,ix,1,1)
 !old    enddo
 !
-!-- sample wavelength
-        r1 = rand()
-        prt_tlyrand = prt_tlyrand+1
-!
-!-- search unnormalized cumulative emission probability values
-        help = r1 !DEBUG
-        r1 = r1*specconsti*grd_capgrey(ix,1,1)
-        iep = binsrch(r1,grd_emitprob2(:,ix,1,1),grd_nep)
-        ig = iep*grd_nepg + 1
-        igp1 = min(ig + grd_nepg - 1, grd_ng)
-        nepg = igp1 - ig + 1
-        specval(:nepg) = specint3(pc_h*pc_c*grd_wlinv(ig:igp1+1) / &
-             (pc_kb*grd_temp(ix,1,1)),nepg+1,1)
-!
-!-- start value
-        if(iep==0) then
-           emitprob = 0d0
-        else
-           emitprob = grd_emitprob2(iep,ix,1,1)
-        endif
-!
-!-- step up until target r1 is reached
-        l = 0
-        do ig=ig,igp1-1
-           l = l + 1
-           emitprob = emitprob + specval(l)*grd_cap(ig,ix,1,1)
-           if(emitprob>r1) exit
-        enddo
-        if(ig>grd_ng) stop 'transport1: ig not valid'
 !(rev 121): calculating radiation energy tally per group
         !grd_eraddens(ix)=grd_eraddens(ix)+e*elabfact
 !-------------------------------------------------------

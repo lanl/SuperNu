@@ -4,7 +4,7 @@ include $(TOP)/Makefile.compiler
 include $(TOP)/Makefile.include
 
 LIBRARY = grid.a
-FILES = grid_setup.o grid_update.o grid_volume.o read_temp_preset.o
+FILES = grid_setup.o grid_update.o grid_volume.o read_temp_preset.o emitgroup.o
 
 .PHONY: all clean
 
