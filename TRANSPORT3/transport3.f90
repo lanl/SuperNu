@@ -19,7 +19,7 @@ subroutine transport3(ptcl,isvacant)
   !corresponding DDMC diffusion routine.
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
-  integer, external :: binsrch
+  integer,external :: binsrch, emitgroup
 
   logical :: loutx,louty,loutz
   integer :: ig, imu, iom, ihelp
@@ -283,12 +283,8 @@ subroutine transport3(ptcl,isvacant)
      else
 !-- effective scattering
 !-- redistributing wavelength
-        denom2 = 0d0
         r1 = rand()
-        do ig=1,grp_ng-1
-           if ((r1>=denom2).and.(r1<denom2+grd_emitprob(ig,ix,iy,iz))) exit
-           denom2 = denom2+grd_emitprob(ig,ix,iy,iz)
-        enddo
+        ig = emitgroup(r1,ix,iy,iz)
 !-- uniformly in new group
         r1 = rand()
         wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
