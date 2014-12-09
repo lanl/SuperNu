@@ -1,6 +1,7 @@
 subroutine transport3(ptcl,isvacant)
 
   use gridmod
+  use groupmod
   use timestepmod
   use physconstmod
   use particlemod
@@ -68,11 +69,11 @@ subroutine transport3(ptcl,isvacant)
   thelpinv = 1d0/thelp
 !
 !-- looking up initial group
-  ig = binsrch(wl/elabfact,grd_wl,grd_ng+1,in_ng)
+  ig = binsrch(wl/elabfact,grp_wl,grp_ng+1,in_ng)
 !-- checking group bounds
-  if(ig>grd_ng.or.ig<1) then
-     if(ig==grd_ng+1) then
-        ig = grd_ng
+  if(ig>grp_ng.or.ig<1) then
+     if(ig==grp_ng+1) then
+        ig = grp_ng
      elseif(ig==0) then
         ig = 1
      else
@@ -124,8 +125,8 @@ subroutine transport3(ptcl,isvacant)
   endif
 !
 !-- Doppler shift distance
-  if(grd_isvelocity.and.ig<grd_ng) then
-     ddop = pc_c*(elabfact-wl/grd_wl(ig+1))
+  if(grd_isvelocity.and.ig<grp_ng) then
+     ddop = pc_c*(elabfact-wl*grp_wlinv(ig+1))
      if(ddop<0d0) then
         ddop = 2d0*pc_c*tsp_dt*thelpinv
      endif
@@ -284,13 +285,13 @@ subroutine transport3(ptcl,isvacant)
 !-- redistributing wavelength
         denom2 = 0d0
         r1 = rand()
-        do ig=1,grd_ng-1
+        do ig=1,grp_ng-1
            if ((r1>=denom2).and.(r1<denom2+grd_emitprob(ig,ix,iy,iz))) exit
            denom2 = denom2+grd_emitprob(ig,ix,iy,iz)
         enddo
 !-- uniformly in new group
         r1 = rand()
-        wl = 1d0/((1d0-r1)/grd_wl(ig)+r1/grd_wl(ig+1))
+        wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
 !-- transforming to lab
         if(grd_isvelocity) then
            wl = wl*(1d0-(mu*z+eta*y+xi*x)*cinv)
@@ -536,14 +537,14 @@ subroutine transport3(ptcl,isvacant)
 !-- Doppler shift
   elseif(d==ddop) then
      if(.not.grd_isvelocity) stop 'transport3: ddop and no velocity'
-     if(ig<grd_ng) then
+     if(ig<grp_ng) then
 !-- shifting group
         ig = ig+1
-        wl = (grd_wl(ig)+1d-6*(grd_wl(ig+1)-grd_wl(ig)))*elabfact
+        wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*elabfact
      else
 !-- resampling wavelength in highest group
         r1 = rand()
-        wl=1d0/(r1/grd_wl(grd_ng+1) + (1d0-r1)/grd_wl(grd_ng))
+        wl=1d0/(r1*grp_wlinv(grp_ng+1) + (1d0-r1)*grp_wlinv(grp_ng))
         wl = wl*elabfact
      endif
 !-- check if ddmc region

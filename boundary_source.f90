@@ -3,6 +3,7 @@ subroutine boundary_source
   use particlemod
   use timestepmod
   use physconstmod
+  use groupmod
   use gridmod
   use totalsmod
   use inputparmod
@@ -17,7 +18,7 @@ subroutine boundary_source
   real*8 :: cmffact, alb,beta,eps,gm
   type(packet),pointer :: ptcl
   integer, external :: binsrch
-  real*8, dimension(grd_ng) :: emitsurfprobg  !surface emission probabilities 
+  real*8, dimension(grp_ng) :: emitsurfprobg  !surface emission probabilities 
 
 !
 !-- statement functions
@@ -39,7 +40,7 @@ subroutine boundary_source
   if(in_opacanaltype=='pick') then
      emitsurfprobg(1) = in_suolpick1
      emitsurfprobg(2) = 1d0 - in_suolpick1
-     do ig = 3, grd_ng
+     do ig = 3, grp_ng
         emitsurfprobg(3) = 0d0
      enddo
   else
@@ -76,9 +77,9 @@ subroutine boundary_source
         endif
      endselect
      if(in_srcmax>0d0.and.in_srctype=='surf') srftemp = in_srcmax
-     do ig = 1, grd_ng
-        wl1 = pc_h*pc_c/(grd_wl(ig+1)*pc_kb*srftemp)
-        wl2 = pc_h*pc_c/(grd_wl(ig)*pc_kb*srftemp)
+     do ig = 1, grp_ng
+        wl1 = pc_h*pc_c*grp_wlinv(ig+1)/(pc_kb*srftemp)
+        wl2 = pc_h*pc_c*grp_wlinv(ig)/(pc_kb*srftemp)
         emitsurfprobg(ig) = 15d0*specint(wl1,wl2,3)/pc_pi**4 
      enddo
   endif
@@ -101,7 +102,7 @@ subroutine boundary_source
      denom2 = 0d0
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     do ig = 1, grd_ng
+     do ig = 1, grp_ng
         iig = ig
         if(r1>=denom2.and.r1<denom2+emitsurfprobg(ig)) exit
         denom2 = denom2+emitsurfprobg(ig)
@@ -111,7 +112,7 @@ subroutine boundary_source
      endif
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     wl0 = 1d0/((1d0-r1)/grd_wl(iig)+r1/grd_wl(iig+1))
+     wl0 = 1d0/((1d0-r1)*grp_wlinv(iig)+r1*grp_wlinv(iig+1))
 
 !-- sampling surface projection
      if(in_surfsrcmu=='beam') then

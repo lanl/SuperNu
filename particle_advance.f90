@@ -3,6 +3,7 @@ subroutine particle_advance
   use particlemod
   use timestepmod
   use totalsmod
+  use groupmod
   use gridmod
   use physconstmod
   use inputparmod
@@ -121,26 +122,26 @@ subroutine particle_advance
      ! Looking up group
      if(ptcl%itype==1) then
         if(grd_isvelocity) then!{{{
-           ig = binsrch(wl/labfact,grd_wl,grd_ng+1,in_ng)
+           ig = binsrch(wl/labfact,grp_wl,grp_ng+1,in_ng)
         else
-           ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)
+           ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)
         endif
         !
-        if(ig>grd_ng.or.ig<1) then
+        if(ig>grp_ng.or.ig<1) then
            !particle out of wlgrid energy bound
-           if(ig>grd_ng) then
-              ig=grd_ng
+           if(ig>grp_ng) then
+              ig=grp_ng
               if(grd_isvelocity) then
-                 wl=grd_wl(grd_ng+1)*labfact
+                 wl=grp_wl(grp_ng+1)*labfact
               else
-                 wl=grd_wl(grd_ng+1)
+                 wl=grp_wl(grp_ng+1)
               endif
            elseif(ig<1) then
               ig=1
               if(grd_isvelocity) then
-                 wl=grd_wl(1)*labfact
+                 wl=grp_wl(1)*labfact
               else
-                 wl=grd_wl(1)
+                 wl=grp_wl(1)
               endif
            else
               write(*,*) 'domain leak!!'
@@ -150,16 +151,16 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)!{{{
+        ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)!{{{
         !
-        if(ig>grd_ng.or.ig<1) then
+        if(ig>grp_ng.or.ig<1) then
            !particle out of wlgrid bound
-           if(ig>grd_ng) then
-              ig=grd_ng
-              wl=grd_wl(grd_ng+1)
+           if(ig>grp_ng) then
+              ig=grp_ng
+              wl=grp_wl(grp_ng+1)
            elseif(ig<1) then
               ig=1
-              wl=grd_wl(1)
+              wl=grp_wl(1)
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
@@ -322,7 +323,7 @@ subroutine particle_advance
 !-- DDMC -> IMC
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
-              wl = 1d0/(r1/grd_wl(ig+1)+(1d0-r1)/grd_wl(ig))
+              wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
               if(grd_isvelocity) then
 !-- velocity effects accounting
                  tot_evelo=tot_evelo+e*(1d0-1d0/labfact)
@@ -352,25 +353,25 @@ subroutine particle_advance
 !-- looking up group
      if(ptcl%itype==1) then
         if(grd_isvelocity) then!{{{
-           ig = binsrch(wl/labfact,grd_wl,grd_ng+1,in_ng)
+           ig = binsrch(wl/labfact,grp_wl,grp_ng+1,in_ng)
         else
-           ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)
+           ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)
         endif
-        if(ig>grd_ng.or.ig<1) then
+        if(ig>grp_ng.or.ig<1) then
            !particle out of wlgrid energy bound
-           if(ig>grd_ng) then
-              ig=grd_ng
+           if(ig>grp_ng) then
+              ig=grp_ng
               if(grd_isvelocity) then
-                 wl=grd_wl(grd_ng+1)*labfact
+                 wl=grp_wl(grp_ng+1)*labfact
               else
-                 wl=grd_wl(grd_ng+1)
+                 wl=grp_wl(grp_ng+1)
               endif
            elseif(ig<1) then
               ig=1
               if(grd_isvelocity) then
-                 wl=grd_wl(1)*labfact
+                 wl=grp_wl(1)*labfact
               else
-                 wl=grd_wl(1)
+                 wl=grp_wl(1)
               endif
            else
               write(*,*) 'domain leak!!'
@@ -380,16 +381,16 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)!{{{
+        ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)!{{{
         !
-        if(ig>grd_ng.or.ig<1) then
+        if(ig>grp_ng.or.ig<1) then
            !particle out of wlgrid bound
-           if(ig>grd_ng) then
-              ig=grd_ng
-              wl=grd_wl(grd_ng+1)
+           if(ig>grp_ng) then
+              ig=grp_ng
+              wl=grp_wl(grp_ng+1)
            elseif(ig<1) then
               ig=1
-              wl=grd_wl(1)
+              wl=grp_wl(1)
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.
@@ -576,27 +577,27 @@ subroutine particle_advance
         !
 !
 !-- find group
-        ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)
+        ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)
         !
-        if(ig>grd_ng.or.ig<1) then
+        if(ig>grp_ng.or.ig<1) then
            !particle out of wlgrid energy bound
-           if(ig>grd_ng) then
-              ig=grd_ng
+           if(ig>grp_ng) then
+              ig=grp_ng
            else
               ig=1
            endif
         endif
         !
         !
-        if(ig<grd_ng) then
+        if(ig<grp_ng) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
            x1 = grd_cap(ig,ix,iy,iz)
-           x2 = grd_wl(ig)/(pc_c*tsp_t*(grd_wl(ig+1)-grd_wl(ig)))
+           x2 = grp_wl(ig)/(pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig)))
            if(r1<x2/(x1+x2)) then
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
-              wl = 1d0/(r1/grd_wl(ig+1)+(1d0-r1)/grd_wl(ig))
+              wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
               wl = wl*exp(tsp_dt/tsp_t)
            endif
         endif
@@ -608,25 +609,25 @@ subroutine particle_advance
      ! Looking up group
      if(ptcl%itype==1) then
         if(grd_isvelocity) then!{{{
-           ig = binsrch(wl/labfact,grd_wl,grd_ng+1,in_ng)
+           ig = binsrch(wl/labfact,grp_wl,grp_ng+1,in_ng)
         else
-           ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)
+           ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)
         endif
-        if(ig>grd_ng.or.ig<1) then
+        if(ig>grp_ng.or.ig<1) then
            !particle out of wlgrid energy bound
-           if(ig>grd_ng) then
-              ig=grd_ng
+           if(ig>grp_ng) then
+              ig=grp_ng
               if(grd_isvelocity) then
-                 wl=grd_wl(grd_ng+1)*labfact
+                 wl=grp_wl(grp_ng+1)*labfact
               else
-                 wl=grd_wl(grd_ng+1)
+                 wl=grp_wl(grp_ng+1)
               endif
            elseif(ig<1) then
               ig=1
               if(grd_isvelocity) then
-                 wl=grd_wl(1)*labfact
+                 wl=grp_wl(1)*labfact
               else
-                 wl=grd_wl(1)
+                 wl=grp_wl(1)
               endif
            else
               write(*,*) 'domain leak!!'
@@ -636,16 +637,16 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)!{{{
+        ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)!{{{
         !
-        if(ig>grd_ng.or.ig<1) then
+        if(ig>grp_ng.or.ig<1) then
            !particle out of wlgrid bound
-           if(ig>grd_ng) then
-              ig=grd_ng
-              wl=grd_wl(grd_ng+1)
+           if(ig>grp_ng) then
+              ig=grp_ng
+              wl=grp_wl(grp_ng+1)
            elseif(ig<1) then
               ig=1
-              wl=grd_wl(1)
+              wl=grp_wl(1)
            else
               write(*,*) 'domain leak!!'
               prt_done = .true.

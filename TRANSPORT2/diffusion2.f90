@@ -1,6 +1,7 @@
 subroutine diffusion2(ptcl,isvacant)
 
   use gridmod
+  use groupmod
   use timestepmod
   use physconstmod
   use particlemod
@@ -26,7 +27,7 @@ subroutine diffusion2(ptcl,isvacant)
   real*8 :: r1, r2, thelp, mu0
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus
-  real*8 :: elabfact, dirdotu, gm
+  real*8 :: dirdotu, gm
 !-- lumped quantities
   real*8 :: emitlump, speclump
   real*8 :: caplump
@@ -37,8 +38,8 @@ subroutine diffusion2(ptcl,isvacant)
   real*8 :: mfphelp, pp
   real*8 :: resopacleak
   integer :: glump, gunlump
-  integer :: glumps(grd_ng)
-  real*8 :: dtinv,capinv(grd_ng)
+  integer :: glumps(grp_ng)
+  real*8 :: dtinv,capinv(grp_ng)
   real*8 :: help
 
   integer,pointer :: ix,iy
@@ -73,11 +74,11 @@ subroutine diffusion2(ptcl,isvacant)
   endif
 !
 !-- looking up initial group
-  ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)
+  ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)
 !-- checking group bounds
-  if(ig>grd_ng.or.ig<1) then
-     if(ig>grd_ng) then
-        ig = grd_ng
+  if(ig>grp_ng.or.ig<1) then
+     if(ig>grp_ng) then
+        ig = grp_ng
      elseif(ig<1) then
         ig = 1
      else
@@ -88,7 +89,7 @@ subroutine diffusion2(ptcl,isvacant)
 !
 !-- opacity regrouping --------------------------
   glump = 0
-  gunlump = grd_ng
+  gunlump = grp_ng
   glumps = 0
 !
 !-- find lumpable groups
@@ -104,7 +105,7 @@ subroutine diffusion2(ptcl,isvacant)
            gunlump=gunlump-1
         endif
      enddo
-     do iig = ig, grd_ng
+     do iig = ig, grp_ng
         if(grd_cap(iig,ix,iy,1)*min(dx(ix),dy(iy)) &
              *thelp >= prt_taulump) then
            glump=glump+1
@@ -121,7 +122,7 @@ subroutine diffusion2(ptcl,isvacant)
      glumps(1)=ig
 !
      forall(iig=2:ig) glumps(iig)=iig-1
-     forall(iig=ig+1:grd_ng) glumps(iig)=iig
+     forall(iig=ig+1:grp_ng) glumps(iig)=iig
 !
   endif
 
@@ -356,7 +357,7 @@ subroutine diffusion2(ptcl,isvacant)
 
 !-- sampling wavelength
      r1 = rand()
-     wl = 1d0/(r1/grd_wl(iiig+1)+(1d0-r1)/grd_wl(iiig))
+     wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
      lhelp = (grd_cap(iiig,ix-1,iy,1)+grd_sig(ix-1,iy,1)) * &
@@ -453,7 +454,7 @@ subroutine diffusion2(ptcl,isvacant)
 
 !-- sampling wavlength
      r1 = rand()
-     wl=1d0/(r1/grd_wl(iiig+1) + (1d0-r1)/grd_wl(iiig))
+     wl=1d0/(r1*grp_wlinv(iiig+1) + (1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
      if(ix==grd_nx) then
@@ -578,7 +579,7 @@ subroutine diffusion2(ptcl,isvacant)
 
 !-- sampling wavlength
      r1 = rand()
-     wl=1d0/(r1/grd_wl(iiig+1) + (1d0-r1)/grd_wl(iiig))
+     wl=1d0/(r1*grp_wlinv(iiig+1) + (1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
      if(iy==1) then
@@ -701,7 +702,7 @@ subroutine diffusion2(ptcl,isvacant)
 
 !-- sampling wavelength
      r1 = rand()
-     wl = 1d0/(r1/grd_wl(iiig+1)+(1d0-r1)/grd_wl(iiig))
+     wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
      if(iy==grd_ny) then
@@ -790,14 +791,14 @@ subroutine diffusion2(ptcl,isvacant)
      denom3 = 0d0
      r1 = rand()
 
-     do iig = grd_ng,glump+1,-1
+     do iig = grp_ng,glump+1,-1
         iiig=glumps(iig)
         if((r1>=denom3).and.(r1<denom3+grd_emitprob(iiig,ix,iy,1)*help)) exit
         denom3 = denom3+grd_emitprob(iiig,ix,iy,1)*help
      enddo
 !
      r1 = rand()
-     wl = 1d0/((1d0-r1)/grd_wl(iiig) + r1/grd_wl(iiig+1))
+     wl = 1d0/((1d0-r1)*grp_wlinv(iiig) + r1*grp_wlinv(iiig+1))
 
      if ((grd_sig(ix,iy,1)+grd_cap(iiig,ix,iy,1)) * &
           min(dx(ix),dy(iy)) &

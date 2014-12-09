@@ -2,6 +2,7 @@ subroutine transport1(ptcl,isvacant)
 
   use miscmod
   use gridmod
+  use groupmod
   use totalsmod
   use timestepmod
   use physconstmod
@@ -62,25 +63,25 @@ subroutine transport1(ptcl,isvacant)
 !
 !-- calculating current group (rev. 120)
   if(grd_isvelocity) then
-     ig = binsrch(wl/(1.0d0-r*mu*cinv),grd_wl,grd_ng+1,in_ng)
+     ig = binsrch(wl/(1.0d0-r*mu*cinv),grp_wl,grp_ng+1,in_ng)
   else
-     ig = binsrch(wl,grd_wl,grd_ng+1,in_ng)
+     ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)
   endif
-  if(ig>grd_ng.or.ig<1) then
+  if(ig>grp_ng.or.ig<1) then
      !particle out of wlgrid energy bound
-     if(ig>grd_ng) then
-        ig=grd_ng
+     if(ig>grp_ng) then
+        ig=grp_ng
         if(grd_isvelocity) then
-           wl=grd_wl(grd_ng+1)*(1.0d0-r*mu*cinv)
+           wl=grp_wl(grp_ng+1)*(1.0d0-r*mu*cinv)
         else
-           wl=grd_wl(grd_ng+1)
+           wl=grp_wl(grp_ng+1)
         endif
      elseif(ig<1) then
         ig=1
         if(grd_isvelocity) then
-           wl=grd_wl(1)*(1.0d0-r*mu*cinv)
+           wl=grp_wl(1)*(1.0d0-r*mu*cinv)
         else
-           wl=grd_wl(1)
+           wl=grp_wl(1)
         endif
      else
         write(*,*) 'domain leak!!'
@@ -134,18 +135,18 @@ subroutine transport1(ptcl,isvacant)
   dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%t)*thelpinv)
 !
 !-- distance to Doppler shift = ddop
-  if(grd_isvelocity.and.ig<grd_ng) then
+  if(grd_isvelocity.and.ig<grp_ng) then
 !      r1 = rand()
 !      prt_tlyrand=prt_tlyrand+1
-!      ddop = pc_c*tsp_t*(grd_wl(ig+1)-grd_wl(ig))*abs(log(r1))/(grd_wl(ig)*dcollabfact)
-!     wl = r1*grd_wl(ig)+(1d0-r1)*grd_wl(ig+1) !uniform sample
-!      wl=1d0/(r1/grd_wl(ig+1) + (1d0-r1)/grd_wl(ig))  !reciprocal sample
+!      ddop = pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig))*abs(log(r1))/(grp_wl(ig)*dcollabfact)
+!     wl = r1*grp_wl(ig)+(1d0-r1)*grp_wl(ig+1) !uniform sample
+!      wl=1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))  !reciprocal sample
 !      wl=wl*(1d0-mu*r*cinv)
-!      ddop = pc_c*(1d0-mu*r*cinv)*(1d0-wl/(1d0-mu*r*cinv*grd_wl(ig+1)))
+!      ddop = pc_c*(1d0-mu*r*cinv)*(1d0-wl/(1d0-mu*r*cinv*grp_wl(ig+1)))
 !     ddop = pc_c*(1d0-mu*r*cinv)*(1d0-&
-!          grd_wl(ig)*log(grd_wl(ig+1)/grd_wl(ig))/(grd_wl(ig+1)-grd_wl(ig)))
-!     write(*,*) pc_c*(wl/grd_wl(ig+1)-1d0)+r*mu
-     ddop = abs(pc_c*(1d0-wl/grd_wl(ig+1))-r*mu)
+!          grp_wl(ig)*log(grp_wl(ig+1)*grp_wlinv(ig))/(grp_wl(ig+1)-grp_wl(ig)))
+!     write(*,*) pc_c*(wl*grp_wlinv(ig+1)-1d0)+r*mu
+     ddop = abs(pc_c*(1d0-wl*grp_wlinv(ig+1))-r*mu)
   else
      ddop = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
   endif
@@ -208,20 +209,20 @@ subroutine transport1(ptcl,isvacant)
 !     r1 = rand()!{{{
 !     prt_tlyrand=prt_tlyrand+1
 !-- redshifting
-     if(ig<grd_ng) then
+     if(ig<grp_ng) then
         ig = ig+1
 !-- lab frame wavelength
-!     wl = r1*grd_wl(ig)+(1d0-r1)*grd_wl(ig+1) !uniform sample
-!        wl=1d0/(r1/grd_wl(ig+1) + (1d0-r1)/grd_wl(ig))  !reciprocal sample
+!     wl = r1*grp_wl(ig)+(1d0-r1)*grp_wl(ig+1) !uniform sample
+!        wl=1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))  !reciprocal sample
 !        wl = wl*(1d0-mu*r*cinv)
-        wl = (grd_wl(ig)+1d-6*(grd_wl(ig+1)-grd_wl(ig)))*(1d0-mu*r*cinv)
+        wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*(1d0-mu*r*cinv)
      else
         r1 = rand()
         prt_tlyrand=prt_tlyrand+1
-!     wl = r1*grd_wl(grd_ng)+(1d0-r1)*grd_wl(grd_ng+1) !uniform sample
-        wl=1d0/(r1/grd_wl(grd_ng+1) + (1d0-r1)/grd_wl(grd_ng))  !reciprocal sample
+!     wl = r1*grp_wl(grp_ng)+(1d0-r1)*grp_wl(grp_ng+1) !uniform sample
+        wl=1d0/(r1*grp_wlinv(grp_ng+1) + (1d0-r1)*grp_wlinv(grp_ng))  !reciprocal sample
         wl = wl*(1d0-mu*r*cinv)
-!        wl = grd_wl(grd_ng+1)*(1d0-mu*r*cinv)
+!        wl = grp_wl(grp_ng+1)*(1d0-mu*r*cinv)
      endif
 !-- check if ddmc region
      if (((grd_sig(ix,1,1)+grd_cap(ig,ix,1,1))*dx(ix)* &
@@ -296,7 +297,7 @@ subroutine transport1(ptcl,isvacant)
         ig = emitgroup(ix,1,1,r1)
 !-- sample wavelength old
 !old    denom2 = 0.0
-!old    do ig = 1, grd_ng-1
+!old    do ig = 1, grp_ng-1
 !old       if ((r1>=denom2).and.(r1<denom2+grd_emitprob(ig,ix,1,1))) exit
 !old       denom2 = denom2+grd_emitprob(ig,ix,1,1)
 !old    enddo
@@ -307,13 +308,13 @@ subroutine transport1(ptcl,isvacant)
 ! sampling comoving wavelength in group
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        wl = 1d0/((1d0-r1)/grd_wl(ig)+r1/grd_wl(ig+1))
-        !wl = (1d0-r1)*grd_wl(ig)+r1*grd_wl(ig+1)
-        !wl = 0.5d0*(grd_wl(ig)+grd_wl(ig+1))
+        wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
+        !wl = (1d0-r1)*grp_wl(ig)+r1*grp_wl(ig+1)
+        !wl = 0.5d0*(grp_wl(ig)+grp_wl(ig+1))
         !
         ! sampling sub-group Planck function:
-!         x1 = pc_h*pc_c/(grd_wl(ig+1)*pc_kb*grd_temp(ix))
-!         x2 = pc_h*pc_c/(grd_wl(ig)*pc_kb*grd_temp(ix))
+!         x1 = pc_h*pc_c/(grp_wl(ig+1)*pc_kb*grd_temp(ix))
+!         x2 = pc_h*pc_c/(grp_wl(ig)*pc_kb*grd_temp(ix))
 !         if (x2<pc_plkpk) then
 !            bmax = x2**3/(exp(x2)-1d0)
 !         elseif (x1>pc_plkpk) then

@@ -33,15 +33,14 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
 !-- lumped quantities -----------------------------------------
 
   real*8 :: emitlump, speclump
-  real*8 :: speclump2
   real*8 :: caplump
   real*8 :: specig
   real*8 :: opacleakllump, opacleakrlump, mfphelp, ppl, ppr
   real*8 :: resopacleakl, resopacleakr
   integer :: glump, gunlump
-  integer :: glumps(grd_ng)
+  integer :: glumps(grp_ng)
   real*8 :: dtinv,tempinv,capgreyinv
-  real*8 :: specarr(grd_ng)
+  real*8 :: specarr(grp_ng)
   real*8 :: help
 
   integer,pointer :: ix
@@ -75,15 +74,15 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
 
 
 !-- find group
-  g = binsrch(wl,grd_wl,grd_ng+1,in_ng)
-  if(g>grd_ng.or.g<1) then
+  g = binsrch(wl,grp_wl,grp_ng+1,in_ng)
+  if(g>grp_ng.or.g<1) then
      !particle out of wlgrid bound
-     if(g>grd_ng) then
-        g=grd_ng
-        wl=grd_wl(grd_ng+1)
+     if(g>grp_ng) then
+        g=grp_ng
+        wl=grp_wl(grp_ng+1)
      elseif(g<1) then
         g=1
-        wl=grd_wl(1)
+        wl=grp_wl(1)
      else
         stop 'diffusion1: missing particle group'
      endif
@@ -92,12 +91,12 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
 !-- lump testing ---------------------------------------------
 !
   glump = 0
-  gunlump = grd_ng
+  gunlump = grp_ng
   glumps = 0
 !
 !-- find lumpable groups
   if((grd_sig(ix,1,1) + grd_cap(g,ix,1,1))*dx(ix)*thelp >= prt_taulump) then
-     do ig=1,grd_ng
+     do ig=1,grp_ng
         if((grd_sig(ix,1,1) + grd_cap(ig,ix,1,1))*dx(ix)*thelp >= prt_taulump) then
            glump=glump+1
            glumps(glump)=ig
@@ -121,8 +120,8 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
 !     glumps(1)=g
 !!
 !     forall(ig=2:g) glumps(ig)=ig-1
-!     forall(ig=g+1:grd_ng) glumps(ig)=ig
-     forall(ig=1:grd_ng) glumps(ig)=ig
+!     forall(ig=g+1:grp_ng) glumps(ig)=ig
+     forall(ig=1:grp_ng) glumps(ig)=ig
   endif
 
 !
@@ -329,12 +328,12 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
            ix = ix-1
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           wl = 1d0/(r1*grd_wlinv(iig+1)+(1d0-r1)*grd_wlinv(iig))
+           wl = 1d0/(r1*grp_wlinv(iig+1)+(1d0-r1)*grp_wlinv(iig))
            g = iig
         else
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           wl = 1d0/(r1*grd_wlinv(iig+1)+(1d0-r1)*grd_wlinv(iig))
+           wl = 1d0/(r1*grp_wlinv(iig+1)+(1d0-r1)*grp_wlinv(iig))
 !
 !-- method changed to IMC
            ptcl%itype = 1
@@ -389,7 +388,7 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
         if(speclump<=0d0) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           wl=1d0/(r1*grd_wlinv(g+1) + (1d0-r1)*grd_wlinv(g))
+           wl=1d0/(r1*grp_wlinv(g+1) + (1d0-r1)*grp_wlinv(g))
 !-- changing from comoving frame to observer frame
            if(grd_isvelocity) then
               help = 1d0+mu*grd_xarr(grd_nx+1)*cinv
@@ -428,7 +427,7 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
            enddo
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           wl=1d0/(r1*grd_wlinv(iig+1) + (1d0-r1)*grd_wlinv(iig))
+           wl=1d0/(r1*grp_wlinv(iig+1) + (1d0-r1)*grp_wlinv(iig))
 !-- changing from comoving frame to observer frame
            if(grd_isvelocity) then
               help = 1d0+mu*grd_xarr(grd_nx+1)*cinv
@@ -493,13 +492,13 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
            ix = ix+1
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           wl = 1d0/(r1*grd_wlinv(iig+1)+(1d0-r1)*grd_wlinv(iig))
+           wl = 1d0/(r1*grp_wlinv(iig+1)+(1d0-r1)*grp_wlinv(iig))
 !--
 !
         else
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
-           wl = 1d0/(r1*grd_wlinv(iig+1)+(1d0-r1)*grd_wlinv(iig))
+           wl = 1d0/(r1*grp_wlinv(iig+1)+(1d0-r1)*grp_wlinv(iig))
 !
 !-- method changed to IMC
            ptcl%itype = 1
@@ -539,7 +538,7 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
 !-- effective scattering sample
   else
 !{{{
-     if(glump==grd_ng) stop 'diffu1: effective scattering with glump==ng'
+     if(glump==grp_ng) stop 'diffu1: effective scattering with glump==ng'
 !
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
@@ -550,7 +549,7 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
         denom2 = 1d0-emitlump
         denom2 = 1d0/denom2
         denom3 = 0d0
-        do ig=glump+1,grd_ng
+        do ig=glump+1,grp_ng
            iig=glumps(ig)
 !          help = specarr(iig)*grd_cap(iig,ix,1,1)*capgreyinv
            help = specint0(tempinv,iig)*grd_cap(iig,ix,1,1)*capgreyinv
@@ -562,7 +561,7 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
      g = iig
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
-     wl = 1d0/((1d0-r1)*grd_wlinv(g) + r1*grd_wlinv(g+1))
+     wl = 1d0/((1d0-r1)*grp_wlinv(g) + r1*grp_wlinv(g+1))
 
      if((grd_sig(ix,1,1)+grd_cap(g,ix,1,1))*dx(ix) &
           *thelp >= prt_tauddmc) then
