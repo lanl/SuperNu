@@ -4,7 +4,7 @@ c     --------------
 c
       integer :: grd_igeom = 0
 c
-      integer :: grd_ng=0
+      integer,private :: ng=0
 c
       integer :: grd_nep=0 !number of emission probability bins
       integer :: grd_nepg=0 !number of groups per emission probability bin
@@ -71,11 +71,11 @@ c
 c
       contains
 c
-      subroutine grid_init(ltalk,ng,igeom,ndim,isvelocity)
+      subroutine grid_init(ltalk,ngin,igeom,ndim,isvelocity)
 c     --------------------------------!{{{
       implicit none
       logical,intent(in) :: ltalk,isvelocity
-      integer,intent(in) :: ng,igeom
+      integer,intent(in) :: ngin,igeom
       integer,intent(in) :: ndim(3)
 ************************************************************************
 * Allocate grd variables.
@@ -87,7 +87,7 @@ c     --------------------------------!{{{
 c
       grd_igeom = igeom
 c
-      grd_ng = ng
+      ng = ngin
 c
 c-- emission probability
       grd_nep = nint(sqrt(dble(ng)))
@@ -144,7 +144,7 @@ c
 c-- ndim=4 alloc
       allocate(grd_opacleak(6,nx,ny,nz))
       allocate(grd_emitprob2(grd_nep,nx,ny,nz))
-      allocate(grd_emitprob(grd_ng,nx,ny,nz))
+      allocate(grd_emitprob(ng,nx,ny,nz))
 c-- ndim=4 alloc
       allocate(grd_cap(ng,nx,ny,nz))
 c!}}}

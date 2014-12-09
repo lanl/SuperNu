@@ -1,6 +1,7 @@
 subroutine analytic_opacity
 
   use inputparmod
+  use groupmod
   use gridmod
   use gasmod
   use physconstmod
@@ -50,21 +51,21 @@ subroutine analytic_opacity
      gas_capgrey = in_gas_capcoef*gas_temp**in_gas_captpwr* &
           gas_rho**in_gas_caprpwr
      do i = 1, gas_ncell
-        do ig = 1, gas_ng
-            x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb)
-            x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb)
+        do ig = 1, grp_ng
+            x1 = pc_h*pc_c*grp_wlinv(ig+1)/pc_kb
+            x2 = pc_h*pc_c*grp_wlinv(ig)/pc_kb
             gas_cap(ig,i) = sngl(0.5d0*gas_capgrey(i)*(x1+x2)/(x1*x2)**2)
         enddo
         gas_capgrey(i) = 0d0
-        do ig = 1, gas_ng
-           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(i))
-           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i))
+        do ig = 1, grp_ng
+           x1 = pc_h*pc_c*grp_wlinv(ig+1)/(pc_kb*gas_temp(i))
+           x2 = pc_h*pc_c*grp_wlinv(ig)/(pc_kb*gas_temp(i))
            gas_capgrey(i) = gas_capgrey(i)+15d0*gas_cap(ig,i)* &
                 specint(x1,x2,3,10)/pc_pi**4
         enddo
      enddo!}}}
   elseif(in_opacanaltype=='pick') then
-     if(gas_ng/=2) stop 'analytic_opacity: invalid gas_ng'
+     if(grp_ng/=2) stop 'analytic_opacity: invalid grp_ng'
      ! sigmaP = sigmaR = constant = A (dd_sigcoef set in input.par)!{{{
      ! Su&Olson picket-fence distributions (tests: A,B,C (Su and Olson 1999))
      ! Input wavelength grid not used
@@ -98,19 +99,19 @@ subroutine analytic_opacity
      do i = 1, gas_ncell
         !
         !set odd group magnitudes (low)
-        do ig = 1, gas_ng, 2
+        do ig = 1, grp_ng, 2
            gas_cap(ig,i) = sngl(gas_capgrey(i)*in_ldisp1)
         enddo
         !set even group magnitudes (high)
-        do ig = 2, gas_ng, 2
+        do ig = 2, grp_ng, 2
            gas_cap(ig,i) = sngl(gas_capgrey(i)*in_ldisp2)
         enddo
         !
         !calculate Planck, Rosseland opacities
         gas_capgrey(i) = 0d0
-        do ig = 1, gas_ng
-           x1 = pc_h*pc_c/(gas_wl(ig+1)*pc_kb*gas_temp(i))
-           x2 = pc_h*pc_c/(gas_wl(ig)*pc_kb*gas_temp(i))
+        do ig = 1, grp_ng
+           x1 = pc_h*pc_c*grp_wlinv(ig+1)/(pc_kb*gas_temp(i))
+           x2 = pc_h*pc_c*grp_wlinv(ig)/(pc_kb*gas_temp(i))
            gas_capgrey(i) = gas_capgrey(i)+15d0*gas_cap(ig,i)* &
                 specint(x1,x2,3,10)/pc_pi**4
         enddo

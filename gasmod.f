@@ -8,8 +8,7 @@ c***********************************************************************
       integer,parameter :: gas_ini56=-1, gas_ico56=-2 !positions in mass0fr and natom1fr arrays
 c
 c-- wavelength grid (gridmod has a copy as well)
-      integer :: gas_ng=0
-      real*8,allocatable :: gas_wl(:) !(gas_ng) wavelength grid
+      integer,private :: ng=0
 c
 c-- domain decomposed grid variables used to calculate the state of the material (gas)
       integer :: gas_ncell=0
@@ -34,9 +33,9 @@ c
 
 c== DD copies
 c-- Probability of emission in a given zone and group
-      real*8,allocatable :: gas_emitprob(:,:) !(gas_ng,ncell)
+      real*8,allocatable :: gas_emitprob(:,:) !(ng,ncell)
 c-- Line+Cont extinction coeff
-      real*4,allocatable :: gas_cap(:,:) !(gas_ng,ncell)
+      real*4,allocatable :: gas_cap(:,:) !(ng,ncell)
 c-- leakage opacities
 c     real*8,allocatable :: dd_opacleak(:,:) !(6,ncell)
 c-- scattering coefficient
@@ -61,11 +60,11 @@ c
       contains
 c
 c
-      subroutine gas_init(ltalk,ncell)
-c-------------------------------------!{{{
+      subroutine gas_init(ltalk,ncell,ngin)
+c----------------------------------------!{{{
       implicit none
       logical,intent(in) :: ltalk
-      integer,intent(in) :: ncell
+      integer,intent(in) :: ncell,ngin
 ************************************************************************
 * Allocate gas variables.
 *
@@ -74,12 +73,14 @@ c-------------------------------------!{{{
 ************************************************************************
       integer :: n
 c
+      ng = ngin
+c
       gas_ncell = ncell
 c
 c-- print alloc size (keep this updated)
 c---------------------------------------
       if(ltalk) then
-       n = gas_ncell*8*(20 + (gas_nelem+3+5) + gas_ng + gas_ng/2)/1024 !kB
+       n = gas_ncell*8*(20 + (gas_nelem+3+5) + ng + ng/2)/1024 !kB
        write(6,*) 'ALLOC gas      :',n,"kB",n/1024,"MB",n/1024**2,"GB"
       endif !ltalk
 c
@@ -120,8 +121,8 @@ c-- ndim=2 alloc small
       gas_natom0fr = 0d0
 c
 c-- ndim=2 alloc big
-      allocate(gas_emitprob(gas_ng,gas_ncell))
-      allocate(gas_cap(gas_ng,gas_ncell))
+      allocate(gas_emitprob(ng,gas_ncell))
+      allocate(gas_cap(ng,gas_ncell))
 !}}}
       end subroutine gas_init
 c

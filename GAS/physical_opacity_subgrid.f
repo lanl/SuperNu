@@ -1,6 +1,7 @@
       subroutine physical_opacity_subgrid
 c     ---------------------------
 c$    use omp_lib
+      use groupmod
       use physconstmod
       use inputparmod
       use ffxsmod
@@ -41,7 +42,7 @@ c-- bbxs
 c-- temporary cap array in the right order
       real*8,allocatable :: cap(:,:)  !(gas_ncell,ngs)
 c-- temperary capros array for opacity mixing
-      real*8 :: capros(gas_ng,gas_ncell)
+      real*8 :: capros(grp_ng,gas_ncell)
 c-- special functions
       real*8 :: x1, x2
 c-- thomson scattering
@@ -80,7 +81,7 @@ c-- ground level occupation number
       enddo !iz
 c
 c-- find the start point: set end before first line that falls into a group
-      wlr = gas_wl(1)  !in cm
+      wlr = grp_wl(1)  !in cm
       ilines = 0
       do ilinee=ilines,bb_nline-1
        wl0 = bb_xs(ilinee+1)%wl0*pc_ang  !in cm
@@ -100,8 +101,8 @@ c-- fixed subgroup number
 c-- find biggest subgroup number for any of the groups
        l = 0
        ll = 0
-       do ig=1,gas_ng
-        ngs = nint((gas_wl(ig+1)/gas_wl(ig) - 1d0) * abs(in_ngs))  !in_ngs stores lambda/(Delta lambda) as negative number
+       do ig=1,grp_ng
+        ngs = nint((grp_wl(ig+1)*grp_wlinv(ig) - 1d0) * abs(in_ngs))  !in_ngs stores lambda/(Delta lambda) as negative number
         ll = ll + ngs
         if(ngs>l) l = ngs
        enddo !ig
@@ -115,15 +116,15 @@ c-- bb,bf,ff opacities - group by group
       tbb = 0d0
       tbf = 0d0
       tff = 0d0
-      do ig=1,gas_ng
+      do ig=1,grp_ng
 c-- variable ngs
        if(in_ngs<0) then
-        ngs = nint((gas_wl(ig+1)/gas_wl(ig) - 1d0) * abs(in_ngs)) !in_ngs stores lambda/(Delta lambda) as negative number
+        ngs = nint((grp_wl(ig+1)*grp_wlinv(ig) - 1d0) * abs(in_ngs)) !in_ngs stores lambda/(Delta lambda) as negative number
         ngs = max(ngs,1)
        endif
 c-- right edge of the group
-       wlr = gas_wl(ig+1)  !in cm
-       dwl = (wlr - gas_wl(ig))/ngs
+       wlr = grp_wl(ig+1)  !in cm
+       dwl = (wlr - grp_wl(ig))/ngs
 c-- bb loop start end end points
        ilines = ilinee + 1  !-- prevous end point is new starting point
        do ilinee=ilines,bb_nline-1
@@ -146,14 +147,14 @@ c-- calculate Planck function weighted Rosseland
         do i=1,gas_ncell
          kbt = pc_kb*gas_temp(i)
          do igs=1,ngs
-          wll = (gas_wl(ig) + (igs-1)*dwl)
+          wll = (grp_wl(ig) + (igs-1)*dwl)
           x1 = pc_h*pc_c/((wll + dwl)*kbt)
           x2 = pc_h*pc_c/(wll*kbt)
           capros(ig,i) = capros(ig,i) +
      &      (15d0*specint(x1,x2,3)/pc_pi**4)/cap(i,igs)
          enddo !igs
-         x1 = pc_h*pc_c/(gas_wl(ig + 1)*kbt)
-         x2 = pc_h*pc_c/(gas_wl(ig)*kbt)
+         x1 = pc_h*pc_c*grp_wl(ig + 1)/kbt
+         x2 = pc_h*pc_c*grp_wl(ig)/kbt
          capros(ig,i) = (15d0*specint(x1,x2,3)/pc_pi**4)/
      &     capros(ig,i)
         enddo !i
@@ -168,7 +169,7 @@ c
 c-- sanity check
       l = 0
       do i=1,gas_ncell
-       do ig=1,gas_ng
+       do ig=1,grp_ng
         if(gas_cap(ig,i)<=0.) l = ior(l,1)
         if(gas_cap(ig,i)/=gas_cap(ig,i)) l = ior(l,2)
         if(gas_cap(ig,i)>huge(gas_cap)) l = ior(l,4)
@@ -201,9 +202,9 @@ c     ----------------------------!{{{
       real*8 :: t0,t1,t2,t3
 c
 c-- left group-boundary wavelength
-      wll = gas_wl(ig)  !in cm
+      wll = grp_wl(ig)  !in cm
 c-- subgroup width
-      dwl = (gas_wl(ig+1) - wll)/ngs
+      dwl = (grp_wl(ig+1) - wll)/ngs
 c
 c-- reset
       cap = 0d0

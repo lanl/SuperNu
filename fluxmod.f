@@ -135,7 +135,7 @@ c
       subroutine generate_fluxgrid(iflx,idex,wlmin,wlmax)
 c     ---------------------------------------
       use physconstmod
-      use gasmod, only:gas_ng,gas_wl
+      use groupmod
       implicit none
       integer,intent(in) :: idex,iflx
       real*8,intent(in) :: wlmin,wlmax
@@ -149,9 +149,9 @@ c-- wavelength
       if(iflx==1) then
          if(idex==0) then
 c-- set wl to transport grid
-            flx_ng = gas_ng
+            flx_ng = grp_ng
             allocate(flx_wl(flx_ng+1))
-            flx_wl = gas_wl
+            flx_wl = grp_wl
 c
          elseif(idex>0) then
 c-- logarithmic wavelength

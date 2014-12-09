@@ -28,7 +28,7 @@ MODULES := elemdatamod.o physconstmod.o mpimod.o \
 FILES := sourceenergy.o sourceenergy_analytic.o sourceenergy_gamma.o \
   sourcenumbers.o vacancies.o \
   boundary_source.o interior_source.o particle_advance.o \
-  particle_advance_gamgrey.o write_output.o wlgrid_setup.o \
+  particle_advance_gamgrey.o write_output.o \
   read_bbxs_data.o restart_file.o dealloc_all.o initialnumbers.o \
   initialnumbers.o initial_particles.o tau_update.o \
   banner.o

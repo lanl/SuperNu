@@ -24,9 +24,7 @@ c     ------------------------------
       logical :: do_output,lexist
       integer :: i,j,k,l,ll,istat
       integer :: l1,l2
-*     integer :: j,k,l
       real*8 :: help
-*     real*8 :: hlparr(gas_ng+1)
       real*8 :: dtempfrac = 0.99d0
       real*8 :: natom1fr(gas_ncell,-2:-1) !todo: memory storage order?
       real*8 :: natom2fr(gas_ncell,-2:-1)
@@ -249,8 +247,7 @@ c-- header
        write(4,'("#",3i8)') tsp_it
 c-- body
        do i=1,gas_ncell
-        write(4,'(1p,9999e12.4)') gas_temp(i),gas_sig(i),
-     &    (gas_cap(ll,i),ll=1,gas_ng)
+        write(4,'(1p,9999e12.4)') gas_temp(i),gas_sig(i),gas_cap(:,i)
        enddo
 c-- close file
        close(4)

@@ -8,6 +8,7 @@ c$    use omp_lib
       use bbxsmod, only:bb_xs,bb_nline
       use ionsmod
       use gasmod
+      use groupmod
       use miscmod
       use timingmod
       implicit none
@@ -37,7 +38,7 @@ c-- bbxs
       real*8 :: expfac(gas_ncell)
       real*8 :: caphelp
 c-- temporary cap array in the right order
-      real*8 :: cap(gas_ncell,gas_ng)
+      real*8 :: cap(gas_ncell,grp_ng)
 c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
@@ -82,20 +83,20 @@ c$omp do schedule(static)
         iz = bb_xs(il)%iz
         ii = bb_xs(il)%ii
 c-- ig pointer
-        do ig=ig,gas_ng
-         if(gas_wl(ig+1)>wl0) exit
+        do ig=ig,grp_ng
+         if(grp_wl(ig+1)>wl0) exit
          dirty = .true.
         enddo !ig
 c-- line in group
         if(ig<1) cycle
-        if(ig>gas_ng) cycle !can't exit in omp
+        if(ig>grp_ng) cycle !can't exit in omp
 c
 c-- update
         if(dirty) then
          dirty = .false.
-         wl = .5*(gas_wl(ig) + gas_wl(ig+1))
+         wl = .5*(grp_wl(ig) + grp_wl(ig+1))
          wlinv = 1d0/wl
-         dwl = gas_wl(ig+1) - gas_wl(ig)  !in cm
+         dwl = grp_wl(ig+1) - grp_wl(ig)  !in cm
 c-- approximate expfac
          expfac = 1d0 - exp(-hckt*wlinv)
 c-- approximate profile function
@@ -140,8 +141,8 @@ c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(wl,en,ie,xs)
 c$omp& shared(gas_void,grndlev,cap)
-       do ig=1,gas_ng
-        wl = gas_wl(ig)  !in cm
+       do ig=1,grp_ng
+        wl = grp_wl(ig)  !in cm
         en = pc_h*pc_c/(pc_ev*wl) !photon energy in eV
         do iz=1,gas_nelem
          do ii=1,min(iz,ion_el(iz)%ni - 1) !last stage is bare nucleus
@@ -172,8 +173,8 @@ c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(wl,wlinv,u,iu,help,gg,igg,gff,yend,dydx,dy)
 c$omp& shared(lwarn,hckt,hlparr,gas_void,cap)
-       do ig=1,gas_ng
-        wl = gas_wl(ig)  !in cm
+       do ig=1,grp_ng
+        wl = grp_wl(ig)  !in cm
         wlinv = 1d0/wl  !in cm
 c-- gcell loop
         do i=1,gas_ncell
@@ -229,7 +230,7 @@ c-- sanity check
       m = 0
       do i=1,gas_ncell
        if(gas_void(i)) cycle
-       do ig=1,gas_ng
+       do ig=1,grp_ng
         if(gas_cap(ig,i)<=0.) m = ior(m,1)
         if(gas_cap(ig,i)/=gas_cap(ig,i)) m = ior(m,2)
         if(gas_cap(ig,i)>huge(gas_cap)) m = ior(m,4)

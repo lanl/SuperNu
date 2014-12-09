@@ -209,6 +209,7 @@ c     ---------------------------
       use gridmod
       use inputparmod
       use gasmod
+      use groupmod
       implicit none
 ************************************************************************
 * calculate initial temperature in Kelvin
@@ -233,7 +234,7 @@ c
             stop 'init_manutemp: in_opacanaltype=pick'
          case ('line')
 c-- line solution
-            if(gas_ng/=2)
+            if(grp_ng/=2)
      &           stop 'init_manutemp: in_opacanaltype=line'
             if(in_ldisp1/in_ldisp2>=1d-3)
      &           stop 'init_manutemp: in_ldisp1/in_ldisp2>=1d-3'

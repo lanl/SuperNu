@@ -20,8 +20,6 @@ c-- ionsmod
       if(impi==impi0) call ion_dealloc
 c-- bbxsmod
       if(allocated(bb_xs)) deallocate(bb_xs) !only impi==impi0, but only if nobbopac==f
-!c-- gasmod
-      deallocate(gas_wl)
 c-- gasmod
       deallocate(grd_numcensus)
       deallocate(grd_xarr,grd_yarr,grd_zarr)

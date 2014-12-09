@@ -76,7 +76,7 @@ program supernu
     endif
 !
 !-- wlgrid (before grid setup)
-    call wlgrid_setup(gas_ng)
+    call group_init(in_ng,in_wldex,in_wlmin,in_wlmax)
     call fluxgrid_setup(in_flx_ndim,in_flx_wlmin,in_flx_wlmax)
 !
 !-- read input structure
@@ -109,15 +109,14 @@ program supernu
 
 
 !-- setup spatial grid
-  call grid_init(impi==impi0,gas_ng,in_igeom,in_ndim,in_isvelocity)
-  call group_init(gas_ng,gas_wl)
-  call grid_setup(gas_wl)
+  call grid_init(impi==impi0,grp_ng,in_igeom,in_ndim,in_isvelocity)
+  call grid_setup
   call mpi_setup_communicators(product(in_ndim)) !MPI
   ncell = product(in_ndim)/nmpi_gas
   call scatter_inputstruct(in_ndim,ncell) !MPI
 
 !-- setup gas
-  if(impi_gas>=0) call gas_init(impi==impi0,ncell)
+  if(impi_gas>=0) call gas_init(impi==impi0,ncell,grp_ng)
   if(impi_gas>=0) call gas_setup(impi==impi0)
 !-- setup flux
   call flux_alloc

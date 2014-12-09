@@ -26,6 +26,7 @@ c     --------------------------!{{{
       use bbxsmod
       use gridmod
       use gasmod
+      use groupmod
       use particlemod
       use timestepmod
       use fluxmod
@@ -103,7 +104,7 @@ c-- integer
       n = 14
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/
-     &  gas_ng,prt_ns,
+     &  grp_ng,prt_ns,
      &  prt_npartmax,tsp_nt,tsp_ntres,
      &  prt_ninit,prt_ninitnew,
      &  ion_nion,ion_iionmax,bb_nline,
@@ -112,7 +113,7 @@ c-- integer
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      gas_ng       = isndvec(1)
+      grp_ng       = isndvec(1)
       prt_ns       = isndvec(2)
       prt_npartmax = isndvec(3)
       tsp_nt       = isndvec(4)
@@ -158,7 +159,7 @@ c
 c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0) then
-       allocate(gas_wl(gas_ng+1))
+       allocate(grp_wl(grp_ng+1))
        allocate(flx_wl(flx_ng+1))
        allocate(flx_mu(flx_nmu+1))
        allocate(flx_om(flx_nom+1))
@@ -189,7 +190,7 @@ c-- broadcast data
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(str_zleft,nz+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(gas_wl,gas_ng+1,MPI_REAL8,
+      call mpi_bcast(grp_wl,grp_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(flx_wl,flx_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -372,6 +373,7 @@ c
 c     ------------------------!{{{
       use gridmod
       use gasmod
+      use groupmod
       use totalsmod
       use particlemod
       use timestepmod
@@ -411,11 +413,11 @@ c
      &   grd_fcoef,gas_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_GAS,ierr)
 c
-       call mpi_gather(gas_emitprob,gas_ng*gas_ncell,MPI_REAL8,
-     &   grd_emitprob,gas_ng*gas_ncell,MPI_REAL8,
+       call mpi_gather(gas_emitprob,grp_ng*gas_ncell,MPI_REAL8,
+     &   grd_emitprob,grp_ng*gas_ncell,MPI_REAL8,
      &   impi0,MPI_COMM_GAS,ierr)
-       call mpi_gather(gas_cap,gas_ng*gas_ncell,MPI_REAL,
-     &   grd_cap,gas_ng*gas_ncell,MPI_REAL,
+       call mpi_gather(gas_cap,grp_ng*gas_ncell,MPI_REAL,
+     &   grd_cap,grp_ng*gas_ncell,MPI_REAL,
      &   impi0,MPI_COMM_GAS,ierr)
       endif
 c
@@ -441,9 +443,9 @@ c
       call mpi_bcast(grd_fcoef,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      call mpi_bcast(grd_emitprob,gas_ng*n,MPI_REAL8,
+      call mpi_bcast(grd_emitprob,grp_ng*n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(grd_cap,gas_ng*n,MPI_REAL,
+      call mpi_bcast(grd_cap,grp_ng*n,MPI_REAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
       call time(t1)
