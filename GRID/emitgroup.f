@@ -23,8 +23,7 @@ c-- search unnormalized cumulative emission probability values
       ig = iep*grd_nepg + 1
       igp1 = min(ig + grd_nepg - 1, grp_ng)
       nepg = igp1 - ig + 1
-      specval(:nepg) = specint3(pc_h*pc_c*grp_wlinv(ig:igp1+1) /
-     &     (pc_kb*grd_temp(i,j,k)),nepg+1,1)
+      specval(:nepg) = specintvp(1d0/grd_temp(i,j,k),ig,igp1)
 c
 c-- start value
       if(iep==0) then

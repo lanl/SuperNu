@@ -164,7 +164,7 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
 !!}}}
 !-- calculating unlumped values
   else
-     emitlump = specint0(g,tempinv)*capgreyinv*grd_cap(g,ix,1,1)!{{{
+     emitlump = specint0(tempinv,g)*capgreyinv*grd_cap(g,ix,1,1)!{{{
      caplump = grd_cap(g,ix,1,1)
 !-- inward
      if(ix==1) then
@@ -553,7 +553,7 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
         do ig=glump+1,grd_ng
            iig=glumps(ig)
 !          help = specarr(iig)*grd_cap(iig,ix,1,1)*capgreyinv
-           help = specint0(iig,tempinv)*grd_cap(iig,ix,1,1)*capgreyinv
+           help = specint0(tempinv,iig)*grd_cap(iig,ix,1,1)*capgreyinv
            denom3 = denom3+help*denom2
            if(denom3>r1) exit
         enddo

@@ -4,7 +4,7 @@ include ../Makefile.compiler
 include ../Makefile.include
 
 LIBRARY = misc.a
-FILES = locate.o sorti.o memusg.o binsrch.o warn.o lcase.o specint.o specint3.o
+FILES = locate.o sorti.o memusg.o binsrch.o warn.o lcase.o specint.o
 
 .PHONY: all clean
 

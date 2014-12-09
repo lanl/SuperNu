@@ -2,6 +2,7 @@ subroutine leakage_opacity3
 
   use miscmod
   use gridmod
+  use groupmod
   use timestepmod
   use particlemod
   use physconstmod
@@ -15,7 +16,7 @@ subroutine leakage_opacity3
   integer :: i,j,k, ig
   real*8 :: thelp, help
   real*8 :: speclump, specval
-  real*8 :: specarr(grd_ng)
+  real*8 :: specarr(grp_ng)
   real*8 :: pp, alb, eps, beta
 !-- statement functions
   integer :: l
@@ -41,11 +42,11 @@ subroutine leakage_opacity3
   do i=1,grd_nx
 !
 !-- initializing Planck integral vectorized
-     specarr = specint3(pc_h*pc_c*grd_wlinv/(pc_kb*grd_temp(i,j,k)),grd_ng+1,1)
+     specarr = specintv(1d0/grd_temp(i,j,k))
      help = min(dx(i),dy(j),dz(k))*thelp
      speclump = 1d0/sum(specarr,grd_cap(:,i,j,k)*help>=prt_taulump)
 !-- lumping opacity
-     do ig=1,grd_ng
+     do ig=1,grp_ng
         if(grd_cap(ig,i,j,k)*min(dx(i),dy(j),dz(k))*thelp < prt_taulump) cycle
 !
 !-- obtaining spectral weight
