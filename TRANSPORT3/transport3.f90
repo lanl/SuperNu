@@ -348,6 +348,18 @@ subroutine transport3(ptcl,isvacant)
            elseif(xi<-1d0) then
               xi = -1
            endif
+           if((xi<0d0.and.x>0d0).or.(xi>0d0.and.x<0d0)) then
+              help=1d0/abs(xi)
+!-- truncate singularity emperially determined
+!-- value of 1000 starts to add noise to W7 spectra
+              help = min(100d0, help)
+!-- velocity effects accounting
+              tot_evelo=tot_evelo-e*2d0 * &
+                   (0.55d0*help-1.25d0*abs(xi))*abs(x)*cinv
+!
+              e0=e0*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(xi))*abs(x)*cinv)
+              e=e*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(xi))*abs(x)*cinv)
+           endif
         endif
         help = (grd_cap(ig,ix+ihelp,iy,iz)+grd_sig(ix+ihelp,iy,iz)) * &
              dx(ix+ihelp)*thelp
@@ -419,6 +431,18 @@ subroutine transport3(ptcl,isvacant)
            elseif(eta<-1d0) then
               eta = -1
            endif
+           if((eta<0d0.and.y>0d0).or.(eta>0d0.and.y<0d0)) then
+              help=1d0/abs(eta)
+!-- truncate singularity emperially determined
+!-- value of 1000 starts to add noise to W7 spectra
+              help = min(100d0, help)
+!-- velocity effects accounting
+              tot_evelo=tot_evelo-e*2d0 * &
+                   (0.55d0*help-1.25d0*abs(eta))*abs(y)*cinv
+!
+              e0=e0*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(eta))*abs(y)*cinv)
+              e=e*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(eta))*abs(y)*cinv)
+           endif
         endif
         help = (grd_cap(ig,ix,iy+ihelp,iz)+grd_sig(ix,iy+ihelp,iz)) * &
              dy(iy+ihelp)*thelp
@@ -489,6 +513,18 @@ subroutine transport3(ptcl,isvacant)
               mu = 1
            elseif(mu<-1d0) then
               mu = -1
+           endif
+           if((mu<0d0.and.z>0d0).or.(mu>0d0.and.z<0d0)) then
+              help=1d0/abs(mu)
+!-- truncate singularity emperially determined
+!-- value of 1000 starts to add noise to W7 spectra
+              help = min(100d0, help)
+!-- velocity effects accounting
+              tot_evelo=tot_evelo-e*2d0 * &
+                   (0.55d0*help-1.25d0*abs(mu))*abs(z)*cinv
+!
+              e0=e0*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(mu))*abs(z)*cinv)
+              e=e*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(mu))*abs(z)*cinv)
            endif
         endif
         help = (grd_cap(ig,ix,iy,iz+ihelp)+grd_sig(ix,iy,iz+ihelp)) * &

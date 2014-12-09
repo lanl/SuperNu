@@ -17,8 +17,8 @@ in_alpha = 1d0
 in_ismodimc = f
 
 !-- grid settings
-in_igeom = 2
-in_ndim = 16, 32, 1
+in_igeom = 3
+in_ndim = 32, 32, 32
 in_isvelocity = t
 in_novolsrc = f
 in_velout = 1d9
