@@ -193,7 +193,7 @@ program supernu
 
      call sourceenergy_analytic !gas_emitex from analytic distribution
      call leakage_opacity       !IMC-DDMC albedo coefficients and DDMC leakage opacities
-     call emission_probability2 !emission probabilities for ep-group in each cell
+     call emission_probability !emission probabilities for ep-group in each cell
      call sourcenumbers         !number of source prt_particles per cell
 
      if(prt_nnew>0) then

@@ -19,7 +19,7 @@ c     --------------------------------------
 c
 c-- search unnormalized cumulative emission probability values
       r1 = r*grd_capgrey(i,j,k)
-      iep = binsrch(r1,grd_emitprob2(:,i,j,k),grd_nep)
+      iep = binsrch(r1,grd_emitprob(:,i,j,k),grd_nep)
       ig = iep*grd_nepg + 1
       igp1 = min(ig + grd_nepg - 1, grp_ng)
       nepg = igp1 - ig + 1
@@ -29,7 +29,7 @@ c-- start value
       if(iep==0) then
        emitprob = 0d0
       else
-       emitprob = grd_emitprob2(iep,i,j,k)
+       emitprob = grd_emitprob(iep,i,j,k)
       endif
 c
 c-- step up until target r1 is reached

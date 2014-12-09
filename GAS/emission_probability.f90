@@ -1,4 +1,4 @@
-subroutine emission_probability2
+subroutine emission_probability
 
   use miscmod
   use inputparmod
@@ -22,13 +22,13 @@ subroutine emission_probability2
 
 !-- grouped volume emission probabilities:
   if(in_opacanaltype=='pick') then
-     stop 'emission_probability2: not implemented'
+     stop 'emission_probability: not implemented'
      do k=1,grd_nz
      do j=1,grd_ny
      do i=1,grd_nx
-        grd_emitprob2(1,i,j,k) = in_suolpick1*grd_cap(1,i,j,k)
-        grd_emitprob2(2,i,j,k) = (1d0 - in_suolpick1)*grd_cap(2,i,j,k)
-        grd_emitprob2(3:grp_ng,i,j,k) = 0d0  !-- not necessary
+        grd_emitprob(1,i,j,k) = in_suolpick1*grd_cap(1,i,j,k)
+        grd_emitprob(2,i,j,k) = (1d0 - in_suolpick1)*grd_cap(2,i,j,k)
+        grd_emitprob(3:grp_ng,i,j,k) = 0d0  !-- not necessary
      enddo !i
      enddo !j
      enddo !k
@@ -37,7 +37,7 @@ subroutine emission_probability2
 
 !-- one group
   if(grp_ng==1) then
-     grd_emitprob2 = 1d0
+     grd_emitprob = 1d0
      return
   endif
 
@@ -54,7 +54,7 @@ subroutine emission_probability2
         nepg = min(iep*grd_nepg,grp_ng) - ig + 1
         igp1 = ig + nepg - 1
         help = help + sum(specarr(ig:igp1)*grd_cap(ig:igp1,i,j,k))
-        grd_emitprob2(iep,i,j,k) = help
+        grd_emitprob(iep,i,j,k) = help
         ig = igp1 + 1
      enddo !iep
   enddo !i
@@ -64,4 +64,4 @@ subroutine emission_probability2
   call time(t1)
   call timereg(t_emitp,t1-t0)
 
-end subroutine emission_probability2
+end subroutine emission_probability
