@@ -53,33 +53,42 @@ c     -----------------------------------------------!{{{
       implicit none
       real*8 :: ss(grp_ng)
       real*8,intent(in) :: tempinv
-      integer,intent(in) :: mode
+      integer,intent(in),optional :: mode
 ************************************************************************
 * Integrate normalized Planck spectrum using Newton-Cotes formulae of
 * different degrees.
 ************************************************************************
       real*8,parameter :: ftpi4=15d0/pc_pi**4
       real*8,parameter :: hck=pc_h*pc_c/pc_kb
-      real*8,parameter :: one6th=1d0/6d0
-      real*8,parameter :: one90th=1d0/90d0
+      real*8,parameter :: one6th=ftpi4/6d0
+      real*8,parameter :: one90th=ftpi4/90d0
+      real*8,parameter :: onehalf=ftpi4/2d0
+      real*8,parameter :: one=ftpi4
       real*8 :: xarr(grp_ng+1)
       real*8 :: farr(grp_ng+1)
       real*8 :: f2arr(grp_ng)
+      integer :: imode
+c
+c-- default mode is linear
+      imode = 1
+      if(present(mode)) imode = mode
 c
 c-- x
       xarr = hck*tempinv*grp_wlinv
 c
 c-- edge values are always used
 c
-      select case(mode)
+      select case(imode)
 c-- constant
       case(0)
-       ss = abs(xarr(2:)-xarr(:grp_ng))*f(.5d0*(xarr(2:)+xarr(:grp_ng)))
+       ss = one*abs(xarr(2:)-xarr(:grp_ng)) *
+     &   f(.5d0*(xarr(2:)+xarr(:grp_ng)))
 c
 c-- linear
       case(1)
        farr = f(xarr) !edge values
-       ss = .5d0*abs(xarr(2:)-xarr(:grp_ng)) * (farr(2:)+farr(:grp_ng))
+       ss = onehalf*abs(xarr(2:)-xarr(:grp_ng)) *
+     &   (farr(2:)+farr(:grp_ng))
 c
 c-- quadratic
       case(2)
@@ -103,8 +112,6 @@ c-- invalid
       case default
        ss = 0d0
       endselect
-c
-      ss = ss * ftpi4
 c
       contains
 c
