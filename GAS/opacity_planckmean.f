@@ -12,7 +12,7 @@ c     -----------------------------
       integer :: i
 !     integer :: ig
 !     real*8 :: x1,x2
-      real*8 :: help,hlparr(grp_ng+1)
+!     real*8 :: help,hlparr(grp_ng+1)
 c
 c-- Planck opacity
       do i=1,gas_ncell

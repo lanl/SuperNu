@@ -160,6 +160,7 @@ c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0) then
        allocate(grp_wl(grp_ng+1))
+       allocate(grp_wlinv(grp_ng+1))
        allocate(flx_wl(flx_ng+1))
        allocate(flx_mu(flx_nmu+1))
        allocate(flx_om(flx_nom+1))
@@ -191,6 +192,8 @@ c-- broadcast data
       call mpi_bcast(str_zleft,nz+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(grp_wl,grp_ng+1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(grp_wlinv,grp_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(flx_wl,flx_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
