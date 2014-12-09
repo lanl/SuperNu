@@ -11,7 +11,6 @@ c     --------------------------------------
 ************************************************************************
 * Determine the group in which to emit a particle.
 ************************************************************************
-      real*8,parameter :: specconsti=pc_pi**4/15d0 !convert specint to planck, inverted
       real*8 :: r1
       integer :: l,iep,nepg,igp1
       integer,external :: binsrch
@@ -19,7 +18,7 @@ c     --------------------------------------
       real*8 :: emitprob
 c
 c-- search unnormalized cumulative emission probability values
-      r1 = r*specconsti*grd_capgrey(i,j,k)
+      r1 = r*grd_capgrey(i,j,k)
       iep = binsrch(r1,grd_emitprob2(:,i,j,k),grd_nep)
       ig = iep*grd_nepg + 1
       igp1 = min(ig + grd_nepg - 1, grp_ng)

@@ -25,7 +25,6 @@ subroutine interior_source
   real*8 :: om0, mu0, x0, y0, z0, ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, thelp
   real*8 :: cmffact,mu1,mu2,gm
-  real*8,parameter :: specconst=15d0/pc_pi**4
   real*8 :: emitprob(grp_ng)
   type(packet),pointer :: ptcl
 !-- statement functions
@@ -245,7 +244,7 @@ subroutine interior_source
      if(nhere<1) cycle
 !-- integrate planck function over each group
      emitprob = specintv(1d0/grd_temp(i,j,k),1)
-     emitprob = emitprob*specconst*grd_cap(:,i,j,k)/grd_capgrey(i,j,k)
+     emitprob = emitprob*grd_cap(:,i,j,k)/grd_capgrey(i,j,k)
 !
   do ii=1,nhere
      ipart = ipart + 1!{{{
