@@ -39,7 +39,7 @@ subroutine diffusion2(ptcl,isvacant)
   real*8 :: resopacleak
   integer :: glump, gunlump
   integer :: glumps(grp_ng)
-  real*8 :: dtinv,tempinv,capgreyinv
+  real*8 :: dtinv, tempinv, capgreyinv
   real*8 :: specarr(grp_ng)
   real*8 :: help
 
