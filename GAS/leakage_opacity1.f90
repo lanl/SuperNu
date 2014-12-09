@@ -40,12 +40,12 @@ subroutine leakage_opacity1
   do i=1,grd_nx
 !
 !-- initializing Planck integral vectorized
-     specarr = specintv(1d0/grd_temp(i,j,k),1)
+     specarr = specintv(1d0/grd_temp(i,j,k))
      help = dx(i)*thelp
-     speclump = 1d0/sum(specarr,(grd_sig(i,j,k) + grd_cap(:,i,j,k))*help>=prt_taulump)
+     speclump = 1d0/sum(specarr,grd_cap(:,i,j,k)*help>=prt_taulump)
 !-- lumping opacity
      do ig=1,grp_ng
-        if((grd_sig(i,j,k) + grd_cap(ig,i,j,k))*dx(i)*thelp < prt_taulump) cycle
+        if(grd_cap(ig,i,j,k)*dx(i)*thelp < prt_taulump) cycle
 !
 !-- obtaining spectral weight
         specval = specarr(ig)

@@ -95,9 +95,9 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
   glumps = 0
 !
 !-- find lumpable groups
-  if((grd_sig(ix,1,1) + grd_cap(g,ix,1,1))*dx(ix)*thelp >= prt_taulump) then
+  if(grd_cap(g,ix,1,1)*dx(ix)*thelp >= prt_taulump) then
      do ig=1,grp_ng
-        if((grd_sig(ix,1,1) + grd_cap(ig,ix,1,1))*dx(ix)*thelp >= prt_taulump) then
+        if(grd_cap(ig,ix,1,1)*dx(ix)*thelp >= prt_taulump) then
            glump=glump+1
            glumps(glump)=ig
         else
@@ -116,11 +116,6 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
 
 !
   if(glump==0) then
-!     glump=1
-!     glumps(1)=g
-!!
-!     forall(ig=2:g) glumps(ig)=ig-1
-!     forall(ig=g+1:grp_ng) glumps(ig)=ig
      forall(ig=1:grp_ng) glumps(ig)=ig
   endif
 
