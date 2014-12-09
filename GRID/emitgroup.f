@@ -1,4 +1,4 @@
-      function emitgroup(i,j,k,r) result(ig)
+      function emitgroup(r,i,j,k) result(ig)
 c     --------------------------------------
       use miscmod
       use groupmod
@@ -6,8 +6,8 @@ c     --------------------------------------
       use physconstmod
       implicit none
       integer :: ig
-      integer,intent(in) :: i,j,k
       real*8,intent(in) :: r
+      integer,intent(in) :: i,j,k
 ************************************************************************
 * Determine the group in which to emit a particle.
 ************************************************************************

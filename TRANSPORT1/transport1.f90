@@ -294,13 +294,7 @@ subroutine transport1(ptcl,isvacant)
 !-- sample wavelength
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        ig = emitgroup(ix,1,1,r1)
-!-- sample wavelength old
-!old    denom2 = 0.0
-!old    do ig = 1, grp_ng-1
-!old       if ((r1>=denom2).and.(r1<denom2+grd_emitprob(ig,ix,1,1))) exit
-!old       denom2 = denom2+grd_emitprob(ig,ix,1,1)
-!old    enddo
+        ig = emitgroup(r1,ix,1,1)
 !
 !(rev 121): calculating radiation energy tally per group
         !grd_eraddens(ix)=grd_eraddens(ix)+e*elabfact
