@@ -32,8 +32,6 @@ c
       real*8,allocatable :: gas_edep(:)
 
 c== DD copies
-c-- Probability of emission in a given zone and group
-      real*8,allocatable :: gas_emitprob(:,:) !(ng,ncell)
 c-- Line+Cont extinction coeff
       real*4,allocatable :: gas_cap(:,:) !(ng,ncell)
 c-- leakage opacities
@@ -80,7 +78,7 @@ c
 c-- print alloc size (keep this updated)
 c---------------------------------------
       if(ltalk) then
-       n = gas_ncell*8*(20 + (gas_nelem+3+5) + ng + ng/2)/1024 !kB
+       n = gas_ncell*8*(20 + (gas_nelem+3+5) + ng/2)/1024 !kB
        write(6,*) 'ALLOC gas      :',n,"kB",n/1024,"MB",n/1024**2,"GB"
       endif !ltalk
 c
@@ -121,7 +119,6 @@ c-- ndim=2 alloc small
       gas_natom0fr = 0d0
 c
 c-- ndim=2 alloc big
-      allocate(gas_emitprob(ng,gas_ncell))
       allocate(gas_cap(ng,gas_ncell))
 !}}}
       end subroutine gas_init

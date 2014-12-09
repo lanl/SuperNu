@@ -26,7 +26,7 @@ subroutine transport3(ptcl,isvacant)
   real*8 :: elabfact, eta, xi
   real*8 :: dtinv, thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop,d
-  real*8 :: r1, r2, denom2
+  real*8 :: r1, r2
 
   integer,pointer :: ix,iy,iz
   real*8,pointer :: x,y,z,mu,om,e,e0,wl

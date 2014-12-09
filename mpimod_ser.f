@@ -54,7 +54,6 @@ c-- domain decomposition
       grd_emitex = reshape(gas_emitex,[grd_nx,grd_ny,grd_nz])
       grd_evolinit = reshape(gas_evolinit,[grd_nx,grd_ny,grd_nz])
 
-      grd_emitprob = reshape(gas_emitprob,[grp_ng,grd_nx,grd_ny,grd_nz])
       grd_cap = reshape(gas_cap,[grp_ng,grd_nx,grd_ny,grd_nz])
       grd_sig = reshape(gas_sig,[grd_nx,grd_ny,grd_nz])
       grd_capgam = reshape(gas_capgam,[grd_nx,grd_ny,grd_nz])

@@ -27,7 +27,7 @@ subroutine transport2(ptcl,isvacant)
   real*8 :: dtinv, thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,ddop,d
   real*8 :: rold, zold, omold
-  real*8 :: r1, r2, denom2
+  real*8 :: r1, r2
 
   integer,pointer :: ix,iy
   real*8,pointer :: x,y,mu,om,e,e0,wl
