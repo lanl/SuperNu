@@ -12,6 +12,8 @@ module particlemod
   type(packet),allocatable,target :: prt_particles(:)  !(prt_npartmax)
   logical,allocatable,target :: prt_isvacant(:)  !(prt_npartmax)
 !
+  integer :: prt_ipart, prt_istep
+!
   integer :: prt_npartmax, prt_ns, prt_ninit
   integer :: prt_nsurf, prt_nexsrc, prt_nnew, prt_ninitnew
 !

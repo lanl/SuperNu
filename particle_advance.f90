@@ -68,6 +68,7 @@ subroutine particle_advance
 !-- active particle
      isvacant => prt_isvacant(ipart)
      ptcl => prt_particles(ipart)
+     prt_ipart = ipart
      npckt = npckt + 1
 
 !-- default, recalculated for isvelocity and itype==1
@@ -425,15 +426,15 @@ subroutine particle_advance
 
 !-- 1D
      case(1)
-        istep = 0
+        prt_istep = 0
         do while ((.not.prt_done).and.(.not.isvacant))
-           istep = istep + 1
+           prt_istep = prt_istep + 1
            if (ptcl%itype == 1.or.in_puretran) then
               nimc = nimc + 1
               call transport1(ptcl,isvacant)
            else
               nddmc = nddmc + 1
-              call diffusion1(ptcl,isvacant,ipart,istep)
+              call diffusion1(ptcl,isvacant)
            endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done .and. &
@@ -468,7 +469,9 @@ subroutine particle_advance
 
 !-- 2D
      case(2)
+        prt_istep = 0
         do while ((.not.prt_done).and.(.not.isvacant))
+           prt_istep = prt_istep + 1
            if (ptcl%itype == 1.or.in_puretran) then
               nimc = nimc + 1
               call transport2(ptcl,isvacant)
@@ -514,7 +517,9 @@ subroutine particle_advance
 
 !-- 3D
      case(3)
+        prt_istep = 0
         do while ((.not.prt_done).and.(.not.isvacant))
+           prt_istep = prt_istep + 1
            if (ptcl%itype == 1.or.in_puretran) then
               nimc = nimc + 1
               call transport3(ptcl,isvacant)

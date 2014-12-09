@@ -1,4 +1,4 @@
-subroutine diffusion1(ptcl,isvacant,ipart,istep)
+subroutine diffusion1(ptcl,isvacant)
 
   use groupmod
   use gridmod
@@ -12,7 +12,6 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
 !
   type(packet),target,intent(inout) :: ptcl
   logical,intent(inout) :: isvacant
-  integer,intent(in) :: ipart,istep
 !##################################################
   !This subroutine passes particle parameters as input and modifies
   !them through one DDMC diffusion event (Densmore, 2007).  If
@@ -106,7 +105,7 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
         endif
      enddo
   endif
-! write(0,*) ipart,istep,glump,ig,ix
+! write(0,*) prt_ipart,prt_istep,glump,ig,ix
 
 !
 !-- only do this if needed
