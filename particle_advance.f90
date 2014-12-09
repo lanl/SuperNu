@@ -22,7 +22,7 @@ subroutine particle_advance
 !##################################################
   logical :: lhelp
   integer*8 :: nddmc, nimc, npckt
-  integer :: ipart, ig
+  integer :: ipart, ig, istep
   integer,external :: binsrch
   real*8 :: r1, x1, x2, help
 ! integer :: irl,irr
@@ -424,13 +424,15 @@ subroutine particle_advance
 
 !-- 1D
      case(1)
+        istep = 0
         do while ((.not.prt_done).and.(.not.isvacant))
+           istep = istep + 1
            if (ptcl%itype == 1.or.in_puretran) then
               nimc = nimc + 1
               call transport1(ptcl,isvacant)
            else
               nddmc = nddmc + 1
-              call diffusion1(ptcl,isvacant)
+              call diffusion1(ptcl,isvacant,ipart,istep)
            endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done .and. &

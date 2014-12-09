@@ -25,7 +25,7 @@ subroutine transport1(ptcl,isvacant)
   real*8 :: r1, r2, thelp,thelpinv
   real*8 :: db, dcol, dcen, dthm, ddop, d
   real*8 :: siglabfact, dcollabfact, elabfact
-  real*8 :: rold, P, denom2, told, muold
+  real*8 :: rold, P, told, muold
 ! real*8 :: x1, x2, xx0
   real*8 :: dtinv
   real*8 :: help
