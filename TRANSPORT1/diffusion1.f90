@@ -28,7 +28,7 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
   integer,external :: binsrch,emitgroup
   real*8 :: r1, r2, thelp
   real*8 :: denom, denom2, denom3
-  real*8 :: ddmct, tau, tcensus, PA
+  real*8 :: ddmct, tau, tcensus, pa
 !-- lumped quantities -----------------------------------------
 
   real*8 :: emitlump, speclump
@@ -58,8 +58,7 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
   e => ptcl%e
   e0 => ptcl%e0
   wl => ptcl%wl
-
-!--------------------------------------------------------------
+!
 !-- shortcuts
   dtinv = 1d0/tsp_dt
   tempinv = 1d0/grd_temp(ix,1,1)
@@ -155,7 +154,7 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
         emitlump = min(emitlump,1d0)
      endif
 !-- leakage opacities
-     opacleak = grd_opacleak(:,ix,1,1)
+     opacleak = grd_opacleak(:2,ix,1,1)
 !!}}}
 !-- calculating unlumped values
   else
@@ -206,7 +205,7 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
 !
 
 !-- calculate time to census or event
-  denom = opacleak(1)+opacleak(2)+&
+  denom = sum(opacleak) + &
        (1d0-emitlump)*(1d0-grd_fcoef(ix,1,1))*caplump
   if(prt_isddmcanlog) then
      denom = denom+grd_fcoef(ix,1,1)*caplump
@@ -217,14 +216,14 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
   tau = abs(log(r1)/(pc_c*denom))
   tcensus = tsp_t+tsp_dt-ptcl%t
   ddmct = min(tau,tcensus)
+
 !
 !-- calculating energy depostion and density
   if(prt_isddmcanlog) then
-     grd_eraddens(ix,1,1)= grd_eraddens(ix,1,1)+e*ddmct*dtinv
+     grd_eraddens(ix,1,1) = grd_eraddens(ix,1,1)+e*ddmct*dtinv
   else
      grd_edep(ix,1,1) = grd_edep(ix,1,1)+e*(1d0-exp(-grd_fcoef(ix,1,1) &!{{{
           *caplump*pc_c*ddmct))
-!--
      if(grd_fcoef(ix,1,1)*caplump*dx(ix)*thelp>1d-6) then
         help = 1d0/(grd_fcoef(ix,1,1)*caplump)
         grd_eraddens(ix,1,1)= &
@@ -260,24 +259,23 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
   help = 1d0/denom
 
 !-- leak probability
-  probleak = opacleak(2)*help
+  probleak = opacleak*help
 
 !-- absorption probability
   if(prt_isddmcanlog) then
-     PA = grd_fcoef(ix,1,1)*caplump*help
+     pa = grd_fcoef(ix,1,1)*caplump*help
   else
-     PA = 0d0
+     pa = 0d0
   endif
 
 !-- absorption sample
-  if(r1<PA) then
+  if(r1<pa) then
      isvacant = .true.
      prt_done = .true.
      grd_edep(ix,1,1) = grd_edep(ix,1,1)+e
 
-
 !-- left leakage sample
-  elseif (r1>=PA .and. r1<PA+probleak(1)) then
+  elseif (r1>=pa .and. r1<pa+probleak(1)) then
 !{{{
 !-- checking if at inner bound
      if (ix == 1) then
@@ -366,7 +364,7 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
 
 
 !-- right leakage sample
-  elseif (r1>=PA+probleak(1) .and. r1<PA+sum(probleak)) then
+  elseif (r1>=pa+probleak(1) .and. r1<pa+sum(probleak)) then
 !!{{{
 !-- checking if at outer bound
      if (ix == grd_nx) then
@@ -532,13 +530,13 @@ subroutine diffusion1(ptcl,isvacant,ipart,istep)
 !-- effective scattering sample
   else
 !{{{
-     if(glump==grp_ng) stop 'diffu1: effective scattering with glump==ng'
+     if(glump==grp_ng) stop 'diffusion1: effective scattering with glump==ng'
 
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
 
      if(glump==0) then
-        iig = emitgroup(ix,1,1,r1)
+        iig = emitgroup(r1,ix,1,1)
      else
         denom2 = 1d0-emitlump
         denom2 = 1d0/denom2
