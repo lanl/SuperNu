@@ -178,6 +178,7 @@ subroutine transport3(ptcl,isvacant)
           (1d0-exp(-grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz)* &
           elabfact*d*thelp))*elabfact
      if(grd_edep(ix,iy,iz)/=grd_edep(ix,iy,iz)) then
+!       write(0,*) e,grd_fcoef(ix,iy,iz),grd_cap(ig,ix,iy,iz),elabfact,d,thelp
         stop 'transport3: invalid energy deposition'
      endif
 !-- reducing particle energy

@@ -113,7 +113,7 @@ subroutine diffusion3(ptcl,isvacant,icell,specarr)
 
 !
 !-- only do this if needed
-  if(glump>0 .and. .not.all(icell/=[ix,iy,iz])) then
+  if(glump>0 .and. .not.all(icell==[ix,iy,iz])) then
      icell = [ix,iy,iz]
      specarr = specintv(tempinv) !this is slow!
   endif
@@ -354,6 +354,11 @@ subroutine diffusion3(ptcl,isvacant,icell,specarr)
              help*cinv*dtinv
      else
         grd_eraddens(ix,iy,iz) = grd_eraddens(ix,iy,iz)+e*ddmct*dtinv
+     endif
+!
+     if(grd_edep(ix,iy,iz)/=grd_edep(ix,iy,iz)) then
+!       write(0,*) e,grd_fcoef(ix,iy,iz),caplump,ddmct,glump,speclump,ig,tempinv
+        stop 'diffusion3: invalid energy deposition'
      endif
      e = e*exp(-grd_fcoef(ix,iy,iz)*caplump*pc_c*ddmct)
 !!}}}
