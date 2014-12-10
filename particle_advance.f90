@@ -80,6 +80,7 @@ subroutine particle_advance
   do ipart = 1, prt_npartmax
      ! Checking vacancy
      if(prt_isvacant(ipart)) cycle
+     isvacant = .false.
 !
 !-- active particle
      ptcl = prt_particles(ipart)
