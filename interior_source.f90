@@ -26,7 +26,7 @@ subroutine interior_source
   real*8 :: denom2,x1,x2,x3,x4, thelp
   real*8 :: cmffact,mu1,mu2,gm
   real*8 :: emitprob(grp_ng)
-  type(packet),pointer :: ptcl
+  type(packet),target :: ptcl
 !-- statement functions
   integer :: l
   real*8 :: dx,dy,dz
@@ -59,7 +59,6 @@ subroutine interior_source
   do ii=1,nhere
      ipart = ipart + 1!{{{
      ivac = prt_vacantarr(ipart)
-     ptcl => prt_particles(ivac)
 
 !-- setting 1st cell index
      ptcl%ix = i
@@ -226,6 +225,10 @@ subroutine interior_source
      ptcl%wl = wl0/cmffact
 !-- velocity effects accounting
      tot_evelo=tot_evelo+ep0*(1d0-cmffact)
+
+!-- save particle result
+!-----------------------
+     prt_particles(ivac) = ptcl
 !}}}
   enddo !ipart
   enddo !i
@@ -249,7 +252,6 @@ subroutine interior_source
   do ii=1,nhere
      ipart = ipart + 1!{{{
      ivac = prt_vacantarr(ipart)
-     ptcl => prt_particles(ivac)
 !
 !-- setting 1st cell index
      ptcl%ix = i
@@ -497,6 +499,10 @@ subroutine interior_source
      ptcl%wl = wl0/cmffact
 !-- velocity effects accounting
      tot_evelo=tot_evelo+ep0*(1d0-cmffact)
+
+!-- save particle result
+!-----------------------
+     prt_particles(ivac) = ptcl
 
 !}}}
   enddo !ipart

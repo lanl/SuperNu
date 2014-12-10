@@ -12,7 +12,7 @@ subroutine initial_particles
   !This subroutine instantiates the initial particles before
   !the first time step.
 !##################################################
-  type(packet),pointer :: ptcl
+  type(packet) :: ptcl
 !
   logical :: lhelp
   integer :: ig, i,j,k, iig, ipart
@@ -33,7 +33,6 @@ subroutine initial_particles
   k = 1
   ijkused = 0
   do ipart=1,prt_ninitnew
-     ptcl => prt_particles(ipart)
 
 !-- incrementing to next vacant cell
      loopk: do k=k,grd_nz
@@ -203,6 +202,10 @@ subroutine initial_particles
         ptcl%e0 = ep0
         ptcl%wl = wl0
      endif
+
+!-- save particle result
+!-----------------------
+     prt_particles(ipart) = ptcl
 
   enddo !ipart
 

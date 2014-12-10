@@ -9,8 +9,8 @@ module particlemod
      integer :: ix, iy, iz
      integer :: itype
   end type packet
-  type(packet),allocatable,target :: prt_particles(:)  !(prt_npartmax)
-  logical,allocatable,target :: prt_isvacant(:)  !(prt_npartmax)
+  type(packet),allocatable :: prt_particles(:)  !(prt_npartmax)
+  logical,allocatable :: prt_isvacant(:)  !(prt_npartmax)
 !
   integer :: prt_ipart, prt_istep
 !

@@ -16,7 +16,7 @@ subroutine boundary_source
   real*8 :: denom2, wl1, wl2, thelp, mfphelp, help, mu1, mu2
   real*8 :: srftemp = 1d4
   real*8 :: cmffact, alb,beta,eps,gm
-  type(packet),pointer :: ptcl
+  type(packet),target :: ptcl
   integer, external :: binsrch
   real*8, dimension(grp_ng) :: emitsurfprobg  !surface emission probabilities 
 
@@ -86,12 +86,11 @@ subroutine boundary_source
   
 
 !-- instantiating surface particles:
-  do ipart = 1, prt_nsurf
+  do ipart=1,prt_nsurf
 
 !-- filling vacant spot in vacancy array
      ivac = prt_vacantarr(ipart)
      prt_isvacant(ivac) = .false.
-     ptcl => prt_particles(ivac)
 !
 !-- calculating particle time
      r1 = rand()
@@ -373,6 +372,10 @@ subroutine boundary_source
         ptcl%wl = wl0
         ptcl%itype = 2
      endif
+
+!-- save particle result
+!-----------------------
+     prt_particles(ivac) = ptcl
 
 
   enddo

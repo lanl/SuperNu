@@ -29,7 +29,7 @@ subroutine particle_advance
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
 ! real*8 :: uul, uur, uumax, r0,r2,r3
-  logical,pointer :: isvacant
+  logical :: isvacant
   integer, pointer :: ix, iy, iz
   real*8, pointer :: x,y,z, mu, e, wl, om
   real*8 :: t0,t1  !timing
@@ -38,7 +38,7 @@ subroutine particle_advance
   real*8 :: specarr(grp_ng)
   integer :: icell(3)
 !
-  type(packet),pointer :: ptcl
+  type(packet),target :: ptcl
 !
   logical,parameter :: isshift=.true.
 !-- statement function
@@ -58,7 +58,7 @@ subroutine particle_advance
   flx_lumnum = 0
   grd_methodswap = 0
   grd_numcensus = 0
-  
+
   call time(t0)
   ! Propagating all particles that are not considered vacant: loop
   npckt = 0
@@ -70,8 +70,7 @@ subroutine particle_advance
      if(prt_isvacant(ipart)) cycle
 !
 !-- active particle
-     isvacant => prt_isvacant(ipart)
-     ptcl => prt_particles(ipart)
+     ptcl = prt_particles(ipart)
      prt_ipart = ipart
      npckt = npckt + 1
 
@@ -175,7 +174,7 @@ subroutine particle_advance
         !!}}}
      endif
 
-     
+
      ! Checking if particle conversions are required since prior time step
      if(.not.in_puretran) then
         if(grd_isvelocity) then!{{{
@@ -353,7 +352,7 @@ subroutine particle_advance
               ptcl%itype = 2
            endif
         endif!}}}
-     endif 
+     endif
 !
 !-- looking up group
      if(ptcl%itype==1) then
@@ -423,7 +422,7 @@ subroutine particle_advance
      endif
 
 !     write(*,*) ipart
-!-----------------------------------------------------------------------        
+!-----------------------------------------------------------------------
 !-- Advancing particle until census, absorption, or escape from domain
 !Calling either diffusion or transport depending on particle type (ptcl%itype)
      select case(in_igeom)
@@ -575,9 +574,8 @@ subroutine particle_advance
 !-----------------------------------------------------------------------
 
 
+!-- Redshifting DDMC particle energy weights and wavelengths
      if(.not.isvacant) then
-
-     ! Redshifting DDMC particle energy weights and wavelengths
      if(ptcl%itype == 2.and.grd_isvelocity) then
 !-- redshifting energy weight!{{{
         tot_evelo=tot_evelo+e*(1d0-exp(-tsp_dt/tsp_t))
@@ -612,59 +610,8 @@ subroutine particle_advance
         endif
         !!}}}
      endif
-
      endif
 
-     ! Looking up group
-     if(ptcl%itype==1) then
-        if(grd_isvelocity) then!{{{
-           ig = binsrch(wl/labfact,grp_wl,grp_ng+1,in_ng)
-        else
-           ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)
-        endif
-        if(ig>grp_ng.or.ig<1) then
-           !particle out of wlgrid energy bound
-           if(ig>grp_ng) then
-              ig=grp_ng
-              if(grd_isvelocity) then
-                 wl=grp_wl(grp_ng+1)*labfact
-              else
-                 wl=grp_wl(grp_ng+1)
-              endif
-           elseif(ig<1) then
-              ig=1
-              if(grd_isvelocity) then
-                 wl=grp_wl(1)*labfact
-              else
-                 wl=grp_wl(1)
-              endif
-           else
-              write(*,*) 'domain leak!!'
-              prt_done = .true.
-              isvacant = .true.
-           endif
-        endif
-        !!}}}
-     else
-        ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)!{{{
-        !
-        if(ig>grp_ng.or.ig<1) then
-           !particle out of wlgrid bound
-           if(ig>grp_ng) then
-              ig=grp_ng
-              wl=grp_wl(grp_ng+1)
-           elseif(ig<1) then
-              ig=1
-              wl=grp_wl(1)
-           else
-              write(*,*) 'domain leak!!'
-              prt_done = .true.
-              isvacant = .true.
-           endif
-        endif
-        !!}}}
-     endif
-     
      if(isshift) then
      if ((grd_isvelocity).and.(ptcl%itype==1)) then
         select case(in_igeom)
@@ -684,6 +631,11 @@ subroutine particle_advance
 !-- radiation energy at census
      if(.not.isvacant) tot_erad = tot_erad + e
 
+!
+!-- save particle results
+!------------------------
+     prt_isvacant(ipart) = isvacant
+     if(.not.isvacant) prt_particles(ipart) = ptcl
 
   enddo !ipart
 
