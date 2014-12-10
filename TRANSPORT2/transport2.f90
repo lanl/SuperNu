@@ -1,5 +1,6 @@
 subroutine transport2(ptcl,ig,isvacant)
 
+  use miscmod
   use gridmod
   use groupmod
   use timestepmod
@@ -20,7 +21,7 @@ subroutine transport2(ptcl,ig,isvacant)
   !corresponding DDMC diffusion routine.
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
-  integer,external :: binsrch, emitgroup
+  integer,external :: emitgroup
 
   logical :: loutx,louty
   integer :: imu, ihelp
@@ -249,8 +250,8 @@ subroutine transport2(ptcl,ig,isvacant)
         isvacant = .true.
         prt_done = .true.
 !-- retrieving lab frame flux group, polar bin
-        imu = binsrch(mu,flx_mu,flx_nmu+1,0)
-        ig = binsrch(wl,flx_wl,flx_ng+1,0)
+        imu = binsrch(mu,flx_mu,flx_nmu+1)
+        ig = binsrch(wl,flx_wl,flx_ng+1)
 !-- checking group bounds
         if(ig>flx_ng.or.ig<1) then
            if(ig>flx_ng) then

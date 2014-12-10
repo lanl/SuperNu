@@ -1,5 +1,6 @@
 subroutine transport2_gamgrey(ptcl)
 
+  use miscmod
   use gridmod
   use timestepmod
   use physconstmod
@@ -16,7 +17,6 @@ subroutine transport2_gamgrey(ptcl)
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
   real*8,parameter :: dt = pc_year !give grey transport infinite time
-  integer, external :: binsrch
 
   logical :: loutx,louty
   integer :: imu, ihelp
@@ -196,7 +196,7 @@ subroutine transport2_gamgrey(ptcl)
 !-- ending particle
         prt_done = .true.
 !-- retrieving lab frame flux group, polar bin
-        imu = binsrch(mu,flx_mu,flx_nmu+1,0)
+        imu = binsrch(mu,flx_mu,flx_nmu+1)
 !-- tallying outbound luminosity
         flx_gamluminos(imu,1) = flx_gamluminos(imu,1)+e/tsp_dt
         flx_gamlumdev(imu,1) = flx_gamlumdev(imu,1)+(e/tsp_dt)**2

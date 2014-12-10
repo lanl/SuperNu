@@ -27,7 +27,14 @@ c
       real*8,intent(in) :: t1,t2
       integer,intent(in),optional :: m
       end function specint
-
+c
+      pure function binsrch(x,arr,ng)
+      integer :: binsrch
+      integer,intent(in) :: ng
+      real*8,intent(in) :: x
+      real*8,intent(in) :: arr(ng)
+      end function binsrch
+c
       end interface
 c
       end module miscmod

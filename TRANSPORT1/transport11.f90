@@ -22,7 +22,7 @@ subroutine transport11(ptcl,ig,isvacant)
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
 !
-  integer,external :: binsrch, emitgroup
+  integer,external :: emitgroup
   real*8 :: r1, r2, thelp,thelpinv
   real*8 :: db, dcol, dcen, dthm, ddop, d
   real*8 :: siglabfact, dcollabfact, elabfact
@@ -332,7 +332,7 @@ subroutine transport11(ptcl,ig,isvacant)
            prt_done = .true.
 !
 !-- retrieve lab frame flux group
-           ig = binsrch(wl,flx_wl,flx_ng+1,0)
+           ig = binsrch(wl,flx_wl,flx_ng+1)
 !
 !-- check group bounds
            if(ig>flx_ng.or.ig<1) then

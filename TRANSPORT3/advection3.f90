@@ -1,4 +1,6 @@
 subroutine advection3(pretrans,ptcl,ig)
+
+  use miscmod
   use timestepmod
   use gridmod
   use particlemod
@@ -15,7 +17,6 @@ subroutine advection3(pretrans,ptcl,ig)
   real*8,parameter :: alph2 = .5d0
   logical,parameter :: partstopper = .true.
 !
-  integer,external :: binsrch
   integer :: ixholder,iyholder,izholder
   real*8 :: rold, xold,yold,zold,rx,ry,rz
   real*8 :: help
@@ -71,9 +72,9 @@ subroutine advection3(pretrans,ptcl,ig)
        stop 'advection3: invalid position update'
 
 !-- finding tentative new index
-  ixholder = binsrch(x,grd_xarr,grd_nx+1,0)
-  iyholder = binsrch(y,grd_yarr,grd_ny+1,0)
-  izholder = binsrch(z,grd_zarr,grd_nz+1,0)
+  ixholder = binsrch(x,grd_xarr,grd_nx+1)
+  iyholder = binsrch(y,grd_yarr,grd_ny+1)
+  izholder = binsrch(z,grd_zarr,grd_nz+1)
 !-- correcting new index
   if(x==0d0) ixholder = ix !-- on yz plane
   if(x<0d0.and.grd_xarr(ixholder)==x) ixholder=ixholder-1 !-- moved to negative x-plane (rare)

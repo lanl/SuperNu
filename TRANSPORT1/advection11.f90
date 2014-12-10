@@ -1,4 +1,6 @@
 subroutine advection11(pretrans,ptcl,ig)
+
+  use miscmod
   use timestepmod
   use gridmod
   use particlemod
@@ -15,7 +17,6 @@ subroutine advection11(pretrans,ptcl,ig)
   real*8,parameter :: alph2 = .5d0
   logical,parameter :: partstopper = .true.
 !
-  integer,external :: binsrch
   integer :: zholder,zfdiff
   real*8 :: help
   integer :: i
@@ -44,7 +45,7 @@ subroutine advection11(pretrans,ptcl,ig)
 
 !
 !-- finding tentative new index
-  zholder = binsrch(x,grd_xarr,grd_nx+1,0)
+  zholder = binsrch(x,grd_xarr,grd_nx+1)
 
 !
 !-- quick exit if DDMC is active

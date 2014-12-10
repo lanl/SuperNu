@@ -1,5 +1,6 @@
 subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
 
+  use miscmod
   use gridmod
   use groupmod
   use timestepmod
@@ -23,7 +24,7 @@ subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
   !is set to true, this routine is not used.
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
-  integer,external :: binsrch, emitgroup
+  integer,external :: emitgroup
 !
   integer :: iig, iiig, imu, iom
   logical :: lhelp
@@ -500,9 +501,9 @@ subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
            tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
-           iom = binsrch(om,flx_om,flx_nom+1,0)
-           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
-           iiig = binsrch(wl,flx_wl,flx_ng+1,0)
+           iom = binsrch(om,flx_om,flx_nom+1)
+           imu = binsrch(mu,flx_mu,flx_nmu+1)
+           iiig = binsrch(wl,flx_wl,flx_ng+1)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
                  iiig=flx_ng
@@ -641,9 +642,9 @@ subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
            tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
-           iom = binsrch(om,flx_om,flx_nom+1,0)
-           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
-           iiig = binsrch(wl,flx_wl,flx_ng+1,0)
+           iom = binsrch(om,flx_om,flx_nom+1)
+           imu = binsrch(mu,flx_mu,flx_nmu+1)
+           iiig = binsrch(wl,flx_wl,flx_ng+1)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
                  iiig=flx_ng
@@ -782,9 +783,9 @@ subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
            tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
-           iom = binsrch(om,flx_om,flx_nom+1,0)
-           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
-           iiig = binsrch(wl,flx_wl,flx_ng+1,0)
+           iom = binsrch(om,flx_om,flx_nom+1)
+           imu = binsrch(mu,flx_mu,flx_nmu+1)
+           iiig = binsrch(wl,flx_wl,flx_ng+1)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
                  iiig=flx_ng
@@ -923,9 +924,9 @@ subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
            tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
-           iom = binsrch(om,flx_om,flx_nom+1,0)
-           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
-           iiig = binsrch(wl,flx_wl,flx_ng+1,0)
+           iom = binsrch(om,flx_om,flx_nom+1)
+           imu = binsrch(mu,flx_mu,flx_nmu+1)
+           iiig = binsrch(wl,flx_wl,flx_ng+1)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
                  iiig=flx_ng
@@ -1063,9 +1064,9 @@ subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
            tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
-           iom = binsrch(om,flx_om,flx_nom+1,0)
-           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
-           iiig = binsrch(wl,flx_wl,flx_ng+1,0)
+           iom = binsrch(om,flx_om,flx_nom+1)
+           imu = binsrch(mu,flx_mu,flx_nmu+1)
+           iiig = binsrch(wl,flx_wl,flx_ng+1)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
                  iiig=flx_ng
@@ -1203,9 +1204,9 @@ subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
            tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
-           iom = binsrch(om,flx_om,flx_nom+1,0)
-           imu = binsrch(mu,flx_mu,flx_nmu+1,0)
-           iiig = binsrch(wl,flx_wl,flx_ng+1,0)
+           iom = binsrch(om,flx_om,flx_nom+1)
+           imu = binsrch(mu,flx_mu,flx_nmu+1)
+           iiig = binsrch(wl,flx_wl,flx_ng+1)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
                  iiig=flx_ng

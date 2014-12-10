@@ -1,5 +1,6 @@
 subroutine particle_advance
 
+  use miscmod
   use particlemod
   use timestepmod
   use totalsmod
@@ -24,7 +25,6 @@ subroutine particle_advance
   logical :: lhelp
   integer*8 :: nddmc, nimc, npckt
   integer :: ipart, ig
-  integer,external :: binsrch
   real*8 :: r1, x1, x2, help
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
@@ -126,9 +126,9 @@ subroutine particle_advance
      ! Looking up group
      if(ptcl%itype==1) then
         if(grd_isvelocity) then!{{{
-           ig = binsrch(wl/labfact,grp_wl,grp_ng+1,in_ng)
+           ig = binsrch(wl/labfact,grp_wl,grp_ng+1)
         else
-           ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)
+           ig = binsrch(wl,grp_wl,grp_ng+1)
         endif
         !
         if(ig>grp_ng.or.ig<1) then
@@ -155,7 +155,7 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)!{{{
+        ig = binsrch(wl,grp_wl,grp_ng+1)!{{{
         !
         if(ig>grp_ng.or.ig<1) then
            !particle out of wlgrid bound
@@ -357,9 +357,9 @@ subroutine particle_advance
 !-- looking up group
      if(ptcl%itype==1) then
         if(grd_isvelocity) then!{{{
-           ig = binsrch(wl/labfact,grp_wl,grp_ng+1,in_ng)
+           ig = binsrch(wl/labfact,grp_wl,grp_ng+1)
         else
-           ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)
+           ig = binsrch(wl,grp_wl,grp_ng+1)
         endif
         if(ig>grp_ng.or.ig<1) then
            !particle out of wlgrid energy bound
@@ -385,7 +385,7 @@ subroutine particle_advance
         endif
         !!}}}
      else
-        ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)!{{{
+        ig = binsrch(wl,grp_wl,grp_ng+1)!{{{
         !
         if(ig>grp_ng.or.ig<1) then
            !particle out of wlgrid bound
@@ -584,7 +584,7 @@ subroutine particle_advance
         !
 !
 !-- find group
-        ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)
+        ig = binsrch(wl,grp_wl,grp_ng+1)
         !
         if(ig>grp_ng.or.ig<1) then
            !particle out of wlgrid energy bound

@@ -13,7 +13,6 @@ c     --------------------------------------
 ************************************************************************
       real*8 :: r1
       integer :: l,iep,nepg,igp1
-      integer,external :: binsrch
       real*8 :: specval(grd_nepg)
       real*8 :: emitprob
 c

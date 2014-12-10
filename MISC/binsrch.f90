@@ -1,4 +1,4 @@
-function binsrch(x,arr,ng,idmy)
+pure function binsrch(x,arr,ng)
 !---------------------------------------------------
 ! Binary search of a real*8 array (arr) of size ng.
 ! Finds index of interval containing x.
@@ -10,7 +10,6 @@ function binsrch(x,arr,ng,idmy)
   integer, intent(in) :: ng
   real*8, intent(in) :: x
   real*8, intent(in) :: arr(ng) !array
-  integer,intent(in),optional :: idmy !for compatibility only
   !
   integer :: imin, imax, imid
 
@@ -35,13 +34,14 @@ function binsrch(x,arr,ng,idmy)
            imid = ng
            exit
         else
-           write(*,*) ng, arr(imin), arr(imid), x
-           stop 'binsrch: invalid inputs'
+!--  invalid inputs
+           binsrch = -1 !invalid
+           return
         endif
      endif
   enddo
 
-  if(imid/=imin) stop 'binsrch: no index'
+  if(imid/=imin) imid = -1 !invalid
   binsrch = imid
 
 end function binsrch

@@ -1,5 +1,6 @@
 subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
 
+  use miscmod
   use groupmod
   use gridmod
   use timestepmod
@@ -27,7 +28,7 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
 !
   integer :: iig, iiig
   logical :: lhelp
-  integer,external :: binsrch,emitgroup
+  integer,external :: emitgroup
   real*8 :: r1, r2, thelp
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus, pa
@@ -374,7 +375,7 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
            else
               help = 1d0
            endif
-           iiig = binsrch(wl,flx_wl,flx_ng+1,0)
+           iiig = binsrch(wl,flx_wl,flx_ng+1)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
                  iiig=flx_ng
@@ -414,7 +415,7 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
               help = 1d0
            endif
 !-- obtaining lab frame flux group
-           iiig = binsrch(wl,flx_wl,flx_ng+1,0)
+           iiig = binsrch(wl,flx_wl,flx_ng+1)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
                  iiig=flx_ng

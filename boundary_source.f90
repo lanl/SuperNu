@@ -7,7 +7,7 @@ subroutine boundary_source
   use gridmod
   use totalsmod
   use inputparmod
-  use miscmod, only:specint
+  use miscmod
   implicit none
 
   logical :: lhelp
@@ -17,7 +17,6 @@ subroutine boundary_source
   real*8 :: srftemp = 1d4
   real*8 :: cmffact, alb,beta,eps,gm
   type(packet),target :: ptcl
-  integer, external :: binsrch
   real*8, dimension(grp_ng) :: emitsurfprobg  !surface emission probabilities 
 
 !
@@ -166,7 +165,7 @@ subroutine boundary_source
            endif
            y0 = ptcl%y
 !-- setting cell index
-           ptcl%ix = binsrch(x0,grd_xarr,grd_nx+1,0)
+           ptcl%ix = binsrch(x0,grd_xarr,grd_nx+1)
            i = ptcl%ix
            ptcl%iy = j
 !-- sampling direction helpers
@@ -184,7 +183,7 @@ subroutine boundary_source
            y0 = ptcl%y
 !-- setting cell index
            ptcl%ix = i
-           ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1,0)
+           ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1)
            j = ptcl%iy
 !-- sampling direction helpers
            r1 = rand()
@@ -241,9 +240,9 @@ subroutine boundary_source
            z0 = ptcl%z
 !-- setting cell index
            ptcl%ix = i
-           ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1,0)
+           ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1)
            j = ptcl%iy
-           ptcl%iz = binsrch(z0,grd_zarr,grd_nz+1,0)
+           ptcl%iz = binsrch(z0,grd_zarr,grd_nz+1)
            k = ptcl%iz
 !-- sampling direction helpers
            r1 = rand()
@@ -271,10 +270,10 @@ subroutine boundary_source
            ptcl%z = r1*grd_zarr(grd_nz+1)+(1d0-r1)*grd_zarr(1)
            z0 = ptcl%z
 !-- setting cell index
-           ptcl%ix = binsrch(x0,grd_xarr,grd_nx+1,0)
+           ptcl%ix = binsrch(x0,grd_xarr,grd_nx+1)
            i = ptcl%ix
            ptcl%iy = j
-           ptcl%iz = binsrch(z0,grd_zarr,grd_nz+1,0)
+           ptcl%iz = binsrch(z0,grd_zarr,grd_nz+1)
            k = ptcl%iz
 !-- sampling direction helpers
            r1 = rand()
@@ -302,9 +301,9 @@ subroutine boundary_source
            endif
            z0 = ptcl%z
 !-- setting cell index
-           ptcl%ix = binsrch(x0,grd_xarr,grd_nx+1,0)
+           ptcl%ix = binsrch(x0,grd_xarr,grd_nx+1)
            i = ptcl%ix
-           ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1,0)
+           ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1)
            j = ptcl%iy
            ptcl%iz = k
 !-- sampling azimuthal angle of direction
