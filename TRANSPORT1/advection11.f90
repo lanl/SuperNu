@@ -1,13 +1,12 @@
-subroutine advection11(pretrans,ig,ix,r)
+subroutine advection11(pretrans,ptcl,ig)
   use timestepmod
   use gridmod
   use particlemod
   use inputparmod
   implicit none
   logical,intent(in) :: pretrans
+  type(packet),target,intent(inout) :: ptcl
   integer,intent(in) :: ig
-  integer,intent(inout) :: ix
-  real*8,intent(inout) :: r
 !-----------------------------------------------------------------------
 ! This routine computes the advection of IMC particles through the
 ! velocity grid.  It is geometry dependent
@@ -19,27 +18,33 @@ subroutine advection11(pretrans,ig,ix,r)
   integer,external :: binsrch
   integer :: zholder,zfdiff
   real*8 :: help
-  integer :: ir
+  integer :: i
+!-- pointers
+  integer,pointer :: ix
+  real*8,pointer :: x 
 !-- statement function
   integer :: l
   real*8 :: dx
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
 
+  ix => ptcl%ix
+  x => ptcl%x
+
 !
 !-- setting tentative new position
   if(pretrans) then
-    r = r*tsp_t/(tsp_t+alph2*tsp_dt)
+    x = x*tsp_t/(tsp_t+alph2*tsp_dt)
   else
-    r = r*(tsp_t + alph2*tsp_dt)/(tsp_t+tsp_dt)
+    x = x*(tsp_t + alph2*tsp_dt)/(tsp_t+tsp_dt)
   endif
 
 !
 !-- nothing to do
-  if (r>=grd_xarr(ix)) return
+  if (x>=grd_xarr(ix)) return
 
 !
 !-- finding tentative new index
-  zholder = binsrch(r,grd_xarr,grd_nx+1,0)
+  zholder = binsrch(x,grd_xarr,grd_nx+1,0)
 
 !
 !-- quick exit if DDMC is active
@@ -54,10 +59,10 @@ subroutine advection11(pretrans,ig,ix,r)
   else
      help = 1d0
   endif
-  do ir = ix-1,zholder,-1
-     if((grd_sig(ir,1,1)+grd_cap(ig,ir,1,1))*dx(ir) &
+  do i=ix-1,zholder,-1
+     if((grd_sig(i,1,1)+grd_cap(ig,i,1,1))*dx(i) &
           *help>=prt_tauddmc) then
-        zfdiff = ir
+        zfdiff = i
         exit
      endif
   enddo
@@ -65,7 +70,7 @@ subroutine advection11(pretrans,ig,ix,r)
 !--
   if(zfdiff.ne.-1) then
      ix = zfdiff+1
-     r = grd_xarr(ix)
+     x = grd_xarr(ix)
   else
      ix = zholder
   endif

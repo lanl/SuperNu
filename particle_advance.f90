@@ -411,13 +411,13 @@ subroutine particle_advance
         select case(in_igeom)
 !-- 1D
         case(1)
-           call advection11(.true.,ig,ix,x)
+           call advection11(.true.,ptcl,ig)
 !-- 2D
         case(2)
-           call advection2(.true.,ig,ix,iy,x,y)
+           call advection2(.true.,ptcl,ig)
 !-- 3D
         case(3)
-           call advection3(.true.,ig,ix,iy,iz,x,y,z)
+           call advection3(.true.,ptcl,ig)
         endselect
      endif
      endif
@@ -670,13 +670,13 @@ subroutine particle_advance
         select case(in_igeom)
 !-- 1D
         case(1)
-           call advection11(.false.,ig,ix,x)
+           call advection11(.false.,ptcl,ig)
 !-- 2D
         case(2)
-           call advection2(.false.,ig,ix,iy,x,y)
+           call advection2(.false.,ptcl,ig)
 !-- 3D
         case(3)
-           call advection3(.false.,ig,ix,iy,iz,x,y,z)
+           call advection3(.false.,ptcl,ig)
         endselect
      endif
      endif

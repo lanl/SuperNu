@@ -1,13 +1,12 @@
-subroutine advection2(pretrans,ig,ix,iy,x,y)
+subroutine advection2(pretrans,ptcl,ig)
   use timestepmod
   use gridmod
   use particlemod
   use inputparmod
   implicit none
   logical,intent(in) :: pretrans
+  type(packet),target,intent(inout) :: ptcl
   integer,intent(in) :: ig
-  integer,intent(inout) :: ix,iy
-  real*8,intent(inout) :: x,y
 !-----------------------------------------------------------------------
 ! This routine computes the advection of IMC particles through the
 ! velocity grid in cylindrical geometry.
@@ -22,12 +21,22 @@ subroutine advection2(pretrans,ig,ix,iy,x,y)
   real*8 :: help
   integer :: i,j
   integer :: imove,nmove
+!-- pointers
+  integer,pointer :: ix
+  integer,pointer :: iy
+  real*8,pointer :: x 
+  real*8,pointer :: y 
 !-- statement functions
   integer :: l
   real*8 :: dx,dy,ymag
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
   ymag(l) = min(abs(grd_yarr(l)),abs(grd_yarr(l+1)))
+
+  ix => ptcl%ix
+  iy => ptcl%iy
+  x => ptcl%x
+  y => ptcl%y
 
 !-- storing initial position
   xold = x

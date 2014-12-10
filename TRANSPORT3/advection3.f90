@@ -1,13 +1,12 @@
-subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
+subroutine advection3(pretrans,ptcl,ig)
   use timestepmod
   use gridmod
   use particlemod
   use inputparmod
   implicit none
   logical,intent(in) :: pretrans
+  type(packet),target,intent(inout) :: ptcl
   integer,intent(in) :: ig
-  integer,intent(inout) :: ix,iy,iz
-  real*8,intent(inout) :: x,y,z
 !-----------------------------------------------------------------------
 ! This routine computes the advection of IMC particles through the
 ! velocity grid in 3D planar geometry.
@@ -22,6 +21,13 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
   real*8 :: help
   integer :: i,j,k
   integer :: imove,nmove
+!-- pointers
+  integer,pointer :: ix
+  integer,pointer :: iy
+  integer,pointer :: iz
+  real*8,pointer :: x 
+  real*8,pointer :: y 
+  real*8,pointer :: z 
 !-- statement functions
   integer :: l
   real*8 :: dx,dy,dz,xmag,ymag,zmag
@@ -31,6 +37,13 @@ subroutine advection3(pretrans,ig,ix,iy,iz,x,y,z)
   xmag(l) = min(abs(grd_xarr(l)),abs(grd_xarr(l+1)))
   ymag(l) = min(abs(grd_yarr(l)),abs(grd_yarr(l+1)))
   zmag(l) = min(abs(grd_zarr(l)),abs(grd_zarr(l+1)))
+
+  ix => ptcl%ix
+  iy => ptcl%iy
+  iz => ptcl%iz
+  x => ptcl%x
+  y => ptcl%y
+  z => ptcl%z
 
 !-- storing initial position
   xold = x
