@@ -1,4 +1,4 @@
-subroutine advection1(pretrans,ig,ix,r)
+subroutine advection11(pretrans,ig,ix,r)
   use timestepmod
   use gridmod
   use particlemod
@@ -70,4 +70,4 @@ subroutine advection1(pretrans,ig,ix,r)
      ix = zholder
   endif
 
-end subroutine advection1
+end subroutine advection11

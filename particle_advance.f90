@@ -411,7 +411,7 @@ subroutine particle_advance
         select case(in_igeom)
 !-- 1D
         case(1)
-           call advection1(.true.,ig,ix,x)
+           call advection11(.true.,ig,ix,x)
 !-- 2D
         case(2)
            call advection2(.true.,ig,ix,iy,x,y)
@@ -435,10 +435,10 @@ subroutine particle_advance
            prt_istep = prt_istep + 1
            if (ptcl%itype == 1.or.in_puretran) then
               nimc = nimc + 1
-              call transport1(ptcl,isvacant)
+              call transport11(ptcl,isvacant)
            else
               nddmc = nddmc + 1
-              call diffusion1(ptcl,isvacant,icell,specarr)
+              call diffusion11(ptcl,isvacant,icell,specarr)
            endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done .and. &
@@ -670,7 +670,7 @@ subroutine particle_advance
         select case(in_igeom)
 !-- 1D
         case(1)
-           call advection1(.false.,ig,ix,x)
+           call advection11(.false.,ig,ix,x)
 !-- 2D
         case(2)
            call advection2(.false.,ig,ix,iy,x,y)

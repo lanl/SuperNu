@@ -1,4 +1,4 @@
-subroutine transport1(ptcl,isvacant)
+subroutine transport11(ptcl,isvacant)
 
   use miscmod
   use gridmod
@@ -101,7 +101,7 @@ subroutine transport1(ptcl,isvacant)
      db = abs(sqrt(grd_xarr(ix+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
   endif
 !-- sanity check
-  if(db/=db) stop 'transport1: db/=db'
+  if(db/=db) stop 'transport11: db/=db'
 !
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
@@ -153,7 +153,7 @@ subroutine transport1(ptcl,isvacant)
 !
 !-- minimum distance = d
   d = min(dcol,dthm,db,dcen,ddop)
-  if(d<0d0) stop 'transport1: negative distance'
+  if(d<0d0) stop 'transport11: negative distance'
 !
 !== END OF DISTANCE CALCULATIONS
 !
@@ -524,4 +524,4 @@ subroutine transport1(ptcl,isvacant)
 !
   endif
 
-end subroutine transport1
+end subroutine transport11

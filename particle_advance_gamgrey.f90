@@ -228,7 +228,7 @@ subroutine particle_advance_gamgrey(nmpi)
      select case(in_igeom)
      case(1)
         do while (.not.prt_done)!{{{
-           call transport1_gamgrey(ptcl)
+           call transport11_gamgrey(ptcl)
 !-- verify position
            if(.not.prt_done .and. (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
               write(0,*) 'prt_adv_ggrey: not in cell', &

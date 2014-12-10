@@ -1,4 +1,4 @@
-subroutine transport1_gamgrey(ptcl)
+subroutine transport11_gamgrey(ptcl)
 
   use gridmod
   use timestepmod
@@ -60,7 +60,7 @@ subroutine transport1_gamgrey(ptcl)
      db = abs(sqrt(grd_xarr(ix+1)**2-(1.0d0-mu**2)*r**2)-mu*r)
   endif
 !-- sanity check
-  if(db/=db) stop 'transport1_gamgrey: db/=db'
+  if(db/=db) stop 'transport11_gamgrey: db/=db'
 !
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
@@ -166,4 +166,4 @@ subroutine transport1_gamgrey(ptcl)
      endif!}}}
   endif
 
-end subroutine transport1_gamgrey
+end subroutine transport11_gamgrey

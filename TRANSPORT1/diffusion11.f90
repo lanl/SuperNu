@@ -1,4 +1,4 @@
-subroutine diffusion1(ptcl,isvacant,icell,specarr)
+subroutine diffusion11(ptcl,isvacant,icell,specarr)
 
   use groupmod
   use gridmod
@@ -84,7 +84,7 @@ subroutine diffusion1(ptcl,isvacant,icell,specarr)
         ig=1
         wl=grp_wl(1)
      else
-        stop 'diffusion1: missing particle group'
+        stop 'diffusion11: missing particle group'
      endif
   endif
 
@@ -280,7 +280,7 @@ subroutine diffusion1(ptcl,isvacant,icell,specarr)
 !{{{
 !-- checking if at inner bound
      if (ix == 1) then
-        stop 'diffusion1: non-physical inward leakage'
+        stop 'diffusion11: non-physical inward leakage'
 
 !-- sample adjacent group (assumes aligned ig bounds)
      else
@@ -531,7 +531,7 @@ subroutine diffusion1(ptcl,isvacant,icell,specarr)
 !-- effective scattering sample
   else
 !{{{
-     if(glump==grp_ng) stop 'diffusion1: effective scattering with glump==ng'
+     if(glump==grp_ng) stop 'diffusion11: effective scattering with glump==ng'
 
      r1 = rand()
      prt_tlyrand = prt_tlyrand+1
@@ -591,4 +591,4 @@ subroutine diffusion1(ptcl,isvacant,icell,specarr)
 !}}}
   endif
 
-end subroutine diffusion1
+end subroutine diffusion11
