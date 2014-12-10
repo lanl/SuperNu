@@ -1,4 +1,4 @@
-subroutine diffusion3(ptcl,isvacant)
+subroutine diffusion3(ptcl,isvacant,icell,specarr)
 
   use gridmod
   use groupmod
@@ -12,6 +12,8 @@ subroutine diffusion3(ptcl,isvacant)
 !
   type(packet),target,intent(inout) :: ptcl
   logical,intent(inout) :: isvacant
+  integer,intent(inout) :: icell(3)
+  real*8,intent(inout) :: specarr(grp_ng)
 !##################################################
   !This subroutine passes particle parameters as input and modifies
   !them through one DDMC diffusion event (Densmore, 2007).  If
@@ -40,7 +42,6 @@ subroutine diffusion3(ptcl,isvacant)
   integer :: glump, gunlump
   integer :: glumps(grp_ng)
   real*8 :: dtinv, tempinv, capgreyinv
-  real*8 :: specarr(grp_ng)
   real*8 :: help, alb, eps, beta
 !
   integer,pointer :: ix,iy,iz
@@ -112,7 +113,8 @@ subroutine diffusion3(ptcl,isvacant)
 
 !
 !-- only do this if needed
-  if(glump>0) then
+  if(glump>0 .and. .not.all(icell/=[ix,iy,iz])) then
+     icell = [ix,iy,iz]
      specarr = specintv(tempinv) !this is slow!
   endif
 
@@ -1250,8 +1252,11 @@ subroutine diffusion3(ptcl,isvacant)
         denom2 = 1d0/denom2
         do iig = glump+1,grp_ng
            iiig=glumps(iig)
-!          help = specarr(iig)*grd_cap(iig,ix,iy,iz)*capgreyinv
-           help = specint0(tempinv,iiig)*grd_cap(iiig,ix,iy,iz)*capgreyinv
+           if(all(icell==[ix,iy,iz])) then
+              help = specarr(iiig)*grd_cap(iiig,ix,iy,iz)*capgreyinv
+           else
+              help = specint0(tempinv,iiig)*grd_cap(iiig,ix,iy,iz)*capgreyinv
+           endif
            denom3 = denom3 + help*denom2
            if(denom3>r1) exit
         enddo

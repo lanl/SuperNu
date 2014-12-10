@@ -23,7 +23,7 @@ subroutine particle_advance
 !##################################################
   logical :: lhelp
   integer*8 :: nddmc, nimc, npckt
-  integer :: ipart, ig, istep
+  integer :: ipart, ig
   integer,external :: binsrch
   real*8 :: r1, x1, x2, help
 ! integer :: irl,irr
@@ -34,6 +34,9 @@ subroutine particle_advance
   real*8, pointer :: x,y,z, mu, e, wl, om
   real*8 :: t0,t1  !timing
   real*8 :: labfact, cmffact, mu1, mu2, gm
+!-- specint cache
+  real*8 :: specarr(grp_ng)
+  integer :: icell(3)
 !
   type(packet),pointer :: ptcl
 !
@@ -61,6 +64,7 @@ subroutine particle_advance
   npckt = 0
   nddmc = 0
   nimc = 0
+  icell = 0
   do ipart = 1, prt_npartmax
      ! Checking vacancy
      if(prt_isvacant(ipart)) cycle
@@ -434,7 +438,7 @@ subroutine particle_advance
               call transport1(ptcl,isvacant)
            else
               nddmc = nddmc + 1
-              call diffusion1(ptcl,isvacant)
+              call diffusion1(ptcl,isvacant,icell,specarr)
            endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done .and. &
@@ -477,7 +481,7 @@ subroutine particle_advance
               call transport2(ptcl,isvacant)
            else
               nddmc = nddmc + 1
-              call diffusion2(ptcl,isvacant)
+              call diffusion2(ptcl,isvacant,icell,specarr)
            endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done) then
@@ -525,7 +529,7 @@ subroutine particle_advance
               call transport3(ptcl,isvacant)
            else
               nddmc = nddmc + 1
-              call diffusion3(ptcl,isvacant)
+              call diffusion3(ptcl,isvacant,icell,specarr)
            endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done) then
