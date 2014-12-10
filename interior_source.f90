@@ -60,8 +60,10 @@ subroutine interior_source
      ipart = ipart + 1!{{{
      ivac = prt_vacantarr(ipart)
 
-!-- setting 1st cell index
+!-- setting cell index
      ptcl%ix = i
+     ptcl%iy = j
+     ptcl%iz = k
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
@@ -129,9 +131,7 @@ subroutine interior_source
 !}}}
 !-- 2D
      case(2)
-!-- setting 2nd cell index!{{{
-        ptcl%iy = j
-!-- calculating position
+!-- calculating position!{{{
         r1 = rand()
         ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + &
              (1d0-r1)*grd_xarr(i)**2)
@@ -172,10 +172,7 @@ subroutine interior_source
 !}}}
 !-- 3D
      case(3)
-!-- setting 2nd,3rd cell index!{{{
-        ptcl%iy = j
-        ptcl%iz = k
-!-- calculating position
+!-- calculating position!{{{
         r1 = rand()
         ptcl%x = r1*grd_xarr(i+1) + (1d0-r1) * &
              grd_xarr(i)
@@ -255,6 +252,8 @@ subroutine interior_source
 !
 !-- setting 1st cell index
      ptcl%ix = i
+     ptcl%iy = j
+     ptcl%iz = k
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
@@ -336,9 +335,7 @@ subroutine interior_source
 !}}}
 !-- 2D
      case(2)
-!-- setting 2nd cell index!{{{
-        ptcl%iy = j
-!-- calculating position:
+!-- calculating position:!{{{
 !-- source tilting in x
         r3 = 0d0
         r2 = 1d0
@@ -404,10 +401,7 @@ subroutine interior_source
 !}}}
 !-- 3D
      case(3)
-!-- setting 2nd,3rd cell index!{{{
-        ptcl%iy = j
-        ptcl%iz = k
-!-- source tilting in x
+!-- source tilting in x!{{{
         r3 = 0d0
         r2 = 1d0
         il = max(i-1,1)  !-- left neighbor

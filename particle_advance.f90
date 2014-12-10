@@ -13,7 +13,6 @@ subroutine particle_advance
   use fluxmod
   implicit none
 !
-  integer,target :: one = 1
 !##################################################
   !This subroutine propagates all existing particles that are not vacant
   !during a time step.  Particles may generally undergo a physical interaction
@@ -47,7 +46,20 @@ subroutine particle_advance
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
   dz(l) = grd_zarr(l+1) - grd_zarr(l)
+!
+!-- assigning pointers to corresponding particle properties
+  ix => ptcl%ix
+  iy => ptcl%iy
+  iz => ptcl%iz
+  x => ptcl%x
+  y => ptcl%y
+  z => ptcl%z
+  mu => ptcl%mu
+  om => ptcl%om
+  wl => ptcl%wl
+  e => ptcl%e
 
+!
 !-- energy tallies
   grd_edep = 0d0
   grd_eraddens = 0d0
@@ -76,50 +88,22 @@ subroutine particle_advance
 
 !-- default, recalculated for isvelocity and itype==1
      labfact = 1d0
-!
-!-- assigning pointers to corresponding particle properties
-     ix => ptcl%ix
-     wl => ptcl%wl
-     x => ptcl%x
-     mu => ptcl%mu
-     e => ptcl%e
-     select case(in_igeom)
 
+     if(grd_isvelocity.and.ptcl%itype==1) then
+        select case(in_igeom)
 !-- 1D
-     case(1)
-        iy => one
-        iz => one
-!-- 1-dir*v/c
-        if(grd_isvelocity.and.ptcl%itype==1) then
-           labfact = 1d0-x*mu/pc_c
-        endif
-
+        case(1)
+           labfact = 1d0-x*mu/pc_c !-- 1-dir*v/c
 !-- 2D
-     case(2)
-        iy => ptcl%iy
-        iz => one
-        y => ptcl%y
-        om => ptcl%om
-!-- 1-dir*v/c
-        if(grd_isvelocity.and.ptcl%itype==1) then
-           labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
-                cos(om)*x)/pc_c
-        endif
-
+        case(2)
+           labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c !-- 1-dir*v/c
 !-- 3D
-     case(3)
-        iy => ptcl%iy
-        iz => ptcl%iz
-        y => ptcl%y
-        z => ptcl%z
-        om => ptcl%om
-!-- 1-dir*v/c
-        if(grd_isvelocity.and.ptcl%itype==1) then
+        case(3)
            mu1 = sqrt(1d0-mu**2)*cos(om)
            mu2 = sqrt(1d0-mu**2)*sin(om)
-           labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c
-        endif
-     endselect
+           labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c !-- 1-dir*v/c
+        endselect
+     endif
 
      prt_done=.false.
 
@@ -320,7 +304,11 @@ subroutine particle_advance
               endif
            endif!}}}
 
+        case default
+!-- don't let the compiler believe lhelp may be used uninitialized
+           lhelp = .true.
         endselect
+
 
         if (lhelp) then
            if (ptcl%itype == 2) then
