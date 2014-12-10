@@ -1,4 +1,4 @@
-subroutine transport3(ptcl,isvacant)
+subroutine transport3(ptcl,ig,isvacant)
 
   use gridmod
   use groupmod
@@ -11,6 +11,7 @@ subroutine transport3(ptcl,isvacant)
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
+  integer,intent(inout) :: ig
   logical,intent(inout) :: isvacant
 !##################################################
   !This subroutine passes particle parameters as input and modifies
@@ -22,7 +23,7 @@ subroutine transport3(ptcl,isvacant)
   integer,external :: binsrch, emitgroup
 
   logical :: loutx,louty,loutz
-  integer :: ig, imu, iom, ihelp
+  integer :: imu, iom, ihelp
   real*8 :: elabfact, eta, xi
   real*8 :: dtinv, thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop,d
@@ -67,19 +68,6 @@ subroutine transport3(ptcl,isvacant)
 !
 !-- inverting vel-grid factor
   thelpinv = 1d0/thelp
-!
-!-- looking up initial group
-  ig = binsrch(wl/elabfact,grp_wl,grp_ng+1,in_ng)
-!-- checking group bounds
-  if(ig>grp_ng.or.ig<1) then
-     if(ig==grp_ng+1) then
-        ig = grp_ng
-     elseif(ig==0) then
-        ig = 1
-     else
-        stop 'transport3 (1): particle group invalid'
-     endif
-  endif
 
 !-- census distance
   dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%t)*thelpinv)

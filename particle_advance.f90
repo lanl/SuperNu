@@ -435,10 +435,10 @@ subroutine particle_advance
            prt_istep = prt_istep + 1
            if (ptcl%itype == 1.or.in_puretran) then
               nimc = nimc + 1
-              call transport11(ptcl,isvacant)
+              call transport11(ptcl,ig,isvacant)
            else
               nddmc = nddmc + 1
-              call diffusion11(ptcl,isvacant,icell,specarr)
+              call diffusion11(ptcl,ig,isvacant,icell,specarr)
            endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done .and. &
@@ -478,10 +478,10 @@ subroutine particle_advance
            prt_istep = prt_istep + 1
            if (ptcl%itype == 1.or.in_puretran) then
               nimc = nimc + 1
-              call transport2(ptcl,isvacant)
+              call transport2(ptcl,ig,isvacant)
            else
               nddmc = nddmc + 1
-              call diffusion2(ptcl,isvacant,icell,specarr)
+              call diffusion2(ptcl,ig,isvacant,icell,specarr)
            endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done) then
@@ -526,10 +526,10 @@ subroutine particle_advance
            prt_istep = prt_istep + 1
            if (ptcl%itype == 1.or.in_puretran) then
               nimc = nimc + 1
-              call transport3(ptcl,isvacant)
+              call transport3(ptcl,ig,isvacant)
            else
               nddmc = nddmc + 1
-              call diffusion3(ptcl,isvacant,icell,specarr)
+              call diffusion3(ptcl,ig,isvacant,icell,specarr)
            endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done) then

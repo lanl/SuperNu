@@ -1,4 +1,4 @@
-subroutine transport11(ptcl,isvacant)
+subroutine transport11(ptcl,ig,isvacant)
 
   use miscmod
   use gridmod
@@ -12,6 +12,7 @@ subroutine transport11(ptcl,isvacant)
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
+  integer,intent(inout) :: ig
   logical,intent(inout) :: isvacant
 !##################################################
 !This subroutine passes particle parameters as input and modifies
@@ -21,7 +22,6 @@ subroutine transport11(ptcl,isvacant)
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
 !
-  integer :: ig
   integer,external :: binsrch, emitgroup
   real*8 :: r1, r2, thelp,thelpinv
   real*8 :: db, dcol, dcen, dthm, ddop, d
@@ -60,35 +60,6 @@ subroutine transport11(ptcl,isvacant)
   endif
   thelpinv = 1d0/thelp
 
-!
-!-- calculating current group (rev. 120)
-  if(grd_isvelocity) then
-     ig = binsrch(wl/(1.0d0-r*mu*cinv),grp_wl,grp_ng+1,in_ng)
-  else
-     ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)
-  endif
-  if(ig>grp_ng.or.ig<1) then
-     !particle out of wlgrid energy bound
-     if(ig>grp_ng) then
-        ig=grp_ng
-        if(grd_isvelocity) then
-           wl=grp_wl(grp_ng+1)*(1.0d0-r*mu*cinv)
-        else
-           wl=grp_wl(grp_ng+1)
-        endif
-     elseif(ig<1) then
-        ig=1
-        if(grd_isvelocity) then
-           wl=grp_wl(1)*(1.0d0-r*mu*cinv)
-        else
-           wl=grp_wl(1)
-        endif
-     else
-        write(*,*) 'domain leak!!'
-        prt_done = .true.
-        isvacant = .true.
-     endif
-  endif
 !
 !== DISTANCE CALCULATIONS
 !

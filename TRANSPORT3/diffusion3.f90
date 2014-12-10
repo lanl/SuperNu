@@ -1,4 +1,4 @@
-subroutine diffusion3(ptcl,isvacant,icell,specarr)
+subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
 
   use gridmod
   use groupmod
@@ -11,6 +11,7 @@ subroutine diffusion3(ptcl,isvacant,icell,specarr)
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
+  integer,intent(inout) :: ig
   logical,intent(inout) :: isvacant
   integer,intent(inout) :: icell(3)
   real*8,intent(inout) :: specarr(grp_ng)
@@ -24,7 +25,7 @@ subroutine diffusion3(ptcl,isvacant,icell,specarr)
   real*8,parameter :: cinv = 1d0/pc_c
   integer,external :: binsrch, emitgroup
 !
-  integer :: ig, iig, iiig, imu, iom
+  integer :: iig, iiig, imu, iom
   logical :: lhelp
   real*8 :: r1, r2, thelp
   real*8 :: denom, denom2, denom3
@@ -76,19 +77,6 @@ subroutine diffusion3(ptcl,isvacant,icell,specarr)
      thelp = tsp_t
   else
      thelp = 1d0
-  endif
-!
-!-- looking up initial group
-  ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)
-!-- checking group bounds
-  if(ig>grp_ng.or.ig<1) then
-     if(ig==grp_ng+1) then
-        ig = grp_ng
-     elseif(ig==0) then
-        ig = 1
-     else
-        stop 'diffusion3: particle group invalid'
-     endif
   endif
 
 !

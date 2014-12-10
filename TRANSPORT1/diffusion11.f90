@@ -1,4 +1,4 @@
-subroutine diffusion11(ptcl,isvacant,icell,specarr)
+subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
 
   use groupmod
   use gridmod
@@ -11,6 +11,7 @@ subroutine diffusion11(ptcl,isvacant,icell,specarr)
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
+  integer,intent(inout) :: ig
   logical,intent(inout) :: isvacant
   integer,intent(inout) :: icell(3)
   real*8,intent(inout) :: specarr(grp_ng)
@@ -24,7 +25,7 @@ subroutine diffusion11(ptcl,isvacant,icell,specarr)
   real*8,parameter :: cinv = 1d0/pc_c
   real*8,parameter :: deleff=0.38d0
 !
-  integer :: iig, iiig, ig
+  integer :: iig, iiig
   logical :: lhelp
   integer,external :: binsrch,emitgroup
   real*8 :: r1, r2, thelp
@@ -72,24 +73,8 @@ subroutine diffusion11(ptcl,isvacant,icell,specarr)
      thelp = 1d0
   endif
 
-
-!-- find group
-  ig = binsrch(wl,grp_wl,grp_ng+1,in_ng)
-  if(ig>grp_ng.or.ig<1) then
-     !particle out of wlgrid bound
-     if(ig>grp_ng) then
-        ig=grp_ng
-        wl=grp_wl(grp_ng+1)
-     elseif(ig<1) then
-        ig=1
-        wl=grp_wl(1)
-     else
-        stop 'diffusion11: missing particle group'
-     endif
-  endif
-
-!-- lump testing ---------------------------------------------
 !
+!-- lump testing ---------------------------------------------
   glump = 0
   gunlump = grp_ng
   glumps = 0
