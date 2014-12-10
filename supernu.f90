@@ -207,6 +207,7 @@ program supernu
 !-- advance particles
      if(tsp_it<=tsp_ntres) where(.not.prt_isvacant) prt_particles%t = tsp_t !reset particle clocks
      call particle_advance
+     call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
      call reduce_tally !MPI !collect particle results from all workers
 
 !-- print packet advance load-balancing info
