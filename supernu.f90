@@ -111,6 +111,7 @@ program supernu
 !-- setup spatial grid
   call grid_init(impi==impi0,grp_ng,in_igeom,in_ndim,in_isvelocity)
   call grid_setup
+
   call mpi_setup_communicators(product(in_ndim)) !MPI
   ncell = product(in_ndim)/nmpi_gas
   call scatter_inputstruct(in_ndim,ncell) !MPI
@@ -118,6 +119,8 @@ program supernu
 !-- setup gas
   if(impi_gas>=0) call gas_init(impi==impi0,ncell,grp_ng)
   if(impi_gas>=0) call gas_setup(impi==impi0)
+  call inputstr_dealloc
+
 !-- setup flux
   call flux_alloc
 

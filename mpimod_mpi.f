@@ -367,9 +367,6 @@ c
      &   str_massfrdd,str_nabund*ncell,MPI_REAL8,
      &   impi0,MPI_COMM_GAS,ierr)
       endif
-c
-c-- deallocate
-      deallocate(str_mass,str_massfr)
 !}}}
       end subroutine scatter_inputstruct
 c

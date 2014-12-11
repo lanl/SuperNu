@@ -18,6 +18,8 @@ c
 c
       subroutine mpi_setup_communicators(ncell)
       integer,intent(in) :: ncell
+      integer :: dmy
+      dmy = ncell !use the intent(in) variable
       end subroutine mpi_setup_communicators
 c
 c
@@ -30,14 +32,14 @@ c
 ************************************************************************
 * mpi_scatter the input structure to all ranks in the worker comm.
 ************************************************************************
+      integer :: dmy
+      dmy = ndim(1) !use the intent(in) variable
       allocate(str_massdd(ncell))
       if(str_nabund>0) then
        allocate(str_massfrdd(str_nabund,ncell))
        str_massfrdd = reshape(str_massfr,[str_nabund,ncell])
       endif
       str_massdd = reshape(str_mass,[ncell]) !}}}
-c-- deallocate
-      deallocate(str_mass,str_massfr)
       end subroutine scatter_inputstruct
 c
 c
