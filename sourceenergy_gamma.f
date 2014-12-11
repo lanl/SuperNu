@@ -1,4 +1,4 @@
-      subroutine sourceenergy_gamma
+      subroutine sourceenergy_misc
 c     -----------------------------
       use mpimod
       use gridmod
@@ -6,8 +6,8 @@ c     -----------------------------
 !     use timestepmod
       implicit none
 ************************************************************************
-* Add the energy deposition from gamma absorption to the energy source
-* for optical particles.
+* Add the energy deposition from gamma absorption and amplification
+* factors to the energy source for optical particles.
 ************************************************************************
 !     integer :: i
 c
@@ -18,10 +18,10 @@ c-- dump whole profile (1D only)
 !      enddo
 c
 c-- sanity check energy deposition
-      if(any(grd_edep<0d0)) stop 'sourceenergy_gamma: negative energy'
+      if(any(grd_edep<0d0)) stop 'sourceenergy_misc: negative energy'
 c
 c-- gamma deposition is energy source
-      grd_emit = grd_emit + grd_edep
+      grd_emit = grd_emit + grd_edep + grd_eamp
 c
 c-- save for output purposes
       grd_edepgam = grd_edep
@@ -29,4 +29,4 @@ c
 c-- add gamma radiation source tot total
       if(impi==impi0) tot_eext = tot_eext + sum(grd_edep)
 c
-      end subroutine sourceenergy_gamma
+      end subroutine sourceenergy_misc

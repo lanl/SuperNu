@@ -61,6 +61,7 @@ subroutine particle_advance
 
 !
 !-- energy tallies
+  grd_eamp = 0d0
   grd_edep = 0d0
   grd_eraddens = 0d0
   tot_erad = 0d0

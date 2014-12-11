@@ -28,6 +28,9 @@ c-- sanity check
        if(minval(grd_xarr)<0d0) stop 'grid_setup: grd_xarr < 0'
       endselect
 c
+c-- zero amplification-factor energy to begin with
+      grd_eamp = 0d0
+c
 c-- read preset temperature profiles
       inquire(file='input.temp',exist=lexist)
       if(lexist) call read_temp_preset

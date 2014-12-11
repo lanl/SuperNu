@@ -334,15 +334,20 @@ subroutine transport3(ptcl,ig,isvacant)
            elseif(xi<-1d0) then
               xi = -1
            endif
+!-- amplification factor
            if((xi<0d0.and.x>0d0).or.(xi>0d0.and.x<0d0)) then
               help=1d0/abs(xi)
-!-- truncate singularity emperially determined
-!-- value of 1000 starts to add noise to W7 spectra
-              help = min(100d0, help)
+              help = min(100d0, help) !-- truncate singularity
+!
 !-- velocity effects accounting
               tot_evelo=tot_evelo-e*2d0 * &
                    (0.55d0*help-1.25d0*abs(xi))*abs(x)*cinv
 !
+!-- apply the excess (higher than factor 2d0) to the energy deposition
+              grd_eamp(ix,iy,iz) = grd_eamp(ix,iy,iz) + &
+                 e*2d0*0.55d0*max(0d0,help-2d0)*abs(x)*cinv
+!-- apply limited correction to the particle
+              help = min(2d0,help)
               e0=e0*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(xi))*abs(x)*cinv)
               e=e*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(xi))*abs(x)*cinv)
            endif
@@ -417,15 +422,20 @@ subroutine transport3(ptcl,ig,isvacant)
            elseif(eta<-1d0) then
               eta = -1
            endif
+!-- amplification factor
            if((eta<0d0.and.y>0d0).or.(eta>0d0.and.y<0d0)) then
               help=1d0/abs(eta)
-!-- truncate singularity emperially determined
-!-- value of 1000 starts to add noise to W7 spectra
-              help = min(100d0, help)
+              help = min(100d0, help) !-- truncate singularity
+!
 !-- velocity effects accounting
               tot_evelo=tot_evelo-e*2d0 * &
                    (0.55d0*help-1.25d0*abs(eta))*abs(y)*cinv
 !
+!-- apply the excess (higher than factor 2d0) to the energy deposition
+              grd_eamp(ix,iy,iz) = grd_eamp(ix,iy,iz) + &
+                 e*2d0*0.55d0*max(0d0,help-2d0)*abs(y)*cinv
+!-- apply limited correction to the particle
+              help = min(2d0,help)
               e0=e0*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(eta))*abs(y)*cinv)
               e=e*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(eta))*abs(y)*cinv)
            endif
@@ -500,15 +510,20 @@ subroutine transport3(ptcl,ig,isvacant)
            elseif(mu<-1d0) then
               mu = -1
            endif
+!-- amplification factor
            if((mu<0d0.and.z>0d0).or.(mu>0d0.and.z<0d0)) then
               help=1d0/abs(mu)
-!-- truncate singularity emperially determined
-!-- value of 1000 starts to add noise to W7 spectra
-              help = min(100d0, help)
+              help = min(100d0, help) !-- truncate singularity
+!
 !-- velocity effects accounting
               tot_evelo=tot_evelo-e*2d0 * &
                    (0.55d0*help-1.25d0*abs(mu))*abs(z)*cinv
 !
+!-- apply the excess (higher than factor 2d0) to the energy deposition
+              grd_eamp(ix,iy,iz) = grd_eamp(ix,iy,iz) + &
+                 e*2d0*0.55d0*max(0d0,help-2d0)*abs(x)*cinv
+!-- apply limited correction to the particle
+              help = min(2d0,help)
               e0=e0*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(mu))*abs(z)*cinv)
               e=e*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(mu))*abs(z)*cinv)
            endif

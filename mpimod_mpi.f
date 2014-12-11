@@ -429,6 +429,9 @@ c
       call mpi_bcast(grd_temp,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
+      call mpi_bcast(grd_eamp,n,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
       call mpi_bcast(grd_emit,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(grd_emitex,n,MPI_REAL8,
@@ -454,7 +457,7 @@ c
 c
 c
       subroutine allreduce_gammaenergy
-c     ------------------------!{{{
+c     ------------------------------------!{{{
       use gridmod,nx=>grd_nx,ny=>grd_ny,nz=>grd_nz
       use timingmod
       implicit none
@@ -564,6 +567,10 @@ c-- dim==3
 c
       isnd3 = grd_methodswap
       call mpi_reduce(isnd3,grd_methodswap,n,MPI_INTEGER,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      snd3 = grd_eamp
+      call mpi_reduce(snd3,grd_eamp,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
       snd3 = grd_edep

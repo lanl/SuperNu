@@ -436,20 +436,25 @@ subroutine transport11(ptcl,ig,isvacant)
              .and.(in_puretran.eqv..false.)) then
            r1 = rand()
            prt_tlyrand = prt_tlyrand+1
+!
+!-- amplification factor
            if(grd_isvelocity) then
               mu = (mu-r*cinv)/(1.0-r*mu*cinv)
-!-- amplification
 !
-!              e0=e0*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r*cinv)
-!              e = e*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r*cinv)
+!             e0=e0*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r*cinv)
+!             e = e*(1d0+2d0*min(0.055*prt_tauddmc,1d0)*r*cinv)
               if(mu<0d0) then
-!-- velocity effects accounting
                  help = 1d0/abs(mu)
-!-- truncate singularity emperially determined
-!-- value of 1000 starts to add noise to W7 spectra
-                 help = min(100d0, help)
+                 help = min(100d0, help) !-- truncate singularity
+!
+!-- velocity effects accounting
                  tot_evelo = tot_evelo-e*2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv
 !
+!-- apply the excess (higher than factor 2d0) to the energy deposition
+                 grd_eamp(ix,1,1) = grd_eamp(ix,1,1) + &
+                    e*2d0*0.55d0*max(0d0,help-2d0)*r*cinv
+!-- apply limited correction to the particle
+                 help = min(2d0,help)
                  e0 = e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv)
                  e = e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv)
               endif

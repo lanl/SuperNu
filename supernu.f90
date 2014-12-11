@@ -191,8 +191,10 @@ program supernu
 !-- testing: dump integral numbers
 !       if(impi==impi0) write(6,*) 'source:', &
 !          sum(grd_emitex),sum(grd_edep),sum(grd_edep)/sum(grd_emitex)
-        call sourceenergy_gamma
+     else
+        grd_edep = 0d0
      endif
+     call sourceenergy_misc
 
      call sourceenergy_analytic !gas_emitex from analytic distribution
      call leakage_opacity       !IMC-DDMC albedo coefficients and DDMC leakage opacities

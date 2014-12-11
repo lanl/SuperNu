@@ -40,6 +40,7 @@ c-- Fleck factor
 
 c-- energy absorbed by material
       real*8,allocatable :: grd_edep(:,:,:)   !(nx,ny,nz)
+      real*8,allocatable :: grd_eamp(:,:,:)   !(nx,ny,nz)
       real*8,allocatable :: grd_edepgam(:,:,:)   !(nx,ny,nz) !for output only
 c-- radiation energy density in tsp_dt
       real*8,allocatable :: grd_eraddens(:,:,:) !(nx,ny,nz)
@@ -120,6 +121,7 @@ c---------------------------------------
 c
 c-- ndim=3 alloc
       allocate(grd_edep(nx,ny,nz))
+      allocate(grd_eamp(nx,ny,nz))
       allocate(grd_edepgam(nx,ny,nz))
       allocate(grd_capgrey(nx,ny,nz))
       allocate(grd_capgam(nx,ny,nz))
