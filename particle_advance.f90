@@ -400,7 +400,7 @@ subroutine particle_advance
         select case(in_igeom)
 !-- 1D
         case(1)
-           call advection11(.true.,ptcl,ig)
+           call advection1(.true.,ptcl,ig)
 !-- 2D
         case(2)
            call advection2(.true.,ptcl,ig)
@@ -434,14 +434,15 @@ subroutine particle_advance
                   (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
               write(0,*) 'prt_adv: not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
            endif
-!-- transformation factor
-           if(grd_isvelocity .and. ptcl%itype==1) then
-              labfact = 1.0d0 - mu*x/pc_c
-           else
-              labfact = 1d0
-           endif
 !-- Russian roulette for termination of exhausted particles
            if (e<1d-6*ptcl%e0 .and. .not.isvacant) then
+!-- transformation factor
+              if(grd_isvelocity .and. ptcl%itype==1) then
+                 labfact = 1d0 - mu*x/pc_c
+              else
+                 labfact = 1d0
+              endif
+!
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
@@ -481,15 +482,16 @@ subroutine particle_advance
                  write(0,*) 'prt_adv: z not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
               endif
            endif
-!-- transformation factor
-           if(grd_isvelocity .and. ptcl%itype==1) then
-              labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
-                   cos(om)*x)/pc_c
-           else
-              labfact = 1d0
-           endif
 !-- Russian roulette for termination of exhausted particles
            if (e<1d-6*ptcl%e0 .and. .not.isvacant) then
+!-- transformation factor
+              if(grd_isvelocity .and. ptcl%itype==1) then
+                 labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
+                      cos(om)*x)/pc_c
+              else
+                 labfact = 1d0
+              endif
+!
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
@@ -532,15 +534,16 @@ subroutine particle_advance
                  write(0,*) 'prt_adv: z not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu,om
               endif
            endif
-!-- transformation factor
-           if(grd_isvelocity .and. ptcl%itype==1) then
-              labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &
-                   (cos(om)*x+sin(om)*y))/pc_c
-           else
-              labfact = 1d0
-           endif
 !-- Russian roulette for termination of exhausted particles
            if (e<1d-6*ptcl%e0 .and. .not.isvacant) then
+!-- transformation factor
+              if(grd_isvelocity .and. ptcl%itype==1) then
+                 labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &
+                      (cos(om)*x+sin(om)*y))/pc_c
+              else
+                 labfact = 1d0
+              endif
+!
               r1 = rand()
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
@@ -607,7 +610,7 @@ subroutine particle_advance
         select case(in_igeom)
 !-- 1D
         case(1)
-           call advection11(.false.,ptcl,ig)
+           call advection1(.false.,ptcl,ig)
 !-- 2D
         case(2)
            call advection2(.false.,ptcl,ig)

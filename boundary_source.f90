@@ -133,6 +133,8 @@ subroutine boundary_source
         x0 = ptcl%x
 !-- setting cell index
         ptcl%ix = i
+        ptcl%iy = j
+        ptcl%iz = k
 !-- calculating albedo
         mfphelp = (grd_cap(iig,i,1,1)+grd_sig(i,1,1))*dx(i)*thelp
         P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
@@ -168,6 +170,7 @@ subroutine boundary_source
            ptcl%ix = binsrch(x0,grd_xarr,grd_nx+1)
            i = ptcl%ix
            ptcl%iy = j
+           ptcl%iz = k
 !-- sampling direction helpers
            r1 = rand()
            om0 = pc_pi2*r1

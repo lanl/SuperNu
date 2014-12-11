@@ -1,4 +1,4 @@
-subroutine advection11(pretrans,ptcl,ig)
+pure subroutine advection1(pretrans,ptcl,ig)
 
   use miscmod
   use timestepmod
@@ -21,7 +21,7 @@ subroutine advection11(pretrans,ptcl,ig)
   real*8 :: help
   integer :: i
 !-- pointers
-  integer,pointer :: ix
+  integer,pointer :: ix, iy, iz
   real*8,pointer :: x 
 !-- statement function
   integer :: l
@@ -29,6 +29,8 @@ subroutine advection11(pretrans,ptcl,ig)
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
 
   ix => ptcl%ix
+  iy => ptcl%iy
+  iz => ptcl%iz
   x => ptcl%x
 
 !
@@ -61,7 +63,7 @@ subroutine advection11(pretrans,ptcl,ig)
      help = 1d0
   endif
   do i=ix-1,zholder,-1
-     if((grd_sig(i,1,1)+grd_cap(ig,i,1,1))*dx(i) &
+     if((grd_sig(i,iy,iz)+grd_cap(ig,i,iy,iz))*dx(i) &
           *help>=prt_tauddmc) then
         zfdiff = i
         exit
@@ -76,4 +78,4 @@ subroutine advection11(pretrans,ptcl,ig)
      ix = zholder
   endif
 
-end subroutine advection11
+end subroutine advection1
