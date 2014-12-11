@@ -28,6 +28,9 @@ c-- outbound flux group and direction bins
       real*8 :: in_flx_wlmin =  1000d-8 !lower wavelength flux boundary [cm]
       real*8 :: in_flx_wlmax = 32000d-8 !upper wavelength flux boundary [cm]
 c
+c-- output
+      logical :: in_nogriddump = .false. !don't write grid cell variables
+c
 c-- do read input structure file instead of specifying the stucture with input parameters
 c==================
       logical :: in_noreadstruct = .false.
@@ -146,14 +149,15 @@ c-- runtime parameter namelist
      & in_gas_capcoef,in_gas_captpwr,in_gas_caprpwr,
      & in_gas_cvcoef,in_gas_cvtpwr,in_gas_cvrpwr,
      & in_opacanaltype,in_suol,
-     & in_suolpick1, in_ldisp1, in_ldisp2,
+     & in_suolpick1,in_ldisp1,in_ldisp2,
      & in_srctype,in_theav,in_nheav,in_srcmax,in_srcepwr,
      & in_surfsrcloc,in_surfsrcmu,
      & in_isimcanlog, in_isddmcanlog,
-     & in_tauddmc, in_dentype, in_noreadstruct,
-     & in_norestart, in_taulump, in_tauvtime,
-     & in_tempradinit, in_ismodimc,
-     & in_comment, in_noeos, in_flx_ndim,in_flx_wlmin,in_flx_wlmax
+     & in_nogriddump,
+     & in_tauddmc,in_dentype,in_noreadstruct,
+     & in_norestart,in_taulump,in_tauvtime,
+     & in_tempradinit,in_ismodimc,
+     & in_comment,in_noeos,in_flx_ndim,in_flx_wlmin,in_flx_wlmax
 c
 c-- pointers
 c
@@ -215,6 +219,7 @@ c
       call inserti(in_flx_ndim(3),in_i,ii)
       call insertr(in_flx_wlmin,in_r,ir)
       call insertr(in_flx_wlmax,in_r,ir)
+      call insertl(in_nogriddump,in_l,il)
       call insertl(in_noreadstruct,in_l,il)
       call insertl(in_isvelocity,in_l,il)
       call insertl(in_voidcorners,in_l,il)
