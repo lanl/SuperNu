@@ -10,7 +10,7 @@ FILES = eos_update.o \
   analytic_opacity.o physical_opacity.o physical_opacity_subgrid.o \
   leakage_opacity1.o leakage_opacity2.o leakage_opacity3.o \
   fleck_factor.o opacity_planckmean.o leakage_opacity.o \
-  emission_probability.o analytic_initial.o
+  emission_probability.o analytic_initial.o leakage_opacity11.o
 
 .PHONY: all clean
 

@@ -36,8 +36,9 @@ c     ---------------------------!{{{
       str_nabund=0
       if(allocated(str_iabund)) deallocate(str_iabund)
       deallocate(str_xleft,str_yleft,str_zleft)
-      deallocate(str_mass,str_massfr)
-      deallocate(str_massdd,str_massfrdd)!}}}
+      deallocate(str_mass,str_massdd)
+      if(allocated(str_massfr)) deallocate(str_massfr)
+      if(allocated(str_massfrdd)) deallocate(str_massfrdd)!}}}
       end subroutine inputstr_dealloc
 c
 c

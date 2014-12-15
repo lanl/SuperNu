@@ -22,6 +22,7 @@ c-- bbxsmod
 c-- gasmod
       deallocate(grd_numcensus)
       deallocate(grd_xarr,grd_yarr,grd_zarr)
+      if(allocated(grd_yacos)) deallocate(grd_yacos)
       deallocate(grd_edep,grd_temp,grd_methodswap)
       deallocate(grd_cap)
       deallocate(grd_opacleak)

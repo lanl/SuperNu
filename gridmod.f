@@ -18,7 +18,8 @@ c
       real*8,allocatable :: grd_xarr(:)   !(nx+1), left cell edge values
       real*8,allocatable :: grd_yarr(:)   !(ny+1), left cell edge values
       real*8,allocatable :: grd_zarr(:)   !(nz+1), left cell edge values
-
+c-- polar angles
+      real*8,allocatable :: grd_yacos(:)   !(ny+1)
 
 c-- Probability of emission in a given zone and group
       real*8,allocatable :: grd_emitprob(:,:,:,:) !(nep,nx,ny,nz)
@@ -102,6 +103,8 @@ c
       allocate(grd_xarr(grd_nx+1))
       allocate(grd_yarr(grd_ny+1))
       allocate(grd_zarr(grd_nz+1))
+c-- polar
+      if(igeom==1) allocate(grd_yacos(grd_ny+1))
 c
 c-- shortcuts
       nx = grd_nx

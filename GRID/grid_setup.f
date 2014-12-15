@@ -13,6 +13,7 @@ c-- agnostic grid setup
       grd_xarr = str_xleft
       grd_yarr = str_yleft
       grd_zarr = str_zleft
+      if(grd_igeom==1) grd_yacos=acos(grd_yarr)
 c
 c-- sanity check
       if(grd_isvelocity) then
