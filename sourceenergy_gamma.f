@@ -1,5 +1,5 @@
       subroutine sourceenergy_misc
-c     -----------------------------
+c     ----------------------------
       use mpimod
       use gridmod
       use totalsmod
@@ -22,9 +22,6 @@ c-- sanity check energy deposition
 c
 c-- gamma deposition is energy source
       grd_emit = grd_emit + grd_edep + grd_eamp
-c
-c-- save for output purposes
-      grd_edepgam = grd_edep
 c
 c-- add gamma radiation source tot total
       if(impi==impi0) tot_eext = tot_eext + sum(grd_edep)

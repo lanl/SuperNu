@@ -125,14 +125,6 @@ subroutine write_output
      enddo
      close(4)
 
-     open(unit=4,file='output.grd_gamdep',position='append',recl=reclen2)
-     do k=1,grd_nz
-     do j=1,grd_ny
-        write(4,'(1p,10000e12.4)') grd_edepgam(:,j,k)
-     enddo
-     enddo
-     close(4)
-
      open(unit=4,file='output.grd_capgrey',position='append',recl=reclen2)
      do k=1,grd_nz
      do j=1,grd_ny

@@ -27,6 +27,9 @@ c-- Line+Cont extinction coeff
 c-- leakage opacities
       real*8,allocatable :: grd_opacleak(:,:,:,:) !(6,nx,ny,nz)
 
+c
+      real*8,allocatable :: grd_temp(:,:,:) !(nx,ny,nz)
+      real*8,allocatable :: grd_vol(:,:,:) !(nx,ny,nz)
 
 c-- scattering coefficient
       real*8,allocatable :: grd_sig(:,:,:) !(nx,ny,nz) !grey scattering opacity
@@ -41,7 +44,6 @@ c-- Fleck factor
 c-- energy absorbed by material
       real*8,allocatable :: grd_edep(:,:,:)   !(nx,ny,nz)
       real*8,allocatable :: grd_eamp(:,:,:)   !(nx,ny,nz)
-      real*8,allocatable :: grd_edepgam(:,:,:)   !(nx,ny,nz) !for output only
 c-- radiation energy density in tsp_dt
       real*8,allocatable :: grd_eraddens(:,:,:) !(nx,ny,nz)
 
@@ -60,9 +62,6 @@ c
       real*8,allocatable :: grd_emit(:,:,:) !(nx,ny,nz) amount of fictitious thermal energy emitted per cell in a time step
       real*8,allocatable :: grd_emitex(:,:,:) !(nx,ny,nz) amount of external energy emitted per cell in a time step
       real*8,allocatable :: grd_evolinit(:,:,:) !(nx,ny,nz) amount of initial energy per cell per group
-c
-      real*8,allocatable :: grd_temp(:,:,:) !(nx,ny,nz)
-      real*8,allocatable :: grd_vol(:,:,:) !(nx,ny,nz)
 c
 c-- temperature structure history (allocated only if used)
       real*8,allocatable :: grd_temppreset(:,:,:,:) !(nx,ny,nz,tim_nt)
@@ -112,7 +111,7 @@ c-- print alloc size (keep this updated)
 c---------------------------------------
       if(ltalk) then
        n = nx*ny*nz
-       n = int((int(n,8)*(8*(12+6) + 4*(5)))/1024) !kB
+       n = int((int(n,8)*(8*(12+6) + 4*4))/1024) !kB
        write(6,*) 'ALLOC grd      :',n,"kB",n/1024,"MB",n/1024**2,"GB"
        n = nx*ny*nz
        n = int((int(n,8)*4*ng)/1024) !kB
@@ -122,7 +121,6 @@ c
 c-- ndim=3 alloc
       allocate(grd_edep(nx,ny,nz))
       allocate(grd_eamp(nx,ny,nz))
-      allocate(grd_edepgam(nx,ny,nz))
       allocate(grd_capgrey(nx,ny,nz))
       allocate(grd_capgam(nx,ny,nz))
       allocate(grd_sig(nx,ny,nz))
