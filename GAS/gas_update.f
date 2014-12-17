@@ -159,8 +159,8 @@ c
         else
          call physical_opacity_subgrid
         endif
-        call opacity_planckmean
        endif
+       call opacity_planckmean
 c
 c-- save
        if(.not.allocated(tempalt)) then
