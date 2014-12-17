@@ -20,6 +20,7 @@ subroutine analytic_opacity
 
   integer :: i, ig
   real*8 :: x1, x2  !unitless energy group bounds
+  real*8 :: specarr(grp_ng)
 
   gas_capgrey = 0d0
   gas_cap = 0.
@@ -51,6 +52,9 @@ subroutine analytic_opacity
      gas_capgrey = in_gas_capcoef*gas_temp**in_gas_captpwr* &
           gas_rho**in_gas_caprpwr
      do i = 1, gas_ncell
+!
+!-- initializing Planck integral vectorized
+        specarr = specintv(1d0/gas_temp(i))
         do ig = 1, grp_ng
             x1 = pc_h*pc_c*grp_wlinv(ig+1)/pc_kb
             x2 = pc_h*pc_c*grp_wlinv(ig)/pc_kb
@@ -58,10 +62,12 @@ subroutine analytic_opacity
         enddo
         gas_capgrey(i) = 0d0
         do ig = 1, grp_ng
-           x1 = pc_h*pc_c*grp_wlinv(ig+1)/(pc_kb*gas_temp(i))
-           x2 = pc_h*pc_c*grp_wlinv(ig)/(pc_kb*gas_temp(i))
-           gas_capgrey(i) = gas_capgrey(i)+15d0*gas_cap(ig,i)* &
-                specint(x1,x2,3,10)/pc_pi**4
+           ! x1 = pc_h*pc_c*grp_wlinv(ig+1)/(pc_kb*gas_temp(i))
+           ! x2 = pc_h*pc_c*grp_wlinv(ig)/(pc_kb*gas_temp(i))
+           ! gas_capgrey(i) = gas_capgrey(i)+15d0*gas_cap(ig,i)* &
+           !      specint(x1,x2,3,10)/pc_pi**4
+           gas_capgrey(i) = gas_capgrey(i)+gas_cap(ig,i)* &
+                specarr(ig)
         enddo
      enddo!}}}
   elseif(in_opacanaltype=='pick') then
@@ -109,11 +115,14 @@ subroutine analytic_opacity
         !
         !calculate Planck, Rosseland opacities
         gas_capgrey(i) = 0d0
+!
+!-- initializing Planck integral vectorized
+        specarr = specintv(1d0/gas_temp(i))
         do ig = 1, grp_ng
-           x1 = pc_h*pc_c*grp_wlinv(ig+1)/(pc_kb*gas_temp(i))
-           x2 = pc_h*pc_c*grp_wlinv(ig)/(pc_kb*gas_temp(i))
-           gas_capgrey(i) = gas_capgrey(i)+15d0*gas_cap(ig,i)* &
-                specint(x1,x2,3,10)/pc_pi**4
+!           x1 = pc_h*pc_c*grp_wlinv(ig+1)/(pc_kb*gas_temp(i))
+!           x2 = pc_h*pc_c*grp_wlinv(ig)/(pc_kb*gas_temp(i))
+           gas_capgrey(i) = gas_capgrey(i)+gas_cap(ig,i)* &
+                specarr(ig)
         enddo
         !
      enddo!}}}
