@@ -98,7 +98,7 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
 !-- only do this if needed
   if(glump>0 .and. .not.all(icell==[ix,1,1])) then
      icell = [ix,1,1]
-     specarr = specintv(tempinv) !this is slow!
+     specarr = specintv(tempinv,0) !this is slow!
   endif
 
 !

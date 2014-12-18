@@ -36,8 +36,9 @@ c     ---------------------------!{{{
       str_nabund=0
       if(allocated(str_iabund)) deallocate(str_iabund)
       deallocate(str_xleft,str_yleft,str_zleft)
-      deallocate(str_mass,str_massfr)
-      deallocate(str_massdd,str_massfrdd)!}}}
+      deallocate(str_mass,str_massdd)
+      if(allocated(str_massfr)) deallocate(str_massfr)
+      if(allocated(str_massfrdd)) deallocate(str_massfrdd)!}}}
       end subroutine inputstr_dealloc
 c
 c
@@ -160,7 +161,7 @@ c-- Zero out the cell mass in the corners of the domain
 c======================================================
 c-- void cells
       nvoid = 0
-      if(lvoidcorners .and. igeom>1) then
+      if(lvoidcorners .and. igeom>1.and.igeom<4) then
 c-- sphere radius
        rs = min(str_xleft(nx+1),str_yleft(ny+1))
        if(igeom>2) rs = min(rs,str_zleft(nz+1))
@@ -213,7 +214,7 @@ c     ---------------------------------------------!{{{
 ************************************************************************
       igeom = igeomin
       select case(igeom)
-      case(1)
+      case(1,4)
        call generate_inputstr1
       case(2)
        call generate_inputstr2
@@ -232,6 +233,7 @@ c
 c
 c
       subroutine generate_inputstr1
+      use physconstmod
       use inputparmod!{{{
       implicit none
 ************************************************************************
@@ -239,13 +241,14 @@ c
 * if in_noreadstruct==.true.
 ************************************************************************
       real*8,allocatable :: rout(:) !(nx+1)
-      integer :: i
-      real*8 :: help, dx
+
+      integer :: i, j, k
+      real*8 :: help, dx, dy, dz
 c
 c-- 1D size
       nx = in_ndim(1)
-      ny = 1
-      nz = 1
+      ny = in_ndim(2) ! number of polar bins
+      nz = in_ndim(3) ! number of azimuthal bins
 c
 c-- verifications (input.par)
       if(in_velout<=0d0.and.in_isvelocity)
@@ -262,7 +265,9 @@ c
 c-- allocate arrays
       allocate(rout(nx+1))
       allocate(str_xleft(nx+1))
-      allocate(str_mass(nx,1,1))
+      allocate(str_yleft(ny+1))
+      allocate(str_zleft(nz+1))
+      allocate(str_mass(nx,ny,nz))
 c
 c-- create unit sphere radii rout
       dx = 1d0/real(nx)
@@ -275,13 +280,24 @@ c-- outer shells
        help = in_lx
       endif
       str_xleft = help*rout
+c-- polar cosine grid
+      dy = 2d0/real(ny)
+      forall(j=1:ny+1) str_yleft(j)=-1d0+(j-1)*dy
+c-- azimuthal angle grid
+      dz = pc_pi2/real(nz)
+      forall(k=1:nz+1) str_zleft(k)=(k-1)*dz
 c
 c-- mass
       if(in_dentype=='unif') then
-       str_mass(:,1,1) = in_totmass*(rout(2:)**3 - rout(:nx)**3)
-       str_mass(:,1,1) = str_mass(:,1,1)/(1d0 - rout(1)**3)
+       do k=1,nz
+       do j=1,ny
+        str_mass(:,j,k)=in_totmass*(rout(2:)**3-rout(:nx)**3)
+     &         *dy*dz
+       enddo
+       enddo
+       str_mass = str_mass/(pc_pi4*(1d0 - rout(1)**3))
       elseif(in_dentype=='mass') then
-       forall(i=1:nx)str_mass(i,1,1) = in_totmass/real(nx)
+       str_mass = in_totmass/real(nx*ny*nz)
       else
        stop 'generate_inputstr1: invalid in_dentype'
       endif

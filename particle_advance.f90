@@ -42,10 +42,13 @@ subroutine particle_advance
   logical,parameter :: isshift=.true.
 !-- statement function
   integer :: l
-  real*8 :: dx,dy,dz
+  real*8 :: dx,dy,dz,xm,dyac,ym
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
   dz(l) = grd_zarr(l+1) - grd_zarr(l)
+  xm(l) = 0.5*(grd_xarr(l+1) + grd_xarr(l))
+  dyac(l) = grd_yacos(l) - grd_yacos(l+1)
+  ym(l) = sqrt(1d0-0.25*(grd_yarr(l+1)+grd_yarr(l))**2)
 !
 !-- assigning pointers to corresponding particle properties
   ix => ptcl%ix
@@ -93,8 +96,8 @@ subroutine particle_advance
 
      if(grd_isvelocity.and.ptcl%itype==1) then
         select case(in_igeom)
-!-- 1D
-        case(1)
+!-- [123]D spherical
+        case(1,4)
            labfact = 1d0-x*mu/pc_c !-- 1-dir*v/c
 !-- 2D
         case(2)
@@ -172,20 +175,26 @@ subroutine particle_advance
 !-- selecting geometry
         select case(in_igeom)
 
-!-- 1D
+!-- 3D spherical
         case(1)
-           lhelp = ((grd_sig(ix,1,1)+grd_cap(ig,ix,1,1)) * &!{{{
-                dx(ix)*help<prt_tauddmc) &
-                .or.in_puretran
+           lhelp = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz)) * &!{{{
+                min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) * &
+                help<prt_tauddmc).or.in_puretran
            if (lhelp) then
               if (ptcl%itype == 2) then
 !-- DDMC -> IMC
-                 grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
+                 grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- sampling position uniformly
                  r1 =  rand()
                  prt_tlyrand = prt_tlyrand+1
                  x = (r1*grd_xarr(ix+1)**3 + &
                       (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
+                 r1 =  rand()
+                 prt_tlyrand = prt_tlyrand+1
+                 y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
+                 r1 =  rand()
+                 prt_tlyrand = prt_tlyrand+1
+                 z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
 !-- must be inside cell
                  x = min(x,grd_xarr(ix+1))
                  x = max(x,grd_xarr(ix))
@@ -193,6 +202,9 @@ subroutine particle_advance
                  r1 = rand()
                  prt_tlyrand = prt_tlyrand+1
                  mu = 1.0 - 2.0*r1
+                 r1 = rand()
+                 prt_tlyrand = prt_tlyrand+1
+                 om = pc_pi2*r1
                  if(grd_isvelocity) then
 !-- 1+dir*v/c
                     cmffact = 1d0+x*mu/pc_c
@@ -205,7 +217,7 @@ subroutine particle_advance
            else
               if(ptcl%itype==1) then
 !-- IMC -> DDMC
-                 grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
+                 grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
               endif
            endif!}}}
 
@@ -306,6 +318,43 @@ subroutine particle_advance
               endif
            endif!}}}
 
+!-- 1D spherical
+        case(4)
+           lhelp = ((grd_sig(ix,1,1)+grd_cap(ig,ix,1,1)) * &!{{{
+                dx(ix)*help<prt_tauddmc) &
+                .or.in_puretran
+           if (lhelp) then
+              if (ptcl%itype == 2) then
+!-- DDMC -> IMC
+                 grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
+!-- sampling position uniformly
+                 r1 =  rand()
+                 prt_tlyrand = prt_tlyrand+1
+                 x = (r1*grd_xarr(ix+1)**3 + &
+                      (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
+!-- must be inside cell
+                 x = min(x,grd_xarr(ix+1))
+                 x = max(x,grd_xarr(ix))
+!-- sampling angle isotropically
+                 r1 = rand()
+                 prt_tlyrand = prt_tlyrand+1
+                 mu = 1.0 - 2.0*r1
+                 if(grd_isvelocity) then
+!-- 1+dir*v/c
+                    cmffact = 1d0+x*mu/pc_c
+!-- mu
+                    mu = (mu+x/pc_c)/cmffact
+!-- 1-dir*v/c
+                    labfact = 1d0-x*mu/pc_c
+                 endif
+              endif
+           else
+              if(ptcl%itype==1) then
+!-- IMC -> DDMC
+                 grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
+              endif
+           endif!}}}
+
         case default
 !-- don't let the compiler believe lhelp may be used uninitialized
            lhelp = .true.
@@ -398,8 +447,8 @@ subroutine particle_advance
      if(isshift) then
      if ((grd_isvelocity).and.(ptcl%itype==1)) then
         select case(in_igeom)
-!-- 1D
-        case(1)
+!-- [123]D spherical
+        case(1,4)
            call advection1(.true.,ptcl,ig)
 !-- 2D
         case(2)
@@ -418,7 +467,7 @@ subroutine particle_advance
      select case(in_igeom)
 
 !-- 1D
-     case(1)
+     case(1,4)
         prt_istep = 0
         do while ((.not.prt_done).and.(.not.isvacant))
            prt_istep = prt_istep + 1
@@ -608,8 +657,8 @@ subroutine particle_advance
      if(isshift) then
      if ((grd_isvelocity).and.(ptcl%itype==1)) then
         select case(in_igeom)
-!-- 1D
-        case(1)
+!-- [123]D
+        case(1,4)
            call advection1(.false.,ptcl,ig)
 !-- 2D
         case(2)

@@ -30,8 +30,8 @@ subroutine sourceenergy_analytic
      help = 0.25d0*pc_acoef*pc_c*tsp_dt*in_srcmax**4 * &
           thelp**2
      select case(in_igeom)
-!-- 1D
-     case(1)
+!-- [123]D spherical
+     case(1,4)
         tot_esurf = help*pc_pi4*grd_xarr(grd_nx+1)**2
 !-- 2D
      case(2)
@@ -64,10 +64,10 @@ subroutine sourceenergy_analytic
      if (tsp_t<=(in_tfirst+in_theav)*pc_day) then
         select case(in_igeom)
 !-- 1D
-        case(1)
+        case(1,4)
            do i=1,min(in_nheav,grd_nx)
-              grd_emitex(i,1,1) = in_srcmax * &
-                   grd_vol(i,1,1)*tsp_dt/thelp**3
+              grd_emitex(i,:,:) = in_srcmax * &
+                   grd_vol(i,:,:)*tsp_dt/thelp**3
               !write(0,*) impi,grd_emitex(i,1,1),grd_vol(i,1,1)
            enddo
 

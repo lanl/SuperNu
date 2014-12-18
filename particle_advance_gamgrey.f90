@@ -134,6 +134,13 @@ subroutine particle_advance_gamgrey(nmpi)
         x = min(x,grd_xarr(ix+1))
         x = max(x,grd_xarr(ix))
 !--
+        y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
+!-- sampling azimuthal angle of direction
+        r1 = rand()
+        om0 = pc_pi2*r1
         if(grd_isvelocity) then
            x0 = x
            cmffact = 1d0+mu0*x0/pc_c !-- 1+dir*v/c
@@ -215,6 +222,23 @@ subroutine particle_advance_gamgrey(nmpi)
            mu = mu0
            om = om0
         endif!}}}
+     case(4)
+!-- calculating position!{{{
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        x = (r1*grd_xarr(ix+1)**3 + &
+             (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
+!-- must be inside cell
+        x = min(x,grd_xarr(ix+1))
+        x = max(x,grd_xarr(ix))
+!--
+        if(grd_isvelocity) then
+           x0 = x
+           cmffact = 1d0+mu0*x0/pc_c !-- 1+dir*v/c
+           mu = (mu0+x0/pc_c)/cmffact
+        else
+           mu = mu0
+        endif!}}}
      endselect
 !
 !-- emission energy per particle
@@ -226,7 +250,7 @@ subroutine particle_advance_gamgrey(nmpi)
      prt_done=.false.
 !
      select case(in_igeom)
-     case(1)
+     case(1,4)
         do while (.not.prt_done)!{{{
            call transport11_gamgrey(ptcl)
 !-- verify position

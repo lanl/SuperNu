@@ -159,8 +159,8 @@ c
         else
          call physical_opacity_subgrid
         endif
-        call opacity_planckmean
        endif
+       call opacity_planckmean
 c
 c-- save
        if(.not.allocated(tempalt)) then
@@ -227,8 +227,8 @@ c-- read data
         write(6,*) 'read_opac: read successfully'
 !}}}
        endif
-       call opacity_planckmean
       endif
+      call opacity_planckmean
 c
 c
 c-- write out opacities

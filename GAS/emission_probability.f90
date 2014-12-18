@@ -46,7 +46,7 @@ subroutine emission_probability
   do j=1,grd_ny
   do i=1,grd_nx
 !-- piecewise integration of planck function
-     specarr = specintv(1d0/grd_temp(i,j,k),1)
+     specarr = specintv(1d0/grd_temp(i,j,k),0)
 !-- cumulative sum of unnormalized emission probability
      ig = 1
      help = 0d0

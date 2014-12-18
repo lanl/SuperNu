@@ -29,10 +29,13 @@ subroutine interior_source
   type(packet),target :: ptcl
 !-- statement functions
   integer :: l
-  real*8 :: dx,dy,dz
+  real*8 :: dx,dy,dz,xm,dyac,ym
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
   dz(l) = grd_zarr(l+1) - grd_zarr(l)
+  xm(l) = 0.5*(grd_xarr(l+1) + grd_xarr(l))
+  dyac(l) = grd_yacos(l) - grd_yacos(l+1)
+  ym(l) = sqrt(1d0-0.25*(grd_yarr(l+1)+grd_yarr(l))**2)
 
   if(grd_isvelocity) then
      thelp = tsp_t
@@ -102,18 +105,28 @@ subroutine interior_source
 !-- selecting geometry
      select case(in_igeom)
 
-!-- 1D
+!-- 3D spherical
      case(1)
 !-- calculating position!{{{
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
+!-- sampling azimuthal angle of direction
+        r1 = rand()
+        ptcl%om = pc_pi2*r1
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,1,1)+grd_cap(ig,i,1,1))*dx(i)* &
+        lhelp = ((grd_sig(i,j,k)+grd_cap(ig,i,j,k)) * &
+             min(dx(i),xm(i)*dyac(j),xm(i)*ym(j)*dz(k)) * &
              thelp < prt_tauddmc).or.(in_puretran)
 
 !-- if velocity-dependent, transforming direction
@@ -215,6 +228,33 @@ subroutine interior_source
            ptcl%itype = 2 !DDMC
         endif
 !}}}
+!-- 1D
+     case(4)
+!-- calculating position!{{{
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        ptcl%x = (r1*grd_xarr(i+1)**3 + &
+             (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(i+1))
+        ptcl%x = max(ptcl%x,grd_xarr(i))
+!-- setting IMC logical
+        lhelp = ((grd_sig(i,1,1)+grd_cap(ig,i,1,1))*dx(i)* &
+             thelp < prt_tauddmc).or.(in_puretran)
+
+!-- if velocity-dependent, transforming direction
+        if(lhelp.and.grd_isvelocity) then
+           x0 = ptcl%x
+!-- 1+dir*v/c
+           cmffact = 1d0+mu0*x0/pc_c
+!-- mu
+           ptcl%mu = (mu0+x0/pc_c)/cmffact
+           ptcl%itype = 1 !IMC
+        else
+           ptcl%itype = 2 !DDMC
+           ptcl%mu = mu0
+        endif
+!}}}
      endselect
 
      ptcl%e = ep0*cmffact
@@ -243,14 +283,14 @@ subroutine interior_source
         grd_emitex(i,j,k)**pwr,grd_nvol(i,j,k),nemit,nhere,ndmy)
      if(nhere<1) cycle
 !-- integrate planck function over each group
-     emitprob = specintv(1d0/grd_temp(i,j,k),1)
+     emitprob = specintv(1d0/grd_temp(i,j,k),0)
      emitprob = emitprob*grd_cap(:,i,j,k)/grd_capgrey(i,j,k)
 !
   do ii=1,nhere
      ipart = ipart + 1!{{{
      ivac = prt_vacantarr(ipart)
 !
-!-- setting 1st cell index
+!-- setting cell index
      ptcl%ix = i
      ptcl%iy = j
      ptcl%iz = k
@@ -301,8 +341,8 @@ subroutine interior_source
         r2 = 1d0
         il = max(i-1,1)  !-- left neighbor
         ir = min(i+1,grd_nx)  !-- right neighbor
-        uul = .5d0*(grd_emit(il,1,1) + grd_emit(i,1,1))
-        uur = .5d0*(grd_emit(ir,1,1) + grd_emit(i,1,1))
+        uul = .5d0*(grd_emit(il,j,k) + grd_emit(i,j,k))
+        uur = .5d0*(grd_emit(ir,j,k) + grd_emit(i,j,k))
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -316,8 +356,19 @@ subroutine interior_source
            prt_tlyrand = prt_tlyrand+1
         enddo
         ptcl%x = x0
+!-- uniform in angles
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(i+1))
+        ptcl%x = max(ptcl%x,grd_xarr(i))
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,1,1)+grd_cap(ig,i,1,1))*dx(i)* &
+        lhelp = ((grd_sig(i,j,k)+grd_cap(ig,i,j,k)) * &
+             min(dx(i),xm(i)*dyac(j),xm(i)*ym(j)*dz(k)) * &
              thelp < prt_tauddmc).or.(in_puretran)
 !write(0,*) i,grd_sig(i,1,1),grd_cap(ig,i,1,1),dx(i),thelp,prt_tauddmc
 
@@ -485,6 +536,46 @@ subroutine interior_source
            ptcl%om = om0
            ptcl%itype = 2 !DDMC
         endif!}}}
+!-- 1D spherical
+     case(4)
+!-- calculating position:!{{{
+!-- source tilting in x
+        r3 = 0d0
+        r2 = 1d0
+        il = max(i-1,1)  !-- left neighbor
+        ir = min(i+1,grd_nx)  !-- right neighbor
+        uul = .5d0*(grd_emit(il,1,1) + grd_emit(i,1,1))
+        uur = .5d0*(grd_emit(ir,1,1) + grd_emit(i,1,1))
+        uumax = max(uul,uur)
+        uul = uul/uumax
+        uur = uur/uumax
+        do while (r2 > r3)
+           r1 = rand()
+           prt_tlyrand = prt_tlyrand+1
+           x0 = (r1*grd_xarr(i+1)**3+(1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
+           r3 = (x0-grd_xarr(i))/dx(i)
+           r3 = r3*uur+(1.0-r3)*uul
+           r2 = rand()
+           prt_tlyrand = prt_tlyrand+1
+        enddo
+        ptcl%x = x0
+!-- setting IMC logical
+        lhelp = ((grd_sig(i,1,1)+grd_cap(ig,i,1,1))*dx(i)* &
+             thelp < prt_tauddmc).or.(in_puretran)
+!write(0,*) i,grd_sig(i,1,1),grd_cap(ig,i,1,1),dx(i),thelp,prt_tauddmc
+
+!-- if velocity-dependent, transforming direction
+        if (lhelp.and.grd_isvelocity) then
+!-- 1+dir*v/c
+           cmffact = 1d0+mu0*x0/pc_c
+!-- mu
+           ptcl%mu = (mu0+x0/pc_c)/cmffact
+           ptcl%itype = 1 !IMC
+        else
+           ptcl%mu = mu0
+           ptcl%itype = 2 !DDMC
+        endif
+!}}}
      endselect
 
 !-- transformation into lab frame (in static grids cmffact==1d0)
