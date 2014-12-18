@@ -98,7 +98,18 @@ subroutine initial_particles
         prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1d0-r1)*grd_xarr(i)**3)**(1d0/3d0)
-
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(i+1))
+        ptcl%x = max(ptcl%x,grd_xarr(i))
+!-- sampling azimuthal angle of direction
+        r1 = rand()
+        ptcl%om = pc_pi2*r1
 !-- if velocity-dependent, transforming direction
         if(grd_isvelocity) then
            x0 = ptcl%x
@@ -189,6 +200,25 @@ subroutine initial_particles
         else
            ptcl%mu = mu0
            ptcl%om = om0
+        endif
+
+!-- 1D
+     case(4)
+!-- calculating position
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        ptcl%x = (r1*grd_xarr(i+1)**3 + &
+             (1d0-r1)*grd_xarr(i)**3)**(1d0/3d0)
+
+!-- if velocity-dependent, transforming direction
+        if(grd_isvelocity) then
+           x0 = ptcl%x
+!-- 1+dir*v/c
+           cmffact = 1d0+x0*mu0/pc_c
+!-- mu
+           ptcl%mu = (mu0+x0/pc_c)/cmffact
+        else
+           ptcl%mu = mu0
         endif
      endselect
 

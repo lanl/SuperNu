@@ -16,7 +16,7 @@ c-- parallelization
       integer :: in_nomp = 1       !number of openmp threads
 c
 c-- grid geometry and dimensions
-      integer :: in_igeom = 0 !geometry: 1=1Dsph, 2=2Dcyl, 3=3Dcar
+      integer :: in_igeom = 0 !geometry: 1=[123]Dsph, 2=2Dcyl, 3=3Dcar, 4=1Dsph
       integer :: in_ndim(3) = [1, 1, 1] !number of x-direction cells
 
       real*8 :: in_lx = 0d0  !spatial length of x-direction
@@ -383,6 +383,9 @@ c
       select case(in_igeom)
       case(:0)
        stop 'in_igeom invalid'
+      case(1)
+       if(in_srctype=='surf'.and.in_surfsrcloc/='out') stop
+     &   'in_srctype and in_surfsrcloc invalid'
       case(2)
        if(in_ndim(3)>1) stop 'in_ndim invalid'
        if(in_flx_ndim(3)/=1) stop 'in_flx_ndim invalid'

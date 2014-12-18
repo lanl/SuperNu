@@ -22,10 +22,13 @@ subroutine boundary_source
 !
 !-- statement functions
   integer :: l
-  real*8 :: dx,dy,dz
+  real*8 :: dx,dy,dz,xm,dyac,ym
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
   dz(l) = grd_zarr(l+1) - grd_zarr(l)
+  xm(l) = 0.5*(grd_xarr(l+1) + grd_xarr(l))
+  dyac(l) = grd_yacos(l) - grd_yacos(l+1)
+  ym(l) = sqrt(1d0-0.25*(grd_yarr(l+1)+grd_yarr(l))**2)
 
   esurfpart = tot_esurf/dble(prt_nsurf)
 
@@ -44,11 +47,9 @@ subroutine boundary_source
      enddo
   else
      select case(in_igeom)
-!-- 1D
+!-- 3D spherical
      case(1)
         i = grd_nx
-        j = 1
-        k = 1
 !-- 2D
      case(2)
         if(in_surfsrcloc=='down') then
@@ -74,6 +75,11 @@ subroutine boundary_source
         else
            k = grd_nz
         endif
+!-- 1D spherical
+     case(4)
+        i = grd_nx
+        j = 1
+        k = 1
      endselect
      if(in_srcmax>0d0.and.in_srctype=='surf') srftemp = in_srcmax
      do ig = 1, grp_ng
@@ -126,20 +132,31 @@ subroutine boundary_source
 !-- selecting geometry and surface
      select case(in_igeom)
 
-!-- 1D (outer surface)
+!-- 3D (outer surface)
      case(1)
 !-- calculating position
         ptcl%x = grd_xarr(i+1)
         x0 = ptcl%x
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        ptcl%y = 1d0-2d0*r1
+        r1 = rand()
+        prt_tlyrand = prt_tlyrand+1
+        ptcl%z = pc_pi2*r1
+        j = binsrch(ptcl%y,grd_yarr,grd_ny+1)
+        k = binsrch(ptcl%z,grd_zarr,grd_nz+1)
 !-- setting cell index
         ptcl%ix = i
         ptcl%iy = j
         ptcl%iz = k
+!-- sampling azimuthal direction angle
+        ptcl%om = r1*pc_pi2
 !-- calculating albedo
-        mfphelp = (grd_cap(iig,i,1,1)+grd_sig(i,1,1))*dx(i)*thelp
+        mfphelp = (grd_cap(iig,i,j,k)+grd_sig(i,j,k))*dx(i)*thelp
         P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
-        lhelp = ((grd_sig(i,1,1)+grd_cap(iig,i,1,1)) * &
-             dx(i)*thelp < prt_tauddmc) &
+        lhelp = ((grd_sig(i,j,k)+grd_cap(iig,i,j,k)) * &
+             min(dx(i),xm(i)*dyac(j),xm(i)*ym(j)*dz(k)) * &
+             thelp < prt_tauddmc) &
              .or.in_puretran.or.P>1d0.or.P<0d0
 !-- if velocity-dependent, transforming direction
         if(lhelp.and.grd_isvelocity) then
@@ -348,6 +365,31 @@ subroutine boundary_source
         else
            ptcl%mu = mu0
            ptcl%om = om0
+        endif
+
+!-- 1D (outer surface)
+     case(4)
+!-- calculating position
+        ptcl%x = grd_xarr(i+1)
+        x0 = ptcl%x
+!-- setting cell index
+        ptcl%ix = i
+        ptcl%iy = j
+        ptcl%iz = k
+!-- calculating albedo
+        mfphelp = (grd_cap(iig,i,1,1)+grd_sig(i,1,1))*dx(i)*thelp
+        P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
+        lhelp = ((grd_sig(i,1,1)+grd_cap(iig,i,1,1)) * &
+             dx(i)*thelp < prt_tauddmc) &
+             .or.in_puretran.or.P>1d0.or.P<0d0
+!-- if velocity-dependent, transforming direction
+        if(lhelp.and.grd_isvelocity) then
+!-- 1+dir*v/c
+           cmffact = 1d0-mu0*x0/pc_c
+!-- mu
+           ptcl%mu = (-mu0+x0/pc_c)/cmffact
+        else
+           ptcl%mu = -mu0
         endif
      endselect
 
