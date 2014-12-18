@@ -326,13 +326,16 @@ c-- create GAS communicator
 c
 c-- evaluate local rank
       call mpi_group_rank(group_gas,impi_gas,ierr)
+c
+c-- full distribution mode:
+      if(nmpi_gas/=nmpi) stop 'mpi_setup_comm: ncell/nmpi no integer'
 c!}}}
       end subroutine mpi_setup_communicators
 c
 c
 c
       subroutine scatter_inputstruct(ndim,ncell)
-c     ------------------------------------!{{{
+c     ------------------------------------------!{{{
       use inputstrmod
       use gasmod
       implicit none
@@ -372,88 +375,21 @@ c
 c
 c
 c
-      subroutine bcast_nonpermanent
-c     ------------------------!{{{
+      subroutine allgather_gammacap
+c     -----------------------------!{{{
       use gridmod
       use gasmod
-      use groupmod
-      use totalsmod
-      use particlemod
-      use timestepmod
-      use timingmod
       implicit none
 ************************************************************************
-* Broadcast the data that changes with time/temperature.
+* gather gas_capgam to grd_capgrey
 ************************************************************************
-      real*8 :: t0,t1
-      integer :: n
-c
-      call time(t0)
-c
-c-- gather
-      if(impi_gas>=0) then
-       call mpi_gather(gas_temp,gas_ncell,MPI_REAL8,
-     &   grd_temp,gas_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_GAS,ierr)
-c
-       call mpi_gather(gas_emit,gas_ncell,MPI_REAL8,
-     &   grd_emit,gas_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_GAS,ierr)
-       call mpi_gather(gas_emitex,gas_ncell,MPI_REAL8,
-     &   grd_emitex,gas_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_GAS,ierr)
-c
-       call mpi_gather(gas_sig,gas_ncell,MPI_REAL8,
-     &   grd_sig,gas_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_GAS,ierr)
-       call mpi_gather(gas_capgam,gas_ncell,MPI_REAL8,
-     &   grd_capgam,gas_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_GAS,ierr)
-       call mpi_gather(gas_capgrey,gas_ncell,MPI_REAL8,
-     &   grd_capgrey,gas_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_GAS,ierr)
-       call mpi_gather(gas_fcoef,gas_ncell,MPI_REAL8,
-     &   grd_fcoef,gas_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_GAS,ierr)
-c
-       call mpi_gather(gas_cap,grp_ng*gas_ncell,MPI_REAL,
-     &   grd_cap,grp_ng*gas_ncell,MPI_REAL,
-     &   impi0,MPI_COMM_GAS,ierr)
-      endif
-c
-c-- broadcast
-      call mpi_bcast(tot_esurf,1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      n = grd_nx*grd_ny*grd_nz
-      call mpi_bcast(grd_temp,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      call mpi_bcast(grd_eamp,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      call mpi_bcast(grd_emit,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(grd_emitex,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      call mpi_bcast(grd_sig,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(grd_capgam,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(grd_capgrey,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(grd_fcoef,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      call mpi_bcast(grd_cap,grp_ng*n,MPI_REAL,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      call time(t1)
-      call timereg(t_mpibcast, t1-t0)
-c!}}}
-      end subroutine bcast_nonpermanent
-c
+      call mpi_allgather(gas_emitex,gas_ncell,MPI_REAL8,
+     &  grd_emitex,gas_ncell,MPI_REAL8,
+     &  MPI_COMM_GAS,ierr)
+      call mpi_allgather(gas_capgam,gas_ncell,MPI_REAL8,
+     &  grd_capgrey,gas_ncell,MPI_REAL8,
+     &  MPI_COMM_GAS,ierr)!}}}
+      end subroutine allgather_gammacap
 c
 c
       subroutine allreduce_gammaenergy
@@ -479,6 +415,86 @@ c
       call timereg(t_mpigamma, t1-t0)
 c!}}}
       end subroutine allreduce_gammaenergy
+c
+c
+      subroutine bcast_nonpermanent
+c     -----------------------------!{{{
+      use gridmod
+      use gasmod
+      use groupmod
+      use totalsmod
+      use particlemod
+      use timestepmod
+      use timingmod
+      implicit none
+************************************************************************
+* Broadcast the data that changes with time/temperature.
+************************************************************************
+      real*8 :: t0,t1
+      real*8 :: snd3(grd_nx,grd_ny,grd_nz)
+      integer :: n
+c
+      call time(t0)
+c
+c-- gather
+      if(impi_gas>=0) then
+       call mpi_allgather(gas_temp,gas_ncell,MPI_REAL8,
+     &   grd_temp,gas_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_GAS,ierr)
+       call mpi_allgather(gas_fcoef,gas_ncell,MPI_REAL8,
+     &   grd_fcoef,gas_ncell,MPI_REAL8,
+     &   MPI_COMM_GAS,ierr)
+       call mpi_allgather(gas_capgrey,gas_ncell,MPI_REAL8,
+     &   grd_capgrey,gas_ncell,MPI_REAL8,
+     &   MPI_COMM_GAS,ierr)
+c
+       call mpi_allgather(gas_emit,gas_ncell,MPI_REAL8,
+     &   grd_emit,gas_ncell,MPI_REAL8,
+     &   MPI_COMM_GAS,ierr)
+       call mpi_allgather(gas_emitex,gas_ncell,MPI_REAL8,
+     &   grd_emitex,gas_ncell,MPI_REAL8,
+     &   MPI_COMM_GAS,ierr)
+c
+       call mpi_allgather(gas_sig,gas_ncell,MPI_REAL8,
+     &   grd_sig,gas_ncell,MPI_REAL8,
+     &   MPI_COMM_GAS,ierr)
+       call mpi_allgather(gas_cap,grp_ng*gas_ncell,MPI_REAL,
+     &   grd_cap,grp_ng*gas_ncell,MPI_REAL,
+     &   MPI_COMM_GAS,ierr)
+      endif
+c
+c-- broadcast
+      call mpi_bcast(tot_esurf,1,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      n = grd_nx*grd_ny*grd_nz
+c
+c-- allreduce
+      snd3 = grd_eamp
+      call mpi_allreduce(snd3,grd_eamp,n,MPI_REAL8,MPI_SUM,
+     &  MPI_COMM_WORLD,ierr)
+!c
+!      call mpi_bcast(grd_temp,n,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!      call mpi_bcast(grd_capgrey,n,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!      call mpi_bcast(grd_fcoef,n,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!c
+!      call mpi_bcast(grd_emit,n,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!      call mpi_bcast(grd_emitex,n,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!c
+!      call mpi_bcast(grd_sig,n,MPI_REAL8,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!      call mpi_bcast(grd_cap,grp_ng*n,MPI_REAL,
+!     &  impi0,MPI_COMM_WORLD,ierr)
+!c
+      call time(t1)
+      call timereg(t_mpibcast, t1-t0)
+c!}}}
+      end subroutine bcast_nonpermanent
 c
 c
 c
@@ -567,10 +583,6 @@ c-- dim==3
 c
       isnd3 = grd_methodswap
       call mpi_reduce(isnd3,grd_methodswap,n,MPI_INTEGER,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      snd3 = grd_eamp
-      call mpi_reduce(snd3,grd_eamp,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
       snd3 = grd_edep

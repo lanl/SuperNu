@@ -87,12 +87,12 @@ subroutine transport3_gamgrey(ptcl)
   endif
 !
 !-- effective collision distance
-  if(grd_capgam(ix,iy,iz)<=0d0) then
+  if(grd_capgrey(ix,iy,iz)<=0d0) then
      dcol = 2d0*pc_c*dt*thelpinv
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
      r1 = rand()
-     dcol = -log(r1)*thelpinv/(elabfact*grd_capgam(ix,iy,iz))
+     dcol = -log(r1)*thelpinv/(elabfact*grd_capgrey(ix,iy,iz))
   else
      dcol = 2d0*pc_c*dt*thelpinv
   endif
@@ -116,13 +116,13 @@ subroutine transport3_gamgrey(ptcl)
   if(.not.prt_isimcanlog) then
 !-- depositing nonanalog absorbed energy
      grd_edep(ix,iy,iz)=grd_edep(ix,iy,iz)+e* &
-          (1d0-exp(-grd_capgam(ix,iy,iz)* &
+          (1d0-exp(-grd_capgrey(ix,iy,iz)* &
           elabfact*d*thelp))*elabfact
      if(grd_edep(ix,iy,iz)/=grd_edep(ix,iy,iz)) then
         stop 'transport3_gamgrey: invalid energy deposition'
      endif
 !-- reducing particle energy
-     e = e*exp(-grd_capgam(ix,iy,iz) * &
+     e = e*exp(-grd_capgrey(ix,iy,iz) * &
           elabfact*d*thelp)
   endif
 

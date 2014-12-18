@@ -178,12 +178,9 @@ program supernu
      if(impi_gas>=0) call sourceenergy(nmpi) !energy to be instantiated per cell in this timestep
 
 
-!-- gather from gas workers and broadcast to world ranks
-     call bcast_nonpermanent !MPI
-
-
 !-- grey gamma ray transport
      if(in_srctype=='none' .and. .not.in_novolsrc) then
+        call allgather_gammacap
         call particle_advance_gamgrey(nmpi)
         call allreduce_gammaenergy !MPI
 !-- testing: local deposition
@@ -194,6 +191,9 @@ program supernu
      else
         grd_edep = 0d0
      endif
+
+!-- gather from gas workers and broadcast to world ranks
+     call bcast_nonpermanent !MPI
      call sourceenergy_misc
 
      call sourceenergy_analytic !gas_emitex from analytic distribution

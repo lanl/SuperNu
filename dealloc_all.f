@@ -29,7 +29,6 @@ c-- gasmod
       if(impi==impi0) deallocate(grd_capgrey)
       deallocate(grd_fcoef)
       deallocate(grd_sig)
-      if(impi==impi0) deallocate(grd_capgam)
       deallocate(grd_emit,grd_emitex,grd_nvol)
       deallocate(grd_evolinit,grd_nvolinit)
 c-- particlemod
