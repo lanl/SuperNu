@@ -16,7 +16,7 @@ c     -----------------------------
 c
 c-- Planck opacity
       do i=1,gas_ncell
-       gas_capgrey(i) = sum(gas_cap(:,i)*specintv(1d0/gas_temp(i)))
+       gas_capgrey(i) = sum(gas_cap(:,i)*specintv(1d0/gas_temp(i),0))
       enddo !i
 c
 c

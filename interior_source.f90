@@ -283,7 +283,7 @@ subroutine interior_source
         grd_emitex(i,j,k)**pwr,grd_nvol(i,j,k),nemit,nhere,ndmy)
      if(nhere<1) cycle
 !-- integrate planck function over each group
-     emitprob = specintv(1d0/grd_temp(i,j,k),1)
+     emitprob = specintv(1d0/grd_temp(i,j,k),0)
      emitprob = emitprob*grd_cap(:,i,j,k)/grd_capgrey(i,j,k)
 !
   do ii=1,nhere

@@ -227,8 +227,8 @@ c-- read data
         write(6,*) 'read_opac: read successfully'
 !}}}
        endif
-       call opacity_planckmean
       endif
+      call opacity_planckmean
 c
 c
 c-- write out opacities
