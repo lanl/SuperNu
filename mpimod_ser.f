@@ -43,12 +43,17 @@ c
       end subroutine scatter_inputstruct
 c
 c
-      subroutine allgather_capgam
+      subroutine allgather_gammacap
 c     ---------------------------
       use gridmod
       use gasmod
       grd_capgrey = reshape(gas_capgam,[grd_nx,grd_ny,grd_nz])
-      end subroutine allgather_capgam
+      grd_emitex = reshape(gas_emitex,[grd_nx,grd_ny,grd_nz])
+      end subroutine allgather_gammacap
+c
+c
+      subroutine allreduce_gammaenergy
+      end subroutine allreduce_gammaenergy
 c
 c
       subroutine bcast_nonpermanent
@@ -71,10 +76,6 @@ c-- domain decomposition
       grd_fcoef = reshape(gas_fcoef,[grd_nx,grd_ny,grd_nz])
 
       end subroutine bcast_nonpermanent
-c
-c
-      subroutine allreduce_gammaenergy
-      end subroutine allreduce_gammaenergy
 c
 c
       subroutine reduce_tally

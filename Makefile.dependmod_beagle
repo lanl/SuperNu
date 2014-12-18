@@ -1,16 +1,19 @@
-profiledatamod.o profiledatamod.mod: profiledatamod.f  
 elemdatamod.o elemdatamod.mod: elemdatamod.f  
 physconstmod.o physconstmod.mod: physconstmod.f  
-mpimod.o mpimod.mod: mpimod.f gasmod.o inputparmod.o particlemod.o 
-miscmod.o miscmod.mod: miscmod.f MISC/lcase.f MISC/warn.f 
+mpimod.o mpimod.mod: mpimod.f gasmod.o gridmod.o groupmod.o inputstrmod.o particlemod.o totalsmod.o 
+miscmod.o miscmod.mod: miscmod.f  
 ionsmod.o ionsmod.mod: ionsmod.f miscmod.o physconstmod.o 
 ffxsmod.o ffxsmod.mod: ffxsmod.f  
 bfxsmod.o bfxsmod.mod: bfxsmod.f  
 bbxsmod.o bbxsmod.mod: bbxsmod.f elemdatamod.o miscmod.o 
-inputparmod.o inputparmod.mod: inputparmod.f miscmod.o physconstmod.o 
+inputparmod.o inputparmod.mod: inputparmod.f miscmod.o 
 timestepmod.o timestepmod.mod: timestepmod.f90 physconstmod.o 
-gasmod.o gasmod.mod: gasmod.f90 inputparmod.o timestepmod.o 
+groupmod.o groupmod.mod: groupmod.f gasmod.o inputparmod.o physconstmod.o 
+gridmod.o gridmod.mod: gridmod.f  
+gasmod.o gasmod.mod: gasmod.f  
 inputstrmod.o inputstrmod.mod: inputstrmod.f elemdatamod.o gasmod.o inputparmod.o miscmod.o physconstmod.o 
 particlemod.o particlemod.mod: particlemod.f90  
 timingmod.o timingmod.mod: timingmod.f  
-manufacmod.o manufacmod.mod: manufacmod.f gasmod.o inputparmod.o miscmod.o physconstmod.o 
+manufacmod.o manufacmod.mod: manufacmod.f gasmod.o gridmod.o groupmod.o inputparmod.o miscmod.o physconstmod.o 
+fluxmod.o fluxmod.mod: fluxmod.f groupmod.o physconstmod.o 
+totalsmod.o totalsmod.mod: totalsmod.f  
