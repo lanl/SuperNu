@@ -1,5 +1,6 @@
 subroutine initial_particles
 
+  use randommod
   use gridmod
   use groupmod
   use timestepmod
@@ -66,7 +67,7 @@ subroutine initial_particles
 
 !-- calculating wavelength
      denom2 = 0d0
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      do ig = 1, grp_ng
         wl3 = grp_wlinv(ig+1)
@@ -75,12 +76,12 @@ subroutine initial_particles
         if(r1>=denom2.and.r1<denom2 + (wl4-wl3)/(wl2-wl1)) exit
         denom2 = denom2 + (wl4-wl3)/(wl2-wl1)
      enddo
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      wl0 = 1d0/((1d0-r1)*grp_wlinv(iig)+r1*grp_wlinv(iig+1))
 
 !-- calculating direction cosine (comoving)
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      mu0 = 1d0-2d0*r1
 
@@ -94,21 +95,21 @@ subroutine initial_particles
 !-- 1D
      case(1)
 !-- calculating position
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1d0-r1)*grd_xarr(i)**3)**(1d0/3d0)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
 !-- sampling azimuthal angle of direction
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         ptcl%om = pc_pi2*r1
 !-- if velocity-dependent, transforming direction
         if(grd_isvelocity) then
@@ -126,15 +127,15 @@ subroutine initial_particles
 !-- setting 2nd cell index
         ptcl%iy = j
 !-- calculating position
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + &
              (1d0-r1)*grd_xarr(i)**2)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         ptcl%y = r1*grd_yarr(j+1) + &
              (1d0-r1)*grd_yarr(j)
 
 !-- sampling azimuthal angle of direction
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
 
 !-- if velocity-dependent, transforming direction
@@ -163,18 +164,18 @@ subroutine initial_particles
         ptcl%iy = j
         ptcl%iz = k
 !-- calculating position
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         ptcl%x = r1*grd_xarr(i+1) + &
              (1d0-r1)*grd_xarr(i)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         ptcl%y = r1*grd_yarr(j+1) + &
              (1d0-r1)*grd_yarr(j)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         ptcl%z = r1*grd_zarr(k+1) + &
              (1d0-r1)*grd_zarr(k)
 
 !-- sampling azimuthal angle of direction
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
 
 !-- if velocity-dependent, transforming direction
@@ -205,7 +206,7 @@ subroutine initial_particles
 !-- 1D
      case(4)
 !-- calculating position
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1d0-r1)*grd_xarr(i)**3)**(1d0/3d0)

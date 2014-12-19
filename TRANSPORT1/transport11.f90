@@ -1,5 +1,6 @@
 subroutine transport11(ptcl,ig,isvacant)
 
+  use randommod
   use miscmod
   use gridmod
   use groupmod
@@ -77,7 +78,7 @@ subroutine transport11(ptcl,ig,isvacant)
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
      if(grd_cap(ig,ix,1,1)>0d0) then
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         dcol = abs(log(r1)/(grd_cap(ig,ix,1,1)*dcollabfact))
      else
@@ -85,7 +86,7 @@ subroutine transport11(ptcl,ig,isvacant)
      endif
   else
      if((1.0d0-grd_fcoef(ix,1,1))*grd_cap(ig,ix,1,1)>0.0d0) then
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         dcol = abs(log(r1)/((1.0d0-grd_fcoef(ix,1,1))*grd_cap(ig,ix,1,1)*dcollabfact))
      else
@@ -95,7 +96,7 @@ subroutine transport11(ptcl,ig,isvacant)
 !
 !-- distance to Thomson-type collision = dthm
   if(grd_sig(ix,1,1)>0.0d0) then
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      dthm = abs(log(r1)/(grd_sig(ix,1,1)*dcollabfact))
   else
@@ -107,7 +108,7 @@ subroutine transport11(ptcl,ig,isvacant)
 !
 !-- distance to Doppler shift = ddop
   if(grd_isvelocity.and.ig<grp_ng) then
-!      r1 = rand()
+!      r1 = rnd_r(rnd_state)
 !      prt_tlyrand=prt_tlyrand+1
 !      ddop = pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig))*abs(log(r1))/(grp_wl(ig)*dcollabfact)
 !     wl = r1*grp_wl(ig)+(1d0-r1)*grp_wl(ig+1) !uniform sample
@@ -177,7 +178,7 @@ subroutine transport11(ptcl,ig,isvacant)
 
   !
   if(d == ddop) then !group shift
-!     r1 = rand()!{{{
+!     r1 = rnd_r(rnd_state)!{{{
 !     prt_tlyrand=prt_tlyrand+1
 !-- redshifting
      if(ig<grp_ng) then
@@ -188,7 +189,7 @@ subroutine transport11(ptcl,ig,isvacant)
 !        wl = wl*(1d0-mu*r*cinv)
         wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*(1d0-mu*r*cinv)
      else
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand=prt_tlyrand+1
 !     wl = r1*grp_wl(grp_ng)+(1d0-r1)*grp_wl(grp_ng+1) !uniform sample
         wl=1d0/(r1*grp_wlinv(grp_ng+1) + (1d0-r1)*grp_wlinv(grp_ng))  !reciprocal sample
@@ -215,7 +216,7 @@ subroutine transport11(ptcl,ig,isvacant)
 !!}}}
   elseif (d == dthm) then  !physical scattering (Thomson-type)
      !!{{{
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      mu = 1.0-2.0*r1
      if(abs(mu)<0.0000001d0) then
@@ -235,7 +236,7 @@ subroutine transport11(ptcl,ig,isvacant)
      !!}}}
   elseif (d == dcol) then  !fictitious scattering with implicit capture
      !!{{{
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      if(r1<=grd_fcoef(ix,1,1).and.prt_isimcanlog) then
         isvacant = .true.
@@ -245,7 +246,7 @@ subroutine transport11(ptcl,ig,isvacant)
         tot_evelo = tot_evelo+e*(1d0-elabfact)
 !
      else
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         mu = 1.0-2.0*r1
         if(abs(mu)<0.0000001d0) then
@@ -263,7 +264,7 @@ subroutine transport11(ptcl,ig,isvacant)
         endif
 !
 !-- sample wavelength
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ig = emitgroup(r1,ix,1,1)
 !
@@ -271,7 +272,7 @@ subroutine transport11(ptcl,ig,isvacant)
         !grd_eraddens(ix)=grd_eraddens(ix)+e*elabfact
 !-------------------------------------------------------
 ! sampling comoving wavelength in group
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
         !wl = (1d0-r1)*grp_wl(ig)+r1*grp_wl(ig+1)
@@ -287,15 +288,15 @@ subroutine transport11(ptcl,ig,isvacant)
 !         else
 !            bmax = pc_plkpk
 !         endif
-!         r1 = rand()
+!         r1 = rnd_r(rnd_state)
 !                 prt_tlyrand = prt_tlyrand+1
-!         r2 = rand()
+!         r2 = rnd_r(rnd_state)
 !                 prt_tlyrand = prt_tlyrand+1
 !         xx0 = (1d0-r1)*x1+r1*x2
 !         do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
-!            r1 = rand()
+!            r1 = rnd_r(rnd_state)
 !                 prt_tlyrand = prt_tlyrand+1
-!            r2 = rand()
+!            r2 = rnd_r(rnd_state)
 !                 prt_tlyrand = prt_tlyrand+1
 !            xx0 = (1d0-r1)*x1+r1*x2
 !         enddo
@@ -354,7 +355,7 @@ subroutine transport11(ptcl,ig,isvacant)
         elseif (((grd_sig(ix+1,1,1)+grd_cap(ig,ix+1,1,1))*dx(ix+1) &
              *thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            if(grd_isvelocity) then
               mu = (mu-r*cinv)/(1.0-r*mu*cinv)
@@ -376,9 +377,9 @@ subroutine transport11(ptcl,ig,isvacant)
               endif
               ix = ix+1
            else
-              r1 = rand()
+              r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
-              r2 = rand()
+              r2 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               mu = -max(r1,r2)
               if(grd_isvelocity) then
@@ -396,7 +397,7 @@ subroutine transport11(ptcl,ig,isvacant)
            if (((grd_sig(ix+1,1,1)+grd_cap(ig,ix+1,1,1))*dx(ix+1) &
                 *thelp >= prt_tauddmc) &
                 .and.(in_puretran.eqv..false.)) then
-              r1 = rand()
+              r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(grd_isvelocity) then
                  mu = (mu-r*cinv)/(1.0-r*mu*cinv)
@@ -417,9 +418,9 @@ subroutine transport11(ptcl,ig,isvacant)
                  endif
                  ix = ix+1
               else
-                 r1 = rand()
+                 r1 = rnd_r(rnd_state)
                  prt_tlyrand = prt_tlyrand+1
-                 r2 = rand()
+                 r2 = rnd_r(rnd_state)
                  prt_tlyrand = prt_tlyrand+1
                  mu = -max(r1,r2)
                  if(grd_isvelocity) then
@@ -434,7 +435,7 @@ subroutine transport11(ptcl,ig,isvacant)
         elseif (((grd_sig(ix-1,1,1)+grd_cap(ig,ix-1,1,1))*dx(ix-1) &
              *thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
 !
 !-- amplification factor
@@ -477,9 +478,9 @@ subroutine transport11(ptcl,ig,isvacant)
               endif
               ix = ix-1
            else
-              r1 = rand()
+              r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
-              r2 = rand()
+              r2 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               mu = max(r1,r2)
               if(grd_isvelocity) then

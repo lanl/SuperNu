@@ -1,5 +1,6 @@
 subroutine particle_advance_gamgrey(nmpi)
 
+  use randommod
   use particlemod
   use gridmod
   use physconstmod
@@ -118,7 +119,7 @@ subroutine particle_advance_gamgrey(nmpi)
      iz = k
 
 !-- calculating direction cosine (comoving)
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      mu0 = 1d0-2d0*r1
 
@@ -126,7 +127,7 @@ subroutine particle_advance_gamgrey(nmpi)
      select case(in_igeom)
      case(1)
 !-- calculating position!{{{
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         x = (r1*grd_xarr(ix+1)**3 + &
              (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
@@ -135,11 +136,11 @@ subroutine particle_advance_gamgrey(nmpi)
         x = max(x,grd_xarr(ix))
 !--
         y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
 !-- sampling azimuthal angle of direction
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
         if(grd_isvelocity) then
            x0 = x
@@ -150,18 +151,18 @@ subroutine particle_advance_gamgrey(nmpi)
         endif!}}}
      case(2)
 !-- calculating position!{{{
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         x = sqrt(r1*grd_xarr(i+1)**2 + &
              (1d0-r1)*grd_xarr(i)**2)
 !-- must be inside cell
         x = min(x,grd_xarr(ix+1))
         x = max(x,grd_xarr(ix))
 !
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         y = r1*grd_yarr(j+1) + (1d0-r1) * &
              grd_yarr(j)
 !-- sampling azimuthal angle of direction
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
 !-- if velocity-dependent, transforming direction
         if(grd_isvelocity) then
@@ -187,17 +188,17 @@ subroutine particle_advance_gamgrey(nmpi)
         iy = j
         iz = k
 !-- calculating position
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         x = r1*grd_xarr(i+1) + (1d0-r1) * &
              grd_xarr(i)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         y = r1*grd_yarr(j+1) + (1d0-r1) * &
              grd_yarr(j)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         z = r1*grd_zarr(k+1) + (1d0-r1) * &
              grd_zarr(k)
 !-- sampling azimuthal angle of direction
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
 !-- if velocity-dependent, transforming direction
         if(grd_isvelocity) then
@@ -224,7 +225,7 @@ subroutine particle_advance_gamgrey(nmpi)
         endif!}}}
      case(4)
 !-- calculating position!{{{
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         x = (r1*grd_xarr(ix+1)**3 + &
              (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
@@ -266,7 +267,7 @@ subroutine particle_advance_gamgrey(nmpi)
            endif
 !-- Russian roulette for termination of exhausted particles
            if (e<1d-6*e0 .and. .not.prt_done) then
-              r1 = rand()
+              r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  prt_done = .true.
@@ -300,7 +301,7 @@ subroutine particle_advance_gamgrey(nmpi)
            endif
 !-- Russian roulette for termination of exhausted particles
            if (e<1d-6*e0 .and. .not.prt_done) then
-              r1 = rand()
+              r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  prt_done = .true.
@@ -323,7 +324,7 @@ subroutine particle_advance_gamgrey(nmpi)
            endif
 !-- Russian roulette for termination of exhausted particles
            if (e<1d-6*e0 .and. .not.prt_done) then
-              r1 = rand()
+              r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  prt_done = .true.

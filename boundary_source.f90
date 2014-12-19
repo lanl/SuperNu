@@ -1,5 +1,6 @@
 subroutine boundary_source
 
+  use randommod
   use particlemod
   use timestepmod
   use physconstmod
@@ -98,13 +99,13 @@ subroutine boundary_source
      prt_isvacant(ivac) = .false.
 !
 !-- calculating particle time
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      ptcl%t = tsp_t+r1*tsp_dt
 
 !-- calculating wavelength
      denom2 = 0d0
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      do ig = 1, grp_ng
         iig = ig
@@ -114,7 +115,7 @@ subroutine boundary_source
      if(grd_isvelocity.and.in_srctype=='manu') then
         iig = 2
      endif
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      wl0 = 1d0/((1d0-r1)*grp_wlinv(iig)+r1*grp_wlinv(iig+1))
 
@@ -122,9 +123,9 @@ subroutine boundary_source
      if(in_surfsrcmu=='beam') then
         mu0 = 1d0
      elseif(in_surfsrcmu=='isot') then
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
-        r2 = rand()
+        r2 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         mu0 = max(r1,r2)
      endif
@@ -137,10 +138,10 @@ subroutine boundary_source
 !-- calculating position
         ptcl%x = grd_xarr(i+1)
         x0 = ptcl%x
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%y = 1d0-2d0*r1
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%z = pc_pi2*r1
         j = binsrch(ptcl%y,grd_yarr,grd_ny+1)
@@ -173,7 +174,7 @@ subroutine boundary_source
 !-- calculating position
         if(in_surfsrcloc=='down'.or.in_surfsrcloc=='up') then
 !-- flat surface
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            ptcl%x = sqrt(r1)*grd_xarr(grd_nx+1)
            x0 = ptcl%x
            if(j==1) then
@@ -189,7 +190,7 @@ subroutine boundary_source
            ptcl%iy = j
            ptcl%iz = k
 !-- sampling direction helpers
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            om0 = pc_pi2*r1
 !-- setting albedo helpers
            help = dy(j)
@@ -198,7 +199,7 @@ subroutine boundary_source
 !-- curved surface
            ptcl%x = grd_xarr(grd_nx+1)
            x0 = ptcl%x
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            ptcl%y = r1*grd_yarr(grd_ny+1)+(1d0-r1)*grd_yarr(1)
            y0 = ptcl%y
 !-- setting cell index
@@ -206,7 +207,7 @@ subroutine boundary_source
            ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1)
            j = ptcl%iy
 !-- sampling direction helpers
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
            om0 = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),-mu0)
            if(om0<0d0) om0=om0+pc_pi2
@@ -252,10 +253,10 @@ subroutine boundary_source
               mu0 = -mu0
            endif
            x0 = ptcl%x
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            ptcl%y = r1*grd_yarr(grd_ny+1)+(1d0-r1)*grd_yarr(1)
            y0 = ptcl%y
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            ptcl%z = r1*grd_zarr(grd_nz+1)+(1d0-r1)*grd_zarr(1)
            z0 = ptcl%z
 !-- setting cell index
@@ -265,7 +266,7 @@ subroutine boundary_source
            ptcl%iz = binsrch(z0,grd_zarr,grd_nz+1)
            k = ptcl%iz
 !-- sampling direction helpers
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
            om0 = atan2(mu1,mu0)
            if(om0<0d0) om0=om0+pc_pi2
@@ -276,7 +277,7 @@ subroutine boundary_source
 
         elseif(in_surfsrcloc=='down'.or.in_surfsrcloc=='up') then
 !-- y surface
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            ptcl%x = r1*grd_xarr(grd_nx+1)+(1d0-r1)*grd_xarr(1)
            x0 = ptcl%x
            if(j==1) then
@@ -286,7 +287,7 @@ subroutine boundary_source
               mu0 = -mu0
            endif
            y0 = ptcl%y
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            ptcl%z = r1*grd_zarr(grd_nz+1)+(1d0-r1)*grd_zarr(1)
            z0 = ptcl%z
 !-- setting cell index
@@ -296,7 +297,7 @@ subroutine boundary_source
            ptcl%iz = binsrch(z0,grd_zarr,grd_nz+1)
            k = ptcl%iz
 !-- sampling direction helpers
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
            om0 = atan2(mu0,mu1)
            if(om0<0d0) om0=om0+pc_pi2
@@ -307,10 +308,10 @@ subroutine boundary_source
 
         else
 !-- z surface
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            ptcl%x = r1*grd_xarr(grd_nx+1)+(1d0-r1)*grd_xarr(1)
            x0 = ptcl%x
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            ptcl%y = r1*grd_yarr(grd_ny+1)+(1d0-r1)*grd_yarr(1)
            y0 = ptcl%y
            if(k==1) then
@@ -327,7 +328,7 @@ subroutine boundary_source
            j = ptcl%iy
            ptcl%iz = k
 !-- sampling azimuthal angle of direction
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            om0 = pc_pi2*r1
 !-- setting albedo helpers
            help = dz(k)

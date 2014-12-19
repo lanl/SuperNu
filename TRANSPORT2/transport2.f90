@@ -1,5 +1,6 @@
 subroutine transport2(ptcl,ig,isvacant)
 
+  use randommod
   use miscmod
   use gridmod
   use groupmod
@@ -103,7 +104,7 @@ subroutine transport2(ptcl,ig,isvacant)
 !
 !-- Thomson scattering distance
   if(grd_sig(ix,iy,1)>0d0) then
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      dthm = -log(r1)*thelpinv/(elabfact*grd_sig(ix,iy,1))
   else
 !-- making greater than dcen
@@ -117,10 +118,10 @@ subroutine transport2(ptcl,ig,isvacant)
      dcol = 2d0*pc_c*tsp_dt*thelpinv
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      dcol = -log(r1)*thelpinv/(elabfact*grd_cap(ig,ix,iy,1))
   elseif(grd_fcoef(ix,iy,1)<1d0.and.grd_fcoef(ix,iy,1)>=0d0) then
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      dcol = -log(r1)*thelpinv/&
           (elabfact*(1d0-grd_fcoef(ix,iy,1))*grd_cap(ig,ix,iy,1))
   else
@@ -221,9 +222,9 @@ subroutine transport2(ptcl,ig,isvacant)
 !-- common manipulations for collisions
   if(d==dthm.or.d==dcol) then
 !-- resampling direction
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      mu = 1d0 - 2d0*r1
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      om = pc_pi2*r1
 !-- checking velocity dependence
      if(grd_isvelocity) then
@@ -289,7 +290,7 @@ subroutine transport2(ptcl,ig,isvacant)
 !
 !-- effective collision
   elseif(d==dcol) then
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
 !-- checking if analog
      if(prt_isimcanlog.and.r1<=grd_fcoef(ix,iy,1)) then
 !-- effective absorption
@@ -301,10 +302,10 @@ subroutine transport2(ptcl,ig,isvacant)
      else
 !-- effective scattering
 !-- redistributing wavelength
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         ig = emitgroup(r1,ix,iy,1)
 !-- uniformly in new group
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
 !-- transforming to lab
         if(grd_isvelocity) then
@@ -390,7 +391,7 @@ subroutine transport2(ptcl,ig,isvacant)
              dx(ix+ihelp)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         if (r1 < help*(1d0+1.5d0*abs(mu0))) then
            ptcl%itype = 2
            grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
@@ -404,10 +405,10 @@ subroutine transport2(ptcl,ig,isvacant)
            endif
            ix = ix + ihelp
         else
-           r1 = rand()
-           r2 = rand()
+           r1 = rnd_r(rnd_state)
+           r2 = rnd_r(rnd_state)
            mu0 = -ihelp*max(r1,r2)
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
 !-- resampling y-cosine
            mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
 !-- resampling azimuthal
@@ -473,7 +474,7 @@ subroutine transport2(ptcl,ig,isvacant)
              dy(iy+ihelp)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         if (r1 < help*(1d0+1.5d0*abs(mu))) then
            ptcl%itype = 2
            grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
@@ -487,11 +488,11 @@ subroutine transport2(ptcl,ig,isvacant)
            endif
            iy = iy + ihelp
         else
-           r1 = rand()
-           r2 = rand()
+           r1 = rnd_r(rnd_state)
+           r2 = rnd_r(rnd_state)
            mu = -ihelp*max(r1,r2)
 !-- resampling azimuthal
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            om = pc_pi2*r1
            if(grd_isvelocity) then
               dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
@@ -518,7 +519,7 @@ subroutine transport2(ptcl,ig,isvacant)
         wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*elabfact
      else
 !-- resampling wavelength in highest group
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         wl=1d0/(r1*grp_wlinv(grp_ng+1) + (1d0-r1)*grp_wlinv(grp_ng))
         wl = wl*elabfact
      endif

@@ -1,5 +1,6 @@
 subroutine interior_source
 
+  use randommod
   use miscmod
   use groupmod
   use gridmod
@@ -75,13 +76,13 @@ subroutine interior_source
      cmffact = 1d0
 !
 !-- calculating particle time
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      ptcl%t = tsp_t+r1*tsp_dt
 
 !-- calculating wavelength
      denom2 = 0d0
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      do ig = 1, grp_ng-1
         x3=grp_wlinv(ig+1)
@@ -89,12 +90,12 @@ subroutine interior_source
         if(r1>=denom2.and.r1<denom2+(x4-x3)/(x2-x1)) exit
         denom2 = denom2+(x4-x3)/(x2-x1)
      enddo
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      wl0 = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
 
 !-- calculating direction cosine (comoving)
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      mu0 = 1d0-2d0*r1
 
@@ -108,21 +109,21 @@ subroutine interior_source
 !-- 3D spherical
      case(1)
 !-- calculating position!{{{
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
 !-- sampling azimuthal angle of direction
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         ptcl%om = pc_pi2*r1
 !-- setting IMC logical
         lhelp = ((grd_sig(i,j,k)+grd_cap(ig,i,j,k)) * &
@@ -145,17 +146,17 @@ subroutine interior_source
 !-- 2D
      case(2)
 !-- calculating position!{{{
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + &
              (1d0-r1)*grd_xarr(i)**2)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
              grd_yarr(j)
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
 !-- sampling azimuthal angle of direction
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
 !-- setting IMC logical
         lhelp = ((grd_sig(i,j,1)+grd_cap(ig,i,j,1)) * &
@@ -186,17 +187,17 @@ subroutine interior_source
 !-- 3D
      case(3)
 !-- calculating position!{{{
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         ptcl%x = r1*grd_xarr(i+1) + (1d0-r1) * &
              grd_xarr(i)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
              grd_yarr(j)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         ptcl%z = r1*grd_zarr(k+1) + (1d0-r1) * &
              grd_zarr(k)
 !-- sampling azimuthal angle of direction
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
 !-- setting IMC logical
         lhelp = ((grd_sig(i,j,k)+grd_cap(ig,i,j,k)) * &
@@ -231,7 +232,7 @@ subroutine interior_source
 !-- 1D
      case(4)
 !-- calculating position!{{{
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
@@ -305,24 +306,24 @@ subroutine interior_source
      ptcl%itype = 1
 !
 !-- calculating particle time
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      ptcl%t = tsp_t+r1*tsp_dt
 
 !-- calculating wavelength
      denom2 = 0d0
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1     
      do ig = 1, grp_ng-1
         if (r1>=denom2.and.r1<denom2+emitprob(ig)) exit
         denom2 = denom2+emitprob(ig)
      enddo
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      wl0 = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
 
 !-- calculating direction cosine (comoving)
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      mu0 = 1d0-2d0*r1
 
@@ -347,20 +348,20 @@ subroutine interior_source
         uul = uul/uumax
         uur = uur/uumax
         do while (r2 > r3)
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            x0 = (r1*grd_xarr(i+1)**3+(1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
            r3 = (x0-grd_xarr(i))/dx(i)
            r3 = r3*uur+(1.0-r3)*uul
-           r2 = rand()
+           r2 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
         enddo
         ptcl%x = x0
 !-- uniform in angles
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
 !-- must be inside cell
@@ -398,11 +399,11 @@ subroutine interior_source
         uul = uul/uumax
         uur = uur/uumax
         do while (r2 > r3)
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            x0 = sqrt(r1*grd_xarr(i+1)**2+(1.0-r1)*grd_xarr(i)**2)
            r3 = (x0-grd_xarr(i))/dx(i)
            r3 = r3*uur+(1.0-r3)*uul
-           r2 = rand()
+           r2 = rnd_r(rnd_state)
         enddo
         ptcl%x = x0
 !- source tilting in y
@@ -416,14 +417,14 @@ subroutine interior_source
         uul = uul/uumax
         uur = uur/uumax
         do while (r2 > r3)
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            r3 = r1*uur+(1d0-r1)*uul
-           r2 = rand()
+           r2 = rnd_r(rnd_state)
         enddo
         y0 = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
         ptcl%y = y0
 !-- sampling azimuthal angle of direction
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
 
 !-- setting IMC logical
@@ -463,9 +464,9 @@ subroutine interior_source
         uul = uul/uumax
         uur = uur/uumax
         do while (r2 > r3)
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            r3 = r1*uur+(1d0-r1)*uul
-           r2 = rand()
+           r2 = rnd_r(rnd_state)
         enddo
         ptcl%x = r1*grd_xarr(i+1)+(1d0-r1)*grd_xarr(i)
 
@@ -480,9 +481,9 @@ subroutine interior_source
         uul = uul/uumax
         uur = uur/uumax
         do while (r2 > r3)
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            r3 = r1*uur+(1d0-r1)*uul
-           r2 = rand()
+           r2 = rnd_r(rnd_state)
         enddo
         ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
 
@@ -497,15 +498,15 @@ subroutine interior_source
         uul = uul/uumax
         uur = uur/uumax
         do while (r2 > r3)
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            r3 = r1*uur+(1d0-r1)*uul
-           r2 = rand()
+           r2 = rnd_r(rnd_state)
         enddo
         ptcl%z = r1*grd_zarr(k+1) + (1d0-r1) * &
              grd_zarr(k)
 
 !-- sampling azimuthal angle of direction
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
 !-- setting IMC logical
         lhelp = ((grd_sig(i,j,k)+grd_cap(ig,i,j,k)) * &
@@ -550,12 +551,12 @@ subroutine interior_source
         uul = uul/uumax
         uur = uur/uumax
         do while (r2 > r3)
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            x0 = (r1*grd_xarr(i+1)**3+(1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
            r3 = (x0-grd_xarr(i))/dx(i)
            r3 = r3*uur+(1.0-r3)*uul
-           r2 = rand()
+           r2 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
         enddo
         ptcl%x = x0

@@ -1,5 +1,6 @@
 subroutine particle_advance
 
+  use randommod
   use miscmod
   use particlemod
   use timestepmod
@@ -199,10 +200,10 @@ subroutine particle_advance
                  x = min(x,grd_xarr(ix+1))
                  x = max(x,grd_xarr(ix))
 !-- sampling angle isotropically
-                 r1 = rand()
+                 r1 = rnd_r(rnd_state)
                  prt_tlyrand = prt_tlyrand+1
                  mu = 1.0 - 2.0*r1
-                 r1 = rand()
+                 r1 = rnd_r(rnd_state)
                  prt_tlyrand = prt_tlyrand+1
                  om = pc_pi2*r1
                  if(grd_isvelocity) then
@@ -237,12 +238,12 @@ subroutine particle_advance
 !-- must be inside cell
                  x = min(x,grd_xarr(ix+1))
                  x = max(x,grd_xarr(ix))
-                 r1 = rand()
+                 r1 = rnd_r(rnd_state)
                  y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
 !-- sampling direction values
-                 r1 = rand()
+                 r1 = rnd_r(rnd_state)
                  om = pc_pi2*r1
-                 r1 = rand()
+                 r1 = rnd_r(rnd_state)
                  mu = 1d0 - 2d0*r1
                  if(grd_isvelocity) then
 !-- 1+dir*v/c
@@ -281,14 +282,14 @@ subroutine particle_advance
 !-- sampling position uniformly
                  r1 =  rand()
                  x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
-                 r1 = rand()
+                 r1 = rnd_r(rnd_state)
                  y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
-                 r1 = rand()
+                 r1 = rnd_r(rnd_state)
                  z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
 !-- sampling direction values
-                 r1 = rand()
+                 r1 = rnd_r(rnd_state)
                  om = pc_pi2*r1
-                 r1 = rand()
+                 r1 = rnd_r(rnd_state)
                  mu = 1d0 - 2d0*r1
                  if(grd_isvelocity) then
 !-- 1+dir*v/c
@@ -336,7 +337,7 @@ subroutine particle_advance
                  x = min(x,grd_xarr(ix+1))
                  x = max(x,grd_xarr(ix))
 !-- sampling angle isotropically
-                 r1 = rand()
+                 r1 = rnd_r(rnd_state)
                  prt_tlyrand = prt_tlyrand+1
                  mu = 1.0 - 2.0*r1
                  if(grd_isvelocity) then
@@ -364,7 +365,7 @@ subroutine particle_advance
         if (lhelp) then
            if (ptcl%itype == 2) then
 !-- DDMC -> IMC
-              r1 = rand()
+              r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
               if(grd_isvelocity) then
@@ -492,7 +493,7 @@ subroutine particle_advance
                  labfact = 1d0
               endif
 !
-              r1 = rand()
+              r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  isvacant = .true.
@@ -541,7 +542,7 @@ subroutine particle_advance
                  labfact = 1d0
               endif
 !
-              r1 = rand()
+              r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  isvacant = .true.
@@ -593,7 +594,7 @@ subroutine particle_advance
                  labfact = 1d0
               endif
 !
-              r1 = rand()
+              r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  isvacant = .true.
@@ -639,12 +640,12 @@ subroutine particle_advance
         !
         !
         if(ig<grp_ng) then
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            x1 = grd_cap(ig,ix,iy,iz)
            x2 = grp_wl(ig)/(pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig)))
            if(r1<x2/(x1+x2)) then
-              r1 = rand()
+              r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
               wl = wl*exp(tsp_dt/tsp_t)

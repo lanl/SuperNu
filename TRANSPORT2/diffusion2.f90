@@ -1,5 +1,6 @@
 subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
 
+  use randommod
   use miscmod
   use gridmod
   use groupmod
@@ -246,7 +247,7 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
      denom = denom+grd_fcoef(ix,iy,1)*caplump
   endif
 
-  r1 = rand()
+  r1 = rnd_r(rnd_state)
   tau = abs(log(r1)/(pc_c*denom))
   tcensus = tsp_t+tsp_dt-ptcl%t
   ddmct = min(tau,tcensus)
@@ -288,7 +289,7 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
 
 
 !-- otherwise, perform event
-  r1 = rand()
+  r1 = rnd_r(rnd_state)
   help = 1d0/denom
 
 !-- leakage probabilities
@@ -317,7 +318,7 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
      if(speclump<=0d0) then
         iiig = ig
      else
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         denom2 = 0d0
         help = 1d0/opacleak(1)
         do iig=1,glump
@@ -347,7 +348,7 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
      endif
 
 !-- sampling wavelength
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
@@ -360,13 +361,13 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
      else
 !-- sampling x,y
         x = grd_xarr(ix)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         y = grd_yarr(iy)*(1d0-r1)+grd_yarr(iy+1)*r1
 !-- sampling direction
-        r1 = rand()
-        r2 = rand()
+        r1 = rnd_r(rnd_state)
+        r2 = rnd_r(rnd_state)
         mu0 = -max(r1,r2)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
         om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
         if(om<0d0) om = om+pc_pi2
@@ -408,7 +409,7 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
      if(speclump<=0d0) then
         iiig = ig
      else
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         denom2 = 0d0
         help = 1d0/opacleak(2)
         do iig = 1, glump
@@ -443,7 +444,7 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
      endif
 
 !-- sampling wavlength
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      wl=1d0/(r1*grp_wlinv(iiig+1) + (1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
@@ -460,13 +461,13 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
      else
 !-- sampling x,y
         x = grd_xarr(ix+1)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         y = grd_yarr(iy)*(1d0-r1)+grd_yarr(iy+1)*r1
 !-- sampling direction
-        r1 = rand()
-        r2 = rand()
+        r1 = rnd_r(rnd_state)
+        r2 = rnd_r(rnd_state)
         mu0 = max(r1,r2)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
         om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
         if(om<0d0) om=om+pc_pi2
@@ -531,7 +532,7 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
      if(speclump<=0d0) then
         iiig = ig
      else
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         denom2 = 0d0
         help = 1d0/opacleak(3)
         do iig= 1, glump
@@ -564,7 +565,7 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
      endif
 
 !-- sampling wavlength
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      wl=1d0/(r1*grp_wlinv(iiig+1) + (1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
@@ -580,14 +581,14 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
         iy = iy-1
      else
 !-- sampling x,y
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         x = sqrt(grd_xarr(ix)**2*(1d0-r1)+grd_xarr(ix+1)**2*r1)
         y = grd_yarr(iy)
 !-- sampling direction
-        r1 = rand()
-        r2 = rand()
+        r1 = rnd_r(rnd_state)
+        r2 = rnd_r(rnd_state)
         mu = -max(r1,r2)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         om = pc_pi2*r1
         if(grd_isvelocity) then
            dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
@@ -650,7 +651,7 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
      if(speclump<=0d0) then
         iiig = ig
      else
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         denom2 = 0d0
         help = 1d0/opacleak(4)
         do iig= 1, glump
@@ -683,7 +684,7 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
      endif
 
 !-- sampling wavelength
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
@@ -699,14 +700,14 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
         iy = iy+1
      else
 !-- sampling x,y
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         x = sqrt(grd_xarr(ix)**2*(1d0-r1)+grd_xarr(ix+1)**2*r1)
         y = grd_yarr(iy+1)
 !-- sampling direction
-        r1 = rand()
-        r2 = rand()
+        r1 = rnd_r(rnd_state)
+        r2 = rnd_r(rnd_state)
         mu = max(r1,r2)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         om = pc_pi2*r1
 !-- doppler and aberration corrections
         if(grd_isvelocity) then
@@ -768,7 +769,7 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
 !
      if(glump==grp_ng) stop 'diffusion2: effective scattering with glump==ng'
 
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
 
      if(glump==0) then
         iiig = emitgroup(r1,ix,iy,1)
@@ -789,7 +790,7 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
      endif
 !
      ig = iiig
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      wl = 1d0/((1d0-r1)*grp_wlinv(ig) + r1*grp_wlinv(ig+1))
 
      if((grd_sig(ix,iy,1)+grd_cap(ig,ix,iy,1)) * &
@@ -798,14 +799,14 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
         ptcl%itype = 1
         grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
 !-- direction sampled isotropically           
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         mu = 1d0 - 2d0*r1
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         om = pc_pi2*r1
 !-- position sampled uniformly
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         x = sqrt(r1*grd_xarr(ix+1)**2+(1d0-r1)*grd_xarr(ix)**2)
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
 
 !-- doppler and aberration corrections

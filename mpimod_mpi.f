@@ -642,6 +642,7 @@ c
       subroutine scatter_restart_data
 c     -------------------------------!{{{
       use particlemod
+      use randommod
 ************************************************************************
 * scatter restart data from master rank to subordinate ranks.
 * allows for restart at some time step, tsp_it.
@@ -701,7 +702,7 @@ c-- scattering rand() count
 c
 c-- iterating to correct rand() count
       do isq = 1, prt_tlyrand-1
-         hlp = rand()
+         hlp = rnd_r(rnd_state)
       enddo
 c
 c-- deallocations

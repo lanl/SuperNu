@@ -1,5 +1,6 @@
 subroutine transport11_gamgrey(ptcl)
 
+  use randommod
   use gridmod
   use timestepmod
   use physconstmod
@@ -65,7 +66,7 @@ subroutine transport11_gamgrey(ptcl)
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
      if(grd_capgrey(ix,1,1)>0d0) then
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         dcol = abs(log(r1)/(grd_capgrey(ix,1,1)*dcollabfact))
      else
@@ -113,7 +114,7 @@ subroutine transport11_gamgrey(ptcl)
 
   if (d == dcol) then  !fictitious scattering with implicit capture
      !!{{{
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      if(r1<=1d0.and.prt_isimcanlog) then
         prt_done = .true.
@@ -121,7 +122,7 @@ subroutine transport11_gamgrey(ptcl)
 !-- velocity effects accounting
 !
      else
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         mu = 1.0-2.0*r1
         if(abs(mu)<0.0000001d0) then
@@ -136,7 +137,7 @@ subroutine transport11_gamgrey(ptcl)
            
         endif
 !
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
      endif
      !!}}}

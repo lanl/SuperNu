@@ -1,5 +1,6 @@
 program supernu
 
+  use randommod
   use mpimod
   use inputparmod
   use timestepmod
@@ -133,7 +134,7 @@ program supernu
 
 !-- initialize random number generator, use different seeds for each rank
   if(in_nomp==0) stop 'supernu: in_nomp == 0'
-  help = rand(in_nomp*impi)
+  call rnd_seed(rnd_state,in_nomp*impi)
 
 !-- reading restart rand() count
   if(tsp_ntres>1.and..not.in_norestart) then

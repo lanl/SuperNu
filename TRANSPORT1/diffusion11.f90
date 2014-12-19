@@ -1,5 +1,6 @@
 subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
 
+  use randommod
   use miscmod
   use groupmod
   use gridmod
@@ -198,7 +199,7 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
      denom = denom+grd_fcoef(ix,1,1)*caplump
   endif
 
-  r1 = rand()
+  r1 = rnd_r(rnd_state)
   prt_tlyrand = prt_tlyrand+1
   tau = abs(log(r1)/(pc_c*denom))
   tcensus = tsp_t+tsp_dt-ptcl%t
@@ -241,7 +242,7 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
 
 
 !-- otherwise, perform event
-  r1 = rand()
+  r1 = rnd_r(rnd_state)
   prt_tlyrand = prt_tlyrand+1
   help = 1d0/denom
 
@@ -274,7 +275,7 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
         if(speclump<=0d0) then
            iiig = ig
         else
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            denom2 = 0d0
            help = 1d0/opacleak(1)
@@ -305,12 +306,12 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
         if((grd_sig(ix-1,1,1)+grd_cap(iiig,ix-1,1,1))*dx(ix-1) &
              *thelp >= prt_tauddmc) then
            ix = ix-1
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
            ig = iiig
         else
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 !
@@ -324,9 +325,9 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
            ix = ix-1
 !
 !-- particl angle sampled from isotropic b.c. inward
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
-           r2 = rand()
+           r2 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            mu = -max(r1,r2)
 !
@@ -359,13 +360,13 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
         prt_done = .true.
         tot_eout = tot_eout+e
 !-- outbound luminosity tally
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
-        r2 = rand()
+        r2 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         mu = max(r1,r2)
         if(speclump<=0d0) then
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            wl=1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))
 !-- changing from comoving frame to observer frame
@@ -389,7 +390,7 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
            flx_lumdev(iiig,1,1) = flx_lumdev(iiig,1,1) + (e*dtinv*help)**2
            flx_lumnum(iiig,1,1) = flx_lumnum(iiig,1,1) + 1
         else
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            denom2 = 0d0
            help = 1d0/opacleak(2)
@@ -404,7 +405,7 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
               denom2 = denom2+specig*resopacleak*speclump*help
               if(denom2>r1) exit
            enddo
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            wl=1d0/(r1*grp_wlinv(iiig+1) + (1d0-r1)*grp_wlinv(iiig))
 !-- changing from comoving frame to observer frame
@@ -437,7 +438,7 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
         if(speclump<=0d0) then
            iiig = ig
         else
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            denom2 = 0d0
            help = 1d0/opacleak(2)
@@ -469,13 +470,13 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
              *thelp >= prt_tauddmc) then
 !
            ix = ix+1
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 !--
 !
         else
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 !
@@ -489,9 +490,9 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
            ix = ix+1
 !
 !--  particl angle sampled from isotropic b.c. outward
-           r1 = rand()
+           r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
-           r2 = rand()
+           r2 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            mu = max(r1,r2)
 !
@@ -519,7 +520,7 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
 !{{{
      if(glump==grp_ng) stop 'diffusion11: effective scattering with glump==ng'
 
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
 
      if(glump==0) then
@@ -541,7 +542,7 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
      endif
 !
      ig = iiig
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      wl = 1d0/((1d0-r1)*grp_wlinv(ig) + r1*grp_wlinv(ig+1))
 
@@ -552,11 +553,11 @@ subroutine diffusion11(ptcl,ig,isvacant,icell,specarr)
         ptcl%itype = 1
         grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
 !-- direction sampled isotropically           
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         mu = 1.0-2.0*r1
 !-- position sampled uniformly
-        r1 = rand()
+        r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         r = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
 !-- must be inside cell

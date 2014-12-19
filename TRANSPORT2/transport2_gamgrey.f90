@@ -1,5 +1,6 @@
 subroutine transport2_gamgrey(ptcl)
 
+  use randommod
   use miscmod
   use gridmod
   use timestepmod
@@ -110,7 +111,7 @@ subroutine transport2_gamgrey(ptcl)
      dcol = 2d0*pc_c*dt*thelpinv
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      dcol = -log(r1)*thelpinv/(elabfact*grd_capgrey(ix,iy,1))
   else
 !-- making greater than dcen
@@ -168,9 +169,9 @@ subroutine transport2_gamgrey(ptcl)
 !-- common manipulations for collisions
   if(d==dcol) then
 !-- resampling direction
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      mu = 1d0 - 2d0*r1
-     r1 = rand()
+     r1 = rnd_r(rnd_state)
      om = pc_pi2*r1
 !-- checking velocity dependence
      if(grd_isvelocity) then
