@@ -66,7 +66,7 @@ subroutine initial_particles
 
 !-- calculating wavelength
      denom2 = 0d0
-     r1=rand()
+     r1 = rand()
      prt_tlyrand = prt_tlyrand+1
      do ig = 1, grp_ng
         wl3 = grp_wlinv(ig+1)
