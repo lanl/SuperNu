@@ -186,14 +186,14 @@ subroutine particle_advance
 !-- DDMC -> IMC
                  grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- sampling position uniformly
-                 r1 =  rand()
+                 r1 = rnd_r(rnd_state)
                  prt_tlyrand = prt_tlyrand+1
                  x = (r1*grd_xarr(ix+1)**3 + &
                       (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
-                 r1 =  rand()
+                 r1 = rnd_r(rnd_state)
                  prt_tlyrand = prt_tlyrand+1
                  y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
-                 r1 =  rand()
+                 r1 = rnd_r(rnd_state)
                  prt_tlyrand = prt_tlyrand+1
                  z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
 !-- must be inside cell
@@ -232,7 +232,7 @@ subroutine particle_advance
 !-- DDMC -> IMC
                  grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
 !-- sampling position uniformly
-                 r1 =  rand()
+                 r1 = rnd_r(rnd_state)
                  x = sqrt(r1*grd_xarr(ix+1)**2 + &
                       (1d0-r1)*grd_xarr(ix)**2)
 !-- must be inside cell
@@ -280,7 +280,7 @@ subroutine particle_advance
 !-- DDMC -> IMC
                  grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- sampling position uniformly
-                 r1 =  rand()
+                 r1 = rnd_r(rnd_state)
                  x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
                  r1 = rnd_r(rnd_state)
                  y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
@@ -329,7 +329,7 @@ subroutine particle_advance
 !-- DDMC -> IMC
                  grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
 !-- sampling position uniformly
-                 r1 =  rand()
+                 r1 = rnd_r(rnd_state)
                  prt_tlyrand = prt_tlyrand+1
                  x = (r1*grd_xarr(ix+1)**3 + &
                       (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)

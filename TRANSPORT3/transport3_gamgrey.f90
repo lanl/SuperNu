@@ -29,12 +29,6 @@ subroutine transport3_gamgrey(ptcl)
 
   integer,pointer :: ix,iy,iz
   real*8,pointer :: x,y,z,mu,om,e,e0
-!-- statement functions
-  integer :: l
-  real*8 :: dx,dy,dz
-  dx(l) = grd_xarr(l+1) - grd_xarr(l)
-  dy(l) = grd_yarr(l+1) - grd_yarr(l)
-  dz(l) = grd_zarr(l+1) - grd_zarr(l)
 
   ix => ptcl%ix
   iy => ptcl%iy

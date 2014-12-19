@@ -6,7 +6,6 @@ subroutine emission_probability
   use gridmod
   use groupmod
   use physconstmod
-  use miscmod, only:specint
   implicit none
 
 !-----------------------
