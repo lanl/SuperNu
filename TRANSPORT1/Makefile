@@ -4,7 +4,7 @@ include $(TOP)/Makefile.compiler
 include $(TOP)/Makefile.include
 
 LIBRARY = transport1.a
-FILES = advection1.o \
+FILES = advection1.o transport1.o \
   diffusion11.o transport11.o transport11_gamgrey.o
 
 .PHONY: all clean
