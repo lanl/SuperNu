@@ -80,7 +80,7 @@ c-- group structure
       integer :: in_ngs = 0      !>0 number of subgroups per opacity group
                                  ! 0 non-subgridded physical_opacities
                                  !<0 target subgrid resolution for automatic subgridding -> lambda/(Delta lambda) = abs(in_ngs)
-      integer :: in_wldex = 1    !if in_iswlread = t, selects group grid from formatted group grid file
+      integer :: in_wldex = 0    !selects group grid from formatted group grid file
       real*8 :: in_wlmin =   100e-8 !lower wavelength boundary [cm]
       real*8 :: in_wlmax = 32000e-8 !upper wavelength boundary [cm]
 c
@@ -89,7 +89,7 @@ c-- physical opacities
       real*8 :: in_opcapgam = .06d0   ![cm^2/g] extinction coefficient for gamma radiation
       real*8 :: in_epsline = 1d0      !line absorption fraction (the rest is scattering)
       logical :: in_noplanckweighting = .false. !disable planck weighting of rosseland opacities within group
-      real*8 :: in_opacmixrossel = 1d0 !mix rosseland with planck average, 1=pure rosseland
+      real*8 :: in_opacmixrossel = 0d0 !mix rosseland with planck average, 1=pure rosseland
 c
 c
 c-- analytic opacities
