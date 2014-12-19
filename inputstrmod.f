@@ -113,7 +113,7 @@ c-- validity check
 c
 c-- transer data to final arrays
 c-- first dim
-      if(igeom==1) then
+      if(igeom==4) then
        str_xleft(1) = 0d0
        str_xleft(2:) = raw(1,:nx)
       else
@@ -121,22 +121,22 @@ c-- first dim
        str_xleft(2:) = raw(2,:nx)
       endif
 c-- second dim
-      if(igeom>1) then
+      if(igeom==4) then
+       str_yleft = [-1d0,1d0]
+      else
        str_yleft(1) = raw(3,1)
        do i=1,ny
         str_yleft(i+1) = raw(4,nx*(i-1)+1)
        enddo
-      else
-       str_yleft = 0d0
       endif
 c-- third dim
-      if(igeom>2) then
+      if(igeom==2 .or. igeom==4) then
+       str_zleft = [0d0,2d0*pc_pi]
+      else
        str_zleft(1) = raw(5,1)
        do i=1,nz
         str_zleft(i+1) = raw(6,nx*ny*(i-1)+1)
        enddo
-      else
-       str_zleft = 0d0
       endif
 c-- var pointers
       imass = 0
@@ -161,10 +161,10 @@ c-- Zero out the cell mass in the corners of the domain
 c======================================================
 c-- void cells
       nvoid = 0
-      if(lvoidcorners .and. igeom>1.and.igeom<4) then
+      if(lvoidcorners .and. igeom==2.or.igeom==3) then
 c-- sphere radius
        rs = min(str_xleft(nx+1),str_yleft(ny+1))
-       if(igeom>2) rs = min(rs,str_zleft(nz+1))
+       if(igeom==3) rs = min(rs,str_zleft(nz+1))
 c
        do k=1,nz
        do j=1,ny
