@@ -30,7 +30,7 @@ c-- ffxs
       real*8 :: yend,dydx,dy !extrapolation
       integer :: iu,igg
 c-- bfxs
-      integer :: il,ig,iz,ii,ie
+      integer :: il,iig,ig,iz,ii,ie
       logical :: dirty
       real*8 :: en,xs,wl
 c-- bbxs
@@ -71,10 +71,10 @@ c-- bound-bound
        enddo !iz
 c
 c$omp parallel
-c$omp& private(wl0,iz,ii,wl,wlinv,dwl,phi,ocggrnd,expfac,caphelp,ig,
+c$omp& private(wl0,iz,ii,wl,wlinv,dwl,phi,ocggrnd,expfac,caphelp,ig,iig,
 c$omp&   dirty)
 c$omp& shared(gas_void,grndlev,hckt,cap)
-       ig = 0
+       iig = 0
        dirty = .true.
        phi = 0d0
 c$omp do schedule(static)
@@ -83,10 +83,11 @@ c$omp do schedule(static)
         iz = bb_xs(il)%iz
         ii = bb_xs(il)%ii
 c-- ig pointer
-        do ig=ig,grp_ng
+        do ig=iig,grp_ng
          if(grp_wl(ig+1)>wl0) exit
          dirty = .true.
         enddo !ig
+        iig = ig
 c-- line in group
         if(ig<1) cycle
         if(ig>grp_ng) cycle !can't exit in omp

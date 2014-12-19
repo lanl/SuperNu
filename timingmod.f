@@ -93,7 +93,7 @@ c     -----------------------------------
 * reset timestep timers and dump timing output (on master rank only).
 ************************************************************************
       logical :: lexist
-      integer :: istat
+      integer :: istat,i
 c
 c-- add to total
       registers(3,:) = registers(3,:) + registers(2,:)
@@ -112,7 +112,7 @@ c-- header
      &   'n_pckt','n_ddmc','n_imc'
        endif
 c-- body
-       write(4,'(1x,30g12.2)') registers(2,:)
+       write(4,'(1x,30g12.2)') (registers(2,i),i=1,mreg)
        close(4)
       endif
 c

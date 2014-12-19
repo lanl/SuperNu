@@ -20,7 +20,7 @@ c-- loop over all gas_vals cells
       do i=1,gas_ncell
        if(gas_void(i)) cycle
        ndens = gas_natom(i)/gas_vol(i) !atom number density
-       call ion_solve_eos(gas_natom1fr(1:,i),
+       call ion_solve_eos(gas_natom1fr(1,i),
      &   gas_temp(i),ndens,gas_nelec(i),niter)
 c
 c-- store occupation numbers of each ion's ground states
