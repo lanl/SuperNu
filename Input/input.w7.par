@@ -31,9 +31,6 @@
 !-- flux settings
  in_flx_ndim = 150, 1, 1
 
-!-- group absorption opacity structure type
- in_opacanaltype = 'none'
-
 !-- group settings
  in_ng = 250
  in_ngs = 0
@@ -57,4 +54,4 @@
  in_nothmson = f
  in_noplanckweighting = t
 
- /
+/

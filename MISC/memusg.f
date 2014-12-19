@@ -37,7 +37,7 @@ c-- /proc/self/stat file data
       end type statdata
       type(statdata) :: stat
 c
-      integer :: istat
+      integer,save :: istat=0
 c
 c-- /proc/self/statm file data
       integer,save :: pagesize=0
@@ -48,13 +48,12 @@ c
 c
 *     character(30) :: words(24)
 *     character(30),allocatable :: words(:)
-      logical,save :: fail=.false.
 c
 c-- invalid by default
       mbsize = -1  !-- return invalid number if error
 c
 c-- quick exit
-      if(fail) return
+      if(istat/=0) return
 c
 c-- read statm file
       if(pagesize==0) then
@@ -63,11 +62,7 @@ c-- read statm file
        close(4)
 c
 c-- check status
-       if(istat/=0) then
-        fail = .true.
-        call warn('memusg','read error: /proc/self/statm')
-        return
-       endif
+       if(istat/=0) return
       endif
 c
 c-- read stat file
@@ -76,11 +71,7 @@ c-- read stat file
       close(4)
 c
 c-- check status
-      if(istat/=0) then
-       fail = .true.
-       call warn('memusg','read error: /proc/self/stat')
-       return
-      endif
+      if(istat/=0) return
 c
 c-- pagesize
       if(pagesize==0) pagesize = nint(stat%vsize/dble(vss_pages))
