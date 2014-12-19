@@ -11,12 +11,14 @@ c-- a data type for storing the state of the random number generator
        integer*4 :: part(4)
       end type rnd_t
 c
+      type(rnd_t),save :: rnd_state
+c
 c
       contains
 c
 c
-      integer*4 function irand(state)
-c     --------------------------------------------!{{{
+      integer*4 function rnd_i(state)
+c     -------------------------------!{{{
       implicit none
       type(rnd_t),intent(inout) :: state
 ************************************************************************
@@ -31,12 +33,13 @@ c
       state%part(2) = state%part(3)
       state%part(3) = imz
       state%part(4) = 69069*state%part(4) + 1013904243
-      imz = imz + state%part(4)!}}}
-      end function irand
+      imz = imz + state%part(4)
+      rnd_i = imz!}}}
+      end function rnd_i
 c
 c
-      real*8 function rrand(state)
-c     ------------------------------------!{{{
+      real*8 function rnd_r(state)
+c     ----------------------------!{{{
       implicit none
       type(rnd_t),intent(inout) :: state
 ************************************************************************
@@ -52,7 +55,47 @@ c
       state%part(3) = imz
       state%part(4) = 69069*state%part(4) + 1013904243
       imz = imz + state%part(4)
-      rrand = 0.5d0 + 0.23283064d-9*imz !(0,1)!}}}
-      end function rrand
+      rnd_r = 0.5d0 + 0.23283064d-9*imz !(0,1)!}}}
+      end function rnd_r
+c
+c
+      subroutine rnd_seed(state,i)
+c     ----------------------------!{{{
+      implicit none
+      integer,intent(in) :: i
+      type(rnd_t),intent(out) :: state
+************************************************************************
+* Return a random initial state of the random number generator.
+************************************************************************
+c-- init
+      state%part = [521288629, 362436069, 16163801, 1131199299]
+c-- draw four random numbers
+      call rnd_advance(state,i*4)!}}}
+      end subroutine rnd_seed
+c
+c
+      subroutine rnd_advance(state,n)
+c     -------------------------------!{{{
+      implicit none
+      type(rnd_t),intent(inout) :: state
+      integer,intent(in) :: n
+************************************************************************
+* advance the random number generator n steps
+************************************************************************
+      integer :: i
+      integer*4 :: imz
+c
+      do i=1,n
+       imz = state%part(1) - state%part(3)
+       if(imz<0) imz = imz + 2147483579
+c
+       state%part(1) = state%part(2)
+       state%part(2) = state%part(3)
+       state%part(3) = imz
+       state%part(4) = 69069*state%part(4) + 1013904243
+       imz = imz + state%part(4)
+      enddo!}}}
+      end subroutine rnd_advance
+c
 c
       end module randommod
