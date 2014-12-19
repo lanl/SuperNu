@@ -2,6 +2,7 @@
 c     ----------------------------
       use gridmod
       use timestepmod
+      implicit none
 ************************************************************************
 * read restart file
 ************************************************************************
@@ -24,6 +25,7 @@ c
       subroutine write_restart_file
 c     -----------------------------
       use gridmod
+      implicit none
 ************************************************************************
 * write restart file
 ************************************************************************
@@ -39,6 +41,7 @@ c
 c     ---------------------------------
       use particlemod
       use timestepmod
+      implicit none
 ************************************************************************
 * read number of rand calls from each rank from restart file
 * at some time step.
@@ -72,6 +75,7 @@ c
       subroutine write_restart_randcount
 c     ----------------------------------
       use particlemod
+      implicit none
 ************************************************************************
 * write number of rand calls from each rank to restart file
 * at each time step.
@@ -87,10 +91,12 @@ c
       subroutine read_restart_particles
 c     ----------------------------------
       use particlemod
+      implicit none
 ************************************************************************
 * read particle from each rank to restart file
 * at some time step
 ************************************************************************
+      integer :: istat
 c
       character(13) :: fnamez = 'input.prtzsrc'
       character(14) :: fnamert = 'input.prtrtsrc'
@@ -163,6 +169,7 @@ c
       subroutine write_restart_particles
 c     ----------------------------------
       use particlemod
+      implicit none
 ************************************************************************
 * write particle from each rank to restart file
 * at each time step

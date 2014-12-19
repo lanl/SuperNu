@@ -1,5 +1,6 @@
-      function locate(xarray,n,x)
+      pure integer function locate(xarray,n,x)
 c     -------------------------------
+      implicit none
       integer,intent(in) :: n
       real*8,intent(in) :: xarray(n),x
 ****************************************************************
@@ -21,5 +22,4 @@ c
       enddo
 c--
       locate = jl
-      return
       end function locate
