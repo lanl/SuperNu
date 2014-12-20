@@ -92,7 +92,7 @@ subroutine initial_particles
 !-- selecting geometry
      select case(in_igeom)
 
-!-- 1D
+!-- 3D spherical
      case(1)
 !-- calculating position
         r1 = rnd_r(rnd_state)
@@ -108,6 +108,10 @@ subroutine initial_particles
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
+        ptcl%y = min(ptcl%y,grd_yarr(j+1))
+        ptcl%y = max(ptcl%y,grd_yarr(j))
+        ptcl%z = min(ptcl%z,grd_zarr(k+1))
+        ptcl%z = max(ptcl%z,grd_zarr(k))
 !-- sampling azimuthal angle of direction
         r1 = rnd_r(rnd_state)
         ptcl%om = pc_pi2*r1
@@ -133,7 +137,11 @@ subroutine initial_particles
         r1 = rnd_r(rnd_state)
         ptcl%y = r1*grd_yarr(j+1) + &
              (1d0-r1)*grd_yarr(j)
-
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(i+1))
+        ptcl%x = max(ptcl%x,grd_xarr(i))
+        ptcl%y = min(ptcl%y,grd_yarr(j+1))
+        ptcl%y = max(ptcl%y,grd_yarr(j))
 !-- sampling azimuthal angle of direction
         r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
@@ -173,7 +181,13 @@ subroutine initial_particles
         r1 = rnd_r(rnd_state)
         ptcl%z = r1*grd_zarr(k+1) + &
              (1d0-r1)*grd_zarr(k)
-
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(i+1))
+        ptcl%x = max(ptcl%x,grd_xarr(i))
+        ptcl%y = min(ptcl%y,grd_yarr(j+1))
+        ptcl%y = max(ptcl%y,grd_yarr(j))
+        ptcl%z = min(ptcl%z,grd_zarr(k+1))
+        ptcl%z = max(ptcl%z,grd_zarr(k))
 !-- sampling azimuthal angle of direction
         r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
@@ -210,7 +224,9 @@ subroutine initial_particles
         prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1d0-r1)*grd_xarr(i)**3)**(1d0/3d0)
-
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(i+1))
+        ptcl%x = max(ptcl%x,grd_xarr(i))
 !-- if velocity-dependent, transforming direction
         if(grd_isvelocity) then
            x0 = ptcl%x

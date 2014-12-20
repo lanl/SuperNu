@@ -199,6 +199,10 @@ subroutine particle_advance
 !-- must be inside cell
                  x = min(x,grd_xarr(ix+1))
                  x = max(x,grd_xarr(ix))
+                 y = min(y,grd_yarr(iy+1))
+                 y = max(y,grd_yarr(iy))
+                 z = min(z,grd_zarr(iz+1))
+                 z = max(z,grd_zarr(iz))
 !-- sampling angle isotropically
                  r1 = rnd_r(rnd_state)
                  prt_tlyrand = prt_tlyrand+1
@@ -286,6 +290,13 @@ subroutine particle_advance
                  y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
                  r1 = rnd_r(rnd_state)
                  z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
+!-- must be inside cell
+                 x = min(x,grd_xarr(ix+1))
+                 x = max(x,grd_xarr(ix))
+                 y = min(y,grd_yarr(iy+1))
+                 y = max(y,grd_yarr(iy))
+                 z = min(z,grd_zarr(iz+1))
+                 z = max(z,grd_zarr(iz))
 !-- sampling direction values
                  r1 = rnd_r(rnd_state)
                  om = pc_pi2*r1
@@ -472,9 +483,13 @@ subroutine particle_advance
         prt_istep = 0
         do while ((.not.prt_done).and.(.not.isvacant))
            prt_istep = prt_istep + 1
-
-           call transport1(ptcl,ig,isvacant)
-
+           if (ptcl%itype == 1.or.in_puretran) then
+              nimc = nimc + 1
+              call transport1(ptcl,ig,isvacant)
+           else
+              nddmc = nddmc + 1
+              call diffusion11(ptcl,ig,isvacant,icell,specarr)
+           endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done) then
               if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then

@@ -122,6 +122,10 @@ subroutine interior_source
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
+        ptcl%y = min(ptcl%y,grd_yarr(j+1))
+        ptcl%y = max(ptcl%y,grd_yarr(j))
+        ptcl%z = min(ptcl%z,grd_zarr(k+1))
+        ptcl%z = max(ptcl%z,grd_zarr(k))
 !-- sampling azimuthal angle of direction
         r1 = rnd_r(rnd_state)
         ptcl%om = pc_pi2*r1
@@ -155,6 +159,8 @@ subroutine interior_source
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
+        ptcl%y = min(ptcl%y,grd_yarr(j+1))
+        ptcl%y = max(ptcl%y,grd_yarr(j))
 !-- sampling azimuthal angle of direction
         r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
@@ -196,6 +202,13 @@ subroutine interior_source
         r1 = rnd_r(rnd_state)
         ptcl%z = r1*grd_zarr(k+1) + (1d0-r1) * &
              grd_zarr(k)
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(i+1))
+        ptcl%x = max(ptcl%x,grd_xarr(i))
+        ptcl%y = min(ptcl%y,grd_yarr(j+1))
+        ptcl%y = max(ptcl%y,grd_yarr(j))
+        ptcl%z = min(ptcl%z,grd_zarr(k+1))
+        ptcl%z = max(ptcl%z,grd_zarr(k))
 !-- sampling azimuthal angle of direction
         r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
@@ -367,11 +380,15 @@ subroutine interior_source
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
+        ptcl%y = min(ptcl%y,grd_yarr(j+1))
+        ptcl%y = max(ptcl%y,grd_yarr(j))
+        ptcl%z = min(ptcl%z,grd_zarr(k+1))
+        ptcl%z = max(ptcl%z,grd_zarr(k))
 !-- setting IMC logical
         lhelp = ((grd_sig(i,j,k)+grd_cap(ig,i,j,k)) * &
              min(dx(i),xm(i)*dyac(j),xm(i)*ym(j)*dz(k)) * &
              thelp < prt_tauddmc).or.(in_puretran)
-!write(0,*) i,grd_sig(i,1,1),grd_cap(ig,i,1,1),dx(i),thelp,prt_tauddmc
+!write(0,*) i,j,k,grd_sig(i,j,k),grd_cap(ig,i,j,k),dx(i),dy(j),dz(k),xm(i),ym(j),dyac(j),thelp,prt_tauddmc
 
 !-- if velocity-dependent, transforming direction
         if (lhelp.and.grd_isvelocity) then
@@ -423,6 +440,11 @@ subroutine interior_source
         enddo
         y0 = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
         ptcl%y = y0
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(i+1))
+        ptcl%x = max(ptcl%x,grd_xarr(i))
+        ptcl%y = min(ptcl%y,grd_yarr(j+1))
+        ptcl%y = max(ptcl%y,grd_yarr(j))
 !-- sampling azimuthal angle of direction
         r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
@@ -502,9 +524,14 @@ subroutine interior_source
            r3 = r1*uur+(1d0-r1)*uul
            r2 = rnd_r(rnd_state)
         enddo
-        ptcl%z = r1*grd_zarr(k+1) + (1d0-r1) * &
-             grd_zarr(k)
-
+        ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(i+1))
+        ptcl%x = max(ptcl%x,grd_xarr(i))
+        ptcl%y = min(ptcl%y,grd_yarr(j+1))
+        ptcl%y = max(ptcl%y,grd_yarr(j))
+        ptcl%z = min(ptcl%z,grd_zarr(k+1))
+        ptcl%z = max(ptcl%z,grd_zarr(k))
 !-- sampling azimuthal angle of direction
         r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
@@ -560,6 +587,9 @@ subroutine interior_source
            prt_tlyrand = prt_tlyrand+1
         enddo
         ptcl%x = x0
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(i+1))
+        ptcl%x = max(ptcl%x,grd_xarr(i))
 !-- setting IMC logical
         lhelp = ((grd_sig(i,1,1)+grd_cap(ig,i,1,1))*dx(i)* &
              thelp < prt_tauddmc).or.(in_puretran)
