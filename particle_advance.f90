@@ -641,7 +641,7 @@ subroutine particle_advance
                  labfact = 1d0
               endif
 !
-              r1 = rand()
+              r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  isvacant = .true.
