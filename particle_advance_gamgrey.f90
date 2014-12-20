@@ -128,16 +128,20 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- calculating position!{{{
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        x = (r1*grd_xarr(ix+1)**3 + &
-             (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
-!-- must be inside cell
-        x = min(x,grd_xarr(ix+1))
-        x = max(x,grd_xarr(ix))
-!--
-        y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
+        x = (r1*grd_xarr(i+1)**3 + &
+             (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
+        y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
+        z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
+!-- must be inside cell
+        x = min(x,grd_xarr(i+1))
+        x = max(x,grd_xarr(i))
+        y = min(y,grd_xarr(j+1))
+        y = max(y,grd_yarr(j))
+        z = min(z,grd_zarr(k+1))
+        z = max(z,grd_zarr(k))
+!--
 !-- sampling azimuthal angle of direction
         r1 = rand()
         om0 = pc_pi2*r1
@@ -153,13 +157,14 @@ subroutine particle_advance_gamgrey(nmpi)
         r1 = rand()
         x = sqrt(r1*grd_xarr(i+1)**2 + &
              (1d0-r1)*grd_xarr(i)**2)
-!-- must be inside cell
-        x = min(x,grd_xarr(ix+1))
-        x = max(x,grd_xarr(ix))
-!
         r1 = rand()
         y = r1*grd_yarr(j+1) + (1d0-r1) * &
              grd_yarr(j)
+!-- must be inside cell
+        x = min(x,grd_xarr(i+1))
+        x = max(x,grd_xarr(i))
+        y = min(y,grd_xarr(j+1))
+        y = max(y,grd_yarr(j))
 !-- sampling azimuthal angle of direction
         r1 = rand()
         om0 = pc_pi2*r1
@@ -196,6 +201,13 @@ subroutine particle_advance_gamgrey(nmpi)
         r1 = rand()
         z = r1*grd_zarr(k+1) + (1d0-r1) * &
              grd_zarr(k)
+!-- must be inside cell
+        x = min(x,grd_xarr(i+1))
+        x = max(x,grd_xarr(i))
+        y = min(y,grd_xarr(j+1))
+        y = max(y,grd_yarr(j))
+        z = min(z,grd_zarr(k+1))
+        z = max(z,grd_zarr(k))
 !-- sampling azimuthal angle of direction
         r1 = rand()
         om0 = pc_pi2*r1
@@ -226,11 +238,11 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- calculating position!{{{
         r1 = rand()
         prt_tlyrand = prt_tlyrand+1
-        x = (r1*grd_xarr(ix+1)**3 + &
-             (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
+        x = (r1*grd_xarr(i+1)**3 + &
+             (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
 !-- must be inside cell
-        x = min(x,grd_xarr(ix+1))
-        x = max(x,grd_xarr(ix))
+        x = min(x,grd_xarr(i+1))
+        x = max(x,grd_xarr(i))
 !--
         if(grd_isvelocity) then
            x0 = x

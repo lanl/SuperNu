@@ -198,6 +198,10 @@ subroutine particle_advance
 !-- must be inside cell
                  x = min(x,grd_xarr(ix+1))
                  x = max(x,grd_xarr(ix))
+                 y = min(y,grd_yarr(iy+1))
+                 y = max(y,grd_yarr(iy))
+                 z = min(z,grd_zarr(iz+1))
+                 z = max(z,grd_zarr(iz))
 !-- sampling angle isotropically
                  r1 = rand()
                  prt_tlyrand = prt_tlyrand+1
@@ -285,6 +289,13 @@ subroutine particle_advance
                  y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
                  r1 = rand()
                  z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
+!-- must be inside cell
+                 x = min(x,grd_xarr(ix+1))
+                 x = max(x,grd_xarr(ix))
+                 y = min(y,grd_yarr(iy+1))
+                 y = max(y,grd_yarr(iy))
+                 z = min(z,grd_zarr(iz+1))
+                 z = max(z,grd_zarr(iz))
 !-- sampling direction values
                  r1 = rand()
                  om = pc_pi2*r1
