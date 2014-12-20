@@ -554,7 +554,7 @@ subroutine transport1(ptcl,ig,isvacant)
            r1 = rand()
            r2 = rand()
 !-- resampling z-cosine
-           if(iznext=iz+1.or.(iznext==1.and.iz=grd_nz)) then
+           if(iznext==iz+1.or.(iznext==1.and.iz==grd_nz)) then
               xi = -max(r1,r2)
            else
               xi = max(r1,r2)
