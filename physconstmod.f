@@ -56,8 +56,8 @@ cbad  real*8,parameter :: pc_thl_co56 = 6.67613d6 !sec, 77.27 days
 c-- nuclear decay gamma emission, 1MeV=1.602176d-6 erg
 c     real*8,parameter :: pc_qhl_ni56 = 3.421d-6 !ergs, 2135 keV, total decay energy
 c     real*8,parameter :: pc_qhl_co56 = 7.316d-6 !ergs, 4566 keV
-      real*8,parameter :: pc_qhl_ni56 = 1720d0*pc_kev                   !total gamma ray production
-      real*8,parameter :: pc_qhl_co56 = (3440d0 + .19d0*2*511d0)*pc_kev !direct gamma's plus positron annihilation
+      real*8,parameter :: pc_qhl_ni56 = 1720d0*pc_kev                  !total gamma ray production
+      real*8,parameter :: pc_qhl_co56 = (3440d0 + .19d0*2*511d0)*pc_kev!direct gamma's plus positron annihilation
 c-- average kinetic energy of co56->fe56 emergent positron
       real*8,parameter :: pc_q_poskin = .19d0*116*pc_kev
 c-- gamma ray gray absorption cross section

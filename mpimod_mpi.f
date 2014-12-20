@@ -440,7 +440,7 @@ c-- gather
       if(impi_gas>=0) then
        call mpi_allgather(gas_temp,gas_ncell,MPI_REAL8,
      &   grd_temp,gas_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_GAS,ierr)
+     &   MPI_COMM_GAS,ierr)
        call mpi_allgather(gas_fcoef,gas_ncell,MPI_REAL8,
      &   grd_fcoef,gas_ncell,MPI_REAL8,
      &   MPI_COMM_GAS,ierr)
