@@ -470,7 +470,37 @@ subroutine transport1(ptcl,ig,isvacant)
            mu=(mu-x*cinv)/(1d0-x*mu*cinv)
            eta = sqrt(1d0-mu**2)*sin(om)
         endif
-        
+        help = (grd_cap(ig,ix,iynext,iz)+grd_sig(ix,iynext,iz)) * &
+             xm(ix)*dyac(iynext)*thelp
+        help = 4d0/(3d0*help+6d0*pc_dext)
+!-- sampling
+        r1 = rand()
+        if(r1 < help*(1d0+1.5d0*abs(eta))) then
+           ptcl%itype = 2
+           grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+           if(grd_isvelocity) then
+!-- velocity effects accounting
+              tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
+              e = e*elabfact
+              e0 = e0*elabfact
+              wl = wl/elabfact
+           endif
+           iy = iynext
+        else
+           r1 = rand()
+           r2 = rand()
+           eta = (iynext-iy)*max(r1,r2)
+           r1 = rand()
+           xi = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
+!-- resampling x-cosine
+           mu = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
+!-- resampling azimuthal
+           om = atan2(xi,eta)
+           if(om<0d0) om=om+pc_pi2
+!-- transforming mu to lab
+           if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
+        endif
      endif
 !
 !-- azimuthal bound
