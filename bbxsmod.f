@@ -10,33 +10,35 @@ c
 c-- raw data read from file
 c-- level data type
       type bb_raw_level_data
-       real :: chi     !in cm^-1
+       real*4 :: chi     !in cm^-1
        integer :: id,g
       end type bb_raw_level_data
       type(bb_raw_level_data),allocatable :: bbxs_level(:) !bb_nlevel
 c-- line data type
       type bb_raw_line_data
        integer :: lev1,lev2
-       real :: f
+       real*4 :: f
       end type bb_raw_line_data
       type(bb_raw_line_data),allocatable :: bbxs_line(:) !bb_nline
 c
 c-- permanent data
       type bb_xs_data
-       real :: wl0   !in ang
-       real :: gxs   !g*xs = g*f*(pi*e**2/m_e/c)
-       real :: chilw !exp(h*c*chi_low/(k*1e4))  ![chi] = cm^-1
+       real*4 :: wl0   !in ang
+       real*4 :: gxs   !g*xs = g*f*(pi*e**2/m_e/c)
+       real*4 :: chilw !exp(h*c*chi_low/(k*1e4))  ![chi] = cm^-1
        integer*2 :: iz
        integer*2 :: ii
       end type bb_xs_data
       type(bb_xs_data),allocatable :: bb_xs(:) !bb_nline
+c
+      save
 c
       contains
 c
 c
 c
       subroutine read_atom(iz,ii,istat,get_data)
-c     ------------------------------------------
+c     ------------------------------------------!{{{
       use miscmod, only:lcase
       use elemdatamod, only:elem_data
       implicit none
@@ -113,13 +115,13 @@ c
 66    continue
       if(.not. get_data) write(6,*) 'read_atom failed:',iz,ii
       close(4)
-c
+c!}}}
       end subroutine read_atom
 c
 c
 c
       subroutine sort_lines
-c     ---------------------
+c     ---------------------!{{{
       implicit none
 ************************************************************************
 * Sort the bound-bound transitions for wl in order to speed up the
@@ -129,16 +131,18 @@ c     ---------------------
 * significantly.
 ************************************************************************
       integer :: l,is,it
+      real*8,allocatable :: wl(:)  !too big for the stack
       type(bb_xs_data) :: xs_src,xs_trg
-      real*8 :: wl(bb_nline)
       integer :: indx(bb_nline),indx_inv(bb_nline)
 c
 c-- initialize arrays
+      allocate(wl(bb_nline))
       wl = dble(bb_xs%wl0)
       forall(l=1:bb_nline) indx(l) = l
 c
 c-- index sort
       call sorti(bb_nline,wl,indx)
+      deallocate(wl)
 c-- reverse indx
       forall(l=1:bb_nline) indx_inv(indx(l)) = l
 c
@@ -167,6 +171,7 @@ c-- step 3: rotate old target to new source
        is = it             !next source location
        xs_src = xs_trg     !rotate old target to new source
       enddo
-c
+c!}}}
       end subroutine sort_lines
+c
       end module bbxsmod

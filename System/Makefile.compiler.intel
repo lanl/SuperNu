@@ -4,7 +4,7 @@ FC = ifort
 
 #-- opt or debug
 FCFLAGS = -O2
-#FCFLAGS = -O0 -g -check -debug -traceback
+#FCFLAGS = -O0 -g -check all -debug -traceback -gen-interfaces -warn all,notruncated_source
 
 #-- additional flags
 FCFLAGS += -msse3
