@@ -467,22 +467,25 @@ subroutine particle_advance
 !Calling either diffusion or transport depending on particle type (ptcl%itype)
      select case(in_igeom)
 
-!-- 1D
-     case(1,4)
+!-- 3D spherical
+     case(1)
         prt_istep = 0
         do while ((.not.prt_done).and.(.not.isvacant))
            prt_istep = prt_istep + 1
-           if (ptcl%itype == 1.or.in_puretran) then
-              nimc = nimc + 1
-              call transport11(ptcl,ig,isvacant)
-           else
-              nddmc = nddmc + 1
-              call diffusion11(ptcl,ig,isvacant,icell,specarr)
-           endif
+
+           call transport1(ptcl,ig,isvacant)
+
 !-- verify position
-           if(ptcl%itype==1 .and. .not.prt_done .and. &
-                  (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
-              write(0,*) 'prt_adv: not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
+           if(ptcl%itype==1 .and. .not.prt_done) then
+              if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
+                 write(0,*) 'prt_adv: r not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
+              endif
+              if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
+                 write(0,*) 'prt_adv: theta not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
+              endif
+              if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
+                 write(0,*) 'prt_adv: phi not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu,om
+              endif
            endif
 !-- Russian roulette for termination of exhausted particles
            if (e<1d-6*ptcl%e0 .and. .not.isvacant) then
@@ -612,6 +615,49 @@ subroutine particle_advance
            endif
         enddo
 
+!-- 1D
+     case(4)
+        prt_istep = 0
+        do while ((.not.prt_done).and.(.not.isvacant))
+           prt_istep = prt_istep + 1
+           if (ptcl%itype == 1.or.in_puretran) then
+              nimc = nimc + 1
+              call transport11(ptcl,ig,isvacant)
+           else
+              nddmc = nddmc + 1
+              call diffusion11(ptcl,ig,isvacant,icell,specarr)
+           endif
+!-- verify position
+           if(ptcl%itype==1 .and. .not.prt_done .and. &
+                  (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
+              write(0,*) 'prt_adv: not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
+           endif
+!-- Russian roulette for termination of exhausted particles
+           if (e<1d-6*ptcl%e0 .and. .not.isvacant) then
+!-- transformation factor
+              if(grd_isvelocity .and. ptcl%itype==1) then
+                 labfact = 1d0 - mu*x/pc_c
+              else
+                 labfact = 1d0
+              endif
+!
+              r1 = rand()
+              prt_tlyrand = prt_tlyrand+1
+              if(r1<0.5d0) then
+                 isvacant = .true.
+                 prt_done = .true.
+                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
+!-- velocity effects accounting
+                 if(ptcl%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
+              else
+!-- weight addition accounted for in external source
+                 tot_eext = tot_eext + e
+!
+                 e = 2d0*e
+                 ptcl%e0 = 2d0*ptcl%e0
+              endif
+           endif
+        enddo
      endselect
 
 !-----------------------------------------------------------------------
