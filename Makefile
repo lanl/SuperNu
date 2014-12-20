@@ -132,11 +132,11 @@ $(SUBDIRS):
 ifeq ($(VERSIONPY), version.py)
   version.inc: version.py $(VERSIONDEP)
 	@python2 -B version.inc.py
-	@echo "      data build_date /'$(DATE)'/" >>$@
+	@echo "      build_date = '$(DATE)'" >>$@
 else
   version.inc: version_dummy.inc $(VERSIONDEP)
 	@cp -vu version_dummy.inc version.inc
-	@echo "      data build_date /'$(DATE)'/" >>$@
+	@echo "      build_date = '$(DATE)'" >>$@
 endif
 
 #
