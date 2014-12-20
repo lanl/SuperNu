@@ -131,6 +131,8 @@ subroutine particle_advance_gamgrey(nmpi)
         prt_tlyrand = prt_tlyrand+1
         x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
+        r1 = rnd_r(rnd_state)
+        prt_tlyrand = prt_tlyrand+1
         y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
         r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
