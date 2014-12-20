@@ -482,9 +482,13 @@ subroutine particle_advance
         prt_istep = 0
         do while ((.not.prt_done).and.(.not.isvacant))
            prt_istep = prt_istep + 1
-
-           call transport1(ptcl,ig,isvacant)
-
+           if (ptcl%itype == 1.or.in_puretran) then
+              nimc = nimc + 1
+              call transport1(ptcl,ig,isvacant)
+           else
+              nddmc = nddmc + 1
+              call diffusion11(ptcl,ig,isvacant,icell,specarr)
+           endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done) then
               if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
