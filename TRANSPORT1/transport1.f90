@@ -502,16 +502,104 @@ subroutine transport1(ptcl,ig,isvacant)
            if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
         endif
      endif
+
 !
 !-- azimuthal bound
   elseif(d==dbz) then
 !-- sanity check
-     if(grd_nz==1) stop 'transport1: invalid phi crossing'
+     if(grd_nz==1) stop 'transport1: invalid z crossing'
+     if(iznext==grd_nz.and.iz==1) then
+!-- not transitioning yet to z=2pi
+        z=0d0
+     elseif(iznext==1.and.iz==grd_nz) then
+!-- not transitioning yet to z=0
+        z=pc_pi2
+     elseif(iznext==iz-1) then
+        z=grd_zarr(iz)
+     else
+!-- iznext==iz+1
+        if(iznext/=iz+1) stop 'transport1: invalid iznext'
+        z=grd_zarr(iz+1)
+     endif
+     if((grd_cap(ig,ix,iy,iznext)+grd_sig(ix,iy,iznext)) * &
+          min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy) * &
+          dz(iznext))*thelp<prt_tauddmc .or. in_puretran) then
+!-- IMC in adjacent cell
+        iz = iznext
+     else
+!-- DDMC in adjacent cell
+        if(grd_isvelocity) then
+!-- transforming z-cosine to cmf
+           mu = (mu-x*cinv)/elabfact
+           xi = sqrt(1d0-mu**2)*cos(om)
+        endif
+        help = (grd_cap(ig,ix,iy,iznext)+grd_sig(ix,iy,iznext)) * &
+             xm(ix)*ym(iy)*dz(iznext)*thelp
+        help = 4d0/(3d0*help+6d0*pc_dext)
+!-- sampling
+        r1 = rand()
+        if (r1 < help*(1d0+1.5d0*abs(xi))) then
+           ptcl%itype = 2
+           grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+           if(grd_isvelocity) then
+!-- velocity effects accounting
+              tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
+              e = e*elabfact
+              e0 = e0*elabfact
+              wl = wl/elabfact
+           endif
+           iz = iznext
+        else
+           r1 = rand()
+           r2 = rand()
+!-- resampling z-cosine
+           if(iznext=iz+1.or.(iznext==1.and.iz=grd_nz)) then
+              xi = -max(r1,r2)
+           else
+              xi = max(r1,r2)
+           endif
+           r1 = rand()
+           eta = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
+!-- resampling x-cosine
+           mu = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
+!-- resampling azimuthal
+           om = atan2(xi,eta)
+           if(om<0d0) om=om+pc_pi2
+!-- transforming mu to lab
+           if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
+        endif
+     endif
 
 !
 !-- Doppler shift
   elseif(d==ddop) then
-
+     if(.not.grd_isvelocity) stop 'transport1: ddop and no velocity'
+     if(ig<grp_ng) then
+!-- shifting group
+        ig = ig+1
+        wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*elabfact
+     else
+!-- resampling wavelength in highest group
+        r1 = rand()
+        wl=1d0/(r1*grp_wlinv(grp_ng+1) + (1d0-r1)*grp_wlinv(grp_ng))
+        wl = wl*elabfact
+     endif
+!-- check if ddmc region
+     if((grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
+          min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) * &
+          thelp>=prt_tauddmc.and..not.in_puretran) then
+        ptcl%itype = 2
+        grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+        if(grd_isvelocity) then
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
+           e = e*elabfact
+           e0 = e0*elabfact
+           wl = wl/elabfact
+        endif
+     endif
   else
      stop 'transport1: invalid distance'
   endif
