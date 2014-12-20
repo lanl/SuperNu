@@ -12,6 +12,10 @@ c-- one-time events
       real*8 :: t_setup
       real*8 :: t_all
 c
+c-- timeline
+      real*8 :: t_timelin(7)
+      real*8 :: t_timeline(6)
+c
       integer,private,parameter :: mreg = 18
       real*8,private,target :: registers(3,mreg)
 c
@@ -139,6 +143,8 @@ c
       write(6,1) 'EOS               :',t_eos(i)
       write(6,1) 'opacity (bb|bf|ff):',t_opac(i),t_bb(i),t_bf(i),t_ff(i)
       write(6,*) '----------------------------'
+      write(6,1) 'timeline          :',t_timeline
+      write(6,*) '----------------------------'
       write(6,1) 'setup             :',t_setup
       write(6,1) 'gas update        :',t_gasupd(i)
       write(6,1) 'gas opacleak      :',t_opacleak(i)
@@ -148,7 +154,7 @@ c
       write(6,1) 'unaccounted       :',t_all - taccounted
       write(6,*) '----------------------------'
       write(6,1) 'all               :',t_all
-1     format(1x,a,4f9.1)
+1     format(1x,a,10f9.1)
       end subroutine print_timing
 c
 c

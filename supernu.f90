@@ -30,7 +30,7 @@ program supernu
   real*8 :: help
   real*8 :: t_elapsed
   integer :: ierr,ns,nmax,it,ncell
-  real*8 :: t0,t1  !timing
+  real*8 :: t0,t1 !timing
   character(15) :: msg
 !
 !-- mpi initialization
@@ -161,6 +161,7 @@ program supernu
   endif
 !
   do it=in_ntres,tsp_nt
+     call time(t_timelin(1)) !timeline
 !-- allow negative and zero it for temperature initialization purposes!{{{
      tsp_it = max(it,1)
 
@@ -177,9 +178,11 @@ program supernu
      call grid_update(tsp_t)
      if(impi_gas>=0) call gas_update(impi,it)
      if(impi_gas>=0) call sourceenergy(nmpi) !energy to be instantiated per cell in this timestep
+     call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
 
 
 !-- grey gamma ray transport
+     call time(t_timelin(2)) !timeline
      if(in_srctype=='none' .and. .not.in_novolsrc) then
         call allgather_gammacap
         call particle_advance_gamgrey(nmpi)
@@ -194,6 +197,7 @@ program supernu
      endif
 
 !-- gather from gas workers and broadcast to world ranks
+     call time(t_timelin(3)) !timeline
      call bcast_nonpermanent !MPI
      call sourceenergy_misc
 
@@ -202,6 +206,7 @@ program supernu
      call emission_probability !emission probabilities for ep-group in each cell
      call sourcenumbers         !number of source prt_particles per cell
 
+     call time(t_timelin(4)) !timeline
      if(prt_nnew>0) then
         allocate(prt_vacantarr(prt_nnew))
         call vacancies             !Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
@@ -209,10 +214,12 @@ program supernu
         call interior_source       !properties of prt_particles emitted in domain interior
         deallocate(prt_vacantarr)
      endif
+     if(tsp_it<=tsp_ntres) where(.not.prt_isvacant) prt_particles%t = tsp_t !reset particle clocks
 
 !-- advance particles
-     if(tsp_it<=tsp_ntres) where(.not.prt_isvacant) prt_particles%t = tsp_t !reset particle clocks
+     call time(t_timelin(5)) !timeline
      call particle_advance
+     call time(t_timelin(6)) !timeline
      call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
      call reduce_tally !MPI !collect particle results from all workers
 
@@ -260,6 +267,8 @@ program supernu
 !-- write timestep timing to file
      if(it>0) call timing_timestep(impi)
 !!}}}
+     call time(t_timelin(7)) !timeline
+     t_timeline(:6) = t_timeline(:6) + (t_timelin(2:) - t_timelin(:6))
   enddo !tsp_it
 !
 !
