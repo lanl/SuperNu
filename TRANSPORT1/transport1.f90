@@ -113,6 +113,7 @@ subroutine transport1(ptcl,ig,isvacant)
         dby2 = x*(muz*y-mu*grd_yarr(iy)**2+grd_yarr(iy)*yhelp1)*yhelp3
         if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
         if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
+        dby = min(dby1,dby2)
         iynext = iy-1
      endif
   else
@@ -133,31 +134,35 @@ subroutine transport1(ptcl,ig,isvacant)
   endif
 
 !-- azimuthal boundary distance (z)
-  zhelp1 = muy*cos(grd_zarr(iz))-mux*sin(grd_zarr(iz))
-  if(zhelp1==0d0) then
-     dbz1=2d0*pc_c*tsp_dt*thelpinv
+  if(grd_nz==1) then
+     dbz = 2d0*pc_c*tsp_dt*thelpinv
   else
-     zhelp1=1d0/zhelp1
+     zhelp1 = muy*cos(grd_zarr(iz))-mux*sin(grd_zarr(iz))
+     if(zhelp1==0d0) then
+        dbz1=2d0*pc_c*tsp_dt*thelpinv
+     else
+        zhelp1=1d0/zhelp1
 !-- dbz1: iz->iz-1
-     dbz1 = x*sqrt(1d0-y**2)*sin(grd_zarr(iz)-z)*zhelp1
-     if(dbz1<0d0) dbz1=2d0*pc_c*tsp_dt*thelpinv
-  endif
-  zhelp2 = muy*cos(grd_zarr(iz+1))-mux*sin(grd_zarr(iz+1))
-  if(zhelp2==0d0) then
-     dbz2=2d0*pc_c*tsp_dt*thelpinv
-  else
-     zhelp2=1d0/zhelp2
+        dbz1 = x*sqrt(1d0-y**2)*sin(grd_zarr(iz)-z)*zhelp1
+        if(dbz1<0d0) dbz1=2d0*pc_c*tsp_dt*thelpinv
+     endif
+     zhelp2 = muy*cos(grd_zarr(iz+1))-mux*sin(grd_zarr(iz+1))
+     if(zhelp2==0d0) then
+        dbz2=2d0*pc_c*tsp_dt*thelpinv
+     else
+        zhelp2=1d0/zhelp2
 !-- dbz1: iz->iz+1
-     dbz2 = x*sqrt(1d0-y**2)*sin(grd_zarr(iz+1)-z)*zhelp2
-     if(dbz2<0d0) dbz2=2d0*pc_c*tsp_dt*thelpinv
-  endif
-  dbz = min(dbz1,dbz2)
-  if(dbz==dbz1) then
-     iznext=iz-1
-     if(iznext==0) iznext=grd_nz
-  else
-     iznext=iz+1
-     if(iznext==grd_nz+1) iznext=1
+        dbz2 = x*sqrt(1d0-y**2)*sin(grd_zarr(iz+1)-z)*zhelp2
+        if(dbz2<0d0) dbz2=2d0*pc_c*tsp_dt*thelpinv
+     endif
+     dbz = min(dbz1,dbz2)
+     if(dbz==dbz1) then
+        iznext=iz-1
+        if(iznext==0) iznext=grd_nz
+     else
+        iznext=iz+1
+        if(iznext==grd_nz+1) iznext=1
+     endif
   endif
 
 !-- Thomson scattering distance
@@ -376,13 +381,102 @@ subroutine transport1(ptcl,ig,isvacant)
 !-- radial bound
   elseif(d==dbx) then
 
+     if(mu>=0d0) then
+        ihelp=ix+1
+        x = grd_xarr(ix+1)
+     else
+        if(ix==1) stop 'transport1: ix=1 and mu<0'
+        ihelp=ix-1
+        x = grd_xarr(ix)
+     endif
+
+     if((grd_cap(ig,ihelp,iy,iz)+grd_sig(ihelp,iy,iz)) * &
+          min(dx(ihelp),xm(ihelp)*dyac(iy),xm(ihelp) * &
+          ym(iy)*dz(iz))*thelp<prt_tauddmc .or. in_puretran) then
+!-- IMC in adjacent cell
+        ix = ihelp
+     else
+!-- DDMC in adjacent cell
+        if(grd_isvelocity) then
+!-- transforming x-cosine to cmf
+           mu = (mu-x*cinv)/elabfact
+!-- amplification factor
+           if(mu<0d0) then
+              help = 1d0/abs(mu)
+              help = min(100d0, help) !-- truncate singularity
+!
+!-- velocity effects accounting
+              tot_evelo = tot_evelo-e*2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv
+!
+!-- apply the excess (higher than factor 2d0) to the energy deposition
+              grd_eamp(ix,iy,iz) = grd_eamp(ix,iy,iz) + &
+                   e*2d0*0.55d0*max(0d0,help-2d0)*x*cinv
+!-- apply limited correction to the particle
+              help = min(2d0,help)
+              e0 = e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv)
+              e = e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv)
+           endif
+        endif
+        help = (grd_cap(ig,ihelp,iy,iz)+grd_sig(ihelp,iy,iz)) * &
+             dx(ihelp)*thelp
+        help = 4d0/(3d0*help+6d0*pc_dext)
+!-- sampling
+        r1 = rand()
+        if(r1<help*(1d0+1.5d0*abs(mu))) then
+           if(grd_isvelocity) then
+!-- velocity effects accounting
+              tot_evelo=tot_evelo+e*(1d0-elabfact)
+!
+              e = e*elabfact
+              e0 = e0*elabfact
+              wl = wl/elabfact
+           endif
+           ix = ihelp
+        else
+!-- resampling x-cosine
+           r1 = rand()
+           r2 = rand()
+           mu=(ix-ihelp)*max(r1,r2)
+!-- resampling azimuthal
+           r1 = rand()
+           om = pc_pi2*r1
+!-- transforming mu to lab
+           if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
+        endif
+     endif
+
 !
 !-- polar bound
   elseif(d==dby) then
 
+     if(iynext==iy-1) then
+        y=grd_yarr(iy)
+     elseif(iynext==iy+1) then
+        y=grd_yarr(iy+1)
+     else
+!-- sanity check
+        stop 'transport1: invalid polar bound crossing'
+     endif
+
+     if((grd_cap(ig,ix,iynext,iz)+grd_sig(ix,iynext,iz)) * &
+          min(dx(ix),xm(ix)*dyac(iynext),xm(ix)*ym(iynext) * &
+          dz(iz))*thelp<prt_tauddmc .or. in_puretran) then
+!-- IMC in adjacent cell
+        iy = iynext
+     else
+!-- DDMC in adjacent cell
+        if(grd_isvelocity) then
+!-- transforming y-cosine to cmf
+           mu=(mu-x*cinv)/(1d0-x*mu*cinv)
+           eta = sqrt(1d0-mu**2)*sin(om)
+        endif
+        
+     endif
 !
 !-- azimuthal bound
   elseif(d==dbz) then
+!-- sanity check
+     if(grd_nz==1) stop 'transport1: invalid phi crossing'
 
 !
 !-- Doppler shift

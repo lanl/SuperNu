@@ -137,11 +137,6 @@ subroutine transport3(ptcl,ig,isvacant)
 !
 !-- updating time
   ptcl%t = ptcl%t + thelp*cinv*d
-!
-!-- updating transformation factors
-  if(grd_isvelocity) then
-     elabfact=1d0-(xi*x+eta*y+mu*z)*cinv
-  endif
 
 !-- tallying energy densities
   if(prt_isimcanlog) then
@@ -173,6 +168,12 @@ subroutine transport3(ptcl,ig,isvacant)
 !-- reducing particle energy
      e = e*exp(-grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz) * &
           elabfact*d*thelp)
+  endif
+
+!
+!-- updating transformation factors
+  if(grd_isvelocity) then
+     elabfact=1d0-(xi*x+eta*y+mu*z)*cinv
   endif
 
 !
