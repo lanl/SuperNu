@@ -27,7 +27,7 @@ subroutine transport11(ptcl,ig,isvacant)
   real*8 :: r1, r2, thelp,thelpinv
   real*8 :: db, dcol, dcen, dthm, ddop, d
   real*8 :: siglabfact, dcollabfact, elabfact
-  real*8 :: rold, P, told, muold
+  real*8 :: rold, P, muold
 ! real*8 :: x1, x2, xx0
   real*8 :: dtinv
   real*8 :: help
@@ -134,10 +134,13 @@ subroutine transport11(ptcl,ig,isvacant)
   r = sqrt((1.0d0-mu**2)*r**2+(d+r*mu)**2)
 !  r = sqrt(r**2+d**2+2d0*d*r*mu)
 !
-  told = ptcl%t
   ptcl%t = ptcl%t + thelp*d*cinv
   muold = mu
-  mu = (rold*mu+d)/r
+  if(r==0d0) then
+     mu = 1d0
+  else
+     mu = (rold*mu+d)/r
+  endif
 
 !-- transformation factor set
   if(grd_isvelocity) then

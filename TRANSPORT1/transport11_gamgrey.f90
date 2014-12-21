@@ -83,7 +83,11 @@ subroutine transport11_gamgrey(ptcl)
   r = sqrt((1.0d0-mu**2)*r**2 + (d+r*mu)**2)
 !  r = sqrt(r**2+d**2+2d0*d*r*mu)
   muold = mu
-  mu = (rold*mu+d)/r
+  if(r==0d0) then
+     mu = 1d0
+  else
+     mu = (rold*mu+d)/r
+  endif
 
 !-- transformation factor set
   if(grd_isvelocity) then
