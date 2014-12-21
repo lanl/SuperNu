@@ -98,7 +98,7 @@ subroutine particle_advance
      if(grd_isvelocity.and.ptcl%itype==1) then
         select case(in_igeom)
 !-- [123]D spherical
-        case(1,4)
+        case(1,11)
            labfact = 1d0-x*mu/pc_c !-- 1-dir*v/c
 !-- 2D
         case(2)
@@ -331,7 +331,7 @@ subroutine particle_advance
            endif!}}}
 
 !-- 1D spherical
-        case(4)
+        case(11)
            lhelp = ((grd_sig(ix,1,1)+grd_cap(ig,ix,1,1)) * &!{{{
                 dx(ix)*help<prt_tauddmc) &
                 .or.in_puretran
@@ -460,7 +460,7 @@ subroutine particle_advance
      if ((grd_isvelocity).and.(ptcl%itype==1)) then
         select case(in_igeom)
 !-- [123]D spherical
-        case(1,4)
+        case(1,11)
            call advection1(.true.,ptcl,ig)
 !-- 2D
         case(2)
@@ -631,7 +631,7 @@ subroutine particle_advance
         enddo
 
 !-- 1D
-     case(4)
+     case(11)
         prt_istep = 0
         do while ((.not.prt_done).and.(.not.isvacant))
            prt_istep = prt_istep + 1
@@ -720,7 +720,7 @@ subroutine particle_advance
      if ((grd_isvelocity).and.(ptcl%itype==1)) then
         select case(in_igeom)
 !-- [123]D
-        case(1,4)
+        case(1,11)
            call advection1(.false.,ptcl,ig)
 !-- 2D
         case(2)

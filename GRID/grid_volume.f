@@ -19,7 +19,7 @@ c
       endif
 c
       select case(igeom)
-      case(1,4)
+      case(1,11)
        forall(i=1:grd_nx,j=1:grd_ny,k=1:grd_nz)
      &  grd_vol(i,j,k) = t**3 *
      &    (grd_xarr(i+1)**3 - grd_xarr(i)**3) *

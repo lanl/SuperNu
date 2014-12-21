@@ -237,7 +237,7 @@ subroutine particle_advance_gamgrey(nmpi)
            mu = mu0
            om = om0
         endif!}}}
-     case(4)
+     case(11)
 !-- calculating position!{{{
         r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
@@ -265,7 +265,7 @@ subroutine particle_advance_gamgrey(nmpi)
      prt_done=.false.
 !
      select case(in_igeom)
-     case(1,4)
+     case(1,11)
         do while (.not.prt_done)!{{{
            call transport11_gamgrey(ptcl)
 !-- verify position

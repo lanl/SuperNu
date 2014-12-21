@@ -718,7 +718,7 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
            iiig=glumps(iig)
            specig = specarr(iiig)
            lhelp = (grd_cap(iiig,ix,iy+1,iz)+grd_sig(ix,iy+1,iz)) * &
-                min(dx(ix),,xm(ix)*dyac(iy+1),xm(ix)*ym(iy+1)*dz(iz)) * &
+                min(dx(ix),xm(ix)*dyac(iy+1),xm(ix)*ym(iy+1)*dz(iz)) * &
                 thelp<prt_tauddmc
            if(lhelp) then
 !-- DDMC interface
@@ -745,7 +745,7 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
 
 !-- checking adjacent
      lhelp = (grd_cap(iiig,ix,iy+1,iz)+grd_sig(ix,iy+1,iz)) * &
-          min(dx(ix),,xm(ix)*dyac(iy+1),xm(ix)*ym(iy+1)*dz(iz)) * &
+          min(dx(ix),xm(ix)*dyac(iy+1),xm(ix)*ym(iy+1)*dz(iz)) * &
           thelp<prt_tauddmc
 
      if(lhelp) then

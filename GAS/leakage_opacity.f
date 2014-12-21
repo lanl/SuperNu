@@ -17,7 +17,7 @@ c
          call leakage_opacity2
       case(3)
          call leakage_opacity3
-      case(4)
+      case(11)
          call leakage_opacity11
       case default
          stop 'leakage_opacity: invalid igeom'

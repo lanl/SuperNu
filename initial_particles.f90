@@ -218,7 +218,7 @@ subroutine initial_particles
         endif
 
 !-- 1D
-     case(4)
+     case(11)
 !-- calculating position
         r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1

@@ -176,7 +176,7 @@ c-- simpson's rule
      &  (farr(2:) + farr(:grp_ng) + 4d0*f2arr)
 c
 c-- cubic
-      case(4)
+      case(11)
 c-- quarter points
        f2arr = 12d0*f(.5d0*(xarr(2:) + xarr(:grp_ng))) + 32d0*(
      &   f(.25d0*xarr(2:) + .75d0*xarr(:grp_ng)) +
@@ -254,7 +254,7 @@ c-- simpson's rule
      &  (farr(2:) + farr(:n) + 4d0*f2arr)
 c
 c-- cubic
-      case(4)
+      case(11)
 c-- quarter points
        f2arr = 12d0*f(.5d0*(xarr(2:) + xarr(:n))) + 32d0*(
      &   f(.25d0*xarr(2:) + .75d0*xarr(:n)) +

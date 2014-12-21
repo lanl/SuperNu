@@ -31,7 +31,7 @@ subroutine sourceenergy_analytic
           thelp**2
      select case(in_igeom)
 !-- [123]D spherical
-     case(1,4)
+     case(1,11)
         tot_esurf = help*pc_pi4*grd_xarr(grd_nx+1)**2
 !-- 2D
      case(2)
@@ -63,8 +63,8 @@ subroutine sourceenergy_analytic
      !Heaviside source (uniform source sphere)!{{{
      if (tsp_t<=(in_tfirst+in_theav)*pc_day) then
         select case(in_igeom)
-!-- 1D
-        case(1,4)
+!-- [123]D spherical
+        case(1,11)
            do i=1,min(in_nheav,grd_nx)
               grd_emitex(i,:,:) = in_srcmax * &
                    grd_vol(i,:,:)*tsp_dt/thelp**3

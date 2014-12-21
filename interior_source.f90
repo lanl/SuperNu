@@ -243,7 +243,7 @@ subroutine interior_source
         endif
 !}}}
 !-- 1D
-     case(4)
+     case(11)
 !-- calculating position!{{{
         r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
@@ -565,7 +565,7 @@ subroutine interior_source
            ptcl%itype = 2 !DDMC
         endif!}}}
 !-- 1D spherical
-     case(4)
+     case(11)
 !-- calculating position:!{{{
 !-- source tilting in x
         r3 = 0d0

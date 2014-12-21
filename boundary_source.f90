@@ -77,7 +77,7 @@ subroutine boundary_source
            k = grd_nz
         endif
 !-- 1D spherical
-     case(4)
+     case(11)
         i = grd_nx
         j = 1
         k = 1
@@ -369,7 +369,7 @@ subroutine boundary_source
         endif
 
 !-- 1D (outer surface)
-     case(4)
+     case(11)
 !-- calculating position
         ptcl%x = grd_xarr(i+1)
         x0 = ptcl%x

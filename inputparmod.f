@@ -16,7 +16,7 @@ c-- parallelization
       integer :: in_nomp = 1       !number of openmp threads
 c
 c-- grid geometry and dimensions
-      integer :: in_igeom = 0 !geometry: 1=[123]Dsph, 2=2Dcyl, 3=3Dcar, 4=1Dsph
+      integer :: in_igeom = 0 !geometry: 1=[123]Dsph, 2=2Dcyl, 3=3Dcar, 11=1Dsph
       integer :: in_ndim(3) = [1, 1, 1] !number of x-direction cells
 
       real*8 :: in_lx = 0d0  !spatial length of x-direction
@@ -392,13 +392,13 @@ c
        if(in_srctype=='surf' .and.
      &      any((/'in  ','top ','botm'/)==in_surfsrcloc))
      &      stop 'in_srctype and in_surfsrcloc invalid'
-      case(4)
+      case(11)
        if(in_ndim(2)>1 .or. in_ndim(3)>1) stop 'in_ndim invalid'
        if(in_flx_ndim(2)/=1 .or. in_flx_ndim(3)/=1) stop
      &   'in_flx_ndim invalid'
        if(in_srctype=='surf'.and.in_surfsrcloc/='out') stop
      &   'in_srctype and in_surfsrcloc invalid'
-      case(5:)
+      case(4:10,12:)
        stop 'in_igeom invalid'
       endselect
 c
@@ -416,8 +416,8 @@ c
      &      stop 'static grid: use in_lx,in_ly,in_lz, not in_velout'
       endif
 c
-      if(in_voidcorners .and. in_igeom==1) stop 'voidcorners && igeom=1'
-      if(in_voidcorners .and. in_igeom==4) stop 'voidcorners && igeom=4'
+      if(in_voidcorners.and.in_igeom==1) stop 'voidcorners && igeom=1'
+      if(in_voidcorners.and.in_igeom==11) stop 'voidcorners && igeom=11'
 c
       if(in_ng==0) then
        if(in_wldex<1) stop 'in_wldex invalid'

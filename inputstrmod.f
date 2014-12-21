@@ -113,7 +113,7 @@ c-- validity check
 c
 c-- transer data to final arrays
 c-- first dim
-      if(igeom==4) then
+      if(igeom==11) then
        str_xleft(1) = 0d0
        str_xleft(2:) = raw(1,:nx)
       else
@@ -121,7 +121,7 @@ c-- first dim
        str_xleft(2:) = raw(2,:nx)
       endif
 c-- second dim
-      if(igeom==4) then
+      if(igeom==11) then
        str_yleft = [-1d0,1d0]
       else
        str_yleft(1) = raw(3,1)
@@ -130,7 +130,7 @@ c-- second dim
        enddo
       endif
 c-- third dim
-      if(igeom==2 .or. igeom==4) then
+      if(igeom==2 .or. igeom==11) then
        str_zleft = [0d0,2d0*pc_pi]
       else
        str_zleft(1) = raw(5,1)
@@ -215,7 +215,7 @@ c     ---------------------------------------------!{{{
 ************************************************************************
       igeom = igeomin
       select case(igeom)
-      case(1,4)
+      case(1,11)
        call generate_inputstr1
       case(2)
        call generate_inputstr2

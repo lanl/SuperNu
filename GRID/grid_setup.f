@@ -23,7 +23,7 @@ c-- sanity check
       endif
 c-- sanity check
       select case(grd_igeom)
-      case(1,4)
+      case(1,11)
        if(minval(grd_xarr)<0d0) stop 'grid_setup: grd_xarr < 0'
       case(2)
        if(minval(grd_xarr)<0d0) stop 'grid_setup: grd_xarr < 0'
