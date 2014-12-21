@@ -27,7 +27,7 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
   real*8,parameter :: cinv = 1d0/pc_c
   integer,external :: emitgroup
 !
-  integer :: iig, iiig, imu, iom
+  integer :: iig, iiig, imu, iom, iznext
   logical :: lhelp
   real*8 :: r1, r2, thelp
   real*8 :: denom, denom2, denom3
@@ -45,7 +45,7 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
   integer :: glump, gunlump
   integer :: glumps(grp_ng)
   real*8 :: dtinv, tempinv, capgreyinv
-  real*8 :: help, alb, eps, beta
+  real*8 :: help
 !
   integer,pointer :: ix,iy,iz
   real*8,pointer :: x,y,z,mu,om,e,e0,wl
@@ -256,8 +256,103 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
 !-- azimuthal leakage opacities
      if(grd_nz==1) then
         opacleak(5:)=0d0
+        iznext = iz
      else
-
+!-- iz->iz-1 (opacleak(5))
+        if(iz==1) then
+           lhelp = (grd_cap(ig,ix,iy,grd_nz)+ &
+              grd_sig(ix,iy,grd_nz))*min(dx(ix),xm(ix)*dyac(iy), &
+              xm(ix)*ym(iy)*dz(grd_nz))*thelp<prt_tauddmc
+           iznext = grd_nz
+        else
+           lhelp = (grd_cap(ig,ix,iy,iz-1)+ &
+              grd_sig(ix,iy,iz-1))*min(dx(ix),xm(ix)*dyac(iy), &
+              xm(ix)*ym(iy)*dz(iz-1))*thelp<prt_tauddmc
+           iznext = iz-1
+        endif
+!
+        if(lhelp) then
+!-- DDMC interface
+           help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*xm(ix)*ym(iy) * &
+              dz(iz)*thelp
+           pp = 4d0/(3d0*help+6d0*pc_dext)
+           opacleak(5)=0.75d0*pp*dx2(ix)*dyac(iy)/(dy(iy)*dx3(ix)*dz(iz))
+        else
+!-- DDMC interior
+           help = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz))*dz(iz) + &
+                (grd_sig(ix,iy,iznext)+grd_cap(ig,ix,iy,iznext))*dz(iznext))
+           grd_opacleak(5)=2d0*dyac(iy)*dx(ix) / &
+                (ym(iy)*dy(iy)*dz(iz)*dx3(ix)*help*thelp**2)
+        endif
+!-- iz->iz+1 (opacleak(6))
+        if(iz==grd_nz) then
+           lhelp = (grd_cap(ig,ix,iy,1)+ &
+              grd_sig(ix,iy,1))*min(dx(ix),xm(ix)*dyac(iy), &
+              xm(ix)*ym(iy)*dz(1))*thelp<prt_tauddmc
+           iznext = 1
+        else
+           lhelp = (grd_cap(ig,ix,iy,iz+1)+ &
+              grd_sig(ix,iy,iz+1))*min(dx(ix),xm(ix)*dyac(iy), &
+              xm(ix)*ym(iy)*dz(iz+1))*thelp<prt_tauddmc
+           iznext = iz+1
+        endif
+!
+        if(lhelp) then
+!-- DDMC interface
+           help = (grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz))*xm(ix)*ym(iy) * &
+              dz(iz)*thelp
+           pp = 4d0/(3d0*help+6d0*pc_dext)
+           opacleak(6)=0.75d0*pp*dx2(ix)*dyac(iy)/(dy(iy)*dx3(ix)*dz(iz))
+        else
+!-- DDMC interior
+           help = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz))*dz(iz) + &
+                (grd_sig(ix,iy,iznext)+grd_cap(ig,ix,iy,iznext))*dz(iznext))
+           grd_opacleak(6)=2d0*dyac(iy)*dx(ix) / &
+                (ym(iy)*dy(iy)*dz(iz)*dx3(ix)*help*thelp**2)
+        endif
      endif
+!}}}
+  endif
+!
+!--------------------------------------------------------
+!
+
+!-- calculate time to census or event
+  denom = sum(opacleak) + &
+       (1d0-emitlump)*(1d0-grd_fcoef(ix,iy,iz))*caplump
+  if(prt_isddmcanlog) then
+     denom = denom+grd_fcoef(ix,iy,iz)*caplump
+  endif
+
+  r1 = rnd_r(rnd_state)
+  tau = abs(log(r1)/(pc_c*denom))
+  tcensus = tsp_t+tsp_dt-ptcl%t
+  ddmct = min(tau,tcensus)
+
+!
+!-- calculating energy depostion and density
+  if(prt_isddmcanlog) then
+     grd_eraddens(ix,iy,iz)= grd_eraddens(ix,iy,iz)+e*ddmct*dtinv
+  else
+     grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz)+e * &
+          (1d0-exp(-grd_fcoef(ix,iy,iz)*caplump*pc_c*ddmct))
+     if(grd_fcoef(ix,iy,iz)*caplump*min(dx(ix),xm(ix)*dyac(iy) , &
+          xm(ix)*ym(iy)*dz(iz))*thelp>1d-6) then
+        help = 1d0/(grd_fcoef(ix,iy,iz)*caplump)
+        grd_eraddens(ix,iy,iz)= &
+             grd_eraddens(ix,iy,iz)+e* &
+             (1d0-exp(-grd_fcoef(ix,iy,iz)*caplump*pc_c*ddmct))* &
+             help*cinv*dtinv
+     else
+        grd_eraddens(ix,iy,iz) = grd_eraddens(ix,iy,iz)+e*ddmct*dtinv
+     endif
+!
+     if(grd_edep(ix,iy,iz)/=grd_edep(ix,iy,iz)) then
+!       write(0,*) e,grd_fcoef(ix,iy,iz),caplump,ddmct,glump,speclump,ig,tempinv
+        stop 'diffusion3: invalid energy deposition'
+     endif
+     e = e*exp(-grd_fcoef(ix,iy,iz)*caplump*pc_c*ddmct)
+!!}}}
+  endif
 
 end subroutine diffusion1

@@ -239,7 +239,8 @@ subroutine transport1(ptcl,ig,isvacant)
   else
 !-- nonanalog energy density
      if(grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz)* &
-          min(dx(ix),dy(iy),dz(iz))*thelp>1d-6) then
+          min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) * &
+          thelp>1d-6) then
         grd_eraddens(ix,iy,iz) = grd_eraddens(ix,iy,iz)+e* &
              (1.0d0-exp(-grd_fcoef(ix,iy,iz)*elabfact* &
              grd_cap(ig,ix,iy,iz)*d*thelp))* &
