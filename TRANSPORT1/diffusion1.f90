@@ -459,10 +459,11 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
            elabfact = 1d0
         endif
 !-- transforming mu to lab
-        if(grd_isvelocity) mu = (mu+x*cinv)/elabfact
+        if(grd_isvelocity) then
+           mu = (mu+x*cinv)/elabfact
 !-- ELABFACT LAB RESET
-        elabfact=1d0-x*mu*cinv
-        help = 1d0/elabfact
+           elabfact=1d0-x*mu*cinv
+           help = 1d0/elabfact
 !-- transforming wl to lab
            wl = wl*elabfact
 !-- velocity effects accounting
@@ -476,6 +477,129 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
 
 !-- ix->ix+1 leakage
   elseif(r1>=pa+probleak(1).and.r1<pa+sum(probleak(1:2))) then
+
+!-- sampling next group
+     if(speclump<=0d0) then
+        iiig = ig
+     else
+        r1 = rnd_r(rnd_state)
+        denom2 = 0d0
+        help = 1d0/opacleak(2)
+        do iig=1,glump
+           iiig = glumps(iig)
+           specig = specarr(iiig)
+!-- calculating resolved leakage opacities
+           lhelp = (grd_cap(iiig,ix+1,iy,iz)+grd_sig(ix+1,iy,iz)) * &
+                   min(dx(ix+1),xm(ix+1)*dyac(iy),xm(ix+1)*ym(iy) * &
+                   dz(iz))*thelp<prt_tauddmc
+           if(lhelp) then
+!-- DDMC interface
+              mfphelp = (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
+                   dx(ix)*thelp
+              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              resopacleak = 1.5d0*pp*grd_xarr(ix+1)**2/(dx3(ix)*thelp)
+           else
+!-- IMC interface
+              mfphelp = ((grd_sig(ix,iy,iz)+grd_cap(iiig,ix,iy,iz))*dx(ix)+&
+                   (grd_sig(ix+1,iy,iz)+grd_cap(iiig,ix+1,iy,iz))*dx(ix+1))*thelp
+              resopacleak = 2d0*grd_xarr(ix+1)**2/(mfphelp*thelp*dx3(ix))
+           endif
+           denom2 = denom2+specig*resopacleak*speclump*help
+           if(denom2>r1) exit
+        enddo
+     endif
+
+!-- sampling wavelength
+     r1 = rnd_r(rnd_state)
+     wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
+
+!-- checking adjacent
+     if(ix==grd_nx) then
+        lhelp = .true.
+     else
+        lhelp = (grd_cap(iiig,ix+1,iy,iz)+grd_sig(ix+1,iy,iz)) * &
+             min(dx(ix+1),xm(ix+1)*dyac(iy),xm(ix+1)*ym(iy)*dz(iz)) * &
+             thelp<prt_tauddmc
+     endif
+
+     if(.not.lhelp) then
+!-- ix->ix+1
+        ix = ix+1
+     else
+!-- sampling x,y,z
+        x = grd_xarr(ix+1)
+        r1 = rnd_r(rnd_state)
+        y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
+        r1 = rnd_r(rnd_state)
+        z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
+!-- must be inside cell
+        y = min(y,grd_yarr(iy+1))
+        y = max(y,grd_yarr(iy))
+        z = min(z,grd_zarr(iz+1))
+        z = max(z,grd_zarr(iz))
+!-- sampling direction
+        r1 = rnd_r(rnd_state)
+        r2 = rnd_r(rnd_state)
+        mu = max(r1,r2)
+        r1 = rnd_r(rnd_state)
+        om = pc_pi2*r1
+        if(grd_isvelocity) then
+           elabfact = 1d0+x*mu*cinv
+        else
+           elabfact = 1d0
+        endif
+!-- transforming mu to lab
+        if(grd_isvelocity) then
+           mu = (mu+x*cinv)/elabfact
+!-- ELABFACT LAB RESET
+           elabfact=1d0-x*mu*cinv
+           help = 1d0/elabfact
+!-- transforming wl to lab
+           wl = wl*elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-help)
+!
+!-- transforming energy weights to lab
+           e = e*help
+           e0 = e0*help
+        endif
+        if(ix==grd_nx) then
+!-- escaping at ix=nx
+           isvacant = .true.
+           prt_done = .true.
+           tot_eout = tot_eout+e
+!-- luminosity tally
+           mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
+           muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
+           help = atan2(muy,mux)
+           if(help<0d0) help=help+pc_pi2
+!-- retrieving lab frame flux group, polar, azimuthal bin
+           iom = binsrch(help,flx_om,flx_nom+1)
+           imu = binsrch(muz,flx_mu,flx_nmu+1)
+           ig = binsrch(wl,flx_wl,flx_ng+1)
+!-- checking group bounds
+           if(ig>flx_ng.or.ig<1) then
+              if(ig>flx_ng) then
+                 ig=flx_ng
+              else
+                 ig=1
+              endif
+           endif
+!-- tallying outbound energy
+           tot_eout = tot_eout+e
+!-- tallying outbound luminosity
+           flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+e*dtinv
+           flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+(e*dtinv)**2
+           flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1
+           return
+        else
+!-- converting to IMC
+           ptcl%itype = 1
+           grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+!-- ix->ix+1
+           ix = ix+1
+        endif
+     endif
 
 !-- iy->iy-1 leakage
   elseif(r1>=pa+sum(probleak(1:2)).and.r1<pa+sum(probleak(1:3))) then
