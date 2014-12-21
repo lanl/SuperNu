@@ -45,13 +45,13 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
   integer :: glump, gunlump
   integer :: glumps(grp_ng)
   real*8 :: dtinv, tempinv, capgreyinv
-  real*8 :: help
+  real*8 :: help, mux, muy, muz
 !
   integer,pointer :: ix,iy,iz
   real*8,pointer :: x,y,z,mu,om,e,e0,wl
 !-- statement functions
   integer :: l
-  real*8 :: dx,dy,dz,xm,dyac,ym
+  real*8 :: dx,dy,dz,xm,dyac,ym,dx2,dx3
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dx2(l) = grd_xarr(l+1)**2 - grd_xarr(l)**2
   dx3(l) = grd_xarr(l+1)**3 - grd_xarr(l)**3
@@ -281,7 +281,7 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
 !-- DDMC interior
            help = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz))*dz(iz) + &
                 (grd_sig(ix,iy,iznext)+grd_cap(ig,ix,iy,iznext))*dz(iznext))
-           grd_opacleak(5)=2d0*dyac(iy)*dx(ix) / &
+           opacleak(5)=2d0*dyac(iy)*dx(ix) / &
                 (ym(iy)*dy(iy)*dz(iz)*dx3(ix)*help*thelp**2)
         endif
 !-- iz->iz+1 (opacleak(6))
@@ -307,7 +307,7 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
 !-- DDMC interior
            help = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz))*dz(iz) + &
                 (grd_sig(ix,iy,iznext)+grd_cap(ig,ix,iy,iznext))*dz(iznext))
-           grd_opacleak(6)=2d0*dyac(iy)*dx(ix) / &
+           opacleak(6)=2d0*dyac(iy)*dx(ix) / &
                 (ym(iy)*dy(iy)*dz(iz)*dx3(ix)*help*thelp**2)
         endif
      endif
@@ -569,8 +569,11 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
            prt_done = .true.
            tot_eout = tot_eout+e
 !-- luminosity tally
+           eta = sqrt(1d0-mu**2)*sin(om)
+           xi = sqrt(1d0-mu**2)*cos(om)
            mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
            muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
+           muz = mu*y-eta*sqrt(1d0-y**2)
            help = atan2(muy,mux)
            if(help<0d0) help=help+pc_pi2
 !-- retrieving lab frame flux group, polar, azimuthal bin
