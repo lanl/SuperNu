@@ -349,10 +349,150 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
 !
      if(grd_edep(ix,iy,iz)/=grd_edep(ix,iy,iz)) then
 !       write(0,*) e,grd_fcoef(ix,iy,iz),caplump,ddmct,glump,speclump,ig,tempinv
-        stop 'diffusion3: invalid energy deposition'
+        stop 'diffusion1: invalid energy deposition'
      endif
      e = e*exp(-grd_fcoef(ix,iy,iz)*caplump*pc_c*ddmct)
 !!}}}
   endif
+
+!-- updating particle time
+  ptcl%t = ptcl%t+ddmct
+
+!-- stepping particle ------------------------------------
+!
+!
+!-- check for census
+  if (ddmct /= tau) then
+     prt_done = .true.
+     grd_numcensus(ix,iy,iz)=grd_numcensus(ix,iy,iz)+1
+     return
+  endif
+
+!-- otherwise, perform event
+  r1 = rnd_r(rnd_state)
+  help = 1d0/denom
+
+!-- leakage probabilities
+  probleak = opacleak*help
+
+!-- absorption probability
+  if(prt_isddmcanlog) then
+     pa = grd_fcoef(ix,iy,iz)*caplump*help
+  else
+     pa = 0d0
+  endif
+
+!-- absorption
+  if(r1<pa) then
+     isvacant = .true.
+     prt_done = .true.
+     grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz)+e
+
+!-- ix->ix-1 leakage
+  elseif(r1>=pa.and.r1<pa+probleak(1)) then
+!-- sanity check
+     if(ix==1) stop 'transport1: invalid probleak(1)'
+!-- sample next group
+     if(speclump<=0d0) then
+        iiig = ig
+     else
+        r1 = rnd_r(rnd_state)
+        denom2 = 0d0
+        help = 1d0/opacleak(1)
+        do iig=1,glump
+           iiig = glumps(iig)
+           specig = specarr(iiig)
+!-- calculating resolved leakage opacities
+           lhelp = (grd_cap(iiig,ix-1,iy,iz)+grd_sig(ix-1,iy,iz)) * &
+                   min(dx(ix-1),xm(ix-1)*dyac(iy),xm(ix-1)*ym(iy) * &
+                   dz(iz))*thelp<prt_tauddmc
+           if(lhelp) then
+!-- DDMC interface
+              mfphelp = (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
+                   dx(ix)*thelp
+              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              resopacleak = 1.5d0*pp*grd_xarr(ix)**2/(dx3(ix)*thelp)
+           else
+!-- IMC interface
+              mfphelp = ((grd_sig(ix,iy,iz)+grd_cap(iiig,ix,iy,iz))*dx(ix)+&
+                   (grd_sig(ix-1,iy,iz)+grd_cap(iiig,ix-1,iy,iz))*dx(ix-1))*thelp
+              resopacleak = 2d0*grd_xarr(ix)**2/(mfphelp*thelp*dx3(ix))
+           endif
+           denom2 = denom2+specig*resopacleak*speclump*help
+           if(denom2>r1) exit
+        enddo
+     endif
+
+!-- sampling wavelength
+     r1 = rnd_r(rnd_state)
+     wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
+
+!-- checking adjacent
+     lhelp = (grd_cap(iiig,ix-1,iy,iz)+grd_sig(ix-1,iy,iz)) * &
+          min(dx(ix-1),xm(ix-1)*dyac(iy),xm(ix-1)*ym(iy)*dz(iz)) * &
+          thelp<prt_tauddmc
+
+     if(.not.lhelp) then
+!-- ix->ix-1
+        ix = ix-1
+     else
+!-- sampling x,y,z
+        x = grd_xarr(ix)
+        r1 = rnd_r(rnd_state)
+        y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
+        r1 = rnd_r(rnd_state)
+        z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
+!-- must be inside cell
+        y = min(y,grd_yarr(iy+1))
+        y = max(y,grd_yarr(iy))
+        z = min(z,grd_zarr(iz+1))
+        z = max(z,grd_zarr(iz))
+!-- sampling direction
+        r1 = rnd_r(rnd_state)
+        r2 = rnd_r(rnd_state)
+        mu = -max(r1,r2)
+        r1 = rnd_r(rnd_state)
+        om = pc_pi2*r1
+        if(grd_isvelocity) then
+           elabfact = 1d0+x*mu*cinv
+        else
+           elabfact = 1d0
+        endif
+!-- transforming mu to lab
+        if(grd_isvelocity) mu = (mu+x*cinv)/elabfact
+!-- ELABFACT LAB RESET
+        elabfact=1d0-x*mu*cinv
+        help = 1d0/elabfact
+!-- transforming wl to lab
+           wl = wl*elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-help)
+!
+!-- transforming energy weights to lab
+           e = e*help
+           e0 = e0*help
+        endif
+     endif
+
+!-- ix->ix+1 leakage
+  elseif(r1>=pa+probleak(1).and.r1<pa+sum(probleak(1:2))) then
+
+!-- iy->iy-1 leakage
+  elseif(r1>=pa+sum(probleak(1:2)).and.r1<pa+sum(probleak(1:3))) then
+
+!-- iy->iy+1 leakage
+  elseif(r1>=pa+sum(probleak(1:3)).and.r1<pa+sum(probleak(1:4))) then
+
+!-- iz->iz-1 leakage
+  elseif(r1>=pa+sum(probleak(1:4)).and.r1<pa+sum(probleak(1:5))) then
+
+!-- iz->iz+1 leakage
+  elseif(r1>=pa+sum(probleak(1:5)).and.r1<pa+sum(probleak(1:6))) then
+
+!-- effective scattering
+  else
+
+  endif
+
 
 end subroutine diffusion1
