@@ -156,7 +156,7 @@ subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
      emitlump = specint0(tempinv,ig)*capgreyinv*grd_cap(ig,ix,iy,iz)!{{{
      caplump = grd_cap(ig,ix,iy,iz)
 
-!-- x left (opacleakllump)
+!-- x left (opacleak(1))
      if(ix==1) then
         lhelp = .true.
      else
@@ -182,7 +182,7 @@ subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
         opacleak(1)=(2d0/3d0)/(help*dx(ix)*thelp)
      endif
 
-!-- x right (opacleakrlump)
+!-- x right (opacleak(2))
      if(ix==grd_nx) then
         lhelp = .true.
      else
@@ -208,7 +208,7 @@ subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
         opacleak(2)=(2d0/3d0)/(help*dx(ix)*thelp)
      endif
 
-!-- y down (opacleakdlump)
+!-- y down (opacleak(3))
      if(iy==1) then
         lhelp = .true.
      else
@@ -234,7 +234,7 @@ subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
         opacleak(3)=(2d0/3d0)/(help*dy(iy)*thelp)
      endif
 
-!-- y up (opacleakulump)
+!-- y up (opacleak(4))
      if(iy==grd_ny) then
         lhelp = .true.
      else
@@ -260,7 +260,7 @@ subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
         opacleak(4)=(2d0/3d0)/(help*dy(iy)*thelp)
      endif
 
-!-- z bottom (opacleakblump)
+!-- z bottom (opacleak(5))
      if(iz==1) then
         lhelp = .true.
      else
@@ -286,7 +286,7 @@ subroutine diffusion3(ptcl,ig,isvacant,icell,specarr)
         opacleak(5)=(2d0/3d0)/(help*dz(iz)*thelp)
      endif
 
-!-- z top (opacleaktlump)
+!-- z top (opacleak(6))
      if(iz==grd_nz) then
         lhelp = .true.
      else
