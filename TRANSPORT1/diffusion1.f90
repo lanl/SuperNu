@@ -609,6 +609,7 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
 !-- iy->iy-1 leakage
   elseif(r1>=pa+sum(probleak(1:2)).and.r1<pa+sum(probleak(1:3))) then
 !-- sanity check
+     if(grd_ny==1) stop 'diffusion1: probleak(3) and grd_ny=1'
      if(iy==1) stop 'diffusion1: invalid probleak(3)'
 
 !-- sampling next group
@@ -705,6 +706,7 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
 !-- iy->iy+1 leakage
   elseif(r1>=pa+sum(probleak(1:3)).and.r1<pa+sum(probleak(1:4))) then
 !-- sanity check
+     if(grd_ny==grd_ny) stop 'diffusion1: probleak(4) and grd_ny=1'
      if(iy==grd_ny) stop 'diffusion1: invalid probleak(4)'
 
 !-- sampling next group
@@ -799,9 +801,211 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
 
 !-- iz->iz-1 leakage
   elseif(r1>=pa+sum(probleak(1:4)).and.r1<pa+sum(probleak(1:5))) then
+!-- sanity check
+     if(grd_nz==1) stop 'diffusion1: probleak(5) and grd_nz=1'
+!-- setting helper index
+     if(iz==1) then
+        iznext=grd_nz
+     else
+        iznext=iz-1
+     endif
+!-- sampling next group
+     if(speclump<=0d0) then
+        iiig = ig
+     else
+        r1 = rnd_r(rnd_state)
+        denom2 = 0d0
+        help = 1d0/opacleak(5)
+        do iig = 1, glump
+           iiig=glumps(iig)
+           specig = specarr(iiig)
+!-- calculating resolved leakage opacities
+           lhelp = (grd_cap(iiig,ix,iy,iznext)+grd_sig(ix,iy,iznext)) * &
+                min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iznext)) * &
+                thelp<prt_tauddmc
+!
+           if(lhelp) then
+!-- DDMC interface
+              mfphelp = (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
+                   xm(ix)*ym(iy)*dz(iz)*thelp
+              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              resopacleak=0.75d0*pp*dx2(ix)*dyac(iy)/(dy(iy)*dx3(ix)*dz(iz))
+           else
+!-- DDMC interior
+              mfphelp = ((grd_sig(ix,iy,iz)+grd_cap(iiig,ix,iy,iz))*dz(iz) + &
+                   (grd_sig(ix,iy,iznext)+grd_cap(iiig,ix,iy,iznext))*dz(iznext))
+              resopacleak=2d0*dyac(iy)*dx(ix)/(ym(iy)*dy(iy)*dz(iz)*dx3(ix) * &
+                   mfphelp*thelp**2)
+           endif
+           denom2 = denom2 + specig*resopacleak*speclump*help
+           if(r1<denom2) exit
+        enddo
+     endif
+
+!-- sampling wavelength
+     r1 = rnd_r(rnd_state)
+     wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
+
+     lhelp = (grd_cap(iiig,ix,iy,iznext)+grd_sig(ix,iy,iznext)) * &
+          min(dx(ix),dy(iy),dz(iznext))*thelp<prt_tauddmc
+
+     if(lhelp) then
+!-- sampling x,y,z
+        r1 = rnd_r(rnd_state)
+        x = ((1d0-r1)*grd_xarr(ix)**3+r1*grd_xarr(ix+1)**3)**(1d0/3d0)
+        r1 = rnd_r(rnd_state)
+        y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
+        if(iznext==iz-1) then
+           z = grd_zarr(iz)
+        else
+!-- iz = 1, iznext = grd_nz
+           z = pc_pi2
+        endif
+!-- must be inside cell
+        x = min(x,grd_xarr(ix+1))
+        x = max(x,grd_xarr(ix))
+        y = min(y,grd_yarr(iy+1))
+        y = max(y,grd_yarr(iy))
+!-- sampling direction
+        r1 = rnd_r(rnd_state)
+        r2 = rnd_r(rnd_state)
+        xi = -max(r1,r2)
+        r1 = rnd_r(rnd_state)
+        eta = sqrt(1d0-xi**2)*cos(pc_pi2*r1)
+        mu = sqrt(1d0-xi**2)*sin(pc_pi2*r1)
+        om = atan2(xi,eta)
+        if(om<0d0) om=om+pc_pi2
+        if(grd_isvelocity) then
+           elabfact=1d0+mu*x*cinv
+        else
+           elabfact=1d0
+        endif
+!-- changing from comoving frame to observer frame
+        if(grd_isvelocity) then
+!-- transforming mu to lab
+           mu = (mu+x*cinv)/elabfact
+!-- ELABFACT LAB RESET
+           elabfact=1d0-x*mu*cinv
+           help = 1d0/elabfact
+!-- transforming wl to lab
+           wl = wl*elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-help)
+!
+!-- transforming energy weights to lab
+           e = e*help
+           e0 = e0*help
+        endif
+!-- converting to IMC
+        ptcl%itype = 1
+        grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+     endif
+!-- iz->iz-1
+     iz = iznext
 
 !-- iz->iz+1 leakage
   elseif(r1>=pa+sum(probleak(1:5)).and.r1<pa+sum(probleak(1:6))) then
+!-- sanity check
+     if(grd_nz==1) stop 'diffusion1: probleak(6) and grd_nz=1'
+!-- setting helper index
+     if(iz==grd_nz) then
+        iznext=1
+     else
+        iznext=iz+1
+     endif
+!-- sampling next group
+     if(speclump<=0d0) then
+        iiig = ig
+     else
+        r1 = rnd_r(rnd_state)
+        denom2 = 0d0
+        help = 1d0/opacleak(6)
+        do iig = 1, glump
+           iiig=glumps(iig)
+           specig = specarr(iiig)
+!-- calculating resolved leakage opacities
+           lhelp = (grd_cap(iiig,ix,iy,iznext)+grd_sig(ix,iy,iznext)) * &
+                min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iznext)) * &
+                thelp<prt_tauddmc
+!
+           if(lhelp) then
+!-- DDMC interface
+              mfphelp = (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
+                   xm(ix)*ym(iy)*dz(iz)*thelp
+              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              resopacleak=0.75d0*pp*dx2(ix)*dyac(iy)/(dy(iy)*dx3(ix)*dz(iz))
+           else
+!-- DDMC interior
+              mfphelp = ((grd_sig(ix,iy,iz)+grd_cap(iiig,ix,iy,iz))*dz(iz) + &
+                   (grd_sig(ix,iy,iznext)+grd_cap(iiig,ix,iy,iznext))*dz(iznext))
+              resopacleak=2d0*dyac(iy)*dx(ix)/(ym(iy)*dy(iy)*dz(iz)*dx3(ix) * &
+                   mfphelp*thelp**2)
+           endif
+           denom2 = denom2 + specig*resopacleak*speclump*help
+           if(r1<denom2) exit
+        enddo
+     endif
+
+!-- sampling wavelength
+     r1 = rnd_r(rnd_state)
+     wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
+
+     lhelp = (grd_cap(iiig,ix,iy,iznext)+grd_sig(ix,iy,iznext)) * &
+          min(dx(ix),dy(iy),dz(iznext))*thelp<prt_tauddmc
+
+     if(lhelp) then
+!-- sampling x,y,z
+        r1 = rnd_r(rnd_state)
+        x = ((1d0-r1)*grd_xarr(ix)**3+r1*grd_xarr(ix+1)**3)**(1d0/3d0)
+        r1 = rnd_r(rnd_state)
+        y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
+        if(iznext==iz+1) then
+           z = grd_zarr(iz+1)
+        else
+!-- iz = grd_nz, iznext = 1
+           z = 0d0
+        endif
+!-- must be inside cell
+        x = min(x,grd_xarr(ix+1))
+        x = max(x,grd_xarr(ix))
+        y = min(y,grd_yarr(iy+1))
+        y = max(y,grd_yarr(iy))
+!-- sampling direction
+        r1 = rnd_r(rnd_state)
+        r2 = rnd_r(rnd_state)
+        xi = max(r1,r2)
+        r1 = rnd_r(rnd_state)
+        eta = sqrt(1d0-xi**2)*cos(pc_pi2*r1)
+        mu = sqrt(1d0-xi**2)*sin(pc_pi2*r1)
+        om = atan2(xi,eta)
+        if(om<0d0) om=om+pc_pi2
+        if(grd_isvelocity) then
+           elabfact=1d0+mu*x*cinv
+        else
+           elabfact=1d0
+        endif
+!-- changing from comoving frame to observer frame
+        if(grd_isvelocity) then
+!-- transforming mu to lab
+           mu = (mu+x*cinv)/elabfact
+!-- ELABFACT LAB RESET
+           elabfact=1d0-x*mu*cinv
+           help = 1d0/elabfact
+!-- transforming wl to lab
+           wl = wl*elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-help)
+!
+!-- transforming energy weights to lab
+           e = e*help
+           e0 = e0*help
+        endif
+!-- converting to IMC
+        ptcl%itype = 1
+        grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+     endif
+!-- iz->iz+1
+     iz = iznext
 
 !-- effective scattering
   else
