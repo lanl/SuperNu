@@ -48,7 +48,7 @@ program supernu
 !-- other tasks before packet propagation begins.
 !--
   if(impi==impi0) then
-    call time(t0)!{{{
+    t0 = t_time()!{{{
 !-- startup message
     call banner
 !-- read runtime parameters
@@ -102,7 +102,7 @@ program supernu
     msg = 'post read:'
     write(6,*) 'memusg: ',msg,memusg()
 !
-    call time(t1)
+    t1 = t_time()
     t_setup = t1-t0!}}}
   endif !impi
 
@@ -161,7 +161,7 @@ program supernu
   endif
 !
   do it=in_ntres,tsp_nt
-     call time(t_timelin(1)) !timeline
+     t_timelin(1) = t_time() !timeline
 !-- allow negative and zero it for temperature initialization purposes!{{{
      tsp_it = max(it,1)
 
@@ -182,7 +182,7 @@ program supernu
 
 
 !-- grey gamma ray transport
-     call time(t_timelin(2)) !timeline
+     t_timelin(2) = t_time() !timeline
      if(in_srctype=='none' .and. .not.in_novolsrc) then
         call allgather_gammacap
         call particle_advance_gamgrey(nmpi)
@@ -197,7 +197,7 @@ program supernu
      endif
 
 !-- gather from gas workers and broadcast to world ranks
-     call time(t_timelin(3)) !timeline
+     t_timelin(3) = t_time() !timeline
      call bcast_nonpermanent !MPI
      call sourceenergy_misc
 
@@ -206,7 +206,7 @@ program supernu
      call emission_probability !emission probabilities for ep-group in each cell
      call sourcenumbers         !number of source prt_particles per cell
 
-     call time(t_timelin(4)) !timeline
+     t_timelin(4) = t_time() !timeline
      if(prt_nnew>0) then
         allocate(prt_vacantarr(prt_nnew))
         call vacancies             !Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
@@ -217,9 +217,9 @@ program supernu
      if(tsp_it<=tsp_ntres) where(.not.prt_isvacant) prt_particles%t = tsp_t !reset particle clocks
 
 !-- advance particles
-     call time(t_timelin(5)) !timeline
+     t_timelin(5) = t_time() !timeline
      call particle_advance
-     call time(t_timelin(6)) !timeline
+     t_timelin(6) = t_time() !timeline
      call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
      call reduce_tally !MPI !collect particle results from all workers
 
@@ -267,7 +267,7 @@ program supernu
 !-- write timestep timing to file
      if(it>0) call timing_timestep(impi)
 !!}}}
-     call time(t_timelin(7)) !timeline
+     t_timelin(7) = t_time() !timeline
      t_timeline(:6) = t_timeline(:6) + (t_timelin(2:) - t_timelin(:6))
   enddo !tsp_it
 !
@@ -285,7 +285,7 @@ program supernu
      write(6,*) 'memusg: ',msg,memusg()
 
 !-- print cpu timing usage
-     call time(t1)
+     t1 = t_time()
      t_all = t1 - t0
      call print_timing  !print timing results
      write(6,*)

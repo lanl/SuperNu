@@ -54,7 +54,7 @@ c
 c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_temp)
 c
-      call time(t0)
+      t0 = t_time()
 c
 c-- warn once
       lwarn = .true.
@@ -181,7 +181,7 @@ c-- sanity check
 c
       deallocate(cap)
 c
-      call time(t1)
+      t1 = t_time()
 c-- register timing
       call timereg(t_opac,t1-t0)
       call timereg(t_bb,tbb)
@@ -210,7 +210,7 @@ c-- reset
       cap = 0d0
 c
 c-- bound-bound
-      call time(t0)
+      t0 = t_time()
       if(.not. in_nobbopac) then
       igs = 1!{{{
 c$omp parallel do
@@ -250,7 +250,7 @@ c$omp end parallel do !}}}
 c
 c
 c-- bound-free
-      call time(t1)
+      t1 = t_time()
       if(.not. in_nobfopac) then
 c$omp parallel do!{{{
 c$omp& schedule(static)
@@ -278,7 +278,7 @@ c$omp end parallel do!}}}
 c
 c
 c-- free-free
-      call time(t2)
+      t2 = t_time()
       if(.not. in_noffopac) then
 c-- simple variant: nearest data grid point!{{{
        hlparr = (gas_natom/gas_vol)**2*gas_nelec
@@ -335,7 +335,7 @@ c-- cross section
 c$omp end parallel do!}}}
       endif !in_noffopac!}}}
 c
-      call time(t3)
+      t3 = t_time()
       t_bb = t_bb + (t1-t0)
       t_bf = t_bf + (t2-t1)
       t_ff = t_ff + (t3-t2)

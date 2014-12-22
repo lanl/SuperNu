@@ -404,14 +404,14 @@ c     ------------------------------------!{{{
       real*8 :: snd3(nx,ny,nz)
       real*8 :: t0,t1
 c
-      call time(t0)
+      t0 = t_time()
 c
       n = nx*ny*nz
       snd3 = grd_edep
       call mpi_allreduce(snd3,grd_edep,n,MPI_REAL8,MPI_SUM,
      &  MPI_COMM_WORLD,ierr)
 c
-      call time(t1)
+      t1 = t_time()
       call timereg(t_mpigamma, t1-t0)
 c!}}}
       end subroutine allreduce_gammaenergy
@@ -434,7 +434,7 @@ c     -----------------------------!{{{
       real*8 :: snd3(grd_nx,grd_ny,grd_nz)
       integer :: n
 c
-      call time(t0)
+      t0 = t_time()
 c
 c-- gather
       if(impi_gas>=0) then
@@ -491,7 +491,7 @@ c-- allreduce
 !      call mpi_bcast(grd_cap,grp_ng*n,MPI_REAL,
 !     &  impi0,MPI_COMM_WORLD,ierr)
 !c
-      call time(t1)
+      t1 = t_time()
       call timereg(t_mpibcast, t1-t0)
 c!}}}
       end subroutine bcast_nonpermanent
@@ -519,7 +519,7 @@ c     -----------------------!{{{
       real*8 :: help
       real*8 :: t0,t1
 c
-      call time(t0)
+      t0 = t_time()
 c
 c-- dim==0
       n = 6
@@ -614,7 +614,7 @@ c-- timing statistics
       call mpi_reduce(help,t_pckt_stat(3),1,MPI_REAL8,MPI_MAX,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      call time(t1)
+      t1 = t_time()
       call timereg(t_mpireduc, t1-t0)
 c!}}}
       end subroutine reduce_tally

@@ -36,7 +36,7 @@ c-- timing
       real*8 :: t0,t1
 c
 c-- begin
-      call time(t0)
+      t0 = t_time()
 c
 c-- nuclear decay
 c================
@@ -264,7 +264,7 @@ c-- save previous values for gentile-fleck factor calculation in next iter
 c
       lfirst = .false.
 c
-      call time(t1)
+      t1 = t_time()
       call timereg(t_gasupd,t1-t0)
 c
       end subroutine gas_update

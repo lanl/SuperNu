@@ -76,7 +76,7 @@ subroutine particle_advance
   grd_methodswap = 0
   grd_numcensus = 0
 
-  call time(t0)
+  t0 = t_time()
   ! Propagating all particles that are not considered vacant: loop
   npckt = 0
   nddmc = 0
@@ -743,7 +743,7 @@ subroutine particle_advance
 
   enddo !ipart
 
-  call time(t1)
+  t1 = t_time()
   t_pckt_stat = t1-t0  !register timing
   call timereg(t_pcktnpckt, dble(npckt))
   call timereg(t_pcktnddmc, dble(nddmc))

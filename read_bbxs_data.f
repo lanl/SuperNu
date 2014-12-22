@@ -42,7 +42,7 @@ c-- allocate permanent storage space for line data
       n = int(sizeof(bb_xs)/1024) !kB
       write(6,*) 'ALLOC bb_xs    :',n,"kB",n/1024,"MB",n/1024**2,"GB"
 c
-      call time(t0)
+      t0 = t_time()
       ilinall = 0
       do iz=1,nelem
        do ii=1,min(iz,ion_el(iz)%ni - 1) !last stage is bare nucleus
@@ -85,7 +85,7 @@ c
 c-- sort lines - doesn't speed-up bb opacity.
       call sort_lines
 c
-      call time(t1)
+      t1 = t_time()
 !     write(6,'(a,f8.2,a)') ' time used for bbxs reading:',t1-t0,'s'
 
       end subroutine read_bbxs_data

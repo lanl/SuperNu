@@ -17,7 +17,7 @@ subroutine emission_probability
   real*8 :: help
   real*8 :: specarr(grp_ng)
 
-  call time(t0)
+  t0 = t_time()
 
 !-- grouped volume emission probabilities:
   if(in_opacanaltype=='pick') then
@@ -60,7 +60,7 @@ subroutine emission_probability
   enddo !j
   enddo !k
 
-  call time(t1)
+  t1 = t_time()
   call timereg(t_emitp,t1-t0)
 
 end subroutine emission_probability

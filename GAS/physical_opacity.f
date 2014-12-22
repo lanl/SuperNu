@@ -57,7 +57,7 @@ c-- thomson scattering
        gas_sig = cthomson*gas_nelec*gas_natom/gas_vol
       endif
 c
-      call time(t0)
+      t0 = t_time()
 c
 c-- bound-bound
       if(.not. in_nobbopac) then
@@ -125,7 +125,7 @@ c$omp end parallel
 c!}}}
       endif !in_nobbopac
 c
-      call time(t1)
+      t1 = t_time()
 c
 c-- bound-free
       if(.not. in_nobfopac) then
@@ -162,7 +162,7 @@ c$omp end parallel do
 c!}}}
       endif !in_nobfopac
 c
-      call time(t2)
+      t2 = t_time()
 c
 c-- free-free
       if(.not. in_noffopac) then
@@ -223,7 +223,7 @@ c$omp end parallel do
 c!}}}
       endif !in_noffopac
 c
-      call time(t3)
+      t3 = t_time()
 c
       gas_cap = transpose(sngl(cap))
 c
@@ -241,7 +241,7 @@ c-- sanity check
       if(m/=iand(m,2)) call warn('opacity_calc','some cap==NaN')
       if(m/=iand(m,4)) call warn('opacity_calc','some cap==inf')
 c
-      call time(t4)
+      t4 = t_time()
 c-- register timing
       call timereg(t_opac,t4-t0)
       call timereg(t_bb,t1-t0)

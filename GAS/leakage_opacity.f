@@ -8,7 +8,7 @@ c     --------------------------
 ************************************************************************
       real*8 :: t0,t1
 c
-      call time(t0)
+      t0 = t_time()
 c
       select case(grd_igeom)
       case(1)
@@ -23,7 +23,7 @@ c
          stop 'leakage_opacity: invalid igeom'
       endselect
 c
-      call time(t1)
+      t1 = t_time()
       call timereg(t_opacleak,t1-t0) 
 c
       end subroutine leakage_opacity

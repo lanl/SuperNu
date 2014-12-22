@@ -159,14 +159,14 @@ c
 c
 c
 c
-      subroutine time(t)
+      function t_time()
 c     ------------------!{{{
       implicit none
-      real*8,intent(out) :: t
+      real*8 :: t_time
 ************************************************************************
 * Determine system time in seconds since some point in history.
 * Note that the result is a single precision real, corresponding to the
-* cpu_time() FORTRAN 95 intrinsic.
+* cpu_t_time() FORTRAN 95 intrinsic.
 ************************************************************************
       integer :: icount,irate
 c
@@ -177,10 +177,10 @@ c
        call system_clock(icount)
       endif
 c
-      t = icount*tick
-      if(icount<icount_prev) t = t + tick*imax
+      t_time = icount*tick
+      if(icount<icount_prev) t_time = t_time + tick*imax
       icount_prev = icount
 c!}}}
-      end subroutine time
+      end function t_time
 c
       end module timingmod

@@ -104,7 +104,7 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- default, in case .not.grd_isvelocity
   cmffact = 1d0
 
-  call time(t0)
+  t0 = t_time()
 
   iimpi = 0
   do k=1,grd_nz
@@ -393,7 +393,7 @@ subroutine particle_advance_gamgrey(nmpi)
   enddo !j
   enddo !k
 
-  call time(t1)
+  t1 = t_time()
   call timereg(t_pcktgam, t1-t0)
 
 end subroutine particle_advance_gamgrey

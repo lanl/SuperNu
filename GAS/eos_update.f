@@ -16,7 +16,7 @@ c     --------------------------------
       real*8 :: pdens(ion_nion,gas_ncell)
 c
 c-- loop over all gas_vals cells
-      call time(t0)
+      t0 = t_time()
       do i=1,gas_ncell
        if(gas_void(i)) cycle
        ndens = gas_natom(i)/gas_vol(i) !atom number density
@@ -47,7 +47,7 @@ c-- store partial densities
        endif
 c
       enddo !ix
-      call time(t1)
+      t1 = t_time()
       call timereg(t_eos, t1-t0)
 c
 c
