@@ -32,7 +32,7 @@ subroutine transport1(ptcl,ig,isvacant)
   real*8 :: r1,r2
 
   integer :: iynext,iznext
-  real*8 :: yhelp1,yhelp2,yhelp3,dby1,dby2
+  real*8 :: yhelp1,yhelp2,dby1,dby2
   real*8 :: zhelp1,zhelp2,dbz1,dbz2
   real*8 :: xold,yold,muold
 
@@ -63,8 +63,8 @@ subroutine transport1(ptcl,ig,isvacant)
 !-- shortcut
   dtinv = 1d0/tsp_dt
 !-- spherical projections
-  eta = sqrt(1d0-mu**2)*sin(om)
-  xi = sqrt(1d0-mu**2)*cos(om)
+  eta = sqrt(1d0-mu**2)*cos(om)
+  xi = sqrt(1d0-mu**2)*sin(om)
 !-- planar projections (invariant until collision)
   mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
   muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
@@ -98,39 +98,43 @@ subroutine transport1(ptcl,ig,isvacant)
   if(dbx/=dbx) stop 'transport1: dbx/=dbx'
 !
 !-- polar boundary distance (y)
-  yhelp1 = y**2-(1d0-mu**2)*grd_yarr(iy)**2-2d0*muz*mu*y+muz**2
-  yhelp2 = y**2-(1d0-mu**2)*grd_yarr(iy+1)**2-2d0*muz*mu*y+muz**2
-  if(yhelp1<0d0.and.yhelp2<0d0) then
-     dby = 2d0*pc_c*tsp_dt*thelpinv
-  elseif(yhelp1>=0d0) then
-!-- iy->iy-1
-     yhelp1 = sqrt(yhelp1)
-     yhelp3 = grd_yarr(iy)**2-muz**2
-     if(yhelp3==0d0) then
+  if(muz>=0d0) then
+     yhelp1 = y**2-(1d0-mu**2)*grd_yarr(iy+1)**2-2d0*muz*mu*y+muz**2
+     if(yhelp1<0d0) then
         dby = 2d0*pc_c*tsp_dt*thelpinv
      else
-        yhelp3=1d0/yhelp3
-        dby1 = x*(muz*y-mu*grd_yarr(iy)**2-grd_yarr(iy)*yhelp1)*yhelp3
-        dby2 = x*(muz*y-mu*grd_yarr(iy)**2+grd_yarr(iy)*yhelp1)*yhelp3
-        if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
-        if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
-        dby = min(dby1,dby2)
-        iynext = iy-1
+        yhelp1 = sqrt(yhelp1)
+        yhelp2 = grd_yarr(iy+1)**2-muz**2
+        if(yhelp2==0d0) then
+           dby = 2d0*pc_c*tsp_dt*thelpinv
+        else
+           yhelp2=1d0/yhelp2
+           dby1 = x*(muz*y-mu*grd_yarr(iy+1)**2-grd_yarr(iy+1)*yhelp1)*yhelp2
+           dby2 = x*(muz*y-mu*grd_yarr(iy+1)**2+grd_yarr(iy+1)*yhelp1)*yhelp2
+           if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
+           if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
+           dby = min(dby1,dby2)
+           iynext = iy+1
+        endif
      endif
   else
-!-- iy->iy+1
-     yhelp2 = sqrt(yhelp2)
-     yhelp3 = grd_yarr(iy+1)**2-muz**2
-     if(yhelp3==0d0) then
+     yhelp1 = y**2-(1d0-mu**2)*grd_yarr(iy)**2-2d0*muz*mu*y+muz**2
+     if(yhelp1<0d0) then
         dby = 2d0*pc_c*tsp_dt*thelpinv
      else
-        yhelp3=1d0/yhelp3
-        dby1 = x*(muz*y-mu*grd_yarr(iy+1)**2-grd_yarr(iy+1)*yhelp2)*yhelp3
-        dby2 = x*(muz*y-mu*grd_yarr(iy+1)**2+grd_yarr(iy+1)*yhelp2)*yhelp3
-        if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
-        if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
-        dby = min(dby1,dby2)
-        iynext = iy+1
+        yhelp1 = sqrt(yhelp1)
+        yhelp2 = grd_yarr(iy)**2-muz**2
+        if(yhelp2==0d0) then
+           dby = 2d0*pc_c*tsp_dt*thelpinv
+        else
+           yhelp2=1d0/yhelp2
+           dby1 = x*(muz*y-mu*grd_yarr(iy)**2-grd_yarr(iy)*yhelp1)*yhelp2
+           dby2 = x*(muz*y-mu*grd_yarr(iy)**2+grd_yarr(iy)*yhelp1)*yhelp2
+           if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
+           if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
+           dby = min(dby1,dby2)
+           iynext = iy-1
+        endif
      endif
   endif
 
@@ -457,6 +461,8 @@ subroutine transport1(ptcl,ig,isvacant)
         y=grd_yarr(iy+1)
      else
 !-- sanity check
+        write(*,*) dby
+        write(*,*) y,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
         stop 'transport1: invalid polar bound crossing'
      endif
 
@@ -470,7 +476,7 @@ subroutine transport1(ptcl,ig,isvacant)
         if(grd_isvelocity) then
 !-- transforming y-cosine to cmf
            mu=(mu-x*cinv)/(1d0-x*mu*cinv)
-           eta = sqrt(1d0-mu**2)*sin(om)
+           eta = sqrt(1d0-mu**2)*cos(om)
         endif
         help = (grd_cap(ig,ix,iynext,iz)+grd_sig(ix,iynext,iz)) * &
              xm(ix)*dyac(iynext)*thelp
@@ -511,10 +517,8 @@ subroutine transport1(ptcl,ig,isvacant)
 !-- sanity check
      if(grd_nz==1) stop 'transport1: invalid z crossing'
      if(iznext==grd_nz.and.iz==1) then
-!-- not transitioning yet to z=2pi
         z=pc_pi2
      elseif(iznext==1.and.iz==grd_nz) then
-!-- not transitioning yet to z=0
         z=0d0
      elseif(iznext==iz-1) then
         z=grd_zarr(iz)
@@ -533,7 +537,7 @@ subroutine transport1(ptcl,ig,isvacant)
         if(grd_isvelocity) then
 !-- transforming z-cosine to cmf
            mu = (mu-x*cinv)/elabfact
-           xi = sqrt(1d0-mu**2)*cos(om)
+           xi = sqrt(1d0-mu**2)*sin(om)
         endif
         help = (grd_cap(ig,ix,iy,iznext)+grd_sig(ix,iy,iznext)) * &
              xm(ix)*ym(iy)*dz(iznext)*thelp
@@ -562,14 +566,20 @@ subroutine transport1(ptcl,ig,isvacant)
               xi = max(r1,r2)
            endif
            r1 = rnd_r(rnd_state)
-           eta = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
+           eta = sqrt(1d0-xi**2)*cos(pc_pi2*r1)
 !-- resampling x-cosine
-           mu = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
+           mu = sqrt(1d0-xi**2)*sin(pc_pi2*r1)
 !-- resampling azimuthal
            om = atan2(xi,eta)
            if(om<0d0) om=om+pc_pi2
 !-- transforming mu to lab
            if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
+!-- reverting z
+           if(iznext==grd_nz.and.iz==1) then
+              z=0d0
+           elseif(iznext==1.and.iz==grd_nz) then
+              z=pc_pi2
+           endif
         endif
      endif
 

@@ -44,8 +44,8 @@ subroutine transport1_gamgrey(ptcl)
   e0 => ptcl%e0
 
 !-- spherical projections
-  eta = sqrt(1d0-mu**2)*sin(om)
-  xi = sqrt(1d0-mu**2)*cos(om)
+  eta = sqrt(1d0-mu**2)*cos(om)
+  xi = sqrt(1d0-mu**2)*sin(om)
 !-- planar projections (invariant until collision)
   mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
   muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)

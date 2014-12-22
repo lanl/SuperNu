@@ -575,8 +575,8 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
            prt_done = .true.
            tot_eout = tot_eout+e
 !-- luminosity tally
-           eta = sqrt(1d0-mu**2)*sin(om)
-           xi = sqrt(1d0-mu**2)*cos(om)
+           eta = sqrt(1d0-mu**2)*cos(om)
+           xi = sqrt(1d0-mu**2)*sin(om)
            mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
            muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
            muz = mu*y-eta*sqrt(1d0-y**2)
