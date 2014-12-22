@@ -99,42 +99,26 @@ subroutine transport1(ptcl,ig,isvacant)
 !
 !-- polar boundary distance (y)
   if(muz>=0d0) then
-     yhelp1 = y**2-(1d0-mu**2)*grd_yarr(iy+1)**2-2d0*muz*mu*y+muz**2
-     if(yhelp1<0d0) then
-        dby = 2d0*pc_c*tsp_dt*thelpinv
-     else
-        yhelp1 = sqrt(yhelp1)
-        yhelp2 = grd_yarr(iy+1)**2-muz**2
-        if(yhelp2==0d0) then
-           dby = 2d0*pc_c*tsp_dt*thelpinv
-        else
-           yhelp2=1d0/yhelp2
-           dby1 = x*(muz*y-mu*grd_yarr(iy+1)**2-grd_yarr(iy+1)*yhelp1)*yhelp2
-           dby2 = x*(muz*y-mu*grd_yarr(iy+1)**2+grd_yarr(iy+1)*yhelp1)*yhelp2
-           if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
-           if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
-           dby = min(dby1,dby2)
-           iynext = iy+1
-        endif
-     endif
+     iynext=iy+1
   else
-     yhelp1 = y**2-(1d0-mu**2)*grd_yarr(iy)**2-2d0*muz*mu*y+muz**2
-     if(yhelp1<0d0) then
+     iynext=iy-1
+  endif
+  ihelp = max(iy,iynext)
+  yhelp1 = y**2-(1d0-mu**2)*grd_yarr(ihelp)**2-2d0*muz*mu*y+muz**2
+  if(yhelp1<0d0) then
+     dby = 2d0*pc_c*tsp_dt*thelpinv
+  else
+     yhelp1 = sqrt(yhelp1)
+     yhelp2 = grd_yarr(ihelp)**2-muz**2
+     if(yhelp2==0d0) then
         dby = 2d0*pc_c*tsp_dt*thelpinv
      else
-        yhelp1 = sqrt(yhelp1)
-        yhelp2 = grd_yarr(iy)**2-muz**2
-        if(yhelp2==0d0) then
-           dby = 2d0*pc_c*tsp_dt*thelpinv
-        else
-           yhelp2=1d0/yhelp2
-           dby1 = x*(muz*y-mu*grd_yarr(iy)**2-grd_yarr(iy)*yhelp1)*yhelp2
-           dby2 = x*(muz*y-mu*grd_yarr(iy)**2+grd_yarr(iy)*yhelp1)*yhelp2
-           if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
-           if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
-           dby = min(dby1,dby2)
-           iynext = iy-1
-        endif
+        yhelp2=1d0/yhelp2
+        dby1 = x*(muz*y-mu*grd_yarr(ihelp)**2-grd_yarr(ihelp)*yhelp1)*yhelp2
+        dby2 = x*(muz*y-mu*grd_yarr(ihelp)**2+grd_yarr(ihelp)*yhelp1)*yhelp2
+        if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
+        if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
+        dby = min(dby1,dby2)
      endif
   endif
 

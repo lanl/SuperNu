@@ -19,13 +19,13 @@ subroutine transport1_gamgrey(ptcl)
   real*8,parameter :: cinv = 1d0/pc_c
   real*8,parameter :: dt = pc_year !give grey transport infinite time
 !
-  integer :: imu, iom
+  integer :: imu, iom, ihelp
   real*8 :: elabfact, eta, xi, mux,muy,muz
   real*8 :: r1, thelp,thelpinv, help
   real*8 :: dcol,dbx,dby,dbz,d
 
   integer :: iynext,iznext
-  real*8 :: yhelp1,yhelp2,yhelp3,dby1,dby2
+  real*8 :: yhelp1,yhelp2,dby1,dby2
   real*8 :: zhelp1,zhelp2,dbz1,dbz2
   real*8 :: xold,yold,muold
 
@@ -74,39 +74,27 @@ subroutine transport1_gamgrey(ptcl)
   if(dbx/=dbx) stop 'transport1: dbx/=dbx'
 !
 !-- polar boundary distance (y)
-  yhelp1 = y**2-(1d0-mu**2)*grd_yarr(iy)**2-2d0*muz*mu*y+muz**2
-  yhelp2 = y**2-(1d0-mu**2)*grd_yarr(iy+1)**2-2d0*muz*mu*y+muz**2
-  if(yhelp1<0d0.and.yhelp2<0d0) then
-     dby = 2d0*pc_c*tsp_dt*thelpinv
-  elseif(yhelp1>=0d0) then
-!-- iy->iy-1
-     yhelp1 = sqrt(yhelp1)
-     yhelp3 = grd_yarr(iy)**2-muz**2
-     if(yhelp3==0d0) then
-        dby = 2d0*pc_c*tsp_dt*thelpinv
-     else
-        yhelp3=1d0/yhelp3
-        dby1 = x*(muz*y-mu*grd_yarr(iy)**2-grd_yarr(iy)*yhelp1)*yhelp3
-        dby2 = x*(muz*y-mu*grd_yarr(iy)**2+grd_yarr(iy)*yhelp1)*yhelp3
-        if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
-        if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
-        dby = min(dby1,dby2)
-        iynext = iy-1
-     endif
+  if(muz>=0d0) then
+     iynext=iy+1
   else
-!-- iy->iy+1
-     yhelp2 = sqrt(yhelp2)
-     yhelp3 = grd_yarr(iy+1)**2-muz**2
-     if(yhelp3==0d0) then
+     iynext=iy-1
+  endif
+  ihelp = max(iy,iynext)
+  yhelp1 = y**2-(1d0-mu**2)*grd_yarr(ihelp)**2-2d0*muz*mu*y+muz**2
+  if(yhelp1<0d0) then
+     dby = 2d0*pc_c*tsp_dt*thelpinv
+  else
+     yhelp1 = sqrt(yhelp1)
+     yhelp2 = grd_yarr(ihelp)**2-muz**2
+     if(yhelp2==0d0) then
         dby = 2d0*pc_c*tsp_dt*thelpinv
      else
-        yhelp3=1d0/yhelp3
-        dby1 = x*(muz*y-mu*grd_yarr(iy+1)**2-grd_yarr(iy+1)*yhelp2)*yhelp3
-        dby2 = x*(muz*y-mu*grd_yarr(iy+1)**2+grd_yarr(iy+1)*yhelp2)*yhelp3
+        yhelp2=1d0/yhelp2
+        dby1 = x*(muz*y-mu*grd_yarr(ihelp)**2-grd_yarr(ihelp)*yhelp1)*yhelp2
+        dby2 = x*(muz*y-mu*grd_yarr(ihelp)**2+grd_yarr(ihelp)*yhelp1)*yhelp2
         if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
         if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
         dby = min(dby1,dby2)
-        iynext = iy+1
      endif
   endif
 
