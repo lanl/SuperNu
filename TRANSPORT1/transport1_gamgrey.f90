@@ -96,7 +96,7 @@ subroutine transport1_gamgrey(ptcl)
   else
 !-- iy->iy+1
      yhelp2 = sqrt(yhelp2)
-     yhelp3 = grd_yarr(iy)**2-muz**2
+     yhelp3 = grd_yarr(iy+1)**2-muz**2
      if(yhelp3==0d0) then
         dby = 2d0*pc_c*tsp_dt*thelpinv
      else
@@ -243,11 +243,9 @@ subroutine transport1_gamgrey(ptcl)
 !-- sanity check
      if(grd_nz==1) stop 'transport1_gamgrey: invalid z crossing'
      if(iznext==grd_nz.and.iz==1) then
-!-- not transitioning yet to z=2pi
-        z=0d0
-     elseif(iznext==1.and.iz==grd_nz) then
-!-- not transitioning yet to z=0
         z=pc_pi2
+     elseif(iznext==1.and.iz==grd_nz) then
+        z=0d0
      elseif(iznext==iz-1) then
         z=grd_zarr(iz)
      else

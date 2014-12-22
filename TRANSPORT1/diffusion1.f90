@@ -374,7 +374,7 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
 
 !-- leakage probabilities
   probleak = opacleak*help
-
+!  write(*,*) probleak
 !-- absorption probability
   if(prt_isddmcanlog) then
      pa = grd_fcoef(ix,iy,iz)*caplump*help
