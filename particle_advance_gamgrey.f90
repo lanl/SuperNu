@@ -265,13 +265,23 @@ subroutine particle_advance_gamgrey(nmpi)
      prt_done=.false.
 !
      select case(in_igeom)
-     case(1,11)
+     case(1)
         do while (.not.prt_done)!{{{
-           call transport11_gamgrey(ptcl)
+           call transport1_gamgrey(ptcl)
 !-- verify position
-           if(.not.prt_done .and. (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
-              write(0,*) 'prt_adv_ggrey: not in cell', &
-                 ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
+           if(.not.prt_done) then
+              if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
+                write(0,*) 'prt_adv_ggrey: x not in cell', &
+                   ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
+              endif
+              if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
+                write(0,*) 'prt_adv_ggrey: y not in cell', &
+                   iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
+              endif
+              if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
+                 write(0,*) 'prt_adv_ggrey: z not in cell', &
+                   iz,z,grd_zarr(iz),grd_zarr(iz+1),mu
+              endif
            endif
 !-- transformation factor
            if(grd_isvelocity) then
@@ -333,6 +343,33 @@ subroutine particle_advance_gamgrey(nmpi)
            if(grd_isvelocity) then
               labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &
                    (cos(om)*x+sin(om)*y))/pc_c
+           else
+              labfact = 1d0
+           endif
+!-- Russian roulette for termination of exhausted particles
+           if (e<1d-6*e0 .and. .not.prt_done) then
+              r1 = rnd_r(rnd_state)
+              prt_tlyrand = prt_tlyrand+1
+              if(r1<0.5d0) then
+                 prt_done = .true.
+                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
+              else
+                 e = 2d0*e
+                 e0 = 2d0*e0
+              endif
+           endif
+        enddo!}}}
+     case(11)
+        do while (.not.prt_done)!{{{
+           call transport11_gamgrey(ptcl)
+!-- verify position
+           if(.not.prt_done .and. (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
+              write(0,*) 'prt_adv_ggrey: not in cell', &
+                 ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
+           endif
+!-- transformation factor
+           if(grd_isvelocity) then
+              labfact = 1.0d0 - mu*x/pc_c
            else
               labfact = 1d0
            endif
