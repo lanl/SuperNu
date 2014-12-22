@@ -488,7 +488,7 @@ subroutine particle_advance
               call transport1(ptcl,ig,isvacant)
            else
               nddmc = nddmc + 1
-              call diffusion11(ptcl,ig,isvacant,icell,specarr)
+              call diffusion1(ptcl,ig,isvacant,icell,specarr)
            endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done) then

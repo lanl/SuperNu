@@ -491,9 +491,13 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
            iiig = glumps(iig)
            specig = specarr(iiig)
 !-- calculating resolved leakage opacities
-           lhelp = (grd_cap(iiig,ix+1,iy,iz)+grd_sig(ix+1,iy,iz)) * &
+           if(ix==grd_nx) then
+              lhelp = .true.
+           else
+              lhelp = (grd_cap(iiig,ix+1,iy,iz)+grd_sig(ix+1,iy,iz)) * &
                    min(dx(ix+1),xm(ix+1)*dyac(iy),xm(ix+1)*ym(iy) * &
                    dz(iz))*thelp<prt_tauddmc
+           endif
            if(lhelp) then
 !-- DDMC interface
               mfphelp = (grd_cap(iiig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
