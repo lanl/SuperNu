@@ -1009,8 +1009,76 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
 
 !-- effective scattering
   else
+!
+     if(glump==grp_ng) stop 'diffusion1: effective scattering with glump==ng'
+!
+     r1 = rnd_r(rnd_state)
+
+     if(glump==0) then
+        iiig = emitgroup(r1,ix,iy,iz)
+     else
+        denom3 = 0d0
+        denom2 = 1d0-emitlump
+        denom2 = 1d0/denom2
+        do iig = glump+1,grp_ng
+           iiig=glumps(iig)
+           if(all(icell==[ix,iy,iz])) then
+              help = specarr(iiig)*grd_cap(iiig,ix,iy,iz)*capgreyinv
+           else
+              help = specint0(tempinv,iiig)*grd_cap(iiig,ix,iy,iz)*capgreyinv
+           endif
+           denom3 = denom3 + help*denom2
+           if(denom3>r1) exit
+        enddo
+     endif
+!
+     ig = iiig
+     r1 = rnd_r(rnd_state)
+     wl = 1d0/((1d0-r1)*grp_wlinv(ig) + r1*grp_wlinv(ig+1))
+
+     if((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz)) * &
+          min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) &
+          *thelp < prt_tauddmc) then
+        ptcl%itype = 1
+        grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+!-- direction sampled isotropically           
+        r1 = rnd_r(rnd_state)
+        mu = 1d0 - 2d0*r1
+        r1 = rnd_r(rnd_state)
+        om = pc_pi2*r1
+!-- position sampled uniformly
+        r1 = rnd_r(rnd_state)
+        x = (r1*grd_xarr(ix+1)**3+(1d0-r1)*grd_xarr(ix)**3)**(1d0/3d0)
+        r1 = rnd_r(rnd_state)
+        y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
+        r1 = rnd_r(rnd_state)
+        z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
+!-- must be inside cell
+        x = min(x,grd_xarr(ix+1))
+        x = max(x,grd_xarr(ix))
+        y = min(y,grd_yarr(iy+1))
+        y = max(y,grd_yarr(iy))
+        z = min(z,grd_zarr(iz+1))
+        z = max(z,grd_zarr(iz))
+!-- doppler and aberration corrections
+        if(grd_isvelocity) then
+!-- calculating transformation factors
+           elabfact = 1d0+mu*x*cinv
+           mu = (mu+x*cinv)/elabfact
+!-- ELABFACT LAB RESET
+           elabfact=1d0-mu*x*cinv
+           help = 1d0/elabfact
+!-- transforming wl to lab
+           wl = wl*elabfact
+!-- velocity effects accounting
+           tot_evelo=tot_evelo+e*(1d0-help)
+!
+!-- transforming energy weights to lab
+           e = e*help
+           e0 = e0*help
+        endif
+     endif
 
   endif
-
 
 end subroutine diffusion1
