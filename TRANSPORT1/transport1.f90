@@ -123,7 +123,7 @@ subroutine transport1(ptcl,ig,isvacant)
   endif
 
 !-- azimuthal boundary distance (z)
-  if(xi==0d0) then
+  if(xi==0d0.or.grd_nz==1) then
      dbz = 2d0*pc_c*tsp_dt*thelpinv
   elseif(xi>0d0) then
 !-- counterclockwise
@@ -409,6 +409,8 @@ subroutine transport1(ptcl,ig,isvacant)
         r1 = rnd_r(rnd_state)
         if(r1<help*(1d0+1.5d0*abs(mu))) then
            if(grd_isvelocity) then
+              ptcl%itype = 2
+              grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
 !-- velocity effects accounting
               tot_evelo=tot_evelo+e*(1d0-elabfact)
 !
