@@ -33,7 +33,7 @@ subroutine transport1(ptcl,ig,isvacant)
 
   integer :: iynext,iznext
   real*8 :: yhelp1,yhelp2,dby1,dby2
-  real*8 :: zhelp1,zhelp2,dbz1,dbz2
+  real*8 :: zhelp
   real*8 :: xold,yold,muold
 
   integer,pointer :: ix,iy,iz
@@ -123,34 +123,29 @@ subroutine transport1(ptcl,ig,isvacant)
   endif
 
 !-- azimuthal boundary distance (z)
-  if(grd_nz==1) then
+  if(xi==0d0) then
      dbz = 2d0*pc_c*tsp_dt*thelpinv
+  elseif(xi>0d0) then
+!-- counterclockwise
+     iznext=iz+1
+     if(iznext==grd_nz+1) iznext=1
+     zhelp = muy*cos(grd_zarr(iz+1))-mux*sin(grd_zarr(iz+1))
+     if(zhelp==0d0) then
+        dbz = 2d0*pc_c*tsp_dt*thelpinv
+     else
+        dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz+1)-z)/zhelp
+        if(dbz<0d0) dbz = 2d0*pc_c*tsp_dt*thelpinv
+     endif
   else
-     zhelp1 = muy*cos(grd_zarr(iz))-mux*sin(grd_zarr(iz))
-     if(zhelp1==0d0) then
-        dbz1=2d0*pc_c*tsp_dt*thelpinv
+!-- clockwise
+     iznext=iz-1
+     if(iznext==0) iznext=grd_nz
+     zhelp = muy*cos(grd_zarr(iz))-mux*sin(grd_zarr(iz))
+     if(zhelp==0d0) then
+        dbz = 2d0*pc_c*tsp_dt*thelpinv
      else
-        zhelp1=1d0/zhelp1
-!-- dbz1: iz->iz-1
-        dbz1 = x*sqrt(1d0-y**2)*sin(grd_zarr(iz)-z)*zhelp1
-        if(dbz1<0d0) dbz1=2d0*pc_c*tsp_dt*thelpinv
-     endif
-     zhelp2 = muy*cos(grd_zarr(iz+1))-mux*sin(grd_zarr(iz+1))
-     if(zhelp2==0d0) then
-        dbz2=2d0*pc_c*tsp_dt*thelpinv
-     else
-        zhelp2=1d0/zhelp2
-!-- dbz1: iz->iz+1
-        dbz2 = x*sqrt(1d0-y**2)*sin(grd_zarr(iz+1)-z)*zhelp2
-        if(dbz2<0d0) dbz2=2d0*pc_c*tsp_dt*thelpinv
-     endif
-     dbz = min(dbz1,dbz2)
-     if(dbz==dbz1) then
-        iznext=iz-1
-        if(iznext==0) iznext=grd_nz
-     else
-        iznext=iz+1
-        if(iznext==grd_nz+1) iznext=1
+        dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz)-z)/zhelp
+        if(dbz<0d0) dbz = 2d0*pc_c*tsp_dt*thelpinv
      endif
   endif
 
