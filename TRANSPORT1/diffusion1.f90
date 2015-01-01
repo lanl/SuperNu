@@ -374,7 +374,7 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
 
 !-- leakage probabilities
   probleak = opacleak*help
-
+!  write(*,*) probleak
 !-- absorption probability
   if(prt_isddmcanlog) then
      pa = grd_fcoef(ix,iy,iz)*caplump*help
@@ -573,10 +573,9 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
 !-- escaping at ix=nx
            isvacant = .true.
            prt_done = .true.
-           tot_eout = tot_eout+e
 !-- luminosity tally
-           eta = sqrt(1d0-mu**2)*sin(om)
-           xi = sqrt(1d0-mu**2)*cos(om)
+           eta = sqrt(1d0-mu**2)*cos(om)
+           xi = sqrt(1d0-mu**2)*sin(om)
            mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
            muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
            muz = mu*y-eta*sqrt(1d0-y**2)
@@ -710,7 +709,7 @@ subroutine diffusion1(ptcl,ig,isvacant,icell,specarr)
 !-- iy->iy+1 leakage
   elseif(r1>=pa+sum(probleak(1:3)).and.r1<pa+sum(probleak(1:4))) then
 !-- sanity check
-     if(grd_ny==grd_ny) stop 'diffusion1: probleak(4) and grd_ny=1'
+     if(grd_ny==1) stop 'diffusion1: probleak(4) and grd_ny=1'
      if(iy==grd_ny) stop 'diffusion1: invalid probleak(4)'
 
 !-- sampling next group
