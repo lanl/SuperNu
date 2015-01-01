@@ -31,10 +31,10 @@ subroutine transport1(ptcl,ig,isvacant)
   real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop,d
   real*8 :: r1,r2
 
-  integer :: iynext,iznext
-  real*8 :: yhelp1,yhelp2,dby1,dby2
+  integer :: iynext,iznext,iyold
+  real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
   real*8 :: zhelp
-  real*8 :: xold,yold,muold
+  real*8 :: xold,yold,muold,dbyold,etaold
 
   integer,pointer :: ix,iy,iz
   real*8,pointer :: x,y,z,mu,om,e,e0,wl
@@ -69,6 +69,9 @@ subroutine transport1(ptcl,ig,isvacant)
   mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
   muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
   muz = mu*y-eta*sqrt(1d0-y**2)
+
+  etaold=eta
+  dbyold=dby
 !
 !-- setting vel-grid helper variables
   if(grd_isvelocity) then
@@ -98,29 +101,102 @@ subroutine transport1(ptcl,ig,isvacant)
   if(dbx/=dbx) stop 'transport1: dbx/=dbx'
 !
 !-- polar boundary distance (y)
-  if(muz>=0d0) then
-     iynext=iy+1
-  else
-     iynext=iy-1
-  endif
-  ihelp = max(iy,iynext)
-  yhelp1 = y**2-(1d0-mu**2)*grd_yarr(ihelp)**2-2d0*muz*mu*y+muz**2
-  if(yhelp1<0d0) then
-     dby = 2d0*pc_c*tsp_dt*thelpinv
-  else
-     yhelp1 = sqrt(yhelp1)
-     yhelp2 = grd_yarr(ihelp)**2-muz**2
+  yhelp1=grd_yarr(iy)**2-muz**2
+  yhelp2=mu*grd_yarr(iy)**2-muz*y
+  yhelp3=grd_yarr(iy)**2-y**2
+  if(yhelp1==0d0.and.yhelp3==0d0) then
+     dby1 = 2d0*pc_c*tsp_dt*thelpinv
+  elseif(yhelp1==0d0) then
      if(yhelp2==0d0) then
-        dby = 2d0*pc_c*tsp_dt*thelpinv
+        dby1 = 2d0*pc_c*tsp_dt*thelpinv
      else
-        yhelp2=1d0/yhelp2
-        dby1 = x*(muz*y-mu*grd_yarr(ihelp)**2-grd_yarr(ihelp)*yhelp1)*yhelp2
-        dby2 = x*(muz*y-mu*grd_yarr(ihelp)**2+grd_yarr(ihelp)*yhelp1)*yhelp2
+        dby1=-0.5*x*yhelp3/yhelp2
+     endif
+  elseif(yhelp3==0d0) then
+     if(y==grd_yarr(iy)) then
+        dby1=0d0
+     else
+        dby1=-2d0*x*yhelp2/yhelp1
+     endif
+  else
+     yhelp4=yhelp2**2-yhelp1*yhelp3
+     if(yhelp4<0d0) then
+        dby1 = 2d0*pc_c*tsp_dt*thelpinv
+     else
+        yhelp4=sqrt(yhelp4)
+        yhelp1=1d0/yhelp1
+        help=x*(-yhelp2+yhelp4)*yhelp1
+        dby1=x*(-yhelp2-yhelp4)*yhelp1
+        if(help<0d0) help=2d0*pc_c*tsp_dt*thelpinv
         if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
-        if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
-        dby = min(dby1,dby2)
+        dby1=min(help,dby1)
      endif
   endif
+  if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
+
+  yhelp1=grd_yarr(iy+1)**2-muz**2
+  yhelp2=mu*grd_yarr(iy+1)**2-muz*y
+  yhelp3=grd_yarr(iy+1)**2-y**2
+  if(yhelp1==0d0.and.yhelp3==0d0) then
+     dby2 = 2d0*pc_c*tsp_dt*thelpinv
+  elseif(yhelp1==0d0) then
+     if(yhelp2==0d0) then
+        dby2 = 2d0*pc_c*tsp_dt*thelpinv
+     else
+        dby2=-0.5*x*yhelp3/yhelp2
+     endif
+  elseif(yhelp3==0d0) then
+     if(y==grd_yarr(iy+1)) then
+        dby2=0d0
+     else
+        dby2=-2d0*x*yhelp2/yhelp1
+     endif
+  else
+     yhelp4=yhelp2**2-yhelp1*yhelp3
+     if(yhelp4<0d0) then
+        dby2 = 2d0*pc_c*tsp_dt*thelpinv
+     else
+        yhelp4=sqrt(yhelp4)
+        yhelp1=1d0/yhelp1
+        help=x*(-yhelp2+yhelp4)*yhelp1
+        dby2=x*(-yhelp2-yhelp4)*yhelp1
+        if(help<0d0) help=2d0*pc_c*tsp_dt*thelpinv
+        if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
+        dby2=min(help,dby2)
+     endif
+  endif
+  if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
+
+  dby=min(dby1,dby2)
+  if(dby==dby1) then
+     iynext=iy-1
+  else
+     iynext=iy+1
+  endif
+
+  ! if(muz>=0d0) then
+  !    iynext=iy+1
+  ! else
+  !    iynext=iy-1
+  ! endif
+  ! ihelp = max(iy,iynext)
+  ! yhelp1 = y**2-(1d0-mu**2)*grd_yarr(ihelp)**2-2d0*muz*mu*y+muz**2
+  ! if(yhelp1<0d0) then
+  !    dby = 2d0*pc_c*tsp_dt*thelpinv
+  ! else
+  !    yhelp1 = sqrt(yhelp1)
+  !    yhelp2 = grd_yarr(ihelp)**2-muz**2
+  !    if(yhelp2==0d0) then
+  !       dby = 2d0*pc_c*tsp_dt*thelpinv
+  !    else
+  !       yhelp2=1d0/yhelp2
+  !       dby1 = x*(muz*y-mu*grd_yarr(ihelp)**2-grd_yarr(ihelp)*yhelp1)*yhelp2
+  !       dby2 = x*(muz*y-mu*grd_yarr(ihelp)**2+grd_yarr(ihelp)*yhelp1)*yhelp2
+  !       if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
+  !       if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
+  !       dby = min(dby1,dby2)
+  !    endif
+  ! endif
 
 !-- azimuthal boundary distance (z)
   if(xi==0d0.or.grd_nz==1) then
@@ -202,6 +278,7 @@ subroutine transport1(ptcl,ig,isvacant)
 !-- updating polar projection of position
   yold = y
   if(x/=0d0) y = (xold*yold+muz*d)/x
+!  if(d==dby) write(*,*) 'dbx: ',dbx,'dby: ',dby,'yold: ',yold,'y: ',y
 !-- updating azimuthal angle of position
   z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
        xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
@@ -451,6 +528,7 @@ subroutine transport1(ptcl,ig,isvacant)
           min(dx(ix),xm(ix)*dyac(iynext),xm(ix)*ym(iynext) * &
           dz(iz))*thelp<prt_tauddmc .or. in_puretran) then
 !-- IMC in adjacent cell
+        iyold=iy
         iy = iynext
      else
 !-- DDMC in adjacent cell
@@ -595,6 +673,17 @@ subroutine transport1(ptcl,ig,isvacant)
      endif
   else
      stop 'transport1: invalid distance'
+  endif
+
+  if((y>grd_yarr(iy+1) .or. y<grd_yarr(iy))) then
+     write(0,*) 'theta not in cell (x): ',ix,xold,x,grd_xarr(ix),grd_xarr(ix+1)
+     write(0,*) 'theta not in cell (y): ',iy,yold,y,grd_yarr(iy),grd_yarr(iy+1)
+     write(0,*) 'old (y): ',iyold,dbyold
+     write(0,*) 'dir: ',mux,muy,muz,mu,eta,xi
+     write(0,*) 'dby: ',dby,'dbx: ',dbx,'max d: ',2d0*pc_c*tsp_dt*thelpinv
+     write(0,*) 'dby1: ',dby1,'dby2: ',dby2,'etaold: ',etaold
+     write(0,*)
+     write(0,*)
   endif
 
 end subroutine transport1
