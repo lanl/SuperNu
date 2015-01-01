@@ -114,7 +114,11 @@ subroutine transport1(ptcl,ig,isvacant)
      endif
   elseif(yhelp3==0d0) then
      if(y==grd_yarr(iy)) then
-        dby1=0d0
+        if(cos(om)>=0d0) then
+           dby1=0d0
+        else
+           dby1=-2d0*x*yhelp2/yhelp1
+        endif
      else
         dby1=-2d0*x*yhelp2/yhelp1
      endif
@@ -147,7 +151,11 @@ subroutine transport1(ptcl,ig,isvacant)
      endif
   elseif(yhelp3==0d0) then
      if(y==grd_yarr(iy+1)) then
-        dby2=0d0
+        if(cos(om)<0d0) then
+           dby2=0d0
+        else
+           dby2=-2d0*x*yhelp2/yhelp1
+        endif
      else
         dby2=-2d0*x*yhelp2/yhelp1
      endif
@@ -169,8 +177,10 @@ subroutine transport1(ptcl,ig,isvacant)
 
   dby=min(dby1,dby2)
   if(dby==dby1) then
+!     if() then
      iynext=iy-1
   else
+!     if() then
      iynext=iy+1
   endif
 
@@ -675,14 +685,14 @@ subroutine transport1(ptcl,ig,isvacant)
      stop 'transport1: invalid distance'
   endif
 
-  if((y>grd_yarr(iy+1) .or. y<grd_yarr(iy))) then
+  if((y>grd_yarr(iy+1) .or. y<grd_yarr(iy)).and.d==dcol) then
      write(0,*) 'theta not in cell (x): ',ix,xold,x,grd_xarr(ix),grd_xarr(ix+1)
      write(0,*) 'theta not in cell (y): ',iy,yold,y,grd_yarr(iy),grd_yarr(iy+1)
      write(0,*) 'old (y): ',iyold,dbyold
      write(0,*) 'dir: ',mux,muy,muz,mu,eta,xi
      write(0,*) 'dby: ',dby,'dbx: ',dbx,'max d: ',2d0*pc_c*tsp_dt*thelpinv
      write(0,*) 'dby1: ',dby1,'dby2: ',dby2,'etaold: ',etaold
-     write(0,*)
+     write(0,*) d
      write(0,*)
   endif
 

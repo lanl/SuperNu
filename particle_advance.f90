@@ -497,6 +497,7 @@ subroutine particle_advance
               endif
               if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
                  write(0,*) 'prt_adv: theta not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
+                 stop 'invalid cell'
               endif
               if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
                  write(0,*) 'prt_adv: phi not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu,om
