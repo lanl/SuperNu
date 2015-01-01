@@ -22,7 +22,7 @@ pure subroutine advection1(pretrans,ptcl,ig)
   integer :: i
 !-- pointers
   integer,pointer :: ix, iy, iz
-  real*8,pointer :: x 
+  real*8,pointer :: x
 !-- statement function
   integer :: l
   real*8 :: dx

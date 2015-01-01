@@ -16,7 +16,7 @@ c$    use omp_lib
 ************************************************************************
 * compute bound-free and bound-bound opacity.
 ************************************************************************
-      integer :: i,l,ll,igs,ngs
+      integer :: i,m,l,ll,igs,ngs
       real*8 :: wlinv
 c-- timing
       real*8 :: t0,t1,tbb,tbf,tff
@@ -69,8 +69,8 @@ c-- ground level occupation number
       do iz=1,gas_nelem
        do i=1,gas_ncell
         forall(ii=1:min(iz,ion_el(iz)%ni - 1))
-     &    grndlev(i,ii,iz) = ion_grndlev(iz,i)%oc(ii)/
-     &    ion_grndlev(iz,i)%g(ii)
+     &    grndlev(i,ii,iz) = ion_grndlev(iz,i)%oc(ii)*
+     &    ion_grndlev(iz,i)%ginv(ii)
        enddo !i
       enddo !iz
       do iz=1,gas_nelem
@@ -167,17 +167,17 @@ c-- combine planck and rosseland averages
       enddo !ig
 c
 c-- sanity check
-      l = 0
+      m = 0
       do i=1,gas_ncell
        do ig=1,grp_ng
-        if(gas_cap(ig,i)<=0.) l = ior(l,1)
-        if(gas_cap(ig,i)/=gas_cap(ig,i)) l = ior(l,2)
-        if(gas_cap(ig,i)>huge(gas_cap)) l = ior(l,4)
+        if(gas_cap(ig,i)<=0.) m = ior(m,1)
+        if(gas_cap(ig,i)/=gas_cap(ig,i)) m = ior(m,2)
+        if(gas_cap(ig,i)>huge(gas_cap)) m = ior(m,4)
        enddo !ig
       enddo !i
-      if(l/=iand(l,1)) call warn('opacity_calc','some cap<=0')
-      if(l/=iand(l,2)) call warn('opacity_calc','some cap==NaN')
-      if(l/=iand(l,4)) call warn('opacity_calc','some cap==inf')
+      if(iand(m,1)/=0) call warn('opacity_calc','some cap<=0')
+      if(iand(m,2)/=0) call warn('opacity_calc','some cap==NaN')
+      if(iand(m,4)/=0) call warn('opacity_calc','some cap==inf')
 c
       deallocate(cap)
 c

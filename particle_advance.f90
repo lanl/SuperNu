@@ -113,59 +113,23 @@ subroutine particle_advance
 
      prt_done=.false.
 
-     ! Looking up group
+!-- Looking up group
      if(ptcl%itype==1) then
-        if(grd_isvelocity) then!{{{
-           ig = binsrch(wl/labfact,grp_wl,grp_ng+1)
-        else
-           ig = binsrch(wl,grp_wl,grp_ng+1)
-        endif
-        !
-        if(ig>grp_ng.or.ig<1) then
-           !particle out of wlgrid energy bound
-           if(ig>grp_ng) then
-              ig=grp_ng
-              if(grd_isvelocity) then
-                 wl=grp_wl(grp_ng+1)*labfact
-              else
-                 wl=grp_wl(grp_ng+1)
-              endif
-           elseif(ig<1) then
-              ig=1
-              if(grd_isvelocity) then
-                 wl=grp_wl(1)*labfact
-              else
-                 wl=grp_wl(1)
-              endif
-           else
-              write(*,*) 'domain leak!!'
-              prt_done = .true.
-              isvacant = .true.
-           endif
-        endif
-        !!}}}
+        ig = binsrch(wl/labfact,grp_wl,grp_ng+1) !.not.grd_isvelocity -> labfact=1d0
      else
-        ig = binsrch(wl,grp_wl,grp_ng+1)!{{{
-        !
-        if(ig>grp_ng.or.ig<1) then
-           !particle out of wlgrid bound
-           if(ig>grp_ng) then
-              ig=grp_ng
-              wl=grp_wl(grp_ng+1)
-           elseif(ig<1) then
-              ig=1
-              wl=grp_wl(1)
-           else
-              write(*,*) 'domain leak!!'
-              prt_done = .true.
-              isvacant = .true.
-           endif
-        endif
-        !!}}}
+        ig = binsrch(wl,grp_wl,grp_ng+1)
      endif
+!-- particle out of wlgrid bound
+    if(ig>grp_ng) then
+       ig = grp_ng
+!      wl = grp_wl(ig)*labfact
+    elseif(ig<1) then
+       ig = 1
+!      wl = grp_wl(ig)*labfact
+    endif
 
 
-     ! Checking if particle conversions are required since prior time step
+!-- Checking if particle conversions are required since prior time step
      if(.not.in_puretran) then
         if(grd_isvelocity) then!{{{
            help = tsp_t
@@ -402,57 +366,23 @@ subroutine particle_advance
               endif
               ptcl%itype = 2
            endif
-        endif!}}}
-     endif
+        endif
 !
 !-- looking up group
-     if(ptcl%itype==1) then
-        if(grd_isvelocity) then!{{{
-           ig = binsrch(wl/labfact,grp_wl,grp_ng+1)
+        if(ptcl%itype==1) then
+           ig = binsrch(wl/labfact,grp_wl,grp_ng+1) !.not.grd_isvelocity -> labfact=1d0
         else
            ig = binsrch(wl,grp_wl,grp_ng+1)
         endif
-        if(ig>grp_ng.or.ig<1) then
-           !particle out of wlgrid energy bound
-           if(ig>grp_ng) then
-              ig=grp_ng
-              if(grd_isvelocity) then
-                 wl=grp_wl(grp_ng+1)*labfact
-              else
-                 wl=grp_wl(grp_ng+1)
-              endif
-           elseif(ig<1) then
-              ig=1
-              if(grd_isvelocity) then
-                 wl=grp_wl(1)*labfact
-              else
-                 wl=grp_wl(1)
-              endif
-           else
-              write(*,*) 'domain leak!!'
-              prt_done = .true.
-              isvacant = .true.
-           endif
+!-- particle out of wlgrid bound
+        if(ig>grp_ng) then
+           ig = grp_ng
+!          wl = grp_wl(ig)*labfact
+        elseif(ig<1) then
+           ig = 1
+!          wl = grp_wl(ig)*labfact
         endif
-        !!}}}
-     else
-        ig = binsrch(wl,grp_wl,grp_ng+1)!{{{
-        !
-        if(ig>grp_ng.or.ig<1) then
-           !particle out of wlgrid bound
-           if(ig>grp_ng) then
-              ig=grp_ng
-              wl=grp_wl(grp_ng+1)
-           elseif(ig<1) then
-              ig=1
-              wl=grp_wl(1)
-           else
-              write(*,*) 'domain leak!!'
-              prt_done = .true.
-              isvacant = .true.
-           endif
-        endif
-        !!}}}
+!}}}
      endif
 
 !-- First portion of operator split particle velocity position adjustment
@@ -480,7 +410,7 @@ subroutine particle_advance
 
 !-- 3D spherical
      case(1)
-        prt_istep = 0
+        prt_istep = 0!{{{
         do while ((.not.prt_done).and.(.not.isvacant))
            prt_istep = prt_istep + 1
            if (ptcl%itype == 1.or.in_puretran) then
@@ -527,11 +457,11 @@ subroutine particle_advance
                  ptcl%e0 = 2d0*ptcl%e0
               endif
            endif
-        enddo
+        enddo !}}}
 
 !-- 2D
      case(2)
-        prt_istep = 0
+        prt_istep = 0!{{{
         do while ((.not.prt_done).and.(.not.isvacant))
            prt_istep = prt_istep + 1
            if (ptcl%itype == 1.or.in_puretran) then
@@ -576,11 +506,11 @@ subroutine particle_advance
                  ptcl%e0 = 2d0*ptcl%e0
               endif
            endif
-        enddo
+        enddo !}}}
 
 !-- 3D
      case(3)
-        prt_istep = 0
+        prt_istep = 0!{{{
         do while ((.not.prt_done).and.(.not.isvacant))
            prt_istep = prt_istep + 1
            if (ptcl%itype == 1.or.in_puretran) then
@@ -628,11 +558,11 @@ subroutine particle_advance
                  ptcl%e0 = 2d0*ptcl%e0
               endif
            endif
-        enddo
+        enddo!}}}
 
 !-- 1D
      case(11)
-        prt_istep = 0
+        prt_istep = 0!{{{
         do while ((.not.prt_done).and.(.not.isvacant))
            prt_istep = prt_istep + 1
            if (ptcl%itype == 1.or.in_puretran) then
@@ -672,48 +602,39 @@ subroutine particle_advance
                  ptcl%e0 = 2d0*ptcl%e0
               endif
            endif
-        enddo
+        enddo!}}}
      endselect
 
-!-----------------------------------------------------------------------
+!-- continue only if particle not vacant
+     prt_isvacant(ipart) = isvacant
+     if(isvacant) cycle
 
 
 !-- Redshifting DDMC particle energy weights and wavelengths
-     if(.not.isvacant) then
-     if(ptcl%itype == 2.and.grd_isvelocity) then
+     if(ptcl%itype==2 .and. grd_isvelocity) then
 !-- redshifting energy weight!{{{
-        tot_evelo=tot_evelo+e*(1d0-exp(-tsp_dt/tsp_t))
+        tot_evelo = tot_evelo + e*(1d0-exp(-tsp_dt/tsp_t))
         e = e*exp(-tsp_dt/tsp_t)
         ptcl%e0 = ptcl%e0*exp(-tsp_dt/tsp_t)
         !
 !
 !-- find group
         ig = binsrch(wl,grp_wl,grp_ng+1)
-        !
-        if(ig>grp_ng.or.ig<1) then
-           !particle out of wlgrid energy bound
-           if(ig>grp_ng) then
-              ig=grp_ng
-           else
-              ig=1
-           endif
-        endif
-        !
-        !
-        if(ig<grp_ng) then
+!-- particle out of wlgrid energy bound
+        if(ig>grp_ng) ig = grp_ng
+        if(ig<1) ig = 1
+!
+        r1 = rnd_r(rnd_state)
+        prt_tlyrand = prt_tlyrand+1
+        x1 = grd_cap(ig,ix,iy,iz)
+        x2 = grp_wl(ig)/(pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig)))
+        if(r1<x2/(x1+x2)) then
            r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
-           x1 = grd_cap(ig,ix,iy,iz)
-           x2 = grp_wl(ig)/(pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig)))
-           if(r1<x2/(x1+x2)) then
-              r1 = rnd_r(rnd_state)
-              prt_tlyrand = prt_tlyrand+1
-              wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
-              wl = wl*exp(tsp_dt/tsp_t)
-           endif
+           wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
+           wl = wl*exp(tsp_dt/tsp_t)
         endif
         !!}}}
-     endif
      endif
 
      if(isshift) then
@@ -733,13 +654,12 @@ subroutine particle_advance
      endif
 
 !-- radiation energy at census
-     if(.not.isvacant) tot_erad = tot_erad + e
+     tot_erad = tot_erad + e
 
 !
 !-- save particle results
 !------------------------
-     prt_isvacant(ipart) = isvacant
-     if(.not.isvacant) prt_particles(ipart) = ptcl
+     prt_particles(ipart) = ptcl
 
   enddo !ipart
 

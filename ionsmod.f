@@ -28,7 +28,7 @@ c-- ocupation number and g value of all ion's ground states
       type ocground
        integer :: ni   !number of ions
        real*8,allocatable :: oc(:)
-       real*8,allocatable :: g(:)
+       real*8,allocatable :: ginv(:)
       end type ocground
       type(ocground),allocatable :: ion_grndlev(:,:) !(nelem,gas_ncell)
 c
@@ -62,7 +62,7 @@ c
         ni = ion_el(iz)%ni
         ion_grndlev(iz,i)%ni = ni
         allocate(ion_grndlev(iz,i)%oc(ni))
-        allocate(ion_grndlev(iz,i)%g(ni))
+        allocate(ion_grndlev(iz,i)%ginv(ni))
        enddo
       enddo !i!}}}
       end subroutine ion_alloc_grndlev
@@ -131,7 +131,7 @@ c
         if(allocated(ion_grndlev(iz,i)%oc))
      &    deallocate(ion_grndlev(iz,i)%oc)
         if(allocated(ion_grndlev(iz,i)%oc))
-     &    deallocate(ion_grndlev(iz,i)%g)
+     &    deallocate(ion_grndlev(iz,i)%ginv)
        enddo
       enddo !i
       deallocate(ion_grndlev)!}}}

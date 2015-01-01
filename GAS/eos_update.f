@@ -26,7 +26,7 @@ c
 c-- store occupation numbers of each ion's ground states
        do iz=1,gas_nelem
         do ii=1,ion_grndlev(iz,i)%ni
-         ion_grndlev(iz,i)%g(ii) = ion_el(iz)%i(ii)%glev(1)
+         ion_grndlev(iz,i)%ginv(ii) = 1d0/ion_el(iz)%i(ii)%glev(1)
          ion_grndlev(iz,i)%oc(ii) =
      &     gas_natom(i)*gas_natom1fr(iz,i)*
      &     ion_el(iz)%i(ii)%glev(1) * ion_el(iz)%i(ii)%n /

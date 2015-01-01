@@ -38,7 +38,7 @@ c-- bbxs
       real*8 :: expfac(gas_ncell)
       real*8 :: caphelp
 c-- temporary cap array in the right order
-      real*8 :: cap(gas_ncell,grp_ng)
+      real*8,allocatable :: cap(:,:)
 c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
      &  *pc_c**4)
@@ -46,14 +46,16 @@ c-- warn once
       logical :: lwarn
 c
 c-- initialize
-      gas_sig = 0d0
+      allocate(cap(gas_ncell,grp_ng))
       cap = 0d0
 c
 c-- ion_grndlev helper array
       hckt = pc_h*pc_c/(pc_kb*gas_temp)
 c
 c-- thomson scattering
-      if(.not. in_nothmson) then
+      if(in_nothmson) then
+       gas_sig = 0d0
+      else
        gas_sig = cthomson*gas_nelec*gas_natom/gas_vol
       endif
 c
@@ -65,8 +67,8 @@ c-- bound-bound
         do i=1,gas_ncell
          if(gas_void(i)) cycle
          forall(ii=1:min(iz,ion_el(iz)%ni - 1))
-     &     grndlev(i,ii,iz) = ion_grndlev(iz,i)%oc(ii)/
-     &     ion_grndlev(iz,i)%g(ii)
+     &     grndlev(i,ii,iz) = ion_grndlev(iz,i)%oc(ii)*
+     &     ion_grndlev(iz,i)%ginv(ii)
         enddo !i
        enddo !iz
 c
@@ -237,9 +239,9 @@ c-- sanity check
         if(gas_cap(ig,i)>huge(gas_cap)) m = ior(m,4)
        enddo !ig
       enddo !i
-      if(m/=iand(m,1)) call warn('opacity_calc','some cap<=0')
-      if(m/=iand(m,2)) call warn('opacity_calc','some cap==NaN')
-      if(m/=iand(m,4)) call warn('opacity_calc','some cap==inf')
+      if(iand(m,1)/=0) call warn('opacity_calc','some cap<=0')
+      if(iand(m,2)/=0) call warn('opacity_calc','some cap==NaN')
+      if(iand(m,4)/=0) call warn('opacity_calc','some cap==inf')
 c
       t4 = t_time()
 c-- register timing
