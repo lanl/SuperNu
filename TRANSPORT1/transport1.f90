@@ -31,10 +31,10 @@ subroutine transport1(ptcl,ig,isvacant)
   real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop,d
   real*8 :: r1,r2
 
-  integer :: iynext,iznext
-  real*8 :: yhelp1,yhelp2,dby1,dby2
+  integer :: iynext,iynext1,iynext2,iznext,iyold,idby1,idby2
+  real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2,disc1,disc2
   real*8 :: zhelp
-  real*8 :: xold,yold,muold
+  real*8 :: xold,yold,muold,dbyold,etaold
 
   integer,pointer :: ix,iy,iz
   real*8,pointer :: x,y,z,mu,om,e,e0,wl
@@ -69,6 +69,9 @@ subroutine transport1(ptcl,ig,isvacant)
   mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
   muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
   muz = mu*y-eta*sqrt(1d0-y**2)
+
+  etaold=eta
+  dbyold=dby
 !
 !-- setting vel-grid helper variables
   if(grd_isvelocity) then
@@ -98,28 +101,160 @@ subroutine transport1(ptcl,ig,isvacant)
   if(dbx/=dbx) stop 'transport1: dbx/=dbx'
 !
 !-- polar boundary distance (y)
-  if(muz>=0d0) then
-     iynext=iy+1
-  else
-     iynext=iy-1
-  endif
-  ihelp = max(iy,iynext)
-  yhelp1 = y**2-(1d0-mu**2)*grd_yarr(ihelp)**2-2d0*muz*mu*y+muz**2
-  if(yhelp1<0d0) then
-     dby = 2d0*pc_c*tsp_dt*thelpinv
-  else
-     yhelp1 = sqrt(yhelp1)
-     yhelp2 = grd_yarr(ihelp)**2-muz**2
-     if(yhelp2==0d0) then
-        dby = 2d0*pc_c*tsp_dt*thelpinv
+!-- dby1: iy->iy-1
+  yhelp1=grd_yarr(iy)**2-muz**2
+  yhelp2=mu*grd_yarr(iy)**2-muz*y
+  yhelp3=grd_yarr(iy)**2-y**2
+  if(yhelp1==0d0.and.yhelp3==0d0) then
+     idby1=1
+!-- particle, direction on cone
+     dby1 = 2d0*pc_c*tsp_dt*thelpinv
+     iynext1=iy
+  elseif(yhelp1==0d0) then
+     if((muz>=0d0.and.muz==grd_yarr(iy)).or. &
+          (muz>=0d0.and.muz==-grd_yarr(iy)).or. &
+          yhelp2==0d0) then
+        idby1=2
+!-- direction parallel to lower cone or nonphysical
+        dby1 = 2d0*pc_c*tsp_dt*thelpinv
+        iynext1=iy
      else
-        yhelp2=1d0/yhelp2
-        dby1 = x*(muz*y-mu*grd_yarr(ihelp)**2-grd_yarr(ihelp)*yhelp1)*yhelp2
-        dby2 = x*(muz*y-mu*grd_yarr(ihelp)**2+grd_yarr(ihelp)*yhelp1)*yhelp2
-        if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
-        if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
-        dby = min(dby1,dby2)
+        idby1=3
+        dby1=-0.5*x*yhelp3/yhelp2
+        iynext1=iy-1
      endif
+  elseif(yhelp3==0d0) then
+!-- particle on lower cone
+     if(y==grd_yarr(iy)) then
+        if(cos(om)>=0d0) then
+           idby1=4
+!-- setting next cell to lower cone
+           dby1=0d0
+           iynext1=iy-1
+        elseif(grd_yarr(iy)>0d0) then
+           idby1=5
+!-- reexit for acute lower cone
+           dby1=-2d0*x*yhelp2/yhelp1
+           iynext1=iy-1
+        else
+           idby1=6
+!-- impossible otherwise
+           dby1 = 2d0*pc_c*tsp_dt*thelpinv
+           iynext1=iy
+        endif
+     else
+        idby1=7
+        dby1=-2d0*x*yhelp2/yhelp1
+        iynext1=iy-1
+     endif
+
+  else
+     yhelp4=yhelp2**2-yhelp1*yhelp3
+     if(abs(yhelp4)<1d-12*abs(yhelp2)) yhelp4=0d0
+     disc1=yhelp4
+     if(yhelp4<0d0) then
+        idby1=8
+!-- not intersecting lower cone
+        dby1 = 2d0*pc_c*tsp_dt*thelpinv
+        iynext1=iy
+     else
+        idby1=9
+!-- intersecting lower cone at at least one point
+        yhelp4=sqrt(yhelp4)
+        yhelp1=1d0/yhelp1
+        help=x*(-yhelp2+yhelp4)*yhelp1
+        dby1=x*(-yhelp2-yhelp4)*yhelp1
+        if(help<0d0) help=2d0*pc_c*tsp_dt*thelpinv
+        if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
+        dby1=min(help,dby1)
+        iynext1=iy-1
+     endif
+  endif
+!-- resetting for nonphysical distances
+  if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
+
+!-- dby2: iy->iy+1
+  yhelp1=grd_yarr(iy+1)**2-muz**2
+  yhelp2=mu*grd_yarr(iy+1)**2-muz*y
+  yhelp3=grd_yarr(iy+1)**2-y**2
+  if(yhelp1==0d0.and.yhelp3==0d0) then
+     idby2=1
+!-- particle, direction on cone
+     dby2 = 2d0*pc_c*tsp_dt*thelpinv
+     iynext2=iy
+  elseif(yhelp1==0d0) then
+     if((muz<=0d0.and.muz==-grd_yarr(iy+1)).or. &
+          (muz<=0d0.and.muz==grd_yarr(iy+1)).or. &
+          yhelp2==0d0) then
+        idby2=2
+!-- direction parallel to upper cone or nonphysical
+        dby2 = 2d0*pc_c*tsp_dt*thelpinv
+        iynext2=iy
+     else
+        idby2=3
+        dby2=-0.5*x*yhelp3/yhelp2
+        iynext2=iy+1
+     endif
+  elseif(yhelp3==0d0) then
+!-- particle on upper cone
+     if(y==grd_yarr(iy+1)) then
+        if(cos(om)<0d0) then
+           idby2=4
+!-- setting next cell to upper cone
+           dby2=0d0
+           iynext2=iy+1
+        elseif(grd_yarr(iy+1)<0d0) then
+           idby2=5
+!-- reexit for obtuse upper cone
+           dby2=-2d0*x*yhelp2/yhelp1
+           iynext2=iy+1
+        else
+           idby2=6
+!-- impossible otherwise
+           dby2 = 2d0*pc_c*tsp_dt*thelpinv
+           iynext2=iy
+        endif
+     else
+        idby2=7
+        dby2=-2d0*x*yhelp2/yhelp1
+        iynext2=iy+1
+     endif
+
+  else
+     yhelp4=yhelp2**2-yhelp1*yhelp3
+     if(abs(yhelp4)<1d-12*abs(yhelp2)) yhelp4=0d0
+     disc2=yhelp4
+     if(yhelp4<0d0) then
+        idby2=8
+!-- not intersecting upper cone
+        dby2 = 2d0*pc_c*tsp_dt*thelpinv
+        iynext2=iy
+     else
+        idby2=9
+!-- intersecting upper cone at at least one point
+        yhelp4=sqrt(yhelp4)
+        yhelp1=1d0/yhelp1
+        help=x*(-yhelp2+yhelp4)*yhelp1
+        dby2=x*(-yhelp2-yhelp4)*yhelp1
+        if(help<0d0) help=2d0*pc_c*tsp_dt*thelpinv
+        if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
+        dby2=min(help,dby2)
+        iynext2=iy+1
+     endif
+  endif
+  if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
+!  write(*,*) dby1,dby2
+!  if(y<grd_yarr(iy+1).and.y>grd_yarr(iy)) write(*,*) idby1,disc1,idby2,disc2
+!  if(dby1==0d0.and.idby1==4) write(*,*) '1: ',idby1, y, iy, dby1
+!  if(dby2==0d0.and.idby2==4) write(*,*) '2: ',idby2, y, iy
+  ! if(dby1==0d0.and.dby2==0d0) stop 'transport1: invalid dby[1,2]'
+  if(iynext1==0) iynext1=1
+  if(iynext2==grd_ny+1) iynext2=grd_ny
+  dby=min(dby1,dby2)
+  if(dby==dby1) then
+     iynext=iynext1
+  else
+     iynext=iynext2
   endif
 
 !-- azimuthal boundary distance (z)
@@ -202,6 +337,7 @@ subroutine transport1(ptcl,ig,isvacant)
 !-- updating polar projection of position
   yold = y
   if(x/=0d0) y = (xold*yold+muz*d)/x
+!  if(d==dby) write(*,*) 'dbx: ',dbx,'dby: ',dby,'yold: ',yold,'y: ',y
 !-- updating azimuthal angle of position
   z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
        xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
@@ -329,7 +465,7 @@ subroutine transport1(ptcl,ig,isvacant)
 !-- effective scattering
 !-- redistributing wavelength
         r1 = rnd_r(rnd_state)
-        ig = emitgroup(r1,ix,iy,iz)
+        if(grp_ng>1) ig = emitgroup(r1,ix,iy,iz)
 !-- uniformly in new group
         r1 = rnd_r(rnd_state)
         wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
@@ -436,6 +572,14 @@ subroutine transport1(ptcl,ig,isvacant)
 !-- polar bound
   elseif(d==dby) then
 
+     if(iynext==0) then
+        write(*,*) y, dby, mu,eta,xi,iy
+        stop 'transport1: invalid polar bound crossing'
+     endif
+     if(iynext==grd_ny+1) then
+        write(*,*) y, dby, mu,eta,xi,iy
+        stop 'transport1: invalid polar bound crossing'
+     endif
      if(iynext==iy-1) then
         y=grd_yarr(iy)
      elseif(iynext==iy+1) then
@@ -451,6 +595,7 @@ subroutine transport1(ptcl,ig,isvacant)
           min(dx(ix),xm(ix)*dyac(iynext),xm(ix)*ym(iynext) * &
           dz(iz))*thelp<prt_tauddmc .or. in_puretran) then
 !-- IMC in adjacent cell
+        iyold=iy
         iy = iynext
      else
 !-- DDMC in adjacent cell
@@ -595,6 +740,18 @@ subroutine transport1(ptcl,ig,isvacant)
      endif
   else
      stop 'transport1: invalid distance'
+  endif
+
+  if((y>grd_yarr(iy+1) .or. y<grd_yarr(iy)).and.d==dcol) then
+     write(0,*) 'theta not in cell (x): ',ix,xold,x,grd_xarr(ix),grd_xarr(ix+1)
+     write(0,*) 'theta not in cell (y): ',iy,yold,y,grd_yarr(iy),grd_yarr(iy+1)
+     write(0,*) 'old (y): ',iyold,dbyold
+     write(0,*) 'dir: ',mux,muy,muz,mu,eta,xi
+     write(0,*) 'dby: ',dby,'dbx: ',dbx,'max d: ',2d0*pc_c*tsp_dt*thelpinv
+     write(0,*) 'dby1: ',dby1,'dby2: ',dby2,'etaold: ',etaold
+     write(0,*) 'idby1: ',idby1,'idby2: ',idby2
+     write(0,*) d
+     write(0,*)
   endif
 
 end subroutine transport1
