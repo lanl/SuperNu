@@ -3,7 +3,7 @@
 !-- misc
 in_nomp = 1
 in_grabstdout = f
-in_puretran = t
+in_puretran = f
 in_noreadstruct = t
 in_noeos = t
 in_norestart = t
@@ -18,7 +18,7 @@ in_ismodimc = f
 
 !-- grid settings
 in_igeom = 1
-in_ndim = 16, 2, 1
+in_ndim = 16, 3, 1
 in_isvelocity = t
 in_novolsrc = f
 in_velout = 1d9
@@ -75,6 +75,7 @@ in_wlmax = 1.2398d-3
 in_ns0 = 0
 in_ns  = 100000
 in_prt_nmax = 10000000
+!in_srcepwr=1d0
 
 !-- imc tally method
 in_isimcanlog = f

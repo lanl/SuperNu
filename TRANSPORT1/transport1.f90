@@ -133,7 +133,6 @@ subroutine transport1(ptcl,ig,isvacant)
            iynext1=iy-1
         elseif(grd_yarr(iy)>0d0) then
            idby1=5
-!           write(*,*) iy
 !-- reexit for acute lower cone
            dby1=-2d0*x*yhelp2/yhelp1
            iynext1=iy-1
@@ -206,7 +205,6 @@ subroutine transport1(ptcl,ig,isvacant)
            iynext2=iy+1
         elseif(grd_yarr(iy+1)<0d0) then
            idby2=5
-!           write(*,*) iy
 !-- reexit for obtuse upper cone
            dby2=-2d0*x*yhelp2/yhelp1
            iynext2=iy+1
@@ -245,38 +243,19 @@ subroutine transport1(ptcl,ig,isvacant)
      endif
   endif
   if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
-!  write(*,*) dby1,dby2,cos(om)
+!  write(*,*) dby1,dby2
 !  if(y<grd_yarr(iy+1).and.y>grd_yarr(iy)) write(*,*) idby1,disc1,idby2,disc2
+!  if(dby1==0d0.and.idby1==4) write(*,*) '1: ',idby1, y, iy, dby1
+!  if(dby2==0d0.and.idby2==4) write(*,*) '2: ',idby2, y, iy
+  ! if(dby1==0d0.and.dby2==0d0) stop 'transport1: invalid dby[1,2]'
+  if(iynext1==0) iynext1=1
+  if(iynext2==grd_ny+1) iynext2=grd_ny
   dby=min(dby1,dby2)
   if(dby==dby1) then
      iynext=iynext1
   else
      iynext=iynext2
   endif
-
-  ! if(muz>=0d0) then
-  !    iynext=iy+1
-  ! else
-  !    iynext=iy-1
-  ! endif
-  ! ihelp = max(iy,iynext)
-  ! yhelp1 = y**2-(1d0-mu**2)*grd_yarr(ihelp)**2-2d0*muz*mu*y+muz**2
-  ! if(yhelp1<0d0) then
-  !    dby = 2d0*pc_c*tsp_dt*thelpinv
-  ! else
-  !    yhelp1 = sqrt(yhelp1)
-  !    yhelp2 = grd_yarr(ihelp)**2-muz**2
-  !    if(yhelp2==0d0) then
-  !       dby = 2d0*pc_c*tsp_dt*thelpinv
-  !    else
-  !       yhelp2=1d0/yhelp2
-  !       dby1 = x*(muz*y-mu*grd_yarr(ihelp)**2-grd_yarr(ihelp)*yhelp1)*yhelp2
-  !       dby2 = x*(muz*y-mu*grd_yarr(ihelp)**2+grd_yarr(ihelp)*yhelp1)*yhelp2
-  !       if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
-  !       if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
-  !       dby = min(dby1,dby2)
-  !    endif
-  ! endif
 
 !-- azimuthal boundary distance (z)
   if(xi==0d0.or.grd_nz==1) then
@@ -486,7 +465,7 @@ subroutine transport1(ptcl,ig,isvacant)
 !-- effective scattering
 !-- redistributing wavelength
         r1 = rnd_r(rnd_state)
-        ig = emitgroup(r1,ix,iy,iz)
+        if(grp_ng>1) ig = emitgroup(r1,ix,iy,iz)
 !-- uniformly in new group
         r1 = rnd_r(rnd_state)
         wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
@@ -593,6 +572,14 @@ subroutine transport1(ptcl,ig,isvacant)
 !-- polar bound
   elseif(d==dby) then
 
+     if(iynext==0) then
+        write(*,*) y, dby, mu,eta,xi,iy
+        stop 'transport1: invalid polar bound crossing'
+     endif
+     if(iynext==grd_ny+1) then
+        write(*,*) y, dby, mu,eta,xi,iy
+        stop 'transport1: invalid polar bound crossing'
+     endif
      if(iynext==iy-1) then
         y=grd_yarr(iy)
      elseif(iynext==iy+1) then
