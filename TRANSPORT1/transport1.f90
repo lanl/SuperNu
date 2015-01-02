@@ -31,8 +31,8 @@ subroutine transport1(ptcl,ig,isvacant)
   real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop,d
   real*8 :: r1,r2
 
-  integer :: iynext,iznext,iyold
-  real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
+  integer :: iynext,iynext1,iynext2,iznext,iyold,idby1,idby2
+  real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2,disc1,disc2
   real*8 :: zhelp
   real*8 :: xold,yold,muold,dbyold,etaold
 
@@ -101,32 +101,66 @@ subroutine transport1(ptcl,ig,isvacant)
   if(dbx/=dbx) stop 'transport1: dbx/=dbx'
 !
 !-- polar boundary distance (y)
+!-- dby1: iy->iy-1
   yhelp1=grd_yarr(iy)**2-muz**2
   yhelp2=mu*grd_yarr(iy)**2-muz*y
   yhelp3=grd_yarr(iy)**2-y**2
   if(yhelp1==0d0.and.yhelp3==0d0) then
+     idby1=1
+!-- particle, direction on cone
      dby1 = 2d0*pc_c*tsp_dt*thelpinv
+     iynext1=iy
   elseif(yhelp1==0d0) then
-     if(yhelp2==0d0) then
+     if((muz>=0d0.and.muz==grd_yarr(iy)).or. &
+          (muz>=0d0.and.muz==-grd_yarr(iy)).or. &
+          yhelp2==0d0) then
+        idby1=2
+!-- direction parallel to lower cone or nonphysical
         dby1 = 2d0*pc_c*tsp_dt*thelpinv
+        iynext1=iy
      else
+        idby1=3
         dby1=-0.5*x*yhelp3/yhelp2
+        iynext1=iy-1
      endif
   elseif(yhelp3==0d0) then
+!-- particle on lower cone
      if(y==grd_yarr(iy)) then
         if(cos(om)>=0d0) then
+           idby1=4
+!-- setting next cell to lower cone
            dby1=0d0
-        else
+           iynext1=iy-1
+        elseif(grd_yarr(iy)>0d0) then
+           idby1=5
+!           write(*,*) iy
+!-- reexit for acute lower cone
            dby1=-2d0*x*yhelp2/yhelp1
+           iynext1=iy-1
+        else
+           idby1=6
+!-- impossible otherwise
+           dby1 = 2d0*pc_c*tsp_dt*thelpinv
+           iynext1=iy
         endif
      else
+        idby1=7
         dby1=-2d0*x*yhelp2/yhelp1
+        iynext1=iy-1
      endif
+
   else
      yhelp4=yhelp2**2-yhelp1*yhelp3
+     if(abs(yhelp4)<1d-12*abs(yhelp2)) yhelp4=0d0
+     disc1=yhelp4
      if(yhelp4<0d0) then
+        idby1=8
+!-- not intersecting lower cone
         dby1 = 2d0*pc_c*tsp_dt*thelpinv
+        iynext1=iy
      else
+        idby1=9
+!-- intersecting lower cone at at least one point
         yhelp4=sqrt(yhelp4)
         yhelp1=1d0/yhelp1
         help=x*(-yhelp2+yhelp4)*yhelp1
@@ -134,36 +168,72 @@ subroutine transport1(ptcl,ig,isvacant)
         if(help<0d0) help=2d0*pc_c*tsp_dt*thelpinv
         if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
         dby1=min(help,dby1)
+        iynext1=iy-1
      endif
   endif
+!-- resetting for nonphysical distances
   if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
 
+!-- dby2: iy->iy+1
   yhelp1=grd_yarr(iy+1)**2-muz**2
   yhelp2=mu*grd_yarr(iy+1)**2-muz*y
   yhelp3=grd_yarr(iy+1)**2-y**2
   if(yhelp1==0d0.and.yhelp3==0d0) then
+     idby2=1
+!-- particle, direction on cone
      dby2 = 2d0*pc_c*tsp_dt*thelpinv
+     iynext2=iy
   elseif(yhelp1==0d0) then
-     if(yhelp2==0d0) then
+     if((muz<=0d0.and.muz==-grd_yarr(iy+1)).or. &
+          (muz<=0d0.and.muz==grd_yarr(iy+1)).or. &
+          yhelp2==0d0) then
+        idby2=2
+!-- direction parallel to upper cone or nonphysical
         dby2 = 2d0*pc_c*tsp_dt*thelpinv
+        iynext2=iy
      else
+        idby2=3
         dby2=-0.5*x*yhelp3/yhelp2
+        iynext2=iy+1
      endif
   elseif(yhelp3==0d0) then
+!-- particle on upper cone
      if(y==grd_yarr(iy+1)) then
         if(cos(om)<0d0) then
+           idby2=4
+!-- setting next cell to upper cone
            dby2=0d0
-        else
+           iynext2=iy+1
+        elseif(grd_yarr(iy+1)<0d0) then
+           idby2=5
+!           write(*,*) iy
+!-- reexit for obtuse upper cone
            dby2=-2d0*x*yhelp2/yhelp1
+           iynext2=iy+1
+        else
+           idby2=6
+!-- impossible otherwise
+           dby2 = 2d0*pc_c*tsp_dt*thelpinv
+           iynext2=iy
         endif
      else
+        idby2=7
         dby2=-2d0*x*yhelp2/yhelp1
+        iynext2=iy+1
      endif
+
   else
      yhelp4=yhelp2**2-yhelp1*yhelp3
+     if(abs(yhelp4)<1d-12*abs(yhelp2)) yhelp4=0d0
+     disc2=yhelp4
      if(yhelp4<0d0) then
+        idby2=8
+!-- not intersecting upper cone
         dby2 = 2d0*pc_c*tsp_dt*thelpinv
+        iynext2=iy
      else
+        idby2=9
+!-- intersecting upper cone at at least one point
         yhelp4=sqrt(yhelp4)
         yhelp1=1d0/yhelp1
         help=x*(-yhelp2+yhelp4)*yhelp1
@@ -171,17 +241,17 @@ subroutine transport1(ptcl,ig,isvacant)
         if(help<0d0) help=2d0*pc_c*tsp_dt*thelpinv
         if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
         dby2=min(help,dby2)
+        iynext2=iy+1
      endif
   endif
   if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
-
+!  write(*,*) dby1,dby2,cos(om)
+!  if(y<grd_yarr(iy+1).and.y>grd_yarr(iy)) write(*,*) idby1,disc1,idby2,disc2
   dby=min(dby1,dby2)
   if(dby==dby1) then
-!     if() then
-     iynext=iy-1
+     iynext=iynext1
   else
-!     if() then
-     iynext=iy+1
+     iynext=iynext2
   endif
 
   ! if(muz>=0d0) then
@@ -692,6 +762,7 @@ subroutine transport1(ptcl,ig,isvacant)
      write(0,*) 'dir: ',mux,muy,muz,mu,eta,xi
      write(0,*) 'dby: ',dby,'dbx: ',dbx,'max d: ',2d0*pc_c*tsp_dt*thelpinv
      write(0,*) 'dby1: ',dby1,'dby2: ',dby2,'etaold: ',etaold
+     write(0,*) 'idby1: ',idby1,'idby2: ',idby2
      write(0,*) d
      write(0,*)
   endif
