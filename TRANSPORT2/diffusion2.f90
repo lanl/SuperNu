@@ -710,8 +710,8 @@ subroutine diffusion2(ptcl,ig,isvacant,icell,specarr)
         x = sqrt(grd_xarr(ix)**2*(1d0-r1)+grd_xarr(ix+1)**2*r1)
         y = grd_yarr(iy+1)
 !-- must be inside cell
-        x = min(y,grd_xarr(ix+1))
-        x = max(y,grd_xarr(ix))
+        x = min(x,grd_xarr(ix+1))
+        x = max(x,grd_xarr(ix))
 !-- sampling direction
         r1 = rnd_r(rnd_state)
         r2 = rnd_r(rnd_state)
