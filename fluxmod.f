@@ -25,6 +25,8 @@ c-- grey gamma flux
       real*8,allocatable :: flx_gamlumdev(:,:)  !(flx_nmu,flx_nom)
       integer,allocatable :: flx_gamlumnum(:,:) !(flx_nmu,flx_nom)
 c
+      save
+c
       contains
 c
 c

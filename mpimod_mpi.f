@@ -12,6 +12,8 @@ c
       integer :: impi_gas
       integer :: nmpi_gas
 c
+      save
+c
       contains
 c
 c

@@ -40,9 +40,9 @@ subroutine transport1(ptcl,ig,isvacant)
   real*8,pointer :: x,y,z,mu,om,e,e0,wl
 !-- statement functions
   integer :: l
-  real*8 :: dx,dy,dz,xm,dyac,ym
+  real*8 :: dx,dz,xm,dyac,ym
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
-  dy(l) = grd_yarr(l+1) - grd_yarr(l)
+! dy(l) = grd_yarr(l+1) - grd_yarr(l)
   dz(l) = grd_zarr(l+1) - grd_zarr(l)
   xm(l) = 0.5*(grd_xarr(l+1) + grd_xarr(l))
   dyac(l) = grd_yacos(l) - grd_yacos(l+1)

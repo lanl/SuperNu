@@ -133,10 +133,10 @@ c     ---------------------!{{{
       integer :: l,is,it
       real*8,allocatable :: wl(:)  !too big for the stack
       type(bb_xs_data) :: xs_src,xs_trg
-      integer :: indx(bb_nline),indx_inv(bb_nline)
+      integer,allocatable :: indx(:),indx_inv(:)  !too big for the stack
 c
 c-- initialize arrays
-      allocate(wl(bb_nline))
+      allocate(wl(bb_nline),indx(bb_nline),indx_inv(bb_nline))
       wl = dble(bb_xs%wl0)
       forall(l=1:bb_nline) indx(l) = l
 c

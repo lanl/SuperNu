@@ -10,6 +10,8 @@ c     -------------
       integer,parameter :: impi_gas=0
       integer,parameter :: nmpi_gas=1
 c
+      save
+c
       contains
 c
       subroutine bcast_permanent

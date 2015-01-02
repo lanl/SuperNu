@@ -15,6 +15,7 @@ c-- a uniform temperature value (or possibly nominal temperature value)
 !      real*8,parameter :: man_temp0 = 1.1602621d7 !K
       real*8,parameter :: man_temp0 = 1.160237998048407d7 !K
 c
+      save
 c
       contains
 c
