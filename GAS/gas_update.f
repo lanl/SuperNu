@@ -22,7 +22,7 @@ c     ------------------------------
 ************************************************************************
       logical,save :: lfirst=.true.
       logical :: do_output,lexist
-      integer :: i,j,k,l,ll,istat
+      integer :: i,j,l,ll,istat
       integer :: l1,l2
       real*8 :: help
       real*8 :: dtempfrac = 0.99d0
@@ -100,19 +100,13 @@ c-- update volume
 c========================================
       l1 = impi*gas_ncell + 1
       l2 = (impi+1)*gas_ncell
-      l = 0
       ll = 0
-      do k=1,grd_nz
-      do j=1,grd_ny
-      do i=1,grd_nx
-       l = l + 1
+      do l=1,grd_ncp
        if(l<l1) cycle
        if(l>l2) exit
        ll = ll + 1
-       gas_vol(ll) = grd_vol(i,j,k)
-      enddo !i
-      enddo !j
-      enddo !k
+       gas_vol(ll) = grd_vol(l)
+      enddo !l
       if(ll/=gas_ncell) stop 'gas_update: ll/=gas_ncell'
 c
 c

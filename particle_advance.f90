@@ -24,7 +24,7 @@ subroutine particle_advance
 !##################################################
   logical :: lhelp
   integer*8 :: nddmc, nimc, npckt
-  integer :: ipart, ig
+  integer :: ipart, ig, ic
   real*8 :: r1, x1, x2, help
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
@@ -82,7 +82,7 @@ subroutine particle_advance
   nddmc = 0
   nimc = 0
   icell = 0
-  do ipart = 1, prt_npartmax
+  do ipart=1,prt_npartmax
      ! Checking vacancy
      if(prt_isvacant(ipart)) cycle
      isvacant = .false.
@@ -111,7 +111,10 @@ subroutine particle_advance
         endselect
      endif
 
-     prt_done=.false.
+     prt_done = .false.
+
+!-- cell pointer
+     ic = grd_icell(ix,iy,iz)
 
 !-- Looking up group
      if(ptcl%itype==1) then
@@ -142,13 +145,13 @@ subroutine particle_advance
 
 !-- 3D spherical
         case(1)
-           lhelp = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz)) * &!{{{
+           lhelp = ((grd_sig(ic)+grd_cap(ig,ic)) * &!{{{
                 min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) * &
                 help<prt_tauddmc).or.in_puretran
-           if (lhelp) then
-              if (ptcl%itype == 2) then
+           if(lhelp) then
+              if(ptcl%itype == 2) then
 !-- DDMC -> IMC
-                 grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+                 grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- sampling position uniformly
                  r1 = rnd_r(rnd_state)
                  prt_tlyrand = prt_tlyrand+1
@@ -186,19 +189,19 @@ subroutine particle_advance
            else
               if(ptcl%itype==1) then
 !-- IMC -> DDMC
-                 grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+                 grd_methodswap(ic) = grd_methodswap(ic)+1
               endif
            endif!}}}
 
 !-- 2D
         case(2)
-           lhelp = ((grd_sig(ix,iy,1)+grd_cap(ig,ix,iy,1)) * & !{{{
+           lhelp = ((grd_sig(ic)+grd_cap(ig,ic)) * & !{{{
                 min(dx(ix),dy(iy))*help < prt_tauddmc) &
                 .or.in_puretran
-           if (lhelp) then
-              if (ptcl%itype == 2) then
+           if(lhelp) then
+              if(ptcl%itype == 2) then
 !-- DDMC -> IMC
-                 grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
+                 grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- sampling position uniformly
                  r1 = rnd_r(rnd_state)
                  x = sqrt(r1*grd_xarr(ix+1)**2 + &
@@ -222,7 +225,7 @@ subroutine particle_advance
                     om = atan2(sqrt(1d0-mu**2)*sin(om) , &
                          sqrt(1d0-mu**2)*cos(om)+(gm*x/pc_c) * &
                          (1d0+gm*(cmffact-1d0)/(gm+1d0)))
-                    if(om<0d0) om=om+pc_pi2
+                    if(om<0d0) om = om+pc_pi2
 !-- mu
                     mu = (mu+(gm*y/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
                          (gm*cmffact)
@@ -234,19 +237,19 @@ subroutine particle_advance
            else
               if(ptcl%itype==1) then
 !-- IMC -> DDMC
-                 grd_methodswap(ix,iy,1)=grd_methodswap(ix,iy,1)+1
+                 grd_methodswap(ic) = grd_methodswap(ic)+1
               endif
            endif!}}}
 
 !-- 3D
         case(3)
-           lhelp = ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz)) * & !{{{
+           lhelp = ((grd_sig(ic)+grd_cap(ig,ic)) * & !{{{
                 min(dx(ix),dy(iy),dz(iz))*help < prt_tauddmc) &
                 .or.in_puretran
-           if (lhelp) then
-              if (ptcl%itype == 2) then
+           if(lhelp) then
+              if(ptcl%itype == 2) then
 !-- DDMC -> IMC
-                 grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+                 grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- sampling position uniformly
                  r1 = rnd_r(rnd_state)
                  x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
@@ -290,19 +293,19 @@ subroutine particle_advance
            else
               if(ptcl%itype==1) then
 !-- IMC -> DDMC
-                 grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+                 grd_methodswap(ic) = grd_methodswap(ic)+1
               endif
            endif!}}}
 
 !-- 1D spherical
         case(11)
-           lhelp = ((grd_sig(ix,1,1)+grd_cap(ig,ix,1,1)) * &!{{{
+           lhelp = ((grd_sig(ic)+grd_cap(ig,ic)) * &!{{{
                 dx(ix)*help<prt_tauddmc) &
                 .or.in_puretran
-           if (lhelp) then
-              if (ptcl%itype == 2) then
+           if(lhelp) then
+              if(ptcl%itype == 2) then
 !-- DDMC -> IMC
-                 grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
+                 grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- sampling position uniformly
                  r1 = rnd_r(rnd_state)
                  prt_tlyrand = prt_tlyrand+1
@@ -327,7 +330,7 @@ subroutine particle_advance
            else
               if(ptcl%itype==1) then
 !-- IMC -> DDMC
-                 grd_methodswap(ix,1,1)=grd_methodswap(ix,1,1)+1
+                 grd_methodswap(ic) = grd_methodswap(ic)+1
               endif
            endif!}}}
 
@@ -337,15 +340,15 @@ subroutine particle_advance
         endselect
 
 
-        if (lhelp) then
-           if (ptcl%itype == 2) then
+        if(lhelp) then
+           if(ptcl%itype == 2) then
 !-- DDMC -> IMC
               r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
               if(grd_isvelocity) then
 !-- velocity effects accounting
-                 tot_evelo=tot_evelo+e*(1d0-1d0/labfact)
+                 tot_evelo = tot_evelo+e*(1d0-1d0/labfact)
 !
                  e = e/labfact
                  ptcl%e0 = ptcl%e0/labfact
@@ -387,17 +390,17 @@ subroutine particle_advance
 
 !-- First portion of operator split particle velocity position adjustment
      if(isshift) then
-     if ((grd_isvelocity).and.(ptcl%itype==1)) then
+     if((grd_isvelocity).and.(ptcl%itype==1)) then
         select case(in_igeom)
 !-- [123]D spherical
         case(1,11)
-           call advection1(.true.,ptcl,ig)
+           call advection1(.true.,ptcl,ic,ig)
 !-- 2D
         case(2)
-           call advection2(.true.,ptcl,ig)
+           call advection2(.true.,ptcl,ic,ig)
 !-- 3D
         case(3)
-           call advection3(.true.,ptcl,ig)
+           call advection3(.true.,ptcl,ic,ig)
         endselect
      endif
      endif
@@ -413,12 +416,12 @@ subroutine particle_advance
         prt_istep = 0!{{{
         do while ((.not.prt_done).and.(.not.isvacant))
            prt_istep = prt_istep + 1
-           if (ptcl%itype == 1.or.in_puretran) then
+           if(ptcl%itype == 1.or.in_puretran) then
               nimc = nimc + 1
-              call transport1(ptcl,ig,isvacant)
+              call transport1(ptcl,ic,ig,isvacant)
            else
               nddmc = nddmc + 1
-              call diffusion1(ptcl,ig,isvacant,icell,specarr)
+              call diffusion1(ptcl,ic,ig,isvacant,icell,specarr)
            endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done) then
@@ -433,7 +436,7 @@ subroutine particle_advance
               endif
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (e<1d-6*ptcl%e0 .and. .not.isvacant) then
+           if(e<1d-6*ptcl%e0 .and. .not.isvacant) then
 !-- transformation factor
               if(grd_isvelocity .and. ptcl%itype==1) then
                  labfact = 1d0 - mu*x/pc_c
@@ -446,7 +449,7 @@ subroutine particle_advance
               if(r1<0.5d0) then
                  isvacant = .true.
                  prt_done = .true.
-                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
+                 grd_edep(ic) = grd_edep(ic) + e*labfact
 !-- velocity effects accounting
                  if(ptcl%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
               else
@@ -464,12 +467,12 @@ subroutine particle_advance
         prt_istep = 0!{{{
         do while ((.not.prt_done).and.(.not.isvacant))
            prt_istep = prt_istep + 1
-           if (ptcl%itype == 1.or.in_puretran) then
+           if(ptcl%itype == 1.or.in_puretran) then
               nimc = nimc + 1
-              call transport2(ptcl,ig,isvacant)
+              call transport2(ptcl,ic,ig,isvacant)
            else
               nddmc = nddmc + 1
-              call diffusion2(ptcl,ig,isvacant,icell,specarr)
+              call diffusion2(ptcl,ic,ig,isvacant,icell,specarr)
            endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done) then
@@ -481,7 +484,7 @@ subroutine particle_advance
               endif
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (e<1d-6*ptcl%e0 .and. .not.isvacant) then
+           if(e<1d-6*ptcl%e0 .and. .not.isvacant) then
 !-- transformation factor
               if(grd_isvelocity .and. ptcl%itype==1) then
                  labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
@@ -495,7 +498,7 @@ subroutine particle_advance
               if(r1<0.5d0) then
                  isvacant = .true.
                  prt_done = .true.
-                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
+                 grd_edep(ic) = grd_edep(ic) + e*labfact
 !-- velocity effects accounting
                  if(ptcl%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
               else
@@ -513,12 +516,12 @@ subroutine particle_advance
         prt_istep = 0!{{{
         do while ((.not.prt_done).and.(.not.isvacant))
            prt_istep = prt_istep + 1
-           if (ptcl%itype == 1.or.in_puretran) then
+           if(ptcl%itype == 1.or.in_puretran) then
               nimc = nimc + 1
-              call transport3(ptcl,ig,isvacant)
+              call transport3(ptcl,ic,ig,isvacant)
            else
               nddmc = nddmc + 1
-              call diffusion3(ptcl,ig,isvacant,icell,specarr)
+              call diffusion3(ptcl,ic,ig,isvacant,icell,specarr)
            endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done) then
@@ -533,7 +536,7 @@ subroutine particle_advance
               endif
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (e<1d-6*ptcl%e0 .and. .not.isvacant) then
+           if(e<1d-6*ptcl%e0 .and. .not.isvacant) then
 !-- transformation factor
               if(grd_isvelocity .and. ptcl%itype==1) then
                  labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &
@@ -547,7 +550,7 @@ subroutine particle_advance
               if(r1<0.5d0) then
                  isvacant = .true.
                  prt_done = .true.
-                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
+                 grd_edep(ic) = grd_edep(ic) + e*labfact
 !-- velocity effects accounting
                  if(ptcl%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
               else
@@ -565,12 +568,12 @@ subroutine particle_advance
         prt_istep = 0!{{{
         do while ((.not.prt_done).and.(.not.isvacant))
            prt_istep = prt_istep + 1
-           if (ptcl%itype == 1.or.in_puretran) then
+           if(ptcl%itype == 1.or.in_puretran) then
               nimc = nimc + 1
-              call transport11(ptcl,ig,isvacant)
+              call transport11(ptcl,ic,ig,isvacant)
            else
               nddmc = nddmc + 1
-              call diffusion11(ptcl,ig,isvacant,icell,specarr)
+              call diffusion11(ptcl,ic,ig,isvacant,icell,specarr)
            endif
 !-- verify position
            if(ptcl%itype==1 .and. .not.prt_done .and. &
@@ -578,7 +581,7 @@ subroutine particle_advance
               write(0,*) 'prt_adv: not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (e<1d-6*ptcl%e0 .and. .not.isvacant) then
+           if(e<1d-6*ptcl%e0 .and. .not.isvacant) then
 !-- transformation factor
               if(grd_isvelocity .and. ptcl%itype==1) then
                  labfact = 1d0 - mu*x/pc_c
@@ -591,7 +594,7 @@ subroutine particle_advance
               if(r1<0.5d0) then
                  isvacant = .true.
                  prt_done = .true.
-                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
+                 grd_edep(ic) = grd_edep(ic) + e*labfact
 !-- velocity effects accounting
                  if(ptcl%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
               else
@@ -626,7 +629,7 @@ subroutine particle_advance
 !
         r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
-        x1 = grd_cap(ig,ix,iy,iz)
+        x1 = grd_cap(ig,ic)
         x2 = grp_wl(ig)/(pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig)))
         if(r1<x2/(x1+x2)) then
            r1 = rnd_r(rnd_state)
@@ -638,17 +641,17 @@ subroutine particle_advance
      endif
 
      if(isshift) then
-     if ((grd_isvelocity).and.(ptcl%itype==1)) then
+     if((grd_isvelocity).and.(ptcl%itype==1)) then
         select case(in_igeom)
 !-- [123]D
         case(1,11)
-           call advection1(.false.,ptcl,ig)
+           call advection1(.false.,ptcl,ic,ig)
 !-- 2D
         case(2)
-           call advection2(.false.,ptcl,ig)
+           call advection2(.false.,ptcl,ic,ig)
 !-- 3D
         case(3)
-           call advection3(.false.,ptcl,ig)
+           call advection3(.false.,ptcl,ic,ig)
         endselect
      endif
      endif

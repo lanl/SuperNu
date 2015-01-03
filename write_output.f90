@@ -1,4 +1,4 @@
-subroutine write_output
+subroutine write_output(nmpi)
 
   use inputparmod
   use timingmod
@@ -7,27 +7,42 @@ subroutine write_output
   use totalsmod
   use fluxmod
   implicit none
+  integer,intent(in) :: nmpi
 
-  integer :: j,k
+  integer :: i,j,k
+  integer :: ncpr !number of cells per rank
   integer :: reclenf, recleng
   logical,save :: lfirst=.true.
   character(16), save :: pos='rewind', fstat='replace'
 !
+  integer,allocatable :: iarr(:,:)
+  real*8,allocatable :: arr(:,:)
+!
+!-- helper arrays
+  ncpr = grd_ncp/nmpi
+  allocate(iarr(ncpr,nmpi),arr(ncpr,nmpi))
+!
   reclenf = (flx_ng+1)*12
-  recleng = (max(grd_nx,grd_ny,grd_nz) + 1)*12
+  recleng = (ncpr+1)*12
 
 !
 !-- write once
 !=============
   if(lfirst) then
-     open(unit=4,file='output.grd_grid',status='replace',recl=recleng)
+     open(unit=4,file='output.grd_grid',status='replace',recl=max(recleng,reclenf))
 !-- header: dimension
      write(4,*) "#",grd_igeom
      write(4,*) "#",grd_nx,grd_ny,grd_nz
+     write(4,*) "#",grd_ncp,nmpi
 !-- body
      write(4,'(1p,10000e12.4)') grd_xarr(:)
      write(4,'(1p,10000e12.4)') grd_yarr(:)
      write(4,'(1p,10000e12.4)') grd_zarr(:)
+!-- cell indices
+     iarr = reshape(grd_icell,[ncpr,nmpi])
+     do i=1,nmpi
+        write(4,'(10000i12)') iarr(:,i)
+     enddo
      close(4)
 
      open(unit=4,file='output.flx_grid',status='replace',recl=reclenf)
@@ -93,52 +108,34 @@ subroutine write_output
 !-- grid arrays
 !==============
   if(.not.in_nogriddump) then
+     iarr = reshape(grd_methodswap,[ncpr,nmpi])
      open(unit=4,file='output.grd_methodswap',status=fstat,position='append',recl=recleng)
-     do k=1,grd_nz
-     do j=1,grd_ny
-        write(4,'(10000i12)') grd_methodswap(:,j,k)
-     enddo
-     enddo
+     write(4,'(10000i12)') (iarr(:,i),i=1,nmpi)
      close(4)
 
      open(unit=4,file='output.grd_temp',status=fstat,position='append',recl=recleng)
-     do k=1,grd_nz
-     do j=1,grd_ny
-        write(4,'(1p,10000e12.4)') grd_temp(:,j,k)
-     enddo
-     enddo
+     arr = reshape(grd_temp,[ncpr,nmpi])
+     write(4,'(1p,10000e12.4)') (arr(:,i),i=1,nmpi)
      close(4)
 
-     open(unit=4,file='output.grd_fcoef',position='append',recl=recleng)
-     do k=1,grd_nz
-     do j=1,grd_ny
-        write(4,'(1p,10000e12.4)') grd_fcoef(:,j,k)
-     enddo
-     enddo
+     open(unit=4,file='output.grd_fcoef',status=fstat,position='append',recl=recleng)
+     arr = reshape(grd_fcoef,[ncpr,nmpi])
+     write(4,'(1p,10000e12.4)') (arr(:,i),i=1,nmpi)
      close(4)
 
-     open(unit=4,file='output.grd_eraddens',position='append',recl=recleng)
-     do k=1,grd_nz
-     do j=1,grd_ny
-        write(4,'(1p,10000e12.4)') grd_eraddens(:,j,k)/grd_vol(:,j,k)
-     enddo
-     enddo
+     open(unit=4,file='output.grd_eraddens',status=fstat,position='append',recl=recleng)
+     arr = reshape(grd_eraddens/grd_vol,[ncpr,nmpi])
+     write(4,'(1p,10000e12.4)') (arr(:,i),i=1,nmpi)
      close(4)
 
-     open(unit=4,file='output.grd_capgrey',position='append',recl=recleng)
-     do k=1,grd_nz
-     do j=1,grd_ny
-        write(4,'(1p,10000e12.4)') grd_capgrey(:,j,k)
-     enddo
-     enddo
+     open(unit=4,file='output.grd_capgrey',status=fstat,position='append',recl=recleng)
+     arr = reshape(grd_capgrey,[ncpr,nmpi])
+     write(4,'(1p,10000e12.4)') (arr(:,i),i=1,nmpi)
      close(4)
 
-     open(unit=4,file='output.grd_sig',position='append',recl=recleng)
-     do k=1,grd_nz
-     do j=1,grd_ny
-        write(4,'(1p,10000e12.4)') grd_sig(:,j,k)
-     enddo
-     enddo
+     open(unit=4,file='output.grd_sig',status=fstat,position='append',recl=recleng)
+     arr = reshape(grd_sig,[ncpr,nmpi])
+     write(4,'(1p,10000e12.4)') (arr(:,i),i=1,nmpi)
      close(4)
   endif
 

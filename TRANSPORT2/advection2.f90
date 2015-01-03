@@ -1,4 +1,4 @@
-subroutine advection2(pretrans,ptcl,ig)
+subroutine advection2(pretrans,ptcl,ic,ig)
 
   use miscmod
   use timestepmod
@@ -8,6 +8,7 @@ subroutine advection2(pretrans,ptcl,ig)
   implicit none
   logical,intent(in) :: pretrans
   type(packet),target,intent(inout) :: ptcl
+  integer,intent(out) :: ic
   integer,intent(in) :: ig
 !-----------------------------------------------------------------------
 ! This routine computes the advection of IMC particles through the
@@ -23,8 +24,8 @@ subroutine advection2(pretrans,ptcl,ig)
   integer :: i,j
   integer :: imove,nmove
 !-- pointers
-  integer,pointer :: ix
-  integer,pointer :: iy
+  integer,pointer :: ix, iy
+  integer,parameter :: iz=1
   real*8,pointer :: x 
   real*8,pointer :: y 
 !-- statement functions
@@ -66,7 +67,7 @@ subroutine advection2(pretrans,ptcl,ig)
 !--correcting new index
   if(x==0d0) ixholder = ix !-- on y axis
   if(y==0d0) iyholder = iy !-- on x axis
-  if(y<0d0.and.grd_yarr(iyholder)==y) iyholder=iyholder-1 !-- moved to negative y-line (rare)
+  if(y<0d0.and.grd_yarr(iyholder)==y) iyholder = iyholder-1 !-- moved to negative y-line (rare)
 
 !
 !-- quick exit if DDMC is active
@@ -105,7 +106,8 @@ subroutine advection2(pretrans,ptcl,ig)
 
 !-- x-edge
      if(help == rx) then
-        if((grd_sig(i-1,j,1)+grd_cap(ig,i-1,j,1)) * &!{{{
+        l = grd_icell(i-1,j,iz)
+        if((grd_sig(l)+grd_cap(ig,l)) * &!{{{
              min(dy(j),dx(i-1))*tsp_t >= prt_tauddmc) then
            x = grd_xarr(i)
            y = (yold/xold)*grd_xarr(i)
@@ -118,7 +120,8 @@ subroutine advection2(pretrans,ptcl,ig)
      else
         if(ymag(j)==abs(grd_yarr(j+1))) then!{{{
 !-- y<0
-           if((grd_sig(i,j+1,1)+grd_cap(ig,i,j+1,1)) * &
+           l = grd_icell(i,j+1,iz)
+           if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j+1),dx(i))*tsp_t >= &
                 prt_tauddmc) then
               x = (xold/yold)*grd_yarr(j+1)
@@ -129,7 +132,8 @@ subroutine advection2(pretrans,ptcl,ig)
            endif
         else
 !-- y>0
-           if((grd_sig(i,j-1,1)+grd_cap(ig,i,j-1,1)) * &
+           l = grd_icell(i,j-1,iz)
+           if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j-1),dx(i))*tsp_t >= &
                 prt_tauddmc) then
               x = (xold/yold)*grd_yarr(j)
@@ -143,5 +147,6 @@ subroutine advection2(pretrans,ptcl,ig)
   enddo
   ix = i
   iy = j
+  ic = grd_icell(ix,iy,iz)
 
 end subroutine advection2

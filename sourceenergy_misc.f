@@ -9,12 +9,13 @@ c     ----------------------------
 * Add the energy deposition from gamma absorption and amplification
 * factors to the energy source for optical particles.
 ************************************************************************
-!     integer :: i
+!     integer :: i,l
 c
 c-- dump whole profile (1D only)
 !      do i=grd_nx,1,-1
-!       write(6,*) 65-i,grd_emitex(i,1,1)/tsp_dt,grd_edep(i,1,1)/tsp_dt,
-!     &   grd_edep(i,1,1)/grd_emitex(i,1,1)
+!       l = grd_icell(i,1,1)
+!       write(6,*) 65-i,grd_emitex(l)/tsp_dt,grd_edep(l)/tsp_dt,
+!     &   grd_edep(l)/grd_emitex(l)
 !      enddo
 c
 c-- sanity check energy deposition

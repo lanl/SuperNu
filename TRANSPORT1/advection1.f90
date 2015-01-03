@@ -1,4 +1,4 @@
-pure subroutine advection1(pretrans,ptcl,ig)
+pure subroutine advection1(pretrans,ptcl,ic,ig)
 
   use miscmod
   use timestepmod
@@ -8,6 +8,7 @@ pure subroutine advection1(pretrans,ptcl,ig)
   implicit none
   logical,intent(in) :: pretrans
   type(packet),target,intent(inout) :: ptcl
+  integer,intent(out) :: ic
   integer,intent(in) :: ig
 !-----------------------------------------------------------------------
 ! This routine computes the advection of IMC particles through the
@@ -17,7 +18,7 @@ pure subroutine advection1(pretrans,ptcl,ig)
   real*8,parameter :: alph2 = .5d0
   logical,parameter :: partstopper = .true.
 !
-  integer :: zholder,zfdiff
+  integer :: zholder, zfdiff
   real*8 :: help
   integer :: i
 !-- pointers
@@ -63,7 +64,8 @@ pure subroutine advection1(pretrans,ptcl,ig)
      help = 1d0
   endif
   do i=ix-1,zholder,-1
-     if((grd_sig(i,iy,iz)+grd_cap(ig,i,iy,iz))*dx(i) &
+     l = grd_icell(i,iy,iz)
+     if((grd_sig(l)+grd_cap(ig,l))*dx(i) &
           *help>=prt_tauddmc) then
         zfdiff = i
         exit
@@ -77,5 +79,6 @@ pure subroutine advection1(pretrans,ptcl,ig)
   else
      ix = zholder
   endif
+  ic = grd_icell(ix,iy,iz)
 
 end subroutine advection1

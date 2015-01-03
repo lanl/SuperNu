@@ -12,7 +12,7 @@ subroutine emission_probability
 !multigroup volume emission probabilities
 !-----------------------
 
-  integer :: i,ig,igp1,j,k,iep,nepg
+  integer :: i,j,k,l,ig,igp1,iep,nepg
   real*8 :: t0,t1
   real*8 :: help
   real*8 :: specarr(grp_ng)
@@ -25,9 +25,10 @@ subroutine emission_probability
      do k=1,grd_nz
      do j=1,grd_ny
      do i=1,grd_nx
-        grd_emitprob(1,i,j,k) = in_suolpick1*grd_cap(1,i,j,k)
-        grd_emitprob(2,i,j,k) = (1d0 - in_suolpick1)*grd_cap(2,i,j,k)
-        grd_emitprob(3:grp_ng,i,j,k) = 0d0  !-- not necessary
+        l = grd_icell(i,j,k)
+        grd_emitprob(1,l) = in_suolpick1*grd_cap(1,l)
+        grd_emitprob(2,l) = (1d0 - in_suolpick1)*grd_cap(2,l)
+        grd_emitprob(3:grp_ng,l) = 0d0  !-- not necessary
      enddo !i
      enddo !j
      enddo !k
@@ -44,16 +45,17 @@ subroutine emission_probability
   do k=1,grd_nz
   do j=1,grd_ny
   do i=1,grd_nx
+     l = grd_icell(i,j,k)
 !-- piecewise integration of planck function
-     specarr = specintv(1d0/grd_temp(i,j,k),0)
+     specarr = specintv(1d0/grd_temp(l),0)
 !-- cumulative sum of unnormalized emission probability
      ig = 1
      help = 0d0
      do iep=1,grd_nep
         nepg = min(iep*grd_nepg,grp_ng) - ig + 1
         igp1 = ig + nepg - 1
-        help = help + sum(specarr(ig:igp1)*grd_cap(ig:igp1,i,j,k))
-        grd_emitprob(iep,i,j,k) = help
+        help = help + sum(specarr(ig:igp1)*grd_cap(ig:igp1,l))
+        grd_emitprob(iep,l) = help
         ig = igp1 + 1
      enddo !iep
   enddo !i

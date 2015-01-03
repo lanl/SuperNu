@@ -1,4 +1,4 @@
-subroutine transport3_gamgrey(ptcl)
+subroutine transport3_gamgrey(ptcl,ic)
 
   use randommod
   use miscmod
@@ -11,6 +11,7 @@ subroutine transport3_gamgrey(ptcl)
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
+  integer,intent(inout) :: ic
 !##################################################
   !This subroutine passes particle parameters as input and modifies
   !them through one IMC transport event.  If
@@ -82,12 +83,12 @@ subroutine transport3_gamgrey(ptcl)
   endif
 !
 !-- effective collision distance
-  if(grd_capgrey(ix,iy,iz)<=0d0) then
+  if(grd_capgrey(ic)<=0d0) then
      dcol = 2d0*pc_c*dt*thelpinv
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
      r1 = rnd_r(rnd_state)
-     dcol = -log(r1)*thelpinv/(elabfact*grd_capgrey(ix,iy,iz))
+     dcol = -log(r1)*thelpinv/(elabfact*grd_capgrey(ic))
   else
      dcol = 2d0*pc_c*dt*thelpinv
   endif
@@ -110,14 +111,14 @@ subroutine transport3_gamgrey(ptcl)
 !-- tallying energy densities
   if(.not.prt_isimcanlog) then
 !-- depositing nonanalog absorbed energy
-     grd_edep(ix,iy,iz)=grd_edep(ix,iy,iz)+e* &
-          (1d0-exp(-grd_capgrey(ix,iy,iz)* &
+     grd_edep(ic)=grd_edep(ic)+e* &
+          (1d0-exp(-grd_capgrey(ic)* &
           elabfact*d*thelp))*elabfact
-     if(grd_edep(ix,iy,iz)/=grd_edep(ix,iy,iz)) then
+     if(grd_edep(ic)/=grd_edep(ic)) then
         stop 'transport3_gamgrey: invalid energy deposition'
      endif
 !-- reducing particle energy
-     e = e*exp(-grd_capgrey(ix,iy,iz) * &
+     e = e*exp(-grd_capgrey(ic) * &
           elabfact*d*thelp)
   endif
 
@@ -176,7 +177,7 @@ subroutine transport3_gamgrey(ptcl)
 !-- effective absorption
         prt_done=.true.
 !-- adding comoving energy to deposition energy
-        grd_edep(ix,iy,iz)=grd_edep(ix,iy,iz)+e*elabfact
+        grd_edep(ic)=grd_edep(ic)+e*elabfact
         return
      else
 !-- energy weight
@@ -197,6 +198,7 @@ subroutine transport3_gamgrey(ptcl)
      endif
 !-- IMC in adjacent cell
      ix = ix+ihelp
+     ic = grd_icell(ix,iy,iz)
 !
 !-- y-bound
   elseif(d==dby) then
@@ -210,6 +212,7 @@ subroutine transport3_gamgrey(ptcl)
      endif
 !-- IMC in adjacent cell
      iy = iy+ihelp
+     ic = grd_icell(ix,iy,iz)
 !
 !-- z-bound
   elseif(d==dbz) then
@@ -223,6 +226,7 @@ subroutine transport3_gamgrey(ptcl)
      endif
 !-- IMC in adjacent cell
      iz = iz+ihelp
+     ic = grd_icell(ix,iy,iz)
   else
      stop 'transport3_gamgrey: invalid distance'
   endif

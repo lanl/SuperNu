@@ -81,6 +81,7 @@ subroutine boundary_source
         i = grd_nx
         j = 1
         k = 1
+        l = grd_icell(i,j,k)
      endselect
      if(in_srcmax>0d0.and.in_srctype=='surf') srftemp = in_srcmax
      do ig = 1, grp_ng
@@ -135,7 +136,7 @@ subroutine boundary_source
 
 !-- 3D (outer surface)
      case(1)
-!-- calculating position
+!-- calculating position!{{{
         ptcl%x = grd_xarr(i+1)
         x0 = ptcl%x
         r1 = rnd_r(rnd_state)
@@ -153,9 +154,10 @@ subroutine boundary_source
 !-- sampling azimuthal direction angle
         ptcl%om = r1*pc_pi2
 !-- calculating albedo
-        mfphelp = (grd_cap(iig,i,j,k)+grd_sig(i,j,k))*dx(i)*thelp
+        l = grd_icell(i,j,k)
+        mfphelp = (grd_cap(iig,l)+grd_sig(l))*dx(i)*thelp
         P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
-        lhelp = ((grd_sig(i,j,k)+grd_cap(iig,i,j,k)) * &
+        lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
              min(dx(i),xm(i)*dyac(j),xm(i)*ym(j)*dz(k)) * &
              thelp < prt_tauddmc) &
              .or.in_puretran.or.P>1d0.or.P<0d0
@@ -167,11 +169,11 @@ subroutine boundary_source
            ptcl%mu = (-mu0+x0/pc_c)/cmffact
         else
            ptcl%mu = -mu0
-        endif
+        endif!}}}
 
 !-- 2D
      case(2)
-!-- calculating position
+!-- calculating position!{{{
         if(in_surfsrcloc=='down'.or.in_surfsrcloc=='up') then
 !-- flat surface
            r1 = rnd_r(rnd_state)
@@ -218,9 +220,10 @@ subroutine boundary_source
         endif
 
 !-- calculating albedo
-        mfphelp = (grd_cap(iig,i,j,1)+grd_sig(i,j,1))*help*thelp
+        l = grd_icell(i,j,1)
+        mfphelp = (grd_cap(iig,l)+grd_sig(l))*help*thelp
         P = 4d0*(1.0+1.5*abs(mu2))/(3d0*mfphelp+6d0*pc_dext)
-        lhelp = ((grd_sig(i,j,1)+grd_cap(iig,i,j,1)) * &
+        lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
              min(dx(i),dy(j))*thelp < prt_tauddmc) &
              .or.in_puretran.or.P>1d0.or.P<0d0
 !-- if velocity-dependent, transforming direction
@@ -239,11 +242,11 @@ subroutine boundary_source
         else
            ptcl%mu = mu0
            ptcl%om = om0
-        endif
+        endif!}}}
 
 !-- 3D
      case(3)
-!-- calculating position
+!-- calculating position!{{{
         if(in_surfsrcloc=='in'.or.in_surfsrcloc=='out') then
 !-- x surface
            if(i==1) then
@@ -336,15 +339,16 @@ subroutine boundary_source
         endif
 
 !-- calculating albedo
-        mfphelp = (grd_cap(iig,i,j,k)+grd_sig(i,j,k))*help*thelp
-        alb = grd_fcoef(i,j,k)*grd_cap(iig,i,j,k)/ &
-             (grd_cap(iig,i,j,k)+grd_sig(i,j,k))
+        l = grd_icell(i,j,k)
+        mfphelp = (grd_cap(iig,l)+grd_sig(l))*help*thelp
+        alb = grd_fcoef(l)*grd_cap(iig,l)/ &
+             (grd_cap(iig,l)+grd_sig(l))
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
         beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
              2.25d0*alb**2*mfphelp**4)
         P = 0.5d0*eps*beta*(1d0+1.5d0*abs(mu2))/(beta-0.75*eps*mfphelp)
 !        P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
-        lhelp = ((grd_sig(i,j,k)+grd_cap(iig,i,j,k)) * &
+        lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
              min(dx(i),dy(j),dz(k))*thelp < prt_tauddmc) &
              .or.in_puretran.or.P>1d0.or.P<0d0
 !-- if velocity-dependent, transforming direction
@@ -366,11 +370,11 @@ subroutine boundary_source
         else
            ptcl%mu = mu0
            ptcl%om = om0
-        endif
+        endif!}}}
 
 !-- 1D (outer surface)
      case(11)
-!-- calculating position
+!-- calculating position!{{{
         ptcl%x = grd_xarr(i+1)
         x0 = ptcl%x
 !-- setting cell index
@@ -378,9 +382,9 @@ subroutine boundary_source
         ptcl%iy = j
         ptcl%iz = k
 !-- calculating albedo
-        mfphelp = (grd_cap(iig,i,1,1)+grd_sig(i,1,1))*dx(i)*thelp
+        mfphelp = (grd_cap(iig,l)+grd_sig(l))*dx(i)*thelp
         P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
-        lhelp = ((grd_sig(i,1,1)+grd_cap(iig,i,1,1)) * &
+        lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
              dx(i)*thelp < prt_tauddmc) &
              .or.in_puretran.or.P>1d0.or.P<0d0
 !-- if velocity-dependent, transforming direction
@@ -391,7 +395,7 @@ subroutine boundary_source
            ptcl%mu = (-mu0+x0/pc_c)/cmffact
         else
            ptcl%mu = -mu0
-        endif
+        endif!}}}
      endselect
 
      if(lhelp) then

@@ -13,7 +13,7 @@ subroutine sourcenumbers
 !to each cell based on the amount of energy emitted by the cell.
 !##################################################
 
-  integer :: i,j,k,iimpi
+  integer :: i,j,k,l,iimpi
   real*8 :: base
   integer :: n,ndone
   real*8,parameter :: basefrac=.1d0
@@ -58,12 +58,13 @@ subroutine sourcenumbers
   do k=1,grd_nz
   do j=1,grd_ny
   do i=1,grd_nx
-     en = grd_emit(i,j,k)**pwr + grd_emitex(i,j,k)**pwr
+     l = grd_icell(i,j,k)
+     en = grd_emit(l)**pwr + grd_emitex(l)**pwr
      if(en==0d0) cycle
 !-- continuously guide the rounding towards the correct cumulative value
      n = int(en*nsavail*einv + base)  !round down
      if(edone*einv>ndone*invn) n = n + 1  !round up
-     grd_nvol(i,j,k) = n
+     grd_nvol(l) = n
      edone = edone + en
      ndone = ndone + n
   enddo
@@ -79,8 +80,9 @@ subroutine sourcenumbers
   do k=1,grd_nz
   do j=1,grd_ny
   do i=1,grd_nx
-     call sourcenumbers_roundrobin(iimpi,grd_emit(i,j,k)**pwr, &
-        grd_emitex(i,j,k)**pwr,grd_nvol(i,j,k),nemit,nvol,nvolex)
+     l = grd_icell(i,j,k)
+     call sourcenumbers_roundrobin(iimpi,grd_emit(l)**pwr, &
+        grd_emitex(l)**pwr,grd_nvol(l),nemit,nvol,nvolex)
 !-- particle counts
      prt_nnew = prt_nnew + nvol + nvolex
      prt_nexsrc = prt_nexsrc + nvolex

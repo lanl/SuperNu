@@ -40,7 +40,6 @@ c
 c
       subroutine inputstr_compress(nmpi,ncpr)
 c     ---------------------------------------!{{{
-      use inputstrmod
       implicit none
       integer,intent(in) :: nmpi
       integer,intent(out) :: ncpr
@@ -49,14 +48,12 @@ c     ---------------------------------------!{{{
 ************************************************************************
       integer :: i,j,k,l
       integer :: idcell
-      integer :: nc,ncpr
 c
       str_nc = count(str_mass>0d0)
 c
 c-- number of cells per rank
-      nc = str_nc
-      if(str_nc<nx*ny*nz) nc = nc + 1 !add one void cell
-      ncpr = ceiling(nc/nmpi)
+      if(str_nc<nx*ny*nz) str_nc = str_nc + 1 !add one void cell
+      ncpr = ceiling(str_nc/dble(nmpi))
       str_ncp = ncpr*nmpi
 c
       allocate(str_idcell(str_ncp))

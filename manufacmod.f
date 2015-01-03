@@ -61,7 +61,7 @@ c     ------------------------------!{{{
 * calculate finite volume manufactured radiation source per cell
 * per group in ergs with manufactured parameters
 ************************************************************************
-      integer :: i
+      integer :: i,l
 c
 c-- verify applicable input pars
       call check_manufacpars
@@ -73,8 +73,9 @@ c-- implement/modify velocity dependent manufactured radiation source
          select case (in_opacanaltype)
          case ('grey')
 c-- grey solution
-            do i = 1, grd_nx
-               grd_emitex(i,1,1)= (1d0/dt)*(
+            do i=1,grd_nx
+               l = grd_icell(i,1,1)
+               grd_emitex(l)= (1d0/dt)*(
      &            log((texp+dt)/texp)
      &            *(4d0*man_aa11/pc_c)+
      &            (3d0*totmass*sigcoef/
@@ -84,10 +85,8 @@ c-- grey solution
      &            (man_aa11-pc_acoef*pc_c*man_temp0**4)
      &            )
 !
-               grd_emitex(i,1,1) = grd_emitex(i,1,1)*
-     &              grd_vol(i,1,1)*dt
-!
             enddo
+            grd_emitex = grd_emitex*grd_vol*dt
 c--
          case ('mono')
             stop 'generate_manuradsrc: in_opacanaltype=mono'

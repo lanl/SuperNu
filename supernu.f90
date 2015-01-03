@@ -29,7 +29,8 @@ program supernu
 !***********************************************************************
   real*8 :: help
   real*8 :: t_elapsed
-  integer :: ierr,ns,nmax,it,ncell
+  integer :: ierr,ns,nmax,it
+  integer :: ncpr !number of cells per rank (gas_ncell)
   real*8 :: t0,t1 !timing
   character(15) :: msg
 !
@@ -48,84 +49,85 @@ program supernu
 !-- other tasks before packet propagation begins.
 !--
   if(impi==impi0) then
-    t0 = t_time()!{{{
+     t0 = t_time()!{{{
 !-- startup message
-    call banner
+     call banner
 !-- read runtime parameters
-    call read_inputpars
+     call read_inputpars
 !-- parse and verify runtime parameters
-    call parse_inputpars(nmpi)
+     call parse_inputpars(nmpi)
 !
 !-- time step init
-    call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst)
+     call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst)
 !-- constant time step, may be coded to loop if time step is not uniform
-    t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
-    tsp_dt = t_elapsed/in_nt
+     t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
+     tsp_dt = t_elapsed/in_nt
 !
 !-- particle init
-    ns = in_ns/nmpi
-    nmax = in_prt_nmax/nmpi
-    call particle_init(nmax,ns,in_ns0,in_isimcanlog, &
-         in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime)
+     ns = in_ns/nmpi
+     nmax = in_prt_nmax/nmpi
+     call particle_init(nmax,ns,in_ns0,in_isimcanlog, &
+          in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime)
 !
 !-- rand() count and prt restarts
-    if(tsp_ntres>1.and..not.in_norestart) then
+     if(tsp_ntres>1.and..not.in_norestart) then
 !-- read rand() count
-      call read_restart_randcount
+       call read_restart_randcount
 !-- read particle properties
-      call read_restart_particles
-    endif
+       call read_restart_particles
+     endif
 !
 !-- wlgrid (before grid setup)
-    call group_init(in_ng,in_wldex,in_wlmin,in_wlmax)
-    call fluxgrid_setup(in_flx_ndim,in_flx_wlmin,in_flx_wlmax)
+     call group_init(in_ng,in_wldex,in_wlmin,in_wlmax)
+     call fluxgrid_setup(in_flx_ndim,in_flx_wlmin,in_flx_wlmax)
 !
 !-- read input structure
-    if(.not.in_noreadstruct.and.in_isvelocity) then
-      call read_inputstr(in_igeom,in_ndim,in_voidcorners)
-    else
+     if(.not.in_noreadstruct.and.in_isvelocity) then
+       call read_inputstr(in_igeom,in_ndim,in_voidcorners)
+     else
 !== generate_inputstr development in progress
-      call generate_inputstr(in_igeom)
-    endif
+       call generate_inputstr(in_igeom)
+     endif
 !-- compressed domain, serialize non-void cells
-    call inputstr_compress(nmpi,ncell)
+     call inputstr_compress(nmpi,ncpr)
 
 !-- READ DATA
 !-- read ion and level data
-    call ion_read_data(gas_nelem)  !ion and level data
+     call ion_read_data(gas_nelem)  !ion and level data
 !-- read bbxs data
-    if(.not.in_nobbopac) call read_bbxs_data(gas_nelem)!bound-bound cross section data
+     if(.not.in_nobbopac) call read_bbxs_data(gas_nelem)!bound-bound cross section data
 !-- read bfxs data
-    if(.not.in_nobfopac) call bfxs_read_data           !bound-free cross section data
+     if(.not.in_nobfopac) call bfxs_read_data           !bound-free cross section data
 !-- read ffxs data
-    if(.not.in_noffopac) call ffxs_read_data           !free-free cross section data
+     if(.not.in_noffopac) call ffxs_read_data           !free-free cross section data
 !
 !-- memory statistics
-    msg = 'post read:'
-    write(6,*) 'memusg: ',msg,memusg()
+     msg = 'post read:'
+     write(6,*) 'memusg: ',msg,memusg()
 !
-    t1 = t_time()
-    t_setup = t1-t0!}}}
+     t1 = t_time()
+     t_setup = t1-t0!}}}
   endif !impi
 
+!-- broadcast init info from impi0 rank to all others
   call bcast_permanent !MPI
 
 
 !-- setup spatial grid
-  call grid_init(impi==impi0,grp_ng,in_igeom,in_ndim,in_isvelocity)
+  call grid_init(impi==impi0,grp_ng,in_igeom,in_ndim,str_nc,str_ncp,in_isvelocity)
   call grid_setup
 
 !-- domain-decompose input structure
-  call scatter_inputstruct(in_ndim,ncell) !MPI
+  call scatter_inputstruct(in_ndim,ncpr) !MPI
 
 !-- setup gas
-  if(impi_gas>=0) call gas_init(impi==impi0,ncell,grp_ng)
-  if(impi_gas>=0) call gas_setup(impi==impi0)
+  if(impi>=0) call gas_init(impi==impi0,ncpr,grp_ng)
+  if(impi>=0) call gas_setup(impi==impi0)
 !-- inputstr no longer needed
   call inputstr_dealloc
 
 
-!-- setup flux
+!-- allocate flux arrays
   call flux_alloc
 
 
@@ -133,7 +135,7 @@ program supernu
   call initialnumbers
 
 !-- allocate arrays of sizes retreived in bcast_permanent
-  if(impi_gas>=0) call ion_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
+  if(impi>=0) call ion_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
   call particle_alloc(impi==impi0,in_norestart,nmpi)
 
 !-- initialize random number generator, use different seeds for each rank
@@ -180,8 +182,8 @@ program supernu
 
 !-- update all non-permanent variables
      call grid_update(tsp_t)
-     if(impi_gas>=0) call gas_update(impi,it)
-     if(impi_gas>=0) call sourceenergy(nmpi) !energy to be instantiated per cell in this timestep
+     if(impi>=0) call gas_update(impi,it)
+     if(impi>=0) call sourceenergy(nmpi) !energy to be instantiated per cell in this timestep
      call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
 
 
@@ -239,7 +241,7 @@ program supernu
      if(.not.in_norestart) call collect_restart_data !MPI
 
 !-- update temperature
-     if(impi_gas>=0) call temperature_update
+     if(impi>=0) call temperature_update
      call reduce_gastemp !MPI
 
 
@@ -255,7 +257,7 @@ program supernu
         call totals_error !check energy (particle weight) is accounted
 
 !-- write output
-        if(it>0) call write_output
+        if(it>0) call write_output(nmpi)
 !-- restart writers
         if(.not.in_norestart .and. it>0) then
            call write_restart_file !temp

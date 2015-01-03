@@ -1,4 +1,4 @@
-subroutine transport2_gamgrey(ptcl)
+subroutine transport2_gamgrey(ptcl,ic)
 
   use randommod
   use miscmod
@@ -10,6 +10,7 @@ subroutine transport2_gamgrey(ptcl)
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
+  integer,intent(inout) :: ic
 !##################################################
   !This subroutine passes particle parameters as input and modifies
   !them through one IMC transport event.  If
@@ -28,6 +29,7 @@ subroutine transport2_gamgrey(ptcl)
   real*8 :: r1
 
   integer,pointer :: ix,iy
+  integer,parameter :: iz=1
   real*8,pointer :: x,y,mu,om,e,e0
 
   ix => ptcl%ix
@@ -101,13 +103,13 @@ subroutine transport2_gamgrey(ptcl)
 
 !
 !-- calculating distance to effective collision:
-  if(grd_capgrey(ix,iy,1)<=0d0) then
+  if(grd_capgrey(ic)<=0d0) then
 !-- making greater than dcen
      dcol = 2d0*pc_c*dt*thelpinv
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
      r1 = rnd_r(rnd_state)
-     dcol = -log(r1)*thelpinv/(elabfact*grd_capgrey(ix,iy,1))
+     dcol = -log(r1)*thelpinv/(elabfact*grd_capgrey(ic))
   else
 !-- making greater than dcen
      dcol = 2d0*pc_c*dt*thelpinv
@@ -147,14 +149,14 @@ subroutine transport2_gamgrey(ptcl)
 !-- tallying energy densities
   if(.not.prt_isimcanlog) then
 !-- depositing nonanalog absorbed energy
-     grd_edep(ix,iy,1) = grd_edep(ix,iy,1)+e* &
-          (1d0-exp(-grd_capgrey(ix,iy,1)* &
+     grd_edep(ic) = grd_edep(ic)+e* &
+          (1d0-exp(-grd_capgrey(ic)* &
           elabfact*d*thelp))*elabfact
-     if(grd_edep(ix,iy,1)/=grd_edep(ix,iy,1)) then
+     if(grd_edep(ic)/=grd_edep(ic)) then
         stop 'transport2_gamgrey: invalid energy deposition'
      endif
 !-- reducing particle energy
-     e = e*exp(-grd_capgrey(ix,iy,1) * &
+     e = e*exp(-grd_capgrey(ic) * &
           elabfact*d*thelp)
   endif
 
@@ -209,7 +211,7 @@ subroutine transport2_gamgrey(ptcl)
 !-- ending particle
         prt_done=.true.
 !-- adding comoving energy to deposition energy
-        grd_edep(ix,iy,1) = grd_edep(ix,iy,1) + e*elabfact
+        grd_edep(ic) = grd_edep(ic) + e*elabfact
      else
 !-- effectively scattered:
 !-- transforming to cmf, then to lab:
@@ -233,6 +235,7 @@ subroutine transport2_gamgrey(ptcl)
      endif
 !-- IMC in adjacent cell
      ix = ix+ihelp
+     ic = grd_icell(ix,iy,iz)
 !
 !-- y-bound
   elseif(d==dby) then
@@ -246,6 +249,7 @@ subroutine transport2_gamgrey(ptcl)
      endif
 !-- IMC in adjacent cell
      iy = iy+ihelp
+     ic = grd_icell(ix,iy,iz)
   else
      stop 'transport2_gamgrey: invalid distance'
   endif

@@ -1,4 +1,4 @@
-subroutine transport3(ptcl,ig,isvacant)
+subroutine transport3(ptcl,ic,ig,isvacant)
 
   use randommod
   use miscmod
@@ -13,7 +13,7 @@ subroutine transport3(ptcl,ig,isvacant)
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
-  integer,intent(inout) :: ig
+  integer,intent(inout) :: ic, ig
   logical,intent(inout) :: isvacant
 !##################################################
   !This subroutine passes particle parameters as input and modifies
@@ -92,24 +92,24 @@ subroutine transport3(ptcl,ig,isvacant)
   endif
 !
 !-- Thomson scattering distance
-  if(grd_sig(ix,iy,iz)>0d0) then
+  if(grd_sig(ic)>0d0) then
      r1 = rnd_r(rnd_state)
-     dthm = -log(r1)*thelpinv/(elabfact*grd_sig(ix,iy,iz))
+     dthm = -log(r1)*thelpinv/(elabfact*grd_sig(ic))
   else
      dthm = 2d0*pc_c*tsp_dt*thelpinv
   endif
 !
 !-- effective collision distance
-  if(grd_cap(ig,ix,iy,iz)<=0d0) then
+  if(grd_cap(ig,ic)<=0d0) then
      dcol = 2d0*pc_c*tsp_dt*thelpinv
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
      r1 = rnd_r(rnd_state)
-     dcol = -log(r1)*thelpinv/(elabfact*grd_cap(ig,ix,iy,iz))
-  elseif(grd_fcoef(ix,iy,iz)<1d0.and.grd_fcoef(ix,iy,iz)>=0d0) then
+     dcol = -log(r1)*thelpinv/(elabfact*grd_cap(ig,ic))
+  elseif(grd_fcoef(ic)<1d0.and.grd_fcoef(ic)>=0d0) then
      r1 = rnd_r(rnd_state)
      dcol = -log(r1)*thelpinv/&
-          (elabfact*(1d0-grd_fcoef(ix,iy,iz))*grd_cap(ig,ix,iy,iz))
+          (elabfact*(1d0-grd_fcoef(ic))*grd_cap(ig,ic))
   else
      dcol = 2d0*pc_c*tsp_dt*thelpinv
   endif
@@ -142,32 +142,32 @@ subroutine transport3(ptcl,ig,isvacant)
 !-- tallying energy densities
   if(prt_isimcanlog) then
 !-- analog energy density
-     grd_eraddens(ix,iy,iz)=grd_eraddens(ix,iy,iz)+e*elabfact* &
+     grd_eraddens(ic)=grd_eraddens(ic)+e*elabfact* &
           d*thelp*cinv*dtinv
   else
 !-- nonanalog energy density
-     if(grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz)* &
+     if(grd_fcoef(ic)*grd_cap(ig,ic)* &
           min(dx(ix),dy(iy),dz(iz))*thelp>1d-6) then
-        grd_eraddens(ix,iy,iz) = grd_eraddens(ix,iy,iz)+e* &
-             (1.0d0-exp(-grd_fcoef(ix,iy,iz)*elabfact* &
-             grd_cap(ig,ix,iy,iz)*d*thelp))* &
-             elabfact/(grd_fcoef(ix,iy,iz)*elabfact * &
-             grd_cap(ig,ix,iy,iz)*pc_c*tsp_dt)
+        grd_eraddens(ic) = grd_eraddens(ic)+e* &
+             (1.0d0-exp(-grd_fcoef(ic)*elabfact* &
+             grd_cap(ig,ic)*d*thelp))* &
+             elabfact/(grd_fcoef(ic)*elabfact * &
+             grd_cap(ig,ic)*pc_c*tsp_dt)
      else
 !-- analog energy density
-        grd_eraddens(ix,iy,iz)=grd_eraddens(ix,iy,iz)+e*elabfact* &
+        grd_eraddens(ic)=grd_eraddens(ic)+e*elabfact* &
              d*thelp*cinv*dtinv
      endif
 !-- depositing nonanalog absorbed energy
-     grd_edep(ix,iy,iz)=grd_edep(ix,iy,iz)+e* &
-          (1d0-exp(-grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz)* &
+     grd_edep(ic)=grd_edep(ic)+e* &
+          (1d0-exp(-grd_fcoef(ic)*grd_cap(ig,ic)* &
           elabfact*d*thelp))*elabfact
-     if(grd_edep(ix,iy,iz)/=grd_edep(ix,iy,iz)) then
-!       write(0,*) e,grd_fcoef(ix,iy,iz),grd_cap(ig,ix,iy,iz),elabfact,d,thelp
+     if(grd_edep(ic)/=grd_edep(ic)) then
+!       write(0,*) e,grd_fcoef(ic),grd_cap(ig,ic),elabfact,d,thelp
         stop 'transport3: invalid energy deposition'
      endif
 !-- reducing particle energy
-     e = e*exp(-grd_fcoef(ix,iy,iz)*grd_cap(ig,ix,iy,iz) * &
+     e = e*exp(-grd_fcoef(ic)*grd_cap(ig,ic) * &
           elabfact*d*thelp)
   endif
 
@@ -184,7 +184,7 @@ subroutine transport3(ptcl,ig,isvacant)
 !-- census
   if(d==dcen) then
      prt_done = .true.
-     grd_numcensus(ix,iy,iz)=grd_numcensus(ix,iy,iz)+1
+     grd_numcensus(ic)=grd_numcensus(ic)+1
      return
   endif
 
@@ -265,18 +265,18 @@ subroutine transport3(ptcl,ig,isvacant)
   elseif(d==dcol) then
      r1 = rnd_r(rnd_state)
 !-- checking if analog
-     if(prt_isimcanlog.and.r1<=grd_fcoef(ix,iy,iz)) then
+     if(prt_isimcanlog.and.r1<=grd_fcoef(ic)) then
 !-- effective absorption
         isvacant=.true.
         prt_done=.true.
 !-- adding comoving energy to deposition energy
-        grd_edep(ix,iy,iz)=grd_edep(ix,iy,iz)+e*elabfact
+        grd_edep(ic)=grd_edep(ic)+e*elabfact
         return
      else
 !-- effective scattering
 !-- redistributing wavelength
         r1 = rnd_r(rnd_state)
-        ig = emitgroup(r1,ix,iy,iz)
+        ig = emitgroup(r1,ic)
 !-- uniformly in new group
         r1 = rnd_r(rnd_state)
         wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
@@ -292,11 +292,11 @@ subroutine transport3(ptcl,ig,isvacant)
            e0 = e0*help
         endif
 !-- checking for DDMC in new group
-        if((grd_cap(ig,ix,iy,iz)+grd_sig(ix,iy,iz)) * &
+        if((grd_cap(ig,ic)+grd_sig(ic)) * &
              min(dx(ix),dy(iy),dz(iz))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
            ptcl%itype = 2
-           grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+           grd_methodswap(ic)=grd_methodswap(ic)+1
 !-- transforming to cmf
            if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -321,11 +321,13 @@ subroutine transport3(ptcl,ig,isvacant)
         x = grd_xarr(ix)
      endif
 
-     if((grd_cap(ig,ix+ihelp,iy,iz)+grd_sig(ix+ihelp,iy,iz)) * &
+     l = grd_icell(ix+ihelp,iy,iz)
+     if((grd_cap(ig,l)+grd_sig(l)) * &
           min(dx(ix+ihelp),dy(iy),dz(iz))*thelp < prt_tauddmc &
           .or.in_puretran) then
 !-- IMC in adjacent cell
         ix = ix+ihelp
+        ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
         if(grd_isvelocity) then
@@ -346,7 +348,7 @@ subroutine transport3(ptcl,ig,isvacant)
                    (0.55d0*help-1.25d0*abs(xi))*abs(x)*cinv
 !
 !-- apply the excess (higher than factor 2d0) to the energy deposition
-              grd_eamp(ix,iy,iz) = grd_eamp(ix,iy,iz) + &
+              grd_eamp(ic) = grd_eamp(ic) + &
                  e*2d0*0.55d0*max(0d0,help-2d0)*abs(x)*cinv
 !-- apply limited correction to the particle
               help = min(2d0,help)
@@ -354,14 +356,14 @@ subroutine transport3(ptcl,ig,isvacant)
               e=e*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(xi))*abs(x)*cinv)
            endif
         endif
-        help = (grd_cap(ig,ix+ihelp,iy,iz)+grd_sig(ix+ihelp,iy,iz)) * &
+        help = (grd_cap(ig,l)+grd_sig(l)) * &
              dx(ix+ihelp)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
         r1 = rnd_r(rnd_state)
         if (r1 < help*(1d0+1.5d0*abs(xi))) then
            ptcl%itype = 2
-           grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+           grd_methodswap(ic)=grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
               tot_evelo=tot_evelo+e*(1d0-elabfact)
@@ -371,6 +373,7 @@ subroutine transport3(ptcl,ig,isvacant)
               wl = wl/elabfact
            endif
            ix = ix + ihelp
+           ic = grd_icell(ix,iy,iz)
         else
            r1 = rnd_r(rnd_state)
            r2 = rnd_r(rnd_state)
@@ -409,11 +412,13 @@ subroutine transport3(ptcl,ig,isvacant)
         y = grd_yarr(iy)
      endif
 
-     if((grd_cap(ig,ix,iy+ihelp,iz)+grd_sig(ix,iy+ihelp,iz)) * &
+     l = grd_icell(ix,iy+ihelp,iz)
+     if((grd_cap(ig,l)+grd_sig(l)) * &
           min(dx(ix),dy(iy+ihelp),dz(iz))*thelp < prt_tauddmc &
           .or.in_puretran) then
 !-- IMC in adjacent cell
         iy = iy+ihelp
+        ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
         if(grd_isvelocity) then
@@ -434,7 +439,7 @@ subroutine transport3(ptcl,ig,isvacant)
                    (0.55d0*help-1.25d0*abs(eta))*abs(y)*cinv
 !
 !-- apply the excess (higher than factor 2d0) to the energy deposition
-              grd_eamp(ix,iy,iz) = grd_eamp(ix,iy,iz) + &
+              grd_eamp(ic) = grd_eamp(ic) + &
                  e*2d0*0.55d0*max(0d0,help-2d0)*abs(y)*cinv
 !-- apply limited correction to the particle
               help = min(2d0,help)
@@ -442,14 +447,14 @@ subroutine transport3(ptcl,ig,isvacant)
               e=e*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(eta))*abs(y)*cinv)
            endif
         endif
-        help = (grd_cap(ig,ix,iy+ihelp,iz)+grd_sig(ix,iy+ihelp,iz)) * &
+        help = (grd_cap(ig,l)+grd_sig(l)) * &
              dy(iy+ihelp)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
         r1 = rnd_r(rnd_state)
         if (r1 < help*(1d0+1.5d0*abs(eta))) then
            ptcl%itype = 2
-           grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+           grd_methodswap(ic)=grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
               tot_evelo=tot_evelo+e*(1d0-elabfact)
@@ -459,6 +464,7 @@ subroutine transport3(ptcl,ig,isvacant)
               wl = wl/elabfact
            endif
            iy = iy + ihelp
+           ic = grd_icell(ix,iy,iz)
         else
            r1 = rnd_r(rnd_state)
            r2 = rnd_r(rnd_state)
@@ -497,11 +503,13 @@ subroutine transport3(ptcl,ig,isvacant)
         z = grd_zarr(iz)
      endif
 
-     if((grd_cap(ig,ix,iy,iz+ihelp)+grd_sig(ix,iy,iz+ihelp)) * &
+     l = grd_icell(ix,iy,iz+ihelp)
+     if((grd_cap(ig,l)+grd_sig(l)) * &
           min(dx(ix),dy(iy),dz(iz+ihelp))*thelp < prt_tauddmc &
           .or.in_puretran) then
 !-- IMC in adjacent cell
         iz = iz+ihelp
+        ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
         if(grd_isvelocity) then
@@ -522,7 +530,7 @@ subroutine transport3(ptcl,ig,isvacant)
                    (0.55d0*help-1.25d0*abs(mu))*abs(z)*cinv
 !
 !-- apply the excess (higher than factor 2d0) to the energy deposition
-              grd_eamp(ix,iy,iz) = grd_eamp(ix,iy,iz) + &
+              grd_eamp(ic) = grd_eamp(ic) + &
                  e*2d0*0.55d0*max(0d0,help-2d0)*abs(x)*cinv
 !-- apply limited correction to the particle
               help = min(2d0,help)
@@ -530,14 +538,14 @@ subroutine transport3(ptcl,ig,isvacant)
               e=e*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(mu))*abs(z)*cinv)
            endif
         endif
-        help = (grd_cap(ig,ix,iy,iz+ihelp)+grd_sig(ix,iy,iz+ihelp)) * &
+        help = (grd_cap(ig,l)+grd_sig(l)) * &
              dz(iz+ihelp)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
         !-- sampling
         r1 = rnd_r(rnd_state)
         if (r1 < help*(1d0+1.5d0*abs(mu))) then
            ptcl%itype = 2
-           grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+           grd_methodswap(ic)=grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
               tot_evelo=tot_evelo+e*(1d0-elabfact)
@@ -547,6 +555,7 @@ subroutine transport3(ptcl,ig,isvacant)
               wl = wl/elabfact
            endif
            iz = iz + ihelp
+           ic = grd_icell(ix,iy,iz)
         else
            r1 = rnd_r(rnd_state)
            r2 = rnd_r(rnd_state)
@@ -587,11 +596,11 @@ subroutine transport3(ptcl,ig,isvacant)
         wl = wl*elabfact
      endif
 !-- check if ddmc region
-     if ((grd_sig(ix,iy,iz)+grd_cap(ig,ix,iy,iz)) * &
+     if ((grd_sig(ic)+grd_cap(ig,ic)) * &
           min(dx(ix),dy(iy),dz(iz))*thelp >= prt_tauddmc &
           .and..not.in_puretran) then
         ptcl%itype = 2
-        grd_methodswap(ix,iy,iz)=grd_methodswap(ix,iy,iz)+1
+        grd_methodswap(ic)=grd_methodswap(ic)+1
         if(grd_isvelocity) then
 !-- velocity effects accounting
            tot_evelo=tot_evelo+e*(1d0-elabfact)

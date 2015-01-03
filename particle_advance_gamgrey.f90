@@ -19,7 +19,8 @@ subroutine particle_advance_gamgrey(nmpi)
 !##################################################
   integer :: nhere, nemit, ndmy
   real*8 :: r1
-  integer :: i, j, k, ii, iimpi
+  integer :: i,j,k,l, ii, iimpi
+  integer :: ic
   integer,pointer :: ix, iy, iz
   real*8,pointer :: x,y,z,mu,om,e,e0
   real*8 :: t0,t1  !timing
@@ -44,7 +45,7 @@ subroutine particle_advance_gamgrey(nmpi)
   grd_numcensus = 0
 
 !-- initializing volume numbers
-  grd_nvol=0
+  grd_nvol = 0
 
 !-- shortcut
   pwr = in_srcepwr
@@ -73,12 +74,13 @@ subroutine particle_advance_gamgrey(nmpi)
   do k=1,grd_nz
   do j=1,grd_ny
   do i=1,grd_nx
-     en = grd_emitex(i,j,k)**pwr
+     l = grd_icell(i,j,k)
+     en = grd_emitex(l)**pwr
      if(en==0d0) cycle
 !-- continuously guide the rounding towards the correct cumulative value
      n = int(en*nsavail*einv + base)  !round down
      if(edone*einv>ndone*invn) n = n + 1  !round up
-     grd_nvol(i,j,k) = n
+     grd_nvol(l) = n
      edone = edone + en
      ndone = ndone + n
   enddo
@@ -110,13 +112,15 @@ subroutine particle_advance_gamgrey(nmpi)
   do k=1,grd_nz
   do j=1,grd_ny
   do i=1,grd_nx
-     call sourcenumbers_roundrobin(iimpi,grd_emitex(i,j,k), &
-        0d0,grd_nvol(i,j,k),nemit,nhere,ndmy)
+     l = grd_icell(i,j,k)
+     call sourcenumbers_roundrobin(iimpi,grd_emitex(l), &
+        0d0,grd_nvol(l),nemit,nhere,ndmy)
   do ii=1,nhere
 !-- adopt position
      ix = i
      iy = j
      iz = k
+     ic = l
 
 !-- calculating direction cosine (comoving)
      r1 = rnd_r(rnd_state)
@@ -182,7 +186,7 @@ subroutine particle_advance_gamgrey(nmpi)
            om = atan2(sqrt(1d0-mu0**2)*sin(om0) , &
                 sqrt(1d0-mu0**2)*cos(om0)+(gm*x/pc_c) * &
                 (1d0+gm*(cmffact-1d0)/(gm+1d0)))
-           if(om<0d0) om=om+pc_pi2
+           if(om<0d0) om = om+pc_pi2
 !-- mu
            mu = (mu0+(gm*y/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
                 (gm*cmffact)
@@ -257,17 +261,17 @@ subroutine particle_advance_gamgrey(nmpi)
      endselect
 !
 !-- emission energy per particle
-     e = grd_emitex(ix,iy,iz)/nemit*cmffact
+     e = grd_emitex(ic)/nemit*cmffact
      e0 = e
 
 !-----------------------------------------------------------------------
 !-- Advancing particle until census, absorption, or escape from domain
-     prt_done=.false.
+     prt_done = .false.
 !
      select case(in_igeom)
      case(1)
         do while (.not.prt_done)!{{{
-           call transport1_gamgrey(ptcl)
+           call transport1_gamgrey(ptcl,ic)
 !-- verify position
            if(.not.prt_done) then
               if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
@@ -295,7 +299,7 @@ subroutine particle_advance_gamgrey(nmpi)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  prt_done = .true.
-                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
+                 grd_edep(ic) = grd_edep(ic) + e*labfact
               else
                  e = 2d0*e
                  e0 = 2d0*e0
@@ -304,7 +308,7 @@ subroutine particle_advance_gamgrey(nmpi)
         enddo!}}}
      case(2)
         do while (.not.prt_done)!{{{
-           call transport2_gamgrey(ptcl)
+           call transport2_gamgrey(ptcl,ic)
 !-- verify position
            if(.not.prt_done) then
               if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
@@ -329,7 +333,7 @@ subroutine particle_advance_gamgrey(nmpi)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  prt_done = .true.
-                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
+                 grd_edep(ic) = grd_edep(ic) + e*labfact
               else
                  e = 2d0*e
                  e0 = 2d0*e0
@@ -338,7 +342,7 @@ subroutine particle_advance_gamgrey(nmpi)
         enddo!}}}
      case(3)
         do while (.not.prt_done)!{{{
-           call transport3_gamgrey(ptcl)
+           call transport3_gamgrey(ptcl,ic)
 !-- transformation factor
            if(grd_isvelocity) then
               labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &
@@ -352,7 +356,7 @@ subroutine particle_advance_gamgrey(nmpi)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  prt_done = .true.
-                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
+                 grd_edep(ic) = grd_edep(ic) + e*labfact
               else
                  e = 2d0*e
                  e0 = 2d0*e0
@@ -361,7 +365,7 @@ subroutine particle_advance_gamgrey(nmpi)
         enddo!}}}
      case(11)
         do while (.not.prt_done)!{{{
-           call transport11_gamgrey(ptcl)
+           call transport11_gamgrey(ptcl,ic)
 !-- verify position
            if(.not.prt_done .and. (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
               write(0,*) 'prt_adv_ggrey: not in cell', &
@@ -379,7 +383,7 @@ subroutine particle_advance_gamgrey(nmpi)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
                  prt_done = .true.
-                 grd_edep(ix,iy,iz) = grd_edep(ix,iy,iz) + e*labfact
+                 grd_edep(ic) = grd_edep(ic) + e*labfact
               else
                  e = 2d0*e
                  e0 = 2d0*e0

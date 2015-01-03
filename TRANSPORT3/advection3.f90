@@ -1,4 +1,4 @@
-subroutine advection3(pretrans,ptcl,ig)
+subroutine advection3(pretrans,ptcl,ic,ig)
 
   use miscmod
   use timestepmod
@@ -8,6 +8,7 @@ subroutine advection3(pretrans,ptcl,ig)
   implicit none
   logical,intent(in) :: pretrans
   type(packet),target,intent(inout) :: ptcl
+  integer,intent(out) :: ic
   integer,intent(in) :: ig
 !-----------------------------------------------------------------------
 ! This routine computes the advection of IMC particles through the
@@ -129,7 +130,8 @@ subroutine advection3(pretrans,ptcl,ig)
      if(help == rx) then
         if(xmag(i)==abs(grd_xarr(i+1))) then!{{{
 !-- x<0
-           if((grd_sig(i+1,j,k)+grd_cap(ig,i+1,j,k)) * &
+           l = grd_icell(i+1,j,k)
+           if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j),dx(i+1),dz(k))*tsp_t >= &
                 prt_tauddmc) then
               x = grd_xarr(i+1)
@@ -141,7 +143,8 @@ subroutine advection3(pretrans,ptcl,ig)
            endif
         else
 !-- x>0
-           if((grd_sig(i-1,j,k)+grd_cap(ig,i-1,j,k)) * &
+           l = grd_icell(i-1,j,k)
+           if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j),dx(i-1),dz(k))*tsp_t >= &
                 prt_tauddmc) then
               x = grd_xarr(i)
@@ -157,7 +160,8 @@ subroutine advection3(pretrans,ptcl,ig)
      elseif(help == ry) then
         if(ymag(j)==abs(grd_yarr(j+1))) then!{{{
 !-- y<0
-           if((grd_sig(i,j+1,k)+grd_cap(ig,i,j+1,k)) * &
+           l = grd_icell(i,j+1,k)
+           if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j+1),dx(i),dz(k))*tsp_t >= &
                 prt_tauddmc) then
               x = (xold/yold)*grd_yarr(j+1)
@@ -169,7 +173,8 @@ subroutine advection3(pretrans,ptcl,ig)
            endif
         else
 !-- y>0
-           if((grd_sig(i,j-1,k)+grd_cap(ig,i,j-1,k)) * &
+           l = grd_icell(i,j-1,k)
+           if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j-1),dx(i),dz(k))*tsp_t >= &
                 prt_tauddmc) then
               x = (xold/yold)*grd_yarr(j)
@@ -185,7 +190,8 @@ subroutine advection3(pretrans,ptcl,ig)
      elseif(help == rz) then
         if(zmag(k)==abs(grd_zarr(k+1))) then
 !-- z<0
-           if((grd_sig(i,j,k+1)+grd_cap(ig,i,j,k+1)) * &
+           l = grd_icell(i,j,k+1)
+           if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j),dx(i),dz(k+1))*tsp_t >= &
                 prt_tauddmc) then
               x = (xold/zold)*grd_zarr(k+1)
@@ -197,7 +203,8 @@ subroutine advection3(pretrans,ptcl,ig)
            endif
         else
 !-- z>0
-           if((grd_sig(i,j,k-1)+grd_cap(ig,i,j,k-1)) * &
+           l = grd_icell(i,j,k-1)
+           if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j),dx(i),dz(k-1))*tsp_t >= &
                 prt_tauddmc) then
               x = (xold/zold)*grd_zarr(k)
@@ -213,5 +220,6 @@ subroutine advection3(pretrans,ptcl,ig)
   ix = i
   iy = j
   iz = k
+  ic = grd_icell(ix,iy,iz)
 
 end subroutine advection3

@@ -99,7 +99,7 @@ c-- copy back
       deallocate(lsndvec)
 c
 c-- integer
-      n = 14
+      n = 16
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/
      &  grp_ng,prt_ns,
@@ -107,7 +107,7 @@ c-- integer
      &  prt_ninit,prt_ninitnew,
      &  ion_nion,ion_iionmax,bb_nline,
      &  flx_ng,flx_nmu,flx_nom,
-     &  str_nabund/)
+     &  str_nc,str_ncp,str_nabund/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -124,7 +124,9 @@ c-- copy back
       flx_ng       = isndvec(11)
       flx_nmu      = isndvec(12)
       flx_nom      = isndvec(13)
-      str_nabund   = isndvec(14)
+      str_nc       = isndvec(14)
+      str_ncp      = isndvec(15)
+      str_nabund   = isndvec(16)
       deallocate(isndvec)
 c
 c-- real*8
@@ -296,7 +298,6 @@ c     ------------------------------------------!{{{
 * mpi_scatter the input structure to all ranks in the worker comm.
 ************************************************************************
       integer :: nx,ny,nz
-      integer :: nc
 c
       nx = ndim(1)
       ny = ndim(2)
@@ -355,15 +356,13 @@ c     ------------------------------------!{{{
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
 ************************************************************************
-      integer :: n
-      real*8 :: snd3(nx,ny,nz)
+      real*8 :: snd(grd_ncp)
       real*8 :: t0,t1
 c
       t0 = t_time()
 c
-      n = nx*ny*nz
-      snd3 = grd_edep
-      call mpi_allreduce(snd3,grd_edep,n,MPI_REAL8,MPI_SUM,
+      snd = grd_edep
+      call mpi_allreduce(snd,grd_edep,grd_ncp,MPI_REAL8,MPI_SUM,
      &  MPI_COMM_WORLD,ierr)
 c
       t1 = t_time()
@@ -386,8 +385,7 @@ c     -----------------------------!{{{
 * Broadcast the data that changes with time/temperature.
 ************************************************************************
       real*8 :: t0,t1
-      real*8 :: snd3(grd_nx,grd_ny,grd_nz)
-      integer :: n
+      real*8 :: snd(grd_ncp)
 c
       t0 = t_time()
 c
@@ -420,30 +418,11 @@ c-- broadcast
       call mpi_bcast(tot_esurf,1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      n = grd_nx*grd_ny*grd_nz
-c
 c-- allreduce
-      snd3 = grd_eamp
-      call mpi_allreduce(snd3,grd_eamp,n,MPI_REAL8,MPI_SUM,
+      snd = grd_eamp
+      call mpi_allreduce(snd,grd_eamp,grd_ncp,MPI_REAL8,MPI_SUM,
      &  MPI_COMM_WORLD,ierr)
-!c
-!      call mpi_bcast(grd_temp,n,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(grd_capgrey,n,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(grd_fcoef,n,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!c
-!      call mpi_bcast(grd_emit,n,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(grd_emitex,n,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!c
-!      call mpi_bcast(grd_sig,n,MPI_REAL8,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!      call mpi_bcast(grd_cap,grp_ng*n,MPI_REAL,
-!     &  impi0,MPI_COMM_WORLD,ierr)
-!c
+c
       t1 = t_time()
       call timereg(t_mpibcast, t1-t0)
 c!}}}
@@ -465,10 +444,12 @@ c     -----------------------!{{{
 ************************************************************************
       integer :: n
       real*8,allocatable :: sndvec(:),rcvvec(:)
-      integer :: isnd3(nx,ny,nz),isnd3f(flx_ng,flx_nmu,flx_nom)
-      real*8 :: snd3(nx,ny,nz),snd3f(flx_ng,flx_nmu,flx_nom)
-      integer :: isnd3g(flx_nmu,flx_nom)
-      real*8 :: snd3g(flx_nmu,flx_nom)
+      integer :: isnd(grd_ncp)
+      real*8 :: snd(grd_ncp)
+      integer :: isnd3f(flx_ng,flx_nmu,flx_nom)
+      real*8 :: snd3f(flx_ng,flx_nmu,flx_nom)
+      integer :: isnd2f(flx_nmu,flx_nom)
+      real*8 :: snd2f(flx_nmu,flx_nom)
       real*8 :: help
       real*8 :: t0,t1
 c
@@ -502,16 +483,16 @@ c-- zero out cumulative values on all other ranks to avoid double counting.
 c
 c-- flux dim==2
       n = flx_nmu*flx_nom
-      isnd3g = flx_gamlumnum
-      call mpi_reduce(isnd3g,flx_gamlumnum,n,MPI_INTEGER,MPI_SUM,
+      isnd2f = flx_gamlumnum
+      call mpi_reduce(isnd2f,flx_gamlumnum,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      snd3g = flx_gamluminos
-      call mpi_reduce(snd3g,flx_gamluminos,n,MPI_REAL8,MPI_SUM,
+      snd2f = flx_gamluminos
+      call mpi_reduce(snd2f,flx_gamluminos,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      snd3g = flx_gamlumdev
-      call mpi_reduce(snd3g,flx_gamlumdev,n,MPI_REAL8,MPI_SUM,
+      snd2f = flx_gamlumdev
+      call mpi_reduce(snd2f,flx_gamlumdev,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- flux dim==3
@@ -529,21 +510,21 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- dim==3
-      n = nx*ny*nz
-      isnd3 = grd_numcensus
-      call mpi_reduce(isnd3,grd_numcensus,n,MPI_INTEGER,MPI_SUM,
+      n = grd_ncp
+      isnd = grd_numcensus
+      call mpi_reduce(isnd,grd_numcensus,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      isnd3 = grd_methodswap
-      call mpi_reduce(isnd3,grd_methodswap,n,MPI_INTEGER,MPI_SUM,
+      isnd = grd_methodswap
+      call mpi_reduce(isnd,grd_methodswap,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      snd3 = grd_edep
-      call mpi_reduce(snd3,grd_edep,n,MPI_REAL8,MPI_SUM,
+      snd = grd_edep
+      call mpi_reduce(snd,grd_edep,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      snd3 = grd_eraddens
-      call mpi_reduce(snd3,grd_eraddens,n,MPI_REAL8,MPI_SUM,
+      snd = grd_eraddens
+      call mpi_reduce(snd,grd_eraddens,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- scatter

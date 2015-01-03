@@ -9,7 +9,7 @@ subroutine sourceenergy_analytic
   use totalsmod
   implicit none
 
-  integer :: i,j,k,nhelp
+  integer :: i,j,k,l,nhelp
   real*8 :: srcren
   real*8 :: thelp, help, xcent, ycent, zcent
 
@@ -65,11 +65,7 @@ subroutine sourceenergy_analytic
         select case(in_igeom)
 !-- [123]D spherical
         case(1,11)
-           do i=1,min(in_nheav,grd_nx)
-              grd_emitex(i,:,:) = in_srcmax * &
-                   grd_vol(i,:,:)*tsp_dt/thelp**3
-              !write(0,*) impi,grd_emitex(i,1,1),grd_vol(i,1,1)
-           enddo
+           grd_emitex = in_srcmax*grd_vol*tsp_dt/thelp**3
 
 !-- 2D
         case(2)
@@ -88,10 +84,11 @@ subroutine sourceenergy_analytic
            do j=1,grd_ny
            ycent = 0.5d0*(grd_yarr(j+1)+grd_yarr(j))
            do i=1,grd_nx
+              l = grd_icell(i,j,1)
               xcent = 0.5d0*(grd_xarr(i+1)+grd_xarr(i))
               if(xcent**2+ycent**2<help**2) then
-                 grd_emitex(i,j,1) = in_srcmax * &
-                      grd_vol(i,j,1)*tsp_dt/thelp**3
+                 grd_emitex(l) = in_srcmax * &
+                      grd_vol(l)*tsp_dt/thelp**3
               endif
            enddo
            enddo
@@ -121,10 +118,11 @@ subroutine sourceenergy_analytic
            do j=1,grd_ny
            ycent = 0.5d0*(grd_yarr(j+1)+grd_yarr(j))
            do i=1,grd_nx
+              l = grd_icell(i,j,k)
               xcent = 0.5d0*(grd_xarr(i+1)+grd_xarr(i))
               if(xcent**2+ycent**2+zcent**2<help**2) then
-                 grd_emitex(i,j,k) = in_srcmax * &
-                      grd_vol(i,j,k)*tsp_dt/thelp**3
+                 grd_emitex(l) = in_srcmax * &
+                      grd_vol(l)*tsp_dt/thelp**3
               endif
            enddo
            enddo
@@ -141,10 +139,11 @@ subroutine sourceenergy_analytic
      !Linear source profile!{{{
      if(grd_ny>1) stop 'sourceenergy_analytic: strt: no 2D'
      do i=1,grd_nx
+        l = grd_icell(i,1,1)
         srcren = in_srcmax*(grd_xarr(grd_nx+1)- &
              0.5d0*(grd_xarr(i)+grd_xarr(i+1)))/ & 
              (grd_xarr(grd_nx+1)-grd_xarr(1))
-        grd_emitex(i,1,1) = srcren * grd_vol(i,1,1)*tsp_dt
+        grd_emitex(l) = srcren * grd_vol(l)*tsp_dt
 !
 !-- no temp source for strt (matsrc=0.0)
 !--

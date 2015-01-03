@@ -9,6 +9,4 @@ c     -------------------------
 c-- volume 
       call grid_volume(grd_igeom,grd_isvelocity,t)
 c
-c-- emission probabilities
-
       end subroutine grid_update

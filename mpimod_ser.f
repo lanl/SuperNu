@@ -7,8 +7,6 @@ c     -------------
       integer :: impi=0  !mpi rank
       integer,parameter :: impi0=0 !master mpi rank
       integer :: nmpi=1  !number of mpi tasks
-      integer,parameter :: impi_gas=0
-      integer,parameter :: nmpi_gas=1
 c
       save
 c
@@ -16,13 +14,6 @@ c
 c
       subroutine bcast_permanent
       end subroutine bcast_permanent
-c
-c
-      subroutine mpi_setup_communicators(ncell)
-      integer,intent(in) :: ncell
-      integer :: dmy
-      dmy = ncell !use the intent(in) variable
-      end subroutine mpi_setup_communicators
 c
 c
       subroutine scatter_inputstruct(ndim,ncell)
@@ -49,8 +40,8 @@ c
 c     ---------------------------
       use gridmod
       use gasmod
-      grd_capgrey = reshape(gas_capgam,[grd_nx,grd_ny,grd_nz])
-      grd_emitex = reshape(gas_emitex,[grd_nx,grd_ny,grd_nz])
+      grd_capgrey = reshape(gas_capgam,[grd_ncp])
+      grd_emitex = reshape(gas_emitex,[grd_ncp])
       end subroutine allgather_gammacap
 c
 c
@@ -67,15 +58,15 @@ c
 * - stub
 ************************************************************************
 c-- domain decomposition
-      grd_temp = reshape(gas_temp,[grd_nx,grd_ny,grd_nz])
-      grd_emit = reshape(gas_emit,[grd_nx,grd_ny,grd_nz])
-      grd_emitex = reshape(gas_emitex,[grd_nx,grd_ny,grd_nz])
-      grd_evolinit = reshape(gas_evolinit,[grd_nx,grd_ny,grd_nz])
+      grd_temp = reshape(gas_temp,[grd_ncp])
+      grd_emit = reshape(gas_emit,[grd_ncp])
+      grd_emitex = reshape(gas_emitex,[grd_ncp])
+      grd_evolinit = reshape(gas_evolinit,[grd_ncp])
 
-      grd_cap = reshape(gas_cap,[grp_ng,grd_nx,grd_ny,grd_nz])
-      grd_sig = reshape(gas_sig,[grd_nx,grd_ny,grd_nz])
-      grd_capgrey = reshape(gas_capgrey,[grd_nx,grd_ny,grd_nz])
-      grd_fcoef = reshape(gas_fcoef,[grd_nx,grd_ny,grd_nz])
+      grd_cap = reshape(gas_cap,[grp_ng,grd_ncp])
+      grd_sig = reshape(gas_sig,[grd_ncp])
+      grd_capgrey = reshape(gas_capgrey,[grd_ncp])
+      grd_fcoef = reshape(gas_fcoef,[grd_ncp])
 
       end subroutine bcast_nonpermanent
 c
@@ -90,8 +81,8 @@ c
       use gridmod
       use gasmod
 c
-      gas_edep = reshape(grd_edep,[grd_nx*grd_ny*grd_nz])
-      gas_eraddens = reshape(grd_eraddens,[grd_nx*grd_ny*grd_nz])
+      gas_edep = reshape(grd_edep,[grd_ncp])
+      gas_eraddens = reshape(grd_eraddens,[grd_ncp])
       end subroutine reduce_tally
 c
 c
@@ -102,7 +93,7 @@ c
 c     -------------------------
       use gridmod
       use gasmod
-      grd_temp = reshape(gas_temp,[grd_nx,grd_ny,grd_nz])
+      grd_temp = reshape(gas_temp,[grd_ncp])
       end subroutine reduce_gastemp
 c
       subroutine scatter_restart_data

@@ -19,13 +19,16 @@ subroutine interior_source
   !particle loop (2nd).
 !##################################################
   logical :: lhelp
-  integer :: i,j,k,il,ir,ipart,ivac,ig,ii
+  integer :: i,j,k, ipart,ivac,ig,ii
   integer :: nhere,ndmy,iimpi,nemit
   real*8 :: pwr
   real*8 :: r1, r2, r3, uul, uur, uumax
   real*8 :: om0, mu0, x0, y0, z0, ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, thelp
   real*8 :: cmffact,mu1,mu2,gm
+!-- neighbor emit values (for source tilting)
+  integer :: icnb(6)
+!
   real*8 :: emitprob(grp_ng)
   type(packet),target :: ptcl
 !-- statement functions
@@ -58,8 +61,9 @@ subroutine interior_source
   do k=1,grd_nz
   do j=1,grd_ny
   do i=1,grd_nx
-     call sourcenumbers_roundrobin(iimpi,grd_emit(i,j,k)**pwr, &
-        grd_emitex(i,j,k)**pwr,grd_nvol(i,j,k),nemit,ndmy,nhere)
+     l = grd_icell(i,j,k)
+     call sourcenumbers_roundrobin(iimpi,grd_emit(l)**pwr, &
+        grd_emitex(l)**pwr,grd_nvol(l),nemit,ndmy,nhere)
   do ii=1,nhere
      ipart = ipart + 1!{{{
      ivac = prt_vacantarr(ipart)
@@ -100,7 +104,7 @@ subroutine interior_source
      mu0 = 1d0-2d0*r1
 
 !-- calculating particle energy
-     ep0 = grd_emitex(i,j,k)/dble(grd_nvol(i,j,k)-nemit)
+     ep0 = grd_emitex(l)/dble(grd_nvol(l)-nemit)
 
 !
 !-- selecting geometry
@@ -130,7 +134,7 @@ subroutine interior_source
         r1 = rnd_r(rnd_state)
         ptcl%om = pc_pi2*r1
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,j,k)+grd_cap(ig,i,j,k)) * &
+        lhelp = ((grd_sig(l)+grd_cap(ig,l)) * &
              min(dx(i),xm(i)*dyac(j),xm(i)*ym(j)*dz(k)) * &
              thelp < prt_tauddmc).or.(in_puretran)
 
@@ -165,7 +169,7 @@ subroutine interior_source
         r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,j,1)+grd_cap(ig,i,j,1)) * &
+        lhelp = ((grd_sig(l)+grd_cap(ig,l)) * &
              min(dx(i),dy(j))*thelp < prt_tauddmc) &
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
@@ -213,7 +217,7 @@ subroutine interior_source
         r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,j,k)+grd_cap(ig,i,j,k)) * &
+        lhelp = ((grd_sig(l)+grd_cap(ig,l)) * &
              min(dx(i),dy(j),dz(k))*thelp < prt_tauddmc) &
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
@@ -253,7 +257,7 @@ subroutine interior_source
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,1,1)+grd_cap(ig,i,1,1))*dx(i)* &
+        lhelp = ((grd_sig(l)+grd_cap(ig,l))*dx(i)* &
              thelp < prt_tauddmc).or.(in_puretran)
 
 !-- if velocity-dependent, transforming direction
@@ -293,12 +297,22 @@ subroutine interior_source
   do k=1,grd_nz
   do j=1,grd_ny
   do i=1,grd_nx
-     call sourcenumbers_roundrobin(iimpi,grd_emit(i,j,k)**pwr, &
-        grd_emitex(i,j,k)**pwr,grd_nvol(i,j,k),nemit,nhere,ndmy)
+     l = grd_icell(i,j,k)
+     call sourcenumbers_roundrobin(iimpi,grd_emit(l)**pwr, &
+        grd_emitex(l)**pwr,grd_nvol(l),nemit,nhere,ndmy)
      if(nhere<1) cycle
 !-- integrate planck function over each group
-     emitprob = specintv(1d0/grd_temp(i,j,k),0)
-     emitprob = emitprob*grd_cap(:,i,j,k)/grd_capgrey(i,j,k)
+     emitprob = specintv(1d0/grd_temp(l),0)
+     emitprob = emitprob*grd_cap(:,l)/grd_capgrey(l)
+!
+!-- neighbors
+     icnb(1) = grd_icell(max(i-1,1),j,k)      !left neighbor
+     icnb(2) = grd_icell(min(i+1,grd_nx),j,k) !right neighbor
+     icnb(3) = grd_icell(i,max(j-1,1),k)      !left neighbor
+     icnb(4) = grd_icell(i,min(j+1,grd_ny),k) !right neighbor
+     icnb(5) = grd_icell(i,j,max(k-1,1))      !left neighbor
+     icnb(6) = grd_icell(i,j,min(k+1,grd_nz)) !right neighbor
+!
 !
   do ii=1,nhere
      ipart = ipart + 1!{{{
@@ -341,7 +355,7 @@ subroutine interior_source
      mu0 = 1d0-2d0*r1
 
 !-- calculating particle energy
-     ep0 = grd_emit(i,j,k)/dble(nemit)
+     ep0 = grd_emit(l)/dble(nemit)
 
 !
 !-- selecting geometry
@@ -353,10 +367,8 @@ subroutine interior_source
 !-- source tilting in x
         r3 = 0d0
         r2 = 1d0
-        il = max(i-1,1)  !-- left neighbor
-        ir = min(i+1,grd_nx)  !-- right neighbor
-        uul = .5d0*(grd_emit(il,j,k) + grd_emit(i,j,k))
-        uur = .5d0*(grd_emit(ir,j,k) + grd_emit(i,j,k))
+        uul = .5d0*(grd_emit(icnb(1)) + grd_emit(l))
+        uur = .5d0*(grd_emit(icnb(2)) + grd_emit(l))
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -385,10 +397,10 @@ subroutine interior_source
         ptcl%z = min(ptcl%z,grd_zarr(k+1))
         ptcl%z = max(ptcl%z,grd_zarr(k))
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,j,k)+grd_cap(ig,i,j,k)) * &
+        lhelp = ((grd_sig(l)+grd_cap(ig,l)) * &
              min(dx(i),xm(i)*dyac(j),xm(i)*ym(j)*dz(k)) * &
              thelp < prt_tauddmc).or.(in_puretran)
-!write(0,*) i,j,k,grd_sig(i,j,k),grd_cap(ig,i,j,k),dx(i),dy(j),dz(k),xm(i),ym(j),dyac(j),thelp,prt_tauddmc
+!write(0,*) i,j,k,grd_sig(l),grd_cap(ig,l),dx(i),dy(j),dz(k),xm(i),ym(j),dyac(j),thelp,prt_tauddmc
 
 !-- if velocity-dependent, transforming direction
         if (lhelp.and.grd_isvelocity) then
@@ -408,10 +420,8 @@ subroutine interior_source
 !-- source tilting in x
         r3 = 0d0
         r2 = 1d0
-        il = max(i-1,1)  !-- left neighbor
-        ir = min(i+1,grd_nx)  !-- right neighbor
-        uul = .5d0*(grd_emit(il,j,1) + grd_emit(i,j,1))
-        uur = .5d0*(grd_emit(ir,j,1) + grd_emit(i,j,1))
+        uul = .5d0*(grd_emit(icnb(1)) + grd_emit(l))
+        uur = .5d0*(grd_emit(icnb(2)) + grd_emit(l))
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -426,10 +436,8 @@ subroutine interior_source
 !- source tilting in y
         r3 = 0d0
         r2 = 1d0
-        il = max(j-1,1)  !-- lower neighbor
-        ir = min(j+1,grd_ny)  !-- upper neighbor
-        uul = .5d0*(grd_emit(i,il,1) + grd_emit(i,j,1))
-        uur = .5d0*(grd_emit(i,ir,1) + grd_emit(i,j,1))
+        uul = .5d0*(grd_emit(icnb(3)) + grd_emit(l))
+        uur = .5d0*(grd_emit(icnb(4)) + grd_emit(l))
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -450,7 +458,7 @@ subroutine interior_source
         om0 = pc_pi2*r1
 
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,j,1)+grd_cap(ig,i,j,1)) * &
+        lhelp = ((grd_sig(l)+grd_cap(ig,l)) * &
              min(dx(i),dy(j))*thelp < prt_tauddmc) &
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
@@ -478,10 +486,8 @@ subroutine interior_source
 !-- source tilting in x!{{{
         r3 = 0d0
         r2 = 1d0
-        il = max(i-1,1)  !-- left neighbor
-        ir = min(i+1,grd_nx)  !-- right neighbor
-        uul = .5d0*(grd_emit(il,j,k) + grd_emit(i,j,k))
-        uur = .5d0*(grd_emit(ir,j,k) + grd_emit(i,j,k))
+        uul = .5d0*(grd_emit(icnb(1)) + grd_emit(l))
+        uur = .5d0*(grd_emit(icnb(2)) + grd_emit(l))
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -495,10 +501,8 @@ subroutine interior_source
 !- source tilting in y
         r3 = 0d0
         r2 = 1d0
-        il = max(j-1,1)  !-- lower neighbor
-        ir = min(j+1,grd_ny)  !-- upper neighbor
-        uul = .5d0*(grd_emit(i,il,k) + grd_emit(i,j,k))
-        uur = .5d0*(grd_emit(i,ir,k) + grd_emit(i,j,k))
+        uul = .5d0*(grd_emit(icnb(3)) + grd_emit(l))
+        uur = .5d0*(grd_emit(icnb(4)) + grd_emit(l))
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -512,10 +516,8 @@ subroutine interior_source
 !- source tilting in y
         r3 = 0d0
         r2 = 1d0
-        il = max(k-1,1)  !-- lower neighbor
-        ir = min(k+1,grd_nz)  !-- upper neighbor
-        uul = .5d0*(grd_emit(i,j,il) + grd_emit(i,j,k))
-        uur = .5d0*(grd_emit(i,j,ir) + grd_emit(i,j,k))
+        uul = .5d0*(grd_emit(icnb(5)) + grd_emit(l))
+        uur = .5d0*(grd_emit(icnb(6)) + grd_emit(l))
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -536,7 +538,7 @@ subroutine interior_source
         r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,j,k)+grd_cap(ig,i,j,k)) * &
+        lhelp = ((grd_sig(l)+grd_cap(ig,l)) * &
              min(dx(i),dy(j),dz(k))*thelp < prt_tauddmc) &
              .or.in_puretran
 !-- if velocity-dependent, transforming direction
@@ -570,10 +572,8 @@ subroutine interior_source
 !-- source tilting in x
         r3 = 0d0
         r2 = 1d0
-        il = max(i-1,1)  !-- left neighbor
-        ir = min(i+1,grd_nx)  !-- right neighbor
-        uul = .5d0*(grd_emit(il,1,1) + grd_emit(i,1,1))
-        uur = .5d0*(grd_emit(ir,1,1) + grd_emit(i,1,1))
+        uul = .5d0*(grd_emit(icnb(1)) + grd_emit(l))
+        uur = .5d0*(grd_emit(icnb(2)) + grd_emit(l))
         uumax = max(uul,uur)
         uul = uul/uumax
         uur = uur/uumax
@@ -591,9 +591,9 @@ subroutine interior_source
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
 !-- setting IMC logical
-        lhelp = ((grd_sig(i,1,1)+grd_cap(ig,i,1,1))*dx(i)* &
+        lhelp = ((grd_sig(l)+grd_cap(ig,l))*dx(i)* &
              thelp < prt_tauddmc).or.(in_puretran)
-!write(0,*) i,grd_sig(i,1,1),grd_cap(ig,i,1,1),dx(i),thelp,prt_tauddmc
+!write(0,*) i,grd_sig(l),grd_cap(ig,l),dx(i),thelp,prt_tauddmc
 
 !-- if velocity-dependent, transforming direction
         if (lhelp.and.grd_isvelocity) then

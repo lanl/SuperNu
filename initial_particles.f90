@@ -16,8 +16,8 @@ subroutine initial_particles
   type(packet) :: ptcl
 !
   logical :: lhelp
-  integer :: ig, i,j,k, iig, ipart
-  integer, dimension(grd_nx,grd_ny,grd_nz) :: ijkused
+  integer :: ig, i,j,k,l, iig, ipart
+  integer :: iused
   real*8 :: wl0, mu0, om0, ep0, x0, y0, z0
   real*8 :: denom2, mu1, mu2
   real*8 :: r1
@@ -32,26 +32,34 @@ subroutine initial_particles
   i = 1
   j = 1
   k = 1
-  ijkused = 0
+  iused = 0
+  l = grd_icell(i,j,k)
   do ipart=1,prt_ninitnew
 
+!-----------------------------------------------------------------------
+!TODO: make this an outer loop, like in interior_source
 !-- incrementing to next vacant cell
      loopk: do k=k,grd_nz
         do j=j,grd_ny
            do i=i,grd_nx
-              lhelp = ijkused(i,j,k)<grd_nvolinit(i,j,k)
-              if(lhelp) exit loopk
+              l = grd_icell(i,j,k)
+              lhelp = iused<grd_nvolinit(l)
+              if(lhelp) then
+                 iused = iused + 1
+                 exit loopk
+              endif
+              iused = 0
            enddo
+           iused = 0
            i = 1
         enddo
+        iused = 0
         j = 1
      enddo loopk
+!-----------------------------------------------------------------------
 !
 !-- sanity check
      if(.not.lhelp) stop 'initial_particles: invalid particle'
-
-!-- increasing cell occupancy
-     ijkused(i,j,k) = ijkused(i,j,k)+1
 !
 !-- setting 1st cell index
      ptcl%ix = i
@@ -86,7 +94,7 @@ subroutine initial_particles
      mu0 = 1d0-2d0*r1
 
 !-- calculating particle energy
-     ep0 = grd_evolinit(i,j,k)/dble(grd_nvolinit(i,j,k))
+     ep0 = grd_evolinit(l)/dble(grd_nvolinit(l))
 
 !
 !-- selecting geometry

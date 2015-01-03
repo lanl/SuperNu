@@ -8,12 +8,38 @@ c     ---------------------
 * Setup the grid on the computational domain
 ************************************************************************
       logical :: lexist
+      integer :: i,j,k,l,idcell
 c
 c-- agnostic grid setup
       grd_xarr = str_xleft
       grd_yarr = str_yleft
       grd_zarr = str_zleft
-      if(grd_igeom==1) grd_yacos=acos(grd_yarr)
+c-- polar angles
+      if(grd_igeom==1) then
+       grd_yacos = acos(grd_yarr)
+      else
+       grd_yacos = 0d0
+      endif
+c
+c-- cell pointers
+c-- if padding exists initialize void cells
+      if(grd_ncp/=grd_nc) grd_icell = grd_ncp
+c-- pointers into compressed grid
+      l = 1
+      idcell = 0
+      loop_k: do k=1,grd_nz
+       do j=1,grd_ny
+       do i=1,grd_nx
+        idcell = idcell + 1
+        if(idcell == str_idcell(l)) then
+         grd_icell(i,j,k) = l
+         l = l + 1
+        endif
+        if(l>grd_nc) exit loop_k
+       enddo
+       enddo
+      enddo loop_k
+      if(l/=grd_nc+1) stop 'grid_setup: l/=grd_nc+1'
 c
 c-- sanity check
       if(grd_isvelocity) then
