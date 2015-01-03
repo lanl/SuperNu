@@ -248,8 +248,6 @@ subroutine transport1(ptcl,ig,isvacant)
 !  if(dby1==0d0.and.idby1==4) write(*,*) '1: ',idby1, y, iy, dby1
 !  if(dby2==0d0.and.idby2==4) write(*,*) '2: ',idby2, y, iy
   ! if(dby1==0d0.and.dby2==0d0) stop 'transport1: invalid dby[1,2]'
-  if(iynext1==0) iynext1=1
-  if(iynext2==grd_ny+1) iynext2=grd_ny
   dby=min(dby1,dby2)
   if(dby==dby1) then
      iynext=iynext1
@@ -572,18 +570,12 @@ subroutine transport1(ptcl,ig,isvacant)
 !-- polar bound
   elseif(d==dby) then
 
-     if(iynext==0) then
-        write(*,*) y, dby, mu,eta,xi,iy
-        stop 'transport1: invalid polar bound crossing'
-     endif
-     if(iynext==grd_ny+1) then
-        write(*,*) y, dby, mu,eta,xi,iy
-        stop 'transport1: invalid polar bound crossing'
-     endif
      if(iynext==iy-1) then
         y=grd_yarr(iy)
+        if(iynext==0) iynext=1
      elseif(iynext==iy+1) then
         y=grd_yarr(iy+1)
+        if(iynext==grd_ny+1) iynext=grd_ny
      else
 !-- sanity check
         write(*,*) dby
