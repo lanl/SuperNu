@@ -164,10 +164,10 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
      caplump = grd_cap(ig,ic)
 
 !-- ix->ix-1 in (opacleak(1))
+     if(ix/=1) l = grd_icell(ix-1,iy,iz)
      if(ix==1) then
         lhelp = .true.
      else
-        l = grd_icell(ix-1,iy,iz)
         lhelp = (grd_cap(ig,l)+ &
            grd_sig(l))*min(dx(ix-1),xm(ix-1)*dyac(iy) , &
            xm(ix-1)*ym(iy)*dz(iz))*thelp<prt_tauddmc
@@ -179,7 +179,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
         opacleak(1)=1.5d0*pp*grd_xarr(ix)**2/(dx3(ix)*thelp)
      else
 !-- DDMC interior
-        l = grd_icell(ix-1,iy,iz)
         help = ((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)+&
              (grd_sig(l)+grd_cap(ig,l))*dx(ix-1))*thelp
         opacleak(1)=2d0*grd_xarr(ix)**2/(dx3(ix)*thelp*help)
@@ -187,10 +186,10 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
 
 !
 !-- ix->ix+1 (opacleak(2))
+     if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
      if(ix==grd_nx) then
         lhelp = .true.
      else
-        l = grd_icell(ix+1,iy,iz)
         lhelp = (grd_cap(ig,l)+grd_sig(l)) * &
              min(dx(ix+1),xm(ix+1)*dyac(iy),xm(ix+1)*ym(iy)*dz(iz)) * &
              thelp<prt_tauddmc
@@ -202,7 +201,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
         opacleak(2)=1.5d0*pp*grd_xarr(ix+1)**2/(dx3(ix)*thelp)
      else
 !-- DDMC interior
-        l = grd_icell(ix+1,iy,iz)
         help = ((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)+&
              (grd_sig(l)+grd_cap(ig,l))*dx(ix+1))*thelp
         opacleak(2)=2d0*grd_xarr(ix+1)**2/(dx3(ix)*thelp*help)
@@ -210,10 +208,10 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
 
 !
 !-- iy->iy-1 (opacleak(3))
+     if(iy/=1) l = grd_icell(ix,iy-1,iz)
      if(iy==1) then
         lhelp = .true.
      else
-        l = grd_icell(ix,iy-1,iz)
         lhelp = (grd_cap(ig,l)+ &
              grd_sig(l))*min(dx(ix),xm(ix)*dyac(iy-1), &
              xm(ix)*ym(iy-1)*dz(iz))*thelp<prt_tauddmc
@@ -227,7 +225,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
              (dy(iy)*dx3(ix)*thelp)
      else
 !-- DDMC interior
-        l = grd_icell(ix,iy-1,iz)
         help = ((grd_sig(ic)+grd_cap(ig,ic))*dyac(iy) + &
              (grd_sig(l)+grd_cap(ig,l))*dyac(iy-1))
         opacleak(3)=2d0*sqrt(1d0-grd_yarr(iy)**2)*dx(ix) / &
@@ -236,10 +233,10 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
 
 !
 !-- iy->iy+1 (opacleak(4))
+     if(iy/=grd_ny) l = grd_icell(ix,iy+1,iz)
      if(iy==grd_ny) then
         lhelp = .true.
      else
-        l = grd_icell(ix,iy+1,iz)
         lhelp = (grd_cap(ig,l)+ &
              grd_sig(l))*min(dx(ix),xm(ix)*dyac(iy+1), &
              xm(ix)*ym(iy+1)*dz(iz))*thelp<prt_tauddmc
@@ -253,7 +250,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
              (dy(iy)*dx3(ix)*thelp)
      else
 !-- DDMC interior
-        l = grd_icell(ix,iy+1,iz)
         help = ((grd_sig(ic)+grd_cap(ig,ic))*dyac(iy) + &
              (grd_sig(l)+grd_cap(ig,l))*dyac(iy+1))
         opacleak(4)=2d0*sqrt(1d0-grd_yarr(iy+1)**2)*dx(ix) / &

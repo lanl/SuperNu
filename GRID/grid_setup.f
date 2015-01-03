@@ -15,11 +15,7 @@ c-- agnostic grid setup
       grd_yarr = str_yleft
       grd_zarr = str_zleft
 c-- polar angles
-      if(grd_igeom==1) then
-       grd_yacos = acos(grd_yarr)
-      else
-       grd_yacos = 0d0
-      endif
+      if(grd_igeom==1) grd_yacos = acos(grd_yarr)
 c
 c-- cell pointers
 c-- if padding exists initialize void cells

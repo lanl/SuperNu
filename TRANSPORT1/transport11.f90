@@ -331,8 +331,8 @@ subroutine transport11(ptcl,ic,ig,isvacant)
      !!}}}
   elseif (d == db) then   !------boundary crossing ----
      if (mu>=0d0) then!{{{
-        l = grd_icell(ix+1,iy,iz)
-        if (ix == grd_nx) then
+        if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
+        if(ix == grd_nx) then
 !           if(ig/=1) then
            isvacant = .true.
            prt_done = .true.
@@ -400,8 +400,8 @@ subroutine transport11(ptcl,ic,ig,isvacant)
            ic = grd_icell(ix,iy,iz)
         endif
      else
-        l = grd_icell(ix-1,iy,iz)
-        if (ix==1) then
+        if(ix/=1) l = grd_icell(ix-1,iy,iz)
+        if(ix==1) then
            l = grd_icell(ix+1,iy,iz)
            if (((grd_sig(l)+grd_cap(ig,l))*dx(ix+1) &
                 *thelp >= prt_tauddmc) &

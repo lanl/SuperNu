@@ -157,7 +157,7 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
      caplump = grd_cap(ig,ic)
 
 !-- x left (opacleak(1))
-     l = grd_icell(ix-1,iy,iz)
+     if(ix/=1) l = grd_icell(ix-1,iy,iz)
      if(ix==1) then
         lhelp = .true.
      else
@@ -184,7 +184,7 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- x right (opacleak(2))
-     l = grd_icell(ix+1,iy,iz)
+     if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
      if(ix==grd_nx) then
         lhelp = .true.
      else
@@ -211,7 +211,7 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- y down (opacleak(3))
-     l = grd_icell(ix,iy-1,iz)
+     if(iy/=1) l = grd_icell(ix,iy-1,iz)
      if(iy==1) then
         lhelp = .true.
      else
@@ -238,7 +238,7 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- y up (opacleak(4))
-     l = grd_icell(ix,iy+1,iz)
+     if(iy/=grd_ny) l = grd_icell(ix,iy+1,iz)
      if(iy==grd_ny) then
         lhelp = .true.
      else
@@ -265,7 +265,7 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- z bottom (opacleak(5))
-     l = grd_icell(ix,iy,iz-1)
+     if(iz/=1) l = grd_icell(ix,iy,iz-1)
      if(iz==1) then
         lhelp = .true.
      else
@@ -292,7 +292,7 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- z top (opacleak(6))
-     l = grd_icell(ix,iy,iz+1)
+     if(iz/=grd_nz) l = grd_icell(ix,iy,iz+1)
      if(iz==grd_nz) then
         lhelp = .true.
      else

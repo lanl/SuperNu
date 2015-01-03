@@ -48,7 +48,7 @@ subroutine diffusion11(ptcl,ic,ig,isvacant,icspec,specarr)
   real*8 :: help
 
   integer,pointer :: ix
-  integer,parameter :: iy=0, iz=0
+  integer,parameter :: iy=1, iz=1
   real*8,pointer :: r, mu, e, e0, wl
 !-- statement function
   integer :: l
@@ -150,7 +150,7 @@ subroutine diffusion11(ptcl,ic,ig,isvacant,icspec,specarr)
      emitlump = specint0(tempinv,ig)*capgreyinv*grd_cap(ig,ic)!{{{
      caplump = grd_cap(ig,ic)
 !-- inward
-     l = grd_icell(ix-1,iy,iz)
+     if(ix/=1) l = grd_icell(ix-1,iy,iz)
      if(ix==1) then
         opacleak(1) = 0d0
      elseif((grd_cap(ig,l)+ &
@@ -169,7 +169,7 @@ subroutine diffusion11(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 !
 !-- outward
-     l = grd_icell(ix+1,iy,iz)
+     if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
      if(ix==grd_nx) then
         lhelp = .true.
      else

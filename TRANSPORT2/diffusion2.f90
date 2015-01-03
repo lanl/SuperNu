@@ -156,7 +156,7 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
      caplump = grd_cap(ig,ic)
 
 !-- inward
-     l = grd_icell(ix-1,iy,iz)
+     if(ix/=1) l = grd_icell(ix-1,iy,iz)
      if(ix==1) then
         opacleak(1) = 0d0
      elseif((grd_cap(ig,l)+ &
@@ -176,7 +176,7 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- outward
-     l = grd_icell(ix+1,iy,iz)
+     if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
      if(ix==grd_nx) then
         lhelp = .true.
      else
@@ -199,7 +199,7 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- downward
-     l = grd_icell(ix,iy-1,iz)
+     if(iy/=1) l = grd_icell(ix,iy-1,iz)
      if(iy==1) then
         lhelp = .true.
      else
@@ -220,7 +220,7 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- upward
-     l = grd_icell(ix,iy+1,iz)
+     if(iy/=grd_ny) l = grd_icell(ix,iy+1,iz)
      if(iy==grd_ny) then
         lhelp = .true.
      else
