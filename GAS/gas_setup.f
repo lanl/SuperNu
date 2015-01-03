@@ -15,6 +15,7 @@ c     --------------------
       real*8 :: mass0fr(-2:gas_nelem,gas_ncell)
 c
 c-- agnostic mass setup
+      gas_idcell = str_idcelldd
       gas_mass = str_massdd
 c
 c-- flag void cells
@@ -57,20 +58,12 @@ c-- convert mass fractions to # atoms
       if(.not.in_noreadstruct.or..not.in_novolsrc) 
      &     call massfr2natomfr(mass0fr)
 c
-c-- output
-C$$$      write(6,*) 'mass fractions'
-C$$$      write(6,'(1p,33i12)') (l,l=-2,30)
-C$$$      write(6,'(1p,33e12.4)') (mass0fr(:,l),l=1,gas_ncell)
-C$$$      write(6,*) 'number fractions'
-C$$$      write(6,'(1p,33i12)') (l,l=-2,30)
-C$$$      write(6,'(1p,33e12.4)') gas_natom1fr(:,l,1,1),l=1,gas_ncell)
-c
       end subroutine gas_setup
 c
 c
 c
       subroutine massfr2natomfr(mass0fr)
-c     -------------------------
+c     ----------------------------------!{{{
       use physconstmod
       use elemdatamod, only:elem_data
       use gasmod
@@ -83,7 +76,7 @@ c     -------------------------
       real*8 :: help
 c
       do i=1,gas_ncell
-       if(gas_void(i)) cycle!{{{
+       if(gas_void(i)) cycle
 c-- sanity test
        if(all(mass0fr(1:,i)==0d0)) stop
      &    'massfr2natomfr: all mass fractions zero'
@@ -131,7 +124,7 @@ c-- convert natoms to natom fractions
      &   gas_natom(i)
        gas_natom0fr(:,i) = gas_natom0fr(:,i)/
      &   gas_natom(i)
-c!}}}
-      enddo !i
 c
+      enddo !i
+c!}}}
       end subroutine massfr2natomfr

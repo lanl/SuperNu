@@ -3,14 +3,10 @@ c     -------------
       implicit none
       INCLUDE 'mpif.h'
 c
-      integer,parameter :: impi0 = 0 !the master rank
+      integer,parameter :: impi0=0 !the master rank
       integer :: impi !mpi rank
       integer :: nmpi !number of mpi tasks
       integer,private :: ierr
-c
-      integer :: MPI_COMM_GAS !communicator for GAS domain decomposition
-      integer :: impi_gas
-      integer :: nmpi_gas
 c
       save
 c
@@ -289,53 +285,6 @@ c!}}}
 c
 c
 c
-      subroutine mpi_setup_communicators(ncell)
-c     -------------------------------------!{{{
-      implicit none
-      integer,intent(in) :: ncell !total number of grid cells in the domain
-************************************************************************
-* create the GAS communicator with a size that integer fraction of the
-* total number of cells in the domain.
-************************************************************************
-      integer :: i,ncpr,ncprmin
-      integer :: ranks(nmpi)
-      integer :: group_world,group_gas
-c
-c-- find minimum number of cells per rank
-      ncprmin = ceiling(ncell/dble(nmpi))
-      do ncpr=ncprmin,2*ncprmin
-       if(mod(ncell,ncpr)==0) exit
-      enddo
-      if(ncpr==2*ncprmin+1) stop 'mpi_setup_comm: no ncpr found'
-c
-      nmpi_gas = ncell/ncpr
-c
-c-- sanity check
-      if(nmpi_gas > nmpi) stop 'mpi_setup_comm: nmpi_gas > nmpi'
-      if(mod(ncell,nmpi_gas)/=0) stop
-     &  'mpi_setup_comm: ncell%nmpi_gas != 0'
-c
-c-- output
-      if(impi==impi0) write(6,*) "GAS comm tasks:",
-     &  nmpi_gas,ncpr,nmpi_gas/dble(nmpi)
-c
-      forall(i=1:nmpi_gas) ranks(i) = i-1 !start counting at 0
-c
-c-- create GAS communicator
-      call mpi_comm_group(MPI_COMM_WORLD,group_world,ierr)
-      call mpi_group_incl(group_world,nmpi_gas,ranks,group_gas,ierr)
-      call mpi_comm_create(MPI_COMM_WORLD,group_gas,MPI_COMM_GAS,ierr)
-c
-c-- evaluate local rank
-      call mpi_group_rank(group_gas,impi_gas,ierr)
-c
-c-- full distribution mode:
-      if(nmpi_gas/=nmpi) stop 'mpi_setup_comm: ncell/nmpi no integer'
-c!}}}
-      end subroutine mpi_setup_communicators
-c
-c
-c
       subroutine scatter_inputstruct(ndim,ncell)
 c     ------------------------------------------!{{{
       use inputstrmod
@@ -347,30 +296,34 @@ c     ------------------------------------------!{{{
 * mpi_scatter the input structure to all ranks in the worker comm.
 ************************************************************************
       integer :: nx,ny,nz
+      integer :: nc
 c
       nx = ndim(1)
       ny = ndim(2)
       nz = ndim(3)
 c
-c-- domain decomposed
+c-- allocate domain decomposed
+      allocate(str_idcelldd(ncell))
       allocate(str_massdd(ncell))
       if(str_nabund>0) allocate(str_massfrdd(str_nabund,ncell))
+c-- allocate domain compressed on non-master ranks
       if(impi/=impi0) then
-       allocate(str_mass(nx,ny,nz))
-       if(str_nabund>0) allocate(str_massfr(str_nabund,nx,ny,nz))
+       allocate(str_idcell(str_ncp))
+       allocate(str_massdc(str_ncp))
+       if(str_nabund>0) allocate(str_massfrdc(str_nabund,str_ncp))
       endif
 c
-c-- continue with relevant ranks only
-      if(impi_gas<0) return
-c
-      call mpi_scatter(str_mass,ncell,MPI_REAL8,
+      call mpi_scatter(str_idcell,ncell,MPI_INTEGER,
+     &  str_idcelldd,ncell,MPI_INTEGER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_scatter(str_massdc,ncell,MPI_REAL8,
      &  str_massdd,ncell,MPI_REAL8,
-     &  impi0,MPI_COMM_GAS,ierr)
+     &  impi0,MPI_COMM_WORLD,ierr)
 c
       if(str_nabund>0) then
-       call mpi_scatter(str_massfr,str_nabund*ncell,MPI_REAL8,
+       call mpi_scatter(str_massfrdc,str_nabund*ncell,MPI_REAL8,
      &   str_massfrdd,str_nabund*ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_GAS,ierr)
+     &   impi0,MPI_COMM_WORLD,ierr)
       endif
 !}}}
       end subroutine scatter_inputstruct
@@ -387,10 +340,10 @@ c     -----------------------------!{{{
 ************************************************************************
       call mpi_allgather(gas_emitex,gas_ncell,MPI_REAL8,
      &  grd_emitex,gas_ncell,MPI_REAL8,
-     &  MPI_COMM_GAS,ierr)
+     &  MPI_COMM_WORLD,ierr)
       call mpi_allgather(gas_capgam,gas_ncell,MPI_REAL8,
      &  grd_capgrey,gas_ncell,MPI_REAL8,
-     &  MPI_COMM_GAS,ierr)!}}}
+     &  MPI_COMM_WORLD,ierr)!}}}
       end subroutine allgather_gammacap
 c
 c
@@ -439,31 +392,29 @@ c
       t0 = t_time()
 c
 c-- gather
-      if(impi_gas>=0) then
-       call mpi_allgather(gas_temp,gas_ncell,MPI_REAL8,
-     &   grd_temp,gas_ncell,MPI_REAL8,
-     &   MPI_COMM_GAS,ierr)
-       call mpi_allgather(gas_fcoef,gas_ncell,MPI_REAL8,
-     &   grd_fcoef,gas_ncell,MPI_REAL8,
-     &   MPI_COMM_GAS,ierr)
-       call mpi_allgather(gas_capgrey,gas_ncell,MPI_REAL8,
-     &   grd_capgrey,gas_ncell,MPI_REAL8,
-     &   MPI_COMM_GAS,ierr)
+      call mpi_allgather(gas_temp,gas_ncell,MPI_REAL8,
+     &  grd_temp,gas_ncell,MPI_REAL8,
+     &  MPI_COMM_WORLD,ierr)
+      call mpi_allgather(gas_fcoef,gas_ncell,MPI_REAL8,
+     &  grd_fcoef,gas_ncell,MPI_REAL8,
+     &  MPI_COMM_WORLD,ierr)
+      call mpi_allgather(gas_capgrey,gas_ncell,MPI_REAL8,
+     &  grd_capgrey,gas_ncell,MPI_REAL8,
+     &  MPI_COMM_WORLD,ierr)
 c
-       call mpi_allgather(gas_emit,gas_ncell,MPI_REAL8,
-     &   grd_emit,gas_ncell,MPI_REAL8,
-     &   MPI_COMM_GAS,ierr)
-       call mpi_allgather(gas_emitex,gas_ncell,MPI_REAL8,
-     &   grd_emitex,gas_ncell,MPI_REAL8,
-     &   MPI_COMM_GAS,ierr)
+      call mpi_allgather(gas_emit,gas_ncell,MPI_REAL8,
+     &  grd_emit,gas_ncell,MPI_REAL8,
+     &  MPI_COMM_WORLD,ierr)
+      call mpi_allgather(gas_emitex,gas_ncell,MPI_REAL8,
+     &  grd_emitex,gas_ncell,MPI_REAL8,
+     &  MPI_COMM_WORLD,ierr)
 c
-       call mpi_allgather(gas_sig,gas_ncell,MPI_REAL8,
-     &   grd_sig,gas_ncell,MPI_REAL8,
-     &   MPI_COMM_GAS,ierr)
-       call mpi_allgather(gas_cap,grp_ng*gas_ncell,MPI_REAL,
-     &   grd_cap,grp_ng*gas_ncell,MPI_REAL,
-     &   MPI_COMM_GAS,ierr)
-      endif
+      call mpi_allgather(gas_sig,gas_ncell,MPI_REAL8,
+     &  grd_sig,gas_ncell,MPI_REAL8,
+     &  MPI_COMM_WORLD,ierr)
+      call mpi_allgather(gas_cap,grp_ng*gas_ncell,MPI_REAL,
+     &  grd_cap,grp_ng*gas_ncell,MPI_REAL,
+     &  MPI_COMM_WORLD,ierr)
 c
 c-- broadcast
       call mpi_bcast(tot_esurf,1,MPI_REAL8,
@@ -596,14 +547,12 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- scatter
-      if(impi_gas>=0) then
-       call mpi_scatter(grd_edep,gas_ncell,MPI_REAL8,
-     &   gas_edep,gas_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_GAS,ierr)
-       call mpi_scatter(grd_eraddens,gas_ncell,MPI_REAL8,
-     &   gas_eraddens,gas_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_GAS,ierr)
-      endif
+      call mpi_scatter(grd_edep,gas_ncell,MPI_REAL8,
+     &  gas_edep,gas_ncell,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_scatter(grd_eraddens,gas_ncell,MPI_REAL8,
+     &  gas_eraddens,gas_ncell,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- timing statistics
       help = t_pckt_stat(1)
@@ -630,12 +579,9 @@ c     -------------------------------------!{{{
 ************************************************************************
 * for output
 ************************************************************************
-c-- continue with relevant ranks only
-      if(impi_gas<0) return
-c
       call mpi_gather(gas_temp,gas_ncell,MPI_REAL8,
      &   grd_temp,gas_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_GAS,ierr)
+     &   impi0,MPI_COMM_WORLD,ierr)
 c!}}}
       end subroutine reduce_gastemp
 c

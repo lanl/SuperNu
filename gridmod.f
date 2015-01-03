@@ -2,6 +2,8 @@
 c     --------------
       implicit none
 c
+      logical :: grd_isvelocity = .false.
+c
       integer :: grd_igeom = 0
 c
       integer,private :: ng=0
@@ -13,14 +15,19 @@ c
       integer :: grd_ny=0
       integer :: grd_nz=0
 
-      logical :: grd_isvelocity = .false.
-
       real*8,allocatable :: grd_xarr(:)   !(nx+1), left cell edge values
       real*8,allocatable :: grd_yarr(:)   !(ny+1), left cell edge values
       real*8,allocatable :: grd_zarr(:)   !(nz+1), left cell edge values
 c-- polar angles
       real*8,allocatable :: grd_yacos(:)   !(ny+1)
+c-- volume
+      real*8,allocatable :: grd_vol(:,:,:) !(nx,ny,nz)
 
+c
+c-- compressed grid
+      integer :: grd_nc=0 !number of cells
+      integer :: grd_ncp=0 !with padding
+c
 c-- Probability of emission in a given zone and group
       real*8,allocatable :: grd_emitprob(:,:,:,:) !(nep,nx,ny,nz)
 c-- Line+Cont extinction coeff
@@ -30,13 +37,11 @@ c-- leakage opacities
 
 c
       real*8,allocatable :: grd_temp(:,:,:) !(nx,ny,nz)
-      real*8,allocatable :: grd_vol(:,:,:) !(nx,ny,nz)
-
 
 c-- scattering coefficient
       real*8,allocatable :: grd_sig(:,:,:) !(nx,ny,nz) !grey scattering opacity
 c-- Planck opacity (gray)
-      real*8,allocatable :: grd_capgrey(:,:,:)!(nx,ny,nz)
+      real*8,allocatable :: grd_capgrey(:,:,:) !(nx,ny,nz)
 c-- Fleck factor
       real*8,allocatable :: grd_fcoef(:,:,:)  !(nx,ny,nz)
 
@@ -70,12 +75,13 @@ c
 c
       contains
 c
-      subroutine grid_init(ltalk,ngin,igeom,ndim,isvelocity)
-c     --------------------------------!{{{
+      subroutine grid_init(ltalk,ngin,igeom,ndim,nc,ncp,isvelocity)
+c     -------------------------------------------------------------!{{{
       implicit none
       logical,intent(in) :: ltalk,isvelocity
       integer,intent(in) :: ngin,igeom
       integer,intent(in) :: ndim(3)
+      integer,intent(in) :: nc,ncp
 ************************************************************************
 * Allocate grd variables.
 *
@@ -95,9 +101,13 @@ c
       grd_nx = ndim(1)
       grd_ny = ndim(2)
       grd_nz = ndim(3)
-
+c
+c-- ncell, ncell-with-padding
+      grd_nc = nc
+      grd_ncp = ncp
+c
       grd_isvelocity = isvelocity
-
+c
       allocate(grd_xarr(grd_nx+1))
       allocate(grd_yarr(grd_ny+1))
       allocate(grd_zarr(grd_nz+1))

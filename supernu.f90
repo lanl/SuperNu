@@ -87,6 +87,8 @@ program supernu
 !== generate_inputstr development in progress
       call generate_inputstr(in_igeom)
     endif
+!-- compressed domain, serialize non-void cells
+    call inputstr_compress(nmpi,ncell)
 
 !-- READ DATA
 !-- read ion and level data
@@ -113,17 +115,19 @@ program supernu
   call grid_init(impi==impi0,grp_ng,in_igeom,in_ndim,in_isvelocity)
   call grid_setup
 
-  call mpi_setup_communicators(product(in_ndim)) !MPI
-  ncell = product(in_ndim)/nmpi_gas
+!-- domain-decompose input structure
   call scatter_inputstruct(in_ndim,ncell) !MPI
 
 !-- setup gas
   if(impi_gas>=0) call gas_init(impi==impi0,ncell,grp_ng)
   if(impi_gas>=0) call gas_setup(impi==impi0)
+!-- inputstr no longer needed
   call inputstr_dealloc
+
 
 !-- setup flux
   call flux_alloc
+
 
 !-- initial radiation energy
   call initialnumbers

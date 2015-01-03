@@ -14,7 +14,15 @@ c
       real*8,allocatable :: str_mass(:,:,:) !(nx,ny,nz)
       real*8,allocatable :: str_massfr(:,:,:,:) !(nabund,nx,ny,nz)
 c
+c-- domain compression
+      integer :: str_nc=0  !number of cells in compressed grid
+      integer :: str_ncp=0 !number of cells including padding in compressed grid
+      integer,allocatable :: str_idcell(:) !(nc)
+      real*8,allocatable :: str_massdc(:) !(nc)
+      real*8,allocatable :: str_massfrdc(:,:) !(nabund,nc)
+c
 c-- domain decomposition
+      integer,allocatable :: str_idcelldd(:) !(gas_ncell)
       real*8,allocatable :: str_massdd(:) !(gas_ncell)
       real*8,allocatable :: str_massfrdd(:,:) !(nabund,gas_ncell)
 c
@@ -30,15 +38,69 @@ c
 c
 c
 c
+      subroutine inputstr_compress(nmpi,ncpr)
+c     ---------------------------------------!{{{
+      use inputstrmod
+      implicit none
+      integer,intent(in) :: nmpi
+      integer,intent(out) :: ncpr
+************************************************************************
+* put valid (non-void) cells in sequence.
+************************************************************************
+      integer :: i,j,k,l
+      integer :: idcell
+      integer :: nc,ncpr
+c
+      str_nc = count(str_mass>0d0)
+c
+c-- number of cells per rank
+      nc = str_nc
+      if(str_nc<nx*ny*nz) nc = nc + 1 !add one void cell
+      ncpr = ceiling(nc/nmpi)
+      str_ncp = ncpr*nmpi
+c
+      allocate(str_idcell(str_ncp))
+      allocate(str_massdc(str_ncp),str_massfrdc(str_nabund,str_ncp))
+c-- zero all, including pad cells
+      str_idcell = 0
+      str_massdc = 0d0
+      str_massfrdc = 0d0
+c
+      l = 0
+      idcell = 0
+      do k=1,nz
+      do j=1,ny
+      do i=1,nx
+       idcell = idcell + 1
+c-- skip void cells
+       if(str_mass(i,j,k)<=0d0) cycle
+       l = l + 1
+c-- insert
+       str_idcell(l) = idcell
+       str_massdc(l) = str_mass(i,j,k)
+       str_massfrdc(:,l) = str_massfr(:,i,j,k)
+      enddo !i
+      enddo !j
+      enddo !k
+c-- sanity check
+      if(l/=str_nc) stop 'inputstr_compress: l/=str_nc'
+      if(idcell/=nx*ny*nz) stop 'inputstr_compress: idcell/=nx*ny*nz'
+c
+c-- deallocate full grid
+      deallocate(str_mass,str_massfr)
+c!}}}
+      end subroutine inputstr_compress
+c
+c
+c
       subroutine inputstr_dealloc
 c     ---------------------------!{{{
       implicit none
       str_nabund=0
       if(allocated(str_iabund)) deallocate(str_iabund)
       deallocate(str_xleft,str_yleft,str_zleft)
-      deallocate(str_mass,str_massdd)
-      if(allocated(str_massfr)) deallocate(str_massfr)
-      if(allocated(str_massfrdd)) deallocate(str_massfrdd)!}}}
+      deallocate(str_massdc,str_massdd)
+      if(allocated(str_massfrdc)) deallocate(str_massfrdc,str_massfrdd)!}}}
       end subroutine inputstr_dealloc
 c
 c
@@ -54,7 +116,8 @@ c     ---------------------------------------------------!{{{
 ************************************************************************
 * Read the input structure file
 ************************************************************************
-      integer :: i,j,k,ierr,nx_r,ny_r,nz_r,ini56,nvar,ncol,imass,nvoid
+      integer :: i,j,k,ierr,nx_r,ny_r,nz_r,ini56,nvar,ncol,imass
+      integer :: nvoid,ncell
       character(2) :: dmy
       character(8),allocatable :: labl(:)
       real*8,allocatable :: raw(:,:)
@@ -180,7 +243,8 @@ c
        write(6,*) '# corner cells voided:', nvoid
       endif !lvoidcorners
 c
-c-- output
+c-- count valid cells
+      ncell = count(str_mass>0d0)
 c
 c-- ni56 mass
       if(ini56>0) then
@@ -197,7 +261,7 @@ c-- output
       write(6,*) '===================='
       write(6,*) 'igeom :',igeom
       write(6,*) 'ndim  :',nx,ny,nz
-      write(6,*) 'ncell :',nx*ny*nz
+      write(6,*) 'ncell :',nx*ny*nz,ncell,ncell/dble(nx*nx*nz)
       write(6,*) 'mass  :', sum(str_mass)/pc_msun, 'Msun'
       write(6,*) 'm_ni56:', mni56/pc_msun, 'Msun'
 !     write(6,*) 'e_kin :', ekin, 'erg'

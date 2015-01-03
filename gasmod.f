@@ -12,7 +12,8 @@ c-- wavelength grid (gridmod has a copy as well)
 c
 c-- domain decomposed grid variables used to calculate the state of the material (gas)
       integer :: gas_ncell=0
-      logical,allocatable :: gas_void(:)       !(ncell)
+      integer,allocatable :: gas_idcell(:)    !(ncell)
+      logical,allocatable :: gas_void(:)      !(ncell)
       real*8,allocatable :: gas_temp(:)       !(ncell)
       real*8,allocatable :: gas_eraddens(:)
       real*8,allocatable :: gas_ur(:)
@@ -78,11 +79,12 @@ c
 c-- print alloc size (keep this updated)
 c---------------------------------------
       if(ltalk) then
-       n = gas_ncell*8*(20 + (gas_nelem+3+5) + ng/2)/1024 !kB
+       n = gas_ncell*(8*(20 + (gas_nelem+3+5)) + 4*(2 + ng))/1024 !kB
        write(6,*) 'ALLOC gas      :',n,"kB",n/1024,"MB",n/1024**2,"GB"
       endif !ltalk
 c
 c-- ndim=1 alloc
+      allocate(gas_idcell(gas_ncell))
       allocate(gas_void(gas_ncell))
       allocate(gas_temp(gas_ncell))
       allocate(gas_ur(gas_ncell))
