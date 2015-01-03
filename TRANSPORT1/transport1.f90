@@ -24,7 +24,7 @@ subroutine transport1(ptcl,ig,isvacant)
   real*8,parameter :: cinv = 1d0/pc_c
   integer,external :: emitgroup
 
-  logical :: lout
+  logical :: lout, lhelp
   integer :: imu, iom, ihelp
   real*8 :: elabfact, eta, xi, mux,muy,muz
   real*8 :: dtinv, thelp, thelpinv, help
@@ -32,9 +32,11 @@ subroutine transport1(ptcl,ig,isvacant)
   real*8 :: r1,r2
 
   integer :: iynext,iynext1,iynext2,iznext,iyold,idby1,idby2
+  integer :: idby1old,idby2old
   real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2,disc1,disc2
+  real*8 :: dby1old,dby2old
   real*8 :: zhelp
-  real*8 :: xold,yold,muold,dbyold,etaold
+  real*8 :: xold,yold,muold,dbyold,etaold,muzold
 
   integer,pointer :: ix,iy,iz
   real*8,pointer :: x,y,z,mu,om,e,e0,wl
@@ -69,9 +71,8 @@ subroutine transport1(ptcl,ig,isvacant)
   mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
   muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
   muz = mu*y-eta*sqrt(1d0-y**2)
-
-  etaold=eta
-  dbyold=dby
+  idby1=0
+  idby2=0
 !
 !-- setting vel-grid helper variables
   if(grd_isvelocity) then
@@ -126,25 +127,32 @@ subroutine transport1(ptcl,ig,isvacant)
   elseif(yhelp3==0d0) then
 !-- particle on lower cone
      if(y==grd_yarr(iy)) then
-        if(cos(om)>=0d0) then
-           idby1=4
-!-- setting next cell to lower cone
-           dby1=0d0
-           iynext1=iy-1
-        elseif(grd_yarr(iy)>0d0) then
-           idby1=5
-!-- reexit for acute lower cone
-           dby1=-2d0*x*yhelp2/yhelp1
-           iynext1=iy-1
+
+        dby1=-2d0*x*yhelp2/yhelp1
+        if(dby1>0d0) then
+           if(cos(om)>=0d0) then
+              write(*,*) yold, y, iy, x, ix
+              write(*,*) dbyold, iyold, muzold, idby1old, idby2old
+              write(*,*) dby1old, dby2old
+              stop 'transport1: did not cross lower y bound'
+           elseif(grd_yarr(iy)<=0d0) then
+!-- choose dby2
+              dby1 = 2d0*pc_c*tsp_dt*thelpinv
+              iynext1=iy
+           elseif(grd_yarr(iy)>0d0) then
+!-- cone internal transfer
+              iynext1=iy-1
+           else
+              stop 'transport1: ptcl on cone and dby1 invalid'
+           endif
         else
-           idby1=6
-!-- impossible otherwise
            dby1 = 2d0*pc_c*tsp_dt*thelpinv
            iynext1=iy
         endif
+
      else
         idby1=7
-        dby1=-2d0*x*yhelp2/yhelp1
+!        dby1=-2d0*x*yhelp2/yhelp1
         iynext1=iy-1
      endif
 
@@ -160,18 +168,24 @@ subroutine transport1(ptcl,ig,isvacant)
      else
         idby1=9
 !-- intersecting lower cone at at least one point
-        yhelp4=sqrt(yhelp4)
-        yhelp1=1d0/yhelp1
-        help=x*(-yhelp2+yhelp4)*yhelp1
-        dby1=x*(-yhelp2-yhelp4)*yhelp1
-        if(help<0d0) help=2d0*pc_c*tsp_dt*thelpinv
-        if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
-        dby1=min(help,dby1)
-        iynext1=iy-1
+        if(cos(om)<0d0.and.grd_yarr(iy)<=0d0) then
+!-- choose dby2
+           dby1 = 2d0*pc_c*tsp_dt*thelpinv
+           iynext1=iy
+        else
+           yhelp4=sqrt(yhelp4)
+           yhelp1=1d0/yhelp1
+           help=x*(-yhelp2+yhelp4)*yhelp1
+           dby1=x*(-yhelp2-yhelp4)*yhelp1
+           if(help<0d0) help=2d0*pc_c*tsp_dt*thelpinv
+           if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
+           dby1=min(help,dby1)
+           iynext1=iy-1
+        endif
      endif
   endif
 !-- resetting for nonphysical distances
-  if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
+!  if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
 
 !-- dby2: iy->iy+1
   yhelp1=grd_yarr(iy+1)**2-muz**2
@@ -198,25 +212,31 @@ subroutine transport1(ptcl,ig,isvacant)
   elseif(yhelp3==0d0) then
 !-- particle on upper cone
      if(y==grd_yarr(iy+1)) then
-        if(cos(om)<0d0) then
-           idby2=4
-!-- setting next cell to upper cone
-           dby2=0d0
-           iynext2=iy+1
-        elseif(grd_yarr(iy+1)<0d0) then
-           idby2=5
-!-- reexit for obtuse upper cone
-           dby2=-2d0*x*yhelp2/yhelp1
-           iynext2=iy+1
+
+        dby2=-2d0*x*yhelp2/yhelp1
+        if(dby2>0d0) then
+           if(cos(om)<0d0) then
+              write(*,*) yold, y, iy, x, ix
+              write(*,*) dbyold, iyold, muzold, idby1old, idby2old
+              write(*,*) dby1old, dby2old
+              stop 'transport1: did not cross upper y bound'
+           elseif(grd_yarr(iy+1)>=0d0) then
+!-- choose dby1
+              dby2 = 2d0*pc_c*tsp_dt*thelpinv
+              iynext2=iy
+           elseif(grd_yarr(iy+1)<0d0) then
+!-- cone internal transfer
+              iynext2=iy+1
+           else
+              stop 'transport1: ptcl on cone and dby2 invalid'
+           endif
         else
-           idby2=6
-!-- impossible otherwise
            dby2 = 2d0*pc_c*tsp_dt*thelpinv
            iynext2=iy
         endif
      else
         idby2=7
-        dby2=-2d0*x*yhelp2/yhelp1
+!        dby2=-2d0*x*yhelp2/yhelp1
         iynext2=iy+1
      endif
 
@@ -232,17 +252,23 @@ subroutine transport1(ptcl,ig,isvacant)
      else
         idby2=9
 !-- intersecting upper cone at at least one point
-        yhelp4=sqrt(yhelp4)
-        yhelp1=1d0/yhelp1
-        help=x*(-yhelp2+yhelp4)*yhelp1
-        dby2=x*(-yhelp2-yhelp4)*yhelp1
-        if(help<0d0) help=2d0*pc_c*tsp_dt*thelpinv
-        if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
-        dby2=min(help,dby2)
-        iynext2=iy+1
+        if(cos(om)>=0d0.and.grd_yarr(iy+1)>=0d0) then
+!-- choose dby1
+           dby2 = 2d0*pc_c*tsp_dt*thelpinv
+           iynext2=iy
+        else
+           yhelp4=sqrt(yhelp4)
+           yhelp1=1d0/yhelp1
+           help=x*(-yhelp2+yhelp4)*yhelp1
+           dby2=x*(-yhelp2-yhelp4)*yhelp1
+           if(help<0d0) help=2d0*pc_c*tsp_dt*thelpinv
+           if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
+           dby2=min(help,dby2)
+           iynext2=iy+1
+        endif
      endif
   endif
-  if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
+!  if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
 !  write(*,*) dby1,dby2
 !  if(y<grd_yarr(iy+1).and.y>grd_yarr(iy)) write(*,*) idby1,disc1,idby2,disc2
 !  if(dby1==0d0.and.idby1==4) write(*,*) '1: ',idby1, y, iy, dby1
@@ -733,6 +759,13 @@ subroutine transport1(ptcl,ig,isvacant)
   else
      stop 'transport1: invalid distance'
   endif
+  idby1old=idby1
+  idby2old=idby2
+  dby1old=dby1
+  dby2old=dby2
+  muzold=muz
+  etaold=eta
+  dbyold=dby
 
   if((y>grd_yarr(iy+1) .or. y<grd_yarr(iy)).and.d==dcol) then
      write(0,*) 'theta not in cell (x): ',ix,xold,x,grd_xarr(ix),grd_xarr(ix+1)
