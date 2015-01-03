@@ -121,7 +121,7 @@ c-- first dim
        str_xleft(2:) = raw(2,:nx)
       endif
 c-- second dim
-      if(igeom==11) then
+      if(igeom==11 .or. (igeom==1 .and. ny==1)) then
        str_yleft = [-1d0,1d0]
       else
        str_yleft(1) = raw(3,1)
@@ -130,7 +130,7 @@ c-- second dim
        enddo
       endif
 c-- third dim
-      if(igeom==2 .or. igeom==11) then
+      if(igeom==2 .or. igeom==11 .or. (igeom==1 .and. nz==1)) then
        str_zleft = [0d0,2d0*pc_pi]
       else
        str_zleft(1) = raw(5,1)
@@ -161,7 +161,7 @@ c-- Zero out the cell mass in the corners of the domain
 c======================================================
 c-- void cells
       nvoid = 0
-      if(lvoidcorners .and. igeom==2.or.igeom==3) then
+      if(lvoidcorners .and. (igeom==2.or.igeom==3)) then
 c-- sphere radius
        rs = min(str_xleft(nx+1),str_yleft(ny+1))
        if(igeom==3) rs = min(rs,str_zleft(nz+1))
