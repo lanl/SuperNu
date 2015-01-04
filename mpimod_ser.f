@@ -21,11 +21,14 @@ c
       use gasmod
       implicit none
       integer,intent(in) :: ndim(3)
-      integer,intent(in) :: ncell
+      integer,intent(out) :: ncell
 ************************************************************************
 * mpi_scatter the input structure to all ranks in the worker comm.
 ************************************************************************
       integer :: dmy
+c
+      ncell = str_ncp/nmpi
+c
       dmy = ndim(1) !use the intent(in) variable
       allocate(str_massdd(ncell))
       if(str_nabund>0) then
