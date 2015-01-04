@@ -276,7 +276,7 @@ subroutine transport3(ptcl,ic,ig,isvacant)
 !-- effective scattering
 !-- redistributing wavelength
         r1 = rnd_r(rnd_state)
-        ig = emitgroup(r1,ic)
+        if(grp_ng>1) ig = emitgroup(r1,ic)
 !-- uniformly in new group
         r1 = rnd_r(rnd_state)
         wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))

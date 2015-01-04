@@ -22,8 +22,8 @@ subroutine write_output(nmpi)
   ncpr = grd_ncp/nmpi
   allocate(iarr(ncpr,nmpi),arr(ncpr,nmpi))
 !
-  reclenf = (flx_ng+1)*12
-  recleng = (ncpr+1)*12
+  reclenf = (max(flx_ng,10)+1)*12
+  recleng = (max(ncpr,20)+1)*12
 
 !
 !-- write once

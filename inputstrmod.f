@@ -233,11 +233,14 @@ c-- number of cells per rank
       str_ncp = ncpr*nmpi
 c
       allocate(str_idcell(str_ncp))
-      allocate(str_massdc(str_ncp),str_massfrdc(str_nabund,str_ncp))
+      allocate(str_massdc(str_ncp))
+      if(str_nabund>0) then
+         allocate(str_massfrdc(str_nabund,str_ncp))
+         str_massfrdc = 0d0
+      endif
 c-- zero all, including pad cells
       str_idcell = 0
       str_massdc = 0d0
-      str_massfrdc = 0d0
 c
       l = 0
       idcell = 0
@@ -251,7 +254,7 @@ c-- skip void cells
 c-- insert
        str_idcell(l) = idcell
        str_massdc(l) = str_mass(i,j,k)
-       str_massfrdc(:,l) = str_massfr(:,i,j,k)
+       if(str_nabund>0) str_massfrdc(:,l) = str_massfr(:,i,j,k)
       enddo !i
       enddo !j
       enddo !k
@@ -270,7 +273,8 @@ c-- output
       write(6,*)
 c
 c-- deallocate full grid
-      deallocate(str_mass,str_massfr)
+      deallocate(str_mass)
+      if(allocated(str_massfr)) deallocate(str_massfr)
 c!}}}
       end subroutine inputstr_compress
 c

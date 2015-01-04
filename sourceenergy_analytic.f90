@@ -166,6 +166,6 @@ subroutine sourceenergy_analytic
 
 !
 !-- add analytic radiation source tot total
-  if(impi==impi0) tot_eext = tot_eext + sum(grd_emitex)
+  if(impi==impi0) tot_eext = tot_eext + sum(grd_emitex) + tot_esurf
 
 end subroutine sourceenergy_analytic

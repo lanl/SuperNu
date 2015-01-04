@@ -1,5 +1,6 @@
       subroutine opacity_planckmean
 c     -----------------------------
+      use inputparmod
       use groupmod
       use physconstmod
       use mpimod
@@ -14,6 +15,11 @@ c     -----------------------------
 !     real*8 :: x1,x2
 !     real*8 :: help,hlparr(grp_ng+1)
 c
+c-- grey exception
+      if(in_opacanaltype=='grey') then
+         gas_capgrey=gas_cap(1,:)
+         return
+      endif
 c-- Planck opacity
       do i=1,gas_ncell
        gas_capgrey(i) = sum(gas_cap(:,i)*specintv(1d0/gas_temp(i),0))

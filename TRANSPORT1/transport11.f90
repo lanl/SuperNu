@@ -270,7 +270,7 @@ subroutine transport11(ptcl,ic,ig,isvacant)
 !-- sample wavelength
         r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
-        ig = emitgroup(r1,ic)
+        if(grp_ng>1) ig = emitgroup(r1,ic)
 !
 !(rev 121): calculating radiation energy tally per group
         !grd_eraddens(ic)=grd_eraddens(ic)+e*elabfact

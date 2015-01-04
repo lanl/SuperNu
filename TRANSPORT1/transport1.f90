@@ -271,8 +271,8 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 !  if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
 !  write(*,*) dby1,dby2
 !  if(y<grd_yarr(iy+1).and.y>grd_yarr(iy)) write(*,*) idby1,disc1,idby2,disc2
-!  if(dby1==0d0.and.idby1==4) write(*,*) '1: ',idby1, y, iy, dby1
-!  if(dby2==0d0.and.idby2==4) write(*,*) '2: ',idby2, y, iy
+  if(dby1==0d0.and.idby1==4) write(*,*) '1: ',idby1, y, iy, dby1
+  if(dby2==0d0.and.idby2==4) write(*,*) '2: ',idby2, y, iy
   ! if(dby1==0d0.and.dby2==0d0) stop 'transport1: invalid dby[1,2]'
   dby=min(dby1,dby2)
   if(dby==dby1) then
