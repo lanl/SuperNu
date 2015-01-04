@@ -37,59 +37,6 @@ c
 c
 c
 c
-      subroutine inputstr_compress(nmpi)
-c     ---------------------------------------!{{{
-      implicit none
-      integer,intent(in) :: nmpi
-************************************************************************
-* put valid (non-void) cells in sequence.
-************************************************************************
-      integer :: i,j,k,l
-      integer :: idcell
-      integer :: ncpr !number of cells per rank
-c
-      str_nc = count(str_mass>0d0)
-c
-c-- number of cells per rank
-      if(str_nc<nx*ny*nz) str_nc = str_nc + 1 !add one void cell
-      ncpr = ceiling(str_nc/dble(nmpi))
-      str_ncp = ncpr*nmpi
-c
-      allocate(str_idcell(str_ncp))
-      allocate(str_massdc(str_ncp),str_massfrdc(str_nabund,str_ncp))
-c-- zero all, including pad cells
-      str_idcell = 0
-      str_massdc = 0d0
-      str_massfrdc = 0d0
-c
-      l = 0
-      idcell = 0
-      do k=1,nz
-      do j=1,ny
-      do i=1,nx
-       idcell = idcell + 1
-c-- skip void cells
-       if(str_mass(i,j,k)<=0d0) cycle
-       l = l + 1
-c-- insert
-       str_idcell(l) = idcell
-       str_massdc(l) = str_mass(i,j,k)
-       str_massfrdc(:,l) = str_massfr(:,i,j,k)
-      enddo !i
-      enddo !j
-      enddo !k
-c-- sanity check
-      if(str_ncp/=str_nc) l = l + 1 !one pad cell in grd_nc
-      if(l/=str_nc) stop 'inputstr_compress: l/=str_nc' !one pad cell in grd_nc
-      if(idcell/=nx*ny*nz) stop 'inputstr_compress: idcell/=nx*ny*nz'
-c
-c-- deallocate full grid
-      deallocate(str_mass,str_massfr)
-c!}}}
-      end subroutine inputstr_compress
-c
-c
-c
       subroutine inputstr_dealloc
 c     ---------------------------!{{{
       implicit none
@@ -264,6 +211,68 @@ c-- output
 !     write(6,*) 'e_kin :', ekin, 'erg'
 c!}}}
       end subroutine read_inputstr
+c
+c
+c
+      subroutine inputstr_compress(nmpi)
+c     ---------------------------------------!{{{
+      implicit none
+      integer,intent(in) :: nmpi
+************************************************************************
+* put valid (non-void) cells in sequence.
+************************************************************************
+      integer :: i,j,k,l
+      integer :: idcell
+      integer :: ncpr !number of cells per rank
+c
+      str_nc = count(str_mass>0d0)
+c
+c-- number of cells per rank
+      if(str_nc<nx*ny*nz) str_nc = str_nc + 1 !add one void cell
+      ncpr = ceiling(str_nc/dble(nmpi))
+      str_ncp = ncpr*nmpi
+c
+      allocate(str_idcell(str_ncp))
+      allocate(str_massdc(str_ncp),str_massfrdc(str_nabund,str_ncp))
+c-- zero all, including pad cells
+      str_idcell = 0
+      str_massdc = 0d0
+      str_massfrdc = 0d0
+c
+      l = 0
+      idcell = 0
+      do k=1,nz
+      do j=1,ny
+      do i=1,nx
+       idcell = idcell + 1
+c-- skip void cells
+       if(str_mass(i,j,k)<=0d0) cycle
+       l = l + 1
+c-- insert
+       str_idcell(l) = idcell
+       str_massdc(l) = str_mass(i,j,k)
+       str_massfrdc(:,l) = str_massfr(:,i,j,k)
+      enddo !i
+      enddo !j
+      enddo !k
+c-- sanity check
+      if(str_ncp/=str_nc) l = l + 1 !one pad cell in grd_nc
+      if(l/=str_nc) stop 'inputstr_compress: l/=str_nc' !one pad cell in grd_nc
+      if(idcell/=nx*ny*nz) stop 'inputstr_compress: idcell/=nx*ny*nz'
+c
+c-- output
+      write(6,*)
+      write(6,*) 'compress domain:'
+      write(6,*) '===================='
+      write(6,*) 'nc,pad:',str_nc,str_ncp,str_ncp-str_nc,
+     &  str_ncp/float(str_nc)
+      write(6,*) 'nc/rnk:',ncpr
+      write(6,*)
+c
+c-- deallocate full grid
+      deallocate(str_mass,str_massfr)
+c!}}}
+      end subroutine inputstr_compress
 c
 c
 c

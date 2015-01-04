@@ -91,6 +91,7 @@ subroutine advection3(pretrans,ptcl,ic,ig)
      ix = ixholder
      iy = iyholder
      iz = izholder
+     ic = grd_icell(ix,iy,iz)
      return
   endif
 

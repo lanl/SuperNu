@@ -75,6 +75,7 @@ subroutine advection2(pretrans,ptcl,ic,ig)
 !-- DDMC inactive, setting index to tentative value
      ix = ixholder
      iy = iyholder
+     ic = grd_icell(ix,iy,iz)
      return
   endif
 

@@ -54,6 +54,7 @@ pure subroutine advection1(pretrans,ptcl,ic,ig)
 !-- quick exit if DDMC is active
   if(in_puretran .or. .not.partstopper) then
     ix = zholder
+    ic = grd_icell(ix,iy,iz)
     return
   endif
 
