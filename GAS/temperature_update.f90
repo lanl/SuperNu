@@ -25,6 +25,7 @@ subroutine temperature_update
   else
 !!-- calculate temp correction
      do i=1,gas_ncell
+        if(gas_void(i)) cycle
         if(gas_bcoef(i)>0d0) then
            dtemp = gas_edep(i)/gas_vol(i) !new
            dtemp = (dtemp - tsp_dt*gas_fcoef(i)*gas_capgrey(i)* &
