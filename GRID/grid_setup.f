@@ -35,6 +35,7 @@ c-- pointers into compressed grid
        enddo
        enddo
       enddo loop_k
+      if(grd_ncp/=grd_nc) l = l + 1 !one pad cell in grd_nc
       if(l/=grd_nc+1) stop 'grid_setup: l/=grd_nc+1'
 c
 c-- sanity check

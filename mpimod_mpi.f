@@ -569,7 +569,7 @@ c     -------------------------------!{{{
 ************************************************************************
 c-- helper variables
       integer :: isq
-      real :: hlp
+      real*8 :: hlp
 c
 c-- scattering part vacancy
       call mpi_scatter(prt_tlyvacant,prt_npartmax,MPI_LOGICAL,

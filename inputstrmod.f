@@ -79,7 +79,8 @@ c-- insert
       enddo !j
       enddo !k
 c-- sanity check
-      if(l/=str_nc) stop 'inputstr_compress: l/=str_nc'
+      if(str_ncp/=str_nc) l = l + 1 !one pad cell in grd_nc
+      if(l/=str_nc) stop 'inputstr_compress: l/=str_nc' !one pad cell in grd_nc
       if(idcell/=nx*ny*nz) stop 'inputstr_compress: idcell/=nx*ny*nz'
 c
 c-- deallocate full grid
@@ -257,7 +258,7 @@ c-- output
       write(6,*) '===================='
       write(6,*) 'igeom :',igeom
       write(6,*) 'ndim  :',nx,ny,nz
-      write(6,*) 'ncell :',nx*ny*nz,ncell,ncell/dble(nx*nx*nz)
+      write(6,*) 'ncell :',nx*ny*nz,ncell,ncell/dble(nx*ny*nz)
       write(6,*) 'mass  :', sum(str_mass)/pc_msun, 'Msun'
       write(6,*) 'm_ni56:', mni56/pc_msun, 'Msun'
 !     write(6,*) 'e_kin :', ekin, 'erg'
