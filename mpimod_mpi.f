@@ -165,9 +165,10 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(flx_mu(flx_nmu+1))
        allocate(flx_om(flx_nom+1))
        if(bb_nline>0) allocate(bb_xs(bb_nline))
-       allocate(str_xleft(nx+1)) !(nx+1)
-       allocate(str_yleft(ny+1)) !(ny+1)
-       allocate(str_zleft(nz+1)) !(nz+1)
+       allocate(str_xleft(nx+1))
+       allocate(str_yleft(ny+1))
+       allocate(str_zleft(nz+1))
+       allocate(str_idcell(str_ncp))
        if(str_nabund>0) allocate(str_iabund(str_nabund))
       endif
 c
@@ -178,6 +179,8 @@ c-- inputstr
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(str_zleft,nz+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(str_idcell,str_ncp,MPI_INTEGER,
+     &  impi0,MPI_COMM_WORLD,ierr)
 c
       if(str_nabund>0) then
        call mpi_bcast(str_iabund,str_nabund,MPI_INTEGER,
@@ -185,12 +188,6 @@ c
       endif
 c
 c-- broadcast data
-      call mpi_bcast(str_xleft,nx+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(str_yleft,ny+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(str_zleft,nz+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(grp_wl,grp_ng+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(grp_wlinv,grp_ng+1,MPI_REAL8,
@@ -293,7 +290,7 @@ c     ------------------------------------------!{{{
       use gasmod
       implicit none
       integer,intent(in) :: ndim(3)
-      integer,intent(in) :: ncell
+      integer,intent(out) :: ncell
 ************************************************************************
 * mpi_scatter the input structure to all ranks in the worker comm.
 ************************************************************************
@@ -303,25 +300,19 @@ c
       ny = ndim(2)
       nz = ndim(3)
 c
-c-- allocate domain decomposed
-      allocate(str_idcelldd(ncell))
-      allocate(str_massdd(ncell))
-      if(str_nabund>0) allocate(str_massfrdd(str_nabund,ncell))
-c-- allocate domain compressed on non-master ranks
-      if(impi/=impi0) then
-       allocate(str_idcell(str_ncp))
-       allocate(str_massdc(str_ncp))
-       if(str_nabund>0) allocate(str_massfrdc(str_nabund,str_ncp))
-      endif
+      ncell = str_ncp/nmpi
 c
-      call mpi_scatter(str_idcell,ncell,MPI_INTEGER,
-     &  str_idcelldd,ncell,MPI_INTEGER,
-     &  impi0,MPI_COMM_WORLD,ierr)
+c-- allocate domain decomposed and domain compressed
+      if(impi/=impi0) allocate(str_massdc(str_ncp))
+      allocate(str_massdd(ncell))
       call mpi_scatter(str_massdc,ncell,MPI_REAL8,
      &  str_massdd,ncell,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
+c-- mass fractions if available
       if(str_nabund>0) then
+       if(impi/=impi0) allocate(str_massfrdc(str_nabund,str_ncp))
+       allocate(str_massfrdd(str_nabund,ncell))
        call mpi_scatter(str_massfrdc,str_nabund*ncell,MPI_REAL8,
      &   str_massfrdd,str_nabund*ncell,MPI_REAL8,
      &   impi0,MPI_COMM_WORLD,ierr)

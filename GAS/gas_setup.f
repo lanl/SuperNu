@@ -1,5 +1,5 @@
-      subroutine gas_setup
-c     --------------------
+      subroutine gas_setup(impi)
+c     --------------------------
       use inputstrmod
       use physconstmod
       use inputparmod
@@ -7,16 +7,28 @@ c     --------------------
       use manufacmod
       use miscmod, only:warn
       implicit none
+      integer,intent(in) :: impi
 ************************************************************************
 * Initialize the gas grid, the part that is constant with time and
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
-      integer :: l,ll
+      integer :: l,ll,l1,l2
       real*8 :: mass0fr(-2:gas_nelem,gas_ncell)
 c
 c-- agnostic mass setup
-      gas_idcell = str_idcelldd
       gas_mass = str_massdd
+c
+c-- decompose idcell
+      l1 = impi*gas_ncell + 1
+      l2 = (impi+1)*gas_ncell
+      ll = 0
+      do l=1,str_ncp
+       if(l<l1) cycle
+       if(l>l2) exit
+       ll = ll + 1
+       gas_idcell(ll) = str_idcell(l)
+      enddo !l
+      if(ll/=gas_ncell) stop 'gas_update: ll/=gas_ncell'
 c
 c-- flag void cells
       gas_void = gas_mass<=0d0

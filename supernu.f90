@@ -89,7 +89,7 @@ program supernu
        call generate_inputstr(in_igeom)
      endif
 !-- compressed domain, serialize non-void cells
-     call inputstr_compress(nmpi,ncpr)
+     call inputstr_compress(nmpi)
 
 !-- READ DATA
 !-- read ion and level data
@@ -115,14 +115,13 @@ program supernu
 
 !-- setup spatial grid
   call grid_init(impi==impi0,grp_ng,in_igeom,in_ndim,str_nc,str_ncp,in_isvelocity)
-  call grid_setup
-
 !-- domain-decompose input structure
   call scatter_inputstruct(in_ndim,ncpr) !MPI
+  call grid_setup
 
 !-- setup gas
-  if(impi>=0) call gas_init(impi==impi0,ncpr,grp_ng)
-  if(impi>=0) call gas_setup(impi==impi0)
+  call gas_init(impi==impi0,ncpr,grp_ng)
+  call gas_setup(impi)
 !-- inputstr no longer needed
   call inputstr_dealloc
 
@@ -135,7 +134,7 @@ program supernu
   call initialnumbers
 
 !-- allocate arrays of sizes retreived in bcast_permanent
-  if(impi>=0) call ion_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
+  call ion_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
   call particle_alloc(impi==impi0,in_norestart,nmpi)
 
 !-- initialize random number generator, use different seeds for each rank
@@ -182,8 +181,8 @@ program supernu
 
 !-- update all non-permanent variables
      call grid_update(tsp_t)
-     if(impi>=0) call gas_update(impi,it)
-     if(impi>=0) call sourceenergy(nmpi) !energy to be instantiated per cell in this timestep
+     call gas_update(impi,it)
+     call sourceenergy(nmpi) !energy to be instantiated per cell in this timestep
      call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
 
 
@@ -241,7 +240,7 @@ program supernu
      if(.not.in_norestart) call collect_restart_data !MPI
 
 !-- update temperature
-     if(impi>=0) call temperature_update
+     call temperature_update
      call reduce_gastemp !MPI
 
 

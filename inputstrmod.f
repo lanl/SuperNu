@@ -22,7 +22,6 @@ c-- domain compression
       real*8,allocatable :: str_massfrdc(:,:) !(nabund,nc)
 c
 c-- domain decomposition
-      integer,allocatable :: str_idcelldd(:) !(gas_ncell)
       real*8,allocatable :: str_massdd(:) !(gas_ncell)
       real*8,allocatable :: str_massfrdd(:,:) !(nabund,gas_ncell)
 c
@@ -38,16 +37,16 @@ c
 c
 c
 c
-      subroutine inputstr_compress(nmpi,ncpr)
+      subroutine inputstr_compress(nmpi)
 c     ---------------------------------------!{{{
       implicit none
       integer,intent(in) :: nmpi
-      integer,intent(out) :: ncpr
 ************************************************************************
 * put valid (non-void) cells in sequence.
 ************************************************************************
       integer :: i,j,k,l
       integer :: idcell
+      integer :: ncpr !number of cells per rank
 c
       str_nc = count(str_mass>0d0)
 c

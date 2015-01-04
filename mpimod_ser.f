@@ -27,13 +27,11 @@ c
 ************************************************************************
       integer :: dmy
       dmy = ndim(1) !use the intent(in) variable
-      allocate(str_idcelldd(ncell))
       allocate(str_massdd(ncell))
       if(str_nabund>0) then
        allocate(str_massfrdd(str_nabund,ncell))
        str_massfrdd = reshape(str_massfrdc,[str_nabund,ncell])
       endif
-      str_idcelldd = reshape(str_idcell,[ncell])
       str_massdd = reshape(str_massdc,[ncell]) !}}}
       end subroutine scatter_inputstruct
 c
