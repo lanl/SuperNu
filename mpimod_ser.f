@@ -89,6 +89,9 @@ c
       end subroutine reduce_tally
 c
 c
+      subroutine reduce_totals
+      end subroutine reduce_totals
+c
       subroutine reduce_fluxes
       end subroutine reduce_fluxes
 c

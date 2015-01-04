@@ -242,7 +242,7 @@ program supernu
 !-- update temperature
      call temperature_update
      call reduce_gastemp !MPI
-
+     call reduce_totals !MPI
 
 !-- output
      if(impi==impi0) then

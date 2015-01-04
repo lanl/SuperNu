@@ -128,10 +128,10 @@ c
 c
 c-- totals
 c=========
-!-- total comoving material energy
-      tot_emat = sum(gas_bcoef*gas_temp*gas_vol)
 c-- add initial thermal input to dd_eext
       if(tsp_it==1) then
+!-- total comoving material energy
+       tot_emat = sum(gas_bcoef*gas_temp*gas_vol)
        tot_eext = tot_eext + tot_emat  !was initialized either in totalsmod or in totals_startup
       endif
 c

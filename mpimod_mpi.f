@@ -424,7 +424,6 @@ c
       subroutine reduce_tally
 c     -----------------------!{{{
       use gridmod,nx=>grd_nx,ny=>grd_ny,nz=>grd_nz
-      use totalsmod
       use gasmod
       use timingmod
       use fluxmod
@@ -434,7 +433,6 @@ c     -----------------------!{{{
 * temperature correction.
 ************************************************************************
       integer :: n
-      real*8,allocatable :: sndvec(:),rcvvec(:)
       integer :: isnd(grd_ncp)
       real*8 :: snd(grd_ncp)
       integer :: isnd3f(flx_ng,flx_nmu,flx_nom)
@@ -445,32 +443,6 @@ c     -----------------------!{{{
       real*8 :: t0,t1
 c
       t0 = t_time()
-c
-c-- dim==0
-      n = 6
-      allocate(sndvec(n))
-      allocate(rcvvec(n))
-      sndvec = [tot_erad,tot_eout,tot_eext,tot_evelo,tot_emat,
-     &  tot_eext0]
-      call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c-- copy back
-      if(impi==impi0) then
-         tot_erad = rcvvec(1)
-         tot_eout = rcvvec(2)
-         tot_eext = rcvvec(3)
-         tot_evelo = rcvvec(4)
-         tot_emat = rcvvec(5)
-         tot_eext0 = rcvvec(6)
-      else
-c-- zero out cumulative values on all other ranks to avoid double counting.
-         tot_eout = 0d0
-         tot_eext = 0d0
-         tot_evelo = 0d0
-      endif
-      deallocate(sndvec)
-      deallocate(rcvvec)
-
 c
 c-- flux dim==2
       n = flx_nmu*flx_nom
@@ -541,6 +513,45 @@ c
       call timereg(t_mpireduc, t1-t0)
 c!}}}
       end subroutine reduce_tally
+c
+c
+c
+      subroutine reduce_totals
+c     ------------------------!{{{
+      use totalsmod
+      implicit none
+************************************************************************
+* Reduce energy totals from totalsmod
+************************************************************************
+      integer :: n
+      real*8,allocatable :: sndvec(:),rcvvec(:)
+c
+c-- dim==0
+      n = 6
+      allocate(sndvec(n))
+      allocate(rcvvec(n))
+      sndvec = [tot_erad,tot_eout,tot_eext,tot_evelo,tot_emat,
+     &  tot_eext0]
+      call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c-- copy back
+      if(impi==impi0) then
+         tot_erad = rcvvec(1)
+         tot_eout = rcvvec(2)
+         tot_eext = rcvvec(3)
+         tot_evelo = rcvvec(4)
+         tot_emat = rcvvec(5)
+         tot_eext0 = rcvvec(6)
+      else
+c-- zero out cumulative values on all other ranks to avoid double counting.
+         tot_eout = 0d0
+         tot_eext = 0d0
+         tot_evelo = 0d0
+      endif
+      deallocate(sndvec)
+      deallocate(rcvvec)
+c!}}}
+      end subroutine reduce_totals
 c
 c
 c

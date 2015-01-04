@@ -1,6 +1,7 @@
 subroutine temperature_update
 
   use gasmod
+  use totalsmod
   use timestepmod
   use physconstmod
   use manufacmod
@@ -41,5 +42,8 @@ subroutine temperature_update
         endif
      enddo !i
   endif
+
+!-- total comoving material energy
+  tot_emat = sum(gas_bcoef*gas_temp*gas_vol)
 
 end subroutine temperature_update
