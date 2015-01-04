@@ -57,6 +57,7 @@ c-- thomson scattering
        gas_sig = 0d0
       else
        gas_sig = cthomson*gas_nelec*gas_natom/gas_vol
+       where(gas_void) gas_sig = 0d0
       endif
 c
       t0 = t_time()

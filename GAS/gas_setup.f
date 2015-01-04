@@ -99,7 +99,7 @@ c-- renormalize (the container fraction (unused elements) is taken out)
        mass0fr(:,i) = mass0fr(:,i)/sum(mass0fr(1:,i))
 c
 c-- partial mass
-       gas_natom1fr(:,i)= mass0fr(:,i)*gas_mass(i)
+       gas_natom1fr(:,i) = mass0fr(:,i)*gas_mass(i)
 c-- only stable nickel and cobalt
        gas_natom1fr(28,i) = gas_natom1fr(28,i) -
      &   gas_natom1fr(gas_ini56,i)

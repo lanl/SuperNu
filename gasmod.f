@@ -91,15 +91,17 @@ c-- ndim=1 alloc
       allocate(gas_rho(gas_ncell))
       allocate(gas_bcoef(gas_ncell))
       allocate(gas_nisource(gas_ncell))
+      gas_nisource = 0d0
       allocate(gas_vol(gas_ncell))
+      gas_vol = 1d0 !avoid nans
       allocate(gas_mass(gas_ncell))
       allocate(gas_ye(gas_ncell))
-      allocate(gas_natom(gas_ncell))
-      allocate(gas_nelec(gas_ncell))
-      allocate(gas_matsrc(gas_ncell))
-      gas_nisource = 0d0
       gas_ye = .5d0
+      allocate(gas_natom(gas_ncell))
+      gas_natom = 0d0
+      allocate(gas_nelec(gas_ncell))
       gas_nelec = 1d0
+      allocate(gas_matsrc(gas_ncell))
       gas_matsrc = 0d0
 c   allocate(dd_opacleak(6,gas_ncell))
       allocate(gas_sig(gas_ncell))
@@ -116,8 +118,8 @@ c
 c
 c-- ndim=2 alloc small
       allocate(gas_natom1fr(-2:gas_nelem,gas_ncell))
-      allocate(gas_natom0fr(-2:2,gas_ncell))
       gas_natom1fr = 0d0
+      allocate(gas_natom0fr(-2:2,gas_ncell))
       gas_natom0fr = 0d0
 c
 c-- ndim=2 alloc big

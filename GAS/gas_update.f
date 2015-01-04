@@ -101,13 +101,12 @@ c========================================
       l1 = impi*gas_ncell + 1
       l2 = (impi+1)*gas_ncell
       ll = 0
-      do l=1,grd_ncp
+      do l=1,grd_nc
        if(l<l1) cycle
        if(l>l2) exit
        ll = ll + 1
        gas_vol(ll) = grd_vol(l)
       enddo !l
-      if(ll/=gas_ncell) stop 'gas_update: ll/=gas_ncell'
 c
 c
 c-- update density, heat capacity

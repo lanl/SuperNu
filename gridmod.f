@@ -137,8 +137,10 @@ c-- ndim=3 alloc
       allocate(grd_eraddens(grd_ncp))
       allocate(grd_temp(grd_ncp))
       allocate(grd_vol(grd_ncp))
+      grd_vol = 1d0 !avoid nans
 c
       allocate(grd_emit(grd_ncp))
+      grd_emit = 0d0
       allocate(grd_emitex(grd_ncp))
       allocate(grd_evolinit(grd_ncp))
 c
