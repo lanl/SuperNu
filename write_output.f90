@@ -110,32 +110,44 @@ subroutine write_output(nmpi)
   if(.not.in_nogriddump) then
      iarr = reshape(grd_methodswap,[ncpr,nmpi])
      open(unit=4,file='output.grd_methodswap',status=fstat,position='append',recl=recleng)
-     write(4,'(10000i12)') (iarr(:,i),i=1,nmpi)
+     do i=1,nmpi
+        write(4,'(10000i12)') iarr(:,i)
+     enddo
      close(4)
 
      open(unit=4,file='output.grd_temp',status=fstat,position='append',recl=recleng)
      arr = reshape(grd_temp,[ncpr,nmpi])
-     write(4,'(1p,10000e12.4)') (arr(:,i),i=1,nmpi)
+     do i=1,nmpi
+        write(4,'(1p,10000e12.4)') arr(:,i)
+     enddo
      close(4)
 
      open(unit=4,file='output.grd_fcoef',status=fstat,position='append',recl=recleng)
      arr = reshape(grd_fcoef,[ncpr,nmpi])
-     write(4,'(1p,10000e12.4)') (arr(:,i),i=1,nmpi)
+     do i=1,nmpi
+        write(4,'(1p,10000e12.4)') arr(:,i)
+     enddo
      close(4)
 
      open(unit=4,file='output.grd_eraddens',status=fstat,position='append',recl=recleng)
      arr = reshape(grd_eraddens/grd_vol,[ncpr,nmpi])
-     write(4,'(1p,10000e12.4)') (arr(:,i),i=1,nmpi)
+     do i=1,nmpi
+        write(4,'(1p,10000e12.4)') arr(:,i)
+     enddo
      close(4)
 
      open(unit=4,file='output.grd_capgrey',status=fstat,position='append',recl=recleng)
      arr = reshape(grd_capgrey,[ncpr,nmpi])
-     write(4,'(1p,10000e12.4)') (arr(:,i),i=1,nmpi)
+     do i=1,nmpi
+        write(4,'(1p,10000e12.4)') arr(:,i)
+     enddo
      close(4)
 
      open(unit=4,file='output.grd_sig',status=fstat,position='append',recl=recleng)
      arr = reshape(grd_sig,[ncpr,nmpi])
-     write(4,'(1p,10000e12.4)') (arr(:,i),i=1,nmpi)
+     do i=1,nmpi
+        write(4,'(1p,10000e12.4)') arr(:,i)
+     enddo
      close(4)
   endif
 
