@@ -169,10 +169,10 @@ subroutine diffusion11(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 !
 !-- outward
-     if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
      if(ix==grd_nx) then
         lhelp = .true.
      else
+        l = grd_icell(ix+1,iy,iz)
         lhelp = (grd_cap(ig,l)+ &
            grd_sig(l))*dx(ix+1)*thelp<prt_tauddmc
      endif

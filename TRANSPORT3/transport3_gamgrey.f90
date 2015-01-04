@@ -111,7 +111,7 @@ subroutine transport3_gamgrey(ptcl,ic)
 !-- tallying energy densities
   if(.not.prt_isimcanlog) then
 !-- depositing nonanalog absorbed energy
-     grd_edep(ic)=grd_edep(ic)+e* &
+     grd_edep(ic) = grd_edep(ic)+e* &
           (1d0-exp(-grd_capgrey(ic)* &
           elabfact*d*thelp))*elabfact
      if(grd_edep(ic)/=grd_edep(ic)) then
@@ -177,7 +177,7 @@ subroutine transport3_gamgrey(ptcl,ic)
 !-- effective absorption
         prt_done=.true.
 !-- adding comoving energy to deposition energy
-        grd_edep(ic)=grd_edep(ic)+e*elabfact
+        grd_edep(ic) = grd_edep(ic)+e*elabfact
         return
      else
 !-- energy weight

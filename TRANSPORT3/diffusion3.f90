@@ -157,10 +157,10 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
      caplump = grd_cap(ig,ic)
 
 !-- x left (opacleak(1))
-     if(ix/=1) l = grd_icell(ix-1,iy,iz)
      if(ix==1) then
         lhelp = .true.
      else
+        l = grd_icell(ix-1,iy,iz)
         lhelp = (grd_cap(ig,l)+ &
            grd_sig(l))*min(dx(ix-1),dy(iy),dz(iz))* &
            thelp<prt_tauddmc
@@ -184,10 +184,10 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- x right (opacleak(2))
-     if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
      if(ix==grd_nx) then
         lhelp = .true.
      else
+        l = grd_icell(ix+1,iy,iz)
         lhelp = (grd_cap(ig,l)+ &
            grd_sig(l))*min(dx(ix+1),dy(iy),dz(iz))* &
            thelp<prt_tauddmc
@@ -211,10 +211,10 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- y down (opacleak(3))
-     if(iy/=1) l = grd_icell(ix,iy-1,iz)
      if(iy==1) then
         lhelp = .true.
      else
+        l = grd_icell(ix,iy-1,iz)
         lhelp = (grd_cap(ig,l)+ &
            grd_sig(l))*min(dx(ix),dy(iy-1),dz(iz))* &
            thelp<prt_tauddmc
@@ -238,10 +238,10 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- y up (opacleak(4))
-     if(iy/=grd_ny) l = grd_icell(ix,iy+1,iz)
      if(iy==grd_ny) then
         lhelp = .true.
      else
+        l = grd_icell(ix,iy+1,iz)
         lhelp = (grd_cap(ig,l)+ &
            grd_sig(l))*min(dx(ix),dy(iy+1),dz(iz))* &
            thelp<prt_tauddmc
@@ -265,10 +265,10 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- z bottom (opacleak(5))
-     if(iz/=1) l = grd_icell(ix,iy,iz-1)
      if(iz==1) then
         lhelp = .true.
      else
+        l = grd_icell(ix,iy,iz-1)
         lhelp = (grd_cap(ig,l)+ &
            grd_sig(l))*min(dx(ix),dy(iy),dz(iz-1))* &
            thelp<prt_tauddmc
@@ -292,10 +292,10 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- z top (opacleak(6))
-     if(iz/=grd_nz) l = grd_icell(ix,iy,iz+1)
      if(iz==grd_nz) then
         lhelp = .true.
      else
+        l = grd_icell(ix,iy,iz+1)
         lhelp = (grd_cap(ig,l)+ &
            grd_sig(l))*min(dx(ix),dy(iy),dz(iz+1))* &
            thelp<prt_tauddmc
@@ -397,7 +397,7 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
 !-- ix->ix-1 leakage
   elseif(r1>=pa.and.r1<pa+probleak(1)) then
 !{{{
-     l = grd_icell(ix-1,iy,iz)
+     if(ix/=1) l = grd_icell(ix-1,iy,iz)
 
 !-- sample next group
      if(speclump<=0d0) then
@@ -547,7 +547,7 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
 !-- ix->ix+1 leakage
   elseif(r1>=pa+probleak(1).and.r1<pa+sum(probleak(1:2))) then
 !{{{
-     l = grd_icell(ix+1,iy,iz)
+     if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
 
 !-- sampling next group
      if(speclump<=0d0) then
@@ -697,7 +697,7 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
 !-- iy->iy-1 leakage
   elseif(r1>=pa+sum(probleak(1:2)).and.r1<pa+sum(probleak(1:3))) then
 !{{{
-     l = grd_icell(ix,iy-1,iz)
+     if(iy/=1) l = grd_icell(ix,iy-1,iz)
 !-- sampling next group
      if(speclump<=0d0) then
         iiig = ig
@@ -846,7 +846,7 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
 !-- iy->iy+1 leakage
   elseif(r1>=pa+sum(probleak(1:3)).and.r1<pa+sum(probleak(1:4))) then
 !{{{
-     l = grd_icell(ix,iy+1,iz)
+     if(iy/=grd_ny) l = grd_icell(ix,iy+1,iz)
 
 !-- sampling next group
      if(speclump<=0d0) then
@@ -996,7 +996,7 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
 !-- iz->iz-1 leakage
   elseif(r1>=pa+sum(probleak(1:4)).and.r1<pa+sum(probleak(1:5))) then
 !{{{
-     l = grd_icell(ix,iy,iz-1)
+     if(iz/=1) l = grd_icell(ix,iy,iz-1)
 
 !-- sampling next group
      if(speclump<=0d0) then
@@ -1145,7 +1145,7 @@ subroutine diffusion3(ptcl,ic,ig,isvacant,icspec,specarr)
 !-- iz->iz+1 leakage
   elseif(r1>=pa+sum(probleak(1:5)).and.r1<pa+sum(probleak(1:6))) then
 !{{{
-     l = grd_icell(ix,iy,iz+1)
+     if(iz/=grd_nz) l = grd_icell(ix,iy,iz+1)
 
 !-- sampling next group
      if(speclump<=0d0) then

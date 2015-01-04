@@ -81,13 +81,13 @@ subroutine leakage_opacity3
                 2.25d0*alb**2*help**4)
            pp = 0.5d0*eps*beta/(beta-0.75*eps*help)
 !              pp = 4d0/(3d0*help+6d0*pc_dext)
-           grd_opacleak(1,l)=grd_opacleak(1,l)+(specval*speclump)*&
+           grd_opacleak(1,l) = grd_opacleak(1,l)+(specval*speclump)*&
                 0.5d0*pp/(thelp*dx(i))
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dx(i)+&
                 (grd_sig(icnb(1))+grd_cap(ig,icnb(1)))*dx(i-1))*thelp
-           grd_opacleak(1,l)=grd_opacleak(1,l)+(specval*speclump)*&
+           grd_opacleak(1,l) = grd_opacleak(1,l)+(specval*speclump)*&
                 (2d0/3d0)/(help*dx(i)*thelp)
         endif
 
@@ -111,13 +111,13 @@ subroutine leakage_opacity3
                 2.25d0*alb**2*help**4)
            pp = 0.5d0*eps*beta/(beta-0.75*eps*help)
 !              pp = 4d0/(3d0*help+6d0*pc_dext)
-           grd_opacleak(2,l)=grd_opacleak(2,l)+(specval*speclump)*&
+           grd_opacleak(2,l) = grd_opacleak(2,l)+(specval*speclump)*&
                 0.5d0*pp/(thelp*dx(i))
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dx(i)+&
                 (grd_sig(icnb(2))+grd_cap(ig,icnb(2)))*dx(i+1))*thelp
-           grd_opacleak(2,l)=grd_opacleak(2,l)+(specval*speclump)*&
+           grd_opacleak(2,l) = grd_opacleak(2,l)+(specval*speclump)*&
                 (2d0/3d0)/(help*dx(i)*thelp)
         endif
 
@@ -141,13 +141,13 @@ subroutine leakage_opacity3
                 2.25d0*alb**2*help**4)
            pp = 0.5d0*eps*beta/(beta-0.75*eps*help)
 !              pp = 4d0/(3d0*help+6d0*pc_dext)
-           grd_opacleak(3,l)=grd_opacleak(3,l)+(specval*speclump)*&
+           grd_opacleak(3,l) = grd_opacleak(3,l)+(specval*speclump)*&
                 0.5d0*pp/(thelp*dy(j))
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dy(j)+&
                 (grd_sig(icnb(3))+grd_cap(ig,icnb(3)))*dy(j-1))*thelp
-           grd_opacleak(3,l)=grd_opacleak(3,l)+(specval*speclump)*&
+           grd_opacleak(3,l) = grd_opacleak(3,l)+(specval*speclump)*&
                 (2d0/3d0)/(help*dy(j)*thelp)
         endif
 
@@ -171,13 +171,13 @@ subroutine leakage_opacity3
                 2.25d0*alb**2*help**4)
            pp = 0.5d0*eps*beta/(beta-0.75*eps*help)
 !              pp = 4d0/(3d0*help+6d0*pc_dext)
-           grd_opacleak(4,l)=grd_opacleak(4,l)+(specval*speclump)*&
+           grd_opacleak(4,l) = grd_opacleak(4,l)+(specval*speclump)*&
                 0.5d0*pp/(thelp*dy(j))
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dy(j)+&
                 (grd_sig(icnb(4))+grd_cap(ig,icnb(4)))*dy(j+1))*thelp
-           grd_opacleak(4,l)=grd_opacleak(4,l)+(specval*speclump)*&
+           grd_opacleak(4,l) = grd_opacleak(4,l)+(specval*speclump)*&
                 (2d0/3d0)/(help*dy(j)*thelp)
         endif
 
@@ -201,13 +201,13 @@ subroutine leakage_opacity3
                 2.25d0*alb**2*help**4)
            pp = 0.5d0*eps*beta/(beta-0.75*eps*help)
 !              pp = 4d0/(3d0*help+6d0*pc_dext)
-           grd_opacleak(5,l)=grd_opacleak(5,l)+(specval*speclump)*&
+           grd_opacleak(5,l) = grd_opacleak(5,l)+(specval*speclump)*&
                 0.5d0*pp/(thelp*dz(k))
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dz(k)+&
                 (grd_sig(icnb(5))+grd_cap(ig,icnb(5)))*dz(k-1))*thelp
-           grd_opacleak(5,l)=grd_opacleak(5,l)+(specval*speclump)*&
+           grd_opacleak(5,l) = grd_opacleak(5,l)+(specval*speclump)*&
                 (2d0/3d0)/(help*dz(k)*thelp)
         endif
 
@@ -231,13 +231,13 @@ subroutine leakage_opacity3
                 2.25d0*alb**2*help**4)
            pp = 0.5d0*eps*beta/(beta-0.75*eps*help)
 !              pp = 4d0/(3d0*help+6d0*pc_dext)
-           grd_opacleak(6,l)=grd_opacleak(6,l)+(specval*speclump)*&
+           grd_opacleak(6,l) = grd_opacleak(6,l)+(specval*speclump)*&
                 0.5d0*pp/(thelp*dz(k))
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dz(k)+&
                 (grd_sig(icnb(6))+grd_cap(ig,icnb(6)))*dz(k+1))*thelp
-           grd_opacleak(6,l)=grd_opacleak(6,l)+(specval*speclump)*&
+           grd_opacleak(6,l) = grd_opacleak(6,l)+(specval*speclump)*&
                 (2d0/3d0)/(help*dz(k)*thelp)
         endif
 

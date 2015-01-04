@@ -160,8 +160,8 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
      if(ix==1) then
         opacleak(1) = 0d0
      elseif((grd_cap(ig,l)+ &
-          grd_sig(l))*min(dx(ix-1),dy(iy))* &
-          thelp<prt_tauddmc) then
+        grd_sig(l))*min(dx(ix-1),dy(iy))* &
+        thelp<prt_tauddmc) then
 !-- DDMC interface
         mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*dx(ix)*thelp
         pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
@@ -176,10 +176,10 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- outward
-     if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
      if(ix==grd_nx) then
         lhelp = .true.
      else
+        l = grd_icell(ix+1,iy,iz)
         lhelp = (grd_cap(ig,l)+ &
            grd_sig(l))*min(dx(ix+1),dy(iy))* &
            thelp<prt_tauddmc
@@ -199,10 +199,10 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- downward
-     if(iy/=1) l = grd_icell(ix,iy-1,iz)
      if(iy==1) then
         lhelp = .true.
      else
+        l = grd_icell(ix,iy-1,iz)
         lhelp = (grd_cap(ig,l)+ &
              grd_sig(l))*min(dx(ix),dy(iy-1)) * &
              thelp<prt_tauddmc
@@ -220,10 +220,10 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
      endif
 
 !-- upward
-     if(iy/=grd_ny) l = grd_icell(ix,iy+1,iz)
      if(iy==grd_ny) then
         lhelp = .true.
      else
+        l = grd_icell(ix,iy+1,iz)
         lhelp = (grd_cap(ig,l)+ &
              grd_sig(l))*min(dx(ix),dy(iy+1)) * &
              thelp<prt_tauddmc
@@ -288,7 +288,7 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
 !-- check for census
   if (ddmct /= tau) then
      prt_done = .true.
-     grd_numcensus(ic)=grd_numcensus(ic)+1
+     grd_numcensus(ic) = grd_numcensus(ic)+1
      return
   endif
 
@@ -406,7 +406,7 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
         endif
 !-- converting to IMC
         ptcl%itype = 1
-        grd_methodswap(ic)=grd_methodswap(ic)+1
+        grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- ix->ix-1
         ix = ix-1
         ic = grd_icell(ix,iy,iz)
@@ -416,7 +416,7 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
 !-- ix->ix+1 leakage
   elseif (r1>=pa+probleak(1).and.r1<pa+sum(probleak(1:2))) then
 !{{{
-     l = grd_icell(ix+1,iy,iz)
+     if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
 !-- sampling next group
      if(speclump<=0d0) then
         iiig = ig
@@ -531,7 +531,7 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
         else
 !-- converting to IMC
            ptcl%itype = 1
-           grd_methodswap(ic)=grd_methodswap(ic)+1
+           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- ix->ix+1
            ix = ix+1
            ic = grd_icell(ix,iy,iz)
@@ -542,7 +542,7 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
 !-- iy->iy-1 leakage
   elseif(r1>=pa+sum(probleak(1:2)).and.r1<pa+sum(probleak(1:3))) then
 !{{{
-     l = grd_icell(ix,iy-1,iz)
+     if(iy/=1) l = grd_icell(ix,iy-1,iz)
 !-- sampling next group
      if(speclump<=0d0) then
         iiig = ig
@@ -656,7 +656,7 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
         else
 !-- converting to IMC
            ptcl%itype = 1
-           grd_methodswap(ic)=grd_methodswap(ic)+1
+           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- iy->iy-1
            iy = iy-1
            ic = grd_icell(ix,iy,iz)
@@ -667,7 +667,7 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
 !-- iy->iy+1 leakage
   elseif(r1>=pa+sum(probleak(1:3)).and.r1<pa+sum(probleak(1:4))) then
 !{{{
-     l = grd_icell(ix,iy+1,iz)
+     if(iy/=grd_ny) l = grd_icell(ix,iy+1,iz)
 !-- sampling next group
      if(speclump<=0d0) then
         iiig = ig
@@ -782,7 +782,7 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
         else
 !-- converting to IMC
            ptcl%itype = 1
-           grd_methodswap(ic)=grd_methodswap(ic)+1
+           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- iy->iy+1
            iy = iy+1
            ic = grd_icell(ix,iy,iz)
@@ -823,7 +823,7 @@ subroutine diffusion2(ptcl,ic,ig,isvacant,icspec,specarr)
           min(dx(ix),dy(iy)) &
           *thelp < prt_tauddmc) then
         ptcl%itype = 1
-        grd_methodswap(ic)=grd_methodswap(ic)+1
+        grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- direction sampled isotropically           
         r1 = rnd_r(rnd_state)
         mu = 1d0 - 2d0*r1

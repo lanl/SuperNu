@@ -164,10 +164,10 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
      caplump = grd_cap(ig,ic)
 
 !-- ix->ix-1 in (opacleak(1))
-     if(ix/=1) l = grd_icell(ix-1,iy,iz)
      if(ix==1) then
         lhelp = .true.
      else
+        l = grd_icell(ix-1,iy,iz)
         lhelp = (grd_cap(ig,l)+ &
            grd_sig(l))*min(dx(ix-1),xm(ix-1)*dyac(iy) , &
            xm(ix-1)*ym(iy)*dz(iz))*thelp<prt_tauddmc
@@ -186,10 +186,10 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
 
 !
 !-- ix->ix+1 (opacleak(2))
-     if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
      if(ix==grd_nx) then
         lhelp = .true.
      else
+        l = grd_icell(ix+1,iy,iz)
         lhelp = (grd_cap(ig,l)+grd_sig(l)) * &
              min(dx(ix+1),xm(ix+1)*dyac(iy),xm(ix+1)*ym(iy)*dz(iz)) * &
              thelp<prt_tauddmc
@@ -208,10 +208,10 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
 
 !
 !-- iy->iy-1 (opacleak(3))
-     if(iy/=1) l = grd_icell(ix,iy-1,iz)
      if(iy==1) then
         lhelp = .true.
      else
+        l = grd_icell(ix,iy-1,iz)
         lhelp = (grd_cap(ig,l)+ &
              grd_sig(l))*min(dx(ix),xm(ix)*dyac(iy-1), &
              xm(ix)*ym(iy-1)*dz(iz))*thelp<prt_tauddmc
@@ -233,10 +233,10 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
 
 !
 !-- iy->iy+1 (opacleak(4))
-     if(iy/=grd_ny) l = grd_icell(ix,iy+1,iz)
      if(iy==grd_ny) then
         lhelp = .true.
      else
+        l = grd_icell(ix,iy+1,iz)
         lhelp = (grd_cap(ig,l)+ &
              grd_sig(l))*min(dx(ix),xm(ix)*dyac(iy+1), &
              xm(ix)*ym(iy+1)*dz(iz))*thelp<prt_tauddmc
@@ -285,7 +285,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
            opacleak(5)=0.75d0*pp*dx2(ix)*dyac(iy)/(dy(iy)*dx3(ix)*dz(iz))
         else
 !-- DDMC interior
-           l = grd_icell(ix,iy,iznext)
            help = ((grd_sig(ic)+grd_cap(ig,ic))*dz(iz) + &
                 (grd_sig(l)+grd_cap(ig,l))*dz(iznext))
            opacleak(5)=2d0*dyac(iy)*dx(ix) / &
@@ -314,7 +313,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
            opacleak(6)=0.75d0*pp*dx2(ix)*dyac(iy)/(dy(iy)*dx3(ix)*dz(iz))
         else
 !-- DDMC interior
-           l = grd_icell(ix,iy,iznext)
            help = ((grd_sig(ic)+grd_cap(ig,ic))*dz(iz) + &
                 (grd_sig(l)+grd_cap(ig,l))*dz(iznext))
            opacleak(6)=2d0*dyac(iy)*dx(ix) / &
@@ -402,6 +400,8 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
   elseif(r1>=pa.and.r1<pa+probleak(1)) then
 !-- sanity check
      if(ix==1) stop 'diffusion1: invalid probleak(1)'
+!
+     l = grd_icell(ix-1,iy,iz)
 !-- sample next group
      if(speclump<=0d0) then
         iiig = ig
@@ -409,7 +409,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
         r1 = rnd_r(rnd_state)
         denom2 = 0d0
         help = 1d0/opacleak(1)
-        l = grd_icell(ix-1,iy,iz)
         do iig=1,glump
            iiig = glumps(iig)
            specig = specarr(iiig)
@@ -439,7 +438,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
-     l = grd_icell(ix-1,iy,iz)
      lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
           min(dx(ix-1),xm(ix-1)*dyac(iy),xm(ix-1)*ym(iy)*dz(iz)) * &
           thelp<prt_tauddmc
@@ -494,13 +492,13 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
   elseif(r1>=pa+probleak(1).and.r1<pa+sum(probleak(1:2))) then
 
 !-- sampling next group
+     if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
      if(speclump<=0d0) then
         iiig = ig
      else
         r1 = rnd_r(rnd_state)
         denom2 = 0d0
         help = 1d0/opacleak(2)
-        l = grd_icell(ix+1,iy,iz)
         do iig=1,glump
            iiig = glumps(iig)
            specig = specarr(iiig)
@@ -537,7 +535,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
      if(ix==grd_nx) then
         lhelp = .true.
      else
-        l = grd_icell(ix+1,iy,iz)
         lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
              min(dx(ix+1),xm(ix+1)*dyac(iy),xm(ix+1)*ym(iy)*dz(iz)) * &
              thelp<prt_tauddmc
@@ -633,13 +630,13 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
      if(iy==1) stop 'diffusion1: invalid probleak(3)'
 
 !-- sampling next group
+     l = grd_icell(ix,iy-1,iz)
      if(speclump<=0d0) then
         iiig = ig
      else
         r1 = rnd_r(rnd_state)
         denom2 = 0d0
         help = 1d0/opacleak(3)
-        l = grd_icell(ix,iy-1,iz)
         do iig = 1, glump
            iiig=glumps(iig)
            specig = specarr(iiig)
@@ -671,7 +668,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
-     l = grd_icell(ix,iy-1,iz)
      lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
           min(dx(ix),xm(ix)*dyac(iy-1),xm(ix)*ym(iy-1)*dz(iz)) * &
           thelp<prt_tauddmc
@@ -733,13 +729,13 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
      if(iy==grd_ny) stop 'diffusion1: invalid probleak(4)'
 
 !-- sampling next group
+     l = grd_icell(ix,iy+1,iz)
      if(speclump<=0d0) then
         iiig = ig
      else
         r1 = rnd_r(rnd_state)
         denom2 = 0d0
         help = 1d0/opacleak(4)
-        l = grd_icell(ix,iy+1,iz)
         do iig = 1, glump
            iiig=glumps(iig)
            specig = specarr(iiig)
@@ -770,7 +766,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
-     l = grd_icell(ix,iy+1,iz)
      lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
           min(dx(ix),xm(ix)*dyac(iy+1),xm(ix)*ym(iy+1)*dz(iz)) * &
           thelp<prt_tauddmc
@@ -835,6 +830,7 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
      else
         iznext=iz-1
      endif
+     l = grd_icell(ix,iy,iznext)
 !-- sampling next group
      if(speclump<=0d0) then
         iiig = ig
@@ -842,7 +838,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
         r1 = rnd_r(rnd_state)
         denom2 = 0d0
         help = 1d0/opacleak(5)
-        l = grd_icell(ix,iy,iznext)
         do iig = 1, glump
            iiig=glumps(iig)
            specig = specarr(iiig)
@@ -873,7 +868,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
      r1 = rnd_r(rnd_state)
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
-     l = grd_icell(ix,iy,iznext)
      lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
           min(dx(ix),dy(iy),dz(iznext))*thelp<prt_tauddmc
 
@@ -942,6 +936,7 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
      else
         iznext=iz+1
      endif
+     l = grd_icell(ix,iy,iznext)
 !-- sampling next group
      if(speclump<=0d0) then
         iiig = ig
@@ -949,7 +944,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
         r1 = rnd_r(rnd_state)
         denom2 = 0d0
         help = 1d0/opacleak(6)
-        l = grd_icell(ix,iy,iznext)
         do iig = 1, glump
            iiig=glumps(iig)
            specig = specarr(iiig)
@@ -980,7 +974,6 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
      r1 = rnd_r(rnd_state)
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
-     l = grd_icell(ix,iy,iznext)
      lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
           min(dx(ix),dy(iy),dz(iznext))*thelp<prt_tauddmc
 

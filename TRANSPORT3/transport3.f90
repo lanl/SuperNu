@@ -155,11 +155,11 @@ subroutine transport3(ptcl,ic,ig,isvacant)
              grd_cap(ig,ic)*pc_c*tsp_dt)
      else
 !-- analog energy density
-        grd_eraddens(ic)=grd_eraddens(ic)+e*elabfact* &
+        grd_eraddens(ic) = grd_eraddens(ic)+e*elabfact* &
              d*thelp*cinv*dtinv
      endif
 !-- depositing nonanalog absorbed energy
-     grd_edep(ic)=grd_edep(ic)+e* &
+     grd_edep(ic) = grd_edep(ic)+e* &
           (1d0-exp(-grd_fcoef(ic)*grd_cap(ig,ic)* &
           elabfact*d*thelp))*elabfact
      if(grd_edep(ic)/=grd_edep(ic)) then
@@ -184,7 +184,7 @@ subroutine transport3(ptcl,ic,ig,isvacant)
 !-- census
   if(d==dcen) then
      prt_done = .true.
-     grd_numcensus(ic)=grd_numcensus(ic)+1
+     grd_numcensus(ic) = grd_numcensus(ic)+1
      return
   endif
 
@@ -270,7 +270,7 @@ subroutine transport3(ptcl,ic,ig,isvacant)
         isvacant=.true.
         prt_done=.true.
 !-- adding comoving energy to deposition energy
-        grd_edep(ic)=grd_edep(ic)+e*elabfact
+        grd_edep(ic) = grd_edep(ic)+e*elabfact
         return
      else
 !-- effective scattering
@@ -296,7 +296,7 @@ subroutine transport3(ptcl,ic,ig,isvacant)
              min(dx(ix),dy(iy),dz(iz))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
            ptcl%itype = 2
-           grd_methodswap(ic)=grd_methodswap(ic)+1
+           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- transforming to cmf
            if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -363,7 +363,7 @@ subroutine transport3(ptcl,ic,ig,isvacant)
         r1 = rnd_r(rnd_state)
         if (r1 < help*(1d0+1.5d0*abs(xi))) then
            ptcl%itype = 2
-           grd_methodswap(ic)=grd_methodswap(ic)+1
+           grd_methodswap(ic) = grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
               tot_evelo=tot_evelo+e*(1d0-elabfact)
@@ -454,7 +454,7 @@ subroutine transport3(ptcl,ic,ig,isvacant)
         r1 = rnd_r(rnd_state)
         if (r1 < help*(1d0+1.5d0*abs(eta))) then
            ptcl%itype = 2
-           grd_methodswap(ic)=grd_methodswap(ic)+1
+           grd_methodswap(ic) = grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
               tot_evelo=tot_evelo+e*(1d0-elabfact)
@@ -545,7 +545,7 @@ subroutine transport3(ptcl,ic,ig,isvacant)
         r1 = rnd_r(rnd_state)
         if (r1 < help*(1d0+1.5d0*abs(mu))) then
            ptcl%itype = 2
-           grd_methodswap(ic)=grd_methodswap(ic)+1
+           grd_methodswap(ic) = grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
               tot_evelo=tot_evelo+e*(1d0-elabfact)
@@ -596,11 +596,11 @@ subroutine transport3(ptcl,ic,ig,isvacant)
         wl = wl*elabfact
      endif
 !-- check if ddmc region
-     if ((grd_sig(ic)+grd_cap(ig,ic)) * &
+     if((grd_sig(ic)+grd_cap(ig,ic)) * &
           min(dx(ix),dy(iy),dz(iz))*thelp >= prt_tauddmc &
           .and..not.in_puretran) then
         ptcl%itype = 2
-        grd_methodswap(ic)=grd_methodswap(ic)+1
+        grd_methodswap(ic) = grd_methodswap(ic)+1
         if(grd_isvelocity) then
 !-- velocity effects accounting
            tot_evelo=tot_evelo+e*(1d0-elabfact)
