@@ -65,12 +65,11 @@ c-- domain decomposition
       grd_emit = reshape(gas_emit,[grd_ncp])
       grd_emitex = reshape(gas_emitex,[grd_ncp])
       grd_evolinit = reshape(gas_evolinit,[grd_ncp])
-
+c
       grd_cap = reshape(gas_cap,[grp_ng,grd_ncp])
       grd_sig = reshape(gas_sig,[grd_ncp])
       grd_capgrey = reshape(gas_capgrey,[grd_ncp])
       grd_fcoef = reshape(gas_fcoef,[grd_ncp])
-
       end subroutine bcast_nonpermanent
 c
 c
@@ -83,14 +82,10 @@ c
       use totalsmod
       use gridmod
       use gasmod
-c
       gas_edep = reshape(grd_edep,[grd_ncp])
       gas_eraddens = reshape(grd_eraddens,[grd_ncp])
       end subroutine reduce_tally
 c
-c
-      subroutine reduce_totals
-      end subroutine reduce_totals
 c
       subroutine reduce_fluxes
       end subroutine reduce_fluxes
@@ -108,14 +103,11 @@ c
 c
       subroutine collect_restart_data
       use particlemod
-************************************************************************
-* Collect data required for restarting a simulation at some time
-*
-************************************************************************
       prt_tlyrandarr=prt_tlyrand
       end subroutine collect_restart_data
 c
-c
+c-- MPI intrinsics
+c-----------------
       subroutine mpi_init(ierr_)
       implicit none
       integer :: ierr_

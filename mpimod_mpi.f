@@ -516,15 +516,21 @@ c!}}}
 c
 c
 c
-      subroutine reduce_totals
-c     ------------------------!{{{
+      subroutine reduce_gastemp
+c     -------------------------------------!{{{
+      use gridmod
       use totalsmod
+      use gasmod
       implicit none
 ************************************************************************
-* Reduce energy totals from totalsmod
+* for output
 ************************************************************************
       integer :: n
       real*8,allocatable :: sndvec(:),rcvvec(:)
+c
+      call mpi_gather(gas_temp,gas_ncell,MPI_REAL8,
+     &   grd_temp,gas_ncell,MPI_REAL8,
+     &   impi0,MPI_COMM_WORLD,ierr)
 c
 c-- dim==0
       n = 6
@@ -550,21 +556,6 @@ c-- zero out cumulative values on all other ranks to avoid double counting.
       endif
       deallocate(sndvec)
       deallocate(rcvvec)
-c!}}}
-      end subroutine reduce_totals
-c
-c
-c
-      subroutine reduce_gastemp
-c     -------------------------------------!{{{
-      use gridmod
-      use gasmod
-************************************************************************
-* for output
-************************************************************************
-      call mpi_gather(gas_temp,gas_ncell,MPI_REAL8,
-     &   grd_temp,gas_ncell,MPI_REAL8,
-     &   impi0,MPI_COMM_WORLD,ierr)
 c!}}}
       end subroutine reduce_gastemp
 c

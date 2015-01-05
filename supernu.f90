@@ -23,9 +23,6 @@ program supernu
   implicit none
 !***********************************************************************
 ! TODO and wishlist:
-! - transport[123].f90: no check wl group bounds (drr 2014/11/20)
-! - interior_source: source tilting from source derivative (drr 2014/11/20)
-! - grd_temp => grd_tempinv
 !***********************************************************************
   real*8 :: help
   real*8 :: t_elapsed
@@ -166,8 +163,8 @@ program supernu
   endif
 !
   do it=in_ntres,tsp_nt
-     t_timelin(1) = t_time() !timeline
-!-- allow negative and zero it for temperature initialization purposes!{{{
+     t_timelin(1) = t_time() !timeline!{{{
+!-- allow negative and zero it for temperature initialization purposes
      tsp_it = max(it,1)
 
 !-- Update tsp_t etc
@@ -242,7 +239,6 @@ program supernu
 !-- update temperature
      call temperature_update
      call reduce_gastemp !MPI
-     call reduce_totals !MPI
 
 !-- output
      if(impi==impi0) then
@@ -256,7 +252,7 @@ program supernu
         call totals_error !check energy (particle weight) is accounted
 
 !-- write output
-        if(it>0) call write_output(nmpi)
+        if(it>0) call write_output
 !-- restart writers
         if(.not.in_norestart .and. it>0) then
            call write_restart_file !temp
@@ -271,9 +267,9 @@ program supernu
 
 !-- write timestep timing to file
      if(it>0) call timing_timestep(impi)
-!!}}}
      t_timelin(7) = t_time() !timeline
      t_timeline(:6) = t_timeline(:6) + (t_timelin(2:) - t_timelin(:6))
+!!}}}
   enddo !tsp_it
 !
 !
