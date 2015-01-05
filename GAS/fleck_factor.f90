@@ -19,7 +19,7 @@ subroutine fleck_factor(tempalt,capgreyalt)
 
 !-- calculating modified Fleck factor
   do i=1,gas_ncell
-     if(gas_void(i)) cycle
+     if(gas_mass(i)<=0d0) cycle
 !
      Um = gas_bcoef(i)*gas_temp(i)
      if(gas_temp(i)<=0d0.or.gas_bcoef(i)==0d0) then

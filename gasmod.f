@@ -13,7 +13,6 @@ c
 c-- domain decomposed grid variables used to calculate the state of the material (gas)
       integer :: gas_ncell=0
       integer,allocatable :: gas_idcell(:)    !(ncell)
-      logical,allocatable :: gas_void(:)      !(ncell)
       real*8,allocatable :: gas_temp(:)       !(ncell)
       real*8,allocatable :: gas_eraddens(:)
       real*8,allocatable :: gas_ur(:)
@@ -85,7 +84,6 @@ c---------------------------------------
 c
 c-- ndim=1 alloc
       allocate(gas_idcell(gas_ncell))
-      allocate(gas_void(gas_ncell))
       allocate(gas_temp(gas_ncell))
       allocate(gas_ur(gas_ncell))
       allocate(gas_rho(gas_ncell))

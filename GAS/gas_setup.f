@@ -30,9 +30,6 @@ c-- decompose idcell
       enddo !l
       if(ll/=gas_ncell) stop 'gas_update: ll/=gas_ncell'
 c
-c-- flag void cells
-      gas_void = gas_mass<=0d0
-c
 c-- temperature
       if(in_srctype=='manu') then
        call init_manutemp
@@ -88,7 +85,7 @@ c     ----------------------------------!{{{
       real*8 :: help
 c
       do i=1,gas_ncell
-       if(gas_void(i)) cycle
+       if(gas_mass(i)<=0) cycle
 c-- sanity test
        if(all(mass0fr(1:,i)==0d0)) stop
      &    'massfr2natomfr: all mass fractions zero'

@@ -112,7 +112,7 @@ c
 c-- update density, heat capacity
 c================================
       gas_rho = gas_mass/gas_vol
-      where(gas_void) gas_rho = 0d0 !deal with nans in void cells
+      where(gas_mass<=0d0) gas_rho = 0d0 !deal with nans in void cells
 c-- Calculating power law heat capacity
       gas_bcoef = in_gas_cvcoef * gas_temp**in_gas_cvtpwr *
      &  gas_rho**in_gas_cvrpwr

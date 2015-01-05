@@ -57,7 +57,7 @@ c-- thomson scattering
        gas_sig = 0d0
       else
        gas_sig = cthomson*gas_nelec*gas_natom/gas_vol
-       where(gas_void) gas_sig = 0d0
+       where(gas_mass<=0d0) gas_sig = 0d0
       endif
 c
       t0 = t_time()
@@ -66,7 +66,7 @@ c-- bound-bound
       if(.not. in_nobbopac) then
        do iz=1,gas_nelem!{{{
         do i=1,gas_ncell
-         if(gas_void(i)) cycle
+         if(gas_mass(i)<=0d0) cycle
          forall(ii=1:min(iz,ion_el(iz)%ni - 1))
      &     grndlev(i,ii,iz) = ion_grndlev(iz,i)%oc(ii)*
      &     ion_grndlev(iz,i)%ginv(ii)
@@ -76,7 +76,7 @@ c
 c$omp parallel
 c$omp& private(wl0,iz,ii,wl,wlinv,dwl,phi,ocggrnd,expfac,caphelp,ig,iig,
 c$omp&   dirty)
-c$omp& shared(gas_void,grndlev,hckt,cap)
+c$omp& shared(gas_mass,grndlev,hckt,cap)
        iig = 0
        dirty = .true.
        phi = 0d0
@@ -112,7 +112,7 @@ c-- profile function
 c
 c-- evaluate cap
         do i=1,gas_ncell
-         if(gas_void(i)) cycle
+         if(gas_mass(i)<=0d0) cycle
          ocggrnd = grndlev(i,ii,iz)
          if(ocggrnd<=0d0) cycle
 *        expfac = 1d0 - exp(-hckt(i)/wl0)  !exact expfac
@@ -135,7 +135,7 @@ c-- bound-free
 c!{{{
        do iz=1,gas_nelem
         do i=1,gas_ncell
-         if(gas_void(i)) cycle
+         if(gas_mass(i)<=0d0) cycle
          forall(ii=1:min(iz,ion_el(iz)%ni - 1))
      &    grndlev(i,ii,iz) = ion_grndlev(iz,i)%oc(ii)
         enddo !i
@@ -144,7 +144,7 @@ c
 c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(wl,en,ie,xs)
-c$omp& shared(gas_void,grndlev,cap)
+c$omp& shared(gas_mass,grndlev,cap)
        do ig=1,grp_ng
         wl = grp_wl(ig)  !in cm
         en = pc_h*pc_c/(pc_ev*wl) !photon energy in eV
@@ -153,7 +153,7 @@ c$omp& shared(gas_void,grndlev,cap)
           ie = iz - ii + 1
           xs = bfxs(iz,ie,en)
           if(xs==0d0) cycle
-          forall(i=1:gas_ncell,.not.gas_void(i))
+          forall(i=1:gas_ncell,.not.gas_mass(i)<=0d0)
      &      cap(i,ig) = cap(i,ig) +
      &      xs*pc_mbarn*grndlev(i,ii,iz)
          enddo !ie
@@ -176,13 +176,13 @@ c-- simple variant: nearest data grid point
 c$omp parallel do
 c$omp& schedule(static)
 c$omp& private(wl,wlinv,u,iu,help,gg,igg,gff,yend,dydx,dy)
-c$omp& shared(lwarn,hckt,hlparr,gas_void,cap)
+c$omp& shared(lwarn,hckt,hlparr,gas_mass,cap)
        do ig=1,grp_ng
         wl = grp_wl(ig)  !in cm
         wlinv = 1d0/wl  !in cm
 c-- gcell loop
         do i=1,gas_ncell
-         if(gas_void(i)) cycle
+         if(gas_mass(i)<=0d0) cycle
          u = hckt(i)*wlinv
          iu = nint(10d0*(log10(u) + 4d0)) + 1
 c
@@ -233,7 +233,7 @@ c
 c-- sanity check
       m = 0
       do i=1,gas_ncell
-       if(gas_void(i)) cycle
+       if(gas_mass(i)<=0d0) cycle
        do ig=1,grp_ng
         if(gas_cap(ig,i)<=0.) m = ior(m,1)
         if(gas_cap(ig,i)/=gas_cap(ig,i)) m = ior(m,2)
