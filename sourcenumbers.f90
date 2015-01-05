@@ -55,7 +55,7 @@ subroutine sourcenumbers
   ndone = 0
   invn = 1d0/(nsavail + nsbase)
   einv = 1d0/etot
-  do l=1,grd_nc
+  do l=1,grd_ncell
      en = grd_emit(l)**pwr + grd_emitex(l)**pwr
      if(en==0d0) cycle
 !-- continuously guide the rounding towards the correct cumulative value
@@ -72,7 +72,7 @@ subroutine sourcenumbers
   prt_nnew = prt_nsurf
   prt_nexsrc = 0
   iimpi = 0
-  do l=1,grd_nc
+  do l=1,grd_ncell
      call sourcenumbers_roundrobin(iimpi,grd_emit(l)**pwr, &
         grd_emitex(l)**pwr,grd_nvol(l),nemit,nvol,nvolex)
 !-- particle counts

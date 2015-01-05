@@ -111,7 +111,7 @@ program supernu
 
 
 !-- setup spatial grid
-  call grid_init(impi==impi0,grp_ng,in_igeom,in_ndim,str_nc,str_lpad,in_isvelocity)
+  call grid_init(impi==impi0,grp_ng,in_igeom,in_ndim,str_nc,str_lvoid,in_isvelocity)
 !-- domain-decompose input structure
   call scatter_inputstruct(in_ndim,ncpr) !MPI
   call grid_setup

@@ -15,7 +15,7 @@ c
       real*8,allocatable :: str_massfr(:,:,:,:) !(nabund,nx,ny,nz)
 c
 c-- domain compression
-      logical :: str_lpad=.false.  !flag pad cell
+      logical :: str_lvoid=.false.  !flag pad cell
       integer :: str_nc=0  !number of cells in compressed grid
       integer,allocatable :: str_idcell(:) !(nc)
       real*8,allocatable :: str_massdc(:) !(nc)
@@ -228,7 +228,7 @@ c
 c
 c-- add void cell
       if(str_nc/=nx*ny*nz) then
-       str_lpad = .true.
+       str_lvoid = .true.
        str_nc = str_nc+1
       endif
 c
@@ -259,8 +259,8 @@ c-- insert
       enddo !j
       enddo !k
 c-- sanity check
-      if(str_lpad) l = l+1
-      if(l/=str_nc) stop 'inputstr_compress: l/=str_nc' !one pad cell in grd_nc
+      if(str_lvoid) l = l+1
+      if(l/=str_nc) stop 'inputstr_compress: l/=str_nc' !one dummy cell
       if(idcell/=nx*ny*nz) stop 'inputstr_compress: idcell/=nx*ny*nz'
 c
 c-- deallocate full grid

@@ -101,7 +101,7 @@ c========================================
       l1 = impi*gas_ncell + 1
       l2 = (impi+1)*gas_ncell
       ll = 0
-      do l=1,grd_nc
+      do l=1,grd_ncell
        if(l<l1) cycle
        if(l>l2) exit
        ll = ll + 1

@@ -43,8 +43,8 @@ c
 c     ---------------------------
       use gridmod
       use gasmod
-      grd_capgrey = reshape(gas_capgam,[grd_nc])
-      grd_emitex = reshape(gas_emitex,[grd_nc])
+      grd_capgrey = reshape(gas_capgam,[grd_ncell])
+      grd_emitex = reshape(gas_emitex,[grd_ncell])
       end subroutine allgather_gammacap
 c
 c
@@ -61,15 +61,15 @@ c
 * - stub
 ************************************************************************
 c-- domain decomposition
-      grd_temp = reshape(gas_temp,[grd_nc])
-      grd_emit = reshape(gas_emit,[grd_nc])
-      grd_emitex = reshape(gas_emitex,[grd_nc])
-      grd_evolinit = reshape(gas_evolinit,[grd_nc])
+      grd_temp = reshape(gas_temp,[grd_ncell])
+      grd_emit = reshape(gas_emit,[grd_ncell])
+      grd_emitex = reshape(gas_emitex,[grd_ncell])
+      grd_evolinit = reshape(gas_evolinit,[grd_ncell])
 c
-      grd_cap = reshape(gas_cap,[grp_ng,grd_nc])
-      grd_sig = reshape(gas_sig,[grd_nc])
-      grd_capgrey = reshape(gas_capgrey,[grd_nc])
-      grd_fcoef = reshape(gas_fcoef,[grd_nc])
+      grd_cap = reshape(gas_cap,[grp_ng,grd_ncell])
+      grd_sig = reshape(gas_sig,[grd_ncell])
+      grd_capgrey = reshape(gas_capgrey,[grd_ncell])
+      grd_fcoef = reshape(gas_fcoef,[grd_ncell])
       end subroutine bcast_nonpermanent
 c
 c
@@ -82,8 +82,8 @@ c
       use totalsmod
       use gridmod
       use gasmod
-      gas_edep = reshape(grd_edep,[grd_nc])
-      gas_eraddens = reshape(grd_eraddens,[grd_nc])
+      gas_edep = reshape(grd_edep,[grd_ncell])
+      gas_eraddens = reshape(grd_eraddens,[grd_ncell])
       end subroutine reduce_tally
 c
 c
@@ -94,7 +94,7 @@ c
 c     -------------------------
       use gridmod
       use gasmod
-      grd_temp = reshape(gas_temp,[grd_nc])
+      grd_temp = reshape(gas_temp,[grd_ncell])
       end subroutine reduce_gastemp
 c
       subroutine scatter_restart_data

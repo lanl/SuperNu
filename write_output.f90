@@ -22,22 +22,22 @@ subroutine write_output
   if(lfirst) then
 !
 !-- shape of volume quantities
-     if(.not.grd_lpad) then
+     if(.not.grd_lvoid) then
 !-- no pad cells
        ncpr = grd_nx
-       nrow = grd_nc/ncpr
+       nrow = grd_ncell/ncpr
      else
 !-- find optimal row size
-       npbot = grd_nc !init with worst case
-       do i=grd_nx,max(grd_nx,grd_ny,grd_nz,grd_nc/2)+1
-          nrow = ceiling(float(grd_nc)/i)
-          np = nrow*i - grd_nc !number of pad cells
+       npbot = grd_ncell !init with worst case
+       do i=grd_nx,max(grd_nx,grd_ny,grd_nz,grd_ncell/2)+1
+          nrow = ceiling(float(grd_ncell)/i)
+          np = nrow*i - grd_ncell !number of pad cells
           if(np<npbot) then
              npbot = np
              ncpr = i !optimal row size
           endif
        enddo
-       nrow = ceiling(float(grd_nc)/ncpr)
+       nrow = ceiling(float(grd_ncell)/ncpr)
      endif
 
 !
@@ -129,9 +129,9 @@ subroutine write_output
      reclen = ncpr*12
 !-- alloc
      allocate(iarr(ncpr*nrow))
-     iarr(grd_nc+1:) = 0
+     iarr(grd_ncell+1:) = 0
 !
-     iarr(:grd_nc) = grd_methodswap(:grd_nc)
+     iarr(:grd_ncell) = grd_methodswap
      open(unit=4,file='output.grd_methodswap',status=fstat,position='append',recl=reclen)
      do i=1,nrow
         write(4,'(10000i12)') iarr((i-1)*ncpr+1:i*ncpr)
@@ -141,37 +141,37 @@ subroutine write_output
 !-- alloc
      deallocate(iarr)
      allocate(arr(ncpr*nrow))
-     arr(grd_nc+1:) = 0d0
+     arr(grd_ncell+1:) = 0d0
 
-     arr(:grd_nc) = grd_temp(:grd_nc)
+     arr(:grd_ncell) = grd_temp
      open(unit=4,file='output.grd_temp',status=fstat,position='append',recl=reclen)
      do i=1,nrow
         write(4,'(1p,10000e12.4)') arr((i-1)*ncpr+1:i*ncpr)
      enddo
      close(4)
 
-     arr(:grd_nc) = grd_fcoef(:grd_nc)
+     arr(:grd_ncell) = grd_fcoef
      open(unit=4,file='output.grd_fcoef',status=fstat,position='append',recl=reclen)
      do i=1,nrow
         write(4,'(1p,10000e12.4)') arr((i-1)*ncpr+1:i*ncpr)
      enddo
      close(4)
 
-     arr(:grd_nc) = grd_eraddens(:grd_nc)/grd_vol(:grd_nc)
+     arr(:grd_ncell) = grd_eraddens/grd_vol
      open(unit=4,file='output.grd_eraddens',status=fstat,position='append',recl=reclen)
      do i=1,nrow
         write(4,'(1p,10000e12.4)') arr((i-1)*ncpr+1:i*ncpr)
      enddo
      close(4)
 
-     arr(:grd_nc) = grd_capgrey(:grd_nc)
+     arr(:grd_ncell) = grd_capgrey
      open(unit=4,file='output.grd_capgrey',status=fstat,position='append',recl=reclen)
      do i=1,nrow
         write(4,'(1p,10000e12.4)') arr((i-1)*ncpr+1:i*ncpr)
      enddo
      close(4)
 
-     arr(:grd_nc) = grd_sig(:grd_nc)
+     arr(:grd_ncell) = grd_sig
      open(unit=4,file='output.grd_sig',status=fstat,position='append',recl=reclen)
      do i=1,nrow
         write(4,'(1p,10000e12.4)') arr((i-1)*ncpr+1:i*ncpr)

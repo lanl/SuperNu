@@ -93,13 +93,13 @@ c-- logical
       n = 3
       allocate(lsndvec(n))
       if(impi==impi0) lsndvec = (/prt_isimcanlog,prt_isddmcanlog,
-     &  str_lpad/)
+     &  str_lvoid/)
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       prt_isimcanlog = lsndvec(1)
       prt_isddmcanlog = lsndvec(2)
-      str_lpad = lsndvec(3)
+      str_lvoid = lsndvec(3)
       deallocate(lsndvec)
 c
 c-- integer
@@ -363,13 +363,13 @@ c     ------------------------------------!{{{
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
 ************************************************************************
-      real*8 :: snd(grd_nc)
+      real*8 :: snd(grd_ncell)
       real*8 :: t0,t1
 c
       t0 = t_time()
 c
       snd = grd_edep
-      call mpi_allreduce(snd,grd_edep,grd_nc,MPI_REAL8,MPI_SUM,
+      call mpi_allreduce(snd,grd_edep,grd_ncell,MPI_REAL8,MPI_SUM,
      &  MPI_COMM_WORLD,ierr)
 c
       t1 = t_time()
@@ -392,7 +392,7 @@ c     -----------------------------!{{{
 * Broadcast the data that changes with time/temperature.
 ************************************************************************
       real*8 :: t0,t1
-      real*8 :: snd(grd_nc)
+      real*8 :: snd(grd_ncell)
 c
       t0 = t_time()
 c
@@ -427,7 +427,7 @@ c-- broadcast
 c
 c-- allreduce
       snd = grd_eamp
-      call mpi_allreduce(snd,grd_eamp,grd_nc,MPI_REAL8,MPI_SUM,
+      call mpi_allreduce(snd,grd_eamp,grd_ncell,MPI_REAL8,MPI_SUM,
      &  MPI_COMM_WORLD,ierr)
 c
       t1 = t_time()
@@ -449,8 +449,8 @@ c     -----------------------!{{{
 * temperature correction.
 ************************************************************************
       integer :: n
-      integer :: isnd(grd_nc)
-      real*8 :: snd(grd_nc)
+      integer :: isnd(grd_ncell)
+      real*8 :: snd(grd_ncell)
       integer :: isnd3f(flx_ng,flx_nmu,flx_nom)
       real*8 :: snd3f(flx_ng,flx_nmu,flx_nom)
       integer :: isnd2f(flx_nmu,flx_nom)
@@ -489,7 +489,7 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- dim==3
-      n = grd_nc
+      n = grd_ncell
       isnd = grd_numcensus
       call mpi_reduce(isnd,grd_numcensus,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
