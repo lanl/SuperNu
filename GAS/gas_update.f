@@ -120,10 +120,8 @@ c-- temperature
       gas_ur = pc_acoef*gas_temp**4
 c
 c-- sanity check temperatures
-      if(any(gas_temp /= gas_temp)) then
-       write(0,*) impi,gas_temp
-       stop 'gas_temp NaN'
-      endif
+      if(any(gas_temp/=gas_temp)) stop 'gas_temp NaN'
+      if(any(gas_temp<=0d0)) stop 'gas_temp<=0'
 c
 c
 c-- totals

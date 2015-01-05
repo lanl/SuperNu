@@ -250,8 +250,8 @@ c
        idcell = idcell + 1
 c-- skip void cells
        if(str_mass(i,j,k)<=0d0) cycle
-       l = l + 1
 c-- insert
+       l = l + 1
        str_idcell(l) = idcell
        str_massdc(l) = str_mass(i,j,k)
        if(str_nabund>0) str_massfrdc(:,l) = str_massfr(:,i,j,k)

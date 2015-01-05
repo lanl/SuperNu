@@ -294,7 +294,7 @@ subroutine particle_advance_gamgrey(nmpi)
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (e<1d-6*e0 .and. .not.prt_done) then
+           if(e<1d-6*e0 .and. .not.prt_done .and. grd_capgrey(ic)>0d0) then
               r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
@@ -328,7 +328,7 @@ subroutine particle_advance_gamgrey(nmpi)
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (e<1d-6*e0 .and. .not.prt_done) then
+           if(e<1d-6*e0 .and. .not.prt_done .and. grd_capgrey(ic)>0d0) then
               r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
@@ -351,7 +351,7 @@ subroutine particle_advance_gamgrey(nmpi)
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (e<1d-6*e0 .and. .not.prt_done) then
+           if(e<1d-6*e0 .and. .not.prt_done .and. grd_capgrey(ic)>0d0) then
               r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
@@ -378,7 +378,7 @@ subroutine particle_advance_gamgrey(nmpi)
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if (e<1d-6*e0 .and. .not.prt_done) then
+           if(e<1d-6*e0 .and. .not.prt_done .and. grd_capgrey(ic)>0d0) then
               r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then

@@ -152,8 +152,8 @@ subroutine transport11(ptcl,ic,ig,isvacant)
   !calculating energy deposition and density
   !
   if(.not.prt_isimcanlog) then
-        grd_edep(ic) = grd_edep(ic)+e*(1d0-exp(-grd_fcoef(ic) &
-             *grd_cap(ig,ic)*siglabfact*d*thelp))*elabfact
+     grd_edep(ic) = grd_edep(ic)+e*(1d0-exp(-grd_fcoef(ic) &
+          *grd_cap(ig,ic)*siglabfact*d*thelp))*elabfact
      !--
      if(grd_fcoef(ic)*grd_cap(ig,ic)*dx(ix)*thelp>1d-6) then     
         grd_eraddens(ic) = grd_eraddens(ic)+e* &

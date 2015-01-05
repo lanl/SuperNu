@@ -436,7 +436,8 @@ subroutine particle_advance
               endif
            endif
 !-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*ptcl%e0 .and. .not.isvacant) then
+           if(e<1d-6*ptcl%e0 .and. .not.isvacant .and. &
+                 grd_capgrey(ic)+grd_sig(ic)>0d0) then
 !-- transformation factor
               if(grd_isvelocity .and. ptcl%itype==1) then
                  labfact = 1d0 - mu*x/pc_c
@@ -484,7 +485,8 @@ subroutine particle_advance
               endif
            endif
 !-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*ptcl%e0 .and. .not.isvacant) then
+           if(e<1d-6*ptcl%e0 .and. .not.isvacant .and. &
+                 grd_capgrey(ic)+grd_sig(ic)>0d0) then
 !-- transformation factor
               if(grd_isvelocity .and. ptcl%itype==1) then
                  labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
@@ -536,7 +538,8 @@ subroutine particle_advance
               endif
            endif
 !-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*ptcl%e0 .and. .not.isvacant) then
+           if(e<1d-6*ptcl%e0 .and. .not.isvacant .and. &
+                 grd_capgrey(ic)+grd_sig(ic)>0d0) then
 !-- transformation factor
               if(grd_isvelocity .and. ptcl%itype==1) then
                  labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &
@@ -581,7 +584,8 @@ subroutine particle_advance
               write(0,*) 'prt_adv: not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
            endif
 !-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*ptcl%e0 .and. .not.isvacant) then
+           if(e<1d-6*ptcl%e0 .and. .not.isvacant .and. &
+                 grd_capgrey(ic)+grd_sig(ic)>0d0) then
 !-- transformation factor
               if(grd_isvelocity .and. ptcl%itype==1) then
                  labfact = 1d0 - mu*x/pc_c
