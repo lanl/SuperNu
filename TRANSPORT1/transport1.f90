@@ -271,13 +271,17 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 !  if(dby1==0d0.and.idby1==4) write(*,*) '1: ',idby1, y, iy, dby1
 !  if(dby2==0d0.and.idby2==4) write(*,*) '2: ',idby2, y, iy
   ! if(dby1==0d0.and.dby2==0d0) stop 'transport1: invalid dby[1,2]'
-  if(dby1<=0d0.and.dby2<=0d0) then
+  if(dby1<0d0.and.dby2<0d0) then
      write(*,*) iy, y
-     write(*,*) idby1, bdy1, idby2, bdy2
-     stop 'transport1: dby1<=0 and dby2<=0'
+     write(*,*) idby1, dby1, idby2, dby2
+     stop 'transport1: dby1<0 and dby2<0'
   endif
-  if(dby1<=0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
-  if(dby2<=0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
+  ! if(dby1==0d0) then
+  !    write(*,*) '1: ', iy, y, dby2, eta
+  ! endif
+  ! if(dby2==0d0) then
+  !    write(*,*) '2: ', iy, y, dby1, eta
+  ! endif
   dby=min(dby1,dby2)
   if(dby==dby1) then
      iynext=iynext1
@@ -384,8 +388,14 @@ subroutine transport1(ptcl,ic,ig,isvacant)
   endif
 
 !-- direction sanity check
-  if(abs(mux**2+muy**2+muz**2-1d0)>1d-15) stop 'transport1: invalid mux,muy,muz'
-  if(abs(mu**2+eta**2+xi**2-1d0)>1d-15) stop 'transport1: invalid mu,eta,xi'
+  if(abs(mux**2+muy**2+muz**2-1d0)>1d-12) then
+     write(*,*) mux**2+muy**2+muz**2,mux,muy,muz
+     stop 'transport1: invalid mux,muy,muz'
+  endif
+  if(abs(mu**2+eta**2+xi**2-1d0)>1d-12) then
+     write(*,*) mu**2+eta**2+xi**2,mu,eta,xi
+     stop 'transport1: invalid mu,eta,xi'
+  endif
 
 !  if(d==dby) write(*,*) 'dbx: ',dbx,'dby: ',dby,'yold: ',yold,'y: ',y
 

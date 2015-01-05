@@ -64,8 +64,16 @@ subroutine sourceenergy_analytic
      if (tsp_t<=(in_tfirst+in_theav)*pc_day) then
         select case(in_igeom)
 !-- [123]D spherical
-        case(1,11)
-           grd_emitex = in_srcmax*grd_vol*tsp_dt/thelp**3
+        case(1)
+           nhelp=min(in_nheav,grd_nx)
+           do k=1,grd_nz
+           do j=1,grd_ny
+           do i=1,nhelp
+              l = grd_icell(i,j,k)
+              grd_emitex(l) = in_srcmax*grd_vol(l)*tsp_dt/thelp**3
+           enddo
+           enddo
+           enddo
 
 !-- 2D
         case(2)
@@ -127,6 +135,12 @@ subroutine sourceenergy_analytic
            enddo
            enddo
            enddo
+
+!-- 1D spherical
+        case(11)
+           nhelp=min(in_nheav,grd_nx)
+           grd_emitex(:nhelp) = in_srcmax*grd_vol(:nhelp)*tsp_dt/thelp**3
+
 !-- adjusting bulk source energy
 !           grd_emitex=grd_emitex*in_srcmax*tsp_dt*pc_pi43*help**3 / &
 !                sum(grd_emitex)
