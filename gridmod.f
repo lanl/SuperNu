@@ -27,7 +27,7 @@ c
 c
 c-- compressed domain
       integer :: grd_nc=0  !number of cells
-      integer :: grd_ncp=0 !with padding
+      logical :: grd_lpad  !number of cells
 c
 c-- Probability of emission in a given zone and group
       real*8,allocatable :: grd_emitprob(:,:) !(nep,ncp)
@@ -77,13 +77,14 @@ c
 c
       contains
 c
-      subroutine grid_init(ltalk,ngin,igeom,ndim,nc,ncp,isvelocity)
+      subroutine grid_init(ltalk,ngin,igeom,ndim,nc,lpad,isvelocity)
 c     -------------------------------------------------------------!{{{
       implicit none
       logical,intent(in) :: ltalk,isvelocity
       integer,intent(in) :: ngin,igeom
       integer,intent(in) :: ndim(3)
-      integer,intent(in) :: nc,ncp
+      integer,intent(in) :: nc
+      logical,intent(in) :: lpad
 ************************************************************************
 * Allocate grd variables.
 *
@@ -106,7 +107,7 @@ c
 c
 c-- ncell, ncell-with-padding
       grd_nc = nc
-      grd_ncp = ncp
+      grd_lpad = lpad
 c
       grd_isvelocity = isvelocity
 c
@@ -122,40 +123,40 @@ c
 c-- print alloc size (keep this updated)
 c---------------------------------------
       if(ltalk) then
-       n = int((int(grd_ncp,8)*(8*(11+6) + 4*4))/1024) !kB
+       n = int((int(grd_nc,8)*(8*(11+6) + 4*4))/1024) !kB
        write(6,*) 'ALLOC grd      :',n,"kB",n/1024,"MB",n/1024**2,"GB"
-       n = int((int(grd_ncp,8)*4*ng)/1024) !kB
+       n = int((int(grd_nc,8)*4*ng)/1024) !kB
        write(6,*) 'ALLOC grd_cap  :',n,"kB",n/1024,"MB",n/1024**2,"GB"
       endif
 c
 c-- ndim=3 alloc
-      allocate(grd_edep(grd_ncp))
-      allocate(grd_eamp(grd_ncp))
-      allocate(grd_capgrey(grd_ncp))
-      allocate(grd_sig(grd_ncp))
-      allocate(grd_fcoef(grd_ncp))
-      allocate(grd_eraddens(grd_ncp))
-      allocate(grd_temp(grd_ncp))
-      allocate(grd_vol(grd_ncp))
+      allocate(grd_edep(grd_nc))
+      allocate(grd_eamp(grd_nc))
+      allocate(grd_capgrey(grd_nc))
+      allocate(grd_sig(grd_nc))
+      allocate(grd_fcoef(grd_nc))
+      allocate(grd_eraddens(grd_nc))
+      allocate(grd_temp(grd_nc))
+      allocate(grd_vol(grd_nc))
       grd_vol = 1d0 !avoid nans
 c
-      allocate(grd_emit(grd_ncp))
+      allocate(grd_emit(grd_nc))
       grd_emit = 0d0
-      allocate(grd_emitex(grd_ncp))
-      allocate(grd_evolinit(grd_ncp))
+      allocate(grd_emitex(grd_nc))
+      allocate(grd_evolinit(grd_nc))
 c
 c-- ndim=3 integer
-      allocate(grd_nvol(grd_ncp))
-      allocate(grd_nvolinit(grd_ncp))
+      allocate(grd_nvol(grd_nc))
+      allocate(grd_nvolinit(grd_nc))
 c
-      allocate(grd_methodswap(grd_ncp))
-      allocate(grd_numcensus(grd_ncp))
+      allocate(grd_methodswap(grd_nc))
+      allocate(grd_numcensus(grd_nc))
 c
 c-- ndim=4 alloc
-      allocate(grd_opacleak(6,grd_ncp))
-      allocate(grd_emitprob(grd_nep,grd_ncp))
+      allocate(grd_opacleak(6,grd_nc))
+      allocate(grd_emitprob(grd_nep,grd_nc))
 c-- ndim=4 alloc
-      allocate(grd_cap(ng,grd_ncp))
+      allocate(grd_cap(ng,grd_nc))
 c!}}}
       end subroutine grid_init
 c

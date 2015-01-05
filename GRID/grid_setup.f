@@ -19,7 +19,7 @@ c-- polar angles
 c
 c-- cell pointers
 c-- if padding exists initialize void cells
-      if(grd_ncp/=grd_nc) grd_icell = grd_nc
+      if(grd_lpad) grd_icell = grd_nc
 c-- pointers into compressed grid
       l = 1
       idcell = 0
@@ -35,7 +35,7 @@ c-- pointers into compressed grid
        enddo
        enddo
       enddo loop_k
-      if(grd_ncp/=grd_nc) l = l + 1 !one pad cell in grd_nc
+      if(grd_lpad) l = l + 1 !one pad cell in grd_nc
       if(l/=grd_nc+1) stop 'grid_setup: l/=grd_nc+1'
 c
 c-- sanity check

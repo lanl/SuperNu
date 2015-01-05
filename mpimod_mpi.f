@@ -8,6 +8,9 @@ c
       integer :: nmpi !number of mpi tasks
       integer,private :: ierr
 c
+      integer,private,allocatable :: counts(:)
+      integer,private,allocatable :: displs(:)
+c
       save
 c
       contains
@@ -46,7 +49,6 @@ c-- inputparmod variables
 c========================
 c-- create pointer arrays
       call inputpar_create_pointers(il,ii,ir,ic)
-c
 c-- broadcast logicals
       n = il
       allocate(lsndvec(n))
@@ -88,18 +90,20 @@ c-- everything else
 c==================
 c-- broadcast constants
 c-- logical
-      n = 2
+      n = 3
       allocate(lsndvec(n))
-      if(impi==impi0) lsndvec = (/prt_isimcanlog,prt_isddmcanlog/)
+      if(impi==impi0) lsndvec = (/prt_isimcanlog,prt_isddmcanlog,
+     &  str_lpad/)
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       prt_isimcanlog = lsndvec(1)
       prt_isddmcanlog = lsndvec(2)
+      str_lpad = lsndvec(3)
       deallocate(lsndvec)
 c
 c-- integer
-      n = 16
+      n = 15
       allocate(isndvec(n))
       if(impi==impi0) isndvec = (/
      &  grp_ng,prt_ns,
@@ -107,7 +111,7 @@ c-- integer
      &  prt_ninit,prt_ninitnew,
      &  ion_nion,ion_iionmax,bb_nline,
      &  flx_ng,flx_nmu,flx_nom,
-     &  str_nc,str_ncp,str_nabund/)
+     &  str_nc,str_nabund/)
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -125,8 +129,7 @@ c-- copy back
       flx_nmu      = isndvec(12)
       flx_nom      = isndvec(13)
       str_nc       = isndvec(14)
-      str_ncp      = isndvec(15)
-      str_nabund   = isndvec(16)
+      str_nabund   = isndvec(15)
       deallocate(isndvec)
 c
 c-- real*8
@@ -168,7 +171,7 @@ c-- allocate all arrays. These are deallocated in dealloc_all.f
        allocate(str_xleft(nx+1))
        allocate(str_yleft(ny+1))
        allocate(str_zleft(nz+1))
-       allocate(str_idcell(str_ncp))
+       allocate(str_idcell(str_nc))
        if(str_nabund>0) allocate(str_iabund(str_nabund))
       endif
 c
@@ -179,7 +182,7 @@ c-- inputstr
      &  impi0,MPI_COMM_WORLD,ierr)
       call mpi_bcast(str_zleft,nz+1,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(str_idcell,str_ncp,MPI_INTEGER,
+      call mpi_bcast(str_idcell,str_nc,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
       if(str_nabund>0) then
@@ -294,27 +297,40 @@ c     ------------------------------------------!{{{
 ************************************************************************
 * mpi_scatter the input structure to all ranks in the worker comm.
 ************************************************************************
-      integer :: nx,ny,nz
+      integer :: i,n,nc,nx,ny,nz
 c
       nx = ndim(1)
       ny = ndim(2)
       nz = ndim(3)
 c
-      ncell = str_ncp/nmpi
+c-- calculate offsets
+      allocate(counts(nmpi),displs(nmpi))
+      displs(1) = 0
+      nc = str_nc
+      do i=1,nmpi
+         n = ceiling(nc/(nmpi-i+1d0))
+         counts(i) = n
+         if(i-1==impi) ncell = n
+         if(i<nmpi) displs(i+1) = displs(i) + n
+         nc = nc - n
+      enddo
+      if(sum(counts)/=str_nc) stop 'scatter_inputstr: counts/=str_nc'
+      if(nc/=0) stop 'scatter_inputstr: nc/=0'
 c
 c-- allocate domain decomposed and domain compressed
-      if(impi/=impi0) allocate(str_massdc(str_ncp))
+      if(impi/=impi0) allocate(str_massdc(str_nc))
       allocate(str_massdd(ncell))
-      call mpi_scatter(str_massdc,ncell,MPI_REAL8,
+      call mpi_scatterv(str_massdc,counts,displs,MPI_REAL8,
      &  str_massdd,ncell,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- mass fractions if available
       if(str_nabund>0) then
-       if(impi/=impi0) allocate(str_massfrdc(str_nabund,str_ncp))
+       if(impi/=impi0) allocate(str_massfrdc(str_nabund,str_nc))
        allocate(str_massfrdd(str_nabund,ncell))
-       call mpi_scatter(str_massfrdc,str_nabund*ncell,MPI_REAL8,
-     &   str_massfrdd,str_nabund*ncell,MPI_REAL8,
+       n = str_nabund
+       call mpi_scatterv(str_massfrdc,n*counts,n*displs,MPI_REAL8,
+     &   str_massfrdd,n*ncell,MPI_REAL8,
      &   impi0,MPI_COMM_WORLD,ierr)
       endif
 !}}}
@@ -330,11 +346,11 @@ c     -----------------------------!{{{
 ************************************************************************
 * gather gas_capgam to grd_capgrey
 ************************************************************************
-      call mpi_allgather(gas_emitex,gas_ncell,MPI_REAL8,
-     &  grd_emitex,gas_ncell,MPI_REAL8,
+      call mpi_allgatherv(gas_emitex,gas_ncell,MPI_REAL8,
+     &  grd_emitex,counts,displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)
-      call mpi_allgather(gas_capgam,gas_ncell,MPI_REAL8,
-     &  grd_capgrey,gas_ncell,MPI_REAL8,
+      call mpi_allgatherv(gas_capgam,gas_ncell,MPI_REAL8,
+     &  grd_capgrey,counts,displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)!}}}
       end subroutine allgather_gammacap
 c
@@ -347,13 +363,13 @@ c     ------------------------------------!{{{
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
 ************************************************************************
-      real*8 :: snd(grd_ncp)
+      real*8 :: snd(grd_nc)
       real*8 :: t0,t1
 c
       t0 = t_time()
 c
       snd = grd_edep
-      call mpi_allreduce(snd,grd_edep,grd_ncp,MPI_REAL8,MPI_SUM,
+      call mpi_allreduce(snd,grd_edep,grd_nc,MPI_REAL8,MPI_SUM,
      &  MPI_COMM_WORLD,ierr)
 c
       t1 = t_time()
@@ -376,33 +392,33 @@ c     -----------------------------!{{{
 * Broadcast the data that changes with time/temperature.
 ************************************************************************
       real*8 :: t0,t1
-      real*8 :: snd(grd_ncp)
+      real*8 :: snd(grd_nc)
 c
       t0 = t_time()
 c
 c-- gather
-      call mpi_allgather(gas_temp,gas_ncell,MPI_REAL8,
-     &  grd_temp,gas_ncell,MPI_REAL8,
+      call mpi_allgatherv(gas_temp,gas_ncell,MPI_REAL8,
+     &  grd_temp,counts,displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)
-      call mpi_allgather(gas_fcoef,gas_ncell,MPI_REAL8,
-     &  grd_fcoef,gas_ncell,MPI_REAL8,
+      call mpi_allgatherv(gas_fcoef,gas_ncell,MPI_REAL8,
+     &  grd_fcoef,counts,displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)
-      call mpi_allgather(gas_capgrey,gas_ncell,MPI_REAL8,
-     &  grd_capgrey,gas_ncell,MPI_REAL8,
-     &  MPI_COMM_WORLD,ierr)
-c
-      call mpi_allgather(gas_emit,gas_ncell,MPI_REAL8,
-     &  grd_emit,gas_ncell,MPI_REAL8,
-     &  MPI_COMM_WORLD,ierr)
-      call mpi_allgather(gas_emitex,gas_ncell,MPI_REAL8,
-     &  grd_emitex,gas_ncell,MPI_REAL8,
+      call mpi_allgatherv(gas_capgrey,gas_ncell,MPI_REAL8,
+     &  grd_capgrey,counts,displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)
 c
-      call mpi_allgather(gas_sig,gas_ncell,MPI_REAL8,
-     &  grd_sig,gas_ncell,MPI_REAL8,
+      call mpi_allgatherv(gas_emit,gas_ncell,MPI_REAL8,
+     &  grd_emit,counts,displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)
-      call mpi_allgather(gas_cap,grp_ng*gas_ncell,MPI_REAL,
-     &  grd_cap,grp_ng*gas_ncell,MPI_REAL,
+      call mpi_allgatherv(gas_emitex,gas_ncell,MPI_REAL8,
+     &  grd_emitex,counts,displs,MPI_REAL8,
+     &  MPI_COMM_WORLD,ierr)
+c
+      call mpi_allgatherv(gas_sig,gas_ncell,MPI_REAL8,
+     &  grd_sig,counts,displs,MPI_REAL8,
+     &  MPI_COMM_WORLD,ierr)
+      call mpi_allgatherv(gas_cap,grp_ng*gas_ncell,MPI_REAL,
+     &  grd_cap,grp_ng*counts,grp_ng*displs,MPI_REAL,
      &  MPI_COMM_WORLD,ierr)
 c
 c-- broadcast
@@ -411,7 +427,7 @@ c-- broadcast
 c
 c-- allreduce
       snd = grd_eamp
-      call mpi_allreduce(snd,grd_eamp,grd_ncp,MPI_REAL8,MPI_SUM,
+      call mpi_allreduce(snd,grd_eamp,grd_nc,MPI_REAL8,MPI_SUM,
      &  MPI_COMM_WORLD,ierr)
 c
       t1 = t_time()
@@ -433,8 +449,8 @@ c     -----------------------!{{{
 * temperature correction.
 ************************************************************************
       integer :: n
-      integer :: isnd(grd_ncp)
-      real*8 :: snd(grd_ncp)
+      integer :: isnd(grd_nc)
+      real*8 :: snd(grd_nc)
       integer :: isnd3f(flx_ng,flx_nmu,flx_nom)
       real*8 :: snd3f(flx_ng,flx_nmu,flx_nom)
       integer :: isnd2f(flx_nmu,flx_nom)
@@ -473,7 +489,7 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- dim==3
-      n = grd_ncp
+      n = grd_nc
       isnd = grd_numcensus
       call mpi_reduce(isnd,grd_numcensus,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -491,10 +507,10 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- scatter
-      call mpi_scatter(grd_edep,gas_ncell,MPI_REAL8,
+      call mpi_scatterv(grd_edep,counts,displs,MPI_REAL8,
      &  gas_edep,gas_ncell,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_scatter(grd_eraddens,gas_ncell,MPI_REAL8,
+      call mpi_scatterv(grd_eraddens,counts,displs,MPI_REAL8,
      &  gas_eraddens,gas_ncell,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
@@ -528,8 +544,8 @@ c     -------------------------------------!{{{
       integer :: n
       real*8,allocatable :: sndvec(:),rcvvec(:)
 c
-      call mpi_gather(gas_temp,gas_ncell,MPI_REAL8,
-     &   grd_temp,gas_ncell,MPI_REAL8,
+      call mpi_gatherv(gas_temp,gas_ncell,MPI_REAL8,
+     &   grd_temp,counts,displs,MPI_REAL8,
      &   impi0,MPI_COMM_WORLD,ierr)
 c
 c-- dim==0

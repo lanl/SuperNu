@@ -22,7 +22,7 @@ subroutine write_output
   if(lfirst) then
 !
 !-- shape of volume quantities
-     if(grd_ncp==grd_nc) then
+     if(.not.grd_lpad) then
 !-- no pad cells
        ncpr = grd_nx
        nrow = grd_nc/ncpr

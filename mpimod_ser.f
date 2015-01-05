@@ -27,7 +27,7 @@ c
 ************************************************************************
       integer :: dmy
 c
-      ncell = str_ncp/nmpi
+      ncell = str_nc/nmpi
 c
       dmy = ndim(1) !use the intent(in) variable
       allocate(str_massdd(ncell))
@@ -43,8 +43,8 @@ c
 c     ---------------------------
       use gridmod
       use gasmod
-      grd_capgrey = reshape(gas_capgam,[grd_ncp])
-      grd_emitex = reshape(gas_emitex,[grd_ncp])
+      grd_capgrey = reshape(gas_capgam,[grd_nc])
+      grd_emitex = reshape(gas_emitex,[grd_nc])
       end subroutine allgather_gammacap
 c
 c
@@ -61,15 +61,15 @@ c
 * - stub
 ************************************************************************
 c-- domain decomposition
-      grd_temp = reshape(gas_temp,[grd_ncp])
-      grd_emit = reshape(gas_emit,[grd_ncp])
-      grd_emitex = reshape(gas_emitex,[grd_ncp])
-      grd_evolinit = reshape(gas_evolinit,[grd_ncp])
+      grd_temp = reshape(gas_temp,[grd_nc])
+      grd_emit = reshape(gas_emit,[grd_nc])
+      grd_emitex = reshape(gas_emitex,[grd_nc])
+      grd_evolinit = reshape(gas_evolinit,[grd_nc])
 c
-      grd_cap = reshape(gas_cap,[grp_ng,grd_ncp])
-      grd_sig = reshape(gas_sig,[grd_ncp])
-      grd_capgrey = reshape(gas_capgrey,[grd_ncp])
-      grd_fcoef = reshape(gas_fcoef,[grd_ncp])
+      grd_cap = reshape(gas_cap,[grp_ng,grd_nc])
+      grd_sig = reshape(gas_sig,[grd_nc])
+      grd_capgrey = reshape(gas_capgrey,[grd_nc])
+      grd_fcoef = reshape(gas_fcoef,[grd_nc])
       end subroutine bcast_nonpermanent
 c
 c
@@ -82,8 +82,8 @@ c
       use totalsmod
       use gridmod
       use gasmod
-      gas_edep = reshape(grd_edep,[grd_ncp])
-      gas_eraddens = reshape(grd_eraddens,[grd_ncp])
+      gas_edep = reshape(grd_edep,[grd_nc])
+      gas_eraddens = reshape(grd_eraddens,[grd_nc])
       end subroutine reduce_tally
 c
 c
@@ -94,7 +94,7 @@ c
 c     -------------------------
       use gridmod
       use gasmod
-      grd_temp = reshape(gas_temp,[grd_ncp])
+      grd_temp = reshape(gas_temp,[grd_nc])
       end subroutine reduce_gastemp
 c
       subroutine scatter_restart_data

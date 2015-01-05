@@ -15,8 +15,8 @@ c
       real*8,allocatable :: str_massfr(:,:,:,:) !(nabund,nx,ny,nz)
 c
 c-- domain compression
+      logical :: str_lpad=.false.  !flag pad cell
       integer :: str_nc=0  !number of cells in compressed grid
-      integer :: str_ncp=0 !number of cells including padding in compressed grid
       integer,allocatable :: str_idcell(:) !(nc)
       real*8,allocatable :: str_massdc(:) !(nc)
       real*8,allocatable :: str_massfrdc(:,:) !(nabund,nc)
@@ -178,7 +178,7 @@ c
        do i=1,nx
         r = sqrt(x(i)**2 + y(j)**2 + z(k)**2)
         if(r>rs) then
-         nvoid = nvoid + 1
+         nvoid = nvoid+1
          str_mass(i,j,k) = 0d0
         endif
        enddo
@@ -189,6 +189,7 @@ c
 c
 c-- count valid cells
       ncell = count(str_mass>0d0)
+      if(ncell/=nx*ny*nz) ncell = ncell+1
 c
 c-- ni56 mass
       if(ini56>0) then
@@ -214,28 +215,27 @@ c!}}}
 c
 c
 c
-      subroutine inputstr_compress(nmpi)
-c     ---------------------------------------!{{{
+      subroutine inputstr_compress
+c     ----------------------------!{{{
       implicit none
-      integer,intent(in) :: nmpi
 ************************************************************************
 * put valid (non-void) cells in sequence.
 ************************************************************************
       integer :: i,j,k,l
       integer :: idcell
-      integer :: ncpr !number of cells per rank
 c
       str_nc = count(str_mass>0d0)
 c
-c-- number of cells per rank
-      if(str_nc<nx*ny*nz) str_nc = str_nc + 1 !add one void cell
-      ncpr = ceiling(str_nc/dble(nmpi))
-      str_ncp = ncpr*nmpi
+c-- add void cell
+      if(str_nc/=nx*ny*nz) then
+       str_lpad = .true.
+       str_nc = str_nc+1
+      endif
 c
-      allocate(str_idcell(str_ncp))
-      allocate(str_massdc(str_ncp))
+      allocate(str_idcell(str_nc))
+      allocate(str_massdc(str_nc))
       if(str_nabund>0) then
-         allocate(str_massfrdc(str_nabund,str_ncp))
+         allocate(str_massfrdc(str_nabund,str_nc))
          str_massfrdc = 0d0
       endif
 c-- zero all, including pad cells
@@ -247,11 +247,11 @@ c
       do k=1,nz
       do j=1,ny
       do i=1,nx
-       idcell = idcell + 1
+       idcell = idcell+1
 c-- skip void cells
        if(str_mass(i,j,k)<=0d0) cycle
 c-- insert
-       l = l + 1
+       l = l+1
        str_idcell(l) = idcell
        str_massdc(l) = str_mass(i,j,k)
        if(str_nabund>0) str_massfrdc(:,l) = str_massfr(:,i,j,k)
@@ -259,18 +259,9 @@ c-- insert
       enddo !j
       enddo !k
 c-- sanity check
-      if(str_ncp/=str_nc) l = l + 1 !one pad cell in grd_nc
+      if(str_lpad) l = l+1
       if(l/=str_nc) stop 'inputstr_compress: l/=str_nc' !one pad cell in grd_nc
       if(idcell/=nx*ny*nz) stop 'inputstr_compress: idcell/=nx*ny*nz'
-c
-c-- output
-      write(6,*)
-      write(6,*) 'compress domain:'
-      write(6,*) '===================='
-      write(6,*) 'nc,pad:',str_nc,str_ncp,str_ncp-str_nc,
-     &  str_ncp/float(str_nc)
-      write(6,*) 'nc/rnk:',ncpr
-      write(6,*)
 c
 c-- deallocate full grid
       deallocate(str_mass)

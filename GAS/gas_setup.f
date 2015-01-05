@@ -22,7 +22,7 @@ c-- decompose idcell
       l1 = impi*gas_ncell + 1
       l2 = (impi+1)*gas_ncell
       ll = 0
-      do l=1,str_ncp
+      do l=1,str_nc
        if(l<l1) cycle
        if(l>l2) exit
        ll = ll + 1
