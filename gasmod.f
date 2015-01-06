@@ -93,7 +93,6 @@ c-- ndim=1 alloc
       allocate(gas_nisource(gas_ncell))
       gas_nisource = 0d0
       allocate(gas_vol(gas_ncell))
-      gas_vol = 1d0 !avoid nans
       allocate(gas_mass(gas_ncell))
       allocate(gas_ye(gas_ncell))
       gas_ye = .5d0

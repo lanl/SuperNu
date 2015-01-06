@@ -77,13 +77,13 @@ c
 c
       contains
 c
-      subroutine grid_init(ltalk,ngin,igeom,ndim,nc,lvoid,isvelocity)
+      subroutine grid_init(ltalk,ngin,igeom,ndim,ncell,lvoid,isvelocity)
 c     -------------------------------------------------------------!{{{
       implicit none
       logical,intent(in) :: ltalk,isvelocity
       integer,intent(in) :: ngin,igeom
       integer,intent(in) :: ndim(3)
-      integer,intent(in) :: nc
+      integer,intent(in) :: ncell
       logical,intent(in) :: lvoid
 ************************************************************************
 * Allocate grd variables.
@@ -105,8 +105,8 @@ c
       grd_ny = ndim(2)
       grd_nz = ndim(3)
 c
-c-- ncell, ncell-with-padding
-      grd_ncell = nc
+c-- number of non-void cells, plus one optional dummy cell if void cells exist
+      grd_ncell = ncell
       grd_lvoid = lvoid
 c
       grd_isvelocity = isvelocity
@@ -138,7 +138,6 @@ c-- ndim=3 alloc
       allocate(grd_eraddens(grd_ncell))
       allocate(grd_temp(grd_ncell))
       allocate(grd_vol(grd_ncell))
-      grd_vol = 1d0 !avoid nans
 c
       allocate(grd_emit(grd_ncell))
       grd_emit = 0d0

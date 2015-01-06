@@ -46,11 +46,12 @@ c
       endselect !in_igeom
 c
 c-- map to compressed grid
+      grd_vol = 0d0
       do k=1,grd_nz
       do j=1,grd_ny
       do i=1,grd_nx
        l = grd_icell(i,j,k)
-       grd_vol(l) = vol(i,j,k)
+       grd_vol(l) = grd_vol(l) + vol(i,j,k) !multiple void cells are linked to the dummy cell
       enddo
       enddo
       enddo

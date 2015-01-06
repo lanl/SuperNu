@@ -18,7 +18,7 @@ c-- polar angles
       if(grd_igeom==1) grd_yacos = acos(grd_yarr)
 c
 c-- cell pointers
-c-- if padding exists initialize void cells
+c-- if dummy cell exists initialize void cells
       if(grd_lvoid) grd_icell = grd_ncell
 c-- pointers into compressed grid
       l = 1
@@ -35,7 +35,7 @@ c-- pointers into compressed grid
        enddo
        enddo
       enddo loop_k
-      if(grd_lvoid) l = l + 1 !one pad cell in grd_ncell
+      if(grd_lvoid) l = l + 1 !one dummy cell
       if(l/=grd_ncell+1) stop 'grid_setup: l/=grd_ncell+1'
 c
 c-- sanity check

@@ -23,7 +23,7 @@ subroutine write_output
 !
 !-- shape of volume quantities
      if(.not.grd_lvoid) then
-!-- no pad cells
+!-- no void cells
        ncpr = grd_nx
        nrow = grd_ncell/ncpr
      else

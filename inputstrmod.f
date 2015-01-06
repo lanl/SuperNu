@@ -15,7 +15,7 @@ c
       real*8,allocatable :: str_massfr(:,:,:,:) !(nabund,nx,ny,nz)
 c
 c-- domain compression
-      logical :: str_lvoid=.false.  !flag pad cell
+      logical :: str_lvoid=.false.  !flag existence of void cells
       integer :: str_nc=0  !number of cells in compressed grid
       integer,allocatable :: str_idcell(:) !(nc)
       real*8,allocatable :: str_massdc(:) !(nc)
@@ -220,7 +220,8 @@ c
 c     ----------------------------!{{{
       implicit none
 ************************************************************************
-* put valid (non-void) cells in sequence.
+* put valid (non-void) cells in sequence, link the other (void) cells
+* to the dummy cell at the end of the sequence.
 ************************************************************************
       integer :: i,j,k,l
       integer :: idcell
@@ -239,7 +240,7 @@ c
          allocate(str_massfrdc(str_nabund,str_nc))
          str_massfrdc = 0d0
       endif
-c-- zero all, including pad cells
+c-- zero all, including the dummy cell
       str_idcell = 0
       str_massdc = 0d0
 c
