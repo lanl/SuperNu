@@ -48,20 +48,20 @@ c     ---------------------------!{{{
       end subroutine inputstr_dealloc
 c
 c
-      subroutine read_inputstr(igeomin,ndim,lvoidcorners)
-c     ---------------------------------------------------!{{{
+      subroutine read_inputstr(igeomin,ndim,lvoidcorners,nmpi)
+c     --------------------------------------------------------!{{{
       use physconstmod
       use gasmod, only:gas_ini56,gas_ico56
       use miscmod
       implicit none
-      integer,intent(in) :: igeomin
+      integer,intent(in) :: igeomin,nmpi
       integer,intent(in) :: ndim(3)
       logical,intent(in) :: lvoidcorners
 ************************************************************************
 * Read the input structure file
 ************************************************************************
       integer :: i,j,k,ierr,nx_r,ny_r,nz_r,ini56,nvar,ncol,imass
-      integer :: nvoid,ncell
+      integer :: nvoid,ncell,ncpr
       character(2) :: dmy
       character(8),allocatable :: labl(:)
       real*8,allocatable :: raw(:,:)
@@ -190,6 +190,7 @@ c
 c-- count valid cells
       ncell = count(str_mass>0d0)
       if(ncell/=nx*ny*nz) ncell = ncell+1
+      ncpr = ceiling(ncell/float(nmpi))
 c
 c-- ni56 mass
       if(ini56>0) then
@@ -206,9 +207,10 @@ c-- output
       write(6,*) '===================='
       write(6,*) 'igeom :',igeom
       write(6,*) 'ndim  :',nx,ny,nz
-      write(6,*) 'ncell :',nx*ny*nz,ncell,ncell/dble(nx*ny*nz)
-      write(6,*) 'mass  :', sum(str_mass)/pc_msun, 'Msun'
-      write(6,*) 'm_ni56:', mni56/pc_msun, 'Msun'
+      write(6,*) 'ncell :',nx*ny*nz,ncell,ncell/float(nx*ny*nz)
+      write(6,*) 'nc/rnk:',ncpr,ncpr*nmpi-ncell,ncell/float(ncpr*nmpi)
+      write(6,*) 'mass  :',sngl(sum(str_mass)/pc_msun), 'Msun'
+      write(6,*) 'm_ni56:',sngl(mni56/pc_msun), 'Msun'
       write(6,*)
 !     write(6,*) 'e_kin :', ekin, 'erg'
 c!}}}
