@@ -372,11 +372,12 @@ subroutine transport1(ptcl,ic,ig,isvacant)
      eta = 0d0
      xi = 0d0
   else
-     if(x<1d-15*grd_xarr(2)) stop 'x=0 and muold/=-1'
+     if(x<1d-15*grd_xarr(2)) stop 'transport1: x=0 and muold/=-1'
 !-- updating radial projection of direction
      mu = (xold*mu+d)/x
 !-- updating polar projection of position
      y = (xold*yold+muz*d)/x
+!-- updating azimuthal angle of position
      z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
           xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
      if(z<0d0) z=z+pc_pi2
