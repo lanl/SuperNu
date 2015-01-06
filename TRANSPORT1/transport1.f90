@@ -24,7 +24,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
   real*8,parameter :: cinv = 1d0/pc_c
   integer,external :: emitgroup
 
-  logical :: lout, lhelp
+  logical :: lout
   integer :: imu, iom, ihelp
   real*8 :: elabfact, eta, xi, mux,muy,muz
   real*8 :: dtinv, thelp, thelpinv, help
@@ -390,11 +390,11 @@ subroutine transport1(ptcl,ic,ig,isvacant)
   endif
 
 !-- direction sanity check
-  if(abs(mux**2+muy**2+muz**2-1d0)>1d-12) then
+  if(abs(mux**2+muy**2+muz**2-1d0)>1d-9) then
      write(*,*) mux**2+muy**2+muz**2,mux,muy,muz
      stop 'transport1: invalid mux,muy,muz'
   endif
-  if(abs(mu**2+eta**2+xi**2-1d0)>1d-12) then
+  if(abs(mu**2+eta**2+xi**2-1d0)>1d-9) then
      write(*,*) mu**2+eta**2+xi**2,mu,eta,xi
      stop 'transport1: invalid mu,eta,xi'
   endif
@@ -640,7 +640,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         if(z>pc_pi2) z=z-pc_pi2
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1)
      elseif(iynext==iy-1) then
-        if(abs(y)>1d-15.and.abs(y-grd_yarr(iy))>1d-12*abs(y)) then
+        if(abs(y)>1d-15.and.abs(y-grd_yarr(iy))>1d-9*abs(y)) then
            write(*,*) iy,'y: ',y,'yarr(iy): ',grd_yarr(iy)
            stop 'transport1: y/=yarr(iy)'
         endif
@@ -653,7 +653,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
            iynext=1
         endif
      elseif(iynext==iy+1) then
-        if(abs(y)>1d-15.and.abs(y-grd_yarr(iy+1))>1d-12*abs(y)) then
+        if(abs(y)>1d-15.and.abs(y-grd_yarr(iy+1))>1d-9*abs(y)) then
            write(*,*) iy,'y: ',y,'yarr(iy+1): ',grd_yarr(iy+1)
            stop 'transport1: y/=yarr(iy+1)'
         endif
