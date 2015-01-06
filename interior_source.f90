@@ -78,6 +78,9 @@ subroutine interior_source
 
 !-- default, recalculated for isvelocity and itype==1
      cmffact = 1d0
+
+!-- default IMC, reset if DDMC
+     ptcl%itype = 1
 !
 !-- calculating particle time
      r1 = rnd_r(rnd_state)
@@ -168,6 +171,7 @@ subroutine interior_source
 !-- sampling azimuthal angle of direction
         r1 = rnd_r(rnd_state)
         om0 = pc_pi2*r1
+
 !-- setting IMC logical
         lhelp = ((grd_sig(l)+grd_cap(ig,l)) * &
              min(dx(i),dy(j))*thelp < prt_tauddmc) &
@@ -275,6 +279,7 @@ subroutine interior_source
 !}}}
      endselect
 
+!-- transformation into lab frame (in static grids cmffact==1d0)
      ptcl%e = ep0*cmffact
      ptcl%e0 = ep0*cmffact
      ptcl%wl = wl0/cmffact
@@ -286,6 +291,7 @@ subroutine interior_source
      prt_particles(ivac) = ptcl
 !}}}
   enddo !ipart
+!
   enddo !i
   enddo !j
   enddo !k
@@ -340,7 +346,7 @@ subroutine interior_source
 !-- calculating wavelength
      denom2 = 0d0
      r1 = rnd_r(rnd_state)
-     prt_tlyrand = prt_tlyrand+1     
+     prt_tlyrand = prt_tlyrand+1
      do ig = 1, grp_ng-1
         if (r1>=denom2.and.r1<denom2+emitprob(ig)) exit
         denom2 = denom2+emitprob(ig)
@@ -361,7 +367,7 @@ subroutine interior_source
 !-- selecting geometry
      select case(in_igeom)
 
-!-- 1D
+!-- 3D spherical
      case(1)
 !-- calculating position:!{{{
 !-- source tilting in x
@@ -396,22 +402,24 @@ subroutine interior_source
         ptcl%y = max(ptcl%y,grd_yarr(j))
         ptcl%z = min(ptcl%z,grd_zarr(k+1))
         ptcl%z = max(ptcl%z,grd_zarr(k))
+!-- sampling azimuthal angle of direction
+        r1 = rnd_r(rnd_state)
+        ptcl%om = pc_pi2*r1
 !-- setting IMC logical
         lhelp = ((grd_sig(l)+grd_cap(ig,l)) * &
              min(dx(i),xm(i)*dyac(j),xm(i)*ym(j)*dz(k)) * &
              thelp < prt_tauddmc).or.(in_puretran)
-!write(0,*) i,j,k,grd_sig(l),grd_cap(ig,l),dx(i),dy(j),dz(k),xm(i),ym(j),dyac(j),thelp,prt_tauddmc
 
 !-- if velocity-dependent, transforming direction
-        if (lhelp.and.grd_isvelocity) then
+        if(lhelp.and.grd_isvelocity) then
 !-- 1+dir*v/c
            cmffact = 1d0+mu0*x0/pc_c
 !-- mu
            ptcl%mu = (mu0+x0/pc_c)/cmffact
            ptcl%itype = 1 !IMC
         else
-           ptcl%mu = mu0
            ptcl%itype = 2 !DDMC
+           ptcl%mu = mu0
         endif
 !}}}
 !-- 2D
@@ -565,10 +573,11 @@ subroutine interior_source
            ptcl%mu = mu0
            ptcl%om = om0
            ptcl%itype = 2 !DDMC
-        endif!}}}
-!-- 1D spherical
+        endif
+!}}}
+!-- 1D
      case(11)
-!-- calculating position:!{{{
+!-- calculating position!{{{
 !-- source tilting in x
         r3 = 0d0
         r2 = 1d0
@@ -596,15 +605,15 @@ subroutine interior_source
 !write(0,*) i,grd_sig(l),grd_cap(ig,l),dx(i),thelp,prt_tauddmc
 
 !-- if velocity-dependent, transforming direction
-        if (lhelp.and.grd_isvelocity) then
+        if(lhelp.and.grd_isvelocity) then
 !-- 1+dir*v/c
            cmffact = 1d0+mu0*x0/pc_c
 !-- mu
            ptcl%mu = (mu0+x0/pc_c)/cmffact
            ptcl%itype = 1 !IMC
         else
-           ptcl%mu = mu0
            ptcl%itype = 2 !DDMC
+           ptcl%mu = mu0
         endif
 !}}}
      endselect
@@ -619,7 +628,6 @@ subroutine interior_source
 !-- save particle result
 !-----------------------
      prt_particles(ivac) = ptcl
-
 !}}}
   enddo !ipart
 !
