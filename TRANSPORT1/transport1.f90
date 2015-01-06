@@ -124,9 +124,9 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         dby1=-0.5*x*yhelp3/yhelp2
         iynext1=iy-1
      endif
-  elseif(yhelp3==0d0) then
+  elseif(abs(yhelp3)<1d-15*abs(y)) then
 !-- particle on lower cone
-     if(y==grd_yarr(iy)) then
+     if(abs(y-grd_yarr(iy))<1d-15*abs(y)) then
 
         dby1=-2d0*x*yhelp2/yhelp1
         if(dby1>0d0) then
@@ -152,7 +152,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 
      else
         idby1=7
-!        dby1=-2d0*x*yhelp2/yhelp1
+        dby1=-2d0*x*yhelp2/yhelp1
         iynext1=iy-1
      endif
 
@@ -207,9 +207,9 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         dby2=-0.5*x*yhelp3/yhelp2
         iynext2=iy+1
      endif
-  elseif(yhelp3==0d0) then
+  elseif(abs(yhelp3)<1d-15*abs(y)) then
 !-- particle on upper cone
-     if(y==grd_yarr(iy+1)) then
+     if(abs(y-grd_yarr(iy+1))<1d-15*abs(y)) then
 
         dby2=-2d0*x*yhelp2/yhelp1
         if(dby2>0d0) then
@@ -234,7 +234,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         endif
      else
         idby2=7
-!        dby2=-2d0*x*yhelp2/yhelp1
+        dby2=-2d0*x*yhelp2/yhelp1
         iynext2=iy+1
      endif
 
@@ -282,6 +282,8 @@ subroutine transport1(ptcl,ic,ig,isvacant)
   ! if(dby2==0d0) then
   !    write(*,*) '2: ', iy, y, dby1, eta
   ! endif
+  if(dby1<=0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
+  if(dby2<=0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
   dby=min(dby1,dby2)
   if(dby==dby1) then
      iynext=iynext1
@@ -396,8 +398,6 @@ subroutine transport1(ptcl,ic,ig,isvacant)
      write(*,*) mu**2+eta**2+xi**2,mu,eta,xi
      stop 'transport1: invalid mu,eta,xi'
   endif
-
-!  if(d==dby) write(*,*) 'dbx: ',dbx,'dby: ',dby,'yold: ',yold,'y: ',y
 
 !-- updating time
   ptcl%t = ptcl%t + thelp*d*cinv
@@ -552,7 +552,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 
 !
 !-- radial bound
-  elseif(d==dbx) then
+  elseif(d==dbx .and. dbx<dby) then
 
      if(mu>=0d0) then
         ihelp=ix+1
@@ -640,6 +640,10 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         if(z>pc_pi2) z=z-pc_pi2
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1)
      elseif(iynext==iy-1) then
+        if(abs(y)>1d-15.and.abs(y-grd_yarr(iy))>1d-12*abs(y)) then
+           write(*,*) iy,'y: ',y,'yarr(iy): ',grd_yarr(iy)
+           stop 'transport1: y/=yarr(iy)'
+        endif
         y=grd_yarr(iy)
         if(iynext==0) then
 !-- reflecting z
@@ -649,6 +653,10 @@ subroutine transport1(ptcl,ic,ig,isvacant)
            iynext=1
         endif
      elseif(iynext==iy+1) then
+        if(abs(y)>1d-15.and.abs(y-grd_yarr(iy+1))>1d-12*abs(y)) then
+           write(*,*) iy,'y: ',y,'yarr(iy+1): ',grd_yarr(iy+1)
+           stop 'transport1: y/=yarr(iy+1)'
+        endif
         y=grd_yarr(iy+1)
         if(iynext==grd_ny+1) then
 !-- reflecting z
