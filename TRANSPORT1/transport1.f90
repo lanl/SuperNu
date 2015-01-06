@@ -33,7 +33,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 
   integer :: iynext,iynext1,iynext2,iznext,iyold,idby1,idby2
   integer :: idby1old,idby2old
-  real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2,disc1,disc2
+  real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
   real*8 :: dby1old,dby2old
   real*8 :: zhelp
   real*8 :: xold,yold,muold,dbyold,etaold,muzold
@@ -159,7 +159,6 @@ subroutine transport1(ptcl,ic,ig,isvacant)
   else
      yhelp4=yhelp2**2-yhelp1*yhelp3
      if(abs(yhelp4)<1d-12*abs(yhelp2)) yhelp4=0d0
-     disc1=yhelp4
      if(yhelp4<0d0) then
         idby1=8
 !-- not intersecting lower cone
@@ -241,7 +240,6 @@ subroutine transport1(ptcl,ic,ig,isvacant)
   else
      yhelp4=yhelp2**2-yhelp1*yhelp3
      if(abs(yhelp4)<1d-12*abs(yhelp2)) yhelp4=0d0
-     disc2=yhelp4
      if(yhelp4<0d0) then
         idby2=8
 !-- not intersecting upper cone
@@ -267,7 +265,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
      endif
   endif
 !  write(*,*) dby1,dby2
-!  if(y<grd_yarr(iy+1).and.y>grd_yarr(iy)) write(*,*) idby1,disc1,idby2,disc2
+!  if(y<grd_yarr(iy+1).and.y>grd_yarr(iy)) write(*,*) idby1,idby2
 !  if(dby1==0d0.and.idby1==4) write(*,*) '1: ',idby1, y, iy, dby1
 !  if(dby2==0d0.and.idby2==4) write(*,*) '2: ',idby2, y, iy
   ! if(dby1==0d0.and.dby2==0d0) stop 'transport1: invalid dby[1,2]'

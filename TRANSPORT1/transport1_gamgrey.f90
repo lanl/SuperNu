@@ -25,8 +25,8 @@ subroutine transport1_gamgrey(ptcl,ic)
   real*8 :: r1, thelp,thelpinv, help
   real*8 :: dcol,dbx,dby,dbz,d
 
-  integer :: iynext,iznext
-  real*8 :: yhelp1,yhelp2,dby1,dby2
+  integer :: iynext,iynext1,iynext2,iznext,idby1,idby2
+  real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
   real*8 :: zhelp
   real*8 :: xold,yold,muold
 
@@ -74,10 +74,177 @@ subroutine transport1_gamgrey(ptcl,ic)
 !-- sanity check
   if(dbx/=dbx) stop 'transport1_gamgrey: dbx/=dbx'
 !
-!-- polar boundary distance (y): STUB
-  if(grd_ny>1) stop 'transport1_gamgrey: dby not implemented'
-  dby=2d0*pc_c*tsp_dt*thelpinv
-  iynext=iy
+!-- polar boundary distance (y)
+  yhelp1=grd_yarr(iy)**2-muz**2
+  yhelp2=mu*grd_yarr(iy)**2-muz*y
+  yhelp3=grd_yarr(iy)**2-y**2
+  if(yhelp1==0d0.and.yhelp3==0d0) then
+     idby1=1
+!-- particle, direction on cone
+     dby1 = 2d0*pc_c*tsp_dt*thelpinv
+     iynext1=iy
+  elseif(yhelp1==0d0) then
+     if((muz>=0d0.and.muz==grd_yarr(iy)).or. &
+          (muz>=0d0.and.muz==-grd_yarr(iy)).or. &
+          yhelp2==0d0) then
+        idby1=2
+!-- direction parallel to lower cone or nonphysical
+        dby1 = 2d0*pc_c*tsp_dt*thelpinv
+        iynext1=iy
+     else
+        idby1=3
+        dby1=-0.5*x*yhelp3/yhelp2
+        iynext1=iy-1
+     endif
+  elseif(abs(yhelp3)<1d-15*abs(y)) then
+!-- particle on lower cone
+     if(abs(y-grd_yarr(iy))<1d-15*abs(y)) then
+
+        dby1=-2d0*x*yhelp2/yhelp1
+        if(dby1>0d0) then
+           if(cos(om)>=0d0) then
+              write(*,*) yold, y, iy, x, ix
+              stop 'transport1_gamgrey: did not cross lower y bound'
+           elseif(grd_yarr(iy)<=0d0) then
+!-- choose dby2
+              dby1 = 2d0*pc_c*tsp_dt*thelpinv
+              iynext1=iy
+           elseif(grd_yarr(iy)>0d0) then
+!-- cone internal transfer
+              iynext1=iy-1
+           else
+              stop 'transport1_gamgrey: ptcl on cone and dby1 invalid'
+           endif
+        else
+           dby1 = 2d0*pc_c*tsp_dt*thelpinv
+           iynext1=iy
+        endif
+
+     else
+        idby1=7
+        dby1=-2d0*x*yhelp2/yhelp1
+        iynext1=iy-1
+     endif
+
+  else
+     yhelp4=yhelp2**2-yhelp1*yhelp3
+     if(abs(yhelp4)<1d-12*abs(yhelp2)) yhelp4=0d0
+     if(yhelp4<0d0) then
+        idby1=8
+!-- not intersecting lower cone
+        dby1 = 2d0*pc_c*tsp_dt*thelpinv
+        iynext1=iy
+     else
+        idby1=9
+!-- intersecting lower cone at at least one point
+        if(cos(om)<0d0.and.grd_yarr(iy)<=0d0) then
+!-- choose dby2
+           dby1 = 2d0*pc_c*tsp_dt*thelpinv
+           iynext1=iy
+        else
+           yhelp4=sqrt(yhelp4)
+           yhelp1=1d0/yhelp1
+           help=x*(-yhelp2+yhelp4)*yhelp1
+           dby1=x*(-yhelp2-yhelp4)*yhelp1
+           if(help<0d0) help=2d0*pc_c*tsp_dt*thelpinv
+           if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
+           dby1=min(help,dby1)
+           iynext1=iy-1
+        endif
+     endif
+  endif
+
+!-- dby2: iy->iy+1
+  yhelp1=grd_yarr(iy+1)**2-muz**2
+  yhelp2=mu*grd_yarr(iy+1)**2-muz*y
+  yhelp3=grd_yarr(iy+1)**2-y**2
+  if(yhelp1==0d0.and.yhelp3==0d0) then
+     idby2=1
+!-- particle, direction on cone
+     dby2 = 2d0*pc_c*tsp_dt*thelpinv
+     iynext2=iy
+  elseif(yhelp1==0d0) then
+     if((muz<=0d0.and.muz==-grd_yarr(iy+1)).or. &
+          (muz<=0d0.and.muz==grd_yarr(iy+1)).or. &
+          yhelp2==0d0) then
+        idby2=2
+!-- direction parallel to upper cone or nonphysical
+        dby2 = 2d0*pc_c*tsp_dt*thelpinv
+        iynext2=iy
+     else
+        idby2=3
+        dby2=-0.5*x*yhelp3/yhelp2
+        iynext2=iy+1
+     endif
+  elseif(abs(yhelp3)<1d-15*abs(y)) then
+!-- particle on upper cone
+     if(abs(y-grd_yarr(iy+1))<1d-15*abs(y)) then
+
+        dby2=-2d0*x*yhelp2/yhelp1
+        if(dby2>0d0) then
+           if(cos(om)<0d0) then
+              write(*,*) yold, y, iy, x, ix
+              stop 'transport1: did not cross upper y bound'
+           elseif(grd_yarr(iy+1)>=0d0) then
+!-- choose dby1
+              dby2 = 2d0*pc_c*tsp_dt*thelpinv
+              iynext2=iy
+           elseif(grd_yarr(iy+1)<0d0) then
+!-- cone internal transfer
+              iynext2=iy+1
+           else
+              stop 'transport1: ptcl on cone and dby2 invalid'
+           endif
+        else
+           dby2 = 2d0*pc_c*tsp_dt*thelpinv
+           iynext2=iy
+        endif
+     else
+        idby2=7
+        dby2=-2d0*x*yhelp2/yhelp1
+        iynext2=iy+1
+     endif
+
+  else
+     yhelp4=yhelp2**2-yhelp1*yhelp3
+     if(abs(yhelp4)<1d-12*abs(yhelp2)) yhelp4=0d0
+     if(yhelp4<0d0) then
+        idby2=8
+!-- not intersecting upper cone
+        dby2 = 2d0*pc_c*tsp_dt*thelpinv
+        iynext2=iy
+     else
+        idby2=9
+!-- intersecting upper cone at at least one point
+        if(cos(om)>=0d0.and.grd_yarr(iy+1)>=0d0) then
+!-- choose dby1
+           dby2 = 2d0*pc_c*tsp_dt*thelpinv
+           iynext2=iy
+        else
+           yhelp4=sqrt(yhelp4)
+           yhelp1=1d0/yhelp1
+           help=x*(-yhelp2+yhelp4)*yhelp1
+           dby2=x*(-yhelp2-yhelp4)*yhelp1
+           if(help<0d0) help=2d0*pc_c*tsp_dt*thelpinv
+           if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
+           dby2=min(help,dby2)
+           iynext2=iy+1
+        endif
+     endif
+  endif
+  if(dby1<0d0.and.dby2<0d0) then
+     write(*,*) iy, y
+     write(*,*) idby1, dby1, idby2, dby2
+     stop 'transport1: dby1<0 and dby2<0'
+  endif
+  if(dby1<=0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
+  if(dby2<=0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
+  dby=min(dby1,dby2)
+  if(dby==dby1) then
+     iynext=iynext1
+  else
+     iynext=iynext2
+  endif
 
 !-- azimuthal boundary distance (z)
   if(xi==0d0.or.grd_nz==1) then
@@ -127,28 +294,48 @@ subroutine transport1_gamgrey(ptcl,ic)
      stop 'transport1_gamgrey: negative distance'
   endif
 
-!-- updating radius
+!-- storing old position
   xold = x
-  x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
-!-- updating radial projection of direction
-  muold = mu
-  if(x==0d0) then
-     mu = 1d0
-  else
-     mu = (xold*mu+d)/x
-  endif
-!-- updating polar projection of position
   yold = y
-  if(x/=0d0) y = (xold*yold+muz*d)/x
+  muold = mu
+!-- updating radius
+  x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
+  if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
+!-- sanity check
+     if(d==dbx) stop 'transport1_gamgrey: x<1d-15*xarr(2),d==dbx,mu=-1'
+!-- excluding dbz
+     dbz = 2d0*pc_c*tsp_dt*thelpinv
+!-- resetting direction
+     mu = 1d0
+     eta = 0d0
+     xi = 0d0
+  else
+     if(x<1d-15*grd_xarr(2)) stop &
+          'transport1_gamgrey: x=0 and muold/=-1'
+!-- updating radial projection of direction
+     mu = (xold*mu+d)/x
+!-- updating polar projection of position
+     y = (xold*yold+muz*d)/x
 !-- updating azimuthal angle of position
-  z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
-       xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
-  if(z<0d0) z = z+pc_pi2
+     z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
+          xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
+     if(z<0d0) z = z+pc_pi2
 !-- updating azimuthal angle of direction (about radius)
-  eta = y*(cos(z)*mux+sin(z)*muy)-sqrt(1d0-y**2)*muz
-  xi = cos(z)*muy-sin(z)*mux
-  om = atan2(xi,eta)
-  if(om<0d0) om = om+pc_pi2
+     eta = y*(cos(z)*mux+sin(z)*muy)-sqrt(1d0-y**2)*muz
+     xi = cos(z)*muy-sin(z)*mux
+     om = atan2(xi,eta)
+     if(om<0d0) om = om+pc_pi2
+  endif
+
+!-- direction sanity check
+  if(abs(mux**2+muy**2+muz**2-1d0)>1d-9) then
+     write(*,*) mux**2+muy**2+muz**2,mux,muy,muz
+     stop 'transport1_gamgrey: invalid mux,muy,muz'
+  endif
+  if(abs(mu**2+eta**2+xi**2-1d0)>1d-9) then
+     write(*,*) mu**2+eta**2+xi**2,mu,eta,xi
+     stop 'transport1_gamgrey: invalid mu,eta,xi'
+  endif
 
 !-- depositing nonanalog absorbed energy
   if(.not.prt_isimcanlog) then
@@ -171,7 +358,7 @@ subroutine transport1_gamgrey(ptcl,ic)
           'transport1_gamgrey: not isimcanlog and dcol<db[xyz]'
      prt_done = .true.
      grd_edep(ic) = grd_edep(ic) + e*elabfact
-  elseif(d==dbx) then
+  elseif(d==dbx .and. dbx<dby) then
      if(mu>=0d0) then
         if(ix==grd_nx) then
 !-- ending particle
@@ -195,18 +382,53 @@ subroutine transport1_gamgrey(ptcl,ic)
      endif
      ic = grd_icell(ix,iy,iz)
   elseif(d==dby) then
-     if(iynext==iy-1) then
+
+!-- iznext=iz except
+     iznext=iz
+     if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
+!-- crossing origin
+        iynext=grd_ny-iy+1
+!-- reflecting y
+        y=-y
+        iynext=grd_ny-iy+1
+!-- reflecting z
+        z=z+pc_pi
+        if(z>pc_pi2) z=z-pc_pi2
+        if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1)
+     elseif(iynext==iy-1) then
+        if(abs(y)>1d-15.and.abs(y-grd_yarr(iy))>1d-9*abs(y)) then
+           write(*,*) iy,'y: ',y,'yarr(iy): ',grd_yarr(iy)
+           stop 'transport1_gamgrey: y/=yarr(iy)'
+        endif
         y=grd_yarr(iy)
-        if(iynext==0) iynext=1
+        if(iynext==0) then
+!-- reflecting z
+           z=z+pc_pi
+           if(z>pc_pi2) z=z-pc_pi2
+           if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1)
+           iynext=1
+        endif
      elseif(iynext==iy+1) then
+        if(abs(y)>1d-15.and.abs(y-grd_yarr(iy+1))>1d-9*abs(y)) then
+           write(*,*) iy,'y: ',y,'yarr(iy+1): ',grd_yarr(iy+1)
+           stop 'transport1_gamgrey: y/=yarr(iy+1)'
+        endif
         y=grd_yarr(iy+1)
-        if(iynext==grd_ny+1) iynext=grd_ny
+        if(iynext==grd_ny+1) then
+!-- reflecting z
+           z=z+pc_pi
+           if(z>pc_pi2) z=z-pc_pi2
+           if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1)
+           iynext=grd_ny
+        endif
      else
 !-- sanity check
         write(*,*) dby
         write(*,*) y,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
         stop 'transport1_gamgrey: invalid polar bound crossing'
      endif
+
+     iz = iznext
      iy = iynext
      ic = grd_icell(ix,iy,iz)
   else !d==dbz
