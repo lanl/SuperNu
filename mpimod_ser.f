@@ -16,18 +16,19 @@ c
       end subroutine bcast_permanent
 c
 c
-      subroutine scatter_inputstruct(ndim,ncell)
+      subroutine scatter_inputstruct(ndim,icell1,ncell)
       use inputstrmod!{{{
       use gasmod
       implicit none
       integer,intent(in) :: ndim(3)
-      integer,intent(out) :: ncell
+      integer,intent(out) :: icell1,ncell
 ************************************************************************
 * mpi_scatter the input structure to all ranks in the worker comm.
 ************************************************************************
       integer :: dmy
 c
-      ncell = str_nc/nmpi
+      icell1 = 1
+      ncell = str_nc
 c
       dmy = ndim(1) !use the intent(in) variable
       allocate(str_massdd(ncell))
