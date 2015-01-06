@@ -24,7 +24,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
   real*8,parameter :: cinv = 1d0/pc_c
   integer,external :: emitgroup
 
-  logical :: lout, lhelp
+  logical :: lout
   integer :: imu, iom, ihelp
   real*8 :: elabfact, eta, xi, mux,muy,muz
   real*8 :: dtinv, thelp, thelpinv, help
@@ -33,7 +33,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 
   integer :: iynext,iynext1,iynext2,iznext,iyold,idby1,idby2
   integer :: idby1old,idby2old
-  real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2,disc1,disc2
+  real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
   real*8 :: dby1old,dby2old
   real*8 :: zhelp
   real*8 :: xold,yold,muold,dbyold,etaold,muzold
@@ -124,9 +124,9 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         dby1=-0.5*x*yhelp3/yhelp2
         iynext1=iy-1
      endif
-  elseif(yhelp3==0d0) then
+  elseif(abs(yhelp3)<1d-15*abs(y)) then
 !-- particle on lower cone
-     if(y==grd_yarr(iy)) then
+     if(abs(y-grd_yarr(iy))<1d-15*abs(y)) then
 
         dby1=-2d0*x*yhelp2/yhelp1
         if(dby1>0d0) then
@@ -152,14 +152,13 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 
      else
         idby1=7
-!        dby1=-2d0*x*yhelp2/yhelp1
+        dby1=-2d0*x*yhelp2/yhelp1
         iynext1=iy-1
      endif
 
   else
      yhelp4=yhelp2**2-yhelp1*yhelp3
      if(abs(yhelp4)<1d-12*abs(yhelp2)) yhelp4=0d0
-     disc1=yhelp4
      if(yhelp4<0d0) then
         idby1=8
 !-- not intersecting lower cone
@@ -184,8 +183,6 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         endif
      endif
   endif
-!-- resetting for nonphysical distances
-!  if(dby1<0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
 
 !-- dby2: iy->iy+1
   yhelp1=grd_yarr(iy+1)**2-muz**2
@@ -209,9 +206,9 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         dby2=-0.5*x*yhelp3/yhelp2
         iynext2=iy+1
      endif
-  elseif(yhelp3==0d0) then
+  elseif(abs(yhelp3)<1d-15*abs(y)) then
 !-- particle on upper cone
-     if(y==grd_yarr(iy+1)) then
+     if(abs(y-grd_yarr(iy+1))<1d-15*abs(y)) then
 
         dby2=-2d0*x*yhelp2/yhelp1
         if(dby2>0d0) then
@@ -236,14 +233,13 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         endif
      else
         idby2=7
-!        dby2=-2d0*x*yhelp2/yhelp1
+        dby2=-2d0*x*yhelp2/yhelp1
         iynext2=iy+1
      endif
 
   else
      yhelp4=yhelp2**2-yhelp1*yhelp3
      if(abs(yhelp4)<1d-12*abs(yhelp2)) yhelp4=0d0
-     disc2=yhelp4
      if(yhelp4<0d0) then
         idby2=8
 !-- not intersecting upper cone
@@ -268,12 +264,24 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         endif
      endif
   endif
-!  if(dby2<0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
 !  write(*,*) dby1,dby2
-!  if(y<grd_yarr(iy+1).and.y>grd_yarr(iy)) write(*,*) idby1,disc1,idby2,disc2
-  if(dby1==0d0.and.idby1==4) write(*,*) '1: ',idby1, y, iy, dby1
-  if(dby2==0d0.and.idby2==4) write(*,*) '2: ',idby2, y, iy
+!  if(y<grd_yarr(iy+1).and.y>grd_yarr(iy)) write(*,*) idby1,idby2
+!  if(dby1==0d0.and.idby1==4) write(*,*) '1: ',idby1, y, iy, dby1
+!  if(dby2==0d0.and.idby2==4) write(*,*) '2: ',idby2, y, iy
   ! if(dby1==0d0.and.dby2==0d0) stop 'transport1: invalid dby[1,2]'
+  if(dby1<0d0.and.dby2<0d0) then
+     write(*,*) iy, y
+     write(*,*) idby1, dby1, idby2, dby2
+     stop 'transport1: dby1<0 and dby2<0'
+  endif
+  ! if(dby1==0d0) then
+  !    write(*,*) '1: ', iy, y, dby2, eta
+  ! endif
+  ! if(dby2==0d0) then
+  !    write(*,*) '2: ', iy, y, dby1, eta
+  ! endif
+  if(dby1<=0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
+  if(dby2<=0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
   dby=min(dby1,dby2)
   if(dby==dby1) then
      iynext=iynext1
@@ -348,29 +356,48 @@ subroutine transport1(ptcl,ic,ig,isvacant)
      stop 'transport1: negative distance'
   endif
 
-!-- updating radius
+!-- storing old position
   xold = x
-  x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
-!-- updating radial projection of direction
-  muold = mu
-  if(x==0d0) then
-     mu = 1d0
-  else
-     mu = (xold*mu+d)/x
-  endif
-!-- updating polar projection of position
   yold = y
-  if(x/=0d0) y = (xold*yold+muz*d)/x
-!  if(d==dby) write(*,*) 'dbx: ',dbx,'dby: ',dby,'yold: ',yold,'y: ',y
+  muold = mu
+!-- updating radius
+  x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
+  if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
+!-- sanity check
+     if(d==dbx) stop 'transport1: x<1d-15*xarr(2),d==dbx,mu=-1'
+!-- excluding dbz
+     dbz = 2d0*pc_c*tsp_dt*thelpinv
+!-- resetting direction
+     mu = 1d0
+     eta = 0d0
+     xi = 0d0
+  else
+     if(x<1d-15*grd_xarr(2)) stop 'transport1: x=0 and muold/=-1'
+!-- updating radial projection of direction
+     mu = (xold*mu+d)/x
+!-- updating polar projection of position
+     y = (xold*yold+muz*d)/x
 !-- updating azimuthal angle of position
-  z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
-       xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
-  if(z<0d0) z=z+pc_pi2
+     z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
+          xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
+     if(z<0d0) z=z+pc_pi2
 !-- updating azimuthal angle of direction (about radius)
-  eta = y*(cos(z)*mux+sin(z)*muy)-sqrt(1d0-y**2)*muz
-  xi = cos(z)*muy-sin(z)*mux
-  om = atan2(xi,eta)
-  if(om<0d0) om=om+pc_pi2
+     eta = y*(cos(z)*mux+sin(z)*muy)-sqrt(1d0-y**2)*muz
+     xi = cos(z)*muy-sin(z)*mux
+     om = atan2(xi,eta)
+     if(om<0d0) om=om+pc_pi2
+  endif
+
+!-- direction sanity check
+  if(abs(mux**2+muy**2+muz**2-1d0)>1d-9) then
+     write(*,*) mux**2+muy**2+muz**2,mux,muy,muz
+     stop 'transport1: invalid mux,muy,muz'
+  endif
+  if(abs(mu**2+eta**2+xi**2-1d0)>1d-9) then
+     write(*,*) mu**2+eta**2+xi**2,mu,eta,xi
+     stop 'transport1: invalid mu,eta,xi'
+  endif
+
 !-- updating time
   ptcl%t = ptcl%t + thelp*d*cinv
 
@@ -524,7 +551,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 
 !
 !-- radial bound
-  elseif(d==dbx) then
+  elseif(d==dbx .and. dbx<dby) then
 
      if(mu>=0d0) then
         ihelp=ix+1
@@ -599,12 +626,44 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 !-- polar bound
   elseif(d==dby) then
 
-     if(iynext==iy-1) then
+!-- iznext=iz except
+     iznext=iz
+     if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
+!-- crossing origin
+        iynext=grd_ny-iy+1
+!-- reflecting y
+        y=-y
+        iynext=grd_ny-iy+1
+!-- reflecting z
+        z=z+pc_pi
+        if(z>pc_pi2) z=z-pc_pi2
+        if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1)
+     elseif(iynext==iy-1) then
+        if(abs(y)>1d-15.and.abs(y-grd_yarr(iy))>1d-9*abs(y)) then
+           write(*,*) iy,'y: ',y,'yarr(iy): ',grd_yarr(iy)
+           stop 'transport1: y/=yarr(iy)'
+        endif
         y=grd_yarr(iy)
-        if(iynext==0) iynext=1
+        if(iynext==0) then
+!-- reflecting z
+           z=z+pc_pi
+           if(z>pc_pi2) z=z-pc_pi2
+           if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1)
+           iynext=1
+        endif
      elseif(iynext==iy+1) then
+        if(abs(y)>1d-15.and.abs(y-grd_yarr(iy+1))>1d-9*abs(y)) then
+           write(*,*) iy,'y: ',y,'yarr(iy+1): ',grd_yarr(iy+1)
+           stop 'transport1: y/=yarr(iy+1)'
+        endif
         y=grd_yarr(iy+1)
-        if(iynext==grd_ny+1) iynext=grd_ny
+        if(iynext==grd_ny+1) then
+!-- reflecting z
+           z=z+pc_pi
+           if(z>pc_pi2) z=z-pc_pi2
+           if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1)
+           iynext=grd_ny
+        endif
      else
 !-- sanity check
         write(*,*) dby
@@ -612,13 +671,14 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         stop 'transport1: invalid polar bound crossing'
      endif
 
-     l = grd_icell(ix,iynext,iz)
+     l = grd_icell(ix,iynext,iznext)
      if((grd_cap(ig,l)+grd_sig(l)) * &
           min(dx(ix),xm(ix)*dyac(iynext),xm(ix)*ym(iynext) * &
-          dz(iz))*thelp<prt_tauddmc .or. in_puretran) then
+          dz(iznext))*thelp<prt_tauddmc .or. in_puretran) then
 !-- IMC in adjacent cell
         iyold=iy
         iy = iynext
+        iz = iznext
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
@@ -644,6 +704,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
               wl = wl/elabfact
            endif
            iy = iynext
+           iz = iznext
            ic = grd_icell(ix,iy,iz)
         else
            r1 = rnd_r(rnd_state)
@@ -776,7 +837,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
   etaold=eta
   dbyold=dby
 
-  if((y>grd_yarr(iy+1) .or. y<grd_yarr(iy)).and.d==dcol) then
+  if((y>grd_yarr(iy+1) .or. y<grd_yarr(iy))) then
      write(0,*) 'theta not in cell (x): ',ix,xold,x,grd_xarr(ix),grd_xarr(ix+1)
      write(0,*) 'theta not in cell (y): ',iy,yold,y,grd_yarr(iy),grd_yarr(iy+1)
      write(0,*) 'old (y): ',iyold,dbyold
