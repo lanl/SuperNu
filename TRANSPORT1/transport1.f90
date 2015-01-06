@@ -629,11 +629,9 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 !-- iznext=iz except
      iznext=iz
      if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
-!-- crossing origin
-        iynext=grd_ny-iy+1
 !-- reflecting y
         y=-y
-        iynext=grd_ny-iy+1
+        iynext=binsrch(y,grd_yarr,grd_ny+1)
 !-- reflecting z
         z=z+pc_pi
         if(z>pc_pi2) z=z-pc_pi2
