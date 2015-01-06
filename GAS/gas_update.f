@@ -22,8 +22,7 @@ c     ------------------------------
 ************************************************************************
       logical,save :: lfirst=.true.
       logical :: do_output,lexist
-      integer :: i,j,l,ll,istat
-      integer :: l1,l2
+      integer :: i,j,l,istat
       real*8 :: help
       real*8 :: dtempfrac = 0.99d0
       real*8 :: natom1fr(gas_ncell,-2:-1) !todo: memory storage order?
@@ -46,10 +45,10 @@ c
 c-- initial decay, prior to first time step
       if(tsp_it==1 .and. grd_isvelocity.and.in_srctype=='none') then
        call update_natomfr(0d0)!{{{
-       forall(ll=-2:-1) natom1fr(:,ll) = gas_natom1fr(ll,:)
+       forall(i=-2:-1) natom1fr(:,i) = gas_natom1fr(i,:)
 c-- end of time step
        call update_natomfr(tsp_t)
-       forall(ll=-2:-1) natom2fr(:,ll) = gas_natom1fr(ll,:)
+       forall(i=-2:-1) natom2fr(:,i) = gas_natom1fr(i,:)
 c-- energy deposition
        nisource0 =  !per average atom (mix of stable and unstable)
      &   (natom1fr(:,gas_ini56) - natom2fr(:,gas_ini56)) *
@@ -66,10 +65,10 @@ c-- current time step
 c-- beginning of time step
        help = tsp_t
        call update_natomfr(help)
-       forall(ll=-2:-1) natom1fr(:,ll) = gas_natom1fr(ll,:)
+       forall(i=-2:-1) natom1fr(:,i) = gas_natom1fr(i,:)
 c-- end of time step
        call update_natomfr(tsp_t + tsp_dt)
-       forall(ll=-2:-1) natom2fr(:,ll) = gas_natom1fr(ll,:)
+       forall(i=-2:-1) natom2fr(:,i) = gas_natom1fr(i,:)
 c
 c-- update the abundances for the center time
        !call update_natomfr(tsp_tcenter)
@@ -98,14 +97,10 @@ c
 c
 c-- update volume
 c========================================
-      l1 = impi*gas_ncell + 1
-      l2 = (impi+1)*gas_ncell
-      ll = 0
-      do l=1,grd_ncell
-       if(l<l1) cycle
-       if(l>l2) exit
-       ll = ll + 1
-       gas_vol(ll) = grd_vol(l)
+      i = 0
+      do l=gas_icell1,gas_icell1+gas_ncell-1
+       i = i+1
+       gas_vol(i) = grd_vol(l)
       enddo !l
 c
 c

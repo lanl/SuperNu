@@ -287,13 +287,13 @@ c!}}}
 c
 c
 c
-      subroutine scatter_inputstruct(ndim,ncell)
-c     ------------------------------------------!{{{
+      subroutine scatter_inputstruct(ndim,icell1,ncell)
+c     -------------------------------------------------!{{{
       use inputstrmod
       use gasmod
       implicit none
       integer,intent(in) :: ndim(3)
-      integer,intent(out) :: ncell
+      integer,intent(out) :: icell1,ncell
 ************************************************************************
 * mpi_scatter the input structure to all ranks in the worker comm.
 ************************************************************************
@@ -311,6 +311,7 @@ c-- calculate offsets
          n = ceiling(nc/(nmpi-i+1d0))
          counts(i) = n
          if(i-1==impi) ncell = n
+         if(i-1==impi) icell1 = displs(i) + 1
          if(i<nmpi) displs(i+1) = displs(i) + n
          nc = nc - n
       enddo

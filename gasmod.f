@@ -12,6 +12,7 @@ c-- wavelength grid (gridmod has a copy as well)
 c
 c-- domain decomposed grid variables used to calculate the state of the material (gas)
       integer :: gas_ncell=0
+      integer :: gas_icell1=0
       integer,allocatable :: gas_idcell(:)    !(ncell)
       real*8,allocatable :: gas_temp(:)       !(ncell)
       real*8,allocatable :: gas_eraddens(:)
@@ -58,11 +59,11 @@ c
       contains
 c
 c
-      subroutine gas_init(ltalk,ncell,ngin)
+      subroutine gas_init(ltalk,icell1,ncell,ngin)
 c----------------------------------------!{{{
       implicit none
       logical,intent(in) :: ltalk
-      integer,intent(in) :: ncell,ngin
+      integer,intent(in) :: icell1,ncell,ngin
 ************************************************************************
 * Allocate gas variables.
 *
@@ -73,6 +74,7 @@ c----------------------------------------!{{{
 c
       ng = ngin
 c
+      gas_icell1 = icell1
       gas_ncell = ncell
 c
 c-- print alloc size (keep this updated)

@@ -12,23 +12,18 @@ c     --------------------------
 * Initialize the gas grid, the part that is constant with time and
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
-      integer :: l,ll,l1,l2
+      integer :: l,i
       real*8 :: mass0fr(-2:gas_nelem,gas_ncell)
 c
 c-- agnostic mass setup
       gas_mass = str_massdd
 c
 c-- decompose idcell
-      l1 = impi*gas_ncell + 1
-      l2 = (impi+1)*gas_ncell
-      ll = 0
-      do l=1,str_nc
-       if(l<l1) cycle
-       if(l>l2) exit
-       ll = ll + 1
-       gas_idcell(ll) = str_idcell(l)
+      i = 0
+      do l=gas_icell1,gas_icell1+gas_ncell-1
+       i = i+1
+       gas_idcell(i) = str_idcell(l)
       enddo !l
-      if(ll/=gas_ncell) stop 'gas_update: ll/=gas_ncell'
 c
 c-- temperature
       if(in_srctype=='manu') then
@@ -52,9 +47,9 @@ c-- adopt partial masses from input file
       if(.not.in_noreadstruct) then
        if(.not.allocated(str_massfrdd)) stop 'input.str data not avail'
        do l=1,str_nabund
-        ll = str_iabund(l)
-        if(ll>gas_nelem) ll = 0 !divert to container
-        mass0fr(ll,:) = str_massfrdd(l,:)
+        i = str_iabund(l)
+        if(i>gas_nelem) i = 0 !divert to container
+        mass0fr(i,:) = str_massfrdd(l,:)
        enddo
       elseif(.not.in_novolsrc) then
         mass0fr(28,:) = 1d0 !stable+unstable Ni abundance

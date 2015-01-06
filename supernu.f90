@@ -27,7 +27,7 @@ program supernu
   real*8 :: help
   real*8 :: t_elapsed
   integer :: ierr,ns,nmax,it
-  integer :: ncpr !number of cells per rank (gas_ncell)
+  integer :: icell1,ncell !number of cells per rank (gas_ncell)
   real*8 :: t0,t1 !timing
   character(15) :: msg
 !
@@ -113,11 +113,11 @@ program supernu
 !-- setup spatial grid
   call grid_init(impi==impi0,grp_ng,in_igeom,in_ndim,str_nc,str_lvoid,in_isvelocity)
 !-- domain-decompose input structure
-  call scatter_inputstruct(in_ndim,ncpr) !MPI
+  call scatter_inputstruct(in_ndim,icell1,ncell) !MPI
   call grid_setup
 
 !-- setup gas
-  call gas_init(impi==impi0,ncpr,grp_ng)
+  call gas_init(impi==impi0,icell1,ncell,grp_ng)
   call gas_setup(impi)
 !-- inputstr no longer needed
   call inputstr_dealloc
