@@ -20,14 +20,17 @@ c
       use inputstrmod!{{{
       use gasmod
       implicit none
-      integer :: ndim(3)
+      integer,intent(in) :: ndim(3)
       integer,intent(out) :: icell1,ncell
 ************************************************************************
 * mpi_scatter the input structure to all ranks in the worker comm.
 ************************************************************************
+      integer :: dmy
+c
       icell1 = 1
       ncell = str_nc
 c
+      dmy = ndim(1) !use the intent(in) variable
       allocate(str_massdd(ncell))
       if(str_nabund>0) then
        allocate(str_massfrdd(str_nabund,ncell))
@@ -71,8 +74,7 @@ c
       end subroutine bcast_nonpermanent
 c
 c
-      subroutine allgather_leakage(icell1,ncell)
-      integer :: icell1,ncell
+      subroutine allgather_leakage
       end subroutine allgather_leakage
 c
 c
