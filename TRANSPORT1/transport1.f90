@@ -167,7 +167,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
      else
         idby1=9
 !-- intersecting lower cone at at least one point
-        if(cos(om)<0d0.and.grd_yarr(iy)<=0d0) then
+        if(cos(om)<0d0.and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
 !-- choose dby2
            dby1 = 2d0*pc_c*tsp_dt*thelpinv
            iynext1=iy
@@ -248,7 +248,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
      else
         idby2=9
 !-- intersecting upper cone at at least one point
-        if(cos(om)>=0d0.and.grd_yarr(iy+1)>=0d0) then
+        if(cos(om)>=0d0.and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
 !-- choose dby1
            dby2 = 2d0*pc_c*tsp_dt*thelpinv
            iynext2=iy
@@ -264,7 +264,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         endif
      endif
   endif
-!  write(*,*) dby1,dby2
+!  write(*,*) idby1,dby1,idby2,dby2
 !  if(y<grd_yarr(iy+1).and.y>grd_yarr(iy)) write(*,*) idby1,idby2
 !  if(dby1==0d0.and.idby1==4) write(*,*) '1: ',idby1, y, iy, dby1
 !  if(dby2==0d0.and.idby2==4) write(*,*) '2: ',idby2, y, iy
@@ -629,17 +629,15 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 !-- iznext=iz except
      iznext=iz
      if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
-!-- crossing origin
-        iynext=grd_ny-iy+1
 !-- reflecting y
         y=-y
-        iynext=grd_ny-iy+1
+        iynext=binsrch(y,grd_yarr,grd_ny+1)
 !-- reflecting z
         z=z+pc_pi
         if(z>pc_pi2) z=z-pc_pi2
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1)
      elseif(iynext==iy-1) then
-        if(abs(y)>1d-15.and.abs(y-grd_yarr(iy))>1d-9*abs(y)) then
+        if(abs(y-grd_yarr(iy))>1d-9) then
            write(*,*) iy,'y: ',y,'yarr(iy): ',grd_yarr(iy)
            stop 'transport1: y/=yarr(iy)'
         endif
@@ -652,7 +650,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
            iynext=1
         endif
      elseif(iynext==iy+1) then
-        if(abs(y)>1d-15.and.abs(y-grd_yarr(iy+1))>1d-9*abs(y)) then
+        if(abs(y-grd_yarr(iy+1))>1d-9) then
            write(*,*) iy,'y: ',y,'yarr(iy+1): ',grd_yarr(iy+1)
            stop 'transport1: y/=yarr(iy+1)'
         endif
