@@ -341,9 +341,23 @@ subroutine transport1_gamgrey(ptcl,ic)
      write(*,*) mux**2+muy**2+muz**2,mux,muy,muz
      stop 'transport1_gamgrey: invalid mux,muy,muz'
   endif
+  if(mux**2+muy**2+muz**2/=1d0) then
+!-- normalize direction
+     help = 1d0/sqrt(mux**2+muy**2+muz**2)
+     mux=mux*help
+     muy=muy*help
+     muz=muz*help
+  endif
   if(abs(mu**2+eta**2+xi**2-1d0)>1d-9) then
      write(*,*) mu**2+eta**2+xi**2,mu,eta,xi
      stop 'transport1_gamgrey: invalid mu,eta,xi'
+  endif
+  if(mu**2+eta**2+xi**2/=1d0) then
+!-- normalize direction
+     help = 1d0/sqrt(mu**2+eta**2+xi**2)
+     mu=mu*help
+     eta=eta*help
+     xi=xi*help
   endif
 
 !-- depositing nonanalog absorbed energy
