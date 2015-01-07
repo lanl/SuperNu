@@ -1,4 +1,4 @@
-subroutine leakage_opacity11
+subroutine leakage_opacity11(icell1,ncell)
 
   use miscmod
   use gridmod
@@ -7,6 +7,7 @@ subroutine leakage_opacity11
   use particlemod
   use physconstmod
   implicit none
+  integer,intent(in) :: icell1,ncell
 
 !##################################################
   !This subroutine computes
@@ -31,15 +32,19 @@ subroutine leakage_opacity11
      thelp = 1d0
   endif
 
-!-- init (necessary for domain decomposition)
-  grd_opacleak = 0d0
-
 !
 !-- calculating leakage opacities
   do k=1,grd_nz
   do j=1,grd_ny
   do i=1,grd_nx
      l = grd_icell(i,j,k)
+!
+!-- work distribution
+     if(l<icell1) cycle
+     if(l>icell1+ncell-1) cycle
+!
+!-- zero
+     grd_opacleak(:,l) = 0d0
 !
 !-- neighbors
      icnb(1) = grd_icell(max(i-1,1),j,k)      !left neighbor

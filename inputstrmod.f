@@ -64,7 +64,7 @@ c     --------------------------------------------------------!{{{
 ************************************************************************
 * Read the input structure file
 ************************************************************************
-      integer :: i,j,k,ierr,nx_r,ny_r,nz_r,ini56,nvar,ncol,imass
+      integer :: i,j,k,l,ierr,nx_r,ny_r,nz_r,ini56,nvar,ncol,imass
       integer :: ncorner,nvoid,ncell,ncpr
       character(2) :: dmy
       character(8),allocatable :: labl(:)

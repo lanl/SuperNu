@@ -108,12 +108,11 @@ program supernu
 
 !-- broadcast init info from impi0 rank to all others
   call bcast_permanent !MPI
-
+!-- domain-decompose input structure
+  call scatter_inputstruct(in_ndim,icell1,ncell) !MPI
 
 !-- setup spatial grid
   call grid_init(impi==impi0,grp_ng,in_igeom,in_ndim,str_nc,str_lvoid,in_isvelocity)
-!-- domain-decompose input structure
-  call scatter_inputstruct(in_ndim,icell1,ncell) !MPI
   call grid_setup
 
 !-- setup gas
@@ -204,8 +203,9 @@ program supernu
      call sourceenergy_misc
 
      call sourceenergy_analytic !gas_emitex from analytic distribution
-     call leakage_opacity       !IMC-DDMC albedo coefficients and DDMC leakage opacities
-     call emission_probability !emission probabilities for ep-group in each cell
+     call leakage_opacity(icell1,ncell) !IMC-DDMC albedo coefficients and DDMC leakage opacities
+     call emission_probability  !emission probabilities for ep-group in each cell
+     call allgather_leakage(icell1,ncell) !MPI
      call sourcenumbers         !number of source prt_particles per cell
 
      t_timelin(4) = t_time() !timeline
