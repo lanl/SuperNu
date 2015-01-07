@@ -29,6 +29,7 @@ subroutine transport2(ptcl,ic,ig,isvacant)
   real*8 :: elabfact, dirdotu, mu0, gm
   real*8 :: dtinv, thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,ddop,d
+  real*8 :: darr(6)
   real*8 :: rold, zold, omold
   real*8 :: r1, r2
 !-- distance out of physical reach
@@ -148,11 +149,13 @@ subroutine transport2(ptcl,ic,ig,isvacant)
   endif
 !
 !-- finding minimum distance
-  d = min(dcen,dbx,dby,dthm,dcol,ddop)
-  if(d<0d0) then
-     write(*,*) dcen,dby,dbx,dthm,dcol,ddop
-     stop 'transport2: negative distance'
+  darr = [dcen,dbx,dby,dthm,dcol,ddop]
+  if(any(darr/=darr) .or. any(darr<0d0)) then
+     write(0,*) darr
+     write(*,*) ix,iy,x,y,mu,om
+     stop 'transport2: invalid distance'
   endif
+  d = minval(darr)
 !
 !-- updating position
   rold = x

@@ -29,6 +29,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
   real*8 :: elabfact, eta, xi, mux,muy,muz
   real*8 :: dtinv, thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop,d
+  real*8 :: darr(7)
   real*8 :: r1,r2
 
   integer :: iynext,iynext1,iynext2,iznext,iyold,idby1,idby2
@@ -363,11 +364,13 @@ subroutine transport1(ptcl,ic,ig,isvacant)
   endif
 !
 !-- finding minimum distance
-  d = min(dcen,dbx,dby,dbz,dthm,dcol,ddop)
-  if(d<0d0) then
-     write(*,*) dcen,dbx,dby,dbz,dthm,dcol,ddop,ix,iy,iz,x,y,z,xi,eta,mu
-     stop 'transport1: negative distance'
+  darr = [dcen,dbx,dby,dbz,dthm,dcol,ddop]
+  if(any(darr/=darr) .or. any(darr<0d0)) then
+     write(0,*) darr
+     write(*,*) ix,iy,iz,x,y,z,mu,eta,xi,om
+     stop 'transport1: invalid distance'
   endif
+  d = minval(darr)
 
 !-- storing old position
   xold = x

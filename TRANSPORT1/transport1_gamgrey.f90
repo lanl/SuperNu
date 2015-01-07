@@ -24,6 +24,7 @@ subroutine transport1_gamgrey(ptcl,ic)
   real*8 :: elabfact, eta, xi, mux,muy,muz
   real*8 :: r1, thelp,thelpinv, help
   real*8 :: dcol,dbx,dby,dbz,d
+  real*8 :: darr(4)
 
   integer :: iynext,iynext1,iynext2,iznext,idby1,idby2
   real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
@@ -302,11 +303,13 @@ subroutine transport1_gamgrey(ptcl,ic)
 
 !
 !-- finding minimum distance
-  d = min(dbx,dby,dbz,dcol)
-  if(d<0d0) then
-     write(*,*) dbx,dby,dbz,dcol,ix,iy,iz,x,y,z,xi,eta,mu
-     stop 'transport1_gamgrey: negative distance'
+  darr = [dbx,dby,dbz,dcol]
+  if(any(darr/=darr) .or. any(darr<0d0)) then
+     write(0,*) darr
+     write(*,*) ix,iy,iz,x,y,z,mu,eta,xi,om
+     stop 'transport1_gamgrey: invalid distance'
   endif
+  d = minval(darr)
 
 !-- storing old position
   xold = x

@@ -21,6 +21,7 @@ subroutine transport11_gamgrey(ptcl,ic)
 !
   real*8 :: r1, thelp,thelpinv
   real*8 :: db, dcol, d
+  real*8 :: darr(2)
   real*8 :: siglabfact, dcollabfact, elabfact
   real*8 :: rold, muold
 ! real*8 :: x1, x2, xx0
@@ -30,17 +31,17 @@ subroutine transport11_gamgrey(ptcl,ic)
 
   integer,pointer :: ix
   integer,parameter :: iy=1,iz=1
-  real*8,pointer :: r, mu, e, e0
+  real*8,pointer :: x, mu, e, e0
 
   ix => ptcl%ix
-  r => ptcl%x
+  x => ptcl%x
   mu => ptcl%mu
   e => ptcl%e
   e0 => ptcl%e0
 
   if(grd_isvelocity) then
-     siglabfact = 1.0d0 - mu*r*cinv
-     dcollabfact = tsp_t*(1d0-mu*r*cinv)
+     siglabfact = 1.0d0 - mu*x*cinv
+     dcollabfact = tsp_t*(1d0-mu*x*cinv)
      thelp = tsp_t
   else
      siglabfact = 1d0
@@ -57,11 +58,11 @@ subroutine transport11_gamgrey(ptcl,ic)
 !
 !-- distance to boundary = db
   if (ix == 1) then
-     db = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*r**2)-mu*r)
-  elseif (mu < -sqrt(1d0-(grd_xarr(ix)/r)**2)) then
-     db = abs(sqrt(grd_xarr(ix)**2-(1d0-mu**2)*r**2)+mu*r)
+     db = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*x**2)-mu*x)
+  elseif (mu < -sqrt(1d0-(grd_xarr(ix)/x)**2)) then
+     db = abs(sqrt(grd_xarr(ix)**2-(1d0-mu**2)*x**2)+mu*x)
   else
-     db = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*r**2)-mu*r)
+     db = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*x**2)-mu*x)
   endif
 !-- sanity check
   if(db/=db) stop 'transport11_gamgrey: db/=db'
@@ -81,19 +82,25 @@ subroutine transport11_gamgrey(ptcl,ic)
 !
 !-- minimum distance = d
 !  if(tsp_it==29) write(*,*) dcol,dthm,db,dcen,ddop
-  d = min(dcol,db)
+  darr = [dcol,db]
+  if(any(darr/=darr) .or. any(darr<0d0)) then
+     write(0,*) darr
+     write(*,*) ix,x,mu
+     stop 'transport11_gamgrey: invalid distance'
+  endif
+  d = minval(darr)
 !
 !== END OF DISTANCE CALCULATIONS
 !
 !-- position, angle, time update  
-  rold = r
-  r = sqrt((1d0-mu**2)*r**2 + (d+r*mu)**2)
-!  r = sqrt(r**2+d**2+2d0*d*r*mu)
+  rold = x
+  x = sqrt((1d0-mu**2)*x**2 + (d+x*mu)**2)
+!  x = sqrt(x**2+d**2+2d0*d*x*mu)
   muold = mu
-  if(r==0d0) then
+  if(x==0d0) then
      mu = 1d0
   else
-     mu = (rold*mu+d)/r
+     mu = (rold*mu+d)/x
   endif
 
 !-- transformation factor set
@@ -114,7 +121,7 @@ subroutine transport11_gamgrey(ptcl,ic)
 
 !-- transformation factor reset
   if(grd_isvelocity) then
-     elabfact = 1d0 - mu*r*cinv
+     elabfact = 1d0 - mu*x*cinv
   else
      elabfact = 1d0
   endif
@@ -138,9 +145,9 @@ subroutine transport11_gamgrey(ptcl,ic)
            mu = 0.0000001d0
         endif
         if(grd_isvelocity) then
-           mu = (mu+r*cinv)/(1d0+r*mu*cinv)
+           mu = (mu+x*cinv)/(1d0+x*mu*cinv)
 !-- velocity effects accounting
-           help = 1d0/(1d0-mu*r*cinv)
+           help = 1d0/(1d0-mu*x*cinv)
 !
            e = e*elabfact*help
            
@@ -163,15 +170,15 @@ subroutine transport11_gamgrey(ptcl,ic)
            flx_gamlumdev(1,1) = flx_gamlumdev(1,1)+(e/tsp_dt)**2
            flx_gamlumnum(1,1) = flx_gamlumnum(1,1)+1
         else
-           r = grd_xarr(ix+1)
+           x = grd_xarr(ix+1)
            ix = ix+1
         endif
      else
         if (ix==1) then
-           r = grd_xarr(ix+1)
+           x = grd_xarr(ix+1)
            ix = ix+1
         else
-           r = grd_xarr(ix)
+           x = grd_xarr(ix)
            ix = ix-1
         endif
      endif

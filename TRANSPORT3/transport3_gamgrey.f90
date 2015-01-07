@@ -26,6 +26,7 @@ subroutine transport3_gamgrey(ptcl,ic)
   real*8 :: elabfact, eta, xi
   real*8 :: thelp, thelpinv
   real*8 :: dcol,dbx,dby,dbz,d
+  real*8 :: darr(4)
   real*8 :: r1
 !-- distance out of physical reach
   real*8 :: far
@@ -99,8 +100,13 @@ subroutine transport3_gamgrey(ptcl,ic)
   endif
 !
 !-- finding minimum distance
-  d = min(dbx,dby,dbz,dcol)
-  if(d<0d0) stop 'transport3_gamgrey: negative distance'
+  darr = [dbx,dby,dbz,dcol]
+  if(any(darr/=darr) .or. any(darr<0d0)) then
+     write(0,*) darr
+     write(*,*) ix,iy,iz,x,y,z,mu,eta,xi,om
+     stop 'transport3_gamgrey: invalid distance'
+  endif
+  d = minval(darr)
 
 !-- updating position
   x = x + xi*d

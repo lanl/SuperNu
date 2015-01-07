@@ -26,8 +26,9 @@ subroutine transport11(ptcl,ic,ig,isvacant)
   integer,external :: emitgroup
   real*8 :: r1, r2, thelp,thelpinv
   real*8 :: db, dcol, dcen, dthm, ddop, d
+  real*8 :: darr(5)
   real*8 :: siglabfact, dcollabfact, elabfact
-  real*8 :: rold, P, muold
+  real*8 :: xold, P, muold
 ! real*8 :: x1, x2, xx0
   real*8 :: dtinv
   real*8 :: help
@@ -37,14 +38,14 @@ subroutine transport11(ptcl,ic,ig,isvacant)
 
   integer,pointer :: ix
   integer,parameter :: iy=1, iz=1
-  real*8,pointer :: r, mu, e, e0, wl
+  real*8,pointer :: x, mu, e, e0, wl
 !-- statement function
   integer :: l
   real*8 :: dx
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
 
   ix => ptcl%ix
-  r => ptcl%x
+  x => ptcl%x
   mu => ptcl%mu
   e => ptcl%e
   e0 => ptcl%e0
@@ -54,8 +55,8 @@ subroutine transport11(ptcl,ic,ig,isvacant)
   dtinv = 1d0/tsp_dt
 
   if(grd_isvelocity) then
-     siglabfact = 1d0 - mu*r*cinv
-     dcollabfact = tsp_t*(1d0-mu*r*cinv)
+     siglabfact = 1d0 - mu*x*cinv
+     dcollabfact = tsp_t*(1d0-mu*x*cinv)
      thelp = tsp_t
   else
      siglabfact = 1d0
@@ -72,11 +73,11 @@ subroutine transport11(ptcl,ic,ig,isvacant)
 !
 !-- distance to boundary = db
   if (ix == 1) then
-     db = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*r**2)-mu*r)
-  elseif (mu < -sqrt(1d0-(grd_xarr(ix)/r)**2)) then
-     db = abs(sqrt(grd_xarr(ix)**2-(1d0-mu**2)*r**2)+mu*r)
+     db = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*x**2)-mu*x)
+  elseif (mu < -sqrt(1d0-(grd_xarr(ix)/x)**2)) then
+     db = abs(sqrt(grd_xarr(ix)**2-(1d0-mu**2)*x**2)+mu*x)
   else
-     db = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*r**2)-mu*r)
+     db = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*x**2)-mu*x)
   endif
 !-- sanity check
   if(db/=db) stop 'transport11: db/=db'
@@ -119,38 +120,43 @@ subroutine transport11(ptcl,ic,ig,isvacant)
 !      ddop = pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig))*abs(log(r1))/(grp_wl(ig)*dcollabfact)
 !     wl = r1*grp_wl(ig)+(1d0-r1)*grp_wl(ig+1) !uniform sample
 !      wl=1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))  !reciprocal sample
-!      wl=wl*(1d0-mu*r*cinv)
-!      ddop = pc_c*(1d0-mu*r*cinv)*(1d0-wl/(1d0-mu*r*cinv*grp_wl(ig+1)))
-!     ddop = pc_c*(1d0-mu*r*cinv)*(1d0-&
+!      wl=wl*(1d0-mu*x*cinv)
+!      ddop = pc_c*(1d0-mu*x*cinv)*(1d0-wl/(1d0-mu*x*cinv*grp_wl(ig+1)))
+!     ddop = pc_c*(1d0-mu*x*cinv)*(1d0-&
 !          grp_wl(ig)*log(grp_wl(ig+1)*grp_wlinv(ig))/(grp_wl(ig+1)-grp_wl(ig)))
-!     write(*,*) pc_c*(wl*grp_wlinv(ig+1)-1d0)+r*mu
-     ddop = abs(pc_c*(1d0-wl*grp_wlinv(ig+1))-r*mu)
+!     write(*,*) pc_c*(wl*grp_wlinv(ig+1)-1d0)+x*mu
+     ddop = abs(pc_c*(1d0-wl*grp_wlinv(ig+1))-x*mu)
   else
      ddop = far
   endif
 !
 !-- minimum distance = d
-  d = min(dcol,dthm,db,dcen,ddop)
-  if(d<0d0) stop 'transport11: negative distance'
+  darr = [dcol,dthm,db,dcen,ddop]
+  if(any(darr/=darr) .or. any(darr<0d0)) then
+     write(0,*) darr
+     write(*,*) ix,x,mu
+     stop 'transport11: invalid distance'
+  endif
+  d = minval(darr)
 !
 !== END OF DISTANCE CALCULATIONS
 !
 !-- position, angle, time update  
-  rold = r
-  r = sqrt((1d0-mu**2)*r**2+(d+r*mu)**2)
-!  r = sqrt(r**2+d**2+2d0*d*r*mu)
+  xold = x
+  x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
+!  x = sqrt(x**2+d**2+2d0*d*x*mu)
 !
   ptcl%t = ptcl%t + thelp*d*cinv
   muold = mu
-  if(r==0d0) then
+  if(x==0d0) then
      mu = 1d0
   else
-     mu = (rold*mu+d)/r
+     mu = (xold*mu+d)/x
   endif
 
 !-- transformation factor set
   if(grd_isvelocity) then
-     elabfact = 1d0 - muold*rold*cinv
+     elabfact = 1d0 - muold*xold*cinv
   else
      elabfact = 1d0
   endif
@@ -180,7 +186,7 @@ subroutine transport11(ptcl,ic,ig,isvacant)
 
 !-- transformation factor reset
   if(grd_isvelocity) then
-     elabfact = 1d0 - mu*r*cinv
+     elabfact = 1d0 - mu*x*cinv
   else
      elabfact = 1d0
   endif
@@ -195,15 +201,15 @@ subroutine transport11(ptcl,ic,ig,isvacant)
 !-- lab frame wavelength
 !     wl = r1*grp_wl(ig)+(1d0-r1)*grp_wl(ig+1) !uniform sample
 !        wl=1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))  !reciprocal sample
-!        wl = wl*(1d0-mu*r*cinv)
-        wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*(1d0-mu*r*cinv)
+!        wl = wl*(1d0-mu*x*cinv)
+        wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*(1d0-mu*x*cinv)
      else
         r1 = rnd_r(rnd_state)
         prt_tlyrand=prt_tlyrand+1
 !     wl = r1*grp_wl(grp_ng)+(1d0-r1)*grp_wl(grp_ng+1) !uniform sample
         wl=1d0/(r1*grp_wlinv(grp_ng+1) + (1d0-r1)*grp_wlinv(grp_ng))  !reciprocal sample
-        wl = wl*(1d0-mu*r*cinv)
-!        wl = grp_wl(grp_ng+1)*(1d0-mu*r*cinv)
+        wl = wl*(1d0-mu*x*cinv)
+!        wl = grp_wl(grp_ng+1)*(1d0-mu*x*cinv)
      endif
 !-- check if ddmc region
      if (((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)* &
@@ -213,11 +219,11 @@ subroutine transport11(ptcl,ic,ig,isvacant)
         grd_methodswap(ic) = grd_methodswap(ic)+1
         if(grd_isvelocity) then
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+e*r*mu*cinv
+           tot_evelo=tot_evelo+e*x*mu*cinv
 !
-           e = e*(1d0-r*mu*cinv)
-           e0 = e0*(1d0-r*mu*cinv)
-           wl = wl/(1d0-r*mu*cinv)
+           e = e*(1d0-x*mu*cinv)
+           e0 = e0*(1d0-x*mu*cinv)
+           wl = wl/(1d0-x*mu*cinv)
         endif
      else
         ptcl%itype = 1
@@ -232,14 +238,14 @@ subroutine transport11(ptcl,ic,ig,isvacant)
         mu = 0.0000001d0
      endif
      if(grd_isvelocity) then
-        mu = (mu+r*cinv)/(1d0+r*mu*cinv)
+        mu = (mu+x*cinv)/(1d0+x*mu*cinv)
 !-- velocity effects accounting
-        help = 1d0/(1d0-mu*r*cinv)
+        help = 1d0/(1d0-mu*x*cinv)
         tot_evelo=tot_evelo+e*(1d0-elabfact*help)
 !
         e = e*elabfact*help
-!        e0 = e0*elabfact/(1d0-mu*r*cinv)
-        wl = wl*(1d0-mu*r*cinv)/elabfact
+!        e0 = e0*elabfact/(1d0-mu*x*cinv)
+        wl = wl*(1d0-mu*x*cinv)/elabfact
      endif
      !
      !!}}}
@@ -262,13 +268,13 @@ subroutine transport11(ptcl,ic,ig,isvacant)
            mu = 0.0000001d0
         endif
         if(grd_isvelocity) then
-           mu = (mu+r*cinv)/(1d0+r*mu*cinv)
+           mu = (mu+x*cinv)/(1d0+x*mu*cinv)
 !-- velocity effects accounting
-           help = 1d0/(1d0-mu*r*cinv)
+           help = 1d0/(1d0-mu*x*cinv)
            tot_evelo = tot_evelo+e*(1d0-elabfact*help)
 !
            e = e*elabfact*help
-!           wl = wl*(1d0-mu*r*cinv)/elabfact
+!           wl = wl*(1d0-mu*x*cinv)/elabfact
            
         endif
 !
@@ -314,7 +320,7 @@ subroutine transport11(ptcl,ic,ig,isvacant)
         !
         if(grd_isvelocity) then
 !-- converting comoving wavelength to lab frame wavelength
-           wl = wl*(1d0-r*mu*cinv)
+           wl = wl*(1d0-x*mu*cinv)
         endif
         if (((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)* &
              thelp >= prt_tauddmc) &
@@ -323,11 +329,11 @@ subroutine transport11(ptcl,ic,ig,isvacant)
            grd_methodswap(ic) = grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
-              tot_evelo = tot_evelo+e*r*mu*cinv
+              tot_evelo = tot_evelo+e*x*mu*cinv
 !
-              e = e*(1d0-r*mu*cinv)
-              e0 = e0*(1d0-r*mu*cinv)
-              wl = wl/(1d0-r*mu*cinv)
+              e = e*(1d0-x*mu*cinv)
+              e0 = e0*(1d0-x*mu*cinv)
+              wl = wl/(1d0-x*mu*cinv)
            endif
         else
            ptcl%itype = 1
@@ -368,7 +374,7 @@ subroutine transport11(ptcl,ic,ig,isvacant)
            r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            if(grd_isvelocity) then
-              mu = (mu-r*cinv)/(1d0-r*mu*cinv)
+              mu = (mu-x*cinv)/(1d0-x*mu*cinv)
            endif
            help = (grd_cap(ig,l)+grd_sig(l))*dx(ix+1)*thelp
            ppl = 4d0/(3d0*help+6d0*pc_dext)
@@ -394,13 +400,13 @@ subroutine transport11(ptcl,ic,ig,isvacant)
               prt_tlyrand = prt_tlyrand+1
               mu = -max(r1,r2)
               if(grd_isvelocity) then
-                 mu = (mu+r*cinv)/(1d0+r*mu*cinv)
+                 mu = (mu+x*cinv)/(1d0+x*mu*cinv)
               endif
-              r = grd_xarr(ix+1)
+              x = grd_xarr(ix+1)
            endif
         ! End of check
         else
-           r = grd_xarr(ix+1)
+           x = grd_xarr(ix+1)
            ix = ix+1
            ic = grd_icell(ix,iy,iz)
         endif
@@ -414,7 +420,7 @@ subroutine transport11(ptcl,ic,ig,isvacant)
               r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(grd_isvelocity) then
-                 mu = (mu-r*cinv)/(1d0-r*mu*cinv)
+                 mu = (mu-x*cinv)/(1d0-x*mu*cinv)
               endif
               help = (grd_cap(ig,l)+grd_sig(l))*dx(ix+1)*thelp
               ppl = 4d0/(3d0*help+6d0*pc_dext)
@@ -439,12 +445,12 @@ subroutine transport11(ptcl,ic,ig,isvacant)
                  prt_tlyrand = prt_tlyrand+1
                  mu = -max(r1,r2)
                  if(grd_isvelocity) then
-                    mu = (mu+r*cinv)/(1d0+r*mu*cinv)
+                    mu = (mu+x*cinv)/(1d0+x*mu*cinv)
                  endif
-                 r = grd_xarr(ix+1)
+                 x = grd_xarr(ix+1)
               endif
            else
-              r = grd_xarr(ix+1)
+              x = grd_xarr(ix+1)
               ix = ix+1
               ic = grd_icell(ix,iy,iz)
            endif
@@ -456,24 +462,24 @@ subroutine transport11(ptcl,ic,ig,isvacant)
 !
 !-- amplification factor
            if(grd_isvelocity) then
-              mu = (mu-r*cinv)/(1d0-r*mu*cinv)
+              mu = (mu-x*cinv)/(1d0-x*mu*cinv)
 !
-!             e0=e0*(1d0+2d0*min(0.055d0*prt_tauddmc,1d0)*r*cinv)
-!             e = e*(1d0+2d0*min(0.055d0*prt_tauddmc,1d0)*r*cinv)
+!             e0=e0*(1d0+2d0*min(0.055d0*prt_tauddmc,1d0)*x*cinv)
+!             e = e*(1d0+2d0*min(0.055d0*prt_tauddmc,1d0)*x*cinv)
               if(mu<0d0) then
                  help = 1d0/abs(mu)
                  help = min(100d0, help) !-- truncate singularity
 !
 !-- velocity effects accounting
-                 tot_evelo = tot_evelo-e*2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv
+                 tot_evelo = tot_evelo-e*2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv
 !
 !-- apply the excess (higher than factor 2d0) to the energy deposition
                  grd_eamp(ic) = grd_eamp(ic) + &
-                    e*2d0*0.55d0*max(0d0,help-2d0)*r*cinv
+                    e*2d0*0.55d0*max(0d0,help-2d0)*x*cinv
 !-- apply limited correction to the particle
                  help = min(2d0,help)
-                 e0 = e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv)
-                 e = e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*r*cinv)
+                 e0 = e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv)
+                 e = e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv)
               endif
 !--
            endif
@@ -501,13 +507,13 @@ subroutine transport11(ptcl,ic,ig,isvacant)
               prt_tlyrand = prt_tlyrand+1
               mu = max(r1,r2)
               if(grd_isvelocity) then
-                 mu = (mu+r*cinv)/(1d0+r*mu*cinv)
+                 mu = (mu+x*cinv)/(1d0+x*mu*cinv)
               endif
-              r = grd_xarr(ix)
+              x = grd_xarr(ix)
            endif
         ! End of check
         else
-           r = grd_xarr(ix)
+           x = grd_xarr(ix)
            ix = ix-1
            ic = grd_icell(ix,iy,iz)
         endif
