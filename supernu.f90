@@ -180,10 +180,10 @@ program supernu
      call grid_update(tsp_t)
      call gas_update(it)
      call sourceenergy(nmpi) !energy to be instantiated per cell in this timestep
-     call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
 
 
 !-- grey gamma ray transport
+     call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
      t_timelin(2) = t_time() !timeline
      if(in_srctype=='none' .and. .not.in_novolsrc) then
         call allgather_gammacap
@@ -199,17 +199,17 @@ program supernu
      endif
 
 !-- gather from gas workers and broadcast to world ranks
-     t_timelin(3) = t_time() !timeline
      call bcast_nonpermanent !MPI
+     t_timelin(3) = t_time() !timeline
      call sourceenergy_misc
 
      call sourceenergy_analytic               !gas_emitex from analytic distribution
      call leakage_opacity       !IMC-DDMC albedo coefficients and DDMC leakage opacities
      call emission_probability  !emission probabilities for ep-group in each cell
      call allgather_leakage !MPI
+     t_timelin(4) = t_time() !timeline
      call sourcenumbers                       !number of source prt_particles per cell
 
-     t_timelin(4) = t_time() !timeline
      if(prt_nnew>0) then
         allocate(prt_vacantarr(prt_nnew))
         call vacancies             !Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
@@ -222,9 +222,8 @@ program supernu
 !-- advance particles
      t_timelin(5) = t_time() !timeline
      call particle_advance
-     t_timelin(6) = t_time() !timeline
-     call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
      call reduce_tally !MPI !collect particle results from all workers
+     t_timelin(6) = t_time() !timeline
 
 !-- print packet advance load-balancing info
      !if(impi==impi0) write(6,'(1x,a,3(f9.2,"s"))') 'packets time(min|mean|max):',t_pckt_stat

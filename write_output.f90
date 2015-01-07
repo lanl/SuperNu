@@ -18,6 +18,9 @@ subroutine write_output
 !
   integer,allocatable :: iarr(:)
   real*8,allocatable :: arr(:)
+  real*8 :: t0,t1
+!
+  t0 = t_time()
 !
   if(lfirst) then
 !
@@ -186,6 +189,9 @@ subroutine write_output
   lfirst = .false.
   pos = 'append'
   fstat = 'old'
-
+!
+!-- timing
+  t1 = t_time()
+  call timereg(t_output, t1-t0)
 
 end subroutine write_output

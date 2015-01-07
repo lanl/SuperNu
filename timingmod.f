@@ -16,21 +16,22 @@ c-- timeline
       real*8 :: t_timelin(7)
       real*8 :: t_timeline(6)
 c
-      integer,private,parameter :: mreg = 18
+      integer,private,parameter :: mreg = 19
       real*8,private,target :: registers(3,mreg)
 c
 c-- global-flow time registers:
-      real*8,pointer :: t_gasupd(:) !update gas
-      real*8,pointer :: t_eos(:) !equation of state
-      real*8,pointer :: t_emitp(:) !emission probability
-      real*8,pointer :: t_opac(:) !all opacity
-      real*8,pointer :: t_opacleak(:) !all opacity
-      real*8,pointer :: t_bb(:) !bound-bound opacity
-      real*8,pointer :: t_bf(:) !bound-free opacity
-      real*8,pointer :: t_ff(:) !bound-free opacity
+      real*8,pointer :: t_gasupd(:)   !update gas
+      real*8,pointer :: t_eos(:)      !equation of state
+      real*8,pointer :: t_emitp(:)    !emission probability
+      real*8,pointer :: t_opac(:)     !all opacity
+      real*8,pointer :: t_opacleak(:) !leakage opacity
+      real*8,pointer :: t_bb(:)       !bound-bound opacity
+      real*8,pointer :: t_bf(:)       !bound-free opacity
+      real*8,pointer :: t_ff(:)       !free-free opacity
+      real*8,pointer :: t_output(:)   !write
 c-- communication
       real*8,pointer :: t_mpibcast(:)
-      real*8,pointer :: t_mpigamma(:)
+      real*8,pointer :: t_mpimisc(:)
       real*8,pointer :: t_mpireduc(:)
 c-- packet transport
       real*8,pointer :: t_pcktmin(:) !collect the max runtimes across all ranks
@@ -60,15 +61,16 @@ c     ----------------------
       t_bf =>       registers(:,7)
       t_ff =>       registers(:,8)
       t_mpibcast => registers(:,9)
-      t_mpigamma => registers(:,10)
+      t_mpimisc  => registers(:,10)
       t_mpireduc => registers(:,11)
       t_pcktgam =>  registers(:,12)
       t_pcktmin =>  registers(:,13)  !collect the max runtimes across all ranks
       t_pcktmea =>  registers(:,14)  !collect the mean runtimes across all ranks
       t_pcktmax =>  registers(:,15)  !collect the min runtimes across all ranks
-      t_pcktnpckt =>registers(:,16)
-      t_pcktnddmc =>registers(:,17)
-      t_pcktnimc => registers(:,18)
+      t_output =>   registers(:,16)  !collect the min runtimes across all ranks
+      t_pcktnpckt =>registers(:,17)
+      t_pcktnddmc =>registers(:,18)
+      t_pcktnimc => registers(:,19)
       end subroutine timing_init
 c
 c
@@ -111,8 +113,8 @@ c-- header
        if(.not.lexist) then
          write(4,'("#",30a12)') 't_gasupd','t_eos','t_emitp',
      &   't_opacleak','t_opac','t_bb','t_bf','t_ff',
-     &   't_mpibcast','t_mpigamma','t_mpireduc',
-     &   't_pgam','t_pmin','t_pmean','t_pmax',
+     &   't_mpibcast','t_mpimisc','t_mpireduc',
+     &   't_pgam','t_pmin','t_pmean','t_pmax','t_output',
      &   'n_pckt','n_ddmc','n_imc'
        endif
 c-- body
@@ -134,8 +136,9 @@ c     ------------------------
       integer,parameter :: i=3 !total runtime timing
       real*8 :: tmpi,taccounted
 c
-      tmpi = t_mpibcast(i)+t_mpigamma(i)+t_mpireduc(i)
-      taccounted = tmpi+t_setup+t_gasupd(i)+t_opacleak(i)+t_pcktmax(i)
+      tmpi = t_mpibcast(i)+t_mpimisc(i)+t_mpireduc(i)
+      taccounted = tmpi+t_setup+t_gasupd(i)+t_opacleak(i)+t_pcktmax(i)+
+     &  t_output(i)
 c
       write(6,*)
       write(6,*) 'timing results:'
@@ -148,9 +151,10 @@ c
       write(6,1) 'setup             :',t_setup
       write(6,1) 'gas update        :',t_gasupd(i)
       write(6,1) 'gas opacleak      :',t_opacleak(i)
-      write(6,1) 'mpi (bc|gam|red)  :',tmpi,
-     &  t_mpibcast(i),t_mpigamma(i),t_mpireduc(i)
+      write(6,1) 'mpi (bc|misc|red) :',tmpi,
+     &  t_mpibcast(i),t_mpimisc(i),t_mpireduc(i)
       write(6,1) 'packet transport  :',t_pcktmax(i)
+      write(6,1) 'output            :',t_output(i)
       write(6,1) 'unaccounted       :',t_all - taccounted
       write(6,*) '----------------------------'
       write(6,1) 'all               :',t_all

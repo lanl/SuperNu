@@ -367,6 +367,7 @@ c     ------------------------------------!{{{
       real*8 :: snd(grd_ncell)
       real*8 :: t0,t1
 c
+      call mpi_barrier(MPI_COMM_WORLD,ierr)
       t0 = t_time()
 c
       snd = grd_edep
@@ -374,7 +375,7 @@ c
      &  MPI_COMM_WORLD,ierr)
 c
       t1 = t_time()
-      call timereg(t_mpigamma, t1-t0)
+      call timereg(t_mpimisc, t1-t0)
 c!}}}
       end subroutine allreduce_gammaenergy
 c
@@ -395,6 +396,7 @@ c     -----------------------------!{{{
       real*8 :: t0,t1
       real*8 :: snd(grd_ncell)
 c
+      call mpi_barrier(MPI_COMM_WORLD,ierr)
       t0 = t_time()
 c
 c-- gather
@@ -440,10 +442,15 @@ c
       subroutine allgather_leakage
 c     ------------------------------------------!{{{
       use gridmod
+      use timingmod
       implicit none
 ************************************************************************
       integer :: n
       real*8,allocatable :: snd(:,:)
+      real*8 :: t0,t1
+c
+      call mpi_barrier(MPI_COMM_WORLD,ierr)
+      t0 = t_time()
 c
       allocate(snd(6,grd_ndd))
       snd = grd_opacleak(:,grd_idd1:grd_idd1+grd_ndd-1)
@@ -459,6 +466,9 @@ c
      &  grd_emitprob,n*counts,n*displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)
       deallocate(snd)
+c
+      t1 = t_time()
+      call timereg(t_mpimisc, t1-t0)
 c!}}}
       end subroutine allgather_leakage
 c
@@ -485,6 +495,7 @@ c     -----------------------!{{{
       real*8 :: help
       real*8 :: t0,t1
 c
+      call mpi_barrier(MPI_COMM_WORLD,ierr)
       t0 = t_time()
 c
 c-- flux dim==2
@@ -564,12 +575,17 @@ c     -------------------------------------!{{{
       use gridmod
       use totalsmod
       use gasmod
+      use timingmod
       implicit none
 ************************************************************************
 * for output
 ************************************************************************
       integer :: n
       real*8,allocatable :: sndvec(:),rcvvec(:)
+      real*8 :: t0,t1
+c
+      call mpi_barrier(MPI_COMM_WORLD,ierr)
+      t0 = t_time()
 c
       call mpi_gatherv(gas_temp,gas_ncell,MPI_REAL8,
      &   grd_temp,counts,displs,MPI_REAL8,
@@ -599,6 +615,9 @@ c-- zero out cumulative values on all other ranks to avoid double counting.
       endif
       deallocate(sndvec)
       deallocate(rcvvec)
+c
+      t1 = t_time()
+      call timereg(t_mpimisc, t1-t0)
 c!}}}
       end subroutine reduce_gastemp
 c
