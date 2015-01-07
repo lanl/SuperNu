@@ -443,15 +443,24 @@ c     ------------------------------------------!{{{
       implicit none
       integer,intent(in) :: icell1,ncell
 ************************************************************************
-      real*8 :: snd(6,ncell)
+      integer :: n
+      real*8,allocatable :: snd(:,:)
 c
+      allocate(snd(6,ncell))
       snd = grd_opacleak(:,icell1:icell1+ncell-1)
       call mpi_allgatherv(snd,6*ncell,MPI_REAL8,
      &  grd_opacleak,6*counts,6*displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)
-!     call mpi_allgatherv(gas_capgam,gas_ncell,MPI_REAL8,
-!    &  grd_capgrey,counts,displs,MPI_REAL8,
-!    &  MPI_COMM_WORLD,ierr)!}}}
+      deallocate(snd)
+c
+      n = grd_nep
+      allocate(snd(n,ncell))
+      snd = grd_emitprob(:,icell1:icell1+ncell-1)
+      call mpi_allgatherv(snd,n*ncell,MPI_REAL8,
+     &  grd_emitprob,n*counts,n*displs,MPI_REAL8,
+     &  MPI_COMM_WORLD,ierr)
+      deallocate(snd)
+c!}}}
       end subroutine allgather_leakage
 c
 c

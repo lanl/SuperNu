@@ -202,11 +202,11 @@ program supernu
      call bcast_nonpermanent !MPI
      call sourceenergy_misc
 
-     call sourceenergy_analytic !gas_emitex from analytic distribution
-     call leakage_opacity(icell1,ncell) !IMC-DDMC albedo coefficients and DDMC leakage opacities
-     call emission_probability  !emission probabilities for ep-group in each cell
+     call sourceenergy_analytic               !gas_emitex from analytic distribution
+     call leakage_opacity(icell1,ncell)       !IMC-DDMC albedo coefficients and DDMC leakage opacities
+     call emission_probability(icell1,ncell)  !emission probabilities for ep-group in each cell
      call allgather_leakage(icell1,ncell) !MPI
-     call sourcenumbers         !number of source prt_particles per cell
+     call sourcenumbers                       !number of source prt_particles per cell
 
      t_timelin(4) = t_time() !timeline
      if(prt_nnew>0) then
