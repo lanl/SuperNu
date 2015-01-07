@@ -29,6 +29,8 @@ subroutine transport1_gamgrey(ptcl,ic)
   real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
   real*8 :: zhelp
   real*8 :: xold,yold,muold
+!-- distance out of physical reach
+  real*8 :: far
 
   integer,pointer :: ix,iy,iz
   real*8,pointer :: x,y,z,mu,om,e,e0
@@ -63,6 +65,9 @@ subroutine transport1_gamgrey(ptcl,ic)
   endif
   thelpinv = 1d0/thelp
 
+!-- distance longer than distance to census
+  far = 2d0*abs(pc_c*dt*thelpinv) !> dcen
+
 !-- radial boundary distance (x)
   if (ix==1) then
      dbx = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*x**2)-mu*x)
@@ -81,7 +86,7 @@ subroutine transport1_gamgrey(ptcl,ic)
   if(yhelp1==0d0.and.yhelp3==0d0) then
      idby1=1
 !-- particle, direction on cone
-     dby1 = 2d0*pc_c*dt*thelpinv
+     dby1 = far
      iynext1=iy
   elseif(yhelp1==0d0) then
      if((muz>=0d0.and.muz==grd_yarr(iy)).or. &
@@ -89,7 +94,7 @@ subroutine transport1_gamgrey(ptcl,ic)
           yhelp2==0d0) then
         idby1=2
 !-- direction parallel to lower cone or nonphysical
-        dby1 = 2d0*pc_c*dt*thelpinv
+        dby1 = far
         iynext1=iy
      else
         idby1=3
@@ -108,7 +113,7 @@ subroutine transport1_gamgrey(ptcl,ic)
            elseif(grd_yarr(iy)<=0d0) then
 !-- choose dby2
               idby1=4
-              dby1 = 2d0*pc_c*dt*thelpinv
+              dby1 = far
               iynext1=iy
            elseif(grd_yarr(iy)>0d0) then
               idby1=5
@@ -119,7 +124,7 @@ subroutine transport1_gamgrey(ptcl,ic)
            endif
         else
            idby1=6
-           dby1 = 2d0*pc_c*dt*thelpinv
+           dby1 = far
            iynext1=iy
         endif
 
@@ -135,14 +140,14 @@ subroutine transport1_gamgrey(ptcl,ic)
      if(yhelp4<0d0) then
         idby1=8
 !-- not intersecting lower cone
-        dby1 = 2d0*pc_c*dt*thelpinv
+        dby1 = far
         iynext1=iy
      else
 !-- intersecting lower cone at at least one point
         if(cos(om)<0d0.and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
            idby1=9
 !-- choose dby2
-           dby1 = 2d0*pc_c*dt*thelpinv
+           dby1 = far
            iynext1=iy
         else
 !write(0,*) yhelp4,yhelp1,yhelp2,yhelp3
@@ -151,8 +156,8 @@ subroutine transport1_gamgrey(ptcl,ic)
            yhelp1=1d0/yhelp1
            help=x*(-yhelp2+yhelp4)*yhelp1
            dby1=x*(-yhelp2-yhelp4)*yhelp1
-           if(help<0d0) help=2d0*pc_c*dt*thelpinv
-           if(dby1<0d0) dby1=2d0*pc_c*dt*thelpinv
+           if(help<0d0) help=far
+           if(dby1<0d0) dby1=far
            dby1=min(help,dby1)
            iynext1=iy-1
         endif
@@ -166,7 +171,7 @@ subroutine transport1_gamgrey(ptcl,ic)
   if(yhelp1==0d0.and.yhelp3==0d0) then
      idby2=1
 !-- particle, direction on cone
-     dby2 = 2d0*pc_c*dt*thelpinv
+     dby2 = far
      iynext2=iy
   elseif(yhelp1==0d0) then
      if((muz<=0d0.and.muz==-grd_yarr(iy+1)).or. &
@@ -174,7 +179,7 @@ subroutine transport1_gamgrey(ptcl,ic)
           yhelp2==0d0) then
         idby2=2
 !-- direction parallel to upper cone or nonphysical
-        dby2 = 2d0*pc_c*dt*thelpinv
+        dby2 = far
         iynext2=iy
      else
         idby2=3
@@ -193,7 +198,7 @@ subroutine transport1_gamgrey(ptcl,ic)
            elseif(grd_yarr(iy+1)>=0d0) then
 !-- choose dby1
               idby2=4
-              dby2 = 2d0*pc_c*dt*thelpinv
+              dby2 = far
               iynext2=iy
            elseif(grd_yarr(iy+1)<0d0) then
               idby2=5
@@ -204,7 +209,7 @@ subroutine transport1_gamgrey(ptcl,ic)
            endif
         else
            idby2=6
-           dby2 = 2d0*pc_c*dt*thelpinv
+           dby2 = far
            iynext2=iy
         endif
      else
@@ -219,14 +224,14 @@ subroutine transport1_gamgrey(ptcl,ic)
      if(yhelp4<0d0) then
         idby2=8
 !-- not intersecting upper cone
-        dby2 = 2d0*pc_c*dt*thelpinv
+        dby2 = far
         iynext2=iy
      else
 !-- intersecting upper cone at at least one point
         if(cos(om)>=0d0.and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
            idby2=9
 !-- choose dby1
-           dby2 = 2d0*pc_c*dt*thelpinv
+           dby2 = far
            iynext2=iy
         else
            idby2=10
@@ -234,8 +239,8 @@ subroutine transport1_gamgrey(ptcl,ic)
            yhelp1=1d0/yhelp1
            help=x*(-yhelp2+yhelp4)*yhelp1
            dby2=x*(-yhelp2-yhelp4)*yhelp1
-           if(help<0d0) help=2d0*pc_c*dt*thelpinv
-           if(dby2<0d0) dby2=2d0*pc_c*dt*thelpinv
+           if(help<0d0) help=far
+           if(dby2<0d0) dby2=far
            dby2=min(help,dby2)
            iynext2=iy+1
         endif
@@ -246,8 +251,8 @@ subroutine transport1_gamgrey(ptcl,ic)
      write(*,*) idby1, dby1, idby2, dby2
      stop 'transport1_gg: dby1<0 and dby2<0'
   endif
-  if(dby1<=0d0) dby1=2d0*pc_c*dt*thelpinv
-  if(dby2<=0d0) dby2=2d0*pc_c*dt*thelpinv
+  if(dby1<=0d0) dby1=far
+  if(dby2<=0d0) dby2=far
   dby=min(dby1,dby2)
   if(dby==dby1) then
      iynext=iynext1
@@ -257,17 +262,17 @@ subroutine transport1_gamgrey(ptcl,ic)
 
 !-- azimuthal boundary distance (z)
   if(xi==0d0.or.grd_nz==1) then
-     dbz = 2d0*pc_c*dt*thelpinv
+     dbz = far
   elseif(xi>0d0) then
 !-- counterclockwise
      iznext=iz+1
      if(iznext==grd_nz+1) iznext=1
      zhelp = muy*cos(grd_zarr(iz+1))-mux*sin(grd_zarr(iz+1))
      if(zhelp==0d0) then
-        dbz = 2d0*pc_c*dt*thelpinv
+        dbz = far
      else
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz+1)-z)/zhelp
-        if(dbz<0d0) dbz = 2d0*pc_c*dt*thelpinv
+        if(dbz<0d0) dbz = far
      endif
   else
 !-- clockwise
@@ -275,10 +280,10 @@ subroutine transport1_gamgrey(ptcl,ic)
      if(iznext==0) iznext=grd_nz
      zhelp = muy*cos(grd_zarr(iz))-mux*sin(grd_zarr(iz))
      if(zhelp==0d0) then
-        dbz = 2d0*pc_c*dt*thelpinv
+        dbz = far
      else
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz)-z)/zhelp
-        if(dbz<0d0) dbz = 2d0*pc_c*dt*thelpinv
+        if(dbz<0d0) dbz = far
      endif
   endif
 
@@ -289,10 +294,10 @@ subroutine transport1_gamgrey(ptcl,ic)
         prt_tlyrand = prt_tlyrand+1
         dcol = -log(r1)*thelpinv/(grd_capgrey(ic)*elabfact)
      else
-        dcol = 2d0*abs(pc_c*dt*thelpinv) !> dcen
+        dcol = far
      endif
   else
-     dcol = 2d0*abs(pc_c*dt*thelpinv) !> dcen
+     dcol = far
   endif
 
 !
@@ -313,7 +318,7 @@ subroutine transport1_gamgrey(ptcl,ic)
 !-- sanity check
      if(d==dbx) stop 'transport1_gamgrey: x<1d-15*xarr(2),d==dbx,mu=-1'
 !-- excluding dbz
-     dbz = 2d0*pc_c*dt*thelpinv
+     dbz = far
 !-- resetting direction
      mu = 1d0
      eta = 0d0

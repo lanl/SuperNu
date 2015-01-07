@@ -32,6 +32,8 @@ subroutine transport11(ptcl,ic,ig,isvacant)
   real*8 :: dtinv
   real*8 :: help
   real*8 :: ppl, ppr
+!-- distance out of physical reach
+  real*8 :: far
 
   integer,pointer :: ix
   integer,parameter :: iy=1, iz=1
@@ -62,6 +64,9 @@ subroutine transport11(ptcl,ic,ig,isvacant)
   endif
   thelpinv = 1d0/thelp
 
+!-- distance longer than distance to census
+  far = 2d0*abs(pc_c*tsp_dt*thelpinv)
+
 !
 !== DISTANCE CALCULATIONS
 !
@@ -83,7 +88,7 @@ subroutine transport11(ptcl,ic,ig,isvacant)
         prt_tlyrand = prt_tlyrand+1
         dcol = abs(log(r1)/(grd_cap(ig,ic)*dcollabfact))
      else
-        dcol = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
+        dcol = far
      endif
   else
      if((1d0-grd_fcoef(ic))*grd_cap(ig,ic)>0d0) then
@@ -91,7 +96,7 @@ subroutine transport11(ptcl,ic,ig,isvacant)
         prt_tlyrand = prt_tlyrand+1
         dcol = abs(log(r1)/((1d0-grd_fcoef(ic))*grd_cap(ig,ic)*dcollabfact))
      else
-        dcol = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
+        dcol = far
      endif
   endif
 !
@@ -101,7 +106,7 @@ subroutine transport11(ptcl,ic,ig,isvacant)
      prt_tlyrand = prt_tlyrand+1
      dthm = abs(log(r1)/(grd_sig(ic)*dcollabfact))
   else
-     dthm = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
+     dthm = far
   endif
 !
 !-- distance to census = dcen
@@ -121,7 +126,7 @@ subroutine transport11(ptcl,ic,ig,isvacant)
 !     write(*,*) pc_c*(wl*grp_wlinv(ig+1)-1d0)+r*mu
      ddop = abs(pc_c*(1d0-wl*grp_wlinv(ig+1))-r*mu)
   else
-     ddop = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
+     ddop = far
   endif
 !
 !-- minimum distance = d

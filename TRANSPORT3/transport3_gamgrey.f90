@@ -27,6 +27,8 @@ subroutine transport3_gamgrey(ptcl,ic)
   real*8 :: thelp, thelpinv
   real*8 :: dcol,dbx,dby,dbz,d
   real*8 :: r1
+!-- distance out of physical reach
+  real*8 :: far
 
   integer,pointer :: ix,iy,iz
   real*8,pointer :: x,y,z,mu,om,e,e0
@@ -58,24 +60,27 @@ subroutine transport3_gamgrey(ptcl,ic)
 !
 !-- inverting vel-grid factor
   thelpinv = 1d0/thelp
+
+!-- distance longer than distance to census
+  far = 2d0*abs(pc_c*dt*thelpinv) !> dcen
 !
 !-- boundary distances
   if(xi==0d0) then
-     dbx = 2d0*pc_c*dt*thelpinv
+     dbx = far
   else
      if((grd_xarr(ix)-x)/xi>0d0.and.(grd_xarr(ix+1)-x)/xi>0d0) stop &
           'transport3_gamgrey: x val out of cell'
      dbx = max((grd_xarr(ix)-x)/xi,(grd_xarr(ix+1)-x)/xi)
   endif
   if(eta==0d0) then
-     dby = 2d0*pc_c*dt*thelpinv
+     dby = far
   else
      if((grd_yarr(iy)-y)/eta>0d0.and.(grd_yarr(iy+1)-y)/eta>0d0) stop &
           'transport3_gamgrey: y val out of cell'
      dby = max((grd_yarr(iy)-y)/eta,(grd_yarr(iy+1)-y)/eta)
   endif
   if(mu==0d0) then
-     dbz = 2d0*pc_c*dt*thelpinv
+     dbz = far
   else
      if((grd_zarr(iz)-z)/mu>0d0.and.(grd_zarr(iz+1)-z)/mu>0d0) stop &
           'transport3_gamgrey: z val out of cell'
@@ -84,13 +89,13 @@ subroutine transport3_gamgrey(ptcl,ic)
 !
 !-- effective collision distance
   if(grd_capgrey(ic)<=0d0) then
-     dcol = 2d0*pc_c*dt*thelpinv
+     dcol = far
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
      r1 = rnd_r(rnd_state)
      dcol = -log(r1)*thelpinv/(elabfact*grd_capgrey(ic))
   else
-     dcol = 2d0*pc_c*dt*thelpinv
+     dcol = far
   endif
 !
 !-- finding minimum distance

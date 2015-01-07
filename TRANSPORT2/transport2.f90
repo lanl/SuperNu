@@ -31,6 +31,8 @@ subroutine transport2(ptcl,ic,ig,isvacant)
   real*8 :: dcen,dcol,dthm,dbx,dby,ddop,d
   real*8 :: rold, zold, omold
   real*8 :: r1, r2
+!-- distance out of physical reach
+  real*8 :: far
 
   integer,pointer :: ix, iy
   integer,parameter :: iz=1
@@ -69,6 +71,9 @@ subroutine transport2(ptcl,ic,ig,isvacant)
 !-- inverting vel-grid factor
   thelpinv = 1d0/thelp
 
+!-- distance longer than distance to census
+  far = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
+
 !-- census distance
   dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%t)*thelpinv)
 !
@@ -76,7 +81,7 @@ subroutine transport2(ptcl,ic,ig,isvacant)
 !-- to x-bound
   if(abs(mu)==1d0) then
 !-- making greater than dcen
-     dbx = 2d0*pc_c*tsp_dt*thelpinv
+     dbx = far
   else
      if(abs(sin(om))<grd_xarr(ix)/x .and. cos(om)<0d0) then
 !-- inner boundary
@@ -100,7 +105,7 @@ subroutine transport2(ptcl,ic,ig,isvacant)
      dby = (grd_yarr(iy)-y)/mu
   else
 !-- making greater than dcen
-     dby = 2d0*pc_c*tsp_dt*thelpinv
+     dby = far
   endif
 !
 !-- Thomson scattering distance
@@ -109,14 +114,14 @@ subroutine transport2(ptcl,ic,ig,isvacant)
      dthm = -log(r1)*thelpinv/(elabfact*grd_sig(ic))
   else
 !-- making greater than dcen
-     dthm = 2d0*pc_c*tsp_dt*thelpinv
+     dthm = far
   endif
   if(dthm/=dthm) stop 'transport2: dthm nan'
 !
 !-- effective collision distance
   if(grd_cap(ig,ic)<=0d0) then
 !-- making greater than dcen
-     dcol = 2d0*pc_c*tsp_dt*thelpinv
+     dcol = far
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
      r1 = rnd_r(rnd_state)
@@ -127,7 +132,7 @@ subroutine transport2(ptcl,ic,ig,isvacant)
           (elabfact*(1d0-grd_fcoef(ic))*grd_cap(ig,ic))
   else
 !-- making greater than dcen
-     dcol = 2d0*pc_c*tsp_dt*thelpinv
+     dcol = far
   endif
   if(dcol/=dcol) stop 'transport2: dthm nan'
 !
@@ -135,11 +140,11 @@ subroutine transport2(ptcl,ic,ig,isvacant)
   if(grd_isvelocity.and.ig<grp_ng) then
      ddop = pc_c*(elabfact-wl*grp_wlinv(ig+1))
      if(ddop<0d0) then
-        ddop = 2d0*pc_c*tsp_dt*thelpinv
+        ddop = far
      endif
   else
 !-- making greater than dcen
-     ddop = 2d0*pc_c*tsp_dt*thelpinv
+     ddop = far
   endif
 !
 !-- finding minimum distance

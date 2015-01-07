@@ -27,6 +27,8 @@ subroutine transport2_gamgrey(ptcl,ic)
   real*8 :: dcol,dbx,dby,d
   real*8 :: rold, zold, omold
   real*8 :: r1
+!-- distance out of physical reach
+  real*8 :: far
 
   integer,pointer :: ix,iy
   integer,parameter :: iz=1
@@ -55,12 +57,15 @@ subroutine transport2_gamgrey(ptcl,ic)
 !
 !-- inverting vel-grid factor
   thelpinv = 1d0/thelp
+
+!-- distance longer than distance to census
+  far = 2d0*abs(pc_c*dt*thelpinv) !> dcen
 !
 !-- calculating distance to boundary:
 !-- to x-bound
   if(abs(mu)==1d0) then
 !-- making greater than dcen
-     dbx = 2d0*pc_c*dt*thelpinv
+     dbx = far
   else
      if(abs(sin(om))<grd_xarr(ix)/x .and. cos(om)<0d0) then
 !-- inner boundary
@@ -98,21 +103,21 @@ subroutine transport2_gamgrey(ptcl,ic)
           'transport2_gamgrey: y above cell'
   else
 !-- making greater than dcen
-     dby = 2d0*pc_c*dt*thelpinv
+     dby = far
   endif
 
 !
 !-- calculating distance to effective collision:
   if(grd_capgrey(ic)<=0d0) then
 !-- making greater than dcen
-     dcol = 2d0*pc_c*dt*thelpinv
+     dcol = far
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
      r1 = rnd_r(rnd_state)
      dcol = -log(r1)*thelpinv/(elabfact*grd_capgrey(ic))
   else
 !-- making greater than dcen
-     dcol = 2d0*pc_c*dt*thelpinv
+     dcol = far
   endif
 !
 !-- finding minimum distance

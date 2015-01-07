@@ -30,6 +30,8 @@ subroutine transport3(ptcl,ic,ig,isvacant)
   real*8 :: dtinv, thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop,d
   real*8 :: r1, r2
+!-- distance out of physical reach
+  real*8 :: far
 
   integer,pointer :: ix,iy,iz
   real*8,pointer :: x,y,z,mu,om,e,e0,wl
@@ -71,22 +73,25 @@ subroutine transport3(ptcl,ic,ig,isvacant)
 !-- inverting vel-grid factor
   thelpinv = 1d0/thelp
 
+!-- distance longer than distance to census
+  far = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
+
 !-- census distance
   dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%t)*thelpinv)
 !
 !-- boundary distances
   if(xi==0d0) then
-     dbx = 2d0*pc_c*tsp_dt*thelpinv
+     dbx = far
   else
      dbx = max((grd_xarr(ix)-x)/xi,(grd_xarr(ix+1)-x)/xi)
   endif
   if(eta==0d0) then
-     dby = 2d0*pc_c*tsp_dt*thelpinv
+     dby = far
   else
      dby = max((grd_yarr(iy)-y)/eta,(grd_yarr(iy+1)-y)/eta)
   endif
   if(mu==0d0) then
-     dbz = 2d0*pc_c*tsp_dt*thelpinv
+     dbz = far
   else
      dbz = max((grd_zarr(iz)-z)/mu,(grd_zarr(iz+1)-z)/mu)
   endif
@@ -96,12 +101,12 @@ subroutine transport3(ptcl,ic,ig,isvacant)
      r1 = rnd_r(rnd_state)
      dthm = -log(r1)*thelpinv/(elabfact*grd_sig(ic))
   else
-     dthm = 2d0*pc_c*tsp_dt*thelpinv
+     dthm = far
   endif
 !
 !-- effective collision distance
   if(grd_cap(ig,ic)<=0d0) then
-     dcol = 2d0*pc_c*tsp_dt*thelpinv
+     dcol = far
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
      r1 = rnd_r(rnd_state)
@@ -111,17 +116,17 @@ subroutine transport3(ptcl,ic,ig,isvacant)
      dcol = -log(r1)*thelpinv/&
           (elabfact*(1d0-grd_fcoef(ic))*grd_cap(ig,ic))
   else
-     dcol = 2d0*pc_c*tsp_dt*thelpinv
+     dcol = far
   endif
 !
 !-- Doppler shift distance
   if(grd_isvelocity.and.ig<grp_ng) then
      ddop = pc_c*(elabfact-wl*grp_wlinv(ig+1))
      if(ddop<0d0) then
-        ddop = 2d0*pc_c*tsp_dt*thelpinv
+        ddop = far
      endif
   else
-     ddop = 2d0*pc_c*tsp_dt*thelpinv
+     ddop = far
   endif
 !
 !-- finding minimum distance

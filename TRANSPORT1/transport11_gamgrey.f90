@@ -25,6 +25,8 @@ subroutine transport11_gamgrey(ptcl,ic)
   real*8 :: rold, muold
 ! real*8 :: x1, x2, xx0
   real*8 :: help
+!-- distance out of physical reach
+  real*8 :: far
 
   integer,pointer :: ix
   integer,parameter :: iy=1,iz=1
@@ -47,6 +49,9 @@ subroutine transport11_gamgrey(ptcl,ic)
   endif
   thelpinv = 1d0/thelp
 
+!-- distance longer than distance to census
+  far = 2d0*abs(pc_c*dt*thelpinv) !> dcen
+
 !
 !== DISTANCE CALCULATIONS
 !
@@ -68,10 +73,10 @@ subroutine transport11_gamgrey(ptcl,ic)
         prt_tlyrand = prt_tlyrand+1
         dcol = abs(log(r1)/(grd_capgrey(ic)*dcollabfact))
      else
-        dcol = 2d0*abs(pc_c*dt*thelpinv) !> dcen
+        dcol = far
      endif
   else
-     dcol = 2d0*abs(pc_c*dt*thelpinv) !> dcen
+     dcol = far
   endif
 !
 !-- minimum distance = d
