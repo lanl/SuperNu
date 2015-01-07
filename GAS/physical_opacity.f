@@ -190,7 +190,7 @@ c
          if(iu<1 .or. iu>ff_nu) then
           if(lwarn) then
            lwarn = .false.
-           call warn('opacity_calc','ff: iu out of data limit')
+           write(6,*) 'opacity_calc ff: iu out of data limit',iu
           endif
           iu = min(iu,ff_nu)
           iu = max(iu,1)

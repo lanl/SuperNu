@@ -1,4 +1,4 @@
-      subroutine gas_update(impi,it)
+      subroutine gas_update(it)
 c     ------------------------------
       use gridmod
       use physconstmod
@@ -10,7 +10,7 @@ c     ------------------------------
       use inputparmod
       use timingmod
       implicit none
-      integer,intent(in) :: impi,it
+      integer,intent(in) :: it
 ************************************************************************
 * Update the part of the gas grid that depends on time and temperature.
 * The non-changing part is computed in gas_setup.
@@ -249,6 +249,11 @@ c-- save previous values for gentile-fleck factor calculation in next iter
       capgreyalt = gas_capgrey/gas_rho
 c
       lfirst = .false.
+c
+c-- clean up
+      if(tsp_it==tsp_nt .and. allocated(tempalt)) then
+       deallocate(tempalt,capgreyalt)
+      endif
 c
       t1 = t_time()
       call timereg(t_gasupd,t1-t0)

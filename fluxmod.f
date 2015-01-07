@@ -210,4 +210,18 @@ c
       end subroutine flux_alloc
 c
 c
+      subroutine flux_dealloc
+      deallocate(flx_wl)!{{{
+      deallocate(flx_mu)
+      deallocate(flx_om)
+      deallocate(flx_luminos)
+      deallocate(flx_lumdev)
+      deallocate(flx_lumnum)
+c-- grey gamma flux
+      deallocate(flx_gamluminos)
+      deallocate(flx_gamlumdev)
+      deallocate(flx_gamlumnum)!}}}
+      end subroutine flux_dealloc
+c
+c
       end module fluxmod

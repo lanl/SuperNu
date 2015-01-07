@@ -254,7 +254,7 @@ c-- bcast shape info and allocate
       call mpi_bcast(nlev,ion_nion,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- allocate structure
-      if(impi/=impi0) call ion_alloc_el(gas_nelem,nion,ion_nion,nlev)
+      if(impi/=impi0) call ions_alloc_el(gas_nelem,nion,ion_nion,nlev)
 c
 c-- fill structure
       call mpi_bcast(e,ion_nion,MPI_REAL8,
@@ -720,5 +720,11 @@ c-- deallocations
 
 c!}}}
       end subroutine collect_restart_data    
+c
+c
+c
+      subroutine mpimod_dealloc
+      deallocate(counts,displs)
+      end subroutine mpimod_dealloc
 c
       end module mpimod

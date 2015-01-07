@@ -15,7 +15,7 @@ program supernu
   use inputstrmod
   use fluxmod
 
-  use ionsmod, only:ion_read_data,ion_alloc_grndlev
+  use ionsmod, only:ions_read_data,ions_alloc_grndlev
   use bfxsmod, only:bfxs_read_data
   use ffxsmod, only:ffxs_read_data
   use timingmod
@@ -90,7 +90,7 @@ program supernu
 
 !-- READ DATA
 !-- read ion and level data
-     call ion_read_data(gas_nelem)  !ion and level data
+     call ions_read_data(gas_nelem)  !ion and level data
 !-- read bbxs data
      if(.not.in_nobbopac) call read_bbxs_data(gas_nelem)!bound-bound cross section data
 !-- read bfxs data
@@ -118,7 +118,7 @@ program supernu
 
 !-- setup gas
   call gas_init(impi==impi0,icell1,ncell,grp_ng)
-  call gas_setup(impi)
+  call gas_setup
 !-- inputstr no longer needed
   call inputstr_dealloc
 
@@ -131,7 +131,7 @@ program supernu
   call initialnumbers
 
 !-- allocate arrays of sizes retreived in bcast_permanent
-  call ion_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
+  call ions_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
   call particle_alloc(impi==impi0,in_norestart,nmpi)
 
 !-- initialize random number generator, use different seeds for each rank
@@ -178,7 +178,7 @@ program supernu
 
 !-- update all non-permanent variables
      call grid_update(tsp_t)
-     call gas_update(impi,it)
+     call gas_update(it)
      call sourceenergy(nmpi) !energy to be instantiated per cell in this timestep
      call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
 

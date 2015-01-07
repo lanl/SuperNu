@@ -159,4 +159,38 @@ c-- ndim=4 alloc
 c!}}}
       end subroutine grid_init
 c
+c
+      subroutine grid_dealloc
+      deallocate(grd_xarr)!{{{
+      deallocate(grd_yarr)
+      deallocate(grd_zarr)
+c-- polar
+      if(grd_igeom==1) deallocate(grd_yacos)
+c-- complete domain
+      deallocate(grd_icell)
+c-- gasmod
+      deallocate(grd_edep)
+      deallocate(grd_eamp)
+      deallocate(grd_capgrey)
+      deallocate(grd_sig)
+      deallocate(grd_fcoef)
+      deallocate(grd_eraddens)
+      deallocate(grd_temp)
+      deallocate(grd_vol)
+c
+      deallocate(grd_emit)
+      deallocate(grd_emitex)
+      deallocate(grd_evolinit)
+c-- ndim=3 integer
+      deallocate(grd_nvol)
+      deallocate(grd_nvolinit)
+      deallocate(grd_methodswap)
+      deallocate(grd_numcensus)
+c-- ndim=4 alloc
+      deallocate(grd_opacleak)
+      deallocate(grd_emitprob)
+c-- ndim=4 alloc
+      deallocate(grd_cap)!}}}
+      end subroutine grid_dealloc
+c
       end module gridmod

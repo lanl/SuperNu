@@ -126,4 +126,32 @@ c-- ndim=2 alloc big
 !}}}
       end subroutine gas_init
 c
+c
+      subroutine gas_dealloc
+      deallocate(gas_idcell)!{{{
+      deallocate(gas_temp)
+      deallocate(gas_ur)
+      deallocate(gas_rho)
+      deallocate(gas_bcoef)
+      deallocate(gas_nisource)
+      deallocate(gas_vol)
+      deallocate(gas_mass)
+      deallocate(gas_ye)
+      deallocate(gas_natom)
+      deallocate(gas_nelec)
+      deallocate(gas_matsrc)
+      deallocate(gas_sig)
+      deallocate(gas_capgam)
+      deallocate(gas_capgrey)
+      deallocate(gas_fcoef)
+      deallocate(gas_eraddens)
+      deallocate(gas_edep)
+      deallocate(gas_emit)
+      deallocate(gas_emitex)
+      deallocate(gas_evolinit)
+      deallocate(gas_natom1fr)
+      deallocate(gas_natom0fr)
+      deallocate(gas_cap)!}}}
+      end subroutine gas_dealloc
+c
       end module gasmod

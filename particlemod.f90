@@ -106,4 +106,23 @@ module particlemod
 !}}}
   end subroutine particle_alloc
 
+
+  subroutine particle_dealloc
+    deallocate(prt_particles,prt_isvacant)
+!-- restart capabilities
+    if(allocated(prt_tlyrandarr)) then
+       deallocate(prt_tlyrandarr)
+!-- mpi gather arrays for particles
+       deallocate(prt_tlyvacant)
+       deallocate(prt_tlyzsrc)
+       deallocate(prt_tlyrtsrc)
+       deallocate(prt_tlyrsrc)
+       deallocate(prt_tlymusrc)
+       deallocate(prt_tlytsrc)
+       deallocate(prt_tlyesrc)
+       deallocate(prt_tlyebirth)
+       deallocate(prt_tlywlsrc)
+    endif
+  end subroutine particle_dealloc
+
 end module particlemod

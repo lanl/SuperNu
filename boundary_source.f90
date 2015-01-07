@@ -17,7 +17,7 @@ subroutine boundary_source
   real*8 :: denom2, wl1, wl2, thelp, mfphelp, help, mu1, mu2
   real*8 :: srftemp = 1d4
   real*8 :: cmffact, alb,beta,eps,gm
-  type(packet),target :: ptcl
+  type(packet) :: ptcl
   real*8, dimension(grp_ng) :: emitsurfprobg  !surface emission probabilities 
 
 !

@@ -107,6 +107,10 @@ c
       prt_tlyrandarr=prt_tlyrand
       end subroutine collect_restart_data
 c
+c
+      subroutine mpimod_dealloc
+      end subroutine mpimod_dealloc
+c
 c-- MPI intrinsics
 c-----------------
       subroutine mpi_init(ierr_)

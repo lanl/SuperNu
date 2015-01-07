@@ -3,8 +3,10 @@ c     --------------
       implicit none
 c
       integer,private :: nelem=0 !private copy (public in gasmod) value is obtained in ion_read_data
-      integer :: ion_iionmax !max number of ions an element has
-      integer :: ion_nion    !total number of ions of all elements
+      integer :: ion_iionmax     !max number of ions an element has
+      integer :: ion_nion=0      !total number of ions of all elements
+c
+      integer,private :: ncell=0 !total number of ions of all elements
 c
       type leveldata
        real*8 :: e     !ionization energy [erg]
@@ -40,20 +42,22 @@ c
 c
 c
 c
-      subroutine ion_alloc_grndlev(nelemin,ncell)
+      subroutine ions_alloc_grndlev(nelemin,ncellin)
 c     -------------------------------------------!{{{
       implicit none
-      integer,intent(in) :: nelemin,ncell
+      integer,intent(in) :: nelemin,ncellin
 ************************************************************************
 * ion_grndlev stores the occupation number density and g value of the
 * ground states for all ions in all gas_vals cells.
 ************************************************************************
       integer :: iz,ni,i
 c
+      ncell = ncellin
+c
       if(nelem==0) then
        nelem = nelemin
       elseif(nelem/=nelemin) then
-       stop 'ion_solve_eos: nelem error'
+       stop 'ions_solve_eos: nelem error'
       endif
 c
       allocate(ion_grndlev(nelem,ncell))
@@ -65,11 +69,11 @@ c
         allocate(ion_grndlev(iz,i)%ginv(ni))
        enddo
       enddo !i!}}}
-      end subroutine ion_alloc_grndlev
+      end subroutine ions_alloc_grndlev
 c
 c
 c
-      subroutine ion_alloc_el(nelem,nion,nions,nlevel)
+      subroutine ions_alloc_el(nelem,nion,nions,nlevel)
 c     ------------------------------------------------!{{{
       implicit none
       integer,intent(in) :: nelem,nions
@@ -103,11 +107,11 @@ c-- allocate compressed data
        enddo !ii
       enddo !iz
 c!}}}
-      end subroutine ion_alloc_el
+      end subroutine ions_alloc_el
 c
 c
 c
-      subroutine ion_dealloc
+      subroutine ions_dealloc
 c     ----------------------!{{{
       implicit none
 ************************************************************************
@@ -115,31 +119,31 @@ c     ----------------------!{{{
 ************************************************************************
       integer :: iz,ii,i
 c
-      do iz=1,nelem
-       do ii=1,ion_el(iz)%ni
-        if(allocated(ion_el(iz)%i(ii)%elev)) then
+      if(ion_nion>0) then
+       do iz=1,nelem
+        do ii=1,ion_el(iz)%ni
          deallocate(ion_el(iz)%i(ii)%elev)
          deallocate(ion_el(iz)%i(ii)%glev)
-        endif
-       enddo !ii
-       deallocate(ion_el(iz)%i)
-      enddo !iz
-      deallocate(ion_el)
+        enddo !ii
+        deallocate(ion_el(iz)%i)
+       enddo !iz
+       deallocate(ion_el)
+      endif
 c
-      do i=lbound(ion_grndlev,dim=2),ubound(ion_grndlev,dim=2)
-       do iz=1,nelem
-        if(allocated(ion_grndlev(iz,i)%oc))
-     &    deallocate(ion_grndlev(iz,i)%oc)
-        if(allocated(ion_grndlev(iz,i)%oc))
-     &    deallocate(ion_grndlev(iz,i)%ginv)
-       enddo
-      enddo !i
-      deallocate(ion_grndlev)!}}}
-      end subroutine ion_dealloc
+      if(ncell>0) then
+       do i=1,ncell
+        do iz=1,nelem
+         deallocate(ion_grndlev(iz,i)%oc)
+         deallocate(ion_grndlev(iz,i)%ginv)
+        enddo
+       enddo !i
+       deallocate(ion_grndlev)
+      endif!}}}
+      end subroutine ions_dealloc
 c
 c
 c
-      subroutine ion_solve_eos(natomfr,temp,ndens,nelec,iconv)
+      subroutine ions_solve_eos(natomfr,temp,ndens,nelec,iconv)
 c     --------------------------------------------------------!{{{
       use physconstmod
       use miscmod, only:warn
@@ -182,7 +186,7 @@ c-- default values
       nec%err(:) = (/1d10,-1d10/)
 c
 c-- sanity check
-      if(nelem==0) stop 'ion_solve_eos: nelem error'
+      if(nelem==0) stop 'ions_solve_eos: nelem error'
 c
 c
 c-- evaluate partition functions: Q = Sum_i(g_i exp(e_i/kt)
@@ -229,7 +233,7 @@ c-- save results: replace the value on the same side of zero
 c
 c-- check bracket
        if(iconv==2) then
-        if(maxval(abs(nec%err),dim=1)==1d10) call warn('ion_solve_eos',
+        if(maxval(abs(nec%err),dim=1)==1d10) call warn('ions_solve_eos',
      &    'overshoot value not on other side')
        endif
 c
@@ -258,13 +262,13 @@ c-- check new value
          write(6,*) 'nelec,dxdy',nelec,dxdy
          write(6,*) 'nec'
          write(6,'(1p,4e12.4)') nec%nel,nec%err
-         stop 'ion_solve_eos: nelec<=0'
+         stop 'ions_solve_eos: nelec<=0'
         endif
 c       nelec = min(1d5*nelec_new,nelec)  !limit
 c       nelec = max(1d-5*nelec_new,nelec) !limit
        endif
       enddo !iconv
-      if(iconv.gt.nconv) call warn('ion_solve_eos',
+      if(iconv.gt.nconv) call warn('ions_solve_eos',
      &  'accuracy in nelec not reached')
 c
 c-- print ionization balance
@@ -333,11 +337,11 @@ c-- compute new electron density
 c
       end subroutine saha_nelec
 c!}}}
-      end subroutine ion_solve_eos
+      end subroutine ions_solve_eos
 c
 c
 c
-      subroutine ion_read_data(nelem_in)
+      subroutine ions_read_data(nelem_in)
 c     ----------------------------------!{{{
       use physconstmod
       implicit none
@@ -506,6 +510,6 @@ c-- output
      &   (ion_el(iz)%i(l)%e/pc_ev,l=1,ion_el(iz)%ni) !in eV units, because it's so common
       enddo
 c!}}}
-      end subroutine ion_read_data
+      end subroutine ions_read_data
 c
       end module ionsmod

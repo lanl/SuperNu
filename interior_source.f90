@@ -30,7 +30,7 @@ subroutine interior_source
   integer :: icnb(6)
 !
   real*8 :: emitprob(grp_ng)
-  type(packet),target :: ptcl
+  type(packet) :: ptcl
 !-- statement functions
   integer :: l
   real*8 :: dx,dy,dz,xm,dyac,ym

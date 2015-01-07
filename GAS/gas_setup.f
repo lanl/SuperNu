@@ -1,4 +1,4 @@
-      subroutine gas_setup(impi)
+      subroutine gas_setup
 c     --------------------------
       use inputstrmod
       use physconstmod
@@ -7,7 +7,6 @@ c     --------------------------
       use manufacmod
       use miscmod, only:warn
       implicit none
-      integer,intent(in) :: impi
 ************************************************************************
 * Initialize the gas grid, the part that is constant with time and
 * temperature. The part that changes is done in gas_grid_update.

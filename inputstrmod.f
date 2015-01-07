@@ -40,11 +40,14 @@ c
       subroutine inputstr_dealloc
 c     ---------------------------!{{{
       implicit none
-      str_nabund=0
       if(allocated(str_iabund)) deallocate(str_iabund)
       deallocate(str_xleft,str_yleft,str_zleft)
+      deallocate(str_idcell)
       deallocate(str_massdc,str_massdd)
-      if(allocated(str_massfrdc)) deallocate(str_massfrdc,str_massfrdd)!}}}
+      if(str_nabund>0) then
+       deallocate(str_massfrdc,str_massfrdd,str_abundlabl)
+      endif
+      str_nabund=0!}}}
       end subroutine inputstr_dealloc
 c
 c
@@ -61,7 +64,7 @@ c     --------------------------------------------------------!{{{
 * Read the input structure file
 ************************************************************************
       integer :: i,j,k,ierr,nx_r,ny_r,nz_r,ini56,nvar,ncol,imass
-      integer :: nvoid,ncell,ncpr
+      integer :: ncorner,nvoid,ncell,ncpr
       character(2) :: dmy
       character(8),allocatable :: labl(:)
       real*8,allocatable :: raw(:,:)
@@ -167,7 +170,7 @@ c
 c-- Zero out the cell mass in the corners of the domain
 c======================================================
 c-- void cells
-      nvoid = 0
+      ncorner = 0
       if(lvoidcorners .and. (igeom==2.or.igeom==3)) then
 c-- sphere radius
        rs = min(str_xleft(nx+1),str_yleft(ny+1))
@@ -178,17 +181,17 @@ c
        do i=1,nx
         r = sqrt(x(i)**2 + y(j)**2 + z(k)**2)
         if(r>rs) then
-         nvoid = nvoid+1
+         ncorner = ncorner+1
          str_mass(i,j,k) = 0d0
         endif
        enddo
        enddo
        enddo
-       write(6,*) '# corner cells voided:', nvoid
       endif !lvoidcorners
 c
 c-- count valid cells
       ncell = count(str_mass>0d0)
+      nvoid = nx*ny*nz - ncell
       if(ncell/=nx*ny*nz) ncell = ncell+1
       ncpr = ceiling(ncell/float(nmpi))
 c
@@ -207,6 +210,7 @@ c-- output
       write(6,*) '===================='
       write(6,*) 'igeom :',igeom
       write(6,*) 'ndim  :',nx,ny,nz
+      write(6,*) 'void  :',ncorner,nvoid-ncorner
       write(6,*) 'ncell :',nx*ny*nz,ncell,ncell/float(nx*ny*nz)
       write(6,*) 'nc/rnk:',ncpr,ncpr*nmpi-ncell,ncell/float(ncpr*nmpi)
       write(6,*) 'mass  :',sngl(sum(str_mass)/pc_msun), 'Msun'

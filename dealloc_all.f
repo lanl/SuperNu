@@ -1,9 +1,10 @@
       subroutine dealloc_all
 c     ----------------------
-      use mpimod, only:impi,impi0
-      use ionsmod, only:ion_dealloc
+      use mpimod
+      use ionsmod
       use bbxsmod
       use gridmod
+      use groupmod
       use gasmod
       use particlemod
       use inputparmod
@@ -15,28 +16,13 @@ c     ----------------------
 * with earlier.  This helps to catch memory leaks! (drr)
 ************************************************************************
 c-- ionsmod
-      !write(*,*) 'here 1.5 ...'
-      if(impi==impi0) call ion_dealloc
-c-- bbxsmod
+      call ions_dealloc
+      call gas_dealloc
+      call grid_dealloc
+      call flux_dealloc
+      call particle_dealloc
+      call mpimod_dealloc
+      deallocate(grp_wl,grp_wlinv)
       if(allocated(bb_xs)) deallocate(bb_xs) !only impi==impi0, but only if nobbopac==f
-c-- gasmod
-      deallocate(grd_numcensus)
-      deallocate(grd_xarr,grd_yarr,grd_zarr)
-      if(allocated(grd_yacos)) deallocate(grd_yacos)
-      deallocate(grd_edep,grd_temp,grd_methodswap)
-      deallocate(grd_cap)
-      deallocate(grd_opacleak)
-      deallocate(grd_eraddens)
-      if(impi==impi0) deallocate(grd_capgrey)
-      deallocate(grd_fcoef)
-      deallocate(grd_sig)
-      deallocate(grd_emit,grd_emitex,grd_nvol)
-      deallocate(grd_evolinit,grd_nvolinit)
-c-- particlemod
-      if(impi==impi0.and..not.in_norestart) deallocate(prt_tlyrandarr)
-      deallocate(prt_particles)
-c-- fluxmod
-      deallocate(flx_wl,flx_mu,flx_om)
-      deallocate(flx_luminos,flx_lumdev,flx_lumnum)
 
       end subroutine dealloc_all
