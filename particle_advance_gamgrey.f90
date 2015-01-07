@@ -151,7 +151,7 @@ subroutine particle_advance_gamgrey(nmpi)
 !--
 !-- sampling azimuthal angle of direction
         r1 = rnd_r(rnd_state)
-        om0 = pc_pi2*r1
+        om = pc_pi2*r1
         if(grd_isvelocity) then
            x0 = x
            cmffact = 1d0+mu0*x0/pc_c !-- 1+dir*v/c
