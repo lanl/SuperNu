@@ -111,7 +111,11 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 !-- dby1: iy->iy-1
   yhelp1=grd_yarr(iy)**2-muz**2
   yhelp2=mu*grd_yarr(iy)**2-muz*y
-  yhelp3=grd_yarr(iy)**2-y**2
+  if(y==grd_yarr(iy+1).and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
+     yhelp3=0d0
+  else
+     yhelp3=grd_yarr(iy)**2-y**2
+  endif
   if(yhelp1==0d0.and.yhelp3==0d0) then
      idby1=1
 !-- particle, direction on cone
@@ -130,46 +134,11 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         dby1=-0.5*x*yhelp3/yhelp2
         iynext1=iy-1
      endif
-  elseif(abs(yhelp3)<1d-15*abs(y)) then
-!-- particle on lower cone
-     if(abs(y-grd_yarr(iy))<1d-15*abs(y)) then
-
-        dby1=-2d0*x*yhelp2/yhelp1
-        if(dby1>0d0) then
-           if(cos(om)>=0d0) then
-              write(*,*) yold, y, iy, x, ix
-              write(*,*) dbyold, iyold, muzold, idby1old, idby2old
-              write(*,*) dby1old, dby2old
-              stop 'transport1: did not cross lower y bound'
-           elseif(grd_yarr(iy)<=0d0) then
-!-- choose dby2
-              idby1=4
-              dby1 = far
-              iynext1=iy
-           elseif(grd_yarr(iy)>0d0) then
-!-- cone internal transfer
-              idby1=5
-              iynext1=iy-1
-           else
-              stop 'transport1: ptcl on cone and dby1 invalid'
-           endif
-        else
-           idby1=6
-           dby1 = far
-           iynext1=iy
-        endif
-
-     else
-        idby1=7
-        dby1=-2d0*x*yhelp2/yhelp1
-        iynext1=iy-1
-     endif
-
   else
      yhelp4=yhelp2**2-yhelp1*yhelp3
      if(abs(yhelp4)<1d-12*abs(yhelp2)) yhelp4=0d0
      if(yhelp4<0d0) then
-        idby1=8
+        idby1=4
 !-- not intersecting lower cone
         dby1 = far
         iynext1=iy
@@ -177,17 +146,22 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 !-- intersecting lower cone at at least one point
         if(cos(om)<0d0.and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
 !-- choose dby2
-           idby1=9
+           idby1=5
            dby1 = far
            iynext1=iy
         else
-           idby1=10
-           yhelp4=sqrt(yhelp4)
+           if(yhelp3==0d0) then
+              idby1=6
+              yhelp4=abs(yhelp2)
+           else
+              idby1=7
+              yhelp4=sqrt(yhelp4)
+           endif
            yhelp1=1d0/yhelp1
            help=x*(-yhelp2+yhelp4)*yhelp1
            dby1=x*(-yhelp2-yhelp4)*yhelp1
-           if(help<0d0) help=far
-           if(dby1<0d0) dby1=far
+           if(help<=0d0) help=far
+           if(dby1<=0d0) dby1=far
            dby1=min(help,dby1)
            iynext1=iy-1
         endif
@@ -197,7 +171,11 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 !-- dby2: iy->iy+1
   yhelp1=grd_yarr(iy+1)**2-muz**2
   yhelp2=mu*grd_yarr(iy+1)**2-muz*y
-  yhelp3=grd_yarr(iy+1)**2-y**2
+  if(y==grd_yarr(iy).and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
+     yhelp3=0d0
+  else
+     yhelp3=grd_yarr(iy+1)**2-y**2
+  endif
   if(yhelp1==0d0.and.yhelp3==0d0) then
      idby2=1
 !-- particle, direction on cone
@@ -216,45 +194,11 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         dby2=-0.5*x*yhelp3/yhelp2
         iynext2=iy+1
      endif
-  elseif(abs(yhelp3)<1d-15*abs(y)) then
-!-- particle on upper cone
-     if(abs(y-grd_yarr(iy+1))<1d-15*abs(y)) then
-
-        dby2=-2d0*x*yhelp2/yhelp1
-        if(dby2>0d0) then
-           if(cos(om)<0d0) then
-              write(*,*) yold, y, iy, x, ix
-              write(*,*) dbyold, iyold, muzold, idby1old, idby2old
-              write(*,*) dby1old, dby2old
-              stop 'transport1: did not cross upper y bound'
-           elseif(grd_yarr(iy+1)>=0d0) then
-!-- choose dby1
-              idby2=4
-              dby2 = far
-              iynext2=iy
-           elseif(grd_yarr(iy+1)<0d0) then
-!-- cone internal transfer
-              idby2=5
-              iynext2=iy+1
-           else
-              stop 'transport1: ptcl on cone and dby2 invalid'
-           endif
-        else
-           idby2=6
-           dby2 = far
-           iynext2=iy
-        endif
-     else
-        idby2=7
-        dby2=-2d0*x*yhelp2/yhelp1
-        iynext2=iy+1
-     endif
-
   else
      yhelp4=yhelp2**2-yhelp1*yhelp3
      if(abs(yhelp4)<1d-12*abs(yhelp2)) yhelp4=0d0
      if(yhelp4<0d0) then
-        idby2=8
+        idby2=4
 !-- not intersecting upper cone
         dby2 = far
         iynext2=iy
@@ -262,17 +206,22 @@ subroutine transport1(ptcl,ic,ig,isvacant)
 !-- intersecting upper cone at at least one point
         if(cos(om)>=0d0.and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
 !-- choose dby1
-           idby2=9
+           idby2=5
            dby2 = far
            iynext2=iy
         else
-           idby2=10
-           yhelp4=sqrt(yhelp4)
+           if(yhelp3==0d0) then
+              idby2=6
+              yhelp4=abs(yhelp2)
+           else
+              idby2=7
+              yhelp4=sqrt(yhelp4)
+           endif
            yhelp1=1d0/yhelp1
            help=x*(-yhelp2+yhelp4)*yhelp1
            dby2=x*(-yhelp2-yhelp4)*yhelp1
-           if(help<0d0) help=far
-           if(dby2<0d0) dby2=far
+           if(help<=0d0) help=far
+           if(dby2<=0d0) dby2=far
            dby2=min(help,dby2)
            iynext2=iy+1
         endif
