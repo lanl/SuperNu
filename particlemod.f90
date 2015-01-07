@@ -6,20 +6,24 @@ module particlemod
      real*8 :: x, y, z
      real*8 :: mu, om, t
      real*8 :: e, e0, wl
-     integer :: ix, iy, iz
-     integer :: itype
   end type packet
   type(packet),allocatable :: prt_particles(:)  !(prt_npartmax)
   logical,allocatable :: prt_isvacant(:)  !(prt_npartmax)
 !
-  integer :: prt_ipart, prt_istep
+!-- secondary particle properties
+  type packet2
+     integer :: ix, iy, iz
+     integer :: ic, ig
+     integer :: itype
+     integer :: ipart, istep
+     logical :: done, isvacant
+  end type packet2
 !
   integer :: prt_npartmax, prt_ns, prt_ninit
   integer :: prt_nsurf, prt_nexsrc, prt_nnew, prt_ninitnew
 !
   integer, allocatable :: prt_vacantarr(:) !array of vacant particle array locations
 
-  logical :: prt_done
   logical :: prt_isimcanlog !sets flux tally and energy deposition ...
   !to analog in IMC
   logical :: prt_isddmcanlog !sets flux tally and energy deposition ...

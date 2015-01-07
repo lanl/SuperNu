@@ -1,4 +1,4 @@
-pure subroutine advection1(pretrans,ptcl,ic,ig)
+pure subroutine advection1(pretrans,ptcl,ptcl2)
 
   use miscmod
   use timestepmod
@@ -8,8 +8,7 @@ pure subroutine advection1(pretrans,ptcl,ic,ig)
   implicit none
   logical,intent(in) :: pretrans
   type(packet),target,intent(inout) :: ptcl
-  integer,intent(out) :: ic
-  integer,intent(in) :: ig
+  type(packet2),target,intent(inout) :: ptcl2
 !-----------------------------------------------------------------------
 ! This routine computes the advection of IMC particles through the
 ! velocity grid.  It is geometry dependent

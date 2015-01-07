@@ -1,4 +1,4 @@
-subroutine transport1(ptcl,ic,ig,isvacant)
+subroutine transport1(ptcl,ptcl2)
 
   use randommod
   use miscmod
@@ -13,8 +13,7 @@ subroutine transport1(ptcl,ic,ig,isvacant)
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
-  integer,intent(inout) :: ic, ig
-  logical,intent(inout) :: isvacant
+  type(packet2),target,intent(inout) :: ptcl2
 !##################################################
   !This subroutine passes particle parameters as input and modifies
   !them through one IMC transport event.  If

@@ -20,7 +20,7 @@ subroutine particle_advance_gamgrey(nmpi)
   integer :: nhere, nemit, ndmy
   real*8 :: r1
   integer :: i,j,k,l, ii, iimpi
-  integer :: ic
+  integer,pointer :: ic
   integer,pointer :: ix, iy, iz
   real*8,pointer :: x,y,z,mu,om,e,e0
   real*8 :: t0,t1  !timing
@@ -35,6 +35,7 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- hardware
 !
   type(packet),target :: ptcl
+  type(packet2),target :: ptcl2
 
   grd_edep = 0d0
   flx_gamluminos = 0d0
@@ -87,10 +88,8 @@ subroutine particle_advance_gamgrey(nmpi)
   enddo
   enddo
 
-!--
-  ix => ptcl%ix
-  iy => ptcl%iy
-  iz => ptcl%iz
+!
+!-- primary particle properties
   x => ptcl%x
   y => ptcl%y
   z => ptcl%z
@@ -98,10 +97,12 @@ subroutine particle_advance_gamgrey(nmpi)
   om => ptcl%om
   e => ptcl%e
   e0 => ptcl%e0
-!-- unused
-!    real*8 :: tsrc
-!    real*8 :: wlsrc
-!    integer :: rtsrc
+!
+!-- secondary particle properties
+  ix => ptcl2%ix
+  iy => ptcl2%iy
+  iz => ptcl2%iz
+  ic => ptcl2%ic
 
 !-- default, in case .not.grd_isvelocity
   cmffact = 1d0
@@ -271,7 +272,7 @@ subroutine particle_advance_gamgrey(nmpi)
      select case(in_igeom)
      case(1)
         do while (.not.prt_done)!{{{
-           call transport1_gamgrey(ptcl,ic)
+           call transport1_gamgrey(ptcl,ptcl2)
 !-- verify position
            if(.not.prt_done) then
               if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
@@ -308,7 +309,7 @@ subroutine particle_advance_gamgrey(nmpi)
         enddo!}}}
      case(2)
         do while (.not.prt_done)!{{{
-           call transport2_gamgrey(ptcl,ic)
+           call transport2_gamgrey(ptcl,ptcl2)
 !-- verify position
            if(.not.prt_done) then
               if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
@@ -342,7 +343,7 @@ subroutine particle_advance_gamgrey(nmpi)
         enddo!}}}
      case(3)
         do while (.not.prt_done)!{{{
-           call transport3_gamgrey(ptcl,ic)
+           call transport3_gamgrey(ptcl,ptcl2)
 !-- transformation factor
            if(grd_isvelocity) then
               labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &
@@ -365,7 +366,7 @@ subroutine particle_advance_gamgrey(nmpi)
         enddo!}}}
      case(11)
         do while (.not.prt_done)!{{{
-           call transport11_gamgrey(ptcl,ic)
+           call transport11_gamgrey(ptcl,ptcl2)
 !-- verify position
            if(.not.prt_done .and. (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
               write(0,*) 'prt_adv_ggrey: not in cell', &

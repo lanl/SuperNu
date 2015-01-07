@@ -1,4 +1,4 @@
-subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
+subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
 
   use randommod
   use miscmod
@@ -13,8 +13,7 @@ subroutine diffusion1(ptcl,ic,ig,isvacant,icspec,specarr)
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
-  integer,intent(inout) :: ic, ig
-  logical,intent(inout) :: isvacant
+  type(packet2),target,intent(inout) :: ptcl2
   integer,intent(inout) :: icspec
   real*8,intent(inout) :: specarr(grp_ng)
 !##################################################

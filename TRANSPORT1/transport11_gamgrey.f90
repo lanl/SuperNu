@@ -1,4 +1,4 @@
-subroutine transport11_gamgrey(ptcl,ic)
+subroutine transport11_gamgrey(ptcl,ptcl2)
 
   use randommod
   use gridmod
@@ -9,7 +9,7 @@ subroutine transport11_gamgrey(ptcl,ic)
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
-  integer,intent(inout) :: ic
+  type(packet2),target,intent(inout) :: ptcl2
 !##################################################
 !This subroutine passes particle parameters as input and modifies
 !them through one IMC transport event (Fleck&Cummings, 1971).  If
