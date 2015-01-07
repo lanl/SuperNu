@@ -1,9 +1,8 @@
-      subroutine leakage_opacity(icell1,ncell)
+      subroutine leakage_opacity
 c     ----------------------------------------
       use gridmod
       use timingmod
       implicit none
-      integer,intent(in) :: icell1,ncell
 ************************************************************************
 * wrapper
 ************************************************************************
@@ -13,13 +12,13 @@ c
 c
       select case(grd_igeom)
       case(1)
-         call leakage_opacity1(icell1,ncell)
+         call leakage_opacity1
       case(2)
-         call leakage_opacity2(icell1,ncell)
+         call leakage_opacity2
       case(3)
-         call leakage_opacity3(icell1,ncell)
+         call leakage_opacity3
       case(11)
-         call leakage_opacity11(icell1,ncell)
+         call leakage_opacity11
       case default
          stop 'leakage_opacity: invalid igeom'
       endselect

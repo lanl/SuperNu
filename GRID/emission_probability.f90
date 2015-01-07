@@ -1,4 +1,4 @@
-subroutine emission_probability(icell1,ncell)
+subroutine emission_probability
 
   use miscmod
   use inputparmod
@@ -7,8 +7,6 @@ subroutine emission_probability(icell1,ncell)
   use groupmod
   use physconstmod
   implicit none
-  integer,intent(in) :: icell1, ncell
-
 !-----------------------
 !multigroup volume emission probabilities
 !-----------------------
@@ -23,7 +21,7 @@ subroutine emission_probability(icell1,ncell)
 !-- grouped volume emission probabilities:
   if(in_opacanaltype=='pick') then
      stop 'emission_probability: not implemented'
-     do l=icell1,icell1+ncell-1
+     do l=grd_idd1,grd_idd1+grd_ndd-1
         grd_emitprob(1,l) = in_suolpick1*grd_cap(1,l)
         grd_emitprob(2,l) = (1d0 - in_suolpick1)*grd_cap(2,l)
         grd_emitprob(3:grp_ng,l) = 0d0  !-- not necessary
@@ -33,12 +31,12 @@ subroutine emission_probability(icell1,ncell)
 
 !-- one group
   if(grp_ng==1) then
-     grd_emitprob(:,icell1:icell1+ncell-1) = 1d0
+     grd_emitprob(:,grd_idd1:grd_idd1+grd_ndd-1) = 1d0
      return
   endif
 
 !-- multi-group
-  do l=icell1,icell1+ncell-1
+  do l=grd_idd1,grd_idd1+grd_ndd-1
 !-- piecewise integration of planck function
      specarr = specintv(1d0/grd_temp(l),0)
 !-- cumulative sum of unnormalized emission probability

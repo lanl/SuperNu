@@ -1,4 +1,4 @@
-subroutine leakage_opacity3(icell1,ncell)
+subroutine leakage_opacity3
 
   use miscmod
   use gridmod
@@ -7,8 +7,6 @@ subroutine leakage_opacity3(icell1,ncell)
   use particlemod
   use physconstmod
   implicit none
-  integer,intent(in) :: icell1,ncell
-
 !##################################################
   !This subroutine computes
   !DDMC 3D lumped leakage opacities.
@@ -42,8 +40,8 @@ subroutine leakage_opacity3(icell1,ncell)
      l = grd_icell(i,j,k)
 !
 !-- work distribution
-     if(l<icell1) cycle
-     if(l>icell1+ncell-1) cycle
+     if(l<grd_idd1) cycle
+     if(l>grd_idd1+grd_ndd-1) cycle
 !
 !-- zero
      grd_opacleak(:,l) = 0d0

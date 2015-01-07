@@ -112,7 +112,8 @@ program supernu
   call scatter_inputstruct(in_ndim,icell1,ncell) !MPI
 
 !-- setup spatial grid
-  call grid_init(impi==impi0,grp_ng,in_igeom,in_ndim,str_nc,str_lvoid,in_isvelocity)
+  call grid_init(impi==impi0,grp_ng,in_igeom,in_ndim,str_nc,icell1,ncell, &
+          str_lvoid,in_isvelocity)
   call grid_setup
 
 !-- setup gas
@@ -203,9 +204,9 @@ program supernu
      call sourceenergy_misc
 
      call sourceenergy_analytic               !gas_emitex from analytic distribution
-     call leakage_opacity(icell1,ncell)       !IMC-DDMC albedo coefficients and DDMC leakage opacities
-     call emission_probability(icell1,ncell)  !emission probabilities for ep-group in each cell
-     call allgather_leakage(icell1,ncell) !MPI
+     call leakage_opacity       !IMC-DDMC albedo coefficients and DDMC leakage opacities
+     call emission_probability  !emission probabilities for ep-group in each cell
+     call allgather_leakage !MPI
      call sourcenumbers                       !number of source prt_particles per cell
 
      t_timelin(4) = t_time() !timeline

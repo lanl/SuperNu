@@ -437,26 +437,25 @@ c!}}}
       end subroutine bcast_nonpermanent
 c
 c
-      subroutine allgather_leakage(icell1,ncell)
+      subroutine allgather_leakage
 c     ------------------------------------------!{{{
       use gridmod
       implicit none
-      integer,intent(in) :: icell1,ncell
 ************************************************************************
       integer :: n
       real*8,allocatable :: snd(:,:)
 c
-      allocate(snd(6,ncell))
-      snd = grd_opacleak(:,icell1:icell1+ncell-1)
-      call mpi_allgatherv(snd,6*ncell,MPI_REAL8,
+      allocate(snd(6,grd_ndd))
+      snd = grd_opacleak(:,grd_idd1:grd_idd1+grd_ndd-1)
+      call mpi_allgatherv(snd,6*grd_ndd,MPI_REAL8,
      &  grd_opacleak,6*counts,6*displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)
       deallocate(snd)
 c
       n = grd_nep
-      allocate(snd(n,ncell))
-      snd = grd_emitprob(:,icell1:icell1+ncell-1)
-      call mpi_allgatherv(snd,n*ncell,MPI_REAL8,
+      allocate(snd(n,grd_ndd))
+      snd = grd_emitprob(:,grd_idd1:grd_idd1+grd_ndd-1)
+      call mpi_allgatherv(snd,n*grd_ndd,MPI_REAL8,
      &  grd_emitprob,n*counts,n*displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)
       deallocate(snd)

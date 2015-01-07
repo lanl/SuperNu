@@ -24,6 +24,9 @@ c-- polar angles
 c-- pointer into compressed domain
       integer,allocatable :: grd_icell(:,:,:) !(nx,ny,nz)
 c
+c-- domain decomposition
+      integer :: grd_idd1=0
+      integer :: grd_ndd=0
 c
 c-- compressed domain
       integer :: grd_ncell=0  !number of cells
@@ -77,13 +80,14 @@ c
 c
       contains
 c
-      subroutine grid_init(ltalk,ngin,igeom,ndim,ncell,lvoid,isvelocity)
+      subroutine grid_init(ltalk,ngin,igeom,ndim,ncell,idd1,ndd,lvoid,
+     &  isvelocity)
 c     -------------------------------------------------------------!{{{
       implicit none
       logical,intent(in) :: ltalk,isvelocity
       integer,intent(in) :: ngin,igeom
       integer,intent(in) :: ndim(3)
-      integer,intent(in) :: ncell
+      integer,intent(in) :: ncell,idd1,ndd
       logical,intent(in) :: lvoid
 ************************************************************************
 * Allocate grd variables.
@@ -107,6 +111,8 @@ c
 c
 c-- number of non-void cells, plus one optional dummy cell if void cells exist
       grd_ncell = ncell
+      grd_idd1 = idd1
+      grd_ndd = ndd
       grd_lvoid = lvoid
 c
       grd_isvelocity = isvelocity
