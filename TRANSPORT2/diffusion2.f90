@@ -46,7 +46,7 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
   real*8 :: dtinv, tempinv, capgreyinv
   real*8 :: help
 
-  integer,pointer :: ix, iy
+  integer,pointer :: ix, iy, ic, ig
   integer,parameter :: iz=1
   real*8,pointer :: x,y,mu,om,e,e0,wl
 !-- statement functions
@@ -56,8 +56,10 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
   dx2(l)= grd_xarr(l+1)**2-grd_xarr(l)**2
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
 
-  ix => ptcl%ix
-  iy => ptcl%iy
+  ix => ptcl2%ix
+  iy => ptcl2%iy
+  ic => ptcl2%ic
+  ig => ptcl2%ig
   x => ptcl%x
   y => ptcl%y
   mu => ptcl%mu
@@ -286,7 +288,7 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
 !
 !-- check for census
   if (ddmct /= tau) then
-     prt_done = .true.
+     ptcl2%done = .true.
      grd_numcensus(ic) = grd_numcensus(ic)+1
      return
   endif
@@ -308,8 +310,8 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
 
 !-- absorption
   if(r1<pa) then
-     isvacant = .true.
-     prt_done = .true.
+     ptcl2%isvacant = .true.
+     ptcl2%done = .true.
      grd_edep(ic) = grd_edep(ic)+e
 
 !-- ix->ix-1 leakage
@@ -404,7 +406,7 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
            e0 = e0*help
         endif
 !-- converting to IMC
-        ptcl%itype = 1
+        ptcl2%itype = 1
         grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- ix->ix-1
         ix = ix-1
@@ -508,8 +510,8 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
         endif
         if (ix==grd_nx) then
 !-- escaping at ix=nx
-           isvacant = .true.
-           prt_done = .true.
+           ptcl2%isvacant = .true.
+           ptcl2%done = .true.
            tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
@@ -529,7 +531,7 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
            flx_lumnum(iiig,imu,1) = flx_lumnum(iiig,imu,1) + 1
         else
 !-- converting to IMC
-           ptcl%itype = 1
+           ptcl2%itype = 1
            grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- ix->ix+1
            ix = ix+1
@@ -633,8 +635,8 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
         endif
         if (iy==1) then
 !-- escaping at iy=1
-           isvacant = .true.
-           prt_done = .true.
+           ptcl2%isvacant = .true.
+           ptcl2%done = .true.
            tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
@@ -654,7 +656,7 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
            flx_lumnum(iiig,imu,1) = flx_lumnum(iiig,imu,1) + 1
         else
 !-- converting to IMC
-           ptcl%itype = 1
+           ptcl2%itype = 1
            grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- iy->iy-1
            iy = iy-1
@@ -759,8 +761,8 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
         endif
         if (iy == grd_ny) then
 !-- escaping at iy=ny
-           isvacant = .true.
-           prt_done = .true.
+           ptcl2%isvacant = .true.
+           ptcl2%done = .true.
            tot_eout = tot_eout+e
 !-- luminosity tally
 !-- obtaining spectrum (lab) group and polar bin
@@ -780,7 +782,7 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
            flx_lumnum(iiig,imu,1) = flx_lumnum(iiig,imu,1) + 1
         else
 !-- converting to IMC
-           ptcl%itype = 1
+           ptcl2%itype = 1
            grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- iy->iy+1
            iy = iy+1
@@ -821,7 +823,7 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
      if((grd_sig(ic)+grd_cap(ig,ic)) * &
           min(dx(ix),dy(iy)) &
           *thelp < prt_tauddmc) then
-        ptcl%itype = 1
+        ptcl2%itype = 1
         grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- direction sampled isotropically           
         r1 = rnd_r(rnd_state)

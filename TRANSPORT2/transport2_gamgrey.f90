@@ -31,12 +31,14 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
 !-- distance out of physical reach
   real*8 :: far
 
-  integer,pointer :: ix,iy
+  integer,pointer :: ix, iy, ic, ig
   integer,parameter :: iz=1
   real*8,pointer :: x,y,mu,om,e,e0
 
-  ix => ptcl%ix
-  iy => ptcl%iy
+  ix => ptcl2%ix
+  iy => ptcl2%iy
+  ic => ptcl2%ic
+  ig => ptcl2%ig
   x => ptcl%x
   y => ptcl%y
   mu => ptcl%mu
@@ -203,7 +205,7 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
      louty = d==dby.and.((mu>=0d0.and.iy==grd_ny).or.(mu<0.and.iy==1))
      if(loutx.or.louty) then
 !-- ending particle
-        prt_done = .true.
+        ptcl2%done = .true.
 !-- retrieving lab frame flux group, polar bin
         imu = binsrch(mu,flx_mu,flx_nmu+1)
 !-- tallying outbound luminosity
@@ -220,7 +222,7 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
      if(prt_isimcanlog) then
 !-- effective absorption:
 !-- ending particle
-        prt_done=.true.
+        ptcl2%done=.true.
 !-- adding comoving energy to deposition energy
         grd_edep(ic) = grd_edep(ic) + e*elabfact
      else

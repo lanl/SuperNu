@@ -46,7 +46,7 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
   real*8 :: dtinv, tempinv, capgreyinv
   real*8 :: help
 
-  integer,pointer :: ix
+  integer,pointer :: ix, ic, ig
   integer,parameter :: iy=1, iz=1
   real*8,pointer :: r, mu, e, e0, wl
 !-- statement function
@@ -55,7 +55,9 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dx3(l) = grd_xarr(l+1)**3 - grd_xarr(l)**3
 
-  ix => ptcl%ix
+  ix => ptcl2%ix
+  ic => ptcl2%ic
+  ig => ptcl2%ig
   r => ptcl%x
   mu => ptcl%mu
   e => ptcl%e
@@ -93,7 +95,7 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
         endif
      enddo
   endif
-! write(0,*) prt_ipart,prt_istep,glump,ig,ix
+! write(0,*) ptcl2%ipart,ptcl2%istep,glump,ig,ix
 
 !
 !-- only do this if needed
@@ -237,7 +239,7 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
 !
 !-- check for census
   if (ddmct /= tau) then
-     prt_done = .true.
+     ptcl2%done = .true.
      grd_numcensus(ic)=grd_numcensus(ic)+1
      return
   endif
@@ -260,8 +262,8 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
 
 !-- absorption sample
   if(r1<pa) then
-     isvacant = .true.
-     prt_done = .true.
+     ptcl2%isvacant = .true.
+     ptcl2%done = .true.
      grd_edep(ic) = grd_edep(ic)+e
 
 !-- left leakage sample
@@ -320,7 +322,7 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
            wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 !
 !-- method changed to IMC
-           ptcl%itype = 1
+           ptcl2%itype = 1
            grd_methodswap(ic)=grd_methodswap(ic)+1
 !
 !-- location set right bound of left cell
@@ -361,8 +363,8 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
 !!{{{
 !-- checking if at outer bound
      if(ix==grd_nx) then
-        isvacant = .true.!{{{
-        prt_done = .true.
+        ptcl2%isvacant = .true.!{{{
+        ptcl2%done = .true.
         tot_eout = tot_eout+e
 !-- outbound luminosity tally
         r1 = rnd_r(rnd_state)
@@ -488,7 +490,7 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
            wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 !
 !-- method changed to IMC
-           ptcl%itype = 1
+           ptcl2%itype = 1
            grd_methodswap(ic)=grd_methodswap(ic)+1
 !
 !-- location set left bound of right cell
@@ -556,9 +558,9 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
 
      if((grd_sig(ic)+grd_cap(ig,ic))*dx(ix) &
           *thelp >= prt_tauddmc) then
-        ptcl%itype = 2
+        ptcl2%itype = 2
      else
-        ptcl%itype = 1
+        ptcl2%itype = 1
         grd_methodswap(ic)=grd_methodswap(ic)+1
 !-- direction sampled isotropically           
         r1 = rnd_r(rnd_state)

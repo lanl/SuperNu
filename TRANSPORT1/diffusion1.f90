@@ -46,7 +46,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
   real*8 :: dtinv, tempinv, capgreyinv
   real*8 :: help, mux, muy, muz
 !
-  integer,pointer :: ix,iy,iz
+  integer,pointer :: ix,iy,iz,ic,ig
   real*8,pointer :: x,y,z,mu,om,e,e0,wl
 !-- statement functions
   integer :: l
@@ -60,9 +60,11 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
   dyac(l) = grd_yacos(l) - grd_yacos(l+1)
   ym(l) = sqrt(1d0-0.25*(grd_yarr(l+1)+grd_yarr(l))**2)
 
-  ix => ptcl%ix
-  iy => ptcl%iy
-  iz => ptcl%iz
+  ix => ptcl2%ix
+  iy => ptcl2%iy
+  iz => ptcl2%iz
+  ic => ptcl2%ic
+  ig => ptcl2%ig
   x => ptcl%x
   y => ptcl%y
   z => ptcl%z
@@ -370,7 +372,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
 !
 !-- check for census
   if (ddmct /= tau) then
-     prt_done = .true.
+     ptcl2%done = .true.
      grd_numcensus(ic) = grd_numcensus(ic)+1
      return
   endif
@@ -391,8 +393,8 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
 
 !-- absorption
   if(r1<pa) then
-     isvacant = .true.
-     prt_done = .true.
+     ptcl2%isvacant = .true.
+     ptcl2%done = .true.
      grd_edep(ic) = grd_edep(ic)+e
 
 !-- ix->ix-1 leakage
@@ -480,7 +482,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
            e0 = e0*help
         endif
 !-- converting to IMC
-        ptcl%itype = 1
+        ptcl2%itype = 1
         grd_methodswap(ic) = grd_methodswap(ic)+1
      endif
 !-- ix->ix-1
@@ -583,8 +585,8 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
         endif
         if(ix==grd_nx) then
 !-- escaping at ix=nx
-           isvacant = .true.
-           prt_done = .true.
+           ptcl2%isvacant = .true.
+           ptcl2%done = .true.
 !-- luminosity tally
            eta = sqrt(1d0-mu**2)*cos(om)
            xi = sqrt(1d0-mu**2)*sin(om)
@@ -614,7 +616,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
            return
         else
 !-- converting to IMC
-           ptcl%itype = 1
+           ptcl2%itype = 1
            grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- ix->ix+1
            ix = ix+1
@@ -714,7 +716,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
            e0 = e0*help
         endif
 !-- converting to IMC
-        ptcl%itype = 1
+        ptcl2%itype = 1
         grd_methodswap(ic) = grd_methodswap(ic)+1
      endif
 !-- iy->iy+1
@@ -812,7 +814,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
            e0 = e0*help
         endif
 !-- converting to IMC
-        ptcl%itype = 1
+        ptcl2%itype = 1
         grd_methodswap(ic) = grd_methodswap(ic)+1
      endif
 !-- iy->iy+1
@@ -918,7 +920,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
            e0 = e0*help
         endif
 !-- converting to IMC
-        ptcl%itype = 1
+        ptcl2%itype = 1
         grd_methodswap(ic) = grd_methodswap(ic)+1
      endif
 !-- iz->iz-1
@@ -1024,7 +1026,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
            e0 = e0*help
         endif
 !-- converting to IMC
-        ptcl%itype = 1
+        ptcl2%itype = 1
         grd_methodswap(ic) = grd_methodswap(ic)+1
      endif
 !-- iz->iz+1
@@ -1063,7 +1065,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
      if((grd_sig(ic)+grd_cap(ig,ic)) * &
           min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) &
           *thelp < prt_tauddmc) then
-        ptcl%itype = 1
+        ptcl2%itype = 1
         grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- direction sampled isotropically           
         r1 = rnd_r(rnd_state)

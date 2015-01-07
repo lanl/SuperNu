@@ -29,11 +29,13 @@ subroutine transport11_gamgrey(ptcl,ptcl2)
 !-- distance out of physical reach
   real*8 :: far
 
-  integer,pointer :: ix
+  integer,pointer :: ix,ic,ig
   integer,parameter :: iy=1,iz=1
   real*8,pointer :: x, mu, e, e0
 
-  ix => ptcl%ix
+  ix => ptcl2%ix
+  ic => ptcl2%ic
+  ig => ptcl2%ig
   x => ptcl%x
   mu => ptcl%mu
   e => ptcl%e
@@ -133,7 +135,7 @@ subroutine transport11_gamgrey(ptcl,ptcl2)
      r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      if(r1<=1d0.and.prt_isimcanlog) then
-        prt_done = .true.
+        ptcl2%done = .true.
         grd_edep(ic) = grd_edep(ic) + e*elabfact
 !-- velocity effects accounting
 !
@@ -162,7 +164,7 @@ subroutine transport11_gamgrey(ptcl,ptcl2)
   elseif (d == db) then
      if (mu>=0d0) then!{{{
         if (ix == grd_nx) then
-           prt_done = .true.
+           ptcl2%done = .true.
 !
 !-- outbound luminosity tally
 !-- velocity effects accounting

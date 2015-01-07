@@ -31,6 +31,7 @@ subroutine interior_source
 !
   real*8 :: emitprob(grp_ng)
   type(packet) :: ptcl
+  integer :: ix,iy,iz,itype
 !-- statement functions
   integer :: l
   real*8 :: dx,dy,dz,xm,dyac,ym
@@ -69,9 +70,9 @@ subroutine interior_source
      ivac = prt_vacantarr(ipart)
 
 !-- setting cell index
-     ptcl%ix = i
-     ptcl%iy = j
-     ptcl%iz = k
+     ix = i
+     iy = j
+     iz = k
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
@@ -80,7 +81,7 @@ subroutine interior_source
      cmffact = 1d0
 
 !-- default IMC, reset if DDMC
-     ptcl%itype = 1
+     itype = 1
 !
 !-- calculating particle time
      r1 = rnd_r(rnd_state)
@@ -148,9 +149,9 @@ subroutine interior_source
            cmffact = 1d0+mu0*x0/pc_c
 !-- mu
            ptcl%mu = (mu0+x0/pc_c)/cmffact
-           ptcl%itype = 1 !IMC
+           itype = 1 !IMC
         else
-           ptcl%itype = 2 !DDMC
+           itype = 2 !DDMC
            ptcl%mu = mu0
         endif
 !}}}
@@ -191,11 +192,11 @@ subroutine interior_source
 !-- mu
            ptcl%mu = (mu0+(gm*y0/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
                 (gm*cmffact)
-           ptcl%itype = 1 !IMC
+           itype = 1 !IMC
         else
            ptcl%mu = mu0
            ptcl%om = om0
-           ptcl%itype = 2 !DDMC
+           itype = 2 !DDMC
         endif
 !}}}
 !-- 3D
@@ -243,11 +244,11 @@ subroutine interior_source
 !-- om
            ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
            if(ptcl%om<0d0) ptcl%om = ptcl%om+pc_pi2
-           ptcl%itype = 1 !IMC
+           itype = 1 !IMC
         else
            ptcl%mu = mu0
            ptcl%om = om0
-           ptcl%itype = 2 !DDMC
+           itype = 2 !DDMC
         endif
 !}}}
 !-- 1D
@@ -271,9 +272,9 @@ subroutine interior_source
            cmffact = 1d0+mu0*x0/pc_c
 !-- mu
            ptcl%mu = (mu0+x0/pc_c)/cmffact
-           ptcl%itype = 1 !IMC
+           itype = 1 !IMC
         else
-           ptcl%itype = 2 !DDMC
+           itype = 2 !DDMC
            ptcl%mu = mu0
         endif
 !}}}
@@ -325,9 +326,9 @@ subroutine interior_source
      ivac = prt_vacantarr(ipart)
 !
 !-- setting cell index
-     ptcl%ix = i
-     ptcl%iy = j
-     ptcl%iz = k
+     ix = i
+     iy = j
+     iz = k
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
@@ -336,7 +337,7 @@ subroutine interior_source
      cmffact = 1d0
 
 !-- default IMC, reset if DDMC
-     ptcl%itype = 1
+     itype = 1
 !
 !-- calculating particle time
      r1 = rnd_r(rnd_state)
@@ -416,9 +417,9 @@ subroutine interior_source
            cmffact = 1d0+mu0*x0/pc_c
 !-- mu
            ptcl%mu = (mu0+x0/pc_c)/cmffact
-           ptcl%itype = 1 !IMC
+           itype = 1 !IMC
         else
-           ptcl%itype = 2 !DDMC
+           itype = 2 !DDMC
            ptcl%mu = mu0
         endif
 !}}}
@@ -482,11 +483,11 @@ subroutine interior_source
 !-- mu
            ptcl%mu = (mu0+(gm*y0/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
                 (gm*cmffact)
-           ptcl%itype = 1 !IMC
+           itype = 1 !IMC
         else
            ptcl%mu = mu0
            ptcl%om = om0
-           ptcl%itype = 2 !DDMC
+           itype = 2 !DDMC
         endif
 !}}}
 !-- 3D
@@ -568,11 +569,11 @@ subroutine interior_source
 !-- om
            ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
            if(ptcl%om<0d0) ptcl%om = ptcl%om+pc_pi2
-           ptcl%itype = 1 !IMC
+           itype = 1 !IMC
         else
            ptcl%mu = mu0
            ptcl%om = om0
-           ptcl%itype = 2 !DDMC
+           itype = 2 !DDMC
         endif
 !}}}
 !-- 1D
@@ -610,9 +611,9 @@ subroutine interior_source
            cmffact = 1d0+mu0*x0/pc_c
 !-- mu
            ptcl%mu = (mu0+x0/pc_c)/cmffact
-           ptcl%itype = 1 !IMC
+           itype = 1 !IMC
         else
-           ptcl%itype = 2 !DDMC
+           itype = 2 !DDMC
            ptcl%mu = mu0
         endif
 !}}}

@@ -267,14 +267,14 @@ subroutine particle_advance_gamgrey(nmpi)
 
 !-----------------------------------------------------------------------
 !-- Advancing particle until census, absorption, or escape from domain
-     prt_done = .false.
+     ptcl2%done = .false.
 !
      select case(in_igeom)
      case(1)
-        do while (.not.prt_done)!{{{
+        do while (.not.ptcl2%done)!{{{
            call transport1_gamgrey(ptcl,ptcl2)
 !-- verify position
-           if(.not.prt_done) then
+           if(.not.ptcl2%done) then
               if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
                 write(0,*) 'prt_adv_ggrey: x not in cell', &
                    ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
@@ -295,11 +295,11 @@ subroutine particle_advance_gamgrey(nmpi)
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*e0 .and. .not.prt_done .and. grd_capgrey(ic)>0d0) then
+           if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgrey(ic)>0d0) then
               r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
-                 prt_done = .true.
+                 ptcl2%done = .true.
                  grd_edep(ic) = grd_edep(ic) + e*labfact
               else
                  e = 2d0*e
@@ -308,10 +308,10 @@ subroutine particle_advance_gamgrey(nmpi)
            endif
         enddo!}}}
      case(2)
-        do while (.not.prt_done)!{{{
+        do while (.not.ptcl2%done)!{{{
            call transport2_gamgrey(ptcl,ptcl2)
 !-- verify position
-           if(.not.prt_done) then
+           if(.not.ptcl2%done) then
               if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
                 write(0,*) 'prt_adv_ggrey: r not in cell', &
                    ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
@@ -329,11 +329,11 @@ subroutine particle_advance_gamgrey(nmpi)
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*e0 .and. .not.prt_done .and. grd_capgrey(ic)>0d0) then
+           if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgrey(ic)>0d0) then
               r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
-                 prt_done = .true.
+                 ptcl2%done = .true.
                  grd_edep(ic) = grd_edep(ic) + e*labfact
               else
                  e = 2d0*e
@@ -342,7 +342,7 @@ subroutine particle_advance_gamgrey(nmpi)
            endif
         enddo!}}}
      case(3)
-        do while (.not.prt_done)!{{{
+        do while (.not.ptcl2%done)!{{{
            call transport3_gamgrey(ptcl,ptcl2)
 !-- transformation factor
            if(grd_isvelocity) then
@@ -352,11 +352,11 @@ subroutine particle_advance_gamgrey(nmpi)
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*e0 .and. .not.prt_done .and. grd_capgrey(ic)>0d0) then
+           if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgrey(ic)>0d0) then
               r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
-                 prt_done = .true.
+                 ptcl2%done = .true.
                  grd_edep(ic) = grd_edep(ic) + e*labfact
               else
                  e = 2d0*e
@@ -365,10 +365,10 @@ subroutine particle_advance_gamgrey(nmpi)
            endif
         enddo!}}}
      case(11)
-        do while (.not.prt_done)!{{{
+        do while (.not.ptcl2%done)!{{{
            call transport11_gamgrey(ptcl,ptcl2)
 !-- verify position
-           if(.not.prt_done .and. (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
+           if(.not.ptcl2%done .and. (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
               write(0,*) 'prt_adv_ggrey: not in cell', &
                  ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
            endif
@@ -379,11 +379,11 @@ subroutine particle_advance_gamgrey(nmpi)
               labfact = 1d0
            endif
 !-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*e0 .and. .not.prt_done .and. grd_capgrey(ic)>0d0) then
+           if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgrey(ic)>0d0) then
               r1 = rnd_r(rnd_state)
               prt_tlyrand = prt_tlyrand+1
               if(r1<0.5d0) then
-                 prt_done = .true.
+                 ptcl2%done = .true.
                  grd_edep(ic) = grd_edep(ic) + e*labfact
               else
                  e = 2d0*e

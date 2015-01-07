@@ -640,16 +640,6 @@ c-- scattering part vacancy
      &     prt_isvacant,prt_npartmax,MPI_LOGICAL,impi0,
      &     MPI_COMM_WORLD,ierr)
 c
-c-- scattering part zone
-      call mpi_scatter(prt_tlyzsrc,prt_npartmax,MPI_INTEGER,
-     &     prt_particles%ix,prt_npartmax,MPI_INTEGER,impi0,
-     &     MPI_COMM_WORLD,ierr)
-c
-c-- scattering part transport index
-      call mpi_scatter(prt_tlyrtsrc,prt_npartmax,MPI_INTEGER,
-     &     prt_particles%itype,prt_npartmax,MPI_INTEGER,impi0,
-     &     MPI_COMM_WORLD,ierr)
-c
 c-- scattering part position
       call mpi_scatter(prt_tlyrsrc,prt_npartmax,MPI_REAL8,
      &     prt_particles%x,prt_npartmax,MPI_REAL8,impi0,
@@ -711,16 +701,6 @@ c
 c-- gathering part vacancy
       call mpi_gather(prt_isvacant,prt_npartmax,MPI_LOGICAL,
      &     prt_tlyvacant,prt_npartmax,MPI_LOGICAL,impi0,MPI_COMM_WORLD,
-     &     ierr)
-c
-c-- gathering part zone
-      call mpi_gather(prt_particles%ix,prt_npartmax,MPI_INTEGER,
-     &     prt_tlyzsrc,prt_npartmax,MPI_INTEGER,impi0,MPI_COMM_WORLD,
-     &     ierr)
-c
-c-- gathering part transport index
-      call mpi_gather(prt_particles%ix,prt_npartmax,MPI_INTEGER,
-     &     prt_tlyrtsrc,prt_npartmax,MPI_INTEGER,impi0,MPI_COMM_WORLD,
      &     ierr)
 c
 c-- gathering part position

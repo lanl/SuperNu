@@ -31,12 +31,14 @@ subroutine transport3_gamgrey(ptcl,ptcl2)
 !-- distance out of physical reach
   real*8 :: far
 
-  integer,pointer :: ix,iy,iz
+  integer,pointer :: ix, iy, iz, ic, ig
   real*8,pointer :: x,y,z,mu,om,e,e0
 
-  ix => ptcl%ix
-  iy => ptcl%iy
-  iz => ptcl%iz
+  ix => ptcl2%ix
+  iy => ptcl2%iy
+  iz => ptcl2%iz
+  ic => ptcl2%ic
+  ig => ptcl2%ig
   x => ptcl%x
   y => ptcl%y
   z => ptcl%z
@@ -168,7 +170,7 @@ subroutine transport3_gamgrey(ptcl,ptcl2)
      loutz = d==dbz.and.((mu>=0d0.and.iz==grd_nz).or.(mu<0.and.iz==1))
      if(loutx.or.louty.or.loutz) then
 !-- ending particle
-        prt_done = .true.
+        ptcl2%done = .true.
 !-- retrieving lab frame flux group, polar, azimuthal bin
         iom = binsrch(om,flx_om,flx_nom+1)
         imu = binsrch(mu,flx_mu,flx_nmu+1)
@@ -186,7 +188,7 @@ subroutine transport3_gamgrey(ptcl,ptcl2)
 !-- checking if analog
      if(prt_isimcanlog) then
 !-- effective absorption
-        prt_done=.true.
+        ptcl2%done=.true.
 !-- adding comoving energy to deposition energy
         grd_edep(ic) = grd_edep(ic)+e*elabfact
         return

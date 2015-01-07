@@ -28,7 +28,8 @@ subroutine particle_advance
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
 ! real*8 :: uul, uur, uumax, r0,r2,r3
-  integer, pointer :: ipart, ig, ic
+  integer :: ipart
+  integer, pointer :: ig, ic
   integer, pointer :: ix, iy, iz
   real*8, pointer :: x,y,z, mu, e, wl, om
   real*8 :: t0,t1  !timing
@@ -411,7 +412,7 @@ subroutine particle_advance
 !     write(*,*) ipart
 !-----------------------------------------------------------------------
 !-- Advancing particle until census, absorption, or escape from domain
-!Calling either diffusion or transport depending on particle type (ptcl%itype)
+!Calling either diffusion or transport depending on particle type (ptcl2%itype)
      select case(in_igeom)
 
 !-- 3D spherical

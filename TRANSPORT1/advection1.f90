@@ -21,16 +21,18 @@ pure subroutine advection1(pretrans,ptcl,ptcl2)
   real*8 :: help
   integer :: i
 !-- pointers
-  integer,pointer :: ix, iy, iz
+  integer,pointer :: ix, iy, iz, ic, ig
   real*8,pointer :: x
 !-- statement function
   integer :: l
   real*8 :: dx
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
 
-  ix => ptcl%ix
-  iy => ptcl%iy
-  iz => ptcl%iz
+  ix => ptcl2%ix
+  iy => ptcl2%iy
+  iz => ptcl2%iz
+  ic => ptcl2%ic
+  ig => ptcl2%ig
   x => ptcl%x
 
 !

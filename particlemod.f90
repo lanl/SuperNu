@@ -12,11 +12,11 @@ module particlemod
 !
 !-- secondary particle properties
   type packet2
-     integer :: ix, iy, iz
-     integer :: ic, ig
-     integer :: itype
-     integer :: ipart, istep
-     logical :: done, isvacant
+     integer :: ix, iy, iz   !positional cell indices
+     integer :: ic, ig       !index into compressed domain arrays, group index
+     integer :: itype        !IMC or DDMC type
+     integer :: ipart, istep !particle number and transport step number
+     logical :: done, isvacant !transport done and particle termination flags
   end type packet2
 !
   integer :: prt_npartmax, prt_ns, prt_ninit

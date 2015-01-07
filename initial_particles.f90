@@ -17,6 +17,7 @@ subroutine initial_particles
 !
   logical :: lhelp
   integer :: ig, i,j,k,l, iig, ipart
+  integer :: ix,iy,iz,itype
   integer :: iused
   real*8 :: wl0, mu0, om0, ep0, x0, y0, z0
   real*8 :: denom2, mu1, mu2
@@ -62,7 +63,7 @@ subroutine initial_particles
      if(.not.lhelp) stop 'initial_particles: invalid particle'
 !
 !-- setting 1st cell index
-     ptcl%ix = i
+     ix = i
 
 !-- setting particle index to not vacant
      prt_isvacant(ipart) = .false.
@@ -71,7 +72,7 @@ subroutine initial_particles
      ptcl%t = tsp_t
 !
 !-- setting type
-     ptcl%itype = 1
+     itype = 1
 
 !-- calculating wavelength
      denom2 = 0d0
@@ -137,7 +138,7 @@ subroutine initial_particles
 !-- 2D
      case(2)
 !-- setting 2nd cell index
-        ptcl%iy = j
+        iy = j
 !-- calculating position
         r1 = rnd_r(rnd_state)
         ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + &
@@ -177,8 +178,8 @@ subroutine initial_particles
 !-- 3D
      case(3)
 !-- setting 2nd, 3rd cell index
-        ptcl%iy = j
-        ptcl%iz = k
+        iy = j
+        iz = k
 !-- calculating position
         r1 = rnd_r(rnd_state)
         ptcl%x = r1*grd_xarr(i+1) + &

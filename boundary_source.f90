@@ -12,7 +12,7 @@ subroutine boundary_source
   implicit none
 
   logical :: lhelp
-  integer :: ipart, ivac, ig, iig, i,j,k
+  integer :: ipart, ivac, ig, iig, i,j,k, ix,iy,iz,itype
   real*8 :: r1, r2, P, mu0, x0,y0,z0, esurfpart, wl0, om0
   real*8 :: denom2, wl1, wl2, thelp, mfphelp, help, mu1, mu2
   real*8 :: srftemp = 1d4
@@ -148,9 +148,9 @@ subroutine boundary_source
         j = binsrch(ptcl%y,grd_yarr,grd_ny+1)
         k = binsrch(ptcl%z,grd_zarr,grd_nz+1)
 !-- setting cell index
-        ptcl%ix = i
-        ptcl%iy = j
-        ptcl%iz = k
+        ix = i
+        iy = j
+        iz = k
 !-- sampling azimuthal direction angle
         ptcl%om = r1*pc_pi2
 !-- calculating albedo
@@ -187,10 +187,10 @@ subroutine boundary_source
            endif
            y0 = ptcl%y
 !-- setting cell index
-           ptcl%ix = binsrch(x0,grd_xarr,grd_nx+1)
-           i = ptcl%ix
-           ptcl%iy = j
-           ptcl%iz = k
+           ix = binsrch(x0,grd_xarr,grd_nx+1)
+           i = ix
+           iy = j
+           iz = k
 !-- sampling direction helpers
            r1 = rnd_r(rnd_state)
            om0 = pc_pi2*r1
@@ -205,9 +205,9 @@ subroutine boundary_source
            ptcl%y = r1*grd_yarr(grd_ny+1)+(1d0-r1)*grd_yarr(1)
            y0 = ptcl%y
 !-- setting cell index
-           ptcl%ix = i
-           ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1)
-           j = ptcl%iy
+           ix = i
+           iy = binsrch(y0,grd_yarr,grd_ny+1)
+           j = iy
 !-- sampling direction helpers
            r1 = rnd_r(rnd_state)
            mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
@@ -263,11 +263,11 @@ subroutine boundary_source
            ptcl%z = r1*grd_zarr(grd_nz+1)+(1d0-r1)*grd_zarr(1)
            z0 = ptcl%z
 !-- setting cell index
-           ptcl%ix = i
-           ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1)
-           j = ptcl%iy
-           ptcl%iz = binsrch(z0,grd_zarr,grd_nz+1)
-           k = ptcl%iz
+           ix = i
+           iy = binsrch(y0,grd_yarr,grd_ny+1)
+           j = iy
+           iz = binsrch(z0,grd_zarr,grd_nz+1)
+           k = iz
 !-- sampling direction helpers
            r1 = rnd_r(rnd_state)
            mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
@@ -294,11 +294,11 @@ subroutine boundary_source
            ptcl%z = r1*grd_zarr(grd_nz+1)+(1d0-r1)*grd_zarr(1)
            z0 = ptcl%z
 !-- setting cell index
-           ptcl%ix = binsrch(x0,grd_xarr,grd_nx+1)
-           i = ptcl%ix
-           ptcl%iy = j
-           ptcl%iz = binsrch(z0,grd_zarr,grd_nz+1)
-           k = ptcl%iz
+           ix = binsrch(x0,grd_xarr,grd_nx+1)
+           i = ix
+           iy = j
+           iz = binsrch(z0,grd_zarr,grd_nz+1)
+           k = iz
 !-- sampling direction helpers
            r1 = rnd_r(rnd_state)
            mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
@@ -325,11 +325,11 @@ subroutine boundary_source
            endif
            z0 = ptcl%z
 !-- setting cell index
-           ptcl%ix = binsrch(x0,grd_xarr,grd_nx+1)
-           i = ptcl%ix
-           ptcl%iy = binsrch(y0,grd_yarr,grd_ny+1)
-           j = ptcl%iy
-           ptcl%iz = k
+           ix = binsrch(x0,grd_xarr,grd_nx+1)
+           i = ix
+           iy = binsrch(y0,grd_yarr,grd_ny+1)
+           j = iy
+           iz = k
 !-- sampling azimuthal angle of direction
            r1 = rnd_r(rnd_state)
            om0 = pc_pi2*r1
@@ -378,9 +378,9 @@ subroutine boundary_source
         ptcl%x = grd_xarr(i+1)
         x0 = ptcl%x
 !-- setting cell index
-        ptcl%ix = i
-        ptcl%iy = j
-        ptcl%iz = k
+        ix = i
+        iy = j
+        iz = k
 !-- calculating albedo
         mfphelp = (grd_cap(iig,l)+grd_sig(l))*dx(i)*thelp
         P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
@@ -412,14 +412,14 @@ subroutine boundary_source
            ptcl%e0 = esurfpart
            ptcl%wl = wl0
         endif
-        ptcl%itype = 1
+        itype = 1
      else
 !-- DDMC
         ptcl%e = P*esurfpart
         ptcl%e0 = P*esurfpart
         tot_eext = tot_eext+ptcl%e
         ptcl%wl = wl0
-        ptcl%itype = 2
+        itype = 2
      endif
 
 !-- save particle result

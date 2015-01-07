@@ -20,7 +20,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   real*8,parameter :: cinv = 1d0/pc_c
   real*8,parameter :: dt = pc_year !give grey transport infinite time
 !
-  integer :: imu, iom, ihelp
+  integer :: imu, iom
   real*8 :: elabfact, eta, xi, mux,muy,muz
   real*8 :: r1, thelp,thelpinv, help
   real*8 :: dcol,dbx,dby,dbz,d
@@ -33,12 +33,14 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 !-- distance out of physical reach
   real*8 :: far
 
-  integer,pointer :: ix,iy,iz
+  integer,pointer :: ix,iy,iz,ic,ig
   real*8,pointer :: x,y,z,mu,om,e,e0
 
-  ix => ptcl%ix
-  iy => ptcl%iy
-  iz => ptcl%iz
+  ix => ptcl2%ix
+  iy => ptcl2%iy
+  iz => ptcl2%iz
+  ic => ptcl2%ic
+  ig => ptcl2%ig
   x => ptcl%x
   y => ptcl%y
   z => ptcl%z
@@ -344,13 +346,13 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 !-- sanity check
      if(.not.prt_isimcanlog) stop &
           'transport1_gamgrey: not isimcanlog and dcol<db[xyz]'
-     prt_done = .true.
+     ptcl2%done = .true.
      grd_edep(ic) = grd_edep(ic) + e*elabfact
   elseif(d==dbx .and. dbx<dby) then
      if(mu>=0d0) then
         if(ix==grd_nx) then
 !-- ending particle
-           prt_done = .true.
+           ptcl2%done = .true.
            help = atan2(muy,mux)
            if(help<0d0) help = help+pc_pi2
 !-- retrieving lab frame flux group, polar, azimuthal bin
@@ -409,7 +411,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
         endif
      else
 !-- sanity check
-        write(*,*) dby,dby1,dby2,idby1,idby2,prt_ipart,prt_istep
+        write(*,*) dby,dby1,dby2,idby1,idby2,ptcl2%ipart,ptcl2%istep
         write(*,*) x,y,mu,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
         stop 'transport1_gamgrey: invalid polar bound crossing'
      endif

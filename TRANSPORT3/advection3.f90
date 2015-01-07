@@ -8,7 +8,7 @@ subroutine advection3(pretrans,ptcl,ptcl2)
   implicit none
   logical,intent(in) :: pretrans
   type(packet),target,intent(inout) :: ptcl
-  type(packet),target,intent(inout) :: ptcl2
+  type(packet2),target,intent(inout) :: ptcl2
 !-----------------------------------------------------------------------
 ! This routine computes the advection of IMC particles through the
 ! velocity grid in 3D planar geometry.
@@ -23,12 +23,8 @@ subroutine advection3(pretrans,ptcl,ptcl2)
   integer :: i,j,k
   integer :: imove,nmove
 !-- pointers
-  integer,pointer :: ix
-  integer,pointer :: iy
-  integer,pointer :: iz
-  real*8,pointer :: x 
-  real*8,pointer :: y 
-  real*8,pointer :: z 
+  integer,pointer :: ix, iy, iz, ic, ig
+  real*8,pointer :: x, y, z
 !-- statement functions
   integer :: l
   real*8 :: dx,dy,dz,xmag,ymag,zmag
@@ -39,9 +35,11 @@ subroutine advection3(pretrans,ptcl,ptcl2)
   ymag(l) = min(abs(grd_yarr(l)),abs(grd_yarr(l+1)))
   zmag(l) = min(abs(grd_zarr(l)),abs(grd_zarr(l+1)))
 
-  ix => ptcl%ix
-  iy => ptcl%iy
-  iz => ptcl%iz
+  ix => ptcl2%ix
+  iy => ptcl2%iy
+  iz => ptcl2%iz
+  ic => ptcl2%ic
+  ig => ptcl2%ig
   x => ptcl%x
   y => ptcl%y
   z => ptcl%z

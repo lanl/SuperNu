@@ -8,7 +8,7 @@ subroutine advection2(pretrans,ptcl,ptcl2)
   implicit none
   logical,intent(in) :: pretrans
   type(packet),target,intent(inout) :: ptcl
-  type(packet),target,intent(inout) :: ptcl2
+  type(packet2),target,intent(inout) :: ptcl2
 !-----------------------------------------------------------------------
 ! This routine computes the advection of IMC particles through the
 ! velocity grid in cylindrical geometry.
@@ -23,7 +23,7 @@ subroutine advection2(pretrans,ptcl,ptcl2)
   integer :: i,j
   integer :: imove,nmove
 !-- pointers
-  integer,pointer :: ix, iy
+  integer,pointer :: ix, iy, ic, ig
   integer,parameter :: iz=1
   real*8,pointer :: x 
   real*8,pointer :: y 
@@ -34,8 +34,10 @@ subroutine advection2(pretrans,ptcl,ptcl2)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
   ymag(l) = min(abs(grd_yarr(l)),abs(grd_yarr(l+1)))
 
-  ix => ptcl%ix
-  iy => ptcl%iy
+  ix => ptcl2%ix
+  iy => ptcl2%iy
+  ic => ptcl2%ic
+  ig => ptcl2%ig
   x => ptcl%x
   y => ptcl%y
 

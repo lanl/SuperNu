@@ -40,7 +40,7 @@ subroutine transport1(ptcl,ptcl2)
 !-- distance out of physical reach
   real*8 :: far
 
-  integer,pointer :: ix,iy,iz
+  integer,pointer :: ix,iy,iz,ic,ig
   real*8,pointer :: x,y,z,mu,om,e,e0,wl
 !-- statement functions
   integer :: l
@@ -52,9 +52,11 @@ subroutine transport1(ptcl,ptcl2)
   dyac(l) = grd_yacos(l) - grd_yacos(l+1)
   ym(l) = sqrt(1d0-0.25d0*(grd_yarr(l+1)+grd_yarr(l))**2)
 
-  ix => ptcl%ix
-  iy => ptcl%iy
-  iz => ptcl%iz
+  ix => ptcl2%ix
+  iy => ptcl2%iy
+  iz => ptcl2%iz
+  ic => ptcl2%ic
+  ig => ptcl2%ig
   x => ptcl%x
   y => ptcl%y
   z => ptcl%z
@@ -420,7 +422,7 @@ subroutine transport1(ptcl,ptcl2)
 !
 !-- census
   if(d==dcen) then
-     prt_done = .true.
+     ptcl2%done = .true.
      grd_numcensus(ic)=grd_numcensus(ic)+1
      return
   endif
@@ -439,8 +441,8 @@ subroutine transport1(ptcl,ptcl2)
      lout = mu>=0d0.and.ix==grd_nx
      if(lout) then
 !-- ending particle
-        isvacant = .true.
-        prt_done = .true.
+        ptcl2%isvacant = .true.
+        ptcl2%done = .true.
         help = atan2(muy,mux)
         if(help<0d0) help=help+pc_pi2
 !-- retrieving lab frame flux group, polar, azimuthal bin
@@ -488,8 +490,8 @@ subroutine transport1(ptcl,ptcl2)
 !-- checking if analog
      if(prt_isimcanlog.and.r1<=grd_fcoef(ic)) then
 !-- effective absorption
-        isvacant=.true.
-        prt_done=.true.
+        ptcl2%isvacant=.true.
+        ptcl2%done=.true.
 !-- adding comoving energy to deposition energy
         grd_edep(ic)=grd_edep(ic)+e*elabfact
         return
@@ -516,7 +518,7 @@ subroutine transport1(ptcl,ptcl2)
         if((grd_cap(ig,ic)+grd_sig(ic)) * &
              min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) * &
              thelp>=prt_tauddmc.and..not.in_puretran) then
-           ptcl%itype = 2
+           ptcl2%itype = 2
            grd_methodswap(ic)=grd_methodswap(ic)+1
 !-- transforming to cmf
            if(grd_isvelocity) then
@@ -579,7 +581,7 @@ subroutine transport1(ptcl,ptcl2)
         r1 = rnd_r(rnd_state)
         if(r1<help*(1d0+1.5d0*abs(mu))) then
            if(grd_isvelocity) then
-              ptcl%itype = 2
+              ptcl2%itype = 2
               grd_methodswap(ic)=grd_methodswap(ic)+1
 !-- velocity effects accounting
               tot_evelo=tot_evelo+e*(1d0-elabfact)
@@ -672,7 +674,7 @@ subroutine transport1(ptcl,ptcl2)
 !-- sampling
         r1 = rnd_r(rnd_state)
         if(r1 < help*(1d0+1.5d0*abs(eta))) then
-           ptcl%itype = 2
+           ptcl2%itype = 2
            grd_methodswap(ic)=grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -737,7 +739,7 @@ subroutine transport1(ptcl,ptcl2)
 !-- sampling
         r1 = rnd_r(rnd_state)
         if (r1 < help*(1d0+1.5d0*abs(xi))) then
-           ptcl%itype = 2
+           ptcl2%itype = 2
            grd_methodswap(ic)=grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -794,7 +796,7 @@ subroutine transport1(ptcl,ptcl2)
      if((grd_cap(ig,ic)+grd_sig(ic)) * &
           min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) * &
           thelp>=prt_tauddmc.and..not.in_puretran) then
-        ptcl%itype = 2
+        ptcl2%itype = 2
         grd_methodswap(ic)=grd_methodswap(ic)+1
         if(grd_isvelocity) then
 !-- velocity effects accounting

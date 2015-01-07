@@ -35,7 +35,7 @@ subroutine transport11(ptcl,ptcl2)
 !-- distance out of physical reach
   real*8 :: far
 
-  integer,pointer :: ix
+  integer,pointer :: ix,ic,ig
   integer,parameter :: iy=1, iz=1
   real*8,pointer :: x, mu, e, e0, wl
 !-- statement function
@@ -43,7 +43,9 @@ subroutine transport11(ptcl,ptcl2)
   real*8 :: dx
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
 
-  ix => ptcl%ix
+  ix => ptcl2%ix
+  ic => ptcl2%ic
+  ig => ptcl2%ig
   x => ptcl%x
   mu => ptcl%mu
   e => ptcl%e
@@ -214,7 +216,7 @@ subroutine transport11(ptcl,ptcl2)
      if (((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)* &
           thelp >= prt_tauddmc) &
           .and.(in_puretran.eqv..false.)) then
-        ptcl%itype = 2
+        ptcl2%itype = 2
         grd_methodswap(ic) = grd_methodswap(ic)+1
         if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -225,7 +227,7 @@ subroutine transport11(ptcl,ptcl2)
            wl = wl/(1d0-x*mu*cinv)
         endif
      else
-        ptcl%itype = 1
+        ptcl2%itype = 1
      endif
 !!}}}
   elseif (d == dthm) then  !physical scattering (Thomson-type)
@@ -253,8 +255,8 @@ subroutine transport11(ptcl,ptcl2)
      r1 = rnd_r(rnd_state)
      prt_tlyrand = prt_tlyrand+1
      if(r1<=grd_fcoef(ic).and.prt_isimcanlog) then
-        isvacant = .true.
-        prt_done = .true.
+        ptcl2%isvacant = .true.
+        ptcl2%done = .true.
         grd_edep(ic) = grd_edep(ic) + e*elabfact
 !-- velocity effects accounting
         tot_evelo = tot_evelo+e*(1d0-elabfact)
@@ -324,7 +326,7 @@ subroutine transport11(ptcl,ptcl2)
         if (((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)* &
              thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
-           ptcl%itype = 2
+           ptcl2%itype = 2
            grd_methodswap(ic) = grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -335,7 +337,7 @@ subroutine transport11(ptcl,ptcl2)
               wl = wl/(1d0-x*mu*cinv)
            endif
         else
-           ptcl%itype = 1
+           ptcl2%itype = 1
         endif
      endif
      !!}}}
@@ -344,8 +346,8 @@ subroutine transport11(ptcl,ptcl2)
         if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
         if(ix == grd_nx) then
 !           if(ig/=1) then
-           isvacant = .true.
-           prt_done = .true.
+           ptcl2%isvacant = .true.
+           ptcl2%done = .true.
 !
 !-- retrieve lab frame flux group
            ig = binsrch(wl,flx_wl,flx_ng+1)
@@ -380,7 +382,7 @@ subroutine transport11(ptcl,ptcl2)
            P = ppl*(1d0+1.5*abs(mu))
 !--
            if (r1 < P) then
-              ptcl%itype = 2
+              ptcl2%itype = 2
               grd_methodswap(ic) = grd_methodswap(ic)+1
               if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -425,7 +427,7 @@ subroutine transport11(ptcl,ptcl2)
               ppl = 4d0/(3d0*help+6d0*pc_dext)
               P = ppl*(1d0+1.5*abs(mu))
               if (r1 < P) then
-                 ptcl%itype = 2
+                 ptcl2%itype = 2
                  grd_methodswap(ic) = grd_methodswap(ic)+1
                  if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -487,7 +489,7 @@ subroutine transport11(ptcl,ptcl2)
            P = ppr*(1d0+1.5*abs(mu))
 !--
            if (r1 < P) then
-              ptcl%itype = 2
+              ptcl2%itype = 2
               grd_methodswap(ic) = grd_methodswap(ic)+1
               if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -518,7 +520,7 @@ subroutine transport11(ptcl,ptcl2)
         endif
      endif!}}}
   elseif (d == dcen) then
-     prt_done = .true.
+     ptcl2%done = .true.
      grd_numcensus(ic) = grd_numcensus(ic)+1
 !     tot_erad = tot_erad + e*elabfact
 !
