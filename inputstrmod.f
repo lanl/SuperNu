@@ -45,7 +45,8 @@ c     ---------------------------!{{{
       deallocate(str_idcell)
       deallocate(str_massdc,str_massdd)
       if(str_nabund>0) then
-       deallocate(str_massfrdc,str_massfrdd,str_abundlabl)
+       deallocate(str_massfrdc,str_massfrdd)
+       if(allocated(str_abundlabl)) deallocate(str_abundlabl) !only on impi0
       endif
       str_nabund=0!}}}
       end subroutine inputstr_dealloc
@@ -155,13 +156,31 @@ c-- var pointers
       enddo
       if(imass==0) stop 'read_inputstr: mass label not found'
 c-- vars
-      str_mass(:,:,:) = reshape(raw(imass,:),[nx,ny,nz])
+!     str_mass(:,:,:) = reshape(raw(imass,:),[nx,ny,nz]) !-- memory hog in ifort 13.1.3
+      l = 0
+      do k=1,nz
+      do j=1,ny
+      do i=1,nx
+       l = l+1
+       str_mass(i,j,k) = raw(imass,l)
+      enddo
+      enddo
+      enddo
 c-- abundances
-      str_massfr(:,:,:,:) =reshape(raw(nvar+1:,:),[str_nabund,nx,ny,nz])
+!     str_massfr(:,:,:,:) =reshape(raw(nvar+1:,:),[str_nabund,nx,ny,nz]) !-- memory hog in ifort 13.1.3
+      l = 0
+      do k=1,nz
+      do j=1,ny
+      do i=1,nx
+       l = l+1
+       str_massfr(:,i,j,k) = raw(nvar+1:,l)
+      enddo
+      enddo
+      enddo
 c
 c-- close file
       close(4)
-      deallocate(raw)
+      deallocate(raw,labl)
 c
 c-- convert abundlabl to element codes
       call elnam2elcode(ini56)
