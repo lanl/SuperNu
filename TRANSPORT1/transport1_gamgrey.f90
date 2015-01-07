@@ -107,15 +107,18 @@ subroutine transport1_gamgrey(ptcl,ic)
               stop 'transport1_gamgrey: did not cross lower y bound'
            elseif(grd_yarr(iy)<=0d0) then
 !-- choose dby2
+              idby1=4
               dby1 = 2d0*pc_c*tsp_dt*thelpinv
               iynext1=iy
            elseif(grd_yarr(iy)>0d0) then
+              idby1=5
 !-- cone internal transfer
               iynext1=iy-1
            else
               stop 'transport1_gamgrey: ptcl on cone and dby1 invalid'
            endif
         else
+           idby1=6
            dby1 = 2d0*pc_c*tsp_dt*thelpinv
            iynext1=iy
         endif
@@ -135,13 +138,15 @@ subroutine transport1_gamgrey(ptcl,ic)
         dby1 = 2d0*pc_c*tsp_dt*thelpinv
         iynext1=iy
      else
-        idby1=9
 !-- intersecting lower cone at at least one point
-        if(cos(om)<0d0.and.grd_yarr(iy)<=0d0) then
+        if(cos(om)<0d0.and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
+           idby1=9
 !-- choose dby2
            dby1 = 2d0*pc_c*tsp_dt*thelpinv
            iynext1=iy
         else
+!write(0,*) yhelp4,yhelp1,yhelp2,yhelp3
+           idby1=10
            yhelp4=sqrt(yhelp4)
            yhelp1=1d0/yhelp1
            help=x*(-yhelp2+yhelp4)*yhelp1
@@ -184,18 +189,21 @@ subroutine transport1_gamgrey(ptcl,ic)
         if(dby2>0d0) then
            if(cos(om)<0d0) then
               write(*,*) yold, y, iy, x, ix
-              stop 'transport1: did not cross upper y bound'
+              stop 'transport1_gg: did not cross upper y bound'
            elseif(grd_yarr(iy+1)>=0d0) then
 !-- choose dby1
+              idby2=4
               dby2 = 2d0*pc_c*tsp_dt*thelpinv
               iynext2=iy
            elseif(grd_yarr(iy+1)<0d0) then
+              idby2=5
 !-- cone internal transfer
               iynext2=iy+1
            else
-              stop 'transport1: ptcl on cone and dby2 invalid'
+              stop 'transport1_gg: ptcl on cone and dby2 invalid'
            endif
         else
+           idby2=6
            dby2 = 2d0*pc_c*tsp_dt*thelpinv
            iynext2=iy
         endif
@@ -214,13 +222,14 @@ subroutine transport1_gamgrey(ptcl,ic)
         dby2 = 2d0*pc_c*tsp_dt*thelpinv
         iynext2=iy
      else
-        idby2=9
 !-- intersecting upper cone at at least one point
-        if(cos(om)>=0d0.and.grd_yarr(iy+1)>=0d0) then
+        if(cos(om)>=0d0.and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
+           idby2=9
 !-- choose dby1
            dby2 = 2d0*pc_c*tsp_dt*thelpinv
            iynext2=iy
         else
+           idby2=10
            yhelp4=sqrt(yhelp4)
            yhelp1=1d0/yhelp1
            help=x*(-yhelp2+yhelp4)*yhelp1
@@ -235,7 +244,7 @@ subroutine transport1_gamgrey(ptcl,ic)
   if(dby1<0d0.and.dby2<0d0) then
      write(*,*) iy, y
      write(*,*) idby1, dby1, idby2, dby2
-     stop 'transport1: dby1<0 and dby2<0'
+     stop 'transport1_gg: dby1<0 and dby2<0'
   endif
   if(dby1<=0d0) dby1=2d0*pc_c*tsp_dt*thelpinv
   if(dby2<=0d0) dby2=2d0*pc_c*tsp_dt*thelpinv
@@ -394,7 +403,7 @@ subroutine transport1_gamgrey(ptcl,ic)
         if(z>pc_pi2) z=z-pc_pi2
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1)
      elseif(iynext==iy-1) then
-        if(abs(y)>1d-15.and.abs(y-grd_yarr(iy))>1d-9*abs(y)) then
+        if(abs(y-grd_yarr(iy))>1d-9) then
            write(*,*) iy,'y: ',y,'yarr(iy): ',grd_yarr(iy)
            stop 'transport1_gamgrey: y/=yarr(iy)'
         endif
@@ -407,7 +416,7 @@ subroutine transport1_gamgrey(ptcl,ic)
            iynext=1
         endif
      elseif(iynext==iy+1) then
-        if(abs(y)>1d-15.and.abs(y-grd_yarr(iy+1))>1d-9*abs(y)) then
+        if(abs(y-grd_yarr(iy+1))>1d-9) then
            write(*,*) iy,'y: ',y,'yarr(iy+1): ',grd_yarr(iy+1)
            stop 'transport1_gamgrey: y/=yarr(iy+1)'
         endif
@@ -421,8 +430,8 @@ subroutine transport1_gamgrey(ptcl,ic)
         endif
      else
 !-- sanity check
-        write(*,*) dby
-        write(*,*) y,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
+        write(*,*) dby,dby1,dby2,idby1,idby2,prt_ipart,prt_istep
+        write(*,*) x,y,mu,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
         stop 'transport1_gamgrey: invalid polar bound crossing'
      endif
 

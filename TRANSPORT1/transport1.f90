@@ -137,15 +137,18 @@ subroutine transport1(ptcl,ic,ig,isvacant)
               stop 'transport1: did not cross lower y bound'
            elseif(grd_yarr(iy)<=0d0) then
 !-- choose dby2
+              idby1=4
               dby1 = 2d0*pc_c*tsp_dt*thelpinv
               iynext1=iy
            elseif(grd_yarr(iy)>0d0) then
 !-- cone internal transfer
+              idby1=5
               iynext1=iy-1
            else
               stop 'transport1: ptcl on cone and dby1 invalid'
            endif
         else
+           idby1=6
            dby1 = 2d0*pc_c*tsp_dt*thelpinv
            iynext1=iy
         endif
@@ -165,13 +168,14 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         dby1 = 2d0*pc_c*tsp_dt*thelpinv
         iynext1=iy
      else
-        idby1=9
 !-- intersecting lower cone at at least one point
         if(cos(om)<0d0.and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
 !-- choose dby2
+           idby1=9
            dby1 = 2d0*pc_c*tsp_dt*thelpinv
            iynext1=iy
         else
+           idby1=10
            yhelp4=sqrt(yhelp4)
            yhelp1=1d0/yhelp1
            help=x*(-yhelp2+yhelp4)*yhelp1
@@ -219,15 +223,18 @@ subroutine transport1(ptcl,ic,ig,isvacant)
               stop 'transport1: did not cross upper y bound'
            elseif(grd_yarr(iy+1)>=0d0) then
 !-- choose dby1
+              idby2=4
               dby2 = 2d0*pc_c*tsp_dt*thelpinv
               iynext2=iy
            elseif(grd_yarr(iy+1)<0d0) then
 !-- cone internal transfer
+              idby2=5
               iynext2=iy+1
            else
               stop 'transport1: ptcl on cone and dby2 invalid'
            endif
         else
+           idby2=6
            dby2 = 2d0*pc_c*tsp_dt*thelpinv
            iynext2=iy
         endif
@@ -246,13 +253,14 @@ subroutine transport1(ptcl,ic,ig,isvacant)
         dby2 = 2d0*pc_c*tsp_dt*thelpinv
         iynext2=iy
      else
-        idby2=9
 !-- intersecting upper cone at at least one point
         if(cos(om)>=0d0.and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
 !-- choose dby1
+           idby2=9
            dby2 = 2d0*pc_c*tsp_dt*thelpinv
            iynext2=iy
         else
+           idby2=10
            yhelp4=sqrt(yhelp4)
            yhelp1=1d0/yhelp1
            help=x*(-yhelp2+yhelp4)*yhelp1
