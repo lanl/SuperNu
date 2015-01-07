@@ -117,8 +117,13 @@ subroutine transport1_gamgrey(ptcl,ic)
            iynext1=iy
         else
 !write(0,*) yhelp4,yhelp1,yhelp2,yhelp3
-           idby1=6
-           yhelp4=sqrt(yhelp4)
+           if(yhelp3==0d0) then
+              idby1=6
+              yhelp4=abs(yhelp2)
+           else
+              idby1=7
+              yhelp4=sqrt(yhelp4)
+           endif
            yhelp1=1d0/yhelp1
            help=x*(-yhelp2+yhelp4)*yhelp1
            dby1=x*(-yhelp2-yhelp4)*yhelp1
@@ -172,8 +177,13 @@ subroutine transport1_gamgrey(ptcl,ic)
            dby2 = 2d0*pc_c*dt*thelpinv
            iynext2=iy
         else
-           idby2=6
-           yhelp4=sqrt(yhelp4)
+           if(yhelp3==0d0) then
+              idby2=6
+              yhelp4=abs(yhelp2)
+           else
+              idby2=7
+              yhelp4=sqrt(yhelp4)
+           endif
            yhelp1=1d0/yhelp1
            help=x*(-yhelp2+yhelp4)*yhelp1
            dby2=x*(-yhelp2-yhelp4)*yhelp1
