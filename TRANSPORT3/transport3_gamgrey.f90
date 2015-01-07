@@ -172,8 +172,8 @@ subroutine transport3_gamgrey(ptcl,ptcl2)
 !-- ending particle
         ptcl2%done = .true.
 !-- retrieving lab frame flux group, polar, azimuthal bin
-        iom = binsrch(om,flx_om,flx_nom+1)
-        imu = binsrch(mu,flx_mu,flx_nmu+1)
+        iom = binsrch(om,flx_om,flx_nom+1,.false.)
+        imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
 !-- tallying outbound luminosity
         flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e/tsp_dt
         flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+(e/tsp_dt)**2

@@ -70,9 +70,9 @@ subroutine advection3(pretrans,ptcl,ptcl2)
        stop 'advection3: invalid position update'
 
 !-- finding tentative new index
-  ixholder = binsrch(x,grd_xarr,grd_nx+1)
-  iyholder = binsrch(y,grd_yarr,grd_ny+1)
-  izholder = binsrch(z,grd_zarr,grd_nz+1)
+  ixholder = binsrch(x,grd_xarr,grd_nx+1,.false.)
+  iyholder = binsrch(y,grd_yarr,grd_ny+1,.false.)
+  izholder = binsrch(z,grd_zarr,grd_nz+1,.false.)
 !-- correcting new index
   if(x==0d0) ixholder = ix !-- on yz plane
   if(x<0d0.and.grd_xarr(ixholder)==x) ixholder=ixholder-1 !-- moved to negative x-plane (rare)

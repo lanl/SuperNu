@@ -145,8 +145,8 @@ subroutine boundary_source
         r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%z = pc_pi2*r1
-        j = binsrch(ptcl%y,grd_yarr,grd_ny+1)
-        k = binsrch(ptcl%z,grd_zarr,grd_nz+1)
+        j = binsrch(ptcl%y,grd_yarr,grd_ny+1,.false.)
+        k = binsrch(ptcl%z,grd_zarr,grd_nz+1,.false.)
 !-- setting cell index
         ix = i
         iy = j
@@ -187,7 +187,7 @@ subroutine boundary_source
            endif
            y0 = ptcl%y
 !-- setting cell index
-           ix = binsrch(x0,grd_xarr,grd_nx+1)
+           ix = binsrch(x0,grd_xarr,grd_nx+1,.false.)
            i = ix
            iy = j
            iz = k
@@ -206,7 +206,7 @@ subroutine boundary_source
            y0 = ptcl%y
 !-- setting cell index
            ix = i
-           iy = binsrch(y0,grd_yarr,grd_ny+1)
+           iy = binsrch(y0,grd_yarr,grd_ny+1,.false.)
            j = iy
 !-- sampling direction helpers
            r1 = rnd_r(rnd_state)
@@ -264,9 +264,9 @@ subroutine boundary_source
            z0 = ptcl%z
 !-- setting cell index
            ix = i
-           iy = binsrch(y0,grd_yarr,grd_ny+1)
+           iy = binsrch(y0,grd_yarr,grd_ny+1,.false.)
            j = iy
-           iz = binsrch(z0,grd_zarr,grd_nz+1)
+           iz = binsrch(z0,grd_zarr,grd_nz+1,.false.)
            k = iz
 !-- sampling direction helpers
            r1 = rnd_r(rnd_state)
@@ -294,10 +294,10 @@ subroutine boundary_source
            ptcl%z = r1*grd_zarr(grd_nz+1)+(1d0-r1)*grd_zarr(1)
            z0 = ptcl%z
 !-- setting cell index
-           ix = binsrch(x0,grd_xarr,grd_nx+1)
+           ix = binsrch(x0,grd_xarr,grd_nx+1,.false.)
            i = ix
            iy = j
-           iz = binsrch(z0,grd_zarr,grd_nz+1)
+           iz = binsrch(z0,grd_zarr,grd_nz+1,.false.)
            k = iz
 !-- sampling direction helpers
            r1 = rnd_r(rnd_state)
@@ -325,9 +325,9 @@ subroutine boundary_source
            endif
            z0 = ptcl%z
 !-- setting cell index
-           ix = binsrch(x0,grd_xarr,grd_nx+1)
+           ix = binsrch(x0,grd_xarr,grd_nx+1,.false.)
            i = ix
-           iy = binsrch(y0,grd_yarr,grd_ny+1)
+           iy = binsrch(y0,grd_yarr,grd_ny+1,.false.)
            j = iy
            iz = k
 !-- sampling azimuthal angle of direction

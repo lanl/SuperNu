@@ -49,7 +49,7 @@ pure subroutine advection1(pretrans,ptcl,ptcl2)
 
 !
 !-- finding tentative new index
-  zholder = binsrch(x,grd_xarr,grd_nx+1)
+  zholder = binsrch(x,grd_xarr,grd_nx+1,.false.)
 
 !
 !-- quick exit if DDMC is active

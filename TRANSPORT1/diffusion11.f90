@@ -383,7 +383,7 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
            else
               help = 1d0
            endif
-           iiig = binsrch(wl,flx_wl,flx_ng+1)
+           iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
                  iiig=flx_ng
@@ -423,7 +423,7 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
               help = 1d0
            endif
 !-- obtaining lab frame flux group
-           iiig = binsrch(wl,flx_wl,flx_ng+1)
+           iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
            if(iiig>flx_ng.or.iiig<1) then
               if(iiig>flx_ng) then
                  iiig=flx_ng

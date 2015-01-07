@@ -63,8 +63,8 @@ subroutine advection2(pretrans,ptcl,ptcl2)
        stop 'advection2: invalid position update'
 
 !-- finding tentative new index
-  ixholder = binsrch(x,grd_xarr,grd_nx+1)
-  iyholder = binsrch(y,grd_yarr,grd_ny+1)
+  ixholder = binsrch(x,grd_xarr,grd_nx+1,.false.)
+  iyholder = binsrch(y,grd_yarr,grd_ny+1,.false.)
 !--correcting new index
   if(x==0d0) ixholder = ix !-- on y axis
   if(y==0d0) iyholder = iy !-- on x axis

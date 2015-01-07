@@ -28,11 +28,12 @@ c
       integer,intent(in),optional :: m
       end function specint
 c
-      pure function binsrch(x,arr,ng)
+      pure function binsrch(x,arr,ng,widerange)
       integer :: binsrch
       integer,intent(in) :: ng
       real*8,intent(in) :: x
       real*8,intent(in) :: arr(ng)
+      logical,intent(in) :: widerange
       end function binsrch
 c
       end interface

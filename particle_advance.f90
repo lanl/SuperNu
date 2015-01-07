@@ -122,18 +122,10 @@ subroutine particle_advance
 
 !-- Looking up group
      if(ptcl2%itype==1) then
-        ig = binsrch(wl/labfact,grp_wl,grp_ng+1) !.not.grd_isvelocity -> labfact=1d0
+        ig = binsrch(wl/labfact,grp_wl,grp_ng+1,.false.) !.not.grd_isvelocity -> labfact=1d0
      else
-        ig = binsrch(wl,grp_wl,grp_ng+1)
+        ig = binsrch(wl,grp_wl,grp_ng+1,.false.)
      endif
-!-- particle out of wlgrid bound
-    if(ig>grp_ng) then
-       ig = grp_ng
-!      wl = grp_wl(ig)*labfact
-    elseif(ig<1) then
-       ig = 1
-!      wl = grp_wl(ig)*labfact
-    endif
 
 
 !-- Checking if particle conversions are required since prior time step
@@ -377,9 +369,9 @@ subroutine particle_advance
 !
 !-- looking up group
         if(ptcl2%itype==1) then
-           ig = binsrch(wl/labfact,grp_wl,grp_ng+1) !.not.grd_isvelocity -> labfact=1d0
+           ig = binsrch(wl/labfact,grp_wl,grp_ng+1,.false.) !.not.grd_isvelocity -> labfact=1d0
         else
-           ig = binsrch(wl,grp_wl,grp_ng+1)
+           ig = binsrch(wl,grp_wl,grp_ng+1,.false.)
         endif
 !-- particle out of wlgrid bound
         if(ig>grp_ng) then
@@ -630,7 +622,7 @@ subroutine particle_advance
         !
 !
 !-- find group
-        ig = binsrch(wl,grp_wl,grp_ng+1)
+        ig = binsrch(wl,grp_wl,grp_ng+1,.false.)
 !-- particle out of wlgrid energy bound
         if(ig>grp_ng) ig = grp_ng
         if(ig<1) ig = 1

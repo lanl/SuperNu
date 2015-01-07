@@ -596,9 +596,9 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
            help = atan2(muy,mux)
            if(help<0d0) help=help+pc_pi2
 !-- retrieving lab frame flux group, polar, azimuthal bin
-           iom = binsrch(help,flx_om,flx_nom+1)
-           imu = binsrch(muz,flx_mu,flx_nmu+1)
-           ig = binsrch(wl,flx_wl,flx_ng+1)
+           iom = binsrch(help,flx_om,flx_nom+1,.false.)
+           imu = binsrch(muz,flx_mu,flx_nmu+1,.false.)
+           ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
 !-- checking group bounds
            if(ig>flx_ng.or.ig<1) then
               if(ig>flx_ng) then

@@ -232,9 +232,9 @@ subroutine transport3(ptcl,ptcl2)
         ptcl2%isvacant = .true.
         ptcl2%done = .true.
 !-- retrieving lab frame flux group, polar, azimuthal bin
-        iom = binsrch(om,flx_om,flx_nom+1)
-        imu = binsrch(mu,flx_mu,flx_nmu+1)
-        ig = binsrch(wl,flx_wl,flx_ng+1)
+        iom = binsrch(om,flx_om,flx_nom+1,.false.)
+        imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
+        ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
 !-- checking group bounds
         if(ig>flx_ng.or.ig<1) then
            if(ig>flx_ng) then

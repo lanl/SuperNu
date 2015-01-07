@@ -356,8 +356,8 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
            help = atan2(muy,mux)
            if(help<0d0) help = help+pc_pi2
 !-- retrieving lab frame flux group, polar, azimuthal bin
-           iom = binsrch(help,flx_om,flx_nom+1)
-           imu = binsrch(muz,flx_mu,flx_nmu+1)
+           iom = binsrch(help,flx_om,flx_nom+1,.false.)
+           imu = binsrch(muz,flx_mu,flx_nmu+1,.false.)
            flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e/tsp_dt
            flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+(e/tsp_dt)**2
            flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1
@@ -378,11 +378,11 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
      if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
 !-- reflecting y
         y=-y
-        iynext=binsrch(y,grd_yarr,grd_ny+1)
+        iynext=binsrch(y,grd_yarr,grd_ny+1,.false.)
 !-- reflecting z
         z=z+pc_pi
         if(z>pc_pi2) z=z-pc_pi2
-        if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1)
+        if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
      elseif(iynext==iy-1) then
         if(abs(y-grd_yarr(iy))>1d-9) then
            write(*,*) iy,'y: ',y,'yarr(iy): ',grd_yarr(iy)
@@ -393,7 +393,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 !-- reflecting z
            z=z+pc_pi
            if(z>pc_pi2) z=z-pc_pi2
-           if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1)
+           if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
            iynext=1
         endif
      elseif(iynext==iy+1) then
@@ -406,7 +406,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 !-- reflecting z
            z=z+pc_pi
            if(z>pc_pi2) z=z-pc_pi2
-           if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1)
+           if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
            iynext=grd_ny
         endif
      else

@@ -1,16 +1,16 @@
-pure function binsrch(x,arr,ng)
+function binsrch(x,arr,ng,widerange)
+  implicit none
+  integer :: binsrch
+
+  integer,intent(in) :: ng
+  real*8,intent(in) :: x
+  real*8,intent(in) :: arr(ng) !array
+  logical,intent(in) :: widerange
 !---------------------------------------------------
 ! Binary search of a real*8 array (arr) of size ng.
 ! Finds index of interval containing x.
 ! Returns an integer between 1 and ng-1, inclusive.
 !---------------------------------------------------
-  implicit none
-  integer :: binsrch
-
-  integer, intent(in) :: ng
-  real*8, intent(in) :: x
-  real*8, intent(in) :: arr(ng) !array
-  !
   integer :: imin, imax, imid
 
   imin = 1
@@ -42,6 +42,13 @@ pure function binsrch(x,arr,ng)
   enddo
 
   if(imid/=imin) imid = -1 !invalid
+
+!-- limit result to within array bounds
+  if(.not.widerange) then
+     imid = min(imid,ng)
+     imid = max(imid,1)
+  endif
+
   binsrch = imid
 
 end function binsrch

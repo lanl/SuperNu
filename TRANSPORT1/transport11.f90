@@ -350,18 +350,7 @@ subroutine transport11(ptcl,ptcl2)
            ptcl2%done = .true.
 !
 !-- retrieve lab frame flux group
-           ig = binsrch(wl,flx_wl,flx_ng+1)
-!
-!-- check group bounds
-           if(ig>flx_ng.or.ig<1) then
-              if(ig>flx_ng) then
-                 ig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 ig=1
-                 wl=flx_wl(1)
-              endif
-           endif
+           ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
 !
 !-- outbound luminosity tally
            tot_eout = tot_eout+e
