@@ -314,6 +314,7 @@ subroutine transport1_gamgrey(ptcl,ic)
   muold = mu
 !-- updating radius
   x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
+  if(x/=x) stop 'transport1: x/=x'
   if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
 !-- sanity check
      if(d==dbx) stop 'transport1_gamgrey: x<1d-15*xarr(2),d==dbx,mu=-1'
@@ -330,6 +331,8 @@ subroutine transport1_gamgrey(ptcl,ic)
      mu = (xold*mu+d)/x
 !-- updating polar projection of position
      y = (xold*yold+muz*d)/x
+     y = max(y,-1d0)
+     y = min(y,1d0)
 !-- updating azimuthal angle of position
      z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
           xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
