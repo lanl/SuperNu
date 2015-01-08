@@ -71,10 +71,21 @@ subroutine transport1(ptcl,ptcl2)
 !-- spherical projections
   eta = sqrt(1d0-mu**2)*cos(om)
   xi = sqrt(1d0-mu**2)*sin(om)
+
 !-- planar projections (invariant until collision)
   mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
   muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
   muz = mu*y-eta*sqrt(1d0-y**2)
+!-- direction sanity check
+  if(abs(mux**2+muy**2+muz**2-1d0)>1d-9) then
+     write(*,*) 'transport1: invalid mux,muy,muz',mux**2+muy**2+muz**2-1d0,mux,muy,muz
+  endif
+!-- normalize direction
+  help = 1d0/sqrt(mux**2+muy**2+muz**2)
+  mux = mux*help
+  muy = muy*help
+  muz = muz*help
+
   idby1=0
   idby2=0
 !
@@ -342,6 +353,8 @@ subroutine transport1(ptcl,ptcl2)
      if(x<1d-15*grd_xarr(2)) stop 'transport1: x=0 and muold/=-1'
 !-- updating radial projection of direction
      mu = (xold*mu+d)/x
+     mu = max(mu,-1d0)
+     mu = min(mu,1d0)
 !-- updating polar projection of position
      y = (xold*yold+muz*d)/x
      y = max(y,-1d0)
@@ -355,25 +368,11 @@ subroutine transport1(ptcl,ptcl2)
      xi = cos(z)*muy-sin(z)*mux
      om = atan2(xi,eta)
      if(om<0d0) om=om+pc_pi2
-  endif
-
-!-- direction sanity check
-  if(abs(mux**2+muy**2+muz**2-1d0)>1d-9) then
-     write(*,*) mux**2+muy**2+muz**2,mux,muy,muz
-     stop 'transport1: invalid mux,muy,muz'
-  endif
-  if(mux**2+muy**2+muz**2/=1d0) then
-!-- normalize direction
-     help = 1d0/sqrt(mux**2+muy**2+muz**2)
-     mux=mux*help
-     muy=muy*help
-     muz=muz*help
-  endif
-  if(abs(mu**2+eta**2+xi**2-1d0)>1d-9) then
-     write(*,*) mu**2+eta**2+xi**2,mu,eta,xi
-     stop 'transport1: invalid mu,eta,xi'
-  endif
-  if(mu**2+eta**2+xi**2/=1d0) then
+!-- warn about inaccurate result
+     if(abs(mu**2+eta**2+xi**2-1d0)>1d-9) then
+        write(*,*) 'transport1: invalid mu,eta,xi',mu**2+eta**2+xi**2-1d0,mu,eta,xi
+     endif
+!
 !-- normalize direction
      help = 1d0/sqrt(mu**2+eta**2+xi**2)
      mu=mu*help
