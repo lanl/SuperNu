@@ -32,7 +32,7 @@ subroutine particle_advance
   integer, pointer :: ix, iy, iz
   real*8, pointer :: x,y,z, mu, e, wl, om
   real*8 :: t0,t1  !timing
-  real*8 :: labfact, cmffact, mu1, mu2, gm
+  real*8 :: labfact, cmffact, mu1, mu2, gm, om0, mu0
 !-- specint cache
   real*8 :: specarr(grp_ng)
   integer :: icell(3)
@@ -113,7 +113,8 @@ subroutine particle_advance
 !-- group index
      ig = binsrch(wl,grp_wl,grp_ng+1,.false.) !co-moving frame
 
-!-- particle type
+!
+!-- determine particle type
      select case(in_igeom)
      case(1)
         help = min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) 
@@ -127,33 +128,51 @@ subroutine particle_advance
 !-- IMC or DDMC
      if(in_puretran .or. (grd_sig(ic)+grd_cap(ig,ic))*help*thelp<prt_tauddmc) then
         ptcl2%itype = 1 !IMC
+!-- to be transformed
+        mu0 = mu
+        om0 = om
      else
         ptcl2%itype = 2 !DDMC
      endif
 
-!-- transformation factor into lab frame
-     cmffact = 1d0  !default
+!
+!-- transform IMC particle into lab frame
      if(grd_isvelocity.and.ptcl2%itype==1) then
-        select case(in_igeom)
+        select case(in_igeom)!{{{
 !-- [123]D spherical
         case(1,11)
            cmffact = 1d0+x*mu/pc_c
+           mu = (mu0+x/pc_c)/cmffact
 !-- 2D
         case(2)
            cmffact = 1d0+(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
+           gm = 1d0/sqrt(1d0-(x**2+y**2)/pc_c**2)
+!-- om
+           om = atan2(sqrt(1d0-mu0**2)*sin(om0), &
+                sqrt(1d0-mu0**2)*cos(om0)+(gm*x/pc_c) * &
+                (1d0+gm*(cmffact-1d0)/(gm+1d0)))
+           if(om<0d0) om=om+pc_pi2
+!-- mu
+           mu = (mu0+(gm*y/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
+                (gm*cmffact)
 !-- 3D
         case(3)
            mu1 = sqrt(1d0-mu**2)*cos(om)
            mu2 = sqrt(1d0-mu**2)*sin(om)
            cmffact = 1d0+(mu*z+mu1*x+mu2*y)/pc_c
+!-- mu
+           mu = (mu0+z/pc_c)/cmffact
+           mu = min(mu,1d0)
+           mu = max(mu,-1d0)
+!-- om
+           om = atan2(mu2+y/pc_c,mu1+x/pc_c)
+           if(om<0d0) om = om+pc_pi2
         endselect
-     endif
 
 !-- transform into lab frame
-     if(ptcl2%itype==1) then
         wl = wl/cmffact
         e = e*cmffact
-        ptcl%e0 = ptcl%e0*cmffact 
+        ptcl%e0 = ptcl%e0*cmffact !}}}
      endif
 
 
@@ -385,7 +404,7 @@ subroutine particle_advance
      prt_isvacant(ipart) = ptcl2%isvacant
      if(ptcl2%isvacant) cycle
 
-
+!
 !-- Redshifting DDMC particle energy weights and wavelengths
      if(ptcl2%itype==2 .and. grd_isvelocity) then
 !-- redshifting energy weight!{{{
@@ -433,7 +452,12 @@ subroutine particle_advance
 !-- sample position, direction, and wavelength of a censused DDMC
 !-- particle. It might be an IMC particle in the next time step
      if(ptcl2%itype==2) then
-!-- selecting geometry!{{{
+!
+!-- sample wavelength
+        r1 = rnd_r(rnd_state)
+        wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
+!
+!-- sample position and direction
         select case(in_igeom)
 !-- 3D spherical
         case(1)
@@ -460,13 +484,7 @@ subroutine particle_advance
            mu = 1.0 - 2.0*r1
            r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
-           om = pc_pi2*r1
-           if(grd_isvelocity) then
-!-- 1+dir*v/c
-              cmffact = 1d0+x*mu/pc_c
-!-- mu
-              mu = (mu+x/pc_c)/cmffact
-           endif!}}}
+           om = pc_pi2*r1!}}}
 !-- 2D
         case(2)
 !-- sampling position uniformly!{{{
@@ -481,23 +499,10 @@ subroutine particle_advance
            r1 = rnd_r(rnd_state)
            om = pc_pi2*r1
            r1 = rnd_r(rnd_state)
-           mu = 1d0 - 2d0*r1
-           if(grd_isvelocity) then
-!-- 1+dir*v/c
-              cmffact = 1d0+(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
-              gm = 1d0/sqrt(1d0-(x**2+y**2)/pc_c**2)
-!-- om
-              om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-                   sqrt(1d0-mu**2)*cos(om)+(gm*x/pc_c) * &
-                   (1d0+gm*(cmffact-1d0)/(gm+1d0)))
-              if(om<0d0) om = om+pc_pi2
-!-- mu
-              mu = (mu+(gm*y/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
-                   (gm*cmffact)
-           endif!}}}
+           mu = 1d0 - 2d0*r1!}}}
 !-- 3D
         case(3)
-!-- sampling position uniformly!{{{
+!-- sampling position uniformly !{{{
            r1 = rnd_r(rnd_state)
            x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
            r1 = rnd_r(rnd_state)
@@ -515,23 +520,7 @@ subroutine particle_advance
            r1 = rnd_r(rnd_state)
            om = pc_pi2*r1
            r1 = rnd_r(rnd_state)
-           mu = 1d0 - 2d0*r1
-           if(grd_isvelocity) then
-!-- 1+dir*v/c
-              mu1 = sqrt(1d0-mu**2)*cos(om)
-              mu2 = sqrt(1d0-mu**2)*sin(om)
-              cmffact = 1d0+(mu*z+mu1*x+mu2*y)/pc_c
-!-- mu
-              mu = (mu+z/pc_c)/cmffact
-              if(mu>1d0) then
-                 mu = 1d0
-              elseif(mu<-1d0) then
-                 mu = -1d0
-              endif
-!-- om
-              om = atan2(mu2+y/pc_c,mu1+x/pc_c)
-              if(om<0d0) om = om+pc_pi2
-           endif!}}}
+           mu = 1d0 - 2d0*r1 !}}}
 !-- 1D spherical
         case(11)
 !-- sampling position uniformly!{{{
@@ -544,32 +533,52 @@ subroutine particle_advance
 !-- sampling angle isotropically
            r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
-           mu = 1.0 - 2.0*r1
-           if(grd_isvelocity) then
-!-- 1+dir*v/c
-              cmffact = 1d0+x*mu/pc_c
-!-- mu
-              mu = (mu+x/pc_c)/cmffact
-           endif
-!}}}
+           mu = 1.0 - 2.0*r1 !}}}
         endselect
-
-!-- sample wavelength
-        r1 = rnd_r(rnd_state)
-        prt_tlyrand = prt_tlyrand+1
-        wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
-!}}}
      endif
 
-!-- transform back into comoving frame before storing
-     if(ptcl2%itype==1) then
+!
+!-- transform IMC particle back into comoving frame for storage
+     if(grd_isvelocity.and.ptcl2%itype==1) then
+        select case(in_igeom)
+!-- [123]D spherical
+        case(1,11)
+           labfact = 1d0-x*mu/pc_c
+           mu0 = (mu-x/pc_c)/labfact
+!
+           cmffact = 1d0+x*mu/pc_c
+!-- 2D
+        case(2)
+!TODO: lorentz back transformation
+           stop 'pa: lorentz transformation missing in 2D cylindrical'
+           labfact = 1d0
+           mu0 = mu
+           om0 = om
+!
+           cmffact = 1d0+(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
+!-- 3D
+        case(3)
+!TODO: lorentz back transformation
+           stop 'pa: lorentz transformation missing in 3D cartesian'
+           labfact = 1d0
+           mu0 = mu
+           om0 = om
+!
+           mu1 = sqrt(1d0-mu**2)*cos(om)
+           mu2 = sqrt(1d0-mu**2)*sin(om)
+           cmffact = 1d0+(mu*z+mu1*x+mu2*y)/pc_c
+        endselect
+
+        mu = mu0
+        om = om0
+!-- apply inverse cmffact for symmetry (gamma factor is missing)
         wl = wl*cmffact
         e = e/cmffact
         ptcl%e0 = ptcl%e0/cmffact 
      endif
 
+!
 !-- save particle properties
-!---------------------------
      prt_particles(ipart) = ptcl
 
   enddo !ipart

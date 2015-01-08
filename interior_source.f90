@@ -34,13 +34,8 @@ subroutine interior_source
   integer :: ix,iy,iz,itype
 !-- statement functions
   integer :: l
-  real*8 :: dx,dy,dz,xm,dyac,ym
+  real*8 :: dx
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
-  dy(l) = grd_yarr(l+1) - grd_yarr(l)
-  dz(l) = grd_zarr(l+1) - grd_zarr(l)
-  xm(l) = 0.5*(grd_xarr(l+1) + grd_xarr(l))
-  dyac(l) = grd_yacos(l) - grd_yacos(l+1)
-  ym(l) = sqrt(1d0-0.25*(grd_yarr(l+1)+grd_yarr(l))**2)
 
   if(grd_isvelocity) then
      thelp = tsp_t
@@ -99,16 +94,23 @@ subroutine interior_source
         denom2 = denom2+(x4-x3)/(x2-x1)
      enddo
      r1 = rnd_r(rnd_state)
-     prt_tlyrand = prt_tlyrand+1
      wl0 = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
-
-!-- calculating direction cosine (comoving)
-     r1 = rnd_r(rnd_state)
-     prt_tlyrand = prt_tlyrand+1
-     mu0 = 1d0-2d0*r1
+     ptcl%wl = wl0
 
 !-- calculating particle energy
      ep0 = grd_emitex(l)/dble(grd_nvol(l)-nemit)
+     ptcl%e = ep0
+     ptcl%e0 = ep0
+
+!-- calculating direction cosine (comoving)
+     r1 = rnd_r(rnd_state)
+     mu0 = 1d0-2d0*r1
+     ptcl%mu = mu0
+
+!-- sampling azimuthal angle of direction
+     r1 = rnd_r(rnd_state)
+     om0 = pc_pi2*r1
+     ptcl%om = om0
 
 !
 !-- selecting geometry
@@ -133,28 +135,8 @@ subroutine interior_source
         ptcl%y = min(ptcl%y,grd_yarr(j+1))
         ptcl%y = max(ptcl%y,grd_yarr(j))
         ptcl%z = min(ptcl%z,grd_zarr(k+1))
-        ptcl%z = max(ptcl%z,grd_zarr(k))
-!-- sampling azimuthal angle of direction
-        r1 = rnd_r(rnd_state)
-        ptcl%om = pc_pi2*r1
-!-- setting IMC logical
-        lhelp = ((grd_sig(l)+grd_cap(ig,l)) * &
-             min(dx(i),xm(i)*dyac(j),xm(i)*ym(j)*dz(k)) * &
-             thelp < prt_tauddmc).or.(in_puretran)
+        ptcl%z = max(ptcl%z,grd_zarr(k)) !}}}
 
-!-- if velocity-dependent, transforming direction
-        if(lhelp.and.grd_isvelocity) then
-           x0 = ptcl%x
-!-- 1+dir*v/c
-           cmffact = 1d0+mu0*x0/pc_c
-!-- mu
-           ptcl%mu = (mu0+x0/pc_c)/cmffact
-           itype = 1 !IMC
-        else
-           itype = 2 !DDMC
-           ptcl%mu = mu0
-        endif
-!}}}
 !-- 2D
      case(2)
 !-- calculating position!{{{
@@ -168,37 +150,8 @@ subroutine interior_source
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
         ptcl%y = min(ptcl%y,grd_yarr(j+1))
-        ptcl%y = max(ptcl%y,grd_yarr(j))
-!-- sampling azimuthal angle of direction
-        r1 = rnd_r(rnd_state)
-        om0 = pc_pi2*r1
+        ptcl%y = max(ptcl%y,grd_yarr(j)) !}}}
 
-!-- setting IMC logical
-        lhelp = ((grd_sig(l)+grd_cap(ig,l)) * &
-             min(dx(i),dy(j))*thelp < prt_tauddmc) &
-             .or.in_puretran
-!-- if velocity-dependent, transforming direction
-        if(lhelp.and.grd_isvelocity) then
-           x0 = ptcl%x
-           y0 = ptcl%y
-!-- 1+dir*v/c
-           cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
-           gm = 1d0/sqrt(1d0-(x0**2+y0**2)/pc_c**2)
-!-- om
-           ptcl%om = atan2(sqrt(1d0-mu0**2)*sin(om0), &
-                sqrt(1d0-mu0**2)*cos(om0)+(gm*x0/pc_c) * &
-                (1d0+gm*(cmffact-1d0)/(gm+1d0)))
-           if(ptcl%om<0d0) ptcl%om=ptcl%om+pc_pi2
-!-- mu
-           ptcl%mu = (mu0+(gm*y0/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
-                (gm*cmffact)
-           itype = 1 !IMC
-        else
-           ptcl%mu = mu0
-           ptcl%om = om0
-           itype = 2 !DDMC
-        endif
-!}}}
 !-- 3D
      case(3)
 !-- calculating position!{{{
@@ -217,40 +170,8 @@ subroutine interior_source
         ptcl%y = min(ptcl%y,grd_yarr(j+1))
         ptcl%y = max(ptcl%y,grd_yarr(j))
         ptcl%z = min(ptcl%z,grd_zarr(k+1))
-        ptcl%z = max(ptcl%z,grd_zarr(k))
-!-- sampling azimuthal angle of direction
-        r1 = rnd_r(rnd_state)
-        om0 = pc_pi2*r1
-!-- setting IMC logical
-        lhelp = ((grd_sig(l)+grd_cap(ig,l)) * &
-             min(dx(i),dy(j),dz(k))*thelp < prt_tauddmc) &
-             .or.in_puretran
-!-- if velocity-dependent, transforming direction
-        if(lhelp.and.grd_isvelocity) then
-           x0 = ptcl%x
-           y0 = ptcl%y
-           z0 = ptcl%z
-!-- 1+dir*v/c
-           mu1 = sqrt(1d0-mu0**2)*cos(om0)
-           mu2 = sqrt(1d0-mu0**2)*sin(om0)
-           cmffact = 1d0+(mu0*z0+mu1*x0+mu2*y0)/pc_c
-!-- mu
-           ptcl%mu = (mu0+z0/pc_c)/cmffact
-           if(ptcl%mu>1d0) then
-              ptcl%mu = 1d0
-           elseif(ptcl%mu<-1d0) then
-              ptcl%mu = -1d0
-           endif
-!-- om
-           ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
-           if(ptcl%om<0d0) ptcl%om = ptcl%om+pc_pi2
-           itype = 1 !IMC
-        else
-           ptcl%mu = mu0
-           ptcl%om = om0
-           itype = 2 !DDMC
-        endif
-!}}}
+        ptcl%z = max(ptcl%z,grd_zarr(k)) !}}}
+
 !-- 1D
      case(11)
 !-- calculating position!{{{
@@ -260,24 +181,8 @@ subroutine interior_source
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
-        ptcl%x = max(ptcl%x,grd_xarr(i))
-!-- setting IMC logical
-        lhelp = ((grd_sig(l)+grd_cap(ig,l))*dx(i)* &
-             thelp < prt_tauddmc).or.(in_puretran)
+        ptcl%x = max(ptcl%x,grd_xarr(i)) !}}}
 
-!-- if velocity-dependent, transforming direction
-        if(lhelp.and.grd_isvelocity) then
-           x0 = ptcl%x
-!-- 1+dir*v/c
-           cmffact = 1d0+mu0*x0/pc_c
-!-- mu
-           ptcl%mu = (mu0+x0/pc_c)/cmffact
-           itype = 1 !IMC
-        else
-           itype = 2 !DDMC
-           ptcl%mu = mu0
-        endif
-!}}}
      endselect
 
 !-- particle properties are saved in the comoving frame
@@ -351,16 +256,23 @@ subroutine interior_source
         denom2 = denom2+emitprob(ig)
      enddo
      r1 = rnd_r(rnd_state)
-     prt_tlyrand = prt_tlyrand+1
      wl0 = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
-
-!-- calculating direction cosine (comoving)
-     r1 = rnd_r(rnd_state)
-     prt_tlyrand = prt_tlyrand+1
-     mu0 = 1d0-2d0*r1
+     ptcl%wl = wl0
 
 !-- calculating particle energy
      ep0 = grd_emit(l)/dble(nemit)
+     ptcl%e = ep0
+     ptcl%e0 = ep0
+
+!-- calculating direction cosine (comoving)
+     r1 = rnd_r(rnd_state)
+     mu0 = 1d0-2d0*r1
+     ptcl%mu = mu0
+
+!-- sampling azimuthal angle of direction
+     r1 = rnd_r(rnd_state)
+     om0 = pc_pi2*r1
+     ptcl%om = om0
 
 !
 !-- selecting geometry
@@ -401,25 +313,6 @@ subroutine interior_source
         ptcl%y = max(ptcl%y,grd_yarr(j))
         ptcl%z = min(ptcl%z,grd_zarr(k+1))
         ptcl%z = max(ptcl%z,grd_zarr(k))
-!-- sampling azimuthal angle of direction
-        r1 = rnd_r(rnd_state)
-        ptcl%om = pc_pi2*r1
-!-- setting IMC logical
-        lhelp = ((grd_sig(l)+grd_cap(ig,l)) * &
-             min(dx(i),xm(i)*dyac(j),xm(i)*ym(j)*dz(k)) * &
-             thelp < prt_tauddmc).or.(in_puretran)
-
-!-- if velocity-dependent, transforming direction
-        if(lhelp.and.grd_isvelocity) then
-!-- 1+dir*v/c
-           cmffact = 1d0+mu0*x0/pc_c
-!-- mu
-           ptcl%mu = (mu0+x0/pc_c)/cmffact
-           itype = 1 !IMC
-        else
-           itype = 2 !DDMC
-           ptcl%mu = mu0
-        endif
 !}}}
 !-- 2D
      case(2)
@@ -460,33 +353,6 @@ subroutine interior_source
         ptcl%x = max(ptcl%x,grd_xarr(i))
         ptcl%y = min(ptcl%y,grd_yarr(j+1))
         ptcl%y = max(ptcl%y,grd_yarr(j))
-!-- sampling azimuthal angle of direction
-        r1 = rnd_r(rnd_state)
-        om0 = pc_pi2*r1
-
-!-- setting IMC logical
-        lhelp = ((grd_sig(l)+grd_cap(ig,l)) * &
-             min(dx(i),dy(j))*thelp < prt_tauddmc) &
-             .or.in_puretran
-!-- if velocity-dependent, transforming direction
-        if(lhelp.and.grd_isvelocity) then
-!-- 1+dir*v/c
-           cmffact = 1d0+(mu0*y0+sqrt(1d0-mu0**2)*cos(om0)*x0)/pc_c
-           gm = 1d0/sqrt(1d0-(x0**2+y0**2)/pc_c**2)
-!-- om
-           ptcl%om = atan2(sqrt(1d0-mu0**2)*sin(om0), &
-                sqrt(1d0-mu0**2)*cos(om0)+(gm*x0/pc_c) * &
-                (1d0+gm*(cmffact-1d0)/(gm+1d0)))
-           if(ptcl%om<0d0) ptcl%om=ptcl%om+pc_pi2
-!-- mu
-           ptcl%mu = (mu0+(gm*y0/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
-                (gm*cmffact)
-           itype = 1 !IMC
-        else
-           ptcl%mu = mu0
-           ptcl%om = om0
-           itype = 2 !DDMC
-        endif
 !}}}
 !-- 3D
      case(3)
@@ -541,38 +407,6 @@ subroutine interior_source
         ptcl%y = max(ptcl%y,grd_yarr(j))
         ptcl%z = min(ptcl%z,grd_zarr(k+1))
         ptcl%z = max(ptcl%z,grd_zarr(k))
-!-- sampling azimuthal angle of direction
-        r1 = rnd_r(rnd_state)
-        om0 = pc_pi2*r1
-!-- setting IMC logical
-        lhelp = ((grd_sig(l)+grd_cap(ig,l)) * &
-             min(dx(i),dy(j),dz(k))*thelp < prt_tauddmc) &
-             .or.in_puretran
-!-- if velocity-dependent, transforming direction
-        if(lhelp.and.grd_isvelocity) then
-           x0 = ptcl%x
-           y0 = ptcl%y
-           z0 = ptcl%z
-!-- 1+dir*v/c
-           mu1 = sqrt(1d0-mu0**2)*cos(om0)
-           mu2 = sqrt(1d0-mu0**2)*sin(om0)
-           cmffact = 1d0+(mu0*z0+mu1*x0+mu2*y0)/pc_c
-!-- mu
-           ptcl%mu = (mu0+z0/pc_c)/cmffact
-           if(ptcl%mu>1d0) then
-              ptcl%mu = 1d0
-           elseif(ptcl%mu<-1d0) then
-              ptcl%mu = -1d0
-           endif
-!-- om
-           ptcl%om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
-           if(ptcl%om<0d0) ptcl%om = ptcl%om+pc_pi2
-           itype = 1 !IMC
-        else
-           ptcl%mu = mu0
-           ptcl%om = om0
-           itype = 2 !DDMC
-        endif
 !}}}
 !-- 1D
      case(11)
@@ -598,29 +432,8 @@ subroutine interior_source
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
-!-- setting IMC logical
-        lhelp = ((grd_sig(l)+grd_cap(ig,l))*dx(i)* &
-             thelp < prt_tauddmc).or.(in_puretran)
-!write(0,*) i,grd_sig(l),grd_cap(ig,l),dx(i),thelp,prt_tauddmc
-
-!-- if velocity-dependent, transforming direction
-        if(lhelp.and.grd_isvelocity) then
-!-- 1+dir*v/c
-           cmffact = 1d0+mu0*x0/pc_c
-!-- mu
-           ptcl%mu = (mu0+x0/pc_c)/cmffact
-           itype = 1 !IMC
-        else
-           itype = 2 !DDMC
-           ptcl%mu = mu0
-        endif
 !}}}
      endselect
-
-!-- particle properties are saved in the comoving frame
-     ptcl%e = ep0
-     ptcl%e0 = ep0
-     ptcl%wl = wl0
 
 !-- save particle result
 !-----------------------
