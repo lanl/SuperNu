@@ -561,9 +561,13 @@ subroutine particle_advance
            labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
            gm = 1d0/sqrt(1d0-(x**2+y**2)/pc_c**2)
 !TODO: lorentz back transformation
-           stop 'pa: lorentz transformation missing in 2D cylindrical'
-           mu0 = mu
-           om0 = om
+!           stop 'pa: lorentz transformation missing in 2D cylindrical'
+           mu0 = (mu-gm*(y/pc_c)*(1d0-gm*(1d0-labfact)/(1d0+gm))) / &
+                (gm*labfact)
+           om0 = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                sqrt(1d0-mu**2)*cos(om)-gm*(x/pc_c) * &
+                (1d0-gm*(1d0-labfact)/(gm+1d0)))
+           if(om0<0d0) om0=om0+pc_pi2
 !
            cmffact = 1d0+(mu0*y+sqrt(1d0-mu0**2) * cos(om0)*x)/pc_c
 !-- 3D
@@ -573,9 +577,15 @@ subroutine particle_advance
            mu2 = help*sin(om)
            labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c
 !TODO: lorentz back transformation
-           stop 'pa: lorentz transformation missing in 3D cartesian'
-           mu0 = mu
-           om0 = om
+!           stop 'pa: lorentz transformation missing in 3D cartesian'
+           mu0 = (mu-z*pc_c)/labfact
+           if(mu0>1d0) then
+              mu0 = 1
+           elseif(mu0<-1d0) then
+              mu0 = -1
+           endif
+           om0 = atan2(mu2-y/pc_c,mu1-x/pc_c)
+           if(om0<0d0) om0 = om0+pc_pi2
 !
            help = sqrt(1d0-mu0**2)
            mu1 = help*cos(om0)
