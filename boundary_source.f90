@@ -12,7 +12,7 @@ subroutine boundary_source
   implicit none
 
   logical :: lhelp
-  integer :: ipart, ivac, ig, iig, i,j,k, ix,iy,iz,itype
+  integer :: ipart, ivac, ig, iig, i,j,k, ix,iy,iz
   real*8 :: r1, r2, P, mu0, x0,y0,z0, esurfpart, wl0, om0
   real*8 :: denom2, wl1, wl2, thelp, mfphelp, help, mu1, mu2
   real*8 :: srftemp = 1d4
@@ -398,28 +398,15 @@ subroutine boundary_source
         endif!}}}
      endselect
 
-     if(lhelp) then
-!-- IMC
-        if(grd_isvelocity) then
-           tot_eext = tot_eext+esurfpart
-           ptcl%e = esurfpart*cmffact
-           ptcl%e0 = esurfpart*cmffact
-           ptcl%wl = wl0/cmffact
-!-- velocity effects accounting
-           tot_evelo=tot_evelo-esurfpart*(cmffact-1d0)
-        else
-           ptcl%e = esurfpart
-           ptcl%e0 = esurfpart
-           ptcl%wl = wl0
-        endif
-        itype = 1
-     else
+!-- particle properties are saved in comoving frame
+     ptcl%e = esurfpart
+     ptcl%e0 = esurfpart
+     ptcl%wl = wl0
+
 !-- DDMC
-        ptcl%e = P*esurfpart
-        ptcl%e0 = P*esurfpart
-        tot_eext = tot_eext+ptcl%e
-        ptcl%wl = wl0
-        itype = 2
+     if(.not.lhelp) then
+        ptcl%e = ptcl%e*P
+        ptcl%e0 = ptcl%e0*P
      endif
 
 !-- save particle result

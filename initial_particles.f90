@@ -17,7 +17,7 @@ subroutine initial_particles
 !
   logical :: lhelp
   integer :: ig, i,j,k,l, iig, ipart
-  integer :: ix,iy,iz,itype
+  integer :: ix,iy,iz
   integer :: iused
   real*8 :: wl0, mu0, om0, ep0, x0, y0, z0
   real*8 :: denom2, mu1, mu2
@@ -70,9 +70,6 @@ subroutine initial_particles
 !
 !-- calculating particle time
      ptcl%t = tsp_t
-!
-!-- setting type
-     itype = 1
 
 !-- calculating wavelength
      denom2 = 0d0
@@ -248,16 +245,10 @@ subroutine initial_particles
         endif
      endselect
 
-!-- if velocity-dependent, transforming energy, wavelength
-     if(grd_isvelocity) then
-        ptcl%e = ep0*cmffact
-        ptcl%e0 = ep0*cmffact
-        ptcl%wl = wl0/cmffact
-     else
-        ptcl%e = ep0
-        ptcl%e0 = ep0
-        ptcl%wl = wl0
-     endif
+!-- particle properties are always saved in comoving frame
+     ptcl%e = ep0
+     ptcl%e0 = ep0
+     ptcl%wl = wl0
 
 !-- save particle result
 !-----------------------

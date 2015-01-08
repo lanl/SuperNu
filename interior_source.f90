@@ -280,12 +280,10 @@ subroutine interior_source
 !}}}
      endselect
 
-!-- transformation into lab frame (in static grids cmffact==1d0)
-     ptcl%e = ep0*cmffact
-     ptcl%e0 = ep0*cmffact
-     ptcl%wl = wl0/cmffact
-!-- velocity effects accounting
-     tot_evelo=tot_evelo+ep0*(1d0-cmffact)
+!-- particle properties are saved in the comoving frame
+     ptcl%e = ep0
+     ptcl%e0 = ep0
+     ptcl%wl = wl0
 
 !-- save particle result
 !-----------------------
@@ -619,12 +617,10 @@ subroutine interior_source
 !}}}
      endselect
 
-!-- transformation into lab frame (in static grids cmffact==1d0)
-     ptcl%e = ep0*cmffact
-     ptcl%e0 = ep0*cmffact
-     ptcl%wl = wl0/cmffact
-!-- velocity effects accounting
-     tot_evelo=tot_evelo+ep0*(1d0-cmffact)
+!-- particle properties are saved in the comoving frame
+     ptcl%e = ep0
+     ptcl%e0 = ep0
+     ptcl%wl = wl0
 
 !-- save particle result
 !-----------------------

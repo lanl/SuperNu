@@ -22,9 +22,8 @@ subroutine particle_advance
   !are being handled in separate subroutines but this may be changed to reduce
   !total subroutine calls in program.
 !##################################################
-  logical :: lhelp
   integer*8 :: nddmc, nimc, npckt
-  real*8 :: r1, x1, x2, help
+  real*8 :: r1, x1, x2, thelp, help
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
 ! real*8 :: uul, uur, uumax, r0,r2,r3
@@ -67,6 +66,11 @@ subroutine particle_advance
   ic => ptcl2%ic
   ig => ptcl2%ig
 
+  if(grd_isvelocity) then
+     thelp = tsp_t
+  else
+     thelp = 1d0
+  endif
 !
 !-- energy tallies
   grd_eamp = 0d0
@@ -92,297 +96,66 @@ subroutine particle_advance
      ptcl2%isvacant = .false.
 !
 !-- active particle
-     ptcl = prt_particles(ipart)
+     ptcl = prt_particles(ipart) !copy properties out of array
      ptcl2%ipart = ipart
      npckt = npckt + 1
 
-!-- default, recalculated for isvelocity and itype==1
-     labfact = 1d0
-
-     if(grd_isvelocity.and.ptcl2%itype==1) then
-        select case(in_igeom)
-!-- [123]D spherical
-        case(1,11)
-           labfact = 1d0-x*mu/pc_c !-- 1-dir*v/c
-!-- 2D
-        case(2)
-           labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c !-- 1-dir*v/c
-!-- 3D
-        case(3)
-           mu1 = sqrt(1d0-mu**2)*cos(om)
-           mu2 = sqrt(1d0-mu**2)*sin(om)
-           labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c !-- 1-dir*v/c
-        endselect
-     endif
-
      ptcl2%done = .false.
+
+!-- cell position
+     ix = binsrch(ptcl%x,grd_xarr,grd_nx+1,.false.)
+     iy = binsrch(ptcl%y,grd_yarr,grd_ny+1,.false.)
+     iz = binsrch(ptcl%z,grd_zarr,grd_nz+1,.false.)
 
 !-- cell pointer
      ic = grd_icell(ix,iy,iz)
 
-!-- Looking up group
-     if(ptcl2%itype==1) then
-        ig = binsrch(wl/labfact,grp_wl,grp_ng+1,.false.) !.not.grd_isvelocity -> labfact=1d0
+!-- group index
+     ig = binsrch(wl,grp_wl,grp_ng+1,.false.) !co-moving frame
+
+!-- particle type
+     select case(in_igeom)
+     case(1)
+        help = min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) 
+     case(2)
+        help = min(dx(ix),dy(iy))
+     case(3)
+        help = min(dx(ix),dy(iy),dz(iz))
+     case(11)
+        help = dx(ix)
+     endselect
+!-- IMC or DDMC
+     if(in_puretran .or. (grd_sig(ic)+grd_cap(ig,ic))*help*thelp<prt_tauddmc) then
+        ptcl2%itype = 1 !IMC
      else
-        ig = binsrch(wl,grp_wl,grp_ng+1,.false.)
+        ptcl2%itype = 2 !DDMC
      endif
 
-
-!-- Checking if particle conversions are required since prior time step
-     if(.not.in_puretran) then
-        if(grd_isvelocity) then!{{{
-           help = tsp_t
-        else
-           help = 1d0
-        endif
-!
-!-- selecting geometry
+!-- transformation factor into lab frame
+     cmffact = 1d0  !default
+     if(grd_isvelocity.and.ptcl2%itype==1) then
         select case(in_igeom)
-
-!-- 3D spherical
-        case(1)
-           lhelp = ((grd_sig(ic)+grd_cap(ig,ic)) * &!{{{
-                min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) * &
-                help<prt_tauddmc).or.in_puretran
-           if(lhelp) then
-              if(ptcl2%itype == 2) then
-!-- DDMC -> IMC
-                 grd_methodswap(ic) = grd_methodswap(ic)+1
-!-- sampling position uniformly
-                 r1 = rnd_r(rnd_state)
-                 prt_tlyrand = prt_tlyrand+1
-                 x = (r1*grd_xarr(ix+1)**3 + &
-                      (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
-                 r1 = rnd_r(rnd_state)
-                 prt_tlyrand = prt_tlyrand+1
-                 y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
-                 r1 = rnd_r(rnd_state)
-                 prt_tlyrand = prt_tlyrand+1
-                 z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
-!-- must be inside cell
-                 x = min(x,grd_xarr(ix+1))
-                 x = max(x,grd_xarr(ix))
-                 y = min(y,grd_yarr(iy+1))
-                 y = max(y,grd_yarr(iy))
-                 z = min(z,grd_zarr(iz+1))
-                 z = max(z,grd_zarr(iz))
-!-- sampling angle isotropically
-                 r1 = rnd_r(rnd_state)
-                 prt_tlyrand = prt_tlyrand+1
-                 mu = 1.0 - 2.0*r1
-                 r1 = rnd_r(rnd_state)
-                 prt_tlyrand = prt_tlyrand+1
-                 om = pc_pi2*r1
-                 if(grd_isvelocity) then
-!-- 1+dir*v/c
-                    cmffact = 1d0+x*mu/pc_c
-!-- mu
-                    mu = (mu+x/pc_c)/cmffact
-!-- 1-dir*v/c
-                    labfact = 1d0-x*mu/pc_c
-                 endif
-              endif
-           else
-              if(ptcl2%itype==1) then
-!-- IMC -> DDMC
-                 grd_methodswap(ic) = grd_methodswap(ic)+1
-              endif
-           endif!}}}
-
+!-- [123]D spherical
+        case(1,11)
+           cmffact = 1d0+x*mu/pc_c
 !-- 2D
         case(2)
-           lhelp = ((grd_sig(ic)+grd_cap(ig,ic)) * & !{{{
-                min(dx(ix),dy(iy))*help < prt_tauddmc) &
-                .or.in_puretran
-           if(lhelp) then
-              if(ptcl2%itype == 2) then
-!-- DDMC -> IMC
-                 grd_methodswap(ic) = grd_methodswap(ic)+1
-!-- sampling position uniformly
-                 r1 = rnd_r(rnd_state)
-                 x = sqrt(r1*grd_xarr(ix+1)**2 + &
-                      (1d0-r1)*grd_xarr(ix)**2)
-!-- must be inside cell
-                 x = min(x,grd_xarr(ix+1))
-                 x = max(x,grd_xarr(ix))
-                 r1 = rnd_r(rnd_state)
-                 y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
-!-- sampling direction values
-                 r1 = rnd_r(rnd_state)
-                 om = pc_pi2*r1
-                 r1 = rnd_r(rnd_state)
-                 mu = 1d0 - 2d0*r1
-                 if(grd_isvelocity) then
-!-- 1+dir*v/c
-                    cmffact = 1d0+(mu*y+sqrt(1d0-mu**2) * &
-                         cos(om)*x)/pc_c
-                    gm = 1d0/sqrt(1d0-(x**2+y**2)/pc_c**2)
-!-- om
-                    om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-                         sqrt(1d0-mu**2)*cos(om)+(gm*x/pc_c) * &
-                         (1d0+gm*(cmffact-1d0)/(gm+1d0)))
-                    if(om<0d0) om = om+pc_pi2
-!-- mu
-                    mu = (mu+(gm*y/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
-                         (gm*cmffact)
-!-- 1-dir*v/c
-                    labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
-                         cos(om)*x)/pc_c
-                 endif
-              endif
-           else
-              if(ptcl2%itype==1) then
-!-- IMC -> DDMC
-                 grd_methodswap(ic) = grd_methodswap(ic)+1
-              endif
-           endif!}}}
-
+           cmffact = 1d0+(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
 !-- 3D
         case(3)
-           lhelp = ((grd_sig(ic)+grd_cap(ig,ic)) * & !{{{
-                min(dx(ix),dy(iy),dz(iz))*help < prt_tauddmc) &
-                .or.in_puretran
-           if(lhelp) then
-              if(ptcl2%itype == 2) then
-!-- DDMC -> IMC
-                 grd_methodswap(ic) = grd_methodswap(ic)+1
-!-- sampling position uniformly
-                 r1 = rnd_r(rnd_state)
-                 x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
-                 r1 = rnd_r(rnd_state)
-                 y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
-                 r1 = rnd_r(rnd_state)
-                 z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
-!-- must be inside cell
-                 x = min(x,grd_xarr(ix+1))
-                 x = max(x,grd_xarr(ix))
-                 y = min(y,grd_yarr(iy+1))
-                 y = max(y,grd_yarr(iy))
-                 z = min(z,grd_zarr(iz+1))
-                 z = max(z,grd_zarr(iz))
-!-- sampling direction values
-                 r1 = rnd_r(rnd_state)
-                 om = pc_pi2*r1
-                 r1 = rnd_r(rnd_state)
-                 mu = 1d0 - 2d0*r1
-                 if(grd_isvelocity) then
-!-- 1+dir*v/c
-                    mu1 = sqrt(1d0-mu**2)*cos(om)
-                    mu2 = sqrt(1d0-mu**2)*sin(om)
-                    cmffact = 1d0+(mu*z+mu1*x+mu2*y)/pc_c
-!-- mu
-                    mu = (mu+z/pc_c)/cmffact
-                    if(mu>1d0) then
-                       mu = 1d0
-                    elseif(mu<-1d0) then
-                       mu = -1d0
-                    endif
-!-- om
-                    om = atan2(mu2+y/pc_c,mu1+x/pc_c)
-                    if(om<0d0) om = om+pc_pi2
-!-- 1-dir*v/c
-                    mu1 = sqrt(1d0-mu**2)*cos(om)
-                    mu2 = sqrt(1d0-mu**2)*sin(om)
-                    labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c
-                 endif
-              endif
-           else
-              if(ptcl2%itype==1) then
-!-- IMC -> DDMC
-                 grd_methodswap(ic) = grd_methodswap(ic)+1
-              endif
-           endif!}}}
-
-!-- 1D spherical
-        case(11)
-           lhelp = ((grd_sig(ic)+grd_cap(ig,ic)) * &!{{{
-                dx(ix)*help<prt_tauddmc) &
-                .or.in_puretran
-           if(lhelp) then
-              if(ptcl2%itype == 2) then
-!-- DDMC -> IMC
-                 grd_methodswap(ic) = grd_methodswap(ic)+1
-!-- sampling position uniformly
-                 r1 = rnd_r(rnd_state)
-                 prt_tlyrand = prt_tlyrand+1
-                 x = (r1*grd_xarr(ix+1)**3 + &
-                      (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
-!-- must be inside cell
-                 x = min(x,grd_xarr(ix+1))
-                 x = max(x,grd_xarr(ix))
-!-- sampling angle isotropically
-                 r1 = rnd_r(rnd_state)
-                 prt_tlyrand = prt_tlyrand+1
-                 mu = 1.0 - 2.0*r1
-                 if(grd_isvelocity) then
-!-- 1+dir*v/c
-                    cmffact = 1d0+x*mu/pc_c
-!-- mu
-                    mu = (mu+x/pc_c)/cmffact
-!-- 1-dir*v/c
-                    labfact = 1d0-x*mu/pc_c
-                 endif
-              endif
-           else
-              if(ptcl2%itype==1) then
-!-- IMC -> DDMC
-                 grd_methodswap(ic) = grd_methodswap(ic)+1
-              endif
-           endif!}}}
-
-        case default
-!-- don't let the compiler believe lhelp may be used uninitialized
-           lhelp = .true.
+           mu1 = sqrt(1d0-mu**2)*cos(om)
+           mu2 = sqrt(1d0-mu**2)*sin(om)
+           cmffact = 1d0+(mu*z+mu1*x+mu2*y)/pc_c
         endselect
-
-
-        if(lhelp) then
-           if(ptcl2%itype == 2) then
-!-- DDMC -> IMC
-              r1 = rnd_r(rnd_state)
-              prt_tlyrand = prt_tlyrand+1
-              wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
-              if(grd_isvelocity) then
-!-- velocity effects accounting
-                 tot_evelo = tot_evelo+e*(1d0-1d0/labfact)
-!
-                 e = e/labfact
-                 ptcl%e0 = ptcl%e0/labfact
-                 wl = wl*labfact
-              endif
-              ptcl2%itype = 1
-           endif
-        else
-           if(ptcl2%itype==1) then
-!-- IMC -> DDMC
-              if(grd_isvelocity) then
-!-- velocity effects accounting
-                 tot_evelo = tot_evelo+e*(1d0-labfact)
-!
-                 e = e*labfact
-                 ptcl%e0 = ptcl%e0*labfact
-                 wl = wl/labfact
-              endif
-              ptcl2%itype = 2
-           endif
-        endif
-!
-!-- looking up group
-        if(ptcl2%itype==1) then
-           ig = binsrch(wl/labfact,grp_wl,grp_ng+1,.false.) !.not.grd_isvelocity -> labfact=1d0
-        else
-           ig = binsrch(wl,grp_wl,grp_ng+1,.false.)
-        endif
-!-- particle out of wlgrid bound
-        if(ig>grp_ng) then
-           ig = grp_ng
-!          wl = grp_wl(ig)*labfact
-        elseif(ig<1) then
-           ig = 1
-!          wl = grp_wl(ig)*labfact
-        endif
-!}}}
      endif
+
+!-- transform into lab frame
+     if(ptcl2%itype==1) then
+        wl = wl/cmffact
+        e = e*cmffact
+        ptcl%e0 = ptcl%e0*cmffact 
+     endif
+
 
 !-- First portion of operator split particle velocity position adjustment
      if(isshift) then
@@ -623,9 +396,6 @@ subroutine particle_advance
 !
 !-- find group
         ig = binsrch(wl,grp_wl,grp_ng+1,.false.)
-!-- particle out of wlgrid energy bound
-        if(ig>grp_ng) ig = grp_ng
-        if(ig<1) ig = 1
 !
         r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
@@ -659,9 +429,147 @@ subroutine particle_advance
 !-- radiation energy at census
      tot_erad = tot_erad + e
 
-!
-!-- save particle results
-!------------------------
+
+!-- sample position, direction, and wavelength of a censused DDMC
+!-- particle. It might be an IMC particle in the next time step
+     if(ptcl2%itype==2) then
+!-- selecting geometry!{{{
+        select case(in_igeom)
+!-- 3D spherical
+        case(1)
+!-- sampling position uniformly!{{{
+           r1 = rnd_r(rnd_state)
+           prt_tlyrand = prt_tlyrand+1
+           x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
+           r1 = rnd_r(rnd_state)
+           prt_tlyrand = prt_tlyrand+1
+           y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
+           r1 = rnd_r(rnd_state)
+           prt_tlyrand = prt_tlyrand+1
+           z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
+!-- must be inside cell
+           x = min(x,grd_xarr(ix+1))
+           x = max(x,grd_xarr(ix))
+           y = min(y,grd_yarr(iy+1))
+           y = max(y,grd_yarr(iy))
+           z = min(z,grd_zarr(iz+1))
+           z = max(z,grd_zarr(iz))
+!-- sampling angle isotropically
+           r1 = rnd_r(rnd_state)
+           prt_tlyrand = prt_tlyrand+1
+           mu = 1.0 - 2.0*r1
+           r1 = rnd_r(rnd_state)
+           prt_tlyrand = prt_tlyrand+1
+           om = pc_pi2*r1
+           if(grd_isvelocity) then
+!-- 1+dir*v/c
+              cmffact = 1d0+x*mu/pc_c
+!-- mu
+              mu = (mu+x/pc_c)/cmffact
+           endif!}}}
+!-- 2D
+        case(2)
+!-- sampling position uniformly!{{{
+           r1 = rnd_r(rnd_state)
+           x = sqrt(r1*grd_xarr(ix+1)**2 + (1d0-r1)*grd_xarr(ix)**2)
+!-- must be inside cell
+           x = min(x,grd_xarr(ix+1))
+           x = max(x,grd_xarr(ix))
+           r1 = rnd_r(rnd_state)
+           y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
+!-- sampling direction values
+           r1 = rnd_r(rnd_state)
+           om = pc_pi2*r1
+           r1 = rnd_r(rnd_state)
+           mu = 1d0 - 2d0*r1
+           if(grd_isvelocity) then
+!-- 1+dir*v/c
+              cmffact = 1d0+(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
+              gm = 1d0/sqrt(1d0-(x**2+y**2)/pc_c**2)
+!-- om
+              om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                   sqrt(1d0-mu**2)*cos(om)+(gm*x/pc_c) * &
+                   (1d0+gm*(cmffact-1d0)/(gm+1d0)))
+              if(om<0d0) om = om+pc_pi2
+!-- mu
+              mu = (mu+(gm*y/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
+                   (gm*cmffact)
+           endif!}}}
+!-- 3D
+        case(3)
+!-- sampling position uniformly!{{{
+           r1 = rnd_r(rnd_state)
+           x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
+           r1 = rnd_r(rnd_state)
+           y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
+           r1 = rnd_r(rnd_state)
+           z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
+!-- must be inside cell
+           x = min(x,grd_xarr(ix+1))
+           x = max(x,grd_xarr(ix))
+           y = min(y,grd_yarr(iy+1))
+           y = max(y,grd_yarr(iy))
+           z = min(z,grd_zarr(iz+1))
+           z = max(z,grd_zarr(iz))
+!-- sampling direction values
+           r1 = rnd_r(rnd_state)
+           om = pc_pi2*r1
+           r1 = rnd_r(rnd_state)
+           mu = 1d0 - 2d0*r1
+           if(grd_isvelocity) then
+!-- 1+dir*v/c
+              mu1 = sqrt(1d0-mu**2)*cos(om)
+              mu2 = sqrt(1d0-mu**2)*sin(om)
+              cmffact = 1d0+(mu*z+mu1*x+mu2*y)/pc_c
+!-- mu
+              mu = (mu+z/pc_c)/cmffact
+              if(mu>1d0) then
+                 mu = 1d0
+              elseif(mu<-1d0) then
+                 mu = -1d0
+              endif
+!-- om
+              om = atan2(mu2+y/pc_c,mu1+x/pc_c)
+              if(om<0d0) om = om+pc_pi2
+           endif!}}}
+!-- 1D spherical
+        case(11)
+!-- sampling position uniformly!{{{
+           r1 = rnd_r(rnd_state)
+           prt_tlyrand = prt_tlyrand+1
+           x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
+!-- must be inside cell
+           x = min(x,grd_xarr(ix+1))
+           x = max(x,grd_xarr(ix))
+!-- sampling angle isotropically
+           r1 = rnd_r(rnd_state)
+           prt_tlyrand = prt_tlyrand+1
+           mu = 1.0 - 2.0*r1
+           if(grd_isvelocity) then
+!-- 1+dir*v/c
+              cmffact = 1d0+x*mu/pc_c
+!-- mu
+              mu = (mu+x/pc_c)/cmffact
+           endif
+!}}}
+        endselect
+
+!-- sample wavelength
+        r1 = rnd_r(rnd_state)
+        prt_tlyrand = prt_tlyrand+1
+        wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
+!}}}
+     endif
+
+!-- transform back into comoving frame before storing
+     if(ptcl2%itype==1) then
+        wl = wl*cmffact
+        e = e/cmffact
+        ptcl%e0 = ptcl%e0/cmffact 
+     endif
+
+!-- save particle properties
+!---------------------------
      prt_particles(ipart) = ptcl
 
   enddo !ipart
