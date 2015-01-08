@@ -22,6 +22,7 @@ subroutine particle_advance
   !are being handled in separate subroutines but this may be changed to reduce
   !total subroutine calls in program.
 !##################################################
+  real*8,parameter :: cinv=1d0/pc_c
   integer*8 :: nddmc, nimc, npckt
   real*8 :: r1, x1, x2, thelp, help
 ! integer :: irl,irr
@@ -103,9 +104,9 @@ subroutine particle_advance
      ptcl2%done = .false.
 
 !-- cell position
-     ix = binsrch(ptcl%x,grd_xarr,grd_nx+1,.false.)
-     iy = binsrch(ptcl%y,grd_yarr,grd_ny+1,.false.)
-     iz = binsrch(ptcl%z,grd_zarr,grd_nz+1,.false.)
+     ix = binsrch(x,grd_xarr,grd_nx+1,.false.)
+     iy = binsrch(y,grd_yarr,grd_ny+1,.false.)
+     iz = binsrch(z,grd_zarr,grd_nz+1,.false.)
 
 !-- cell pointer
      ic = grd_icell(ix,iy,iz)
@@ -141,11 +142,12 @@ subroutine particle_advance
         select case(in_igeom)!{{{
 !-- [123]D spherical
         case(1,11)
-           cmffact = 1d0+x*mu/pc_c
+           cmffact = 1d0+x*mu0/pc_c
            mu = (mu0+x/pc_c)/cmffact
+           labfact = 1d0-x*mu/pc_c
 !-- 2D
         case(2)
-           cmffact = 1d0+(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
+           cmffact = 1d0+(mu0*y+sqrt(1d0-mu0**2) * cos(om0)*x)/pc_c
            gm = 1d0/sqrt(1d0-(x**2+y**2)/pc_c**2)
 !-- om
            om = atan2(sqrt(1d0-mu0**2)*sin(om0), &
@@ -155,11 +157,13 @@ subroutine particle_advance
 !-- mu
            mu = (mu0+(gm*y/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
                 (gm*cmffact)
+           labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
 !-- 3D
         case(3)
-           mu1 = sqrt(1d0-mu**2)*cos(om)
-           mu2 = sqrt(1d0-mu**2)*sin(om)
-           cmffact = 1d0+(mu*z+mu1*x+mu2*y)/pc_c
+           help = sqrt(1d0-mu0**2)
+           mu1 = help*cos(om)
+           mu2 = help*sin(om)
+           cmffact = 1d0+(mu0*z+mu1*x+mu2*y)/pc_c
 !-- mu
            mu = (mu0+z/pc_c)/cmffact
            mu = min(mu,1d0)
@@ -167,12 +171,16 @@ subroutine particle_advance
 !-- om
            om = atan2(mu2+y/pc_c,mu1+x/pc_c)
            if(om<0d0) om = om+pc_pi2
+           help = sqrt(1d0-mu**2)
+           mu1 = help*cos(om)
+           mu2 = help*sin(om)
+           labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c
         endselect
 
 !-- transform into lab frame
-        wl = wl/cmffact
-        e = e*cmffact
-        ptcl%e0 = ptcl%e0*cmffact !}}}
+        wl = wl*labfact
+        e = e/labfact
+        ptcl%e0 = ptcl%e0/labfact !}}}
      endif
 
 
@@ -545,28 +553,34 @@ subroutine particle_advance
         case(1,11)
            labfact = 1d0-x*mu/pc_c
            mu0 = (mu-x/pc_c)/labfact
+           om0 = om
 !
-           cmffact = 1d0+x*mu/pc_c
+           cmffact = 1d0+x*mu0/pc_c
 !-- 2D
         case(2)
+           labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
+           gm = 1d0/sqrt(1d0-(x**2+y**2)/pc_c**2)
 !TODO: lorentz back transformation
            stop 'pa: lorentz transformation missing in 2D cylindrical'
-           labfact = 1d0
            mu0 = mu
            om0 = om
 !
-           cmffact = 1d0+(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
+           cmffact = 1d0+(mu0*y+sqrt(1d0-mu0**2) * cos(om0)*x)/pc_c
 !-- 3D
         case(3)
+           help = sqrt(1d0-mu**2)
+           mu1 = help*cos(om)
+           mu2 = help*sin(om)
+           labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c
 !TODO: lorentz back transformation
            stop 'pa: lorentz transformation missing in 3D cartesian'
-           labfact = 1d0
            mu0 = mu
            om0 = om
 !
-           mu1 = sqrt(1d0-mu**2)*cos(om)
-           mu2 = sqrt(1d0-mu**2)*sin(om)
-           cmffact = 1d0+(mu*z+mu1*x+mu2*y)/pc_c
+           help = sqrt(1d0-mu0**2)
+           mu1 = help*cos(om0)
+           mu2 = help*sin(om0)
+           cmffact = 1d0+(mu0*z+mu1*x+mu2*y)/pc_c
         endselect
 
         mu = mu0
