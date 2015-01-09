@@ -18,20 +18,17 @@ subroutine interior_source
   !Composed of external source particle loop (1st) and thermal source
   !particle loop (2nd).
 !##################################################
-  logical :: lhelp
   integer :: i,j,k, ipart,ivac,ig,ii
   integer :: nhere,ndmy,iimpi,nemit
   real*8 :: pwr
   real*8 :: r1, r2, r3, uul, uur, uumax
-  real*8 :: om0, mu0, x0, y0, z0, ep0, wl0
+  real*8 :: om0, mu0, x0, y0, ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, thelp
-  real*8 :: cmffact,mu1,mu2,gm
 !-- neighbor emit values (for source tilting)
   integer :: icnb(6)
 !
   real*8 :: emitprob(grp_ng)
-  type(packet) :: ptcl
-  integer :: ix,iy,iz,itype
+  type(packet),pointer :: ptcl
 !-- statement functions
   integer :: l
   real*8 :: dx
@@ -63,20 +60,11 @@ subroutine interior_source
   do ii=1,nhere
      ipart = ipart + 1!{{{
      ivac = prt_vacantarr(ipart)
-
-!-- setting cell index
-     ix = i
-     iy = j
-     iz = k
+     ptcl => prt_particles(ivac)
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
 
-!-- default, recalculated for isvelocity and itype==1
-     cmffact = 1d0
-
-!-- default IMC, reset if DDMC
-     itype = 1
 !
 !-- calculating particle time
      r1 = rnd_r(rnd_state)
@@ -105,12 +93,12 @@ subroutine interior_source
 !-- calculating direction cosine (comoving)
      r1 = rnd_r(rnd_state)
      mu0 = 1d0-2d0*r1
-     ptcl%mu = mu0
+     ptcl%mu = mu0 !overwrite when isvelocity
 
 !-- sampling azimuthal angle of direction
      r1 = rnd_r(rnd_state)
      om0 = pc_pi2*r1
-     ptcl%om = om0
+     ptcl%om = om0 !overwrite when isvelocity
 
 !
 !-- selecting geometry
@@ -135,8 +123,7 @@ subroutine interior_source
         ptcl%y = min(ptcl%y,grd_yarr(j+1))
         ptcl%y = max(ptcl%y,grd_yarr(j))
         ptcl%z = min(ptcl%z,grd_zarr(k+1))
-        ptcl%z = max(ptcl%z,grd_zarr(k)) !}}}
-
+        ptcl%z = max(ptcl%z,grd_zarr(k))!}}}
 !-- 2D
      case(2)
 !-- calculating position!{{{
@@ -150,8 +137,7 @@ subroutine interior_source
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
         ptcl%y = min(ptcl%y,grd_yarr(j+1))
-        ptcl%y = max(ptcl%y,grd_yarr(j)) !}}}
-
+        ptcl%y = max(ptcl%y,grd_yarr(j))!}}}
 !-- 3D
      case(3)
 !-- calculating position!{{{
@@ -171,7 +157,6 @@ subroutine interior_source
         ptcl%y = max(ptcl%y,grd_yarr(j))
         ptcl%z = min(ptcl%z,grd_zarr(k+1))
         ptcl%z = max(ptcl%z,grd_zarr(k)) !}}}
-
 !-- 1D
      case(11)
 !-- calculating position!{{{
@@ -184,15 +169,6 @@ subroutine interior_source
         ptcl%x = max(ptcl%x,grd_xarr(i)) !}}}
 
      endselect
-
-!-- particle properties are saved in the comoving frame
-     ptcl%e = ep0
-     ptcl%e0 = ep0
-     ptcl%wl = wl0
-
-!-- save particle result
-!-----------------------
-     prt_particles(ivac) = ptcl
 !}}}
   enddo !ipart
 !
@@ -227,20 +203,11 @@ subroutine interior_source
   do ii=1,nhere
      ipart = ipart + 1!{{{
      ivac = prt_vacantarr(ipart)
-!
-!-- setting cell index
-     ix = i
-     iy = j
-     iz = k
+     ptcl => prt_particles(ivac)
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
 
-!-- default, recalculated for isvelocity and itype==1
-     cmffact = 1d0
-
-!-- default IMC, reset if DDMC
-     itype = 1
 !
 !-- calculating particle time
      r1 = rnd_r(rnd_state)
@@ -434,10 +401,6 @@ subroutine interior_source
         ptcl%x = max(ptcl%x,grd_xarr(i))
 !}}}
      endselect
-
-!-- save particle result
-!-----------------------
-     prt_particles(ivac) = ptcl
 !}}}
   enddo !ipart
 !

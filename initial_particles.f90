@@ -19,11 +19,10 @@ subroutine initial_particles
   integer :: ig, i,j,k,l, iig, ipart
   integer :: ix,iy,iz
   integer :: iused
-  real*8 :: wl0, mu0, om0, ep0, x0, y0, z0
-  real*8 :: denom2, mu1, mu2
+  real*8 :: wl0, mu0, om0, ep0
+  real*8 :: denom2
   real*8 :: r1
   real*8 :: wl1,wl2,wl3,wl4
-  real*8 :: cmffact,gm
 
 !-- helper quantities
   wl1=grp_wlinv(grp_ng+1)

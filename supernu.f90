@@ -2,6 +2,7 @@ program supernu
 
   use randommod
   use mpimod
+  use transportmod
   use inputparmod
   use timestepmod
   use groupmod
@@ -122,6 +123,8 @@ program supernu
 !-- inputstr no longer needed
   call inputstr_dealloc
 
+!-- create procedure pointers for the selected geometry
+  call transport_init(in_igeom)
 
 !-- allocate flux arrays
   call flux_alloc
@@ -215,6 +218,7 @@ program supernu
         call vacancies             !Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
         call boundary_source       !properties of prt_particles on domain boundary
         call interior_source       !properties of prt_particles emitted in domain interior
+        if(in_isvelocity) call source_transformdirection
         deallocate(prt_vacantarr)
      endif
      if(tsp_it<=tsp_ntres) where(.not.prt_isvacant) prt_particles%t = tsp_t !reset particle clocks

@@ -12,14 +12,24 @@ subroutine boundary_source
   implicit none
 
   logical :: lhelp
-  integer :: ipart, ivac, ig, iig, i,j,k, ix,iy,iz, l
+  integer :: ipart, ivac, ig, iig, i,j,k, ix,iy,iz
   real*8 :: r1, r2, P, mu0, x0,y0,z0, esurfpart, wl0, om0
   real*8 :: denom2, wl1, wl2, thelp, mfphelp, help, mu1, mu2
   real*8 :: srftemp = 1d4
-  real*8 :: cmffact, alb,beta,eps,gm
+  real*8 :: alb,beta,eps
   type(packet) :: ptcl
   real*8, dimension(grp_ng) :: emitsurfprobg  !surface emission probabilities 
 
+!
+!-- statement functions
+  integer :: l
+  real*8 :: dx,dy,dz,xm,dyac,ym
+  dx(l) = grd_xarr(l+1) - grd_xarr(l)
+  dy(l) = grd_yarr(l+1) - grd_yarr(l)
+  dz(l) = grd_zarr(l+1) - grd_zarr(l)
+  xm(l) = 0.5*(grd_xarr(l+1) + grd_xarr(l))
+  dyac(l) = grd_yacos(l) - grd_yacos(l+1)
+  ym(l) = sqrt(1d0-0.25*(grd_yarr(l+1)+grd_yarr(l))**2)
 
   esurfpart = tot_esurf/dble(prt_nsurf)
 
@@ -143,6 +153,14 @@ subroutine boundary_source
         iz = k
 !-- sampling azimuthal direction angle
         ptcl%om = r1*pc_pi2
+!-- calculating albedo
+        l = grd_icell(i,j,k)
+        mfphelp = (grd_cap(iig,l)+grd_sig(l))*dx(i)*thelp
+        P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
+        lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
+             min(dx(i),xm(i)*dyac(j),xm(i)*ym(j)*dz(k)) * &
+             thelp < prt_tauddmc) &
+             .or.in_puretran.or.P>1d0.or.P<0d0
         ptcl%mu = -mu0!}}}
 
 !-- 2D
@@ -168,6 +186,9 @@ subroutine boundary_source
 !-- sampling direction helpers
            r1 = rnd_r(rnd_state)
            om0 = pc_pi2*r1
+!-- setting albedo helpers
+           help = dy(j)
+           mu2 = mu0
         else
 !-- curved surface
            ptcl%x = grd_xarr(grd_nx+1)
@@ -181,10 +202,23 @@ subroutine boundary_source
            j = iy
 !-- sampling direction helpers
            r1 = rnd_r(rnd_state)
-           mu0 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
+           mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
            om0 = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),-mu0)
            if(om0<0d0) om0=om0+pc_pi2
+!-- setting albedo helpers
+           help = dx(i)
+           mu2 = mu0
+           mu0 = mu1
         endif
+
+!-- calculating albedo
+        l = grd_icell(i,j,1)
+        mfphelp = (grd_cap(iig,l)+grd_sig(l))*help*thelp
+        P = 4d0*(1.0+1.5*abs(mu2))/(3d0*mfphelp+6d0*pc_dext)
+        lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
+             min(dx(i),dy(j))*thelp < prt_tauddmc) &
+             .or.in_puretran.or.P>1d0.or.P<0d0
+
         ptcl%mu = mu0
         ptcl%om = om0!}}}
 
@@ -217,6 +251,9 @@ subroutine boundary_source
            mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
            om0 = atan2(mu1,mu0)
            if(om0<0d0) om0=om0+pc_pi2
+!-- setting albedo helpers
+           help = dx(i)
+           mu2 = mu0
            mu0 = sqrt(1d0-mu0**2)*sin(pc_pi2*r1)
 
         elseif(in_surfsrcloc=='down'.or.in_surfsrcloc=='up') then
@@ -245,6 +282,9 @@ subroutine boundary_source
            mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
            om0 = atan2(mu0,mu1)
            if(om0<0d0) om0=om0+pc_pi2
+!-- setting albedo helpers
+           help = dy(j)
+           mu2 = mu0
            mu0 = sqrt(1d0-mu0**2)*sin(pc_pi2*r1)
 
         else
@@ -271,7 +311,24 @@ subroutine boundary_source
 !-- sampling azimuthal angle of direction
            r1 = rnd_r(rnd_state)
            om0 = pc_pi2*r1
+!-- setting albedo helpers
+           help = dz(k)
+           mu2 = mu0
         endif
+
+!-- calculating albedo
+        l = grd_icell(i,j,k)
+        mfphelp = (grd_cap(iig,l)+grd_sig(l))*help*thelp
+        alb = grd_fcoef(l)*grd_cap(iig,l)/ &
+             (grd_cap(iig,l)+grd_sig(l))
+        eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
+        beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
+             2.25d0*alb**2*mfphelp**4)
+        P = 0.5d0*eps*beta*(1d0+1.5d0*abs(mu2))/(beta-0.75*eps*mfphelp)
+!        P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
+        lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
+             min(dx(i),dy(j),dz(k))*thelp < prt_tauddmc) &
+             .or.in_puretran.or.P>1d0.or.P<0d0
 
         ptcl%mu = mu0
         ptcl%om = om0!}}}
@@ -285,6 +342,13 @@ subroutine boundary_source
         ix = i
         iy = j
         iz = k
+!-- calculating albedo
+        mfphelp = (grd_cap(iig,l)+grd_sig(l))*dx(i)*thelp
+        P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
+        lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
+             dx(i)*thelp < prt_tauddmc) &
+             .or.in_puretran.or.P>1d0.or.P<0d0
+
         ptcl%mu = -mu0!}}}
      endselect
 

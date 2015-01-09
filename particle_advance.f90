@@ -1,6 +1,7 @@
 subroutine particle_advance
 
   use randommod
+  use transportmod
   use miscmod
   use particlemod
   use timestepmod
@@ -31,9 +32,9 @@ subroutine particle_advance
   integer :: ipart
   integer, pointer :: ig, ic
   integer, pointer :: ix, iy, iz
-  real*8, pointer :: x,y,z, mu, e, wl, om
+  real*8, pointer :: x,y,z, mu, e, e0, wl, om
   real*8 :: t0,t1  !timing
-  real*8 :: labfact, cmffact, mu1, mu2, gm, om0, mu0
+  real*8 :: labfact, mu1, mu2, om0, mu0
 !-- specint cache
   real*8 :: specarr(grp_ng)
   integer :: icell(3)
@@ -60,6 +61,7 @@ subroutine particle_advance
   om => ptcl%om
   wl => ptcl%wl
   e => ptcl%e
+  e0 => ptcl%e0
 !-- secondary particle properties
   ix => ptcl2%ix
   iy => ptcl2%iy
@@ -139,48 +141,21 @@ subroutine particle_advance
 !
 !-- transform IMC particle into lab frame
      if(grd_isvelocity.and.ptcl2%itype==1) then
-        select case(in_igeom)!{{{
-!-- [123]D spherical
+        select case(in_igeom)
         case(1,11)
-           cmffact = 1d0+x*mu0/pc_c
-           mu = (mu0+x/pc_c)/cmffact
            labfact = 1d0-x*mu/pc_c
-!-- 2D
         case(2)
-           cmffact = 1d0+(mu0*y+sqrt(1d0-mu0**2) * cos(om0)*x)/pc_c
-           gm = 1d0/sqrt(1d0-(x**2+y**2)/pc_c**2)
-!-- om
-           om = atan2(sqrt(1d0-mu0**2)*sin(om0), &
-                sqrt(1d0-mu0**2)*cos(om0)+(gm*x/pc_c) * &
-                (1d0+gm*(cmffact-1d0)/(gm+1d0)))
-           if(om<0d0) om=om+pc_pi2
-!-- mu
-           mu = (mu0+(gm*y/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
-                (gm*cmffact)
            labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
-!-- 3D
         case(3)
-           help = sqrt(1d0-mu0**2)
-           mu1 = help*cos(om)
-           mu2 = help*sin(om)
-           cmffact = 1d0+(mu0*z+mu1*x+mu2*y)/pc_c
-!-- mu
-           mu = (mu0+z/pc_c)/cmffact
-           mu = min(mu,1d0)
-           mu = max(mu,-1d0)
-!-- om
-           om = atan2(mu2+y/pc_c,mu1+x/pc_c)
-           if(om<0d0) om = om+pc_pi2
            help = sqrt(1d0-mu**2)
            mu1 = help*cos(om)
            mu2 = help*sin(om)
            labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c
         endselect
-
 !-- transform into lab frame
         wl = wl*labfact
         e = e/labfact
-        ptcl%e0 = ptcl%e0/labfact !}}}
+        e0 = e0/labfact
      endif
 
 
@@ -232,7 +207,7 @@ subroutine particle_advance
               endif
            endif
 !-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*ptcl%e0 .and. .not.ptcl2%isvacant .and. &
+           if(e<1d-6*e0 .and. .not.ptcl2%isvacant .and. &
                  grd_capgrey(ic)+grd_sig(ic)>0d0) then
 !-- transformation factor
               if(grd_isvelocity .and. ptcl2%itype==1) then
@@ -254,7 +229,7 @@ subroutine particle_advance
                  tot_eext = tot_eext + e
 !
                  e = 2d0*e
-                 ptcl%e0 = 2d0*ptcl%e0
+                 e0 = 2d0*e0
               endif
            endif
         enddo !}}}
@@ -281,7 +256,7 @@ subroutine particle_advance
               endif
            endif
 !-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*ptcl%e0 .and. .not.ptcl2%isvacant .and. &
+           if(e<1d-6*e0 .and. .not.ptcl2%isvacant .and. &
                  grd_capgrey(ic)+grd_sig(ic)>0d0) then
 !-- transformation factor
               if(grd_isvelocity .and. ptcl2%itype==1) then
@@ -304,7 +279,7 @@ subroutine particle_advance
                  tot_eext = tot_eext + e
 !
                  e = 2d0*e
-                 ptcl%e0 = 2d0*ptcl%e0
+                 e0 = 2d0*e0
               endif
            endif
         enddo !}}}
@@ -334,7 +309,7 @@ subroutine particle_advance
               endif
            endif
 !-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*ptcl%e0 .and. .not.ptcl2%isvacant .and. &
+           if(e<1d-6*e0 .and. .not.ptcl2%isvacant .and. &
                  grd_capgrey(ic)+grd_sig(ic)>0d0) then
 !-- transformation factor
               if(grd_isvelocity .and. ptcl2%itype==1) then
@@ -357,7 +332,7 @@ subroutine particle_advance
                  tot_eext = tot_eext + e
 !
                  e = 2d0*e
-                 ptcl%e0 = 2d0*ptcl%e0
+                 e0 = 2d0*e0
               endif
            endif
         enddo!}}}
@@ -380,7 +355,7 @@ subroutine particle_advance
               write(0,*) 'prt_adv: not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
            endif
 !-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*ptcl%e0 .and. .not.ptcl2%isvacant .and. &
+           if(e<1d-6*e0 .and. .not.ptcl2%isvacant .and. &
                  grd_capgrey(ic)+grd_sig(ic)>0d0) then
 !-- transformation factor
               if(grd_isvelocity .and. ptcl2%itype==1) then
@@ -402,7 +377,7 @@ subroutine particle_advance
                  tot_eext = tot_eext + e
 !
                  e = 2d0*e
-                 ptcl%e0 = 2d0*ptcl%e0
+                 e0 = 2d0*e0
               endif
            endif
         enddo!}}}
@@ -418,7 +393,7 @@ subroutine particle_advance
 !-- redshifting energy weight!{{{
         tot_evelo = tot_evelo + e*(1d0-exp(-tsp_dt/tsp_t))
         e = e*exp(-tsp_dt/tsp_t)
-        ptcl%e0 = ptcl%e0*exp(-tsp_dt/tsp_t)
+        e0 = e0*exp(-tsp_dt/tsp_t)
         !
 !
 !-- find group
@@ -457,8 +432,8 @@ subroutine particle_advance
      tot_erad = tot_erad + e
 
 
-!-- sample position, direction, and wavelength of a censused DDMC
-!-- particle. It might be an IMC particle in the next time step
+!-- sample position, direction, and wavelength of a censused DDMC particle
+!-- It can be an IMC particle in the next time step
      if(ptcl2%itype==2) then
 !
 !-- sample wavelength
@@ -543,52 +518,31 @@ subroutine particle_advance
            prt_tlyrand = prt_tlyrand+1
            mu = 1.0 - 2.0*r1 !}}}
         endselect
+!
+        if(grd_isvelocity) call direction2lab(x,y,z,mu,om)
      endif
 
 !
-!-- transform IMC particle back into comoving frame for storage
+!-- transform IMC particle energy to comoving frame for storage
      if(grd_isvelocity.and.ptcl2%itype==1) then
         select case(in_igeom)
 !-- [123]D spherical
         case(1,11)
            labfact = 1d0-x*mu/pc_c
-           mu0 = (mu-x/pc_c)/labfact
-           om0 = om
-!
-           cmffact = 1d0+x*mu0/pc_c
 !-- 2D
         case(2)
            labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
-           gm = 1d0/sqrt(1d0-(x**2+y**2)/pc_c**2)
-!TODO: lorentz back transformation
-           stop 'pa: lorentz transformation missing in 2D cylindrical'
-           mu0 = mu
-           om0 = om
-!
-           cmffact = 1d0+(mu0*y+sqrt(1d0-mu0**2) * cos(om0)*x)/pc_c
 !-- 3D
         case(3)
-           help = sqrt(1d0-mu**2)
-           mu1 = help*cos(om)
-           mu2 = help*sin(om)
+           mu1 = sqrt(1d0-mu**2)*cos(om)
+           mu2 = sqrt(1d0-mu**2)*sin(om)
            labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c
-!TODO: lorentz back transformation
-           stop 'pa: lorentz transformation missing in 3D cartesian'
-           mu0 = mu
-           om0 = om
-!
-           help = sqrt(1d0-mu0**2)
-           mu1 = help*cos(om0)
-           mu2 = help*sin(om0)
-           cmffact = 1d0+(mu0*z+mu1*x+mu2*y)/pc_c
         endselect
 
-        mu = mu0
-        om = om0
-!-- apply inverse cmffact for symmetry (gamma factor is missing)
-        wl = wl*cmffact
-        e = e/cmffact
-        ptcl%e0 = ptcl%e0/cmffact 
+!-- apply inverse labfact for symmetry (since gamma factor is missing)
+        wl = wl/labfact
+        e = e*labfact
+        e0 = e0*labfact
      endif
 
 !

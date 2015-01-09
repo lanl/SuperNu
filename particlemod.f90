@@ -7,7 +7,7 @@ module particlemod
      real*8 :: mu, om, t
      real*8 :: e, e0, wl
   end type packet
-  type(packet),allocatable :: prt_particles(:)  !(prt_npartmax)
+  type(packet),allocatable,target :: prt_particles(:)  !(prt_npartmax)
   logical,allocatable :: prt_isvacant(:)  !(prt_npartmax)
 !
 !-- secondary particle properties
