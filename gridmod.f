@@ -80,8 +80,8 @@ c
 c
       contains
 c
-      subroutine grid_init(ltalk,ngin,igeom,ndim,ncell,idd1,ndd,lvoid,
-     &  isvelocity)
+      subroutine gridmod_init(ltalk,ngin,igeom,ndim,ncell,idd1,ndd,
+     &  lvoid,isvelocity)
 c     -------------------------------------------------------------!{{{
       implicit none
       logical,intent(in) :: ltalk,isvelocity
@@ -163,7 +163,7 @@ c-- ndim=4 alloc
 c-- ndim=4 alloc
       allocate(grd_cap(ng,grd_ncell))
 c!}}}
-      end subroutine grid_init
+      end subroutine gridmod_init
 c
 c
       subroutine grid_dealloc

@@ -10,7 +10,7 @@ c
 c
       contains
 
-      subroutine source_init(ns,ninit)
+      subroutine sourcemod_init(ns,ninit)
 c     ------------------------------------------!{{{
       implicit none
       integer,intent(in) :: ns, ninit
@@ -21,6 +21,6 @@ c     ------------------------------------------!{{{
       src_ns = ns
       src_ninit = ninit
 !}}}
-      end subroutine source_init
+      end subroutine sourcemod_init
 c
       end module sourcemod

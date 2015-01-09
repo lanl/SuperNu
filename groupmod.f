@@ -11,7 +11,7 @@ c
       contains
 c
 c
-      subroutine group_init(ng,wldex,wlmin,wlmax)
+      subroutine groupmod_init(ng,wldex,wlmin,wlmax)
 c     -------------------------------------------!{{{
       implicit none
       integer,intent(in) :: ng,wldex
@@ -98,7 +98,7 @@ c
 c!}}}
       end subroutine read_wlgrid
 c!}}}
-      end subroutine group_init
+      end subroutine groupmod_init
 c
 c
       elemental function specint0(tempinv,ig)

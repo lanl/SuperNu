@@ -58,7 +58,7 @@ c
 c
 c
 c
-      subroutine transport_init(igeom)
+      subroutine transportmod_init(igeom)
 c     --------------------------------
       integer,intent(in) :: igeom
       select case(igeom)
@@ -78,9 +78,9 @@ c     --------------------------------
        direction2lab => direction2lab3
        advection => advection3
       case default
-       stop 'transport_init: invalid igeom'
+       stop 'transportmod_init: invalid igeom'
       end select
-      end subroutine transport_init
+      end subroutine transportmod_init
 c
 c
 c

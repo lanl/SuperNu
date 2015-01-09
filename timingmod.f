@@ -49,7 +49,7 @@ c
 c
       contains
 c
-      subroutine timing_init
+      subroutine timingmod_init
 c     ----------------------
       implicit none
       t_gasupd =>   registers(:,1)
@@ -71,7 +71,7 @@ c     ----------------------
       t_pcktnpckt =>registers(:,17)
       t_pcktnddmc =>registers(:,18)
       t_pcktnimc => registers(:,19)
-      end subroutine timing_init
+      end subroutine timingmod_init
 c
 c
       subroutine timereg(reg,t)

@@ -61,6 +61,16 @@ c-- check if bins are read or generated
          endif
       enddo
 c
+c-- allocate flux tally arrays
+      allocate(flx_luminos(flx_ng,flx_nmu,flx_nom))
+      allocate(flx_lumdev(flx_ng,flx_nmu,flx_nom))
+      allocate(flx_lumnum(flx_ng,flx_nmu,flx_nom))
+c
+c-- grey gamma flux
+      allocate(flx_gamluminos(flx_nmu,flx_nom))
+      allocate(flx_gamlumdev(flx_nmu,flx_nom))
+      allocate(flx_gamlumnum(flx_nmu,flx_nom))
+c
       end subroutine fluxgrid_setup
 c
 c
@@ -192,22 +202,6 @@ c-- uniform azimuthal array
       endif
 c
       end subroutine generate_fluxgrid
-c
-c
-      subroutine flux_alloc
-c     --------------------
-      implicit none
-c-- allocating flux tally arrays
-      allocate(flx_luminos(flx_ng,flx_nmu,flx_nom))
-      allocate(flx_lumdev(flx_ng,flx_nmu,flx_nom))
-      allocate(flx_lumnum(flx_ng,flx_nmu,flx_nom))
-c
-c-- grey gamma flux
-      allocate(flx_gamluminos(flx_nmu,flx_nom))
-      allocate(flx_gamlumdev(flx_nmu,flx_nom))
-      allocate(flx_gamlumnum(flx_nmu,flx_nom))
-c
-      end subroutine flux_alloc
 c
 c
       subroutine flux_dealloc

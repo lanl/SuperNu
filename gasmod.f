@@ -59,7 +59,7 @@ c
       contains
 c
 c
-      subroutine gas_init(ltalk,icell1,ncell,ngin)
+      subroutine gasmod_init(ltalk,icell1,ncell,ngin)
 c----------------------------------------!{{{
       implicit none
       logical,intent(in) :: ltalk
@@ -124,7 +124,7 @@ c
 c-- ndim=2 alloc big
       allocate(gas_cap(ng,gas_ncell))
 !}}}
-      end subroutine gas_init
+      end subroutine gasmod_init
 c
 c
       subroutine gas_dealloc

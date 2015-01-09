@@ -18,7 +18,7 @@ module timestepmod
   contains
 
 
-  subroutine timestep_init(nt, ntres, alpha, tfirst)
+  subroutine timestepmod_init(nt, ntres, alpha, tfirst)
 !------------------------------------------------!{{{
     use physconstmod
     integer,intent(in) :: nt, ntres
@@ -39,7 +39,7 @@ module timestepmod
        tsp_t = tfirst*pc_day
     endif
 !!}}}
-  end subroutine timestep_init
+  end subroutine timestepmod_init
 
 
   subroutine timestep_update(dt)

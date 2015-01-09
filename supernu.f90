@@ -27,7 +27,7 @@ program supernu
 ! TODO and wishlist:
 !***********************************************************************
   real*8 :: help
-  real*8 :: t_elapsed
+  real*8 :: dt
   integer :: ierr,it
   integer :: icell1,ncell !number of cells per rank (gas_ncell)
   real*8 :: t0,t1 !timing
@@ -40,14 +40,12 @@ program supernu
   lmpi0 = impi==impi0
 !
 !-- initialize timing module
-  call timing_init
+  call timingmod_init
 !
 !--
-!-- READ DATA AND INIT SIMULATION
+!-- read and distribut input data
 !================================
-!-- The setup is done by the master task only, and broadcasted to the
-!-- other tasks before packet propagation begins.
-!--
+!-- this is done by the master task only and then broadcasted
   if(lmpi0) then
      t0 = t_time()!{{{
 !-- startup message
@@ -57,16 +55,6 @@ program supernu
 !-- parse and verify runtime parameters
      call parse_inputpars(nmpi)
 !
-!-- time step init
-     call timestep_init(in_nt,in_ntres,in_alpha,in_tfirst)
-!-- constant time step, may be coded to loop if time step is not uniform
-     t_elapsed = (in_tlast - in_tfirst) * pc_day  !convert input from days to seconds
-     tsp_dt = t_elapsed/in_nt
-!
-!-- particle init
-     call particle_init(in_prt_nmax/nmpi,in_isimcanlog, &
-          in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime)
-!
 !-- rand() count and prt restarts
      if(tsp_ntres>1.and..not.in_norestart) then
 !-- read rand() count
@@ -74,10 +62,6 @@ program supernu
 !-- read particle properties
        call read_restart_particles
      endif
-!
-!-- wlgrid (before grid setup)
-     call group_init(in_ng,in_wldex,in_wlmin,in_wlmax)
-     call fluxgrid_setup(in_flx_ndim,in_flx_wlmin,in_flx_wlmax)
 !
 !-- read input structure
      if(.not.in_noreadstruct.and.in_isvelocity) then
@@ -102,39 +86,45 @@ program supernu
      t1 = t_time()
      t_setup = t1-t0!}}}
   endif !impi
-
 !-- broadcast init info from impi0 rank to all others
   call bcast_permanent !MPI
 !-- domain-decompose input structure
   call scatter_inputstruct(in_ndim,icell1,ncell) !MPI
 
+!--
+!-- setup remaining modules
+!==========================
+!-- time step init
+  call timestepmod_init(in_nt,in_ntres,in_alpha,in_tfirst)
+!-- constant time step, may be coded to loop if time step is not uniform
+  dt = (in_tlast - in_tfirst)*pc_day/in_nt
+
+!-- wlgrid (before grid setup)
+  call groupmod_init(in_ng,in_wldex,in_wlmin,in_wlmax)
+  call fluxgrid_setup(in_flx_ndim,in_flx_wlmin,in_flx_wlmax)
+
 !-- setup spatial grid
-  call grid_init(lmpi0,grp_ng,in_igeom,in_ndim,str_nc,icell1,ncell, &
+  call gridmod_init(lmpi0,grp_ng,in_igeom,in_ndim,str_nc,icell1,ncell, &
           str_lvoid,in_isvelocity)
   call grid_setup
 !-- setup gas
-  call gas_init(lmpi0,icell1,ncell,grp_ng)
+  call gasmod_init(lmpi0,icell1,ncell,grp_ng)
   call gas_setup
 !-- inputstr no longer needed
   call inputstr_dealloc
 
+!-- particle init
+  call particlemod_init(in_prt_nmax/nmpi,in_isimcanlog, &
+       in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime)
 !-- create procedure pointers for the selected geometry
-  call transport_init(in_igeom)
-  call source_init(in_ns/nmpi,in_ns0/nmpi)
-
-!-- allocate flux arrays
-  call flux_alloc
-
-
-!-- initial radiation energy
-  call initialnumbers
+  call transportmod_init(in_igeom)
+  call sourcemod_init(in_ns/nmpi,in_ns0/nmpi)
 
 !-- allocate arrays of sizes retreived in bcast_permanent
   call ions_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
   call particle_alloc(lmpi0,in_norestart,nmpi)
 
 !-- initialize random number generator, use different seeds for each rank
-  if(in_nomp==0) stop 'supernu: in_nomp == 0'
   call rnd_seed(rnd_state,in_nomp*impi)
 
 !-- reading restart rand() count
@@ -145,6 +135,8 @@ program supernu
      prt_tlyrand = 1
   endif
 
+!-- initial radiation energy
+  call initialnumbers
 !-- instantiating initial particles (if any)
   call initial_particles
 
@@ -167,7 +159,7 @@ program supernu
      tsp_it = max(it,1)
 
 !-- Update tsp_t etc
-     call timestep_update(tsp_dt)  !tsp_dt is being set here, any value can be passed
+     call timestep_update(dt)  !dt is input here, any value can be passed
      call tau_update(tsp_t,in_tfirst,in_tlast) !updating prt_tauddmc and prt_taulump
 
 !-- write timestep
@@ -206,7 +198,7 @@ program supernu
      call emission_probability  !emission probabilities for ep-group in each cell
      call allgather_leakage !MPI
      t_timelin(4) = t_time()    !timeline
-     call sourcenumbers         !number of source prt_particles per cell
+     call sourcenumbers(nmpi)   !number of source prt_particles per cell
 
      if(src_nnew>0) then
         allocate(src_ivacant(src_nnew))

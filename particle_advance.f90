@@ -11,7 +11,6 @@ subroutine particle_advance
   use physconstmod
   use inputparmod
   use timingmod
-  use mpimod
   use fluxmod
   implicit none
 !

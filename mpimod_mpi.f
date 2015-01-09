@@ -87,74 +87,47 @@ c-- broadcast characters
       enddo
       deallocate(csndvec)
 c
+c-- set number of threads, i.e. non-automatic
+c$    if(in_nomp/=0) call omp_set_num_threads(in_nomp)
+c
 c
 c-- everything else
 c==================
 c-- broadcast constants
 c-- logical
-      n = 3
+      n = 1
       allocate(lsndvec(n))
-      if(lmpi0) lsndvec = (/prt_isimcanlog,prt_isddmcanlog,
-     &  str_lvoid/)
+      if(lmpi0) lsndvec = [str_lvoid]
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      prt_isimcanlog = lsndvec(1)
-      prt_isddmcanlog = lsndvec(2)
-      str_lvoid = lsndvec(3)
+      str_lvoid = lsndvec(1)
       deallocate(lsndvec)
 c
 c-- integer
-      n = 15
+      n = 5
       allocate(isndvec(n))
-      if(lmpi0) isndvec = (/
-     &  grp_ng,src_ns,
-     &  prt_npartmax,tsp_nt,tsp_ntres,
-     &  src_ninit,src_ninitnew,
-     &  ion_nion,ion_iionmax,bb_nline,
-     &  flx_ng,flx_nmu,flx_nom,
-     &  str_nc,str_nabund/)
+      if(lmpi0) isndvec = [ion_nion,ion_iionmax,bb_nline,
+     &  str_nc,str_nabund]
       call mpi_bcast(isndvec,n,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      grp_ng       = isndvec(1)
-      src_ns       = isndvec(2)
-      prt_npartmax = isndvec(3)
-      tsp_nt       = isndvec(4)
-      tsp_ntres    = isndvec(5)
-      src_ninit    = isndvec(6)
-      src_ninitnew = isndvec(7)
-      ion_nion     = isndvec(8)
-      ion_iionmax  = isndvec(9)
-      bb_nline     = isndvec(10)
-      flx_ng       = isndvec(11)
-      flx_nmu      = isndvec(12)
-      flx_nom      = isndvec(13)
-      str_nc       = isndvec(14)
-      str_nabund   = isndvec(15)
+      ion_nion     = isndvec(1)
+      ion_iionmax  = isndvec(2)
+      bb_nline     = isndvec(3)
+      str_nc       = isndvec(4)
+      str_nabund   = isndvec(5)
       deallocate(isndvec)
-c
-c-- real*8
-      n = 5
-      allocate(sndvec(n))
-      if(lmpi0) sndvec = (/prt_tauddmc,prt_taulump,
-     &  tsp_t,tsp_dt,tsp_alpha/)
-      call mpi_bcast(sndvec,n,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c-- copy back
-      prt_tauddmc  = sndvec(1)
-      prt_taulump  = sndvec(2)
-      tsp_t        = sndvec(3)
-      tsp_dt       = sndvec(4)
-      tsp_alpha    = sndvec(5)
-      deallocate(sndvec)
-c
-c-- character
-      call mpi_bcast(prt_tauvtime,4,MPI_CHARACTER,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-c
-c$    if(in_nomp/=0) call omp_set_num_threads(in_nomp)
+cc
+cc-- real*8
+c      n = 1
+c      allocate(sndvec(n))
+c      if(lmpi0) sndvec = [dummy]
+c      call mpi_bcast(sndvec,n,MPI_REAL8,
+c     &  impi0,MPI_COMM_WORLD,ierr)
+cc-- copy back
+c      dummy        = sndvec(1)
+c      deallocate(sndvec)
 c
 c-- dimenstions
       nx = in_ndim(1)
@@ -164,11 +137,6 @@ c
 c
 c-- allocate all arrays. These are deallocated in dealloc_all.f
       if(impi/=impi0) then
-       allocate(grp_wl(grp_ng+1))
-       allocate(grp_wlinv(grp_ng+1))
-       allocate(flx_wl(flx_ng+1))
-       allocate(flx_mu(flx_nmu+1))
-       allocate(flx_om(flx_nom+1))
        if(bb_nline>0) allocate(bb_xs(bb_nline))
        allocate(str_xleft(nx+1))
        allocate(str_yleft(ny+1))
@@ -193,17 +161,6 @@ c
       endif
 c
 c-- broadcast data
-      call mpi_bcast(grp_wl,grp_ng+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(grp_wlinv,grp_ng+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(flx_wl,flx_ng+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(flx_mu,flx_nmu+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_bcast(flx_om,flx_nom+1,MPI_REAL8,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
 c-- bound-bound
       if(bb_nline>0) then
        call mpi_bcast(bb_xs,sizeof(bb_xs),MPI_BYTE,

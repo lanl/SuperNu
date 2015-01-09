@@ -46,7 +46,7 @@ module particlemod
 
   contains
 
-  subroutine particle_init(npartmax,isimcanlog, &
+  subroutine particlemod_init(npartmax,isimcanlog, &
        isddmcanlog,tauddmc,taulump,tauvtime)!{{{
 !--------------------------------------
     implicit none
@@ -65,7 +65,7 @@ module particlemod
     prt_taulump = taulump
     prt_tauvtime = tauvtime
 !!}}}
-  end subroutine particle_init
+  end subroutine particlemod_init
 
 
   subroutine particle_alloc(ltalk,norestart,nummespasint)

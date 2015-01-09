@@ -1,12 +1,12 @@
-subroutine sourcenumbers
+subroutine sourcenumbers(nmpi)
 !{{{
-  use mpimod
   use sourcemod
   use totalsmod
   use gridmod
   use particlemod
   use inputparmod
   implicit none
+  integer,intent(in) :: nmpi
 
 !##################################################
 !This subroutine computes the distribution of source particles each

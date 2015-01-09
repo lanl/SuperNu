@@ -3,7 +3,6 @@ c     -----------------------------
       use inputparmod
       use groupmod
       use physconstmod
-      use mpimod
       use gasmod
       use miscmod
       implicit none
