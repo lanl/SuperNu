@@ -56,6 +56,16 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
   muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
   muz = mu*y-eta*sqrt(1d0-y**2)
+!-- direction sanity check
+  if(abs(mux**2+muy**2+muz**2-1d0)>1d-9) then
+     write(*,*) 'transport1_gamgrey: invalid mux,muy,muz', &
+        mux**2+muy**2+muz**2-1d0,mux,muy,muz
+  endif
+!-- normalize direction
+  help = 1d0/sqrt(mux**2+muy**2+muz**2)
+  mux = mux*help
+  muy = muy*help
+  muz = muz*help
 !
 !-- setting vel-grid helper variables
   if(grd_isvelocity) then
@@ -288,6 +298,8 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
           'transport1_gamgrey: x=0 and muold/=-1'
 !-- updating radial projection of direction
      mu = (xold*mu+d)/x
+     mu = max(mu,-1d0)
+     mu = min(mu,1d0)
 !-- updating polar projection of position
      y = (xold*yold+muz*d)/x
      y = max(y,-1d0)
@@ -301,30 +313,15 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
      xi = cos(z)*muy-sin(z)*mux
      om = atan2(xi,eta)
      if(om<0d0) om = om+pc_pi2
-  endif
-
 !-- direction sanity check
-  if(abs(mux**2+muy**2+muz**2-1d0)>1d-9) then
-     write(*,*) mux**2+muy**2+muz**2,mux,muy,muz
-     stop 'transport1_gamgrey: invalid mux,muy,muz'
-  endif
-  if(mux**2+muy**2+muz**2/=1d0) then
-!-- normalize direction
-     help = 1d0/sqrt(mux**2+muy**2+muz**2)
-     mux=mux*help
-     muy=muy*help
-     muz=muz*help
-  endif
-  if(abs(mu**2+eta**2+xi**2-1d0)>1d-9) then
-     write(*,*) mu**2+eta**2+xi**2,mu,eta,xi
-     stop 'transport1_gamgrey: invalid mu,eta,xi'
-  endif
-  if(mu**2+eta**2+xi**2/=1d0) then
+     if(abs(mu**2+eta**2+xi**2-1d0)>1d-9) then
+        write(*,*) 'transport1_gamgrey: invalid mu,eta,xi',mu**2+eta**2+xi**2-1d0,mu,eta,xi
+     endif
 !-- normalize direction
      help = 1d0/sqrt(mu**2+eta**2+xi**2)
-     mu=mu*help
-     eta=eta*help
-     xi=xi*help
+     mu = mu*help
+     eta = eta*help
+     xi = xi*help
   endif
 
 !-- depositing nonanalog absorbed energy
@@ -385,8 +382,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
      elseif(iynext==iy-1) then
         if(abs(y-grd_yarr(iy))>1d-9) then
-           write(*,*) iy,'y: ',y,'yarr(iy): ',grd_yarr(iy)
-           stop 'transport1_gamgrey: y/=yarr(iy)'
+           write(*,*) 'transport1_gamgrey: y/=yarr(iy)', iy,y,grd_yarr(iy)
         endif
         y=grd_yarr(iy)
         if(iynext==0) then
@@ -398,8 +394,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
         endif
      elseif(iynext==iy+1) then
         if(abs(y-grd_yarr(iy+1))>1d-9) then
-           write(*,*) iy,'y: ',y,'yarr(iy+1): ',grd_yarr(iy+1)
-           stop 'transport1_gamgrey: y/=yarr(iy+1)'
+           write(*,*) 'transport1_gamgrey: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1)
         endif
         y=grd_yarr(iy+1)
         if(iynext==grd_ny+1) then

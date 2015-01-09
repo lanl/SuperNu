@@ -620,8 +620,7 @@ subroutine transport1(ptcl,ptcl2)
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
      elseif(iynext==iy-1) then
         if(abs(y-grd_yarr(iy))>1d-9) then
-           write(*,*) iy,'y: ',y,'yarr(iy): ',grd_yarr(iy)
-           stop 'transport1: y/=yarr(iy)'
+           write(*,*) 'transport1: y/=yarr(iy)',iy,y,grd_yarr(iy)
         endif
         y=grd_yarr(iy)
         if(iynext==0) then
@@ -633,8 +632,7 @@ subroutine transport1(ptcl,ptcl2)
         endif
      elseif(iynext==iy+1) then
         if(abs(y-grd_yarr(iy+1))>1d-9) then
-           write(*,*) iy,'y: ',y,'yarr(iy+1): ',grd_yarr(iy+1)
-           stop 'transport1: y/=yarr(iy+1)'
+           write(*,*) 'transport1: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1)
         endif
         y=grd_yarr(iy+1)
         if(iynext==grd_ny+1) then
