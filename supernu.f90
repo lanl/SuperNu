@@ -172,7 +172,7 @@ program supernu
 
 !-- Update tsp_t etc
      call timestep_update(tsp_dt)  !tsp_dt is being set here, any value can be passed
-     call tau_update !updating prt_tauddmc and prt_taulump
+     call tau_update(tsp_t,in_tfirst,in_tlast) !updating prt_tauddmc and prt_taulump
 
 !-- write timestep
      help = merge(tot_eerror,tot_erad,it>1)

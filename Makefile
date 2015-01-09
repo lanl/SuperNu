@@ -26,16 +26,13 @@ MODULES := elemdatamod.o physconstmod.o randommod.o mpimod.o \
   particlemod.o timingmod.o manufacmod.o fluxmod.o totalsmod.o \
   transportmod.o
 
-FILES := sourceenergy.o sourceenergy_analytic.o sourceenergy_misc.o \
-  sourcenumbers.o vacancies.o \
-  boundary_source.o interior_source.o particle_advance.o \
-  particle_advance_gamgrey.o write_output.o \
-  read_bbxs_data.o restart_file.o dealloc_all.o initialnumbers.o \
-  initialnumbers.o initial_particles.o tau_update.o \
-  banner.o
+FILES := banner.o \
+  particle_advance.o particle_advance_gamgrey.o \
+  write_output.o restart_file.o dealloc_all.o \
+  read_bbxs_data.o 
 
 LIBRARIES := TRANSPORT1/transport1.a TRANSPORT2/transport2.a TRANSPORT3/transport3.a \
-  GAS/gas.a  GRID/grid.a MISC/misc.a SOURCE/source.a
+  SOURCE/source.a GAS/gas.a GRID/grid.a MISC/misc.a
 SUBDIRS := $(dir $(LIBRARIES))
 SUBCLEAN = $(addsuffix .clean, $(SUBDIRS))
 

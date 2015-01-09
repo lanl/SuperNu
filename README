@@ -30,8 +30,13 @@ In order to create multiple builds (e.g. serial and MPI) from a single source, u
 # lndir ../src
 
 
+NOTES
+=====
+The particle array saves particle direction in the lab frame and particle energy/wavelength in the comoving frame.
+
+
 REFERENCES
 ==========
+Wollaeger, van Rossum et al. 2014
 Wollaeger, van Rossum et al. 2013
 Densmoore 201x
-Kasen et al. 200x

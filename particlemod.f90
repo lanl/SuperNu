@@ -129,4 +129,33 @@ module particlemod
     endif
   end subroutine particle_dealloc
 
+
+  subroutine tau_update(t,tfirst,tlast)
+    use physconstmod
+    implicit none
+    real*8,intent(in) :: t,tfirst,tlast
+!-------------------------------------------------
+! Update mfp thresholds for DDMC:
+! - IMC-DDMC transition,
+! - DDMC group lumping.
+!-------------------------------------------------
+    real*8 :: slp1,slp2
+
+    if(prt_tauvtime=='unif') then
+!-- constant thresholds
+       return
+    elseif(prt_tauvtime=='incr') then
+!-- linear increase in thresholds (max mfp thresh = 5)
+       slp1=0.667d0*prt_tauddmc/(pc_day*(tlast-tfirst))
+       slp2=0.667d0*prt_taulump/(pc_day*(tlast-tfirst))
+
+       prt_tauddmc = prt_tauddmc+(t-pc_day*tfirst)*slp1
+       prt_taulump = prt_taulump+(t-pc_day*tfirst)*slp2
+    else
+       stop 'tau_update: prt_tauvtime invalid'
+    endif
+
+
+  end subroutine tau_update
+
 end module particlemod

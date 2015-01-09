@@ -42,7 +42,6 @@ subroutine particle_advance
   type(packet),target :: ptcl
   type(packet2),target :: ptcl2
 !
-  logical,parameter :: isshift=.true.
 !-- statement function
   integer :: l
   real*8 :: dx,dy,dz,xm,dyac,ym
@@ -160,20 +159,8 @@ subroutine particle_advance
 
 
 !-- First portion of operator split particle velocity position adjustment
-     if(isshift) then
      if((grd_isvelocity).and.(ptcl2%itype==1)) then
-        select case(in_igeom)
-!-- [123]D spherical
-        case(1,11)
-           call advection1(.true.,ptcl,ptcl2)
-!-- 2D
-        case(2)
-           call advection2(.true.,ptcl,ptcl2)
-!-- 3D
-        case(3)
-           call advection3(.true.,ptcl,ptcl2)
-        endselect
-     endif
+        call advection(.true.,ptcl,ptcl2) !procedure pointer to advection[123]
      endif
 
 !     write(*,*) ipart
@@ -412,20 +399,8 @@ subroutine particle_advance
         !!}}}
      endif
 
-     if(isshift) then
      if((grd_isvelocity).and.(ptcl2%itype==1)) then
-        select case(in_igeom)
-!-- [123]D
-        case(1,11)
-           call advection1(.false.,ptcl,ptcl2)
-!-- 2D
-        case(2)
-           call advection2(.false.,ptcl,ptcl2)
-!-- 3D
-        case(3)
-           call advection3(.false.,ptcl,ptcl2)
-        endselect
-     endif
+        call advection(.false.,ptcl,ptcl2) !procedure pointer to advection[123]
      endif
 
 !-- radiation energy at census
