@@ -380,27 +380,27 @@ c-- check input parameter validity
       if(in_nomp==0 .and. nmpi>1) stop 'no in_nomp==0 in mpi mode'
 c
       if(any(in_ndim<1)) stop 'in_ndim invalid'
+c
       select case(in_igeom)
-      case(:0)
-       stop 'in_igeom invalid'
       case(1)
        if(in_srctype=='surf'.and.in_surfsrcloc/='out') stop
      &   'in_srctype and in_surfsrcloc invalid'
       case(2)
        if(in_ndim(3)>1) stop 'in_ndim invalid'
-       if(in_flx_ndim(3)/=1) stop 'in_flx_ndim invalid'
        if(in_srctype=='surf' .and.
      &      any((/'in  ','top ','botm'/)==in_surfsrcloc))
      &      stop 'in_srctype and in_surfsrcloc invalid'
+      case(3)
       case(11)
        if(in_ndim(2)>1 .or. in_ndim(3)>1) stop 'in_ndim invalid'
-       if(in_flx_ndim(2)/=1 .or. in_flx_ndim(3)/=1) stop
-     &   'in_flx_ndim invalid'
        if(in_srctype=='surf'.and.in_surfsrcloc/='out') stop
      &   'in_srctype and in_surfsrcloc invalid'
-      case(4:10,12:)
+      case default
        stop 'in_igeom invalid'
       endselect
+c
+      if(in_ndim(2)==1.and.in_flx_ndim(2)/=1) stop'in_flx_ndim(2) inval'
+      if(in_ndim(3)==1.and.in_flx_ndim(3)/=1) stop'in_flx_ndim(3) inval'
 c
       if(in_isvelocity) then
        if(in_lx>0d0) stop 'vel grid: use in_velout, not in_lx'

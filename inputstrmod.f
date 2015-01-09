@@ -123,7 +123,7 @@ c-- validity check
       if(any(raw/=raw)) stop 'read_inputstr: nan in input'
 c
 c-- transer data to final arrays
-c-- first dim
+c-- dim 1
       if(igeom==11) then
        str_xleft(1) = 0d0
        str_xleft(2:) = raw(1,:nx)
@@ -131,24 +131,33 @@ c-- first dim
        str_xleft(1) = raw(1,1)
        str_xleft(2:) = raw(2,:nx)
       endif
-c-- second dim
-      if(igeom==11 .or. (igeom==1 .and. ny==1)) then
-       str_yleft = [-1d0,1d0]
-      else
+c
+c-- dim 2
+      if(ny>1) then
        str_yleft(1) = raw(3,1)
        do i=1,ny
         str_yleft(i+1) = raw(4,nx*(i-1)+1)
        enddo
       endif
-c-- third dim
-      if(igeom==2 .or. igeom==11 .or. (igeom==1 .and. nz==1)) then
-       str_zleft = [0d0,2d0*pc_pi]
-      else
+c-- fix endpoints
+      if(igeom==11 .or. igeom==1) then
+       str_yleft(1) = -1d0
+       str_yleft(ny+1) = 1d0
+      endif
+c
+c-- dim 3
+      if(nz>1) then
        str_zleft(1) = raw(5,1)
        do i=1,nz
         str_zleft(i+1) = raw(6,nx*ny*(i-1)+1)
        enddo
       endif
+c-- fix endpoints
+      if(igeom==1 .or. igeom==2 .or. igeom==11) then
+       str_zleft(1) = 0d0
+       str_zleft(nz+1) = pc_pi2
+      endif
+c
 c-- var pointers
       imass = 0
       do i=1,nvar
