@@ -1,6 +1,7 @@
 subroutine sourceenergy(nmpi)
 
   use gasmod
+  use sourcemod
   use totalsmod
   use timestepmod
   use particlemod
@@ -12,13 +13,13 @@ subroutine sourceenergy(nmpi)
 
 !##################################################
 !This subroutine computes the distribution of source particles each
-!time step.  A fraction of the source particle number prt_ns is given
+!time step.  A fraction of the source particle number src_ns is given
 !to each cell based on the amount of energy emitted by the cell.
 !##################################################
 
   integer :: i
-! prt_nsurf = number of surface prt_particles
-! prt_nnew = total number of new prt_particles~=prt_ns
+! src_nsurf = number of surface prt_particles
+! src_nnew = total number of new prt_particles~=src_ns
   
 !-- prepare manufactured solution temperature source
   if(in_srctype=='manu') then

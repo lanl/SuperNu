@@ -6,6 +6,7 @@ c     -------------
       integer,private :: ierr=0
       integer :: impi=0  !mpi rank
       integer,parameter :: impi0=0 !master mpi rank
+      logical :: lmpi0   !true on the master mpi rank
       integer :: nmpi=1  !number of mpi tasks
 c
       save

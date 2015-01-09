@@ -1,6 +1,7 @@
 subroutine particle_advance_gamgrey(nmpi)
 
   use randommod
+  use sourcemod
   use particlemod
   use gridmod
   use physconstmod
@@ -52,7 +53,7 @@ subroutine particle_advance_gamgrey(nmpi)
   pwr = in_srcepwr
 
 !-- total particle number
-  nstot = nmpi*int(prt_ns,8)
+  nstot = nmpi*int(src_ns,8)
 
 !-- total energy (converted by pwr)
   etot = sum(grd_emitex**pwr)

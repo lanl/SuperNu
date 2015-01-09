@@ -1,6 +1,7 @@
 subroutine initialnumbers
 
   use gridmod
+  use sourcemod
   use totalsmod
   use particlemod
   implicit none
@@ -13,7 +14,7 @@ subroutine initialnumbers
 !##################################################
   real*8 :: etotinit
   
-  prt_ninitnew = 0
+  src_ninitnew = 0
 !
   grd_nvolinit = 0
   grd_evolinit = 0d0
@@ -28,10 +29,10 @@ subroutine initialnumbers
   tot_eext = etotinit
 !
   if(etotinit > 0d0) then
-     grd_nvolinit = nint(grd_evolinit*prt_ninit/etotinit) !+50
+     grd_nvolinit = nint(grd_evolinit*src_ninit/etotinit) !+50
   endif
 
-  prt_ninitnew = sum(grd_nvolinit)
+  src_ninitnew = sum(grd_nvolinit)
 
 
 end subroutine initialnumbers

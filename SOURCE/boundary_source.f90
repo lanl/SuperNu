@@ -2,6 +2,7 @@ subroutine boundary_source
 
   use randommod
   use particlemod
+  use sourcemod
   use timestepmod
   use physconstmod
   use groupmod
@@ -31,7 +32,7 @@ subroutine boundary_source
   dyac(l) = grd_yacos(l) - grd_yacos(l+1)
   ym(l) = sqrt(1d0-0.25*(grd_yarr(l+1)+grd_yarr(l))**2)
 
-  esurfpart = tot_esurf/dble(prt_nsurf)
+  esurfpart = tot_esurf/dble(src_nsurf)
 
   if(grd_isvelocity) then
      thelp = tsp_t
@@ -93,10 +94,10 @@ subroutine boundary_source
   
 
 !-- instantiating surface particles:
-  do ipart=1,prt_nsurf
+  do ipart=1,src_nsurf
 
 !-- filling vacant spot in vacancy array
-     ivac = prt_vacantarr(ipart)
+     ivac = src_ivacant(ipart)
      prt_isvacant(ivac) = .false.
 !
 !-- calculating particle time

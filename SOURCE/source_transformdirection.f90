@@ -1,6 +1,7 @@
 subroutine source_transformdirection
 
   use particlemod
+  use sourcemod
   use inputparmod
   use physconstmod
   use transportmod
@@ -15,16 +16,16 @@ subroutine source_transformdirection
   type(packet),pointer :: p
 
 !-- transform particle direction into lab frame
-  do ipart=1,prt_nnew
-     ivac = prt_vacantarr(ipart)
+  do ipart=1,src_nnew
+     ivac = src_ivacant(ipart)
      p => prt_particles(ivac)
      call direction2lab(p%x,p%y,p%z,p%mu,p%om)
   enddo
 
 !!
 !!-- transform particle direction into lab frame
-!  do ipart=1,prt_nnew
-!     ivac = prt_vacantarr(ipart)
+!  do ipart=1,src_nnew
+!     ivac = src_ivacant(ipart)
 !!
 !!-- particle properties from the array
 !     x0 = prt_particles(ivac)%x

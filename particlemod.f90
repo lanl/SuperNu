@@ -7,8 +7,6 @@ module particlemod
      real*8 :: mu, om, t
      real*8 :: e, e0, wl
   end type packet
-  type(packet),allocatable,target :: prt_particles(:)  !(prt_npartmax)
-  logical,allocatable :: prt_isvacant(:)  !(prt_npartmax)
 !
 !-- secondary particle properties
   type packet2
@@ -19,10 +17,10 @@ module particlemod
      logical :: done, isvacant !transport done and particle termination flags
   end type packet2
 !
-  integer :: prt_npartmax, prt_ns, prt_ninit
-  integer :: prt_nsurf, prt_nexsrc, prt_nnew, prt_ninitnew
+  type(packet),allocatable,target :: prt_particles(:)  !(prt_npartmax)
+  logical,allocatable :: prt_isvacant(:)  !(prt_npartmax)
 !
-  integer, allocatable :: prt_vacantarr(:) !array of vacant particle array locations
+  integer :: prt_npartmax
 
   logical :: prt_isimcanlog !sets flux tally and energy deposition ...
   !to analog in IMC
@@ -48,11 +46,11 @@ module particlemod
 
   contains
 
-  subroutine particle_init(npartmax,ns,ninit,isimcanlog, &
+  subroutine particle_init(npartmax,isimcanlog, &
        isddmcanlog,tauddmc,taulump,tauvtime)!{{{
 !--------------------------------------
     implicit none
-    integer,intent(in) :: npartmax, ns, ninit
+    integer,intent(in) :: npartmax
     logical,intent(in) :: isimcanlog, isddmcanlog
     real*8,intent(in) :: tauddmc, taulump
     character(4),intent(in) :: tauvtime
@@ -61,8 +59,6 @@ module particlemod
 !***********************************************************************
 !-- adopt input values in module internal storage
     prt_npartmax = npartmax
-    prt_ns = ns
-    prt_ninit = ninit
     prt_isimcanlog = isimcanlog
     prt_isddmcanlog = isddmcanlog
     prt_tauddmc = tauddmc

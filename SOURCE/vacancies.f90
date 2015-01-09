@@ -1,6 +1,7 @@
 subroutine vacancies
 
   use particlemod
+  use sourcemod
   implicit none
 
 !##################################################
@@ -14,13 +15,13 @@ subroutine vacancies
   ipart = 0
   ivac = 0
 
-!-- Filling prt_vacantarr with particle index of vacant particles: loop
-  if(prt_nnew > prt_npartmax) stop 'vacancies: nnew>npartmax'
+!-- Filling src_ivacant with particle index of vacant particles: loop
+  if(src_nnew > prt_npartmax) stop 'vacancies: nnew>npartmax'
   do ipart=1,prt_npartmax
      if(.not.prt_isvacant(ipart)) cycle
      ivac = ivac+1
-     prt_vacantarr(ivac) = ipart
-     if (ivac == prt_nnew) exit
+     src_ivacant(ivac) = ipart
+     if (ivac == src_nnew) exit
   enddo
   if(ipart > prt_npartmax) stop 'Maximum number of prt_particles reached'
 

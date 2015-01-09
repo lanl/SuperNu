@@ -1,13 +1,13 @@
-subroutine sourceenergy_analytic
+subroutine sourceenergy_analytic(lmpi0)
 
   use gridmod
-  use mpimod
   use physconstmod
   use timestepmod
   use inputparmod
   use manufacmod
   use totalsmod
   implicit none
+  logical,intent(in) :: lmpi0
 
   integer :: i,j,k,l,nhelp
   real*8 :: srcren
@@ -180,6 +180,6 @@ subroutine sourceenergy_analytic
 
 !
 !-- add analytic radiation source tot total
-  if(impi==impi0) tot_eext = tot_eext + sum(grd_emitex) + tot_esurf
+  if(lmpi0) tot_eext = tot_eext + sum(grd_emitex) + tot_esurf
 
 end subroutine sourceenergy_analytic

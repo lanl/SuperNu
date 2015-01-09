@@ -4,6 +4,7 @@ c     -------------
       INCLUDE 'mpif.h'
 c
       integer,parameter :: impi0=0 !the master rank
+      logical :: lmpi0 !true for the master rank
       integer :: impi !mpi rank
       integer :: nmpi !number of mpi tasks
       integer,private :: ierr
@@ -21,6 +22,7 @@ c
 c     --------------------------!{{{
       use inputparmod
       use inputstrmod
+      use sourcemod
       use ionsmod
       use ffxsmod
       use bfxsmod
@@ -92,7 +94,7 @@ c-- broadcast constants
 c-- logical
       n = 3
       allocate(lsndvec(n))
-      if(impi==impi0) lsndvec = (/prt_isimcanlog,prt_isddmcanlog,
+      if(lmpi0) lsndvec = (/prt_isimcanlog,prt_isddmcanlog,
      &  str_lvoid/)
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -105,10 +107,10 @@ c
 c-- integer
       n = 15
       allocate(isndvec(n))
-      if(impi==impi0) isndvec = (/
-     &  grp_ng,prt_ns,
+      if(lmpi0) isndvec = (/
+     &  grp_ng,src_ns,
      &  prt_npartmax,tsp_nt,tsp_ntres,
-     &  prt_ninit,prt_ninitnew,
+     &  src_ninit,src_ninitnew,
      &  ion_nion,ion_iionmax,bb_nline,
      &  flx_ng,flx_nmu,flx_nom,
      &  str_nc,str_nabund/)
@@ -116,12 +118,12 @@ c-- integer
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       grp_ng       = isndvec(1)
-      prt_ns       = isndvec(2)
+      src_ns       = isndvec(2)
       prt_npartmax = isndvec(3)
       tsp_nt       = isndvec(4)
       tsp_ntres    = isndvec(5)
-      prt_ninit    = isndvec(6)
-      prt_ninitnew = isndvec(7)
+      src_ninit    = isndvec(6)
+      src_ninitnew = isndvec(7)
       ion_nion     = isndvec(8)
       ion_iionmax  = isndvec(9)
       bb_nline     = isndvec(10)
@@ -135,7 +137,7 @@ c
 c-- real*8
       n = 5
       allocate(sndvec(n))
-      if(impi==impi0) sndvec = (/prt_tauddmc,prt_taulump,
+      if(lmpi0) sndvec = (/prt_tauddmc,prt_taulump,
      &  tsp_t,tsp_dt,tsp_alpha/)
       call mpi_bcast(sndvec,n,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
@@ -234,7 +236,7 @@ c     ---------------------!{{{
       real*8 :: e(ion_nion)
 c
 c-- evaluate shape info
-      if(impi==impi0) then
+      if(lmpi0) then
        iion = 0
        do iz=1,gas_nelem
         nion(iz) = ion_el(iz)%ni
@@ -267,12 +269,12 @@ c-- fill structure
 c-- eion
         if(impi/=impi0) ion_el(iz)%i(ii)%e = e(iion)
 c-- elev
-        if(impi==impi0) vec(:n) = ion_el(iz)%i(ii)%elev
+        if(lmpi0) vec(:n) = ion_el(iz)%i(ii)%elev
         call mpi_bcast(vec(1),n,MPI_REAL8,
      &    impi0,MPI_COMM_WORLD,ierr)
         if(impi/=impi0) ion_el(iz)%i(ii)%elev = vec(:n)
 c-- glev
-        if(impi==impi0) vec(:n) = ion_el(iz)%i(ii)%glev
+        if(lmpi0) vec(:n) = ion_el(iz)%i(ii)%glev
         call mpi_bcast(vec(1),n,MPI_REAL8,
      &    impi0,MPI_COMM_WORLD,ierr)
         if(impi/=impi0) ion_el(iz)%i(ii)%glev = vec(:n)
@@ -600,7 +602,7 @@ c-- dim==0
       call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
-      if(impi==impi0) then
+      if(lmpi0) then
          tot_erad = rcvvec(1)
          tot_eout = rcvvec(2)
          tot_eext = rcvvec(3)

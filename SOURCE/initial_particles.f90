@@ -1,6 +1,7 @@
 subroutine initial_particles
 
   use randommod
+  use sourcemod
   use gridmod
   use groupmod
   use timestepmod
@@ -34,7 +35,7 @@ subroutine initial_particles
   k = 1
   iused = 0
   l = grd_icell(i,j,k)
-  do ipart=1,prt_ninitnew
+  do ipart=1,src_ninitnew
 
 !-----------------------------------------------------------------------
 !TODO: make this an outer loop, like in interior_source

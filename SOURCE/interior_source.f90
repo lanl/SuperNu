@@ -1,6 +1,7 @@
 subroutine interior_source
 
   use randommod
+  use sourcemod
   use miscmod
   use groupmod
   use gridmod
@@ -49,7 +50,7 @@ subroutine interior_source
 !Volume particle instantiation: loop
 !Loop run over the number of new particles that aren't surface source
 !particles.
-  ipart = prt_nsurf
+  ipart = src_nsurf
   iimpi = 0
   do k=1,grd_nz
   do j=1,grd_ny
@@ -59,7 +60,7 @@ subroutine interior_source
         grd_emitex(l)**pwr,grd_nvol(l),nemit,ndmy,nhere)
   do ii=1,nhere
      ipart = ipart + 1!{{{
-     ivac = prt_vacantarr(ipart)
+     ivac = src_ivacant(ipart)
      ptcl => prt_particles(ivac)
 
 !-- setting particle index to not vacant
@@ -175,7 +176,7 @@ subroutine interior_source
   enddo !i
   enddo !j
   enddo !k
-  if(ipart/=prt_nsurf+prt_nexsrc) stop 'interior_source: n/=nexecsrc'
+  if(ipart/=src_nsurf+src_nnonth) stop 'interior_source: n/=nexecsrc'
   
 
 !-- Thermal volume particle instantiation: loop
@@ -202,7 +203,7 @@ subroutine interior_source
 !
   do ii=1,nhere
      ipart = ipart + 1!{{{
-     ivac = prt_vacantarr(ipart)
+     ivac = src_ivacant(ipart)
      ptcl => prt_particles(ivac)
 
 !-- setting particle index to not vacant
@@ -407,7 +408,7 @@ subroutine interior_source
   enddo !i
   enddo !j
   enddo !k
-  if(ipart/=prt_nnew) stop 'interior_source: n/=nnew'
+  if(ipart/=src_nnew) stop 'interior_source: n/=nnew'
 
 
 end subroutine interior_source

@@ -1,6 +1,7 @@
 program supernu
 
   use randommod
+  use sourcemod
   use mpimod
   use transportmod
   use inputparmod
@@ -27,7 +28,7 @@ program supernu
 !***********************************************************************
   real*8 :: help
   real*8 :: t_elapsed
-  integer :: ierr,ns,nmax,it
+  integer :: ierr,it
   integer :: icell1,ncell !number of cells per rank (gas_ncell)
   real*8 :: t0,t1 !timing
   character(15) :: msg
@@ -36,6 +37,7 @@ program supernu
   call mpi_init(ierr) !MPI
   call mpi_comm_rank(MPI_COMM_WORLD,impi,ierr) !MPI
   call mpi_comm_size(MPI_COMM_WORLD,nmpi,ierr) !MPI
+  lmpi0 = impi==impi0
 !
 !-- initialize timing module
   call timing_init
@@ -46,7 +48,7 @@ program supernu
 !-- The setup is done by the master task only, and broadcasted to the
 !-- other tasks before packet propagation begins.
 !--
-  if(impi==impi0) then
+  if(lmpi0) then
      t0 = t_time()!{{{
 !-- startup message
      call banner
@@ -62,9 +64,7 @@ program supernu
      tsp_dt = t_elapsed/in_nt
 !
 !-- particle init
-     ns = in_ns/nmpi
-     nmax = in_prt_nmax/nmpi
-     call particle_init(nmax,ns,in_ns0,in_isimcanlog, &
+     call particle_init(in_prt_nmax/nmpi,in_isimcanlog, &
           in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime)
 !
 !-- rand() count and prt restarts
@@ -99,10 +99,6 @@ program supernu
 !-- read ffxs data
      if(.not.in_noffopac) call ffxs_read_data           !free-free cross section data
 !
-!-- memory statistics
-     msg = 'post read:'
-     write(6,*) 'memusg: ',msg,memusg()
-!
      t1 = t_time()
      t_setup = t1-t0!}}}
   endif !impi
@@ -113,18 +109,18 @@ program supernu
   call scatter_inputstruct(in_ndim,icell1,ncell) !MPI
 
 !-- setup spatial grid
-  call grid_init(impi==impi0,grp_ng,in_igeom,in_ndim,str_nc,icell1,ncell, &
+  call grid_init(lmpi0,grp_ng,in_igeom,in_ndim,str_nc,icell1,ncell, &
           str_lvoid,in_isvelocity)
   call grid_setup
-
 !-- setup gas
-  call gas_init(impi==impi0,icell1,ncell,grp_ng)
+  call gas_init(lmpi0,icell1,ncell,grp_ng)
   call gas_setup
 !-- inputstr no longer needed
   call inputstr_dealloc
 
 !-- create procedure pointers for the selected geometry
   call transport_init(in_igeom)
+  call source_init(in_ns/nmpi,in_ns0/nmpi)
 
 !-- allocate flux arrays
   call flux_alloc
@@ -135,7 +131,7 @@ program supernu
 
 !-- allocate arrays of sizes retreived in bcast_permanent
   call ions_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
-  call particle_alloc(impi==impi0,in_norestart,nmpi)
+  call particle_alloc(lmpi0,in_norestart,nmpi)
 
 !-- initialize random number generator, use different seeds for each rank
   if(in_nomp==0) stop 'supernu: in_nomp == 0'
@@ -156,7 +152,7 @@ program supernu
 
 !-- time step loop
 !=================
-  if(impi==impi0) then
+  if(lmpi0) then
      msg = 'post setup:'
      write(6,*) 'memusg: ',msg,memusg()
 !
@@ -176,14 +172,15 @@ program supernu
 
 !-- write timestep
      help = merge(tot_eerror,tot_erad,it>1)
-     if(impi==impi0) write(6,'(1x,a,i5,f8.3,"d",i10,1p,2e10.2)') 'timestep:', &
+     if(lmpi0) write(6,'(1x,a,i5,f8.3,"d",i10,1p,2e10.2)') 'timestep:', &
         it,tsp_t/pc_day,count(.not.prt_isvacant),help
 
 !-- update all non-permanent variables
      call grid_update(tsp_t)
      call gas_update(it)
-     call sourceenergy(nmpi) !energy to be instantiated per cell in this timestep
 
+!-- source energy: gamma and material
+     call sourceenergy(nmpi)
 
 !-- grey gamma ray transport
      call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
@@ -192,11 +189,7 @@ program supernu
         call allgather_gammacap
         call particle_advance_gamgrey(nmpi)
         call allreduce_gammaenergy !MPI
-!-- testing: local deposition
-!       grd_edep = grd_emitex
-!-- testing: dump integral numbers
-!       if(impi==impi0) write(6,*) 'source:', &
-!          sum(grd_emitex),sum(grd_edep),sum(grd_edep)/sum(grd_emitex)
+!       grd_edep = grd_emitex !for testing: local deposition
      else
         grd_edep = 0d0
      endif
@@ -204,34 +197,36 @@ program supernu
 !-- gather from gas workers and broadcast to world ranks
      call bcast_nonpermanent !MPI
      t_timelin(3) = t_time() !timeline
-     call sourceenergy_misc
 
-     call sourceenergy_analytic               !gas_emitex from analytic distribution
+!-- source energy
+     call sourceenergy_misc(lmpi0)      !add gamma source energy and amplification-factor energy
+     call sourceenergy_analytic(lmpi0)  !gas_emitex from analytic distribution
+
      call leakage_opacity       !IMC-DDMC albedo coefficients and DDMC leakage opacities
      call emission_probability  !emission probabilities for ep-group in each cell
      call allgather_leakage !MPI
-     t_timelin(4) = t_time() !timeline
-     call sourcenumbers                       !number of source prt_particles per cell
+     t_timelin(4) = t_time()    !timeline
+     call sourcenumbers         !number of source prt_particles per cell
 
-     if(prt_nnew>0) then
-        allocate(prt_vacantarr(prt_nnew))
-        call vacancies             !Storing vacant "prt_particles" indexes in ordered array "prt_vacantarr"
-        call boundary_source       !properties of prt_particles on domain boundary
-        call interior_source       !properties of prt_particles emitted in domain interior
+     if(src_nnew>0) then
+        allocate(src_ivacant(src_nnew))
+        call vacancies          !Storing vacant "prt_particles" indexes in ordered array "src_ivacant"
+        call boundary_source    !properties of prt_particles on domain boundary
+        call interior_source    !properties of prt_particles emitted in domain interior
         if(in_isvelocity) call source_transformdirection
-        deallocate(prt_vacantarr)
+        deallocate(src_ivacant)
      endif
      if(tsp_it<=tsp_ntres) where(.not.prt_isvacant) prt_particles%t = tsp_t !reset particle clocks
 
 !-- advance particles
      t_timelin(5) = t_time() !timeline
      call particle_advance
-     call reduce_tally !MPI !collect particle results from all workers
+     call reduce_tally !MPI  !collect particle results from all workers
      t_timelin(6) = t_time() !timeline
 
 !-- print packet advance load-balancing info
-     !if(impi==impi0) write(6,'(1x,a,3(f9.2,"s"))') 'packets time(min|mean|max):',t_pckt_stat
-     if(impi==impi0) then
+     !if(lmpi0) write(6,'(1x,a,3(f9.2,"s"))') 'packets time(min|mean|max):',t_pckt_stat
+     if(lmpi0) then
         call timereg(t_pcktmin,t_pckt_stat(1))
         call timereg(t_pcktmea,t_pckt_stat(2))
         call timereg(t_pcktmax,t_pckt_stat(3))
@@ -245,7 +240,7 @@ program supernu
      call reduce_gastemp !MPI
 
 !-- output
-     if(impi==impi0) then
+     if(lmpi0) then
 !-- luminosity statistics!{{{
         where(flx_lumnum>0) flx_lumdev = ( &
            (flx_lumdev/flx_lumnum - (flx_luminos/flx_lumnum)**2) * &
@@ -282,7 +277,7 @@ program supernu
 !=============
   call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
 !-- Print timing output.
-  if(impi==impi0) then
+  if(lmpi0) then
 !
 !-- print memory usage
      msg = 'post loop:'

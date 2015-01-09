@@ -1,6 +1,7 @@
 subroutine sourcenumbers
 !{{{
   use mpimod
+  use sourcemod
   use totalsmod
   use gridmod
   use particlemod
@@ -9,7 +10,7 @@ subroutine sourcenumbers
 
 !##################################################
 !This subroutine computes the distribution of source particles each
-!time step.  A fraction of the source particle number prt_ns is given
+!time step.  A fraction of the source particle number src_ns is given
 !to each cell based on the amount of energy emitted by the cell.
 !##################################################
 
@@ -21,8 +22,8 @@ subroutine sourcenumbers
   real*8 :: etot,einv,pwr,edone,en,invn
   integer :: nemit,nvol,nvolex
 ! tot_esurf for any new prt_particles from a surface source
-! prt_nsurf = number of surface prt_particles
-! prt_nnew = total number of new prt_particles~=prt_ns
+! src_nsurf = number of surface prt_particles
+! src_nnew = total number of new prt_particles~=src_ns
 
 !-- initialize volume numbers
   grd_nvol = 0
@@ -31,23 +32,23 @@ subroutine sourcenumbers
   pwr = in_srcepwr
 
 !-- total particle number
-  nstot = nmpi*int(prt_ns,8)
+  nstot = nmpi*int(src_ns,8)
 
 !-- etot
   etot = sum(grd_emit**pwr) + sum(grd_emitex**pwr) + tot_esurf**pwr
   if(etot/=etot) stop 'sourcenumber: etot nan'
 
 !-- calculating number of boundary particles (if any)
-  prt_nsurf = nint(tot_esurf**pwr*nstot/etot)
+  src_nsurf = nint(tot_esurf**pwr*nstot/etot)
 
 !-- base (flat,constant) particle number per cell over ALL RANKS
   n = count(grd_emit>0d0 .or. grd_emitex>0d0)  !number of cells with nonzero energy
-  base = dble(nstot - prt_nsurf)/n  !uniform distribution
+  base = dble(nstot - src_nsurf)/n  !uniform distribution
   base = basefrac*base
 
 !-- number of particles available for proportional distribution
   nsbase = int(n*base,8)  !total number of base particles
-  nsavail = nstot - nsbase - prt_nsurf
+  nsavail = nstot - nsbase - src_nsurf
 
 
 !-- total particle number per cell
@@ -69,15 +70,15 @@ subroutine sourcenumbers
 
 !-- from total nvol (over ALL RANKS) to nvol PER RANK
 !-- also convert emit to energy PER PARTICLE
-  prt_nnew = prt_nsurf
-  prt_nexsrc = 0
+  src_nnew = src_nsurf
+  src_nnonth = 0
   iimpi = 0
   do l=1,grd_ncell
      call sourcenumbers_roundrobin(iimpi,grd_emit(l)**pwr, &
         grd_emitex(l)**pwr,grd_nvol(l),nemit,nvol,nvolex)
 !-- particle counts
-     prt_nnew = prt_nnew + nvol + nvolex
-     prt_nexsrc = prt_nexsrc + nvolex
+     src_nnew = src_nnew + nvol + nvolex
+     src_nnonth = src_nnonth + nvolex
   enddo
 !}}}
 end subroutine sourcenumbers

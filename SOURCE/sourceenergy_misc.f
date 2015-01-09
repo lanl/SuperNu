@@ -1,10 +1,10 @@
-      subroutine sourceenergy_misc
-c     ----------------------------
-      use mpimod
+      subroutine sourceenergy_misc(lmpi0)
+c     ----------------------------------
       use gridmod
       use totalsmod
 !     use timestepmod
       implicit none
+      logical,intent(in) :: lmpi0
 ************************************************************************
 * Add the energy deposition from gamma absorption and amplification
 * factors to the energy source for optical particles.
@@ -32,6 +32,6 @@ c-- verify zero emission energy in dummy cell
      &  stop 'soureceenergy_misc: emission energy in dummy cell'
 c
 c-- add gamma radiation source tot total
-      if(impi==impi0) tot_eext = tot_eext + sum(grd_edep)
+      if(lmpi0) tot_eext = tot_eext + sum(grd_edep)
 c
       end subroutine sourceenergy_misc
