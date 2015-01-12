@@ -185,13 +185,13 @@ subroutine particle_advance
 !-- verify position
            if(ptcl2%itype==1 .and. .not.ptcl2%done) then
               if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
-                 write(0,*) 'prt_adv: r not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
+                 write(0,*) 'prt_adv: r not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu,ptcl2%ipart,ptcl2%istep
               endif
               if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-                 write(0,*) 'prt_adv: theta not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
+                 write(0,*) 'prt_adv: theta not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu,ptcl2%ipart,ptcl2%istep
               endif
               if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
-                 write(0,*) 'prt_adv: phi not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu,om
+                 write(0,*) 'prt_adv: phi not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu,om,ptcl2%ipart,ptcl2%istep
               endif
            endif
 !-- Russian roulette for termination of exhausted particles

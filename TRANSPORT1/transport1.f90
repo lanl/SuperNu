@@ -715,8 +715,8 @@ subroutine transport1(ptcl,ptcl2)
      if(grd_nz==1) stop 'transport1: invalid z crossing'
      if(iznext==grd_nz.and.iz==1) then
 !        write(*,*) iz, z, dbz
-        if(abs(z-pc_pi)<1d-9) then
-           z=pc_pi
+        if(abs(z-grd_zarr(2))<1d-9) then
+           z=grd_zarr(2)
         elseif(abs(z)<1d-9) then
            z=pc_pi2
         else
@@ -724,8 +724,8 @@ subroutine transport1(ptcl,ptcl2)
            stop 'transport1: iz=1 & z/=pi or 0'
         endif
      elseif(iznext==1.and.iz==grd_nz) then
-        if(abs(z-pc_pi)<1d-9) then
-           z=pc_pi
+        if(abs(z-grd_zarr(grd_nz))<1d-9) then
+           z=grd_zarr(grd_nz)
         elseif(abs(z-pc_pi2)<1d-9) then
            z=0d0
         else
