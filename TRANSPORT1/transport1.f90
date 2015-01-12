@@ -267,7 +267,7 @@ subroutine transport1(ptcl,ptcl2)
 !-- azimuthal boundary distance (z)
   if(xi==0d0.or.grd_nz==1) then
      dbz = far
-  elseif(xi>0d0) then
+  elseif(xi>0d0.and.grd_zarr(iz+1)-z<pc_pi) then
 !-- counterclockwise
      iznext=iz+1
      if(iznext==grd_nz+1) iznext=1
@@ -276,9 +276,9 @@ subroutine transport1(ptcl,ptcl2)
         dbz = far
      else
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz+1)-z)/zhelp
-        if(dbz<0d0) dbz = far
+        if(dbz<=0d0) dbz = far
      endif
-  else
+  elseif(xi<0d0.and.z-grd_zarr(iz)<pc_pi) then
 !-- clockwise
      iznext=iz-1
      if(iznext==0) iznext=grd_nz
@@ -287,8 +287,10 @@ subroutine transport1(ptcl,ptcl2)
         dbz = far
      else
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz)-z)/zhelp
-        if(dbz<0d0) dbz = far
+        if(dbz<=0d0) dbz = far
      endif
+  else
+     dbz = far
   endif
 
 !-- Thomson scattering distance
@@ -362,7 +364,13 @@ subroutine transport1(ptcl,ptcl2)
 !-- updating azimuthal angle of position
      z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
           xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
-     if(z<0d0) z=z+pc_pi2
+     if(abs(z)<1d-9.and.iz==1) then
+        z = 0d0
+     elseif(abs(z)<1d-9.and.iz==grd_nz) then
+        z = pc_pi2
+     elseif(z<0d0) then
+        z=z+pc_pi2
+     endif
 !-- updating azimuthal angle of direction (about radius)
      eta = y*(cos(z)*mux+sin(z)*muy)-sqrt(1d0-y**2)*muz
      xi = cos(z)*muy-sin(z)*mux
@@ -706,9 +714,24 @@ subroutine transport1(ptcl,ptcl2)
 !-- sanity check
      if(grd_nz==1) stop 'transport1: invalid z crossing'
      if(iznext==grd_nz.and.iz==1) then
-        z=pc_pi2
+!        write(*,*) iz, z, dbz
+        if(abs(z-pc_pi)<1d-9) then
+           z=pc_pi
+        elseif(abs(z)<1d-9) then
+           z=pc_pi2
+        else
+           write(*,*) iz,iznext,z
+           stop 'transport1: iz=1 & z/=pi or 0'
+        endif
      elseif(iznext==1.and.iz==grd_nz) then
-        z=0d0
+        if(abs(z-pc_pi)<1d-9) then
+           z=pc_pi
+        elseif(abs(z-pc_pi2)<1d-9) then
+           z=0d0
+        else
+           write(*,*) iz,iznext,z
+           stop 'transport1: iz=nz & z/=pi or 2*pi'
+        endif
      elseif(iznext==iz-1) then
         z=grd_zarr(iz)
      else
@@ -767,10 +790,12 @@ subroutine transport1(ptcl,ptcl2)
 !-- transforming mu to lab
            if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
 !-- reverting z
-           if(iznext==grd_nz.and.iz==1) then
-              z=0d0
-           elseif(iznext==1.and.iz==grd_nz) then
-              z=pc_pi2
+           if(z/=pc_pi) then
+              if(iznext==grd_nz.and.iz==1) then
+                 z=0d0
+              elseif(iznext==1.and.iz==grd_nz) then
+                 z=pc_pi2
+              endif
            endif
         endif
      endif
