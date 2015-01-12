@@ -51,6 +51,9 @@ subroutine particle_advance
   dyac(l) = grd_yacos(l) - grd_yacos(l+1)
   ym(l) = sqrt(1d0-0.25*(grd_yarr(l+1)+grd_yarr(l))**2)
 !
+!-- start clock
+  t0 = t_time()
+!
 !-- assigning pointers to corresponding particle properties
   x => ptcl%x
   y => ptcl%y
@@ -85,7 +88,6 @@ subroutine particle_advance
   grd_methodswap = 0
   grd_numcensus = 0
 
-  t0 = t_time()
   ! Propagating all particles that are not considered vacant: loop
   npckt = 0
   nddmc = 0

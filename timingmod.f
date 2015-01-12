@@ -138,7 +138,7 @@ c     ------------------------
 c
       tmpi = t_mpibcast(i)+t_mpimisc(i)+t_mpireduc(i)
       taccounted = tmpi+t_setup+t_gasupd(i)+t_opacleak(i)+t_pcktmax(i)+
-     &  t_output(i)
+     &  t_pcktgam(i)+t_output(i)
 c
       write(6,*)
       write(6,*) 'timing results:'
@@ -154,6 +154,7 @@ c
       write(6,1) 'mpi (bc|misc|red) :',tmpi,
      &  t_mpibcast(i),t_mpimisc(i),t_mpireduc(i)
       write(6,1) 'packet transport  :',t_pcktmax(i)
+      write(6,1) 'gamma transport   :',t_pcktgam(i)
       write(6,1) 'output            :',t_output(i)
       write(6,1) 'unaccounted       :',t_all - taccounted
       write(6,*) '----------------------------'

@@ -37,6 +37,9 @@ subroutine particle_advance_gamgrey(nmpi)
 !
   type(packet),target :: ptcl
   type(packet2),target :: ptcl2
+!
+!-- start clock
+  t0 = t_time()
 
   grd_edep = 0d0
   flx_gamluminos = 0d0
@@ -107,8 +110,6 @@ subroutine particle_advance_gamgrey(nmpi)
 
 !-- default, in case .not.grd_isvelocity
   cmffact = 1d0
-
-  t0 = t_time()
 
   iimpi = 0
   do k=1,grd_nz
