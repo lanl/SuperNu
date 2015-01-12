@@ -18,7 +18,7 @@ c     --------------------------------------
 c
 c-- search unnormalized cumulative emission probability values
       r1 = r*grd_capgrey(ic)
-      iep = binsrch(r1,grd_emitprob(:,ic),grd_nep,.false.)
+      iep = binsrch(r1,grd_emitprob(:,ic),grd_nep,.true.)
       ig = iep*grd_nepg + 1
       igp1 = min(ig + grd_nepg - 1, grp_ng)
       nepg = igp1 - ig + 1
