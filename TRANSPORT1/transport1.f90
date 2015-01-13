@@ -715,8 +715,8 @@ subroutine transport1(ptcl,ptcl2)
      if(grd_nz==1) stop 'transport1: invalid z crossing'
      if(iznext==grd_nz.and.iz==1) then
 !        write(*,*) iz, z, dbz
-        if(abs(z-pc_pi)<1d-9) then
-           z=pc_pi
+        if(abs(z-grd_zarr(iz+1))<1d-9) then
+           z=grd_zarr(iz+1)
         elseif(abs(z)<1d-9) then
            z=pc_pi2
         else
@@ -724,8 +724,9 @@ subroutine transport1(ptcl,ptcl2)
            stop 'transport1: iz=1 & z/=pi or 0'
         endif
      elseif(iznext==1.and.iz==grd_nz) then
-        if(abs(z-pc_pi)<1d-9) then
-           z=pc_pi
+        if(abs(z-grd_zarr(iz))<1d-9) then
+           if(grd_nz/=2) stop 'transport1: z=zarr(iz) & nz/=2'
+           z=grd_zarr(iz)
         elseif(abs(z-pc_pi2)<1d-9) then
            z=0d0
         else
@@ -778,13 +779,13 @@ subroutine transport1(ptcl,ptcl2)
            if(grd_nz==2) then
 !-- rejection for 2 cells can occur at zarr(iz) and zarr(iz+1)
               if(iznext==1) then
-                 if(z==pc_pi) then
+                 if(z==grd_zarr(2)) then
                     xi = max(r1,r2)
                  elseif(z==0d0) then
                     xi = -max(r1,r2)
                  endif
               elseif(iznext==2) then
-                 if(z==pc_pi) then
+                 if(z==grd_zarr(2)) then
                     xi = -max(r1,r2)
                  elseif(z==pc_pi2) then
                     xi = max(r1,r2)
@@ -805,12 +806,10 @@ subroutine transport1(ptcl,ptcl2)
 !-- transforming mu to lab
            if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
 !-- reverting z
-           if(z/=pc_pi) then
-              if(iznext==grd_nz.and.iz==1) then
-                 z=0d0
-              elseif(iznext==1.and.iz==grd_nz) then
-                 z=pc_pi2
-              endif
+           if(iznext==grd_nz.and.iz==1) then
+              if(z==pc_pi2) z=0d0
+           elseif(iznext==1.and.iz==grd_nz) then
+              if(z==0d0) z=pc_pi2
            endif
         endif
      endif
