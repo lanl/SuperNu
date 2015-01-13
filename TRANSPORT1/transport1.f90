@@ -775,7 +775,22 @@ subroutine transport1(ptcl,ptcl2)
            r1 = rnd_r(rnd_state)
            r2 = rnd_r(rnd_state)
 !-- resampling z-cosine
-           if(iznext==iz+1.or.(iznext==1.and.iz==grd_nz)) then
+           if(grd_nz==2) then
+!-- rejection for 2 cells can occur at zarr(iz) and zarr(iz+1)
+              if(iznext==1) then
+                 if(z==pc_pi) then
+                    xi = max(r1,r2)
+                 elseif(z==0d0) then
+                    xi = -max(r1,r2)
+                 endif
+              elseif(iznext==2) then
+                 if(z==pc_pi) then
+                    xi = -max(r1,r2)
+                 elseif(z==pc_pi2) then
+                    xi = max(r1,r2)
+                 endif
+              endif
+           elseif(iznext==iz+1.or.(iznext==1.and.iz==grd_nz)) then
               xi = -max(r1,r2)
            else
               xi = max(r1,r2)
