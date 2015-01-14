@@ -446,6 +446,23 @@ subroutine transport1(ptcl,ptcl2)
      mu = 1d0 - 2d0*r1
      r1 = rnd_r(rnd_state)
      om = pc_pi2*r1
+!-- place particle at correct side of boundary after a collision distance smaller than the tolerance level
+     help = sin(om) !xi
+     if(z==grd_zarr(iz) .and. help<0d0) then
+        iz = iz - 1
+        if(iz<1) then
+           z = pc_pi2
+           iz = grd_nz
+        endif
+        ic = grd_icell(ix,iy,iz)
+     elseif(z==grd_zarr(iz+1) .and. help>0d0) then
+        iz = iz + 1
+        if(iz>grd_nz) then
+           z = 0d0
+           iz = 1
+        endif
+        ic = grd_icell(ix,iy,iz)
+     endif
 !-- checking velocity dependence
      if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+mu*x*cinv)
   elseif(d==dbx) then
@@ -876,9 +893,9 @@ subroutine transport1(ptcl,ptcl2)
      write(0,*) 'phi not in cell (y): ',iy,yold,y,grd_yarr(iy),grd_yarr(iy+1)
      write(0,*) 'phi not in cell (z): ',iz,zold,z,grd_zarr(iz),grd_zarr(iz+1)
      write(0,*) 'old iz: ',izold
-     write(0,*) 'dir: ',mux,muy,muz,mu,eta,xi
-     write(0,*) ptcl2%idist, darr
-     write(0,*) idistold,darrold
+     write(0,*) 'dir: ', mux,muy,muz,mu,eta,xi
+     write(0,*) 'darr   :', ptcl2%idist, darr
+     write(0,*) 'darrold:', idistold, darrold
      write(0,*)
   endif
   darrold = darr

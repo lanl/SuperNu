@@ -195,6 +195,16 @@ subroutine particle_advance
               if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
                  write(0,*) 'prt_adv: phi not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu,om,ptcl2%ipart,ptcl2%istep,ptcl2%idist
               endif
+!-- verify direction
+              if(x==grd_xarr(ix+1).and.mu>0d0 .or. x==grd_xarr(ix).and.mu<0d0) then
+!                write(0,*) 'prt_adv: mu pointing out of cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu,ptcl2%ipart,ptcl2%istep,ptcl2%idist
+              endif
+              if(y==grd_yarr(iy+1).and.cos(om)>0d0 .or. y==grd_yarr(iy).and.cos(om)<0d0) then
+                 write(0,*) 'prt_adv: eta pointing out of cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),cos(om),ptcl2%ipart,ptcl2%istep,ptcl2%idist
+              endif
+              if(z==grd_zarr(iz+1).and.sin(om)>0d0 .or. z==grd_zarr(iz).and.sin(om)<0d0) then
+                 write(0,*) 'prt_adv: xi pointing out of cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),sin(om),ptcl2%ipart,ptcl2%istep,ptcl2%idist
+              endif
            endif
 !-- Russian roulette for termination of exhausted particles
            if(e<1d-6*e0 .and. .not.ptcl2%isvacant .and. &
