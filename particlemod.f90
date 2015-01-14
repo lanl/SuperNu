@@ -14,6 +14,7 @@ module particlemod
      integer :: ic, ig       !index into compressed domain arrays, group index
      integer :: itype        !IMC or DDMC type
      integer :: ipart, istep !particle number and transport step number
+     integer :: idist        !transport distance identifier
      logical :: done, isvacant !transport done and particle termination flags
   end type packet2
 !

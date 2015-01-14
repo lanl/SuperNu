@@ -28,15 +28,15 @@ subroutine transport1(ptcl,ptcl2)
   real*8 :: elabfact, eta, xi, mux,muy,muz
   real*8 :: dtinv, thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop,d
-  real*8 :: darr(7)
+  real*8 :: darr(7),darrold(7)
   real*8 :: r1,r2
 
-  integer :: iynext,iynext1,iynext2,iznext,iyold,idby1,idby2
+  integer :: iynext,iynext1,iynext2,iznext,iyold,idby1,idby2,izold,idistold
   integer :: idby1old,idby2old
   real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
   real*8 :: dby1old,dby2old
   real*8 :: zhelp
-  real*8 :: xold,yold,muold,dbyold,etaold,muzold
+  real*8 :: xold,yold,zold,muold,dbyold,etaold,muzold
 !-- distance out of physical reach
   real*8 :: far
 
@@ -65,6 +65,9 @@ subroutine transport1(ptcl,ptcl2)
   e => ptcl%e
   e0 => ptcl%e0
   wl => ptcl%wl
+!
+  izold = iz
+  idistold = ptcl2%idist
 !
 !-- shortcut
   dtinv = 1d0/tsp_dt
@@ -327,17 +330,19 @@ subroutine transport1(ptcl,ptcl2)
   endif
 !
 !-- finding minimum distance
-  darr = [dcen,dbx,dby,dbz,dthm,dcol,ddop]
+  darr = [dcen,dby,dbx,dbz,dthm,dcol,ddop]
   if(any(darr/=darr) .or. any(darr<0d0)) then
      write(0,*) darr
      write(*,*) ix,iy,iz,x,y,z,mu,eta,xi,om
      stop 'transport1: invalid distance'
   endif
   d = minval(darr)
+  ptcl2%idist = minloc(darr,dim=1)
 
 !-- storing old position
   xold = x
   yold = y
+  zold = z
   muold = mu
 !-- updating radius
   x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
@@ -865,5 +870,17 @@ subroutine transport1(ptcl,ptcl2)
      write(0,*) d
      write(0,*)
   endif
+
+  if((z>grd_zarr(iz+1) .or. z<grd_zarr(iz))) then
+     write(0,*) 'phi not in cell (x): ',ix,xold,x,grd_xarr(ix),grd_xarr(ix+1)
+     write(0,*) 'phi not in cell (y): ',iy,yold,y,grd_yarr(iy),grd_yarr(iy+1)
+     write(0,*) 'phi not in cell (z): ',iz,zold,z,grd_zarr(iz),grd_zarr(iz+1)
+     write(0,*) 'old iz: ',izold
+     write(0,*) 'dir: ',mux,muy,muz,mu,eta,xi
+     write(0,*) ptcl2%idist, darr
+     write(0,*) idistold,darrold
+     write(0,*)
+  endif
+  darrold = darr
 
 end subroutine transport1

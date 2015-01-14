@@ -173,6 +173,7 @@ subroutine particle_advance
 !-- 3D spherical
      case(1)
         ptcl2%istep = 0!{{{
+        ptcl2%idist = 0
         do while ((.not.ptcl2%done).and.(.not.ptcl2%isvacant))
            ptcl2%istep = ptcl2%istep + 1
            if(ptcl2%itype == 1.or.in_puretran) then
@@ -181,17 +182,18 @@ subroutine particle_advance
            else
               nddmc = nddmc + 1
               call diffusion1(ptcl,ptcl2,icell,specarr)
+              ptcl2%idist = -1
            endif
 !-- verify position
            if(ptcl2%itype==1 .and. .not.ptcl2%done) then
               if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
-                 write(0,*) 'prt_adv: r not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu,ptcl2%ipart,ptcl2%istep
+                 write(0,*) 'prt_adv: r not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu,ptcl2%ipart,ptcl2%istep,ptcl2%idist
               endif
               if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-                 write(0,*) 'prt_adv: theta not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu,ptcl2%ipart,ptcl2%istep
+                 write(0,*) 'prt_adv: theta not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu,ptcl2%ipart,ptcl2%istep,ptcl2%idist
               endif
               if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
-                 write(0,*) 'prt_adv: phi not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu,om,ptcl2%ipart,ptcl2%istep
+                 write(0,*) 'prt_adv: phi not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu,om,ptcl2%ipart,ptcl2%istep,ptcl2%idist
               endif
            endif
 !-- Russian roulette for termination of exhausted particles
