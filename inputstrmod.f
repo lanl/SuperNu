@@ -69,7 +69,7 @@ c     --------------------------------------------------------!{{{
       character(2) :: dmy
       character(8),allocatable :: labl(:)
       real*8,allocatable :: raw(:,:)
-      real*8 :: mni56
+      real*8 :: mni56,help
       real*8 :: r,rs
 c-- statement functions
       real*8 :: x,y,z
@@ -152,9 +152,16 @@ c-- dim 3
         str_zleft(i+1) = raw(6,nx*ny*(i-1)+1)
        enddo
       endif
-c-- fix endpoints
+c-- uniform grid
       if(igeom==1 .or. igeom==2 .or. igeom==11) then
-       str_zleft(1) = 0d0
+       do k=1,nz+1
+        help = (k-1)*pc_pi2/nz
+c-- verify approximate values
+        if(abs(str_zleft(k) - help)>1d-3) then
+         stop 'read_inputstr: z inaccurate'
+        endif
+        str_zleft(k) = help
+       enddo
        str_zleft(nz+1) = pc_pi2
       endif
 c
