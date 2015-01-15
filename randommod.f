@@ -67,10 +67,18 @@ c     ----------------------------!{{{
 ************************************************************************
 * Return a random initial state of the random number generator.
 ************************************************************************
+      integer :: j
+      type(rnd_t) :: st
 c-- init
       state%part = [521288629, 362436069, 16163801, 1131199299]
-c-- draw four random numbers
+c-- advance to the selected offset
       call rnd_advance(state,i*4)!}}}
+c-- draw four random numbers
+      do j=1,4
+       st%part(j) = rnd_i(state)
+      enddo
+c-- save
+      state = st
       end subroutine rnd_seed
 c
 c
