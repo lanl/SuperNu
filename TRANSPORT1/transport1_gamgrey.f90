@@ -29,7 +29,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   integer :: iynext,iynext1,iynext2,iznext,idby1,idby2
   real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
   real*8 :: zhelp
-  real*8 :: xold,yold,muold
+  real*8 :: xold,yold,zold,muold
 !-- distance out of physical reach
   real*8 :: far
 
@@ -228,7 +228,11 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   endif
 
 !-- azimuthal boundary distance (z)
+  iznext = iz
   if(xi==0d0.or.grd_nz==1) then
+     dbz = far
+  elseif(abs(y)==1d0) then
+!-- azimuthal position undetermined
      dbz = far
   elseif(xi>0d0.and.grd_zarr(iz+1)-z<pc_pi) then
 !-- counterclockwise
@@ -282,6 +286,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 !-- storing old position
   xold = x
   yold = y
+  zold = z
   muold = mu
 !-- updating radius
   x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
@@ -309,13 +314,15 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 !-- updating azimuthal angle of position
      z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
           xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
-     if(abs(z)<1d-9.and.iz==1) then
+     if(d==dbz .and. abs(z)<1d-9.and.iz==1) then
         z = 0d0
-     elseif(abs(z)<1d-9.and.iz==grd_nz) then
+     elseif(d==dbz .and. abs(z)<1d-9.and.iz==grd_nz) then
         z = pc_pi2
      elseif(z<0d0) then
         z=z+pc_pi2
      endif
+!-- any iz possible if previous position was undetermined
+     if(abs(yold)==1d0) iz = binsrch(z,grd_zarr,grd_nz+1,.false.)
 !-- updating azimuthal angle of direction (about radius)
      eta = y*(cos(z)*mux+sin(z)*muy)-sqrt(1d0-y**2)*muz
      xi = cos(z)*muy-sin(z)*mux
@@ -385,7 +392,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
         y=-y
         iynext=binsrch(y,grd_yarr,grd_ny+1,.false.)
 !-- reflecting z
-        z=z+pc_pi
+        z=zold+pc_pi
         if(z>pc_pi2) z=z-pc_pi2
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
      elseif(iynext==iy-1) then
@@ -395,7 +402,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
         y=grd_yarr(iy)
         if(iynext==0) then
 !-- reflecting z
-           z=z+pc_pi
+           z=zold+pc_pi
            if(z>pc_pi2) z=z-pc_pi2
            if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
            iynext=1
@@ -407,7 +414,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
         y=grd_yarr(iy+1)
         if(iynext==grd_ny+1) then
 !-- reflecting z
-           z=z+pc_pi
+           z=zold+pc_pi
            if(z>pc_pi2) z=z-pc_pi2
            if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
            iynext=grd_ny

@@ -31,7 +31,7 @@ subroutine transport1(ptcl,ptcl2)
   real*8 :: darr(7),darrold(7)
   real*8 :: r1,r2
 
-  integer :: iynext,iynext1,iynext2,iznext,iyold,idby1,idby2,izold,idistold
+  integer :: iynext,iynext1,iynext2,iznext,ixold,iyold,idby1,idby2,izold,idistold
   integer :: idby1old,idby2old
   real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
   real*8 :: dby1old,dby2old
@@ -66,6 +66,8 @@ subroutine transport1(ptcl,ptcl2)
   e0 => ptcl%e0
   wl => ptcl%wl
 !
+  ixold = ix
+  iyold = iy
   izold = iz
   idistold = ptcl2%idist
 !
@@ -268,7 +270,11 @@ subroutine transport1(ptcl,ptcl2)
   endif
 
 !-- azimuthal boundary distance (z)
+  iznext = iz
   if(xi==0d0.or.grd_nz==1) then
+     dbz = far
+  elseif(abs(y)==1d0) then
+!-- azimuthal position undetermined
      dbz = far
   elseif(xi>0d0.and.grd_zarr(iz+1)-z<pc_pi) then
 !-- counterclockwise
@@ -369,13 +375,15 @@ subroutine transport1(ptcl,ptcl2)
 !-- updating azimuthal angle of position
      z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
           xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
-     if(abs(z)<1d-9.and.iz==1) then
+     if(d==dbz .and. abs(z)<1d-9.and.iz==1) then
         z = 0d0
-     elseif(abs(z)<1d-9.and.iz==grd_nz) then
+     elseif(d==dbz .and. abs(z)<1d-9.and.iz==grd_nz) then
         z = pc_pi2
      elseif(z<0d0) then
         z=z+pc_pi2
      endif
+!-- any iz possible if previous position was undetermined
+     if(abs(yold)==1d0) iz = binsrch(z,grd_zarr,grd_nz+1,.false.)
 !-- updating azimuthal angle of direction (about radius)
      eta = y*(cos(z)*mux+sin(z)*muy)-sqrt(1d0-y**2)*muz
      xi = cos(z)*muy-sin(z)*mux
@@ -645,7 +653,7 @@ subroutine transport1(ptcl,ptcl2)
         y=-y
         iynext=binsrch(y,grd_yarr,grd_ny+1,.false.)
 !-- reflecting z
-        z=z+pc_pi
+        z=zold+pc_pi
         if(z>pc_pi2) z=z-pc_pi2
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
      elseif(iynext==iy-1) then
@@ -655,7 +663,7 @@ subroutine transport1(ptcl,ptcl2)
         y=grd_yarr(iy)
         if(iynext==0) then
 !-- reflecting z
-           z=z+pc_pi
+           z=zold+pc_pi
            if(z>pc_pi2) z=z-pc_pi2
            if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
            iynext=1
@@ -667,7 +675,7 @@ subroutine transport1(ptcl,ptcl2)
         y=grd_yarr(iy+1)
         if(iynext==grd_ny+1) then
 !-- reflecting z
-           z=z+pc_pi
+           z=zold+pc_pi
            if(z>pc_pi2) z=z-pc_pi2
            if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
            iynext=grd_ny
@@ -684,7 +692,6 @@ subroutine transport1(ptcl,ptcl2)
           min(dx(ix),xm(ix)*dyac(iynext),xm(ix)*ym(iynext) * &
           dz(iznext))*thelp<prt_tauddmc .or. in_puretran) then
 !-- IMC in adjacent cell
-        iyold=iy
         iy = iynext
         iz = iznext
         ic = grd_icell(ix,iy,iz)
@@ -727,6 +734,7 @@ subroutine transport1(ptcl,ptcl2)
            if(om<0d0) om=om+pc_pi2
 !-- transforming mu to lab
            if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
+           z = zold
         endif
      endif
 
@@ -742,7 +750,7 @@ subroutine transport1(ptcl,ptcl2)
         elseif(abs(z)<1d-9) then
            z=pc_pi2
         else
-           write(*,*) iz,iznext,z
+           write(*,*) iz,iznext,z,z-pc_pi2,ptcl2%idist,d,far
            stop 'transport1: iz=1 & z/=pi or 0'
         endif
      elseif(iznext==1.and.iz==grd_nz) then
@@ -892,10 +900,15 @@ subroutine transport1(ptcl,ptcl2)
      write(0,*) 'phi not in cell (x): ',ix,xold,x,grd_xarr(ix),grd_xarr(ix+1)
      write(0,*) 'phi not in cell (y): ',iy,yold,y,grd_yarr(iy),grd_yarr(iy+1)
      write(0,*) 'phi not in cell (z): ',iz,zold,z,grd_zarr(iz),grd_zarr(iz+1)
-     write(0,*) 'old iz: ',izold
+     write(0,*) 'old ix,iy,iz:',ixold,iyold,izold
+     write(0,*) 'iynext1,2:',iynext1,iynext2,dby1,dby2
+     write(0,*) 'ptcl id:',ptcl2%ipart,ptcl2%istep
      write(0,*) 'dir: ', mux,muy,muz,mu,eta,xi
      write(0,*) 'darr   :', ptcl2%idist, darr
      write(0,*) 'darrold:', idistold, darrold
+     write(0,*) 'atan2:',sqrt(1d0-yold**2),sin(zold),cos(zold),xold*sqrt(1d0-yold**2),muy*d,mux*d
+!    z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
+!         xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
      write(0,*)
   endif
   darrold = darr
