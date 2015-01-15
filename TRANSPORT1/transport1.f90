@@ -276,10 +276,9 @@ subroutine transport1(ptcl,ptcl2)
   elseif(abs(y)==1d0) then
 !-- azimuthal position undetermined
      dbz = far
-  elseif(xi>0d0.and.grd_zarr(iz+1)-z<pc_pi) then
+  elseif(xi>0d0) then
 !-- counterclockwise
      iznext=iz+1
-     if(iznext==grd_nz+1) iznext=1
      zhelp = muy*cos(grd_zarr(iz+1))-mux*sin(grd_zarr(iz+1))
      if(zhelp==0d0) then
         dbz = far
@@ -287,10 +286,9 @@ subroutine transport1(ptcl,ptcl2)
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz+1)-z)/zhelp
         if(dbz<=0d0) dbz = far
      endif
-  elseif(xi<0d0.and.z-grd_zarr(iz)<pc_pi) then
+  else
 !-- clockwise
      iznext=iz-1
-     if(iznext==0) iznext=grd_nz
      zhelp = muy*cos(grd_zarr(iz))-mux*sin(grd_zarr(iz))
      if(zhelp==0d0) then
         dbz = far
@@ -298,8 +296,6 @@ subroutine transport1(ptcl,ptcl2)
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz)-z)/zhelp
         if(dbz<=0d0) dbz = far
      endif
-  else
-     dbz = far
   endif
 
 !-- Thomson scattering distance
@@ -339,7 +335,7 @@ subroutine transport1(ptcl,ptcl2)
   darr = [dcen,dby,dbx,dbz,dthm,dcol,ddop]
   if(any(darr/=darr) .or. any(darr<0d0)) then
      write(0,*) darr
-     write(*,*) ix,iy,iz,x,y,z,mu,eta,xi,om
+     write(0,*) ix,iy,iz,x,y,z,mu,eta,xi,om
      stop 'transport1: invalid distance'
   endif
   d = minval(darr)
@@ -743,32 +739,20 @@ subroutine transport1(ptcl,ptcl2)
   elseif(d==dbz) then
 !-- sanity check
      if(grd_nz==1) stop 'transport1: invalid z crossing'
-     if(iznext==grd_nz.and.iz==1) then
-!        write(*,*) iz, z, dbz
-        if(abs(z-grd_zarr(iz+1))<1d-9) then
-           z=grd_zarr(iz+1)
-        elseif(abs(z)<1d-9) then
-           z=pc_pi2
-        else
-           write(*,*) iz,iznext,z,z-pc_pi2,ptcl2%idist,d,far
-           stop 'transport1: iz=1 & z/=pi or 0'
-        endif
-     elseif(iznext==1.and.iz==grd_nz) then
-        if(abs(z-grd_zarr(iz))<1d-9) then
-           if(grd_nz/=2) stop 'transport1: z=zarr(iz) & nz/=2'
-           z=grd_zarr(iz)
-        elseif(abs(z-pc_pi2)<1d-9) then
-           z=0d0
-        else
-           write(*,*) iz,iznext,z
-           stop 'transport1: iz=nz & z/=pi or 2*pi'
-        endif
-     elseif(iznext==iz-1) then
+     if(iznext==iz-1) then
         z=grd_zarr(iz)
-     else
-!-- iznext==iz+1
-        if(iznext/=iz+1) stop 'transport1: invalid iznext'
+        if(iznext==0) then
+           iznext = grd_nz
+           z = pc_pi2
+        endif
+     elseif(iznext==iz+1) then
         z=grd_zarr(iz+1)
+        if(iznext==grd_nz+1) then
+           iznext = 1
+           z = 0d0
+        endif
+     else
+        stop 'transport1: invalid iznext'
      endif
      l = grd_icell(ix,iy,iznext)
      if((grd_cap(ig,l)+grd_sig(l)) * &

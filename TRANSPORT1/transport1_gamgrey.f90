@@ -234,10 +234,9 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   elseif(abs(y)==1d0) then
 !-- azimuthal position undetermined
      dbz = far
-  elseif(xi>0d0.and.grd_zarr(iz+1)-z<pc_pi) then
+  elseif(xi>0d0) then
 !-- counterclockwise
      iznext=iz+1
-     if(iznext==grd_nz+1) iznext=1
      zhelp = muy*cos(grd_zarr(iz+1))-mux*sin(grd_zarr(iz+1))
      if(zhelp==0d0) then
         dbz = far
@@ -245,10 +244,9 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz+1)-z)/zhelp
         if(dbz<=0d0) dbz = far
      endif
-  elseif(xi<0d0.and.z-grd_zarr(iz)<pc_pi) then
+  else
 !-- clockwise
      iznext=iz-1
-     if(iznext==0) iznext=grd_nz
      zhelp = muy*cos(grd_zarr(iz))-mux*sin(grd_zarr(iz))
      if(zhelp==0d0) then
         dbz = far
@@ -256,8 +254,6 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz)-z)/zhelp
         if(dbz<=0d0) dbz = far
      endif
-  else
-     dbz = far
   endif
 
 !-- distance to fictitious collision = dcol
@@ -278,7 +274,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   darr = [dbx,dby,dbz,dcol]
   if(any(darr/=darr) .or. any(darr<0d0)) then
      write(0,*) darr
-     write(*,*) ix,iy,iz,x,y,z,mu,eta,xi,om
+     write(0,*) ix,iy,iz,x,y,z,mu,eta,xi,om
      stop 'transport1_gamgrey: invalid distance'
   endif
   d = minval(darr)
@@ -429,37 +425,28 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
      iz = iznext
      iy = iynext
      ic = grd_icell(ix,iy,iz)
-  else !d==dbz
+  elseif(d==dbz) then
 !-- sanity check
      if(grd_nz==1) stop 'transport1_gamgrey: invalid z crossing'
-     if(iznext==grd_nz.and.iz==1) then
-!        write(*,*) iz, z, dbz
-        if(abs(z-grd_zarr(2))<1d-9) then
-           z=grd_zarr(2)
-        elseif(abs(z)<1d-9) then
-           z=pc_pi2
-        else
-           write(*,*) iz,iznext,z
-           stop 'transport1_gamgrey: iz=1 & z/=pi or 0'
+     if(iznext==iz-1) then
+        z=grd_zarr(iz)
+        if(iznext==0) then
+           iznext = grd_nz
+           z = pc_pi2
         endif
-     elseif(iznext==1.and.iz==grd_nz) then
-        if(abs(z-grd_zarr(grd_nz))<1d-9) then
-           z=grd_zarr(grd_nz)
-        elseif(abs(z-pc_pi2)<1d-9) then
-           z=0d0
-        else
-           write(*,*) iz,iznext,z
-           stop 'transport1_gamgrey: iz=nz & z/=pi or 2*pi'
+     elseif(iznext==iz+1) then
+        z=grd_zarr(iz+1)
+        if(iznext==grd_nz+1) then
+           iznext = 1
+           z = 0d0
         endif
-     elseif(iznext==iz-1) then
-        z = grd_zarr(iz)
      else
-!-- iznext==iz+1
-        if(iznext/=iz+1) stop 'transport1_gamgrey: invalid iznext'
-        z = grd_zarr(iz+1)
+        stop 'transport1: invalid iznext'
      endif
      iz = iznext
      ic = grd_icell(ix,iy,iz)
+  else
+     stop 'transport1_gamgrey: invalid distance mode'
   endif
 
 end subroutine transport1_gamgrey

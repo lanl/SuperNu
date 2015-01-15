@@ -502,6 +502,13 @@ c
       snd = grd_eraddens
       call mpi_reduce(snd,grd_eraddens,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
+!c
+!c-- hack
+!      n = grd_ncell/2
+!      grd_edep(:n) = .5d0*(grd_edep(:n) + grd_edep(n+1:))
+!      grd_edep(n+1:) = grd_edep(:n)
+!      grd_eraddens(:n) = .5d0*(grd_eraddens(:n) + grd_eraddens(n+1:))
+!      grd_eraddens(n+1:) = grd_eraddens(:n)
 c
 c-- scatter
       call mpi_scatterv(grd_edep,counts,displs,MPI_REAL8,

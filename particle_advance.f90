@@ -23,7 +23,7 @@ subroutine particle_advance
   !total subroutine calls in program.
 !##################################################
   real*8,parameter :: cinv=1d0/pc_c
-  integer*8 :: nddmc, nimc, npckt
+  integer*8 :: nddmc, nimc, npckt, nstepmax
   real*8 :: r1, x1, x2, thelp, help
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
@@ -37,6 +37,7 @@ subroutine particle_advance
 !-- specint cache
   real*8 :: specarr(grp_ng)
   integer :: icell(3)
+  integer :: ndist(0:7)
 !
   type(packet),target :: ptcl
   type(packet2),target :: ptcl2
@@ -91,8 +92,10 @@ subroutine particle_advance
   ! Propagating all particles that are not considered vacant: loop
   npckt = 0
   nddmc = 0
+  nstepmax = 0
   nimc = 0
   icell = 0
+  ndist = 0
   do ipart=1,prt_npartmax
      ! Checking vacancy
      if(prt_isvacant(ipart)) cycle
@@ -164,6 +167,9 @@ subroutine particle_advance
         call advection(.true.,ptcl,ptcl2) !procedure pointer to advection[123]
      endif
 
+!-- place particle at correct side of the cell boundary
+     if(x==grd_xarr(ix) .and. mu<0d0 .and. ptcl2%itype==1) ix = ix-1
+
 !     write(*,*) ipart
 !-----------------------------------------------------------------------
 !-- Advancing particle until census, absorption, or escape from domain
@@ -173,7 +179,7 @@ subroutine particle_advance
 !-- 3D spherical
      case(1)
         ptcl2%istep = 0!{{{
-        ptcl2%idist = 0
+        ptcl2%idist = -1
         do while ((.not.ptcl2%done).and.(.not.ptcl2%isvacant))
            ptcl2%istep = ptcl2%istep + 1
            if(ptcl2%itype == 1.or.in_puretran) then
@@ -182,28 +188,37 @@ subroutine particle_advance
            else
               nddmc = nddmc + 1
               call diffusion1(ptcl,ptcl2,icell,specarr)
-              ptcl2%idist = -1
+              ptcl2%idist = 0
            endif
+           ndist(ptcl2%idist) = ndist(ptcl2%idist) + 1
 !-- verify position
            if(ptcl2%itype==1 .and. .not.ptcl2%done) then
               if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
-                 write(0,*) 'prt_adv: r not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu,ptcl2%ipart,ptcl2%istep,ptcl2%idist
+                 write(0,*) 'prt_adv: r not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu, &
+                    ptcl2%ipart,ptcl2%istep,ptcl2%idist
               endif
               if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-                 write(0,*) 'prt_adv: theta not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu,ptcl2%ipart,ptcl2%istep,ptcl2%idist
+                 write(0,*) 'prt_adv: theta not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu, &
+                    ptcl2%ipart,ptcl2%istep,ptcl2%idist
               endif
               if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
-                 write(0,*) 'prt_adv: phi not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu,om,ptcl2%ipart,ptcl2%istep,ptcl2%idist
+                 write(0,*) 'prt_adv: phi not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu,om, &
+                    ptcl2%ipart,ptcl2%istep,ptcl2%idist
               endif
+           endif
 !-- verify direction
+           if(ptcl2%itype==1 .and. .not.ptcl2%done) then
               if(x==grd_xarr(ix+1).and.mu>0d0 .or. x==grd_xarr(ix).and.mu<0d0) then
-!                write(0,*) 'prt_adv: mu pointing out of cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu,ptcl2%ipart,ptcl2%istep,ptcl2%idist
+!                write(0,*) 'prt_adv: mu pointing out of cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu, &
+!                   ptcl2%ipart,ptcl2%istep,ptcl2%idist
               endif
               if(y==grd_yarr(iy+1).and.cos(om)>0d0 .or. y==grd_yarr(iy).and.cos(om)<0d0) then
-                 write(0,*) 'prt_adv: eta pointing out of cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),cos(om),ptcl2%ipart,ptcl2%istep,ptcl2%idist
+!                write(0,*) 'prt_adv: eta pointing out of cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),cos(om), &
+!                   ptcl2%ipart,ptcl2%istep,ptcl2%idist
               endif
               if(z==grd_zarr(iz+1).and.sin(om)>0d0 .or. z==grd_zarr(iz).and.sin(om)<0d0) then
-                 write(0,*) 'prt_adv: xi pointing out of cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),sin(om),ptcl2%ipart,ptcl2%istep,ptcl2%idist
+                 write(0,*) 'prt_adv: xi pointing out of cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),sin(om), &
+                    ptcl2%ipart,ptcl2%istep,ptcl2%idist
               endif
            endif
 !-- Russian roulette for termination of exhausted particles
@@ -383,6 +398,9 @@ subroutine particle_advance
         enddo!}}}
      endselect
 
+!-- max step counter
+     nstepmax = max(nstepmax,ptcl2%istep)
+
 !-- continue only if particle not vacant
      prt_isvacant(ipart) = ptcl2%isvacant
      if(ptcl2%isvacant) cycle
@@ -538,6 +556,7 @@ subroutine particle_advance
      prt_particles(ipart) = ptcl
 
   enddo !ipart
+  !write(0,*) nstepmax, ndist
 
   t1 = t_time()
   t_pckt_stat = t1-t0  !register timing
