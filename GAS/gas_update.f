@@ -251,7 +251,7 @@ c
       lfirst = .false.
 c
 c-- clean up
-      if(tsp_it==tsp_nt .and. allocated(tempalt)) then
+      if(tsp_it==tsp_nt .and. tsp_it>1 .and. allocated(tempalt)) then
        deallocate(tempalt,capgreyalt)
       endif
 c

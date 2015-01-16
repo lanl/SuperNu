@@ -182,16 +182,13 @@ subroutine leakage_opacity1
 !
 !-- calculating k->k-1 leakage opacity
         if(k==1) then
-           lhelp = (grd_cap(ig,icnb(5))+ &
-              grd_sig(icnb(5)))*min(dx(i),xm(i)*dyac(j), &
-              xm(i)*ym(j)*dz(grd_nz))*thelp<prt_tauddmc
            khelp = grd_nz
         else
-           lhelp = (grd_cap(ig,icnb(5))+ &
-              grd_sig(icnb(5)))*min(dx(i),xm(i)*dyac(j), &
-              xm(i)*ym(j)*dz(k-1))*thelp<prt_tauddmc
            khelp = k-1
         endif
+        lhelp = (grd_cap(ig,icnb(5))+ &
+           grd_sig(icnb(5)))*min(dx(i),xm(i)*dyac(j), &
+           xm(i)*ym(j)*dz(khelp))*thelp<prt_tauddmc
 !
         if(lhelp) then
 !-- DDMC interface
@@ -199,7 +196,7 @@ subroutine leakage_opacity1
               dz(k)*thelp
            pp = 4d0/(3d0*help+6d0*pc_dext)
            grd_opacleak(5,l)=grd_opacleak(5,l)+(specval*speclump)*&
-                0.75d0*pp*dx2(i)*dyac(j)/(dy(j)*dx3(i)*dz(k))
+                0.75d0*pp*dx2(i)*dyac(j)/(dy(j)*dx3(i)*dz(k)*thelp)
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dz(k) + &
@@ -212,16 +209,13 @@ subroutine leakage_opacity1
 !
 !-- calculating k->k+1 leakage opacity
         if(k==grd_nz) then
-           lhelp = (grd_cap(ig,icnb(6))+ &
-              grd_sig(icnb(6)))*min(dx(i),xm(i)*dyac(j), &
-              xm(i)*ym(j)*dz(1))*thelp<prt_tauddmc
            khelp = 1
         else
-           lhelp = (grd_cap(ig,icnb(6))+ &
-              grd_sig(icnb(6)))*min(dx(i),xm(i)*dyac(j), &
-              xm(i)*ym(j)*dz(k+1))*thelp<prt_tauddmc
            khelp = k+1
         endif
+        lhelp = (grd_cap(ig,icnb(6))+ &
+           grd_sig(icnb(6)))*min(dx(i),xm(i)*dyac(j), &
+           xm(i)*ym(j)*dz(khelp))*thelp<prt_tauddmc
 !
         if(lhelp) then
 !-- DDMC interface
@@ -229,7 +223,7 @@ subroutine leakage_opacity1
               dz(k)*thelp
            pp = 4d0/(3d0*help+6d0*pc_dext)
            grd_opacleak(6,l)=grd_opacleak(6,l)+(specval*speclump)*&
-                0.75d0*pp*dx2(i)*dyac(j)/(dy(j)*dx3(i)*dz(k))
+                0.75d0*pp*dx2(i)*dyac(j)/(dy(j)*dx3(i)*dz(k)*thelp)
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dz(k) + &
@@ -238,6 +232,9 @@ subroutine leakage_opacity1
                 2.0d0*dyac(j)*dx(i) / &
                 (ym(j)*dy(j)*dz(k)*dx3(i)*help*thelp**2)
         endif
+!if(i==20 .and. k==1) write(0,*) help,pp,grd_opacleak(6,l),grd_sig(l),grd_sig(icnb(6)),grd_cap(ig,l),grd_cap(ig,icnb(6)), &
+!  specval,speclump,specval*speclump
+!if(i==20 .and. k==1) write(0,*) help,pp,grd_opacleak(6,l),lhelp,xm(i),ym(j),dz(k)
 
      enddo !ig
   enddo !i
