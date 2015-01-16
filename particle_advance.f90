@@ -112,7 +112,6 @@ subroutine particle_advance
      ix = binsrch(x,grd_xarr,grd_nx+1,.false.)
      iy = binsrch(y,grd_yarr,grd_ny+1,.false.)
      iz = binsrch(z,grd_zarr,grd_nz+1,.false.)
-
 !-- cell pointer
      ic = grd_icell(ix,iy,iz)
 
@@ -167,8 +166,10 @@ subroutine particle_advance
         call advection(.true.,ptcl,ptcl2) !procedure pointer to advection[123]
      endif
 
-!-- place particle at correct side of the cell boundary
-     if(x==grd_xarr(ix) .and. mu<0d0 .and. ptcl2%itype==1) ix = ix-1
+!!-- place particle at correct side of the cell boundary
+!wrong: this skippes the albedo condition that decides if particles are rejected at the DDMC surface
+!     if(x==grd_xarr(ix) .and. mu<0d0 .and. ptcl2%itype==1) ix = ix-1
+!     ic = grd_icell(ix,iy,iz)
 
 !     write(*,*) ipart
 !-----------------------------------------------------------------------

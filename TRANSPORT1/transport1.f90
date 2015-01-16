@@ -276,7 +276,7 @@ subroutine transport1(ptcl,ptcl2)
   elseif(abs(y)==1d0) then
 !-- azimuthal position undetermined
      dbz = far
-  elseif(xi>0d0) then
+  elseif(xi>0d0.and.grd_zarr(iz+1)-pc_pi<z) then
 !-- counterclockwise
      iznext=iz+1
      zhelp = muy*cos(grd_zarr(iz+1))-mux*sin(grd_zarr(iz+1))
@@ -286,7 +286,7 @@ subroutine transport1(ptcl,ptcl2)
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz+1)-z)/zhelp
         if(dbz<=0d0) dbz = far
      endif
-  else
+  elseif(xi<0d0.and.z<pc_pi+grd_zarr(iz)) then
 !-- clockwise
      iznext=iz-1
      zhelp = muy*cos(grd_zarr(iz))-mux*sin(grd_zarr(iz))
@@ -296,6 +296,8 @@ subroutine transport1(ptcl,ptcl2)
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz)-z)/zhelp
         if(dbz<=0d0) dbz = far
      endif
+  else
+     dbz = far
   endif
 
 !-- Thomson scattering distance
@@ -379,7 +381,10 @@ subroutine transport1(ptcl,ptcl2)
         z=z+pc_pi2
      endif
 !-- any iz possible if previous position was undetermined
-     if(abs(yold)==1d0) iz = binsrch(z,grd_zarr,grd_nz+1,.false.)
+     if(abs(yold)==1d0) then
+        iz = binsrch(z,grd_zarr,grd_nz+1,.false.)
+        ic = grd_icell(ix,iy,iz)
+     endif
 !-- updating azimuthal angle of direction (about radius)
      eta = y*(cos(z)*mux+sin(z)*muy)-sqrt(1d0-y**2)*muz
      xi = cos(z)*muy-sin(z)*mux
@@ -649,7 +654,7 @@ subroutine transport1(ptcl,ptcl2)
         y=-y
         iynext=binsrch(y,grd_yarr,grd_ny+1,.false.)
 !-- reflecting z
-        z=zold+pc_pi
+        z=z+pc_pi !z is not updated with atan2 calculation
         if(z>pc_pi2) z=z-pc_pi2
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
      elseif(iynext==iy-1) then
@@ -730,7 +735,6 @@ subroutine transport1(ptcl,ptcl2)
            if(om<0d0) om=om+pc_pi2
 !-- transforming mu to lab
            if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
-           z = zold
         endif
      endif
 

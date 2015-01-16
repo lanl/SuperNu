@@ -151,6 +151,8 @@ c-- dim 3
        do i=1,nz
         str_zleft(i+1) = raw(6,nx*ny*(i-1)+1)
        enddo
+      elseif(igeom==1 .or. igeom==2 .or. igeom==11) then
+       str_zleft = [0d0,pc_pi2]
       endif
 c-- uniform grid
       if(igeom==1 .or. igeom==2 .or. igeom==11) then
