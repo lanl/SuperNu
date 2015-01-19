@@ -283,7 +283,8 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
            help = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix)*ym(iy) * &
               dz(iz)*thelp
            pp = 4d0/(3d0*help+6d0*pc_dext)
-           opacleak(5)=0.75d0*pp*dx2(ix)*dyac(iy)/(dy(iy)*dx3(ix)*dz(iz))
+           opacleak(5)=0.75d0*pp*dx2(ix)*dyac(iy) / &
+                (dy(iy)*dx3(ix)*dz(iz)*thelp)
         else
 !-- DDMC interior
            help = ((grd_sig(ic)+grd_cap(ig,ic))*dz(iz) + &
@@ -311,7 +312,8 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
            help = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix)*ym(iy) * &
               dz(iz)*thelp
            pp = 4d0/(3d0*help+6d0*pc_dext)
-           opacleak(6)=0.75d0*pp*dx2(ix)*dyac(iy)/(dy(iy)*dx3(ix)*dz(iz))
+           opacleak(6)=0.75d0*pp*dx2(ix)*dyac(iy) / &
+                (dy(iy)*dx3(ix)*dz(iz)*thelp)
         else
 !-- DDMC interior
            help = ((grd_sig(ic)+grd_cap(ig,ic))*dz(iz) + &
@@ -852,7 +854,8 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
               mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
                    xm(ix)*ym(iy)*dz(iz)*thelp
               pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
-              resopacleak=0.75d0*pp*dx2(ix)*dyac(iy)/(dy(iy)*dx3(ix)*dz(iz))
+              resopacleak=0.75d0*pp*dx2(ix)*dyac(iy) / &
+                   (dy(iy)*dx3(ix)*dz(iz)*thelp)
            else
 !-- DDMC interior
               mfphelp = ((grd_sig(ic)+grd_cap(iiig,ic))*dz(iz) + &
@@ -958,7 +961,8 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
               mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
                    xm(ix)*ym(iy)*dz(iz)*thelp
               pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
-              resopacleak=0.75d0*pp*dx2(ix)*dyac(iy)/(dy(iy)*dx3(ix)*dz(iz))
+              resopacleak=0.75d0*pp*dx2(ix)*dyac(iy) / &
+                   (dy(iy)*dx3(ix)*dz(iz)*thelp)
            else
 !-- DDMC interior
               mfphelp = ((grd_sig(ic)+grd_cap(iiig,ic))*dz(iz) + &
