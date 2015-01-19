@@ -95,14 +95,19 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 !-- polar boundary distance (y)
   yhelp1=grd_yarr(iy)**2-muz**2
   yhelp2=mu*grd_yarr(iy)**2-muz*y
+  yhelp3=grd_yarr(iy)**2-y**2
   if(y==grd_yarr(iy+1).and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
-     yhelp3=0d0
-  else
-     yhelp3=grd_yarr(iy)**2-y**2
-  endif
-  if(yhelp1==0d0.and.yhelp3==0d0) then
-     idby1=1
+!-- unreachable
+     idby1 = 9
+     dby1 = far
+  elseif(y==-1d0 .and. eta<0d0) then
+!-- flip z
+     idby1 = 8
+     iynext1 = 0
+     dby1 = 0d0
+  elseif(yhelp1==0d0.and.yhelp3==0d0) then
 !-- particle, direction on cone
+     idby1=1
      dby1 = far
      iynext1=iy
   elseif(yhelp1==0d0) then
@@ -156,14 +161,19 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 !-- dby2: iy->iy+1
   yhelp1=grd_yarr(iy+1)**2-muz**2
   yhelp2=mu*grd_yarr(iy+1)**2-muz*y
+  yhelp3=grd_yarr(iy+1)**2-y**2
   if(y==grd_yarr(iy).and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
-     yhelp3=0d0
-  else
-     yhelp3=grd_yarr(iy+1)**2-y**2
-  endif
-  if(yhelp1==0d0.and.yhelp3==0d0) then
-     idby2=1
+!-- unreachable
+     idby2 = 9
+     dby2 = far
+  elseif(y==1d0 .and. eta>0d0) then
+!-- flip z
+     idby2 = 8
+     iynext2 = grd_ny+1
+     dby2 = 0d0
+  elseif(yhelp1==0d0.and.yhelp3==0d0) then
 !-- particle, direction on cone
+     idby2=1
      dby2 = far
      iynext2=iy
   elseif(yhelp1==0d0) then
@@ -238,7 +248,9 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 !-- counterclockwise
      iznext=iz+1
      zhelp = muy*cos(grd_zarr(iz+1))-mux*sin(grd_zarr(iz+1))
-     if(zhelp==0d0) then
+     if(z==grd_zarr(iz+1)) then
+        dbz = 0d0
+     elseif(zhelp==0d0) then
         dbz = far
      else
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz+1)-z)/zhelp
@@ -248,9 +260,9 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 !-- clockwise
      iznext=iz-1
      zhelp = muy*cos(grd_zarr(iz))-mux*sin(grd_zarr(iz))
-     if(zhelp==0d0) then
-        dbz = far
-     else
+     if(z==grd_zarr(iz)) then
+        dbz = 0d0
+     elseif(zhelp==0d0) then
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz)-z)/zhelp
         if(dbz<=0d0) dbz = far
      endif
@@ -274,12 +286,12 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 !
 !-- finding minimum distance
   darr = [dbx,dby,dbz,dcol]
-  if(any(darr/=darr) .or. any(darr<0d0)) then
+  d = minval(darr)
+  if(any(darr/=darr) .or. d<0d0) then
      write(0,*) darr
      write(0,*) ix,iy,iz,x,y,z,mu,eta,xi,om
      stop 'transport1_gamgrey: invalid distance'
   endif
-  d = minval(darr)
 
 !-- storing old position
   xold = x
@@ -318,11 +330,6 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
         z = pc_pi2
      elseif(z<0d0) then
         z=z+pc_pi2
-     endif
-!-- any iz possible if previous position was undetermined
-     if(abs(yold)==1d0) then
-        iz = binsrch(z,grd_zarr,grd_nz+1,.false.)
-        ic = grd_icell(ix,iy,iz)
      endif
 !-- updating azimuthal angle of direction (about radius)
      eta = y*(cos(z)*mux+sin(z)*muy)-sqrt(1d0-y**2)*muz

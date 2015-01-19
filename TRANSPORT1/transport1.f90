@@ -14,6 +14,7 @@ subroutine transport1(ptcl,ptcl2)
 !
   type(packet),target,intent(inout) :: ptcl
   type(packet2),target,intent(inout) :: ptcl2
+  integer :: ierr
 !##################################################
   !This subroutine passes particle parameters as input and modifies
   !them through one IMC transport event.  If
@@ -36,7 +37,9 @@ subroutine transport1(ptcl,ptcl2)
   real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
   real*8 :: dby1old,dby2old
   real*8 :: zhelp
-  real*8 :: xold,yold,zold,muold,dbyold,etaold,muzold
+  real*8 :: xold,yold,zold
+  real*8 :: muold,etaold,xiold
+  real*8 :: ynew,znew
 !-- distance out of physical reach
   real*8 :: far
 
@@ -65,10 +68,19 @@ subroutine transport1(ptcl,ptcl2)
   e => ptcl%e
   e0 => ptcl%e0
   wl => ptcl%wl
-!
+
+  ierr = 0 !no error by default
+
+!-- storing old position
   ixold = ix
   iyold = iy
   izold = iz
+  xold = x
+  yold = y
+  zold = z
+  muold = mu
+  etaold = eta
+  xiold = xi
   idistold = ptcl2%idist
 !
 !-- shortcut
@@ -83,6 +95,7 @@ subroutine transport1(ptcl,ptcl2)
   muz = mu*y-eta*sqrt(1d0-y**2)
 !-- direction sanity check
   if(abs(mux**2+muy**2+muz**2-1d0)>1d-9) then
+     ierr = 1
      write(*,*) 'transport1: invalid mux,muy,muz',mux**2+muy**2+muz**2-1d0,mux,muy,muz
   endif
 !-- normalize direction
@@ -128,14 +141,19 @@ subroutine transport1(ptcl,ptcl2)
 !-- dby1: iy->iy-1
   yhelp1=grd_yarr(iy)**2-muz**2
   yhelp2=mu*grd_yarr(iy)**2-muz*y
+  yhelp3=grd_yarr(iy)**2-y**2
   if(y==grd_yarr(iy+1).and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
-     yhelp3=0d0
-  else
-     yhelp3=grd_yarr(iy)**2-y**2
-  endif
-  if(yhelp1==0d0.and.yhelp3==0d0) then
-     idby1=1
+!-- unreachable
+     idby1 = 9
+     dby1 = far
+  elseif(y==-1d0 .and. eta<0d0) then
+!-- flip z
+     idby1 = 8
+     iynext1 = 0
+     dby1 = 0d0
+  elseif(yhelp1==0d0.and.yhelp3==0d0) then
 !-- particle, direction on cone
+     idby1=1
      dby1 = far
      iynext1=iy
   elseif(yhelp1==0d0) then
@@ -188,14 +206,19 @@ subroutine transport1(ptcl,ptcl2)
 !-- dby2: iy->iy+1
   yhelp1=grd_yarr(iy+1)**2-muz**2
   yhelp2=mu*grd_yarr(iy+1)**2-muz*y
+  yhelp3=grd_yarr(iy+1)**2-y**2
   if(y==grd_yarr(iy).and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
-     yhelp3=0d0
-  else
-     yhelp3=grd_yarr(iy+1)**2-y**2
-  endif
-  if(yhelp1==0d0.and.yhelp3==0d0) then
-     idby2=1
+!-- unreachable
+     idby2 = 9
+     dby2 = far
+  elseif(y==1d0 .and. eta>0d0) then
+!-- flip z
+     idby2 = 8
+     iynext2 = grd_ny+1
+     dby2 = 0d0
+  elseif(yhelp1==0d0.and.yhelp3==0d0) then
 !-- particle, direction on cone
+     idby2=1
      dby2 = far
      iynext2=iy
   elseif(yhelp1==0d0) then
@@ -270,27 +293,29 @@ subroutine transport1(ptcl,ptcl2)
   endif
 
 !-- azimuthal boundary distance (z)
-  iznext = iz
   if(xi==0d0.or.grd_nz==1) then
      dbz = far
-  elseif(abs(y)==1d0) then
-!-- azimuthal position undetermined
-     dbz = far
-  elseif(xi>0d0.and.grd_zarr(iz+1)-pc_pi<z) then
+  elseif(xi>0d0.and.grd_zarr(iz+1)-z<pc_pi) then
 !-- counterclockwise
      iznext=iz+1
+     if(iznext==grd_nz+1) iznext=1
      zhelp = muy*cos(grd_zarr(iz+1))-mux*sin(grd_zarr(iz+1))
-     if(zhelp==0d0) then
+     if(z==grd_zarr(iz+1)) then
+        dbz = 0d0
+     elseif(zhelp==0d0) then
         dbz = far
      else
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz+1)-z)/zhelp
         if(dbz<=0d0) dbz = far
      endif
-  elseif(xi<0d0.and.z<pc_pi+grd_zarr(iz)) then
+  elseif(xi<0d0.and.z-grd_zarr(iz)<pc_pi) then
 !-- clockwise
      iznext=iz-1
+     if(iznext==0) iznext=grd_nz
      zhelp = muy*cos(grd_zarr(iz))-mux*sin(grd_zarr(iz))
-     if(zhelp==0d0) then
+     if(z==grd_zarr(iz)) then
+        dbz = 0d0
+     elseif(zhelp==0d0) then
         dbz = far
      else
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz)-z)/zhelp
@@ -335,19 +360,13 @@ subroutine transport1(ptcl,ptcl2)
 !
 !-- finding minimum distance
   darr = [dcen,dby,dbx,dbz,dthm,dcol,ddop]
-  if(any(darr/=darr) .or. any(darr<0d0)) then
-     write(0,*) darr
-     write(0,*) ix,iy,iz,x,y,z,mu,eta,xi,om
-     stop 'transport1: invalid distance'
-  endif
   d = minval(darr)
+  if(any(darr/=darr) .or. d<0d0) then
+     ierr = 1
+     write(0,*) 'transport1: invalid distance'
+  endif
   ptcl2%idist = minloc(darr,dim=1)
 
-!-- storing old position
-  xold = x
-  yold = y
-  zold = z
-  muold = mu
 !-- updating radius
   x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
   if(dbx/=dbx) stop 'transport1: x/=x'
@@ -373,17 +392,12 @@ subroutine transport1(ptcl,ptcl2)
 !-- updating azimuthal angle of position
      z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
           xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
-     if(d==dbz .and. abs(z)<1d-9.and.iz==1) then
+     if(abs(z)<1d-9.and.iz==1) then
         z = 0d0
-     elseif(d==dbz .and. abs(z)<1d-9.and.iz==grd_nz) then
+     elseif(abs(z)<1d-9.and.iz==grd_nz) then
         z = pc_pi2
      elseif(z<0d0) then
         z=z+pc_pi2
-     endif
-!-- any iz possible if previous position was undetermined
-     if(abs(yold)==1d0) then
-        iz = binsrch(z,grd_zarr,grd_nz+1,.false.)
-        ic = grd_icell(ix,iy,iz)
      endif
 !-- updating azimuthal angle of direction (about radius)
      eta = y*(cos(z)*mux+sin(z)*muy)-sqrt(1d0-y**2)*muz
@@ -392,6 +406,7 @@ subroutine transport1(ptcl,ptcl2)
      if(om<0d0) om=om+pc_pi2
 !-- warn about inaccurate result
      if(abs(mu**2+eta**2+xi**2-1d0)>1d-9) then
+        ierr = -1
         write(*,*) 'transport1: invalid mu,eta,xi',mu**2+eta**2+xi**2-1d0,mu,eta,xi
      endif
 !
@@ -455,23 +470,6 @@ subroutine transport1(ptcl,ptcl2)
      mu = 1d0 - 2d0*r1
      r1 = rnd_r(rnd_state)
      om = pc_pi2*r1
-!-- place particle at correct side of boundary after a collision distance smaller than the tolerance level
-     help = sin(om) !xi
-     if(z==grd_zarr(iz) .and. help<0d0) then
-        iz = iz - 1
-        if(iz<1) then
-           z = pc_pi2
-           iz = grd_nz
-        endif
-        ic = grd_icell(ix,iy,iz)
-     elseif(z==grd_zarr(iz+1) .and. help>0d0) then
-        iz = iz + 1
-        if(iz>grd_nz) then
-           z = 0d0
-           iz = 1
-        endif
-        ic = grd_icell(ix,iy,iz)
-     endif
 !-- checking velocity dependence
      if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+mu*x*cinv)
   elseif(d==dbx) then
@@ -647,6 +645,8 @@ subroutine transport1(ptcl,ptcl2)
 !-- polar bound
   elseif(d==dby) then
 
+     ynew = y !backup
+     znew = z !backup
 !-- iznext=iz except
      iznext=iz
      if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
@@ -659,6 +659,7 @@ subroutine transport1(ptcl,ptcl2)
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
      elseif(iynext==iy-1) then
         if(abs(y-grd_yarr(iy))>1d-9) then
+           ierr = 1
            write(*,*) 'transport1: y/=yarr(iy)',iy,y,grd_yarr(iy)
         endif
         y=grd_yarr(iy)
@@ -671,7 +672,8 @@ subroutine transport1(ptcl,ptcl2)
         endif
      elseif(iynext==iy+1) then
         if(abs(y-grd_yarr(iy+1))>1d-9) then
-           write(*,*) 'transport1: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1)
+           ierr = 1
+           write(*,*) 'transport1: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1),dby1,dby2,idby1,idby2
         endif
         y=grd_yarr(iy+1)
         if(iynext==grd_ny+1) then
@@ -725,7 +727,19 @@ subroutine transport1(ptcl,ptcl2)
         else
            r1 = rnd_r(rnd_state)
            r2 = rnd_r(rnd_state)
-           eta = (iynext-iy)*max(r1,r2)
+           if(iynext==iy) then
+              if(y>grd_yarr(iy)) then
+                 eta = -max(r1,r2)
+              elseif(y<grd_yarr(iy+1)) then
+                 eta = max(r1,r2)
+              else
+                 ierr = 1
+                 write(0,*) 'transport1: no idea how to calculate new eta'
+                 eta = 2d0*r1 - 1d0
+              endif
+           else
+              eta = (iynext-iy)*max(r1,r2)
+           endif
            r1 = rnd_r(rnd_state)
            xi = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
 !-- resampling x-cosine
@@ -735,6 +749,9 @@ subroutine transport1(ptcl,ptcl2)
            if(om<0d0) om=om+pc_pi2
 !-- transforming mu to lab
            if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
+!-- restore position: undo reflection
+           y = ynew
+           z = znew
         endif
      endif
 
@@ -743,20 +760,32 @@ subroutine transport1(ptcl,ptcl2)
   elseif(d==dbz) then
 !-- sanity check
      if(grd_nz==1) stop 'transport1: invalid z crossing'
-     if(iznext==iz-1) then
+     if(iznext==grd_nz.and.iz==1) then
+!        write(*,*) iz, z, dbz
+        if(abs(z-grd_zarr(iz+1))<1d-9) then
+           z=grd_zarr(iz+1)
+        elseif(abs(z)<1d-9) then
+           z=pc_pi2
+        else
+           write(*,*) iz,iznext,z
+           stop 'transport1: iz=1 & z/=pi or 0'
+        endif
+     elseif(iznext==1.and.iz==grd_nz) then
+        if(abs(z-grd_zarr(iz))<1d-9) then
+           if(grd_nz/=2) stop 'transport1: z=zarr(iz) & nz/=2'
+           z=grd_zarr(iz)
+        elseif(abs(z-pc_pi2)<1d-9) then
+           z=0d0
+        else
+           write(*,*) iz,iznext,z
+           stop 'transport1: iz=nz & z/=pi or 2*pi'
+        endif
+     elseif(iznext==iz-1) then
         z=grd_zarr(iz)
-        if(iznext==0) then
-           iznext = grd_nz
-           z = pc_pi2
-        endif
-     elseif(iznext==iz+1) then
-        z=grd_zarr(iz+1)
-        if(iznext==grd_nz+1) then
-           iznext = 1
-           z = 0d0
-        endif
      else
-        stop 'transport1: invalid iznext'
+!-- iznext==iz+1
+        if(iznext/=iz+1) stop 'transport1: invalid iznext'
+        z=grd_zarr(iz+1)
      endif
      l = grd_icell(ix,iy,iznext)
      if((grd_cap(ig,l)+grd_sig(l)) * &
@@ -864,34 +893,29 @@ subroutine transport1(ptcl,ptcl2)
   else
      stop 'transport1: invalid distance'
   endif
-  idby1old=idby1
-  idby2old=idby2
-  dby1old=dby1
-  dby2old=dby2
-  muzold=muz
-  etaold=eta
-  dbyold=dby
 
   if((y>grd_yarr(iy+1) .or. y<grd_yarr(iy))) then
-     write(0,*) 'theta not in cell (x): ',ix,xold,x,grd_xarr(ix),grd_xarr(ix+1)
-     write(0,*) 'theta not in cell (y): ',iy,yold,y,grd_yarr(iy),grd_yarr(iy+1)
-     write(0,*) 'old (y): ',iyold,dbyold
-     write(0,*) 'dir: ',mux,muy,muz,mu,eta,xi
-     write(0,*) 'dby: ',dby,'dbx: ',dbx,'max d: ',far
-     write(0,*) 'dby1: ',dby1,'dby2: ',dby2,'etaold: ',etaold
-     write(0,*) 'idby1: ',idby1,'idby2: ',idby2
-     write(0,*) d
-     write(0,*)
+     ierr = 1
+     write(0,*) 'theta not in cell'
   endif
 
   if((z>grd_zarr(iz+1) .or. z<grd_zarr(iz))) then
-     write(0,*) 'phi not in cell (x): ',ix,xold,x,grd_xarr(ix),grd_xarr(ix+1)
-     write(0,*) 'phi not in cell (y): ',iy,yold,y,grd_yarr(iy),grd_yarr(iy+1)
-     write(0,*) 'phi not in cell (z): ',iz,zold,z,grd_zarr(iz),grd_zarr(iz+1)
+     ierr = 1
+     write(0,*) 'phi not in cell'
+  endif
+
+  if(ierr/=0) then
+     write(0,*) '(x): ',ix,xold,x,grd_xarr(ix),grd_xarr(ix+1)
+     write(0,*) '(y): ',iy,yold,y,grd_yarr(iy),grd_yarr(iy+1)
+     write(0,*) '(z): ',iz,zold,z,grd_zarr(iz),grd_zarr(iz+1)
+     write(0,*) 'y==1 ',abs(yold)-1d0, abs(y)-1d0
      write(0,*) 'old ix,iy,iz:',ixold,iyold,izold
-     write(0,*) 'iynext1,2:',iynext1,iynext2,dby1,dby2
+     write(0,*) 'iynxt1|2:',iynext1,iynext2
+     write(0,*) 'dby1|2  :',dby1,dby2
+     write(0,*) 'idby1|2 : ',idby1,idby2
      write(0,*) 'ptcl id:',ptcl2%ipart,ptcl2%istep
      write(0,*) 'dir: ', mux,muy,muz,mu,eta,xi
+     write(0,*) 'dirold: ', muold,etaold,xiold
      write(0,*) 'darr   :', ptcl2%idist, darr
      write(0,*) 'darrold:', idistold, darrold
      write(0,*) 'atan2:',sqrt(1d0-yold**2),sin(zold),cos(zold),xold*sqrt(1d0-yold**2),muy*d,mux*d
@@ -899,6 +923,7 @@ subroutine transport1(ptcl,ptcl2)
 !         xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
      write(0,*)
   endif
+!-- save
   darrold = darr
 
 end subroutine transport1

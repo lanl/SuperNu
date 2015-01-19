@@ -26,6 +26,7 @@ program supernu
 !***********************************************************************
 ! TODO and wishlist:
 !***********************************************************************
+integer :: i,j,k,l
   real*8 :: help
   real*8 :: dt
   integer :: ierr,it
@@ -154,7 +155,7 @@ program supernu
   endif
 !
   do it=in_ntres,tsp_nt
-     t_timelin(1) = t_time() !timeline!{{{
+     t_timelin(1) = t_time() !timeline
 !-- allow negative and zero it for temperature initialization purposes
      tsp_it = max(it,1)
 
@@ -197,6 +198,18 @@ program supernu
      call leakage_opacity       !IMC-DDMC albedo coefficients and DDMC leakage opacities
      call emission_probability  !emission probabilities for ep-group in each cell
      call allgather_leakage !MPI
+!if(lmpi0) then
+!do i=1,grd_nx
+!do j=1,grd_ny
+!do k=1,grd_nz
+!   l = grd_icell(i,j,k)
+!   write(6,*) i,grd_opacleak(:,l),grd_temp(l)
+!   !write(6,*) i,grd_opacleak(5:6,l),grd_temp(l),grd_sig(l),grd_capgrey(l)
+!   !write(6,*) i,grd_temp(l),grd_sig(l)
+!enddo
+!enddo
+!enddo
+!endif
      t_timelin(4) = t_time()    !timeline
      call sourcenumbers(nmpi)   !number of source prt_particles per cell
 
@@ -212,6 +225,7 @@ program supernu
 
 !-- advance particles
      t_timelin(5) = t_time() !timeline
+!write(0,*) 'start transport',impi
      call particle_advance
      call reduce_tally !MPI  !collect particle results from all workers
      t_timelin(6) = t_time() !timeline
@@ -260,7 +274,6 @@ program supernu
      if(it>0) call timing_timestep(impi)
      t_timelin(7) = t_time() !timeline
      t_timeline(:6) = t_timeline(:6) + (t_timelin(2:) - t_timelin(:6))
-!!}}}
   enddo !tsp_it
 !
 !

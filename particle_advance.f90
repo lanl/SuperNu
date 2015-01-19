@@ -183,7 +183,7 @@ subroutine particle_advance
         ptcl2%idist = -1
         do while ((.not.ptcl2%done).and.(.not.ptcl2%isvacant))
            ptcl2%istep = ptcl2%istep + 1
-           if(ptcl2%itype == 1.or.in_puretran) then
+           if(ptcl2%itype==1 .or. in_puretran) then
               nimc = nimc + 1
               call transport1(ptcl,ptcl2)
            else
@@ -431,7 +431,7 @@ subroutine particle_advance
         !!}}}
      endif
 
-     if((grd_isvelocity).and.(ptcl2%itype==1)) then
+     if(grd_isvelocity.and.ptcl2%itype==1) then
         call advection(.false.,ptcl,ptcl2) !procedure pointer to advection[123]
      endif
 
@@ -557,7 +557,7 @@ subroutine particle_advance
      prt_particles(ipart) = ptcl
 
   enddo !ipart
-  !write(0,*) nstepmax, ndist
+!write(0,*) nstepmax, ndist
 
   t1 = t_time()
   t_pckt_stat = t1-t0  !register timing
