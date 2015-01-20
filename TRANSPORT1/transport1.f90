@@ -346,7 +346,7 @@ subroutine transport1(ptcl,ptcl2)
   darr = [dcen,dby,dbx,dbz,dthm,dcol,ddop]
   d = minval(darr)
   if(any(darr/=darr) .or. d<0d0) then
-     ierr = 1
+     ierr = 1 !error
      write(0,*) 'transport1: invalid distance'
   endif
   ptcl2%idist = minloc(darr,dim=1)
@@ -390,7 +390,7 @@ subroutine transport1(ptcl,ptcl2)
      if(om<0d0) om=om+pc_pi2
 !-- warn about inaccurate result
      if(abs(mu**2+eta**2+xi**2-1d0)>1d-9) then
-        ierr = -1
+        ierr = -1 !warning
         write(0,*) 'transport1: invalid mu,eta,xi',mu**2+eta**2+xi**2-1d0,mu,eta,xi
      endif
 !
@@ -631,11 +631,11 @@ subroutine transport1(ptcl,ptcl2)
 !-- polar bound
   elseif(d==dby) then
 
-     ynew = y !backup
-     znew = z !backup
 !-- iznext=iz except
      iznext=iz
      if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
+        ynew = y !backup
+        znew = z !backup
 !-- reflecting y
         y=-y
         iynext=binsrch(y,grd_yarr,grd_ny+1,.false.)
@@ -645,14 +645,14 @@ subroutine transport1(ptcl,ptcl2)
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
      elseif(iynext==iy-1) then
         if(abs(y-grd_yarr(iy))>1d-9) then
-           ierr = 1
+           ierr = -1 !warning
            write(0,*) 'transport1: y/=yarr(iy)',iy,y,grd_yarr(iy)
         endif
         if(iynext<1) stop 'transport1: iynext<1'
         y=grd_yarr(iy)
      elseif(iynext==iy+1) then
         if(abs(y-grd_yarr(iy+1))>1d-9) then
-           ierr = 1
+           ierr = -1 !warning
            write(0,*) 'transport1: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1),dby1,dby2,idby1,idby2
         endif
         if(iynext>grd_ny) stop 'transport1: iynext>ny'
@@ -707,7 +707,7 @@ subroutine transport1(ptcl,ptcl2)
               elseif(y<grd_yarr(iy+1)) then
                  eta = max(r1,r2)
               else
-                 ierr = 1
+                 ierr = -1 !warning
                  write(0,*) 'transport1: no idea how to calculate new eta'
                  eta = 2d0*r1 - 1d0
               endif
@@ -726,8 +726,10 @@ subroutine transport1(ptcl,ptcl2)
 !-- transforming mu to lab
            if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
 !-- restore position: undo reflection
-           y = ynew
-           z = znew
+           if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
+              y = ynew
+              z = znew
+           endif
         endif
      endif
 
@@ -876,19 +878,19 @@ subroutine transport1(ptcl,ptcl2)
 
 !-- sanity check
   if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-     ierr = 1
+     ierr = -1 !warning
      write(0,*) 'theta not in cell'
   endif
 
 !-- sanity check
   if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
-     ierr = 1
+     ierr = -1 !warning
      write(0,*) 'phi not in cell'
   endif
 
 !-- sanity check
   if(abs(y)==1d0) then
-     ierr = 1
+     ierr = -1 !warning
      write(0,*) '|y|==1'
   endif
 
@@ -913,6 +915,8 @@ subroutine transport1(ptcl,ptcl2)
 !         xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
      write(0,*)
   endif
+
+  if(ierr>0) stop 'transport1: fatal error occurred'
 
 !-- save
   darrold = darr
