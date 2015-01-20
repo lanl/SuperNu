@@ -239,12 +239,9 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 
 !-- azimuthal boundary distance (z)
   iznext = iz
-  if(xi==0d0.or.grd_nz==1) then
+  if(xi==0d0 .or. grd_nz==1) then
      dbz = far
-  elseif(abs(y)==1d0) then
-!-- azimuthal position undetermined
-     dbz = far
-  elseif(xi>0d0.and.grd_zarr(iz+1)-pc_pi<z) then
+  elseif(xi>0d0 .and. z>grd_zarr(iz+1)-pc_pi) then
 !-- counterclockwise
      iznext=iz+1
      zhelp = muy*cos(grd_zarr(iz+1))-mux*sin(grd_zarr(iz+1))
@@ -256,13 +253,15 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz+1)-z)/zhelp
         if(dbz<=0d0) dbz = far
      endif
-  elseif(xi<0d0.and.z<pc_pi+grd_zarr(iz)) then
+  elseif(xi<0d0 .and. z<pc_pi+grd_zarr(iz)) then
 !-- clockwise
      iznext=iz-1
      zhelp = muy*cos(grd_zarr(iz))-mux*sin(grd_zarr(iz))
      if(z==grd_zarr(iz)) then
         dbz = 0d0
      elseif(zhelp==0d0) then
+        dbz = far
+     else
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz)-z)/zhelp
         if(dbz<=0d0) dbz = far
      endif
@@ -300,7 +299,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   muold = mu
 !-- updating radius
   x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
-  if(x/=x) stop 'transport1: x/=x'
+  if(x/=x) stop 'transport1_gamgrey: x/=x'
   if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
 !-- sanity check
      if(d==dbx) stop 'transport1_gamgrey: x<1d-15*xarr(2),d==dbx,mu=-1'
@@ -329,7 +328,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
      elseif(d==dbz .and. abs(z)<1d-9.and.iz==grd_nz) then
         z = pc_pi2
      elseif(z<0d0) then
-        z=z+pc_pi2
+        z = z+pc_pi2
      endif
 !-- updating azimuthal angle of direction (about radius)
      eta = y*(cos(z)*mux+sin(z)*muy)-sqrt(1d0-y**2)*muz
@@ -453,7 +452,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
            z = 0d0
         endif
      else
-        stop 'transport1: invalid iznext'
+        stop 'transport1_gamgrey: invalid iznext'
      endif
      iz = iznext
      ic = grd_icell(ix,iy,iz)

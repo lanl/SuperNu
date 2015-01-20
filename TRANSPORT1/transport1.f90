@@ -33,9 +33,7 @@ subroutine transport1(ptcl,ptcl2)
   real*8 :: r1,r2
 
   integer :: iynext,iynext1,iynext2,iznext,ixold,iyold,idby1,idby2,izold,idistold
-  integer :: idby1old,idby2old
   real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
-  real*8 :: dby1old,dby2old
   real*8 :: zhelp
   real*8 :: xold,yold,zold
   real*8 :: muold,etaold,xiold
@@ -70,6 +68,12 @@ subroutine transport1(ptcl,ptcl2)
   wl => ptcl%wl
 
   ierr = 0 !no error by default
+!
+!-- shortcut
+  dtinv = 1d0/tsp_dt
+!-- spherical projections
+  eta = sqrt(1d0-mu**2)*cos(om)
+  xi = sqrt(1d0-mu**2)*sin(om)
 
 !-- storing old position
   ixold = ix
@@ -82,12 +86,6 @@ subroutine transport1(ptcl,ptcl2)
   etaold = eta
   xiold = xi
   idistold = ptcl2%idist
-!
-!-- shortcut
-  dtinv = 1d0/tsp_dt
-!-- spherical projections
-  eta = sqrt(1d0-mu**2)*cos(om)
-  xi = sqrt(1d0-mu**2)*sin(om)
 
 !-- planar projections (invariant until collision)
   mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
@@ -293,12 +291,11 @@ subroutine transport1(ptcl,ptcl2)
   endif
 
 !-- azimuthal boundary distance (z)
-  if(xi==0d0.or.grd_nz==1) then
+  if(xi==0d0 .or. grd_nz==1) then
      dbz = far
-  elseif(xi>0d0.and.grd_zarr(iz+1)-z<pc_pi) then
+  elseif(xi>0d0 .and. z>grd_zarr(iz+1)-pc_pi) then
 !-- counterclockwise
      iznext=iz+1
-     if(iznext==grd_nz+1) iznext=1
      zhelp = muy*cos(grd_zarr(iz+1))-mux*sin(grd_zarr(iz+1))
      if(z==grd_zarr(iz+1)) then
         dbz = 0d0
@@ -308,10 +305,9 @@ subroutine transport1(ptcl,ptcl2)
         dbz = x*sqrt(1d0-y**2)*sin(grd_zarr(iz+1)-z)/zhelp
         if(dbz<=0d0) dbz = far
      endif
-  elseif(xi<0d0.and.z-grd_zarr(iz)<pc_pi) then
+  elseif(xi<0d0 .and. z<grd_zarr(iz)+pc_pi) then
 !-- clockwise
      iznext=iz-1
-     if(iznext==0) iznext=grd_nz
      zhelp = muy*cos(grd_zarr(iz))-mux*sin(grd_zarr(iz))
      if(z==grd_zarr(iz)) then
         dbz = 0d0
@@ -397,7 +393,7 @@ subroutine transport1(ptcl,ptcl2)
      elseif(abs(z)<1d-9.and.iz==grd_nz) then
         z = pc_pi2
      elseif(z<0d0) then
-        z=z+pc_pi2
+        z = z+pc_pi2
      endif
 !-- updating azimuthal angle of direction (about radius)
      eta = y*(cos(z)*mux+sin(z)*muy)-sqrt(1d0-y**2)*muz
@@ -760,33 +756,22 @@ subroutine transport1(ptcl,ptcl2)
   elseif(d==dbz) then
 !-- sanity check
      if(grd_nz==1) stop 'transport1: invalid z crossing'
-     if(iznext==grd_nz.and.iz==1) then
-!        write(*,*) iz, z, dbz
-        if(abs(z-grd_zarr(iz+1))<1d-9) then
-           z=grd_zarr(iz+1)
-        elseif(abs(z)<1d-9) then
-           z=pc_pi2
-        else
-           write(*,*) iz,iznext,z
-           stop 'transport1: iz=1 & z/=pi or 0'
-        endif
-     elseif(iznext==1.and.iz==grd_nz) then
-        if(abs(z-grd_zarr(iz))<1d-9) then
-           if(grd_nz/=2) stop 'transport1: z=zarr(iz) & nz/=2'
-           z=grd_zarr(iz)
-        elseif(abs(z-pc_pi2)<1d-9) then
-           z=0d0
-        else
-           write(*,*) iz,iznext,z
-           stop 'transport1: iz=nz & z/=pi or 2*pi'
-        endif
-     elseif(iznext==iz-1) then
+     if(iznext==iz-1) then
         z=grd_zarr(iz)
-     else
-!-- iznext==iz+1
-        if(iznext/=iz+1) stop 'transport1: invalid iznext'
+        if(iznext==0) then
+           iznext = grd_nz
+           z = pc_pi2
+        endif
+     elseif(iznext==iz+1) then
         z=grd_zarr(iz+1)
+        if(iznext==grd_nz+1) then
+           iznext = 1
+           z = 0d0
+        endif
+     else
+        stop 'transport1: invalid iznext'
      endif
+
      l = grd_icell(ix,iy,iznext)
      if((grd_cap(ig,l)+grd_sig(l)) * &
           min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy) * &
