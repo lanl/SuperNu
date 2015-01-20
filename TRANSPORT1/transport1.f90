@@ -24,9 +24,11 @@ subroutine transport1(ptcl,ptcl2)
   real*8,parameter :: cinv = 1d0/pc_c
   integer,external :: emitgroup
 
+  logical :: lredir !direction resampled
   logical :: lout
   integer :: imu, iom, ihelp
-  real*8 :: elabfact, eta, xi, mux,muy,muz
+  real*8 :: elabfact, eta, xi
+  real*8,pointer :: mux,muy,muz
   real*8 :: dtinv, thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop,d
   real*8 :: darr(7),darrold(7)
@@ -53,11 +55,6 @@ subroutine transport1(ptcl,ptcl2)
   dyac(l) = grd_yacos(l) - grd_yacos(l+1)
   ym(l) = sqrt(1d0-0.25d0*(grd_yarr(l+1)+grd_yarr(l))**2)
 
-  ix => ptcl2%ix
-  iy => ptcl2%iy
-  iz => ptcl2%iz
-  ic => ptcl2%ic
-  ig => ptcl2%ig
   x => ptcl%x
   y => ptcl%y
   z => ptcl%z
@@ -66,6 +63,18 @@ subroutine transport1(ptcl,ptcl2)
   e => ptcl%e
   e0 => ptcl%e0
   wl => ptcl%wl
+
+  mux => ptcl2%mux
+  muy => ptcl2%muy
+  muz => ptcl2%muz
+  ix => ptcl2%ix
+  iy => ptcl2%iy
+  iz => ptcl2%iz
+  ic => ptcl2%ic
+  ig => ptcl2%ig
+
+!-- direction resample flag
+  lredir = .false.
 
   ierr = 0 !no error by default
 !
@@ -86,21 +95,6 @@ subroutine transport1(ptcl,ptcl2)
   etaold = eta
   xiold = xi
   idistold = ptcl2%idist
-
-!-- planar projections (invariant until collision)
-  mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
-  muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
-  muz = mu*y-eta*sqrt(1d0-y**2)
-!-- direction sanity check
-  if(abs(mux**2+muy**2+muz**2-1d0)>1d-9) then
-     ierr = 1
-     write(*,*) 'transport1: invalid mux,muy,muz',mux**2+muy**2+muz**2-1d0,mux,muy,muz
-  endif
-!-- normalize direction
-  help = 1d0/sqrt(mux**2+muy**2+muz**2)
-  mux = mux*help
-  muy = muy*help
-  muz = muz*help
 
   idby1=0
   idby2=0
@@ -137,18 +131,15 @@ subroutine transport1(ptcl,ptcl2)
 !
 !-- polar boundary distance (y)
 !-- dby1: iy->iy-1
-  yhelp1=grd_yarr(iy)**2-muz**2
-  yhelp2=mu*grd_yarr(iy)**2-muz*y
-  yhelp3=grd_yarr(iy)**2-y**2
-  if(y==grd_yarr(iy+1).and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
-!-- unreachable
-     idby1 = 9
-     dby1 = far
-  elseif(y==-1d0 .and. eta<0d0) then
-!-- flip z
+  if(iy/=1) then
+     yhelp1=grd_yarr(iy)**2-muz**2
+     yhelp2=mu*grd_yarr(iy)**2-muz*y
+     yhelp3=grd_yarr(iy)**2-y**2
+  endif
+  if(iy==1) then
+!-- don't stop at axis
      idby1 = 8
-     iynext1 = 0
-     dby1 = 0d0
+     dby1 = far
   elseif(yhelp1==0d0.and.yhelp3==0d0) then
 !-- particle, direction on cone
      idby1=1
@@ -202,18 +193,15 @@ subroutine transport1(ptcl,ptcl2)
   endif
 
 !-- dby2: iy->iy+1
-  yhelp1=grd_yarr(iy+1)**2-muz**2
-  yhelp2=mu*grd_yarr(iy+1)**2-muz*y
-  yhelp3=grd_yarr(iy+1)**2-y**2
-  if(y==grd_yarr(iy).and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
-!-- unreachable
+  if(iy/=grd_ny) then
+     yhelp1=grd_yarr(iy+1)**2-muz**2
+     yhelp2=mu*grd_yarr(iy+1)**2-muz*y
+     yhelp3=grd_yarr(iy+1)**2-y**2
+  endif
+  if(iy==grd_ny) then
+!-- don't stop at axis
      idby2 = 9
      dby2 = far
-  elseif(y==1d0 .and. eta>0d0) then
-!-- flip z
-     idby2 = 8
-     iynext2 = grd_ny+1
-     dby2 = 0d0
   elseif(yhelp1==0d0.and.yhelp3==0d0) then
 !-- particle, direction on cone
      idby2=1
@@ -265,21 +253,21 @@ subroutine transport1(ptcl,ptcl2)
         endif
      endif
   endif
-!  write(*,*) idby1,dby1,idby2,dby2
-!  if(y<grd_yarr(iy+1).and.y>grd_yarr(iy)) write(*,*) idby1,idby2
-!  if(dby1==0d0.and.idby1==4) write(*,*) '1: ',idby1, y, iy, dby1
-!  if(dby2==0d0.and.idby2==4) write(*,*) '2: ',idby2, y, iy
+!  write(0,*) idby1,dby1,idby2,dby2
+!  if(y<grd_yarr(iy+1).and.y>grd_yarr(iy)) write(0,*) idby1,idby2
+!  if(dby1==0d0.and.idby1==4) write(0,*) '1: ',idby1, y, iy, dby1
+!  if(dby2==0d0.and.idby2==4) write(0,*) '2: ',idby2, y, iy
   ! if(dby1==0d0.and.dby2==0d0) stop 'transport1: invalid dby[1,2]'
   if(dby1<0d0.and.dby2<0d0) then
-     write(*,*) iy, y
-     write(*,*) idby1, dby1, idby2, dby2
+     write(0,*) iy, y
+     write(0,*) idby1, dby1, idby2, dby2
      stop 'transport1: dby1<0 and dby2<0'
   endif
   ! if(dby1==0d0) then
-  !    write(*,*) '1: ', iy, y, dby2, eta
+  !    write(0,*) '1: ', iy, y, dby2, eta
   ! endif
   ! if(dby2==0d0) then
-  !    write(*,*) '2: ', iy, y, dby1, eta
+  !    write(0,*) '2: ', iy, y, dby1, eta
   ! endif
   if(dby1<=0d0) dby1=far
   if(dby2<=0d0) dby2=far
@@ -403,7 +391,7 @@ subroutine transport1(ptcl,ptcl2)
 !-- warn about inaccurate result
      if(abs(mu**2+eta**2+xi**2-1d0)>1d-9) then
         ierr = -1
-        write(*,*) 'transport1: invalid mu,eta,xi',mu**2+eta**2+xi**2-1d0,mu,eta,xi
+        write(0,*) 'transport1: invalid mu,eta,xi',mu**2+eta**2+xi**2-1d0,mu,eta,xi
      endif
 !
 !-- normalize direction
@@ -462,6 +450,7 @@ subroutine transport1(ptcl,ptcl2)
 !-- common manipulations for collisions
   if(d==dthm.or.d==dcol) then
 !-- resampling direction
+     lredir = .true.
      r1 = rnd_r(rnd_state)
      mu = 1d0 - 2d0*r1
      r1 = rnd_r(rnd_state)
@@ -626,6 +615,7 @@ subroutine transport1(ptcl,ptcl2)
            ic = grd_icell(ix,iy,iz)
         else
 !-- resampling x-cosine
+           lredir = .true.
            r1 = rnd_r(rnd_state)
            r2 = rnd_r(rnd_state)
            mu=(ix-ihelp)*max(r1,r2)
@@ -656,33 +646,21 @@ subroutine transport1(ptcl,ptcl2)
      elseif(iynext==iy-1) then
         if(abs(y-grd_yarr(iy))>1d-9) then
            ierr = 1
-           write(*,*) 'transport1: y/=yarr(iy)',iy,y,grd_yarr(iy)
+           write(0,*) 'transport1: y/=yarr(iy)',iy,y,grd_yarr(iy)
         endif
+        if(iynext<1) stop 'transport1: iynext<1'
         y=grd_yarr(iy)
-        if(iynext==0) then
-!-- reflecting z
-           z=zold+pc_pi
-           if(z>pc_pi2) z=z-pc_pi2
-           if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
-           iynext=1
-        endif
      elseif(iynext==iy+1) then
         if(abs(y-grd_yarr(iy+1))>1d-9) then
            ierr = 1
-           write(*,*) 'transport1: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1),dby1,dby2,idby1,idby2
+           write(0,*) 'transport1: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1),dby1,dby2,idby1,idby2
         endif
+        if(iynext>grd_ny) stop 'transport1: iynext>ny'
         y=grd_yarr(iy+1)
-        if(iynext==grd_ny+1) then
-!-- reflecting z
-           z=zold+pc_pi
-           if(z>pc_pi2) z=z-pc_pi2
-           if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
-           iynext=grd_ny
-        endif
      else
 !-- sanity check
-        write(*,*) dby
-        write(*,*) y,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
+        write(0,*) dby
+        write(0,*) y,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
         stop 'transport1: invalid polar bound crossing'
      endif
 
@@ -736,6 +714,8 @@ subroutine transport1(ptcl,ptcl2)
            else
               eta = (iynext-iy)*max(r1,r2)
            endif
+
+           lredir = .true.
            r1 = rnd_r(rnd_state)
            xi = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
 !-- resampling x-cosine
@@ -828,6 +808,8 @@ subroutine transport1(ptcl,ptcl2)
            else
               xi = max(r1,r2)
            endif
+
+           lredir = .true.
            r1 = rnd_r(rnd_state)
            eta = sqrt(1d0-xi**2)*cos(pc_pi2*r1)
 !-- resampling x-cosine
@@ -879,35 +861,59 @@ subroutine transport1(ptcl,ptcl2)
      stop 'transport1: invalid distance'
   endif
 
-  if((y>grd_yarr(iy+1) .or. y<grd_yarr(iy))) then
+
+!-- update planar projections
+  if(lredir) then
+!-- spherical projections
+     eta = sqrt(1d0-mu**2)*cos(om)
+     xi = sqrt(1d0-mu**2)*sin(om)
+!-- planar projections (invariant until collision)
+     mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
+     muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
+     muz = mu*y-eta*sqrt(1d0-y**2)
+  endif
+
+
+!-- sanity check
+  if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
      ierr = 1
      write(0,*) 'theta not in cell'
   endif
 
-  if((z>grd_zarr(iz+1) .or. z<grd_zarr(iz))) then
+!-- sanity check
+  if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
      ierr = 1
      write(0,*) 'phi not in cell'
   endif
 
+!-- sanity check
+  if(abs(y)==1d0) then
+     ierr = 1
+     write(0,*) '|y|==1'
+  endif
+
+!-- verbose
   if(ierr/=0) then
      write(0,*) '(x): ',ix,xold,x,grd_xarr(ix),grd_xarr(ix+1)
      write(0,*) '(y): ',iy,yold,y,grd_yarr(iy),grd_yarr(iy+1)
      write(0,*) '(z): ',iz,zold,z,grd_zarr(iz),grd_zarr(iz+1)
      write(0,*) 'y==1 ',abs(yold)-1d0, abs(y)-1d0
+     write(0,*) 'lredir',lredir
      write(0,*) 'old ix,iy,iz:',ixold,iyold,izold
      write(0,*) 'iynxt1|2:',iynext1,iynext2
      write(0,*) 'dby1|2  :',dby1,dby2
      write(0,*) 'idby1|2 : ',idby1,idby2
      write(0,*) 'ptcl id:',ptcl2%ipart,ptcl2%istep
-     write(0,*) 'dir: ', mux,muy,muz,mu,eta,xi
      write(0,*) 'dirold: ', muold,etaold,xiold
-     write(0,*) 'darr   :', ptcl2%idist, darr
+     write(0,*) 'dir: ', mux,muy,muz,mu,eta,xi
      write(0,*) 'darrold:', idistold, darrold
+     write(0,*) 'darr   :', ptcl2%idist, darr
      write(0,*) 'atan2:',sqrt(1d0-yold**2),sin(zold),cos(zold),xold*sqrt(1d0-yold**2),muy*d,mux*d
 !    z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
 !         xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
      write(0,*)
   endif
+
 !-- save
   darrold = darr
 

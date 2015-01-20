@@ -26,6 +26,8 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
   real*8,parameter :: cinv = 1d0/pc_c
   integer,external :: emitgroup
 !
+  logical :: lredir
+!
   integer :: iig, iiig, imu, iom, iznext
   logical :: lhelp
   real*8 :: r1, r2, thelp
@@ -79,7 +81,9 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
   tempinv = 1d0/grd_temp(ic)
   capgreyinv = max(1d0/grd_capgrey(ic),0d0) !catch nans
 
-!
+!-- direction resample flag
+  lredir = .false.
+
 !-- set expansion helper
   if(grd_isvelocity) then
      thelp = tsp_t
@@ -458,6 +462,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
         z = min(z,grd_zarr(iz+1))
         z = max(z,grd_zarr(iz))
 !-- sampling direction
+        lredir = .true.
         r1 = rnd_r(rnd_state)
         r2 = rnd_r(rnd_state)
         mu = -max(r1,r2)
@@ -560,6 +565,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
         z = min(z,grd_zarr(iz+1))
         z = max(z,grd_zarr(iz))
 !-- sampling direction
+        lredir = .true.
         r1 = rnd_r(rnd_state)
         r2 = rnd_r(rnd_state)
         mu = max(r1,r2)
@@ -688,6 +694,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
         z = min(z,grd_zarr(iz+1))
         z = max(z,grd_zarr(iz))
 !-- sampling direction
+        lredir = .true.
         r1 = rnd_r(rnd_state)
         r2 = rnd_r(rnd_state)
         eta = max(r1,r2)
@@ -786,6 +793,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
         z = min(z,grd_zarr(iz+1))
         z = max(z,grd_zarr(iz))
 !-- sampling direction
+        lredir = .true.
         r1 = rnd_r(rnd_state)
         r2 = rnd_r(rnd_state)
         eta = -max(r1,r2)
@@ -893,6 +901,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
         y = min(y,grd_yarr(iy+1))
         y = max(y,grd_yarr(iy))
 !-- sampling direction
+        lredir = .true.
         r1 = rnd_r(rnd_state)
         r2 = rnd_r(rnd_state)
         xi = -max(r1,r2)
@@ -1000,6 +1009,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
         y = min(y,grd_yarr(iy+1))
         y = max(y,grd_yarr(iy))
 !-- sampling direction
+        lredir = .true.
         r1 = rnd_r(rnd_state)
         r2 = rnd_r(rnd_state)
         xi = max(r1,r2)
@@ -1072,6 +1082,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
         ptcl2%itype = 1
         grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- direction sampled isotropically           
+        lredir = .true.
         r1 = rnd_r(rnd_state)
         mu = 1d0 - 2d0*r1
         r1 = rnd_r(rnd_state)
@@ -1109,6 +1120,16 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
         endif
      endif
 
+  endif
+
+  if(lredir) then
+!-- spherical projections
+     eta = sqrt(1d0-mu**2)*cos(om)
+     xi = sqrt(1d0-mu**2)*sin(om)
+!-- planar projections (invariant until collision)
+     ptcl2%mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
+     ptcl2%muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
+     ptcl2%muz = mu*y-eta*sqrt(1d0-y**2)
   endif
 
 end subroutine diffusion1

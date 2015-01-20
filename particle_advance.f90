@@ -32,8 +32,9 @@ subroutine particle_advance
   integer, pointer :: ig, ic
   integer, pointer :: ix, iy, iz
   real*8, pointer :: x,y,z, mu, e, e0, wl, om
+  real*8 :: eta, xi
   real*8 :: t0,t1  !timing
-  real*8 :: labfact, mu1, mu2, om0, mu0
+  real*8 :: labfact, mu1, mu2
 !-- specint cache
   real*8 :: specarr(grp_ng)
   integer :: icell(3)
@@ -133,9 +134,6 @@ subroutine particle_advance
 !-- IMC or DDMC
      if(in_puretran .or. (grd_sig(ic)+grd_cap(ig,ic))*help*thelp<prt_tauddmc) then
         ptcl2%itype = 1 !IMC
-!-- to be transformed
-        mu0 = mu
-        om0 = om
      else
         ptcl2%itype = 2 !DDMC
      endif
@@ -166,12 +164,17 @@ subroutine particle_advance
         call advection(.true.,ptcl,ptcl2) !procedure pointer to advection[123]
      endif
 
-!!-- place particle at correct side of the cell boundary
-!wrong: this skippes the albedo condition that decides if particles are rejected at the DDMC surface
-!     if(x==grd_xarr(ix) .and. mu<0d0 .and. ptcl2%itype==1) ix = ix-1
-!     ic = grd_icell(ix,iy,iz)
+!-- velocity components in cartesian basis
+     if(grd_igeom==1 .and. ptcl2%itype==1) then
+!-- spherical projections
+        eta = sqrt(1d0-mu**2)*cos(om)
+        xi = sqrt(1d0-mu**2)*sin(om)
+!-- planar projections (invariant until collision)
+        ptcl2%mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
+        ptcl2%muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
+        ptcl2%muz = mu*y-eta*sqrt(1d0-y**2)
+     endif
 
-!     write(*,*) ipart
 !-----------------------------------------------------------------------
 !-- Advancing particle until census, absorption, or escape from domain
 !Calling either diffusion or transport depending on particle type (ptcl2%itype)

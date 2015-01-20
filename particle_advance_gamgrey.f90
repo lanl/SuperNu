@@ -24,6 +24,7 @@ subroutine particle_advance_gamgrey(nmpi)
   integer,pointer :: ic
   integer,pointer :: ix, iy, iz
   real*8,pointer :: x,y,z,mu,om,e,e0
+  real*8 :: eta, xi
   real*8 :: t0,t1  !timing
   real*8 :: labfact, cmffact, mu1, mu2, gm
   real*8 :: etot,pwr
@@ -262,6 +263,17 @@ subroutine particle_advance_gamgrey(nmpi)
            mu = mu0
         endif!}}}
      endselect
+
+!-- velocity components in cartesian basis
+     if(grd_igeom==1) then
+!-- spherical projections
+        eta = sqrt(1d0-mu**2)*cos(om)
+        xi = sqrt(1d0-mu**2)*sin(om)
+!-- planar projections (invariant until collision)
+        ptcl2%mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
+        ptcl2%muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
+        ptcl2%muz = mu*y-eta*sqrt(1d0-y**2)
+     endif
 !
 !-- emission energy per particle
      e = grd_emitex(ic)/nemit*cmffact

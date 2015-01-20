@@ -21,7 +21,8 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   real*8,parameter :: dt = pc_year !give grey transport infinite time
 !
   integer :: imu, iom
-  real*8 :: elabfact, eta, xi, mux,muy,muz
+  real*8 :: elabfact, eta, xi
+  real*8,pointer :: mux,muy,muz
   real*8 :: r1, thelp,thelpinv, help
   real*8 :: dcol,dbx,dby,dbz,d
   real*8 :: darr(4)
@@ -36,11 +37,6 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   integer,pointer :: ix,iy,iz,ic,ig
   real*8,pointer :: x,y,z,mu,om,e,e0
 
-  ix => ptcl2%ix
-  iy => ptcl2%iy
-  iz => ptcl2%iz
-  ic => ptcl2%ic
-  ig => ptcl2%ig
   x => ptcl%x
   y => ptcl%y
   z => ptcl%z
@@ -49,23 +45,17 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   e => ptcl%e
   e0 => ptcl%e0
 
+  mux => ptcl2%mux
+  muy => ptcl2%muy
+  muz => ptcl2%muz
+  ix => ptcl2%ix
+  iy => ptcl2%iy
+  iz => ptcl2%iz
+  ic => ptcl2%ic
+  ig => ptcl2%ig
+
 !-- spherical projections
-  eta = sqrt(1d0-mu**2)*cos(om)
   xi = sqrt(1d0-mu**2)*sin(om)
-!-- planar projections (invariant until collision)
-  mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
-  muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
-  muz = mu*y-eta*sqrt(1d0-y**2)
-!-- direction sanity check
-  if(abs(mux**2+muy**2+muz**2-1d0)>1d-9) then
-     write(*,*) 'transport1_gamgrey: invalid mux,muy,muz', &
-        mux**2+muy**2+muz**2-1d0,mux,muy,muz
-  endif
-!-- normalize direction
-  help = 1d0/sqrt(mux**2+muy**2+muz**2)
-  mux = mux*help
-  muy = muy*help
-  muz = muz*help
 !
 !-- setting vel-grid helper variables
   if(grd_isvelocity) then
@@ -93,18 +83,16 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   if(dbx/=dbx) stop 'transport1_gamgrey: dbx/=dbx'
 !
 !-- polar boundary distance (y)
-  yhelp1=grd_yarr(iy)**2-muz**2
-  yhelp2=mu*grd_yarr(iy)**2-muz*y
-  yhelp3=grd_yarr(iy)**2-y**2
-  if(y==grd_yarr(iy+1).and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
-!-- unreachable
-     idby1 = 9
-     dby1 = far
-  elseif(y==-1d0 .and. eta<0d0) then
-!-- flip z
+!-- dby1: iy->iy-1
+  if(iy/=1) then
+     yhelp1=grd_yarr(iy)**2-muz**2
+     yhelp2=mu*grd_yarr(iy)**2-muz*y
+     yhelp3=grd_yarr(iy)**2-y**2
+  endif
+  if(iy==1) then
+!-- don't stop at axis
      idby1 = 8
-     iynext1 = 0
-     dby1 = 0d0
+     dby1 = far
   elseif(yhelp1==0d0.and.yhelp3==0d0) then
 !-- particle, direction on cone
      idby1=1
@@ -159,18 +147,15 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   endif
 
 !-- dby2: iy->iy+1
-  yhelp1=grd_yarr(iy+1)**2-muz**2
-  yhelp2=mu*grd_yarr(iy+1)**2-muz*y
-  yhelp3=grd_yarr(iy+1)**2-y**2
-  if(y==grd_yarr(iy).and.abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9) then
-!-- unreachable
+  if(iy/=grd_ny) then
+     yhelp1=grd_yarr(iy+1)**2-muz**2
+     yhelp2=mu*grd_yarr(iy+1)**2-muz*y
+     yhelp3=grd_yarr(iy+1)**2-y**2
+  endif
+  if(iy==grd_ny) then
+!-- don't stop at axis
      idby2 = 9
      dby2 = far
-  elseif(y==1d0 .and. eta>0d0) then
-!-- flip z
-     idby2 = 8
-     iynext2 = grd_ny+1
-     dby2 = 0d0
   elseif(yhelp1==0d0.and.yhelp3==0d0) then
 !-- particle, direction on cone
      idby2=1
@@ -224,8 +209,8 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
      endif
   endif
   if(dby1<0d0.and.dby2<0d0) then
-     write(*,*) iy, y
-     write(*,*) idby1, dby1, idby2, dby2
+     write(0,*) iy, y
+     write(0,*) idby1, dby1, idby2, dby2
      stop 'transport1_gg: dby1<0 and dby2<0'
   endif
   if(dby1<=0d0) dby1=far
@@ -288,7 +273,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   d = minval(darr)
   if(any(darr/=darr) .or. d<0d0) then
      write(0,*) darr
-     write(0,*) ix,iy,iz,x,y,z,mu,eta,xi,om
+     write(0,*) ix,iy,iz,x,y,z,mu,om
      stop 'transport1_gamgrey: invalid distance'
   endif
 
@@ -307,8 +292,6 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
      dbz = far
 !-- resetting direction
      mu = 1d0
-     eta = 0d0
-     xi = 0d0
   else
      if(x<1d-15*grd_xarr(2)) stop &
           'transport1_gamgrey: x=0 and muold/=-1'
@@ -335,15 +318,6 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
      xi = cos(z)*muy-sin(z)*mux
      om = atan2(xi,eta)
      if(om<0d0) om = om+pc_pi2
-!-- direction sanity check
-     if(abs(mu**2+eta**2+xi**2-1d0)>1d-9) then
-        write(*,*) 'transport1_gamgrey: invalid mu,eta,xi',mu**2+eta**2+xi**2-1d0,mu,eta,xi
-     endif
-!-- normalize direction
-     help = 1d0/sqrt(mu**2+eta**2+xi**2)
-     mu = mu*help
-     eta = eta*help
-     xi = xi*help
   endif
 
 !-- depositing nonanalog absorbed energy
@@ -404,32 +378,20 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
      elseif(iynext==iy-1) then
         if(abs(y-grd_yarr(iy))>1d-9) then
-           write(*,*) 'transport1_gamgrey: y/=yarr(iy)', iy,y,grd_yarr(iy)
+           write(0,*) 'transport1_gamgrey: y/=yarr(iy)', iy,y,grd_yarr(iy)
         endif
+        if(iynext<1) stop 'transport1_gamgrey: iynext<1'
         y=grd_yarr(iy)
-        if(iynext==0) then
-!-- reflecting z
-           z=zold+pc_pi
-           if(z>pc_pi2) z=z-pc_pi2
-           if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
-           iynext=1
-        endif
      elseif(iynext==iy+1) then
         if(abs(y-grd_yarr(iy+1))>1d-9) then
-           write(*,*) 'transport1_gamgrey: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1)
+           write(0,*) 'transport1_gamgrey: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1)
         endif
+        if(iynext>grd_ny) stop 'transport1_gamgrey: iynext>ny'
         y=grd_yarr(iy+1)
-        if(iynext==grd_ny+1) then
-!-- reflecting z
-           z=zold+pc_pi
-           if(z>pc_pi2) z=z-pc_pi2
-           if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
-           iynext=grd_ny
-        endif
      else
 !-- sanity check
-        write(*,*) dby,dby1,dby2,idby1,idby2,ptcl2%ipart,ptcl2%istep
-        write(*,*) x,y,mu,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
+        write(0,*) dby
+        write(0,*) y,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
         stop 'transport1_gamgrey: invalid polar bound crossing'
      endif
 
