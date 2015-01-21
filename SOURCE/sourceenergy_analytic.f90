@@ -61,7 +61,7 @@ subroutine sourceenergy_analytic(lmpi0)
      endselect
   elseif(in_srctype=='heav') then
      !Heaviside source (uniform source sphere)!{{{
-     if (tsp_t<=(in_tfirst+in_theav)*pc_day) then
+     if (tsp_t<=(in_tfirst+in_theav)) then
         select case(in_igeom)
 !-- [123]D spherical
         case(1)

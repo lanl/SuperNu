@@ -10,8 +10,8 @@ in_norestart = t
 in_ntres = 1
 
 !-- time step
-in_tfirst = 2d0
-in_tlast = 5d0
+in_tsp_tfirst = 172800 !2 days
+in_tsp_tlast = 432000  !5 days
 in_nt = 128
 in_alpha = 1d0
 in_ismodimc = f
@@ -72,9 +72,8 @@ in_wlmin = 1.2398d-9
 in_wlmax = 1.2398d-3
 
 !-- particle numbers
-in_ns0 = 0
-in_ns  = 100000
-in_prt_nmax = 10000000
+in_src_n2s  = 16 !65k
+in_trn_n2part = 23 !2**7 times bigger than ns
 !in_srcepwr=1d0
 
 !-- imc tally method

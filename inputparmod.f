@@ -53,9 +53,14 @@ c-- analytic heat capacity terms
       real*8 :: in_gas_cvrpwr = 1d0 !power law heat capacity density exponent
 c
 c-- particles
-      integer :: in_ns = 0    !number of source particles generated per time step (total over all ranks)
-      integer :: in_ns0 = 0   !number of initial particles at in_tfirst
-      integer :: in_prt_nmax = 0 !length of particle array
+      integer :: in_src_n2s = -1 !2^n source particles generated per time step (total over all ranks)
+      integer :: in_src_n2sinit = -1 !2^n number of initial particles at in_tfirst
+      integer :: in_trn_n2part = -1 !2^n length of particle array
+c>> backwards compatibility
+        integer :: in_ns = 0    !number of source particles generated per time step (total over all ranks)
+        integer :: in_ns0 = 0   !number of initial particles at in_tfirst
+        integer :: in_prt_nmax = 0 !length of particle array
+c<< backwards compatibility
       logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
       logical :: in_isimcanlog = .false. !use analog IMC tally if true
       logical :: in_isddmcanlog = .true. !use analog DDMC tally if true
@@ -67,8 +72,12 @@ c
       real*8 :: in_alpha = 1d0 !time centering control parameter [0,1]
 c
 c-- time step
-      real*8 :: in_tfirst = 0d0 !first point in time evolution
-      real*8 :: in_tlast = 0d0  !last point in time evolution
+      real*8 :: in_tsp_tfirst = 0d0 !first point in time evolution [sec]
+      real*8 :: in_tsp_tlast = 0d0  !last point in time evolution [sec]
+c>> backwards compatibility
+        real*8 :: in_tfirst = 0d0 !first point in time evolution [day]
+        real*8 :: in_tlast = 0d0  !last point in time evolution [day]
+c<< backwards compatibility
       integer :: in_nt = 0      !number of time steps.  <0 means read timeline from input.tsp_time
       integer :: in_ntres = -1   !restart time step number
       logical :: in_norestart = .true.
@@ -139,8 +148,12 @@ c-- runtime parameter namelist
      & in_ng,in_ngs,in_wldex,in_wlmin,in_wlmax,
      & in_totmass,in_velout,
      & in_consttemp,
-     & in_ns,in_ns0,in_prt_nmax,in_puretran,in_alpha,
-     & in_tfirst,in_tlast,in_nt,in_ntres,
+     &    in_ns,in_ns0,in_prt_nmax, !compat
+     & in_src_n2s,in_src_n2sinit,in_trn_n2part,
+     & in_puretran,in_alpha,
+     & in_tsp_tfirst,in_tsp_tlast,
+     &    in_tfirst,in_tlast, !compat
+     & in_nt,in_ntres,
      & in_grabstdout,in_nomp,
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
      & in_noffopac,in_nothmson,in_noplanckweighting,in_opacmixrossel,
@@ -234,6 +247,9 @@ c
       call inserti(in_ns,in_i,ii)
       call inserti(in_ns0,in_i,ii)
       call inserti(in_prt_nmax,in_i,ii)
+      call inserti(in_src_n2s,in_i,ii)
+      call inserti(in_src_n2sinit,in_i,ii)
+      call inserti(in_trn_n2part,in_i,ii)
       call insertl(in_puretran,in_l,il)
       call insertl(in_isimcanlog,in_l,il)
       call insertl(in_isddmcanlog,in_l,il)
@@ -241,6 +257,8 @@ c
       call insertr(in_taulump,in_r,ir)
       call insertc(in_tauvtime,in_c,ic)
       call insertr(in_alpha,in_r,ir)
+      call insertr(in_tsp_tfirst,in_r,ir)
+      call insertr(in_tsp_tlast,in_r,ir)
       call insertr(in_tfirst,in_r,ir)
       call insertr(in_tlast,in_r,ir)
       call inserti(in_nt,in_i,ii)
@@ -427,9 +445,17 @@ c
       if(in_wlmin<0) stop 'in_wlmin invalid'
       if(in_wlmax<=in_wlmin) stop 'in_wlmax invalid'
 c
-      if(in_ns<=0) stop 'in_ns <= 0'
-      if(in_ns0<0) stop 'in_ns0 < 0'
-      if(in_prt_nmax<=in_ns+in_ns0) stop 'in_prt_nmax invalid'
+      if(in_ns<=0 .eqv. in_src_n2s<0) stop 'use in_ns or in_src_n2s'
+      if(in_ns0>0 .and. in_src_n2sinit>=0) stop
+     &  'use in_ns0 or in_src_n2sinit'
+      if(in_prt_nmax>0) then
+       if(in_prt_nmax<max(int(in_ns,8),int(2,8)**in_src_n2s)) stop
+     &   'in_prt_nmax too small'
+      else
+       if(int(2,8)**in_trn_n2part < max(int(in_ns,8),
+     &   int(2,8)**in_src_n2s)) stop 'in_prt_nmax too small'
+      endif
+c
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
       if(in_taulump<in_tauddmc) stop 'in_taulump<in_tauddmc'
 c
@@ -439,9 +465,18 @@ c-- temp init
       if(in_consttemp<0d0) stop 'in_consttemp < 0'
       if(in_tempradinit<0d0) stop 'in_tempradinit < 0'
 c
+c-- timestepping
       if(in_nt==0) stop 'in_nt invalid'
-      if(in_tfirst<0d0) stop 'in_tfirst invalid'
-      if(in_tlast<in_tfirst) stop 'in_tlast invalid'
+      if(in_tfirst<=0d0 .eqv. in_tsp_tfirst<=0d0) stop
+     &  'use in_tfirst or in_tsp_tfirst'
+      if(in_tlast<=0d0 .eqv. in_tsp_tlast<=0d0) stop
+     &  'use in_tlast or in_tsp_tlast'
+      if(in_tsp_tlast>0d0) then
+       if(in_tsp_tlast<max(in_tfirst,in_tsp_tfirst)) stop
+     &   'in_tsp_tlast invalid'
+      else
+       if(in_tlast<max(in_tfirst,in_tsp_tfirst)) stop 'in_tlast invalid'
+      endif
 c
 c-- special grid
       if(.not.in_noreadstruct) then

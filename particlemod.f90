@@ -144,11 +144,11 @@ module particlemod
        return
     elseif(prt_tauvtime=='incr') then
 !-- linear increase in thresholds (max mfp thresh = 5)
-       slp1=0.667d0*prt_tauddmc/(pc_day*(tlast-tfirst))
-       slp2=0.667d0*prt_taulump/(pc_day*(tlast-tfirst))
+       slp1=0.667d0*prt_tauddmc/(tlast-tfirst)
+       slp2=0.667d0*prt_taulump/(tlast-tfirst)
 
-       prt_tauddmc = prt_tauddmc+(t-pc_day*tfirst)*slp1
-       prt_taulump = prt_taulump+(t-pc_day*tfirst)*slp2
+       prt_tauddmc = prt_tauddmc+(t-tfirst)*slp1
+       prt_taulump = prt_taulump+(t-tfirst)*slp2
     else
        stop 'tau_update: prt_tauvtime invalid'
     endif

@@ -28,9 +28,11 @@ program supernu
 !***********************************************************************
   real*8 :: help
   real*8 :: dt
-  integer :: ierr,it
-  integer :: icell1,ncell !number of cells per rank (gas_ncell)
-  real*8 :: t0,t1 !timing
+  integer :: ierr, it
+  integer :: icell1, ncell !number of cells per rank (gas_ncell)
+  integer :: ns, nsinit, mpart
+  real*8 :: tfirst, tlast
+  real*8 :: t0, t1 !timing
   character(15) :: msg
 !
 !-- mpi initialization
@@ -95,9 +97,11 @@ program supernu
 !-- setup remaining modules
 !==========================
 !-- time step init
-  call timestepmod_init(in_nt,in_ntres,in_alpha,in_tfirst)
+  tfirst = max(in_tsp_tfirst,in_tfirst*pc_day)
+  tlast = max(in_tsp_tlast,in_tlast*pc_day)
+  call timestepmod_init(in_nt,in_ntres,tfirst)
 !-- constant time step, may be coded to loop if time step is not uniform
-  dt = (in_tlast - in_tfirst)*pc_day/in_nt
+  dt = (tlast - tfirst)/in_nt
 
 !-- wlgrid (before grid setup)
   call groupmod_init(in_ng,in_wldex,in_wlmin,in_wlmax)
@@ -114,11 +118,18 @@ program supernu
   call inputstr_dealloc
 
 !-- particle init
-  call particlemod_init(in_prt_nmax/nmpi,in_isimcanlog, &
+  mpart = int(int(2,8)**in_trn_n2part/nmpi) !max number of particles
+  mpart = max(mpart,in_prt_nmax/nmpi)
+  call particlemod_init(mpart,in_isimcanlog, &
        in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime)
 !-- create procedure pointers for the selected geometry
   call transportmod_init(in_igeom)
-  call sourcemod_init(in_ns/nmpi,in_ns0/nmpi)
+!-- source particles
+  ns = int(int(2,8)**in_src_n2s/nmpi)
+  ns = max(ns,in_ns/nmpi)
+  nsinit = int(int(2,8)**in_src_n2sinit/nmpi)
+  nsinit = max(nsinit,in_ns/nmpi)
+  call sourcemod_init(ns,nsinit)
 
 !-- allocate arrays of sizes retreived in bcast_permanent
   call ions_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
@@ -160,7 +171,7 @@ program supernu
 
 !-- Update tsp_t etc
      call timestep_update(dt)  !dt is input here, any value can be passed
-     call tau_update(tsp_t,in_tfirst,in_tlast) !updating prt_tauddmc and prt_taulump
+     call tau_update(tsp_t,tfirst,tlast) !updating prt_tauddmc and prt_taulump
 
 !-- write timestep
      help = merge(tot_eerror,tot_erad,it>1)

@@ -38,7 +38,7 @@ subroutine fleck_factor(tempalt,capgreyalt)
         beta = 4.0*gas_ur(i)/Um - beta2
 
      endif
-     gas_fcoef(i) = 1.0/(1.0+tsp_alpha*beta*pc_c*tsp_dt*gas_capgrey(i))
+     gas_fcoef(i) = 1.0/(1.0+in_alpha*beta*pc_c*tsp_dt*gas_capgrey(i))
 !-- sanity check
      if(gas_fcoef(i)<=0d0) stop 'fleck_factor: fcoef<=0d0'
      if(gas_fcoef(i)/=gas_fcoef(i)) stop 'fleck_factor: fcoef nan'

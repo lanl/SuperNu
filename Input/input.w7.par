@@ -8,11 +8,9 @@
  in_norestart = t
 
 !-- time step
- in_tfirst = 2d0
- in_tlast = 64d0
+ in_tsp_tfirst = 172800 !2 days
+ in_tsp_tlast = 5529600 !64 days
  in_nt = 62
-!in_tlast = 2.5d0
-!in_nt = 4
  in_ntres = -6
 
 !-- grid settings
@@ -36,8 +34,8 @@
  in_ngs = 0
 
 !-- particle numbers
- in_ns  = 1000
- in_prt_nmax = 100000
+ in_src_n2s = 10
+ in_trn_n2part = 17 !2**7 times bigger than ns
  in_srcepwr = .5d0
 
 !-- imc tally method

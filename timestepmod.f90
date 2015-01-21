@@ -9,7 +9,6 @@ module timestepmod
   real*8,allocatable :: tsp_tpreset(:)  !store preset time steps from input.tsp_time
   real*8 :: tsp_tcenter
   real*8 :: tsp_dt
-  real*8 :: tsp_alpha = 0d0
 
   private read_timestep_preset
 
@@ -18,15 +17,14 @@ module timestepmod
   contains
 
 
-  subroutine timestepmod_init(nt, ntres, alpha, tfirst)
+  subroutine timestepmod_init(nt, ntres, tfirst)
 !------------------------------------------------!{{{
     use physconstmod
     integer,intent(in) :: nt, ntres
-    real*8,intent(in) :: alpha, tfirst
+    real*8,intent(in) :: tfirst
 !***********************************************************************
 ! set the timestep constants
 !***********************************************************************
-    tsp_alpha = alpha
     tsp_ntres = max(ntres,1)
 !
 !-- read timestep configuration from file
@@ -36,7 +34,7 @@ module timestepmod
     else
 !-- configured by input parameters
        tsp_nt = nt
-       tsp_t = tfirst*pc_day
+       tsp_t = tfirst
     endif
 !!}}}
   end subroutine timestepmod_init
