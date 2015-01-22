@@ -111,7 +111,7 @@ subroutine write_output
   open(unit=4,file='output.flx_lumdev',status=fstat,position='append',recl=reclen)
   do k=1,flx_nom
   do j=1,flx_nmu
-     write(4,'(1p,10000e12.4)') flx_lumdev(:,j,k)/flx_luminos(:,j,k)
+     write(4,'(1p,10000e12.4)') flx_lumdev(:,j,k)
   enddo
   enddo
   close(4)
