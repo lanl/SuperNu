@@ -470,20 +470,12 @@ subroutine transport1(ptcl,ptcl2)
         iom = binsrch(help,flx_om,flx_nom+1,.false.)
         imu = binsrch(muz,flx_mu,flx_nmu+1,.false.)
         ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-!-- checking group bounds
-        if(ig>flx_ng.or.ig<1) then
-           if(ig>flx_ng) then
-              ig=flx_ng
-           else
-              ig=1
-           endif
-        endif
-!-- tallying outbound energy
-        tot_eout = tot_eout+e
 !-- tallying outbound luminosity
         flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+e*dtinv
         flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+(e*dtinv)**2
         flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1
+!-- tallying outbound energy
+        tot_eout = tot_eout+e
         return
      endif
   endif
