@@ -105,6 +105,13 @@ module particlemod
        allocate(prt_tlyebirth(prt_npartmax,nummespasint))
        allocate(prt_tlywlsrc(prt_npartmax,nummespasint))
     endif
+!
+!-- output
+    write(6,*)
+    write(6,*) 'particle array:'
+    write(6,*) '===================='
+    write(6,*) 'npart :',prt_npartmax
+    write(6,*)
 !}}}
   end subroutine particle_alloc
 
@@ -152,8 +159,6 @@ module particlemod
     else
        stop 'tau_update: prt_tauvtime invalid'
     endif
-
-
   end subroutine tau_update
 
 end module particlemod
