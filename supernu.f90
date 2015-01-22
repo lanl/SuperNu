@@ -245,11 +245,6 @@ program supernu
 
 !-- output
      if(lmpi0) then
-!-- luminosity statistics!{{{
-        where(flx_lumnum>0) flx_lumdev = ( &
-           (flx_lumdev/flx_lumnum - (flx_luminos/flx_lumnum)**2) * &
-           flx_lumnum/dble(flx_lumnum - 1) )**.5d0
-!
 !-- total energy startup values and energy conservation
         if(it<1) call totals_startup
         call totals_error !check energy (particle weight) is accounted
@@ -262,7 +257,6 @@ program supernu
            call write_restart_randcount !rand() count
            call write_restart_particles !particle properties of current time step
         endif
-!!}}}
      endif !impi
 
 !-- reset rand counters
