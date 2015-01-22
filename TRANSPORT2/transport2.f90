@@ -264,20 +264,12 @@ subroutine transport2(ptcl,ptcl2)
 !-- retrieving lab frame flux group, polar bin
         imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
         ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-!-- checking group bounds
-        if(ig>flx_ng.or.ig<1) then
-           if(ig>flx_ng) then
-              ig=flx_ng
-           else
-              ig=1
-           endif
-        endif
-!-- tallying outbound energy
-        tot_eout = tot_eout+e
 !-- tallying outbound luminosity
         flx_luminos(ig,imu,1) = flx_luminos(ig,imu,1)+e*dtinv
         flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(e*dtinv)**2
         flx_lumnum(ig,imu,1) = flx_lumnum(ig,imu,1)+1
+!-- tallying outbound energy
+        tot_eout = tot_eout+e
         return
      endif
   endif

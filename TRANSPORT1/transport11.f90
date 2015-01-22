@@ -376,11 +376,11 @@ subroutine transport11(ptcl,ptcl2)
               if(grd_isvelocity) then
 !-- velocity effects accounting
                  tot_evelo=tot_evelo+e*(1d0-elabfact)
-!
                  e = e*elabfact
                  e0 = e0*elabfact
                  wl = wl/elabfact
               endif
+!-- update
               ix = ix+1
               ic = grd_icell(ix,iy,iz)
            else
@@ -426,6 +426,7 @@ subroutine transport11(ptcl,ptcl2)
                     e0 = e0*elabfact
                     wl = wl/elabfact
                  endif
+!-- update
                  ix = ix+1
                  ic = grd_icell(ix,iy,iz)
               else
@@ -488,6 +489,7 @@ subroutine transport11(ptcl,ptcl2)
                  e0 = e0*elabfact
                  wl = wl/elabfact
               endif
+!-- update
               ix = ix-1
               ic = grd_icell(ix,iy,iz)
            else

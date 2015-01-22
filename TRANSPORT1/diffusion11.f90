@@ -310,11 +310,12 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
 
         if((grd_sig(l)+grd_cap(iiig,l))*dx(ix-1) &
              *thelp >= prt_tauddmc) then
-           ix = ix-1
-           ic = grd_icell(ix,iy,iz)
            r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
+!-- update particle
+           ix = ix-1
+           ic = grd_icell(ix,iy,iz)
            ig = iiig
         else
            r1 = rnd_r(rnd_state)
@@ -327,11 +328,8 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
 !
 !-- location set right bound of left cell
            r = grd_xarr(ix)
-!-- current particle cell set to 1 left
-           ix = ix-1
-           ic = grd_icell(ix,iy,iz)
 !
-!-- particl angle sampled from isotropic b.c. inward
+!-- particle angle sampled from isotropic b.c. inward
            r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            r2 = rnd_r(rnd_state)
@@ -350,7 +348,9 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
               wl = wl*(1.0-r*mu*cinv)
            endif
 !
-!-- group reset
+!-- update particle
+           ix = ix-1
+           ic = grd_icell(ix,iy,iz)
            ig = iiig
 !
         endif
@@ -384,15 +384,6 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
               help = 1d0
            endif
            iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-           if(iiig>flx_ng.or.iiig<1) then
-              if(iiig>flx_ng) then
-                 iiig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 iiig=1
-                 wl=flx_wl(1)
-              endif
-           endif
            flx_luminos(iiig,1,1) = flx_luminos(iiig,1,1) + e*dtinv*help
            flx_lumdev(iiig,1,1) = flx_lumdev(iiig,1,1) + (e*dtinv*help)**2
            flx_lumnum(iiig,1,1) = flx_lumnum(iiig,1,1) + 1
@@ -424,15 +415,6 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
            endif
 !-- obtaining lab frame flux group
            iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-           if(iiig>flx_ng.or.iiig<1) then
-              if(iiig>flx_ng) then
-                 iiig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 iiig=1
-                 wl=flx_wl(1)
-              endif
-           endif
            flx_luminos(iiig,1,1) = flx_luminos(iiig,1,1) + e*dtinv*help
            flx_lumdev(iiig,1,1) = flx_lumdev(iiig,1,1) + (e*dtinv*help)**2
            flx_lumnum(iiig,1,1) = flx_lumnum(iiig,1,1) + 1
@@ -477,12 +459,13 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
         if((grd_sig(l)+grd_cap(iiig,l))*dx(ix+1) &
              *thelp >= prt_tauddmc) then
 !
-           ix = ix+1
-           ic = grd_icell(ix,iy,iz)
            r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
-!--
+!-- update particle
+           ix = ix+1
+           ic = grd_icell(ix,iy,iz)
+           ig = iiig
 !
         else
            r1 = rnd_r(rnd_state)
@@ -495,11 +478,8 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
 !
 !-- location set left bound of right cell
            r = grd_xarr(ix+1)
-!-- current particle cell set 1 right
-           ix = ix+1
-           ic = grd_icell(ix,iy,iz)
 !
-!--  particl angle sampled from isotropic b.c. outward
+!-- particle angle sampled from isotropic b.c. outward
            r1 = rnd_r(rnd_state)
            prt_tlyrand = prt_tlyrand+1
            r2 = rnd_r(rnd_state)
@@ -518,7 +498,9 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
               wl = wl*(1.0-r*mu*cinv)
            endif
 !
-!-- group reset
+!-- update particle
+           ix = ix+1
+           ic = grd_icell(ix,iy,iz)
            ig = iiig
 !
         endif

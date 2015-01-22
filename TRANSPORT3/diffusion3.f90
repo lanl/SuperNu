@@ -520,19 +520,8 @@ subroutine diffusion3(ptcl,ptcl2,icspec,specarr)
            iom = binsrch(om,flx_om,flx_nom+1,.false.)
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
            iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-           if(iiig>flx_ng.or.iiig<1) then
-              if(iiig>flx_ng) then
-                 iiig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 iiig=1
-                 wl=flx_wl(1)
-              endif
-           endif
-           flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+&
-                e*dtinv
-           flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+&
-                (e*dtinv)**2
+           flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+e*dtinv
+           flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+(e*dtinv)**2
            flx_lumnum(iiig,imu,iom)=flx_lumnum(iiig,imu,iom)+1
            return
         else
@@ -670,20 +659,11 @@ subroutine diffusion3(ptcl,ptcl2,icspec,specarr)
            iom = binsrch(om,flx_om,flx_nom+1,.false.)
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
            iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-           if(iiig>flx_ng.or.iiig<1) then
-              if(iiig>flx_ng) then
-                 iiig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 iiig=1
-                 wl=flx_wl(1)
-              endif
-           endif
-           flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+&
+           flx_luminos(iiig,imu,iom) = flx_luminos(iiig,imu,iom)+&
                 e*dtinv
-           flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+&
+           flx_lumdev(iiig,imu,iom) = flx_lumdev(iiig,imu,iom)+&
                 (e*dtinv)**2
-           flx_lumnum(iiig,imu,iom)=flx_lumnum(iiig,imu,iom)+1
+           flx_lumnum(iiig,imu,iom) = flx_lumnum(iiig,imu,iom)+1
            return
         else
 !-- converting to IMC
@@ -819,20 +799,11 @@ subroutine diffusion3(ptcl,ptcl2,icspec,specarr)
            iom = binsrch(om,flx_om,flx_nom+1,.false.)
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
            iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-           if(iiig>flx_ng.or.iiig<1) then
-              if(iiig>flx_ng) then
-                 iiig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 iiig=1
-                 wl=flx_wl(1)
-              endif
-           endif
-           flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+&
+           flx_luminos(iiig,imu,iom) = flx_luminos(iiig,imu,iom)+&
                 e*dtinv
-           flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+&
+           flx_lumdev(iiig,imu,iom) = flx_lumdev(iiig,imu,iom)+&
                 (e*dtinv)**2
-           flx_lumnum(iiig,imu,iom)=flx_lumnum(iiig,imu,iom)+1
+           flx_lumnum(iiig,imu,iom) = flx_lumnum(iiig,imu,iom)+1
            return
         else
 !-- converting to IMC
@@ -969,20 +940,11 @@ subroutine diffusion3(ptcl,ptcl2,icspec,specarr)
            iom = binsrch(om,flx_om,flx_nom+1,.false.)
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
            iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-           if(iiig>flx_ng.or.iiig<1) then
-              if(iiig>flx_ng) then
-                 iiig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 iiig=1
-                 wl=flx_wl(1)
-              endif
-           endif
-           flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+&
+           flx_luminos(iiig,imu,iom) = flx_luminos(iiig,imu,iom)+&
                 e*dtinv
-           flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+&
+           flx_lumdev(iiig,imu,iom) = flx_lumdev(iiig,imu,iom)+&
                 (e*dtinv)**2
-           flx_lumnum(iiig,imu,iom)=flx_lumnum(iiig,imu,iom)+1
+           flx_lumnum(iiig,imu,iom) = flx_lumnum(iiig,imu,iom)+1
            return
         else
 !-- converting to IMC
@@ -1118,20 +1080,11 @@ subroutine diffusion3(ptcl,ptcl2,icspec,specarr)
            iom = binsrch(om,flx_om,flx_nom+1,.false.)
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
            iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-           if(iiig>flx_ng.or.iiig<1) then
-              if(iiig>flx_ng) then
-                 iiig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 iiig=1
-                 wl=flx_wl(1)
-              endif
-           endif
-           flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+&
+           flx_luminos(iiig,imu,iom) = flx_luminos(iiig,imu,iom)+&
                 e*dtinv
-           flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+&
+           flx_lumdev(iiig,imu,iom) = flx_lumdev(iiig,imu,iom)+&
                 (e*dtinv)**2
-           flx_lumnum(iiig,imu,iom)=flx_lumnum(iiig,imu,iom)+1
+           flx_lumnum(iiig,imu,iom) = flx_lumnum(iiig,imu,iom)+1
            return
         else
 !-- converting to IMC
@@ -1267,20 +1220,11 @@ subroutine diffusion3(ptcl,ptcl2,icspec,specarr)
            iom = binsrch(om,flx_om,flx_nom+1,.false.)
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
            iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-           if(iiig>flx_ng.or.iiig<1) then
-              if(iiig>flx_ng) then
-                 iiig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 iiig=1
-                 wl=flx_wl(1)
-              endif
-           endif
-           flx_luminos(iiig,imu,iom)=flx_luminos(iiig,imu,iom)+&
+           flx_luminos(iiig,imu,iom) = flx_luminos(iiig,imu,iom)+&
                 e*dtinv
-           flx_lumdev(iiig,imu,iom)=flx_lumdev(iiig,imu,iom)+&
+           flx_lumdev(iiig,imu,iom) = flx_lumdev(iiig,imu,iom)+&
                 (e*dtinv)**2
-           flx_lumnum(iiig,imu,iom)=flx_lumnum(iiig,imu,iom)+1
+           flx_lumnum(iiig,imu,iom) = flx_lumnum(iiig,imu,iom)+1
            return
         else
 !-- converting to IMC

@@ -517,15 +517,6 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
 !-- obtaining spectrum (lab) group and polar bin
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
            iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-           if(iiig>flx_ng.or.iiig<1) then
-              if(iiig>flx_ng) then
-                 iiig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 iiig=1
-                 wl=flx_wl(1)
-              endif
-           endif
            flx_luminos(iiig,imu,1) = flx_luminos(iiig,imu,1) + e*dtinv
            flx_lumdev(iiig,imu,1) = flx_lumdev(iiig,imu,1) + (e*dtinv)**2
            flx_lumnum(iiig,imu,1) = flx_lumnum(iiig,imu,1) + 1
@@ -642,15 +633,6 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
 !-- obtaining spectrum (lab) group and polar bin
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
            iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-           if(iiig>flx_ng.or.iiig<1) then
-              if(iiig>flx_ng) then
-                 iiig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 iiig=1
-                 wl=flx_wl(1)
-              endif
-           endif
            flx_luminos(iiig,imu,1) = flx_luminos(iiig,imu,1) + e*dtinv
            flx_lumdev(iiig,imu,1) = flx_lumdev(iiig,imu,1) + (e*dtinv)**2
            flx_lumnum(iiig,imu,1) = flx_lumnum(iiig,imu,1) + 1
@@ -768,15 +750,6 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
 !-- obtaining spectrum (lab) group and polar bin
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
            iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-           if(iiig>flx_ng.or.iiig<1) then
-              if(iiig>flx_ng) then
-                 iiig=flx_ng
-                 wl=flx_wl(flx_ng+1)
-              else
-                 iiig=1
-                 wl=flx_wl(1)
-              endif
-           endif
            flx_luminos(iiig,imu,1) = flx_luminos(iiig,imu,1) + e*dtinv
            flx_lumdev(iiig,imu,1) = flx_lumdev(iiig,imu,1) + (e*dtinv)**2
            flx_lumnum(iiig,imu,1) = flx_lumnum(iiig,imu,1) + 1
