@@ -44,7 +44,7 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
   integer :: glump, gunlump
   integer :: glumps(grp_ng)
   real*8 :: dtinv, tempinv, capgreyinv
-  real*8 :: help
+  real*8 :: dist, help
 
   integer,pointer :: ix, ic, ig
   integer,parameter :: iy=1, iz=1
@@ -84,9 +84,12 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
   glumps = 0
 !
 !-- find lumpable groups
-  if(grd_cap(ig,ic)*dx(ix)*thelp >= prt_taulump) then
+  dist = dx(ix)*thelp
+  if(grd_cap(ig,ic)*dist >= prt_taulump .and. &
+       (grd_sig(ic) + grd_cap(ig,ic))*dist >= prt_tauddmc) then
      do iig=1,grp_ng
-        if(grd_cap(iig,ic)*dx(ix)*thelp >= prt_taulump) then
+        if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
+             (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
            glump=glump+1
            glumps(glump)=iig
         else

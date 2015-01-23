@@ -13,7 +13,7 @@ subroutine leakage_opacity11
 !##################################################
   logical :: lhelp
   integer :: i,j,k, ig
-  real*8 :: thelp, help
+  real*8 :: thelp, dist, help
   real*8 :: speclump, specval
   real*8 :: specarr(grp_ng)
   real*8 :: ppl, ppr
@@ -50,11 +50,13 @@ subroutine leakage_opacity11
 !
 !-- initializing Planck integral vectorized
      specarr = specintv(1d0/grd_temp(l),0)
-     help = dx(i)*thelp
-     speclump = 1d0/sum(specarr,grd_cap(:,l)*help>=prt_taulump)
+     dist = dx(i)*thelp
+     speclump = 1d0/sum(specarr, grd_cap(:,l)*dist>=prt_taulump .and. &
+       (grd_sig(l) + grd_cap(:,l))*dist >= prt_tauddmc)
 !-- lumping opacity
      do ig=1,grp_ng
-        if(grd_cap(ig,l)*dx(i)*thelp < prt_taulump) cycle
+        if(grd_cap(ig,l)*dist < prt_taulump) cycle
+        if((grd_sig(l) + grd_cap(ig,l))*dist < prt_tauddmc) cycle
 !
 !-- obtaining spectral weight
         specval = specarr(ig)

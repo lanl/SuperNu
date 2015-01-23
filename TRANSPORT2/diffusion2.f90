@@ -44,7 +44,7 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
   integer :: glump, gunlump
   integer :: glumps(grp_ng)
   real*8 :: dtinv, tempinv, capgreyinv
-  real*8 :: help
+  real*8 :: dist, help
 
   integer,pointer :: ix, iy, ic, ig
   integer,parameter :: iz=1
@@ -88,9 +88,12 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
   glumps = 0
 !
 !-- find lumpable groups
-  if(grd_cap(ig,ic)*min(dx(ix),dy(iy)) * thelp>=prt_taulump) then
+  dist = min(dx(ix),dy(iy)) * thelp
+  if(grd_cap(ig,ic)*dist >= prt_taulump .and. &
+       (grd_sig(ic) + grd_cap(ig,ic))*dist >= prt_tauddmc) then
      do iig=1,grp_ng
-        if(grd_cap(iig,ic)*min(dx(ix),dy(iy))*thelp >= prt_taulump) then
+        if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
+             (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
            glump=glump+1
            glumps(glump)=iig
         else
@@ -210,14 +213,14 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
      endif
      if(lhelp) then
 !-- DDMC interface
-        help = (grd_cap(ig,ic)+grd_sig(ic))*dy(iy)*thelp
-        pp = 4d0/(3d0*help+6d0*pc_dext)
+        dist = (grd_cap(ig,ic)+grd_sig(ic))*dy(iy)*thelp
+        pp = 4d0/(3d0*dist+6d0*pc_dext)
         opacleak(3)=0.5d0*pp/(thelp*dy(iy))
      else
 !-- DDMC interior
-        help = ((grd_sig(ic)+grd_cap(ig,ic))*dy(iy)+&
+        dist = ((grd_sig(ic)+grd_cap(ig,ic))*dy(iy)+&
              (grd_sig(l)+grd_cap(ig,l))*dy(iy-1))*thelp
-        opacleak(3)=(2d0/3d0)/(help*dy(iy)*thelp)
+        opacleak(3)=(2d0/3d0)/(dist*dy(iy)*thelp)
      endif
 
 !-- upward
@@ -231,14 +234,14 @@ subroutine diffusion2(ptcl,ptcl2,icspec,specarr)
      endif
      if(lhelp) then
 !-- DDMC interface
-        help = (grd_cap(ig,ic)+grd_sig(ic))*dy(iy)*thelp
-        pp = 4d0/(3d0*help+6d0*pc_dext)
+        dist = (grd_cap(ig,ic)+grd_sig(ic))*dy(iy)*thelp
+        pp = 4d0/(3d0*dist+6d0*pc_dext)
         opacleak(4)=0.5d0*pp/(thelp*dy(iy))
      else
 !-- DDMC interior
-        help = ((grd_sig(ic)+grd_cap(ig,ic))*dy(iy)+&
+        dist = ((grd_sig(ic)+grd_cap(ig,ic))*dy(iy)+&
              (grd_sig(l)+grd_cap(ig,l))*dy(iy+1))*thelp
-        opacleak(4)=(2d0/3d0)/(help*dy(iy)*thelp)
+        opacleak(4)=(2d0/3d0)/(dist*dy(iy)*thelp)
      endif
 !}}}
   endif

@@ -46,7 +46,7 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
   integer :: glump, gunlump
   integer :: glumps(grp_ng)
   real*8 :: dtinv, tempinv, capgreyinv
-  real*8 :: help, mux, muy, muz
+  real*8 :: dist, help, mux, muy, muz
 !
   integer,pointer :: ix,iy,iz,ic,ig
   real*8,pointer :: x,y,z,mu,om,e,e0,wl
@@ -98,11 +98,12 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
   glumps = 0
 !
 !-- find lumpable groups
-  if(grd_cap(ig,ic)*min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) * &
-       thelp>=prt_taulump) then
+  dist = min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) * thelp
+  if(grd_cap(ig,ic)*dist >= prt_taulump .and. &
+       (grd_sig(ic) + grd_cap(ig,ic))*dist >= prt_tauddmc) then
      do iig=1,grp_ng
-        if(grd_cap(iig,ic)*min(dx(ix),xm(ix)*dyac(iy) , &
-             xm(ix)*ym(iy)*dz(iz))*thelp >= prt_taulump) then
+        if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
+             (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
            glump=glump+1
            glumps(glump)=iig
         else
@@ -179,14 +180,14 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
      endif
      if(lhelp) then
 !-- DDMC interface
-        help = (grd_cap(ig,ic)+grd_sig(ic))*dx(ix)*thelp
-        pp = 4d0/(3d0*help+6d0*pc_dext)
+        dist = (grd_cap(ig,ic)+grd_sig(ic))*dx(ix)*thelp
+        pp = 4d0/(3d0*dist+6d0*pc_dext)
         opacleak(1)=1.5d0*pp*grd_xarr(ix)**2/(dx3(ix)*thelp)
      else
 !-- DDMC interior
-        help = ((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)+&
+        dist = ((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)+&
              (grd_sig(l)+grd_cap(ig,l))*dx(ix-1))*thelp
-        opacleak(1)=2d0*grd_xarr(ix)**2/(dx3(ix)*thelp*help)
+        opacleak(1)=2d0*grd_xarr(ix)**2/(dx3(ix)*thelp*dist)
      endif
 
 !
@@ -201,14 +202,14 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
      endif
      if(lhelp) then
 !-- DDMC interface
-        help = (grd_cap(ig,ic)+grd_sig(ic))*dx(ix)*thelp
-        pp = 4d0/(3d0*help+6d0*pc_dext)
+        dist = (grd_cap(ig,ic)+grd_sig(ic))*dx(ix)*thelp
+        pp = 4d0/(3d0*dist+6d0*pc_dext)
         opacleak(2)=1.5d0*pp*grd_xarr(ix+1)**2/(dx3(ix)*thelp)
      else
 !-- DDMC interior
-        help = ((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)+&
+        dist = ((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)+&
              (grd_sig(l)+grd_cap(ig,l))*dx(ix+1))*thelp
-        opacleak(2)=2d0*grd_xarr(ix+1)**2/(dx3(ix)*thelp*help)
+        opacleak(2)=2d0*grd_xarr(ix+1)**2/(dx3(ix)*thelp*dist)
      endif
 
 !
@@ -224,16 +225,16 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
 !
      if(lhelp) then
 !-- DDMC interface
-        help = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix)*dyac(iy)*thelp
-        pp = 4d0/(3d0*help+6d0*pc_dext)
+        dist = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix)*dyac(iy)*thelp
+        pp = 4d0/(3d0*dist+6d0*pc_dext)
         opacleak(3)=0.75d0*pp*dx2(ix)*sqrt(1d0-grd_yarr(iy)**2) / &
              (dy(iy)*dx3(ix)*thelp)
      else
 !-- DDMC interior
-        help = ((grd_sig(ic)+grd_cap(ig,ic))*dyac(iy) + &
+        dist = ((grd_sig(ic)+grd_cap(ig,ic))*dyac(iy) + &
              (grd_sig(l)+grd_cap(ig,l))*dyac(iy-1))
         opacleak(3)=2d0*sqrt(1d0-grd_yarr(iy)**2)*dx(ix) / &
-             (dy(iy)*dx3(ix)*help*thelp**2)
+             (dy(iy)*dx3(ix)*dist*thelp**2)
      endif
 
 !
@@ -249,16 +250,16 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
 !
      if(lhelp) then
 !-- DDMC interface
-        help = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix)*dyac(iy)*thelp
-        pp = 4d0/(3d0*help+6d0*pc_dext)
+        dist = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix)*dyac(iy)*thelp
+        pp = 4d0/(3d0*dist+6d0*pc_dext)
         opacleak(4)=0.75d0*pp*dx2(ix)*sqrt(1d0-grd_yarr(iy+1)**2) / &
              (dy(iy)*dx3(ix)*thelp)
      else
 !-- DDMC interior
-        help = ((grd_sig(ic)+grd_cap(ig,ic))*dyac(iy) + &
+        dist = ((grd_sig(ic)+grd_cap(ig,ic))*dyac(iy) + &
              (grd_sig(l)+grd_cap(ig,l))*dyac(iy+1))
         opacleak(4)=2d0*sqrt(1d0-grd_yarr(iy+1)**2)*dx(ix) / &
-             (dy(iy)*dx3(ix)*help*thelp**2)
+             (dy(iy)*dx3(ix)*dist*thelp**2)
      endif
 
 !
@@ -284,17 +285,17 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
 !
         if(lhelp) then
 !-- DDMC interface
-           help = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix)*ym(iy) * &
+           dist = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix)*ym(iy) * &
               dz(iz)*thelp
-           pp = 4d0/(3d0*help+6d0*pc_dext)
+           pp = 4d0/(3d0*dist+6d0*pc_dext)
            opacleak(5)=0.75d0*pp*dx2(ix)*dyac(iy) / &
                 (dy(iy)*dx3(ix)*dz(iz)*thelp)
         else
 !-- DDMC interior
-           help = ((grd_sig(ic)+grd_cap(ig,ic))*dz(iz) + &
+           dist = ((grd_sig(ic)+grd_cap(ig,ic))*dz(iz) + &
                 (grd_sig(l)+grd_cap(ig,l))*dz(iznext))
            opacleak(5)=2d0*dyac(iy)*dx(ix) / &
-                (ym(iy)*dy(iy)*dz(iz)*dx3(ix)*help*thelp**2)
+                (ym(iy)*dy(iy)*dz(iz)*dx3(ix)*dist*thelp**2)
         endif
 !-- iz->iz+1 (opacleak(6))
         if(iz==grd_nz) then
@@ -313,17 +314,17 @@ subroutine diffusion1(ptcl,ptcl2,icspec,specarr)
 !
         if(lhelp) then
 !-- DDMC interface
-           help = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix)*ym(iy) * &
+           dist = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix)*ym(iy) * &
               dz(iz)*thelp
-           pp = 4d0/(3d0*help+6d0*pc_dext)
+           pp = 4d0/(3d0*dist+6d0*pc_dext)
            opacleak(6)=0.75d0*pp*dx2(ix)*dyac(iy) / &
                 (dy(iy)*dx3(ix)*dz(iz)*thelp)
         else
 !-- DDMC interior
-           help = ((grd_sig(ic)+grd_cap(ig,ic))*dz(iz) + &
+           dist = ((grd_sig(ic)+grd_cap(ig,ic))*dz(iz) + &
                 (grd_sig(l)+grd_cap(ig,l))*dz(iznext))
            opacleak(6)=2d0*dyac(iy)*dx(ix) / &
-                (ym(iy)*dy(iy)*dz(iz)*dx3(ix)*help*thelp**2)
+                (ym(iy)*dy(iy)*dz(iz)*dx3(ix)*dist*thelp**2)
         endif
      endif
 !}}}
