@@ -1,4 +1,4 @@
-subroutine transport11_gamgrey(ptcl,ptcl2)
+pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
   use randommod
   use gridmod
@@ -10,6 +10,9 @@ subroutine transport11_gamgrey(ptcl,ptcl2)
 !
   type(packet),target,intent(inout) :: ptcl
   type(packet2),target,intent(inout) :: ptcl2
+  type(rnd_t),intent(inout) :: rndstate
+  real*8,intent(out) :: edep
+  integer,intent(out) :: ierr
 !##################################################
 !This subroutine passes particle parameters as input and modifies
 !them through one IMC transport event (Fleck&Cummings, 1971).  If
@@ -41,6 +44,8 @@ subroutine transport11_gamgrey(ptcl,ptcl2)
   e => ptcl%e
   e0 => ptcl%e0
 
+  ierr = 0
+
   if(grd_isvelocity) then
      siglabfact = 1.0d0 - mu*x*cinv
      dcollabfact = tsp_t*(1d0-mu*x*cinv)
@@ -67,13 +72,16 @@ subroutine transport11_gamgrey(ptcl,ptcl2)
      db = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*x**2)-mu*x)
   endif
 !-- sanity check
-  if(db/=db) stop 'transport11_gamgrey: db/=db'
+  if(db/=db) then
+!   stop 'transport11_gamgrey: db/=db'
+    ierr = 1
+    return
+  endif
 !
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
      if(grd_capgrey(ic)>0d0) then
-        r1 = rnd_r(rnd_state)
-        prt_tlyrand = prt_tlyrand+1
+        call rnd_rp(r1,rndstate)
         dcol = abs(log(r1)/(grd_capgrey(ic)*dcollabfact))
      else
         dcol = far
@@ -86,9 +94,11 @@ subroutine transport11_gamgrey(ptcl,ptcl2)
 !  if(tsp_it==29) write(*,*) dcol,dthm,db,dcen,ddop
   darr = [dcol,db]
   if(any(darr/=darr) .or. any(darr<0d0)) then
-     write(0,*) darr
-     write(*,*) ix,x,mu
-     stop 'transport11_gamgrey: invalid distance'
+!    write(0,*) darr
+!    write(*,*) ix,x,mu
+!    stop 'transport11_gamgrey: invalid distance'
+     ierr = 2
+     return
   endif
   d = minval(darr)
 !
@@ -114,7 +124,7 @@ subroutine transport11_gamgrey(ptcl,ptcl2)
   !calculating energy deposition and density
   !
   if(.not.prt_isimcanlog) then
-     grd_edep(ic) = grd_edep(ic)+e*(1d0-exp( &
+     edep = e*(1d0-exp( &
           -grd_capgrey(ic)*siglabfact*d*thelp))*elabfact
      !--
      e = e*exp(-grd_capgrey(ic)*siglabfact*d*thelp)
@@ -132,16 +142,14 @@ subroutine transport11_gamgrey(ptcl,ptcl2)
 !-- fictitious scattering with implicit capture
   if (d == dcol) then
      !!{{{
-     r1 = rnd_r(rnd_state)
-     prt_tlyrand = prt_tlyrand+1
+     call rnd_rp(r1,rndstate)
      if(r1<=1d0.and.prt_isimcanlog) then
         ptcl2%done = .true.
-        grd_edep(ic) = grd_edep(ic) + e*elabfact
+        edep = e*elabfact
 !-- velocity effects accounting
 !
      else
-        r1 = rnd_r(rnd_state)
-        prt_tlyrand = prt_tlyrand+1
+        call rnd_rp(r1,rndstate)
         mu = 1d0-2d0*r1
         if(abs(mu)<0.0000001d0) then
            mu = 0.0000001d0
@@ -155,8 +163,7 @@ subroutine transport11_gamgrey(ptcl,ptcl2)
            
         endif
 !
-        r1 = rnd_r(rnd_state)
-        prt_tlyrand = prt_tlyrand+1
+        call rnd_rp(r1,rndstate)
      endif
      !!}}}
 !
@@ -165,12 +172,7 @@ subroutine transport11_gamgrey(ptcl,ptcl2)
      if (mu>=0d0) then!{{{
         if (ix == grd_nx) then
            ptcl2%done = .true.
-!
-!-- outbound luminosity tally
-!-- velocity effects accounting
-           flx_gamluminos(1,1) = flx_gamluminos(1,1)+e/tsp_dt
-           flx_gamlumdev(1,1) = flx_gamlumdev(1,1)+(e/tsp_dt)**2
-           flx_gamlumnum(1,1) = flx_gamlumnum(1,1)+1
+           ptcl2%flux = .true.
         else
            x = grd_xarr(ix+1)
            ix = ix+1

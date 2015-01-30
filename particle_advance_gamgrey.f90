@@ -7,6 +7,7 @@ subroutine particle_advance_gamgrey(nmpi)
   use physconstmod
   use inputparmod
   use timingmod
+  use timestepmod
   use fluxmod
   implicit none
   integer,intent(in) :: nmpi
@@ -18,9 +19,10 @@ subroutine particle_advance_gamgrey(nmpi)
   !are being handled in separate subroutines but this may be changed to reduce
   !total subroutine calls in program.
 !##################################################
+  integer :: ierr
   integer :: nhere, nemit, ndmy
-  real*8 :: r1
-  integer :: i,j,k,l, ii, iimpi
+  real*8 :: r1, edep
+  integer :: i,j,k,l, ii, iimpi, icold
   integer,pointer :: ic
   integer,pointer :: ix, iy, iz
   real*8,pointer :: x,y,z,mu,om,e,e0
@@ -286,11 +288,12 @@ subroutine particle_advance_gamgrey(nmpi)
 !-----------------------------------------------------------------------
 !-- Advancing particle until census, absorption, or escape from domain
      ptcl2%done = .false.
+     ptcl2%flux = .false.
 !
      select case(in_igeom)
      case(1)
         do while (.not.ptcl2%done)!{{{
-           call transport1_gamgrey(ptcl,ptcl2)
+!          call transport1_gamgrey(ptcl,ptcl2)
 !-- verify position
            if(.not.ptcl2%done) then
               if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
@@ -327,7 +330,7 @@ subroutine particle_advance_gamgrey(nmpi)
         enddo!}}}
      case(2)
         do while (.not.ptcl2%done)!{{{
-           call transport2_gamgrey(ptcl,ptcl2)
+!          call transport2_gamgrey(ptcl,ptcl2)
 !-- verify position
            if(.not.ptcl2%done) then
               if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
@@ -361,7 +364,7 @@ subroutine particle_advance_gamgrey(nmpi)
         enddo!}}}
      case(3)
         do while (.not.ptcl2%done)!{{{
-           call transport3_gamgrey(ptcl,ptcl2)
+!          call transport3_gamgrey(ptcl,ptcl2)
 !-- transformation factor
            if(grd_isvelocity) then
               labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &
@@ -384,7 +387,9 @@ subroutine particle_advance_gamgrey(nmpi)
         enddo!}}}
      case(11)
         do while (.not.ptcl2%done)!{{{
-           call transport11_gamgrey(ptcl,ptcl2)
+           icold = ic
+           call transport11_gamgrey(ptcl,ptcl2,rnd_state,edep,ierr)
+           grd_edep(icold) = grd_edep(icold) + edep
 !-- verify position
            if(.not.ptcl2%done .and. (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
               write(0,*) 'prt_adv_ggrey: not in cell', &
@@ -409,7 +414,21 @@ subroutine particle_advance_gamgrey(nmpi)
               endif
            endif
         enddo!}}}
+!
+!-- outbound luminosity tally
+!-- velocity effects accounting
+        if(ptcl2%flux) then
+           flx_gamluminos(1,1) = flx_gamluminos(1,1)+e/tsp_dt
+           flx_gamlumdev(1,1) = flx_gamlumdev(1,1)+(e/tsp_dt)**2
+           flx_gamlumnum(1,1) = flx_gamlumnum(1,1)+1
+        endif
      endselect
+
+!-- check for errors
+     if(ierr/=0) then
+        write(0,*) ierr
+        stop 'particle_advance_gg: fatal transport error'
+     endif
 
   enddo !ipart
 

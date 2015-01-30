@@ -1,4 +1,4 @@
-function binsrch(x,arr,n,widerange)
+pure function binsrch(x,arr,n,widerange)
   implicit none
   integer :: binsrch
 
