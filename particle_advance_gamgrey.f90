@@ -32,9 +32,10 @@ subroutine particle_advance_gamgrey(nmpi)
 !
   real*8,parameter :: basefrac=.1d0
   real*8 :: base,edone,einv,invn,en
-  integer :: n,ndone
+  integer :: n, ndone, mpart, npart, ipart
   integer*8 :: nstot,nsavail,nsbase
-!-- hardware
+!
+  integer,allocatable :: ipospart(:,:) !(3,npart)
 !
   type(packet),target :: ptcl
   type(packet2),target :: ptcl2
@@ -46,9 +47,6 @@ subroutine particle_advance_gamgrey(nmpi)
   flx_gamluminos = 0d0
   flx_gamlumdev = 0d0
   flx_gamlumnum = 0
-!
-  grd_eraddens = 0d0
-  grd_numcensus = 0
 
 !-- initializing volume numbers
   grd_nvol = 0
@@ -72,6 +70,11 @@ subroutine particle_advance_gamgrey(nmpi)
   nsbase = int(n*base,8)  !total number of base particles
   nsavail = nstot - nsbase
 
+  mpart = nint(10 + 1.1d0*src_ns) !big enough
+  allocate(ipospart(3,mpart))
+
+  iimpi = 0
+  npart = 0
 !-- total particle number per cell
   edone = 0d0
   ndone = 0
@@ -89,6 +92,14 @@ subroutine particle_advance_gamgrey(nmpi)
      grd_nvol(l) = n
      edone = edone + en
      ndone = ndone + n
+!-- particle count on this rank
+     call sourcenumbers_roundrobin(iimpi,grd_emitex(l), &
+        0d0,grd_nvol(l),nemit,nhere,ndmy)
+     do ii=1,nhere
+        npart = npart + 1
+        if(npart>mpart) stop 'particle_advance_gamgrey: npart>npartmax'
+        ipospart(:,npart) = [i,j,k]
+     enddo !ii
   enddo
   enddo
   enddo
@@ -102,29 +113,21 @@ subroutine particle_advance_gamgrey(nmpi)
   om => ptcl%om
   e => ptcl%e
   e0 => ptcl%e0
-!
 !-- secondary particle properties
   ix => ptcl2%ix
   iy => ptcl2%iy
   iz => ptcl2%iz
   ic => ptcl2%ic
 
-!-- default, in case .not.grd_isvelocity
-  cmffact = 1d0
-
-  iimpi = 0
-  do k=1,grd_nz
-  do j=1,grd_ny
-  do i=1,grd_nx
-     l = grd_icell(i,j,k)
-     call sourcenumbers_roundrobin(iimpi,grd_emitex(l), &
-        0d0,grd_nvol(l),nemit,nhere,ndmy)
-  do ii=1,nhere
-!-- adopt position
+  do ipart=1,npart
+     i = ipospart(1,ipart)
+     j = ipospart(2,ipart)
+     k = ipospart(3,ipart)
+!-- adopt position (get rid of this copy after merged with wlT branch)
      ix = i
      iy = j
      iz = k
-     ic = l
+     ic = grd_icell(ix,iy,iz)
 
 !-- calculating direction cosine (comoving)
      r1 = rnd_r(rnd_state)
@@ -276,7 +279,8 @@ subroutine particle_advance_gamgrey(nmpi)
      endif
 !
 !-- emission energy per particle
-     e = grd_emitex(ic)/nemit*cmffact
+     e = grd_emitex(ic)/grd_nvol(ic)
+     if(grd_isvelocity) e = e*cmffact
      e0 = e
 
 !-----------------------------------------------------------------------
@@ -407,10 +411,9 @@ subroutine particle_advance_gamgrey(nmpi)
         enddo!}}}
      endselect
 
-  enddo !ii
-  enddo !i
-  enddo !j
-  enddo !k
+  enddo !ipart
+
+  deallocate(ipospart)
 
   t1 = t_time()
   call timereg(t_pcktgam, t1-t0)
