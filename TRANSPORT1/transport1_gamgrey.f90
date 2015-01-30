@@ -1,4 +1,4 @@
-subroutine transport1_gamgrey(ptcl,ptcl2)
+subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
   use randommod
   use miscmod
@@ -11,6 +11,9 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 !
   type(packet),target,intent(inout) :: ptcl
   type(packet2),target,intent(inout) :: ptcl2
+  type(rnd_t),intent(inout) :: rndstate
+  real*8,intent(out) :: edep
+  integer,intent(out) :: ierr
 !##################################################
 !This subroutine passes particle parameters as input and modifies
 !them through one IMC transport event (Fleck&Cummings, 1971).  If
@@ -20,7 +23,6 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   real*8,parameter :: cinv = 1d0/pc_c
   real*8,parameter :: dt = pc_year !give grey transport infinite time
 !
-  integer :: imu, iom
   real*8 :: elabfact, eta, xi
   real*8,pointer :: mux,muy,muz
   real*8 :: r1, thelp,thelpinv, help
@@ -54,6 +56,8 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   ic => ptcl2%ic
   ig => ptcl2%ig
 
+  ierr = 0
+
 !-- spherical projections
   xi = sqrt(1d0-mu**2)*sin(om)
 !
@@ -80,7 +84,11 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
      dbx = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*x**2)-mu*x)
   endif
 !-- sanity check
-  if(dbx/=dbx) stop 'transport1_gamgrey: dbx/=dbx'
+  if(dbx/=dbx) then
+!    stop 'transport1_gamgrey: dbx/=dbx'
+     ierr = 1
+     return
+  endif
 !
 !-- polar boundary distance (y)
 !-- dby1: iy->iy-1
@@ -209,9 +217,11 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
      endif
   endif
   if(dby1<0d0.and.dby2<0d0) then
-     write(0,*) iy, y
-     write(0,*) idby1, dby1, idby2, dby2
-     stop 'transport1_gg: dby1<0 and dby2<0'
+!    write(0,*) iy, y
+!    write(0,*) idby1, dby1, idby2, dby2
+!    stop 'transport1_gg: dby1<0 and dby2<0'
+     ierr = 2
+     return
   endif
   if(dby1<=0d0) dby1=far
   if(dby2<=0d0) dby2=far
@@ -257,7 +267,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
      if(grd_capgrey(ic)>0d0) then
-        r1 = rnd_r(rnd_state)
+        r1 = rnd_r(rndstate)
         prt_tlyrand = prt_tlyrand+1
         dcol = -log(r1)*thelpinv/(grd_capgrey(ic)*elabfact)
      else
@@ -272,9 +282,11 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   darr = [dbx,dby,dbz,dcol]
   d = minval(darr)
   if(any(darr/=darr) .or. d<0d0) then
-     write(0,*) darr
-     write(0,*) ix,iy,iz,x,y,z,mu,om
-     stop 'transport1_gamgrey: invalid distance'
+!    write(0,*) darr
+!    write(0,*) ix,iy,iz,x,y,z,mu,om
+!    stop 'transport1_gamgrey: invalid distance'
+     ierr = 3
+     return
   endif
 
 !-- storing old position
@@ -284,17 +296,28 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
   muold = mu
 !-- updating radius
   x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
-  if(x/=x) stop 'transport1_gamgrey: x/=x'
+  if(x/=x) then
+!    stop 'transport1_gamgrey: x/=x'
+     ierr = 4
+     return
+  endif
   if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
 !-- sanity check
-     if(d==dbx) stop 'transport1_gamgrey: x<1d-15*xarr(2),d==dbx,mu=-1'
+     if(d==dbx) then
+!       stop 'transport1_gamgrey: x<1d-15*xarr(2),d==dbx,mu=-1'
+        ierr = 5
+        return
+     endif
 !-- excluding dbz
      dbz = far
 !-- resetting direction
      mu = 1d0
   else
-     if(x<1d-15*grd_xarr(2)) stop &
-          'transport1_gamgrey: x=0 and muold/=-1'
+     if(x<1d-15*grd_xarr(2)) then
+!       stop 'transport1_gamgrey: x=0 and muold/=-1'
+        ierr = 6
+        return
+     endif
 !-- updating radial projection of direction
      mu = (xold*mu+d)/x
      mu = max(mu,-1d0)
@@ -322,11 +345,13 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 
 !-- depositing nonanalog absorbed energy
   if(.not.prt_isimcanlog) then
-     grd_edep(ic) = grd_edep(ic)+e* &
+     edep = e* &
           (1d0-exp(-grd_capgrey(ic)* &
           elabfact*d*thelp))*elabfact
-     if(grd_edep(ic)/=grd_edep(ic)) then
-        stop 'transport1_gamgrey: invalid energy deposition'
+     if(edep/=edep) then
+!       stop 'transport1_gamgrey: invalid energy deposition'
+        ierr = 7
+        return
      endif
 !-- reducing particle energy
      e = e*exp(-grd_capgrey(ic)*elabfact*d*thelp)
@@ -337,23 +362,23 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
 
   if(d==dcol) then
 !-- sanity check
-     if(.not.prt_isimcanlog) stop &
-          'transport1_gamgrey: not isimcanlog and dcol<db[xyz]'
+     if(.not.prt_isimcanlog) then
+!       stop 'transport1_gamgrey: not isimcanlog and dcol<db[xyz]'
+        ierr = 8
+        return
+     endif
      ptcl2%done = .true.
-     grd_edep(ic) = grd_edep(ic) + e*elabfact
+     edep = e*elabfact
   elseif(d==dbx .and. dbx<dby) then
      if(mu>=0d0) then
         if(ix==grd_nx) then
 !-- ending particle
            ptcl2%done = .true.
-           help = atan2(muy,mux)
-           if(help<0d0) help = help+pc_pi2
-!-- retrieving lab frame flux group, polar, azimuthal bin
-           iom = binsrch(help,flx_om,flx_nom+1,.false.)
-           imu = binsrch(muz,flx_mu,flx_nmu+1,.false.)
-           flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e/tsp_dt
-           flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+(e/tsp_dt)**2
-           flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1
+           ptcl2%lflux = .true.
+!-- redefine for flux tally
+           om = atan2(muy,mux)
+           if(om<0d0) om = om+pc_pi2
+           mu = muz
            return
         else
            x = grd_xarr(ix+1)
@@ -378,21 +403,33 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
      elseif(iynext==iy-1) then
         if(abs(y-grd_yarr(iy))>1d-9) then
-           write(0,*) 'transport1_gamgrey: y/=yarr(iy)', iy,y,grd_yarr(iy)
+!          write(0,*) 'transport1_gamgrey: y/=yarr(iy)', iy,y,grd_yarr(iy)
+           ierr = -1
         endif
-        if(iynext<1) stop 'transport1_gamgrey: iynext<1'
+        if(iynext<1) then
+!          stop 'transport1_gamgrey: iynext<1'
+           ierr = 9
+           return
+        endif
         y=grd_yarr(iy)
      elseif(iynext==iy+1) then
         if(abs(y-grd_yarr(iy+1))>1d-9) then
            write(0,*) 'transport1_gamgrey: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1)
+           ierr = -2
         endif
-        if(iynext>grd_ny) stop 'transport1_gamgrey: iynext>ny'
+        if(iynext>grd_ny) then
+!          stop 'transport1_gamgrey: iynext>ny'
+           ierr = 10
+           return
+        endif
         y=grd_yarr(iy+1)
      else
 !-- sanity check
-        write(0,*) dby
-        write(0,*) y,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
-        stop 'transport1_gamgrey: invalid polar bound crossing'
+!       write(0,*) dby
+!       write(0,*) y,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
+!       stop 'transport1_gamgrey: invalid polar bound crossing'
+        ierr = 11
+        return
      endif
 
      iz = iznext
@@ -400,7 +437,11 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
      ic = grd_icell(ix,iy,iz)
   elseif(d==dbz) then
 !-- sanity check
-     if(grd_nz==1) stop 'transport1_gamgrey: invalid z crossing'
+     if(grd_nz==1) then
+!       stop 'transport1_gamgrey: invalid z crossing'
+        ierr = 12
+        return
+     endif
      if(iznext==iz-1) then
         z=grd_zarr(iz)
         if(iznext==0) then
@@ -414,12 +455,16 @@ subroutine transport1_gamgrey(ptcl,ptcl2)
            z = 0d0
         endif
      else
-        stop 'transport1_gamgrey: invalid iznext'
+!       stop 'transport1_gamgrey: invalid iznext'
+        ierr = 13
+        return
      endif
      iz = iznext
      ic = grd_icell(ix,iy,iz)
   else
-     stop 'transport1_gamgrey: invalid distance mode'
+!    stop 'transport1_gamgrey: invalid distance mode'
+     ierr = 14
+     return
   endif
 
 end subroutine transport1_gamgrey

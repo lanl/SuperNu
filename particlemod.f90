@@ -16,7 +16,7 @@ module particlemod
      integer :: itype        !IMC or DDMC type
      integer :: ipart, istep !particle number and transport step number
      integer :: idist        !transport distance identifier
-     logical :: done, flux, isvacant !transport done and particle termination flags
+     logical :: done, lflux, isvacant !transport done and particle termination flags
   end type packet2
 !
   type(packet),allocatable,target :: prt_particles(:)  !(prt_npartmax)

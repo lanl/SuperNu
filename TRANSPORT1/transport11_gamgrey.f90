@@ -172,7 +172,7 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
      if (mu>=0d0) then!{{{
         if (ix == grd_nx) then
            ptcl2%done = .true.
-           ptcl2%flux = .true.
+           ptcl2%lflux = .true.
         else
            x = grd_xarr(ix+1)
            ix = ix+1

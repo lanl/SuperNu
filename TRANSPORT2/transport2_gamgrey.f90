@@ -1,4 +1,4 @@
-subroutine transport2_gamgrey(ptcl,ptcl2)
+subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
   use randommod
   use miscmod
@@ -11,6 +11,9 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
 !
   type(packet),target,intent(inout) :: ptcl
   type(packet2),target,intent(inout) :: ptcl2
+  type(rnd_t),intent(inout) :: rndstate
+  real*8,intent(out) :: edep
+  integer,intent(out) :: ierr
 !##################################################
   !This subroutine passes particle parameters as input and modifies
   !them through one IMC transport event.  If
@@ -45,6 +48,8 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
   om => ptcl%om
   e => ptcl%e
   e0 => ptcl%e0
+
+  ierr = 0
 !
 !-- setting vel-grid helper variables
   if(grd_isvelocity) then
@@ -75,7 +80,9 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
         dbx = abs(x*cos(om)/sqrt(1d0-mu**2) &
              +sqrt(((cos(om)*x)**2-x**2+grd_xarr(ix)**2)/(1d0-mu**2)))
         if(dbx/=dbx) then
-           stop 'transport2_gamgrey: invalid inner dbx'
+!          stop 'transport2_gamgrey: invalid inner dbx'
+           ierr = 1
+           return
         endif
      elseif(abs(grd_xarr(ix+1)-x)<1d-15*x .and. cos(om)>0d0) then
 !-- on outer boundary moving out
@@ -85,25 +92,43 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
         dbx = -x*cos(om)/sqrt(1d0-mu**2) &
              + sqrt(((cos(om)*x)**2 + grd_xarr(ix+1)**2-x**2)/(1d0-mu**2))
         if(dbx/=dbx) then
-           stop 'transport2_gamgrey: invalid outer dbx'
+!          stop 'transport2_gamgrey: invalid outer dbx'
+           ierr = 2
+           return
         endif
      endif
   endif
-  if(dbx/=dbx) stop 'transport2_gamgrey: dbx nan'
+  if(dbx/=dbx) then
+!    stop 'transport2_gamgrey: dbx nan'
+     ierr = 3
+     return
+  endif
 
 !-- to y-bound
   if(mu>0d0) then
      dby = (grd_yarr(iy+1)-y)/mu
      if(dby<0d0) then
-        stop 'upward dby'
-     if((grd_yarr(iy)-y)/mu>0d0) stop &
-          'transport2_gamgrey: y below cell'
+!       stop 'upward dby'
+        ierr = 4
+        return
+     endif
+     if((grd_yarr(iy)-y)/mu>0d0) then
+!       stop 'transport2_gamgrey: y below cell'
+        ierr = 5
+        return
      endif
   elseif(mu<0d0) then
      dby = (grd_yarr(iy)-y)/mu
-     if(dby<0d0) stop 'downward dby'
-     if((grd_yarr(iy+1)-y)/mu>0d0) stop &
-          'transport2_gamgrey: y above cell'
+     if(dby<0d0) then
+!       stop 'downward dby'
+        ierr = 6
+        return
+     endif
+     if((grd_yarr(iy+1)-y)/mu>0d0) then
+!       stop 'transport2_gamgrey: y above cell'
+        ierr = 7
+        return
+     endif
   else
 !-- making greater than dcen
      dby = far
@@ -116,7 +141,7 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
      dcol = far
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
-     r1 = rnd_r(rnd_state)
+     call rnd_rp(r1,rndstate)
      dcol = -log(r1)*thelpinv/(elabfact*grd_capgrey(ic))
   else
 !-- making greater than dcen
@@ -126,9 +151,11 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
 !-- finding minimum distance
   darr = [dbx,dby,dcol]
   if(any(darr/=darr) .or. any(darr<0d0)) then
-     write(0,*) darr
-     write(*,*) ix,iy,x,y,mu,om
-     stop 'transport2_gamgrey: invalid distance'
+!    write(0,*) darr
+!    write(*,*) ix,iy,x,y,mu,om
+!    stop 'transport2_gamgrey: invalid distance'
+     ierr = 8
+     return
   endif
   d = minval(darr)
 
@@ -148,7 +175,9 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
           rold*cos(omold)+d*sqrt(1d0-mu**2))
   endif
   if(om/=om) then
-     stop 'transport2_gamgrey: om is nan'
+!    stop 'transport2_gamgrey: om is nan'
+     ierr = 9
+     return
   endif
 
 !
@@ -162,11 +191,13 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
 !-- tallying energy densities
   if(.not.prt_isimcanlog) then
 !-- depositing nonanalog absorbed energy
-     grd_edep(ic) = grd_edep(ic)+e* &
+     edep = e* &
           (1d0-exp(-grd_capgrey(ic)* &
           elabfact*d*thelp))*elabfact
-     if(grd_edep(ic)/=grd_edep(ic)) then
-        stop 'transport2_gamgrey: invalid energy deposition'
+     if(edep/=edep) then
+!       stop 'transport2_gamgrey: invalid energy deposition'
+        ierr = 10
+        return
      endif
 !-- reducing particle energy
      e = e*exp(-grd_capgrey(ic) * &
@@ -179,9 +210,9 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
 !-- common manipulations for collisions
   if(d==dcol) then
 !-- resampling direction
-     r1 = rnd_r(rnd_state)
+     call rnd_rp(r1,rndstate)
      mu = 1d0 - 2d0*r1
-     r1 = rnd_r(rnd_state)
+     call rnd_rp(r1,rndstate)
      om = pc_pi2*r1
 !-- checking velocity dependence
      if(grd_isvelocity) then
@@ -206,12 +237,7 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
      if(loutx.or.louty) then
 !-- ending particle
         ptcl2%done = .true.
-!-- retrieving lab frame flux group, polar bin
-        imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
-!-- tallying outbound luminosity
-        flx_gamluminos(imu,1) = flx_gamluminos(imu,1)+e/tsp_dt
-        flx_gamlumdev(imu,1) = flx_gamlumdev(imu,1)+(e/tsp_dt)**2
-        flx_gamlumnum(imu,1) = flx_gamlumnum(imu,1)+1
+        ptcl2%lflux = .true.
         return
      endif
   endif
@@ -224,7 +250,7 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
 !-- ending particle
         ptcl2%done=.true.
 !-- adding comoving energy to deposition energy
-        grd_edep(ic) = grd_edep(ic) + e*elabfact
+        edep = e*elabfact
      else
 !-- effectively scattered:
 !-- transforming to cmf, then to lab:
@@ -241,8 +267,11 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
         ihelp = 1
         x = grd_xarr(ix+1)
      else
-        if(ix==1) stop &
-             'transport2_gamgrey: cos(om)<0 and ix=1'
+        if(ix==1) then
+!          stop 'transport2_gamgrey: cos(om)<0 and ix=1'
+           ierr = 11
+           return
+        endif
         ihelp = -1
         x = grd_xarr(ix)
      endif
@@ -264,7 +293,9 @@ subroutine transport2_gamgrey(ptcl,ptcl2)
      iy = iy+ihelp
      ic = grd_icell(ix,iy,iz)
   else
-     stop 'transport2_gamgrey: invalid distance'
+!    stop 'transport2_gamgrey: invalid distance'
+     ierr = 12
+     return
   endif
 
 end subroutine transport2_gamgrey

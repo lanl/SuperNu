@@ -1,4 +1,4 @@
-subroutine transport3_gamgrey(ptcl,ptcl2)
+subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
   use randommod
   use miscmod
@@ -12,6 +12,9 @@ subroutine transport3_gamgrey(ptcl,ptcl2)
 !
   type(packet),target,intent(inout) :: ptcl
   type(packet2),target,intent(inout) :: ptcl2
+  type(rnd_t),intent(inout) :: rndstate
+  real*8,intent(out) :: edep
+  integer,intent(out) :: ierr
 !##################################################
   !This subroutine passes particle parameters as input and modifies
   !them through one IMC transport event.  If
@@ -46,6 +49,8 @@ subroutine transport3_gamgrey(ptcl,ptcl2)
   om => ptcl%om
   e => ptcl%e
   e0 => ptcl%e0
+
+  ierr = 0
 !
 !-- projections
   eta = sqrt(1d0-mu**2)*sin(om)
@@ -71,22 +76,31 @@ subroutine transport3_gamgrey(ptcl,ptcl2)
   if(xi==0d0) then
      dbx = far
   else
-     if((grd_xarr(ix)-x)/xi>0d0.and.(grd_xarr(ix+1)-x)/xi>0d0) stop &
-          'transport3_gamgrey: x val out of cell'
+     if((grd_xarr(ix)-x)/xi>0d0.and.(grd_xarr(ix+1)-x)/xi>0d0) then
+!       stop 'transport3_gamgrey: x val out of cell'
+        ierr = 1
+        return
+     endif
      dbx = max((grd_xarr(ix)-x)/xi,(grd_xarr(ix+1)-x)/xi)
   endif
   if(eta==0d0) then
      dby = far
   else
-     if((grd_yarr(iy)-y)/eta>0d0.and.(grd_yarr(iy+1)-y)/eta>0d0) stop &
-          'transport3_gamgrey: y val out of cell'
+     if((grd_yarr(iy)-y)/eta>0d0.and.(grd_yarr(iy+1)-y)/eta>0d0) then
+!       stop 'transport3_gamgrey: y val out of cell'
+        ierr = 2
+        return
+     endif
      dby = max((grd_yarr(iy)-y)/eta,(grd_yarr(iy+1)-y)/eta)
   endif
   if(mu==0d0) then
      dbz = far
   else
-     if((grd_zarr(iz)-z)/mu>0d0.and.(grd_zarr(iz+1)-z)/mu>0d0) stop &
-          'transport3_gamgrey: z val out of cell'
+     if((grd_zarr(iz)-z)/mu>0d0.and.(grd_zarr(iz+1)-z)/mu>0d0) then
+!       stop 'transport3_gamgrey: z val out of cell'
+        ierr = 3
+        return
+     endif
      dbz = max((grd_zarr(iz)-z)/mu,(grd_zarr(iz+1)-z)/mu)
   endif
 !
@@ -95,7 +109,7 @@ subroutine transport3_gamgrey(ptcl,ptcl2)
      dcol = far
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
-     r1 = rnd_r(rnd_state)
+     call rnd_rp(r1,rndstate)
      dcol = -log(r1)*thelpinv/(elabfact*grd_capgrey(ic))
   else
      dcol = far
@@ -104,9 +118,11 @@ subroutine transport3_gamgrey(ptcl,ptcl2)
 !-- finding minimum distance
   darr = [dbx,dby,dbz,dcol]
   if(any(darr/=darr) .or. any(darr<0d0)) then
-     write(0,*) darr
-     write(*,*) ix,iy,iz,x,y,z,mu,eta,xi,om
-     stop 'transport3_gamgrey: invalid distance'
+!    write(0,*) darr
+!    write(*,*) ix,iy,iz,x,y,z,mu,eta,xi,om
+!    stop 'transport3_gamgrey: invalid distance'
+     ierr = 4
+     return
   endif
   d = minval(darr)
 
@@ -124,11 +140,13 @@ subroutine transport3_gamgrey(ptcl,ptcl2)
 !-- tallying energy densities
   if(.not.prt_isimcanlog) then
 !-- depositing nonanalog absorbed energy
-     grd_edep(ic) = grd_edep(ic)+e* &
+     edep = e* &
           (1d0-exp(-grd_capgrey(ic)* &
           elabfact*d*thelp))*elabfact
-     if(grd_edep(ic)/=grd_edep(ic)) then
-        stop 'transport3_gamgrey: invalid energy deposition'
+     if(edep/=edep) then
+!       stop 'transport3_gamgrey: invalid energy deposition'
+        ierr = 5
+        return
      endif
 !-- reducing particle energy
      e = e*exp(-grd_capgrey(ic) * &
@@ -141,9 +159,9 @@ subroutine transport3_gamgrey(ptcl,ptcl2)
 !-- common manipulations for collisions
   if(d==dcol) then
 !-- resampling direction
-     r1 = rnd_r(rnd_state)
+     call rnd_rp(r1,rndstate)
      mu = 1d0 - 2d0*r1
-     r1 = rnd_r(rnd_state)
+     call rnd_rp(r1,rndstate)
      om = pc_pi2*r1
 !-- checking velocity dependence
      if(grd_isvelocity) then
@@ -171,26 +189,20 @@ subroutine transport3_gamgrey(ptcl,ptcl2)
      if(loutx.or.louty.or.loutz) then
 !-- ending particle
         ptcl2%done = .true.
-!-- retrieving lab frame flux group, polar, azimuthal bin
-        iom = binsrch(om,flx_om,flx_nom+1,.false.)
-        imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
-!-- tallying outbound luminosity
-        flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e/tsp_dt
-        flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+(e/tsp_dt)**2
-        flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1
+        ptcl2%lflux = .true.
         return
      endif
   endif
 
 !-- effective collision
   if(d==dcol) then
-     r1 = rnd_r(rnd_state)
+     call rnd_rp(r1,rndstate)
 !-- checking if analog
      if(prt_isimcanlog) then
 !-- effective absorption
         ptcl2%done=.true.
 !-- adding comoving energy to deposition energy
-        grd_edep(ic) = grd_edep(ic)+e*elabfact
+        edep = e*elabfact
         return
      else
 !-- energy weight
@@ -241,7 +253,9 @@ subroutine transport3_gamgrey(ptcl,ptcl2)
      iz = iz+ihelp
      ic = grd_icell(ix,iy,iz)
   else
-     stop 'transport3_gamgrey: invalid distance'
+!    stop 'transport3_gamgrey: invalid distance'
+     ierr = 6
+     return
   endif
 
 end subroutine transport3_gamgrey

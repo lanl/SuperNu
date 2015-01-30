@@ -9,7 +9,6 @@ c
 c
       interface
       pure subroutine advection1(pretrans,ptcl,ptcl2)!{{{
-c     -----------------------------------------------
       use particlemod
       logical,intent(in) :: pretrans
       type(packet),target,intent(inout) :: ptcl
@@ -17,7 +16,6 @@ c     -----------------------------------------------
       end subroutine advection1
 c
       pure subroutine advection2(pretrans,ptcl,ptcl2)
-c     -----------------------------------------------
       use particlemod
       logical,intent(in) :: pretrans
       type(packet),target,intent(inout) :: ptcl
@@ -25,12 +23,52 @@ c     -----------------------------------------------
       end subroutine advection2
 c
       pure subroutine advection3(pretrans,ptcl,ptcl2)
-c     -----------------------------------------------
       use particlemod
       logical,intent(in) :: pretrans
       type(packet),target,intent(inout) :: ptcl
       type(packet2),target,intent(inout) :: ptcl2
-      end subroutine advection3!}}}
+      end subroutine advection3
+c
+c
+      pure subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
+      use randommod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep
+      integer,intent(out) :: ierr
+      end subroutine transport1_gamgrey
+c
+      pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
+      use randommod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep
+      integer,intent(out) :: ierr
+      end subroutine transport2_gamgrey
+c
+      pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
+      use randommod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep
+      integer,intent(out) :: ierr
+      end subroutine transport3_gamgrey
+c
+      pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
+      use randommod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep
+      integer,intent(out) :: ierr
+      end subroutine transport11_gamgrey!}}}
       end interface
 c
 c
@@ -47,12 +85,25 @@ c     -----------------------------------------------
       logical,intent(in) :: pretrans
       type(packet),target,intent(inout) :: ptcl
       type(packet2),target,intent(inout) :: ptcl2
-      end subroutine advection_!}}}
+      end subroutine advection_
+c
+      pure subroutine transport_gamgrey_(ptcl,ptcl2,rndstate,edep,ierr)
+      use randommod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep
+      integer,intent(out) :: ierr
+      end subroutine transport_gamgrey_
+!}}}
       end interface
 c
 c-- procedure pointers
       procedure(direction2lab_),pointer :: direction2lab => null()
       procedure(advection_),pointer :: advection => null()
+      procedure(transport_gamgrey_),pointer ::
+     &  transport_gamgrey => null()
 c
       contains
 c
@@ -62,21 +113,30 @@ c
 c     --------------------------------
       integer,intent(in) :: igeom
       select case(igeom)
-      case(1,11)
+      case(1)
 !      labfact => labfact1
 !      cmffact => cmffact1
        direction2lab => direction2lab1
        advection => advection1
+       transport_gamgrey => transport1_gamgrey
       case(2)
 !      labfact => labfact2
 !      cmffact => cmffact2
        direction2lab => direction2lab2
        advection => advection2
+       transport_gamgrey => transport2_gamgrey
       case(3)
 !      labfact => labfact3
 !      cmffact => cmffact3
        direction2lab => direction2lab3
        advection => advection3
+       transport_gamgrey => transport3_gamgrey
+      case(11)
+!      labfact => labfact1
+!      cmffact => cmffact1
+       direction2lab => direction2lab1
+       advection => advection1
+       transport_gamgrey => transport11_gamgrey
       case default
        stop 'transportmod_init: invalid igeom'
       end select

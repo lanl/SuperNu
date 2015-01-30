@@ -1,5 +1,6 @@
 subroutine particle_advance_gamgrey(nmpi)
 
+  use miscmod
   use randommod
   use sourcemod
   use particlemod
@@ -22,7 +23,8 @@ subroutine particle_advance_gamgrey(nmpi)
   integer :: ierr
   integer :: nhere, nemit, ndmy
   real*8 :: r1, edep
-  integer :: i,j,k,l, ii, iimpi, icold
+  integer :: i,j,k,l, ii, iimpi
+  integer :: imu, iom, icold
   integer,pointer :: ic
   integer,pointer :: ix, iy, iz
   real*8,pointer :: x,y,z,mu,om,e,e0
@@ -288,147 +290,75 @@ subroutine particle_advance_gamgrey(nmpi)
 !-----------------------------------------------------------------------
 !-- Advancing particle until census, absorption, or escape from domain
      ptcl2%done = .false.
-     ptcl2%flux = .false.
+     ptcl2%lflux = .false.
 !
-     select case(in_igeom)
-     case(1)
-        do while (.not.ptcl2%done)!{{{
-!          call transport1_gamgrey(ptcl,ptcl2)
+     do while (.not.ptcl2%done)
+        icold = ic
+        call transport11_gamgrey(ptcl,ptcl2,rnd_state,edep,ierr)
+        grd_edep(icold) = grd_edep(icold) + edep
+
 !-- verify position
-           if(.not.ptcl2%done) then
-              if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
-                write(0,*) 'prt_adv_ggrey: x not in cell', &
-                   ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
-              endif
-              if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-                write(0,*) 'prt_adv_ggrey: y not in cell', &
-                   iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
-              endif
-              if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
-                 write(0,*) 'prt_adv_ggrey: z not in cell', &
-                   iz,z,grd_zarr(iz),grd_zarr(iz+1),mu
-              endif
+        if(.not.ptcl2%done) then
+           if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
+             write(0,*) 'prt_adv_ggrey: x not in cell', &
+                ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
            endif
-!-- transformation factor
-           if(grd_isvelocity) then
-              labfact = 1.0d0 - mu*x/pc_c
-           else
-              labfact = 1d0
+           if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
+             write(0,*) 'prt_adv_ggrey: y not in cell', &
+                iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
            endif
+           if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
+              write(0,*) 'prt_adv_ggrey: z not in cell', &
+                iz,z,grd_zarr(iz),grd_zarr(iz+1),mu
+           endif
+        endif
+
 !-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgrey(ic)>0d0) then
-              r1 = rnd_r(rnd_state)
-              prt_tlyrand = prt_tlyrand+1
-              if(r1<0.5d0) then
-                 ptcl2%done = .true.
-                 grd_edep(ic) = grd_edep(ic) + e*labfact
-              else
-                 e = 2d0*e
-                 e0 = 2d0*e0
-              endif
-           endif
-        enddo!}}}
-     case(2)
-        do while (.not.ptcl2%done)!{{{
-!          call transport2_gamgrey(ptcl,ptcl2)
-!-- verify position
-           if(.not.ptcl2%done) then
-              if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
-                write(0,*) 'prt_adv_ggrey: r not in cell', &
-                   ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
-              endif
-              if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-                write(0,*) 'prt_adv_ggrey: r not in cell', &
-                   iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
-              endif
-           endif
+        if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgrey(ic)>0d0) then
+           r1 = rnd_r(rnd_state)
+           if(r1<0.5d0) then
 !-- transformation factor
-           if(grd_isvelocity) then
-              labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
-                   cos(om)*x)/pc_c
-           else
-              labfact = 1d0
-           endif
-!-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgrey(ic)>0d0) then
-              r1 = rnd_r(rnd_state)
-              prt_tlyrand = prt_tlyrand+1
-              if(r1<0.5d0) then
-                 ptcl2%done = .true.
-                 grd_edep(ic) = grd_edep(ic) + e*labfact
+              if(grd_isvelocity) then
+                 select case(grd_igeom)
+                 case(1,11)
+                    labfact = 1.0d0 - mu*x/pc_c
+                 case(2)
+                    labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
+                         cos(om)*x)/pc_c
+                 case(3)
+                    labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &
+                         (cos(om)*x+sin(om)*y))/pc_c
+                 endselect
               else
-                 e = 2d0*e
-                 e0 = 2d0*e0
+                 labfact = 1d0
               endif
-           endif
-        enddo!}}}
-     case(3)
-        do while (.not.ptcl2%done)!{{{
-!          call transport3_gamgrey(ptcl,ptcl2)
-!-- transformation factor
-           if(grd_isvelocity) then
-              labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &
-                   (cos(om)*x+sin(om)*y))/pc_c
+!
+              ptcl2%done = .true.
+              grd_edep(ic) = grd_edep(ic) + e*labfact
            else
-              labfact = 1d0
+              e = 2d0*e
+              e0 = 2d0*e0
            endif
-!-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgrey(ic)>0d0) then
-              r1 = rnd_r(rnd_state)
-              prt_tlyrand = prt_tlyrand+1
-              if(r1<0.5d0) then
-                 ptcl2%done = .true.
-                 grd_edep(ic) = grd_edep(ic) + e*labfact
-              else
-                 e = 2d0*e
-                 e0 = 2d0*e0
-              endif
-           endif
-        enddo!}}}
-     case(11)
-        do while (.not.ptcl2%done)!{{{
-           icold = ic
-           call transport11_gamgrey(ptcl,ptcl2,rnd_state,edep,ierr)
-           grd_edep(icold) = grd_edep(icold) + edep
-!-- verify position
-           if(.not.ptcl2%done .and. (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
-              write(0,*) 'prt_adv_ggrey: not in cell', &
-                 ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
-           endif
-!-- transformation factor
-           if(grd_isvelocity) then
-              labfact = 1.0d0 - mu*x/pc_c
-           else
-              labfact = 1d0
-           endif
-!-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgrey(ic)>0d0) then
-              r1 = rnd_r(rnd_state)
-              prt_tlyrand = prt_tlyrand+1
-              if(r1<0.5d0) then
-                 ptcl2%done = .true.
-                 grd_edep(ic) = grd_edep(ic) + e*labfact
-              else
-                 e = 2d0*e
-                 e0 = 2d0*e0
-              endif
-           endif
-        enddo!}}}
+        endif
 !
 !-- outbound luminosity tally
 !-- velocity effects accounting
-        if(ptcl2%flux) then
-           flx_gamluminos(1,1) = flx_gamluminos(1,1)+e/tsp_dt
-           flx_gamlumdev(1,1) = flx_gamlumdev(1,1)+(e/tsp_dt)**2
-           flx_gamlumnum(1,1) = flx_gamlumnum(1,1)+1
+        if(ptcl2%lflux) then
+!-- retrieving lab frame flux group, polar, azimuthal bin
+           iom = binsrch(om,flx_om,flx_nom+1,.false.)
+           imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
+!-- tallying outbound luminosity
+           flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e/tsp_dt
+           flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+(e/tsp_dt)**2
+           flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1
         endif
-     endselect
 
 !-- check for errors
-     if(ierr/=0) then
-        write(0,*) ierr
-        stop 'particle_advance_gg: fatal transport error'
-     endif
+        if(ierr/=0) then
+           write(0,*) ierr
+           stop 'particle_advance_gg: fatal transport error'
+        endif
+     enddo
 
   enddo !ipart
 
