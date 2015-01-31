@@ -57,6 +57,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   ig => ptcl2%ig
 
   ierr = 0
+  edep = 0d0
 
 !-- spherical projections
   xi = sqrt(1d0-mu**2)*sin(om)

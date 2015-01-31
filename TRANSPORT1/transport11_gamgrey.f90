@@ -45,6 +45,7 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   e0 => ptcl%e0
 
   ierr = 0
+  edep = 0d0
 
   if(grd_isvelocity) then
      siglabfact = 1.0d0 - mu*x*cinv

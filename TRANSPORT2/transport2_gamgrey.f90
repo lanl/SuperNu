@@ -50,6 +50,7 @@ subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   e0 => ptcl%e0
 
   ierr = 0
+  edep = 0d0
 !
 !-- setting vel-grid helper variables
   if(grd_isvelocity) then

@@ -51,6 +51,7 @@ subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   e0 => ptcl%e0
 
   ierr = 0
+  edep = 0d0
 !
 !-- projections
   eta = sqrt(1d0-mu**2)*sin(om)
