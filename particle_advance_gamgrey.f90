@@ -1,5 +1,6 @@
 subroutine particle_advance_gamgrey(nmpi)
 
+!$ use omp_lib
   use miscmod
   use randommod
   use sourcemod
@@ -35,6 +36,9 @@ subroutine particle_advance_gamgrey(nmpi)
   real*8 :: etot,pwr
   real*8 :: om0, mu0, x0, y0, z0
 !
+  type(rnd_t) :: rndstate
+  integer,save :: iomp=0
+!
   real*8,parameter :: basefrac=.1d0
   real*8 :: base,edone,einv,invn,en
   integer :: n, ndone, mpart, npart, ipart
@@ -48,7 +52,9 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- start clock
   t0 = t_time()
 
+!$ if(.false.) then
   grd_edep = 0d0
+!$ endif
   flx_gamluminos = 0d0
   flx_gamlumdev = 0d0
   flx_gamlumnum = 0
@@ -109,6 +115,18 @@ subroutine particle_advance_gamgrey(nmpi)
   enddo
   enddo
 
+
+!$omp parallel &
+!$omp private(ptcl,ptcl2,x0,y0,z0,mu0,om0,cmffact,gm,mu1,mu2,eta,xi,labfact,iom,imu, &
+!$omp    rndstate,edep,ierr, iomp, &
+!$omp    x,y,z,mu,om,e,e0,ix,iy,iz,ic,icold,r1, &
+!$omp    i,j,k) &
+!$omp reduction(+:grd_edep)
+
+!-- thread id                                                               
+!$ iomp = omp_get_thread_num()
+  rndstate = rnd_states(iomp)
+
 !
 !-- primary particle properties
   x => ptcl%x
@@ -124,6 +142,7 @@ subroutine particle_advance_gamgrey(nmpi)
   iz => ptcl2%iz
   ic => ptcl2%ic
 
+!$omp do schedule(static,1) !round-robin
   do ipart=1,npart
      i = ipospart(1,ipart)
      j = ipospart(2,ipart)
@@ -135,23 +154,19 @@ subroutine particle_advance_gamgrey(nmpi)
      ic = grd_icell(ix,iy,iz)
 
 !-- calculating direction cosine (comoving)
-     r1 = rnd_r(rnd_state)
-     prt_tlyrand = prt_tlyrand+1
+     call rnd_rp(r1,rndstate)
      mu0 = 1d0-2d0*r1
 
 !-- particle propagation
      select case(in_igeom)
      case(1)
 !-- calculating position!{{{
-        r1 = rnd_r(rnd_state)
-        prt_tlyrand = prt_tlyrand+1
+        call rnd_rp(r1,rndstate)
         x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
-        r1 = rnd_r(rnd_state)
-        prt_tlyrand = prt_tlyrand+1
+        call rnd_rp(r1,rndstate)
         y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
-        r1 = rnd_r(rnd_state)
-        prt_tlyrand = prt_tlyrand+1
+        call rnd_rp(r1,rndstate)
         z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
 !-- must be inside cell
         x = min(x,grd_xarr(i+1))
@@ -162,7 +177,7 @@ subroutine particle_advance_gamgrey(nmpi)
         z = max(z,grd_zarr(k))
 !--
 !-- sampling azimuthal angle of direction
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         om = pc_pi2*r1
         if(grd_isvelocity) then
            x0 = x
@@ -173,10 +188,10 @@ subroutine particle_advance_gamgrey(nmpi)
         endif!}}}
      case(2)
 !-- calculating position!{{{
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         x = sqrt(r1*grd_xarr(i+1)**2 + &
              (1d0-r1)*grd_xarr(i)**2)
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         y = r1*grd_yarr(j+1) + (1d0-r1) * &
              grd_yarr(j)
 !-- must be inside cell
@@ -185,7 +200,7 @@ subroutine particle_advance_gamgrey(nmpi)
         y = min(y,grd_yarr(j+1))
         y = max(y,grd_yarr(j))
 !-- sampling azimuthal angle of direction
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         om0 = pc_pi2*r1
 !-- if velocity-dependent, transforming direction
         if(grd_isvelocity) then
@@ -211,13 +226,13 @@ subroutine particle_advance_gamgrey(nmpi)
         iy = j
         iz = k
 !-- calculating position
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         x = r1*grd_xarr(i+1) + (1d0-r1) * &
              grd_xarr(i)
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         y = r1*grd_yarr(j+1) + (1d0-r1) * &
              grd_yarr(j)
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         z = r1*grd_zarr(k+1) + (1d0-r1) * &
              grd_zarr(k)
 !-- must be inside cell
@@ -228,7 +243,7 @@ subroutine particle_advance_gamgrey(nmpi)
         z = min(z,grd_zarr(k+1))
         z = max(z,grd_zarr(k))
 !-- sampling azimuthal angle of direction
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         om0 = pc_pi2*r1
 !-- if velocity-dependent, transforming direction
         if(grd_isvelocity) then
@@ -255,8 +270,7 @@ subroutine particle_advance_gamgrey(nmpi)
         endif!}}}
      case(11)
 !-- calculating position!{{{
-        r1 = rnd_r(rnd_state)
-        prt_tlyrand = prt_tlyrand+1
+        call rnd_rp(r1,rndstate)
         x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
 !-- must be inside cell
@@ -295,7 +309,7 @@ subroutine particle_advance_gamgrey(nmpi)
 !
      do while (.not.ptcl2%done)
         icold = ic
-        call transport_gamgrey(ptcl,ptcl2,rnd_state,edep,ierr)
+        call transport_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
         grd_edep(icold) = grd_edep(icold) + edep
 
 !-- verify position
@@ -316,7 +330,7 @@ subroutine particle_advance_gamgrey(nmpi)
 
 !-- Russian roulette for termination of exhausted particles
         if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgrey(ic)>0d0) then
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            if(r1<0.5d0) then
 !-- transformation factor
               if(grd_isvelocity) then
@@ -343,12 +357,11 @@ subroutine particle_advance_gamgrey(nmpi)
         endif
 !
 !-- outbound luminosity tally
-!-- velocity effects accounting
         if(ptcl2%lflux) then
-!-- retrieving lab frame flux group, polar, azimuthal bin
+!-- lab frame flux group, polar, azimuthal bin
            iom = binsrch(om,flx_om,flx_nom+1,.false.)
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
-!-- tallying outbound luminosity
+!-- tally outbound luminosity
            flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e/tsp_dt
            flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+(e/tsp_dt)**2
            flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1
@@ -362,6 +375,11 @@ subroutine particle_advance_gamgrey(nmpi)
      enddo
 
   enddo !ipart
+!$omp end do
+!
+!-- save state
+  rnd_states(iomp) = rndstate
+!$omp end parallel
 
   deallocate(ipospart)
 

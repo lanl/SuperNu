@@ -11,10 +11,39 @@ c-- a data type for storing the state of the random number generator
        integer*4 :: part(4)
       end type rnd_t
 c
-      type(rnd_t),save :: rnd_state
+      integer :: rnd_nstate
+      type(rnd_t) :: rnd_state
+      type(rnd_t),allocatable :: rnd_states(:)
 c
+      save
 c
       contains
+c
+c
+      subroutine rnd_init(n,ioffset)
+c     ------------------------------!{{{
+      implicit none
+      integer,intent(in) :: n,ioffset
+************************************************************************
+* Initialize n states of the random number generator.
+************************************************************************
+      integer :: i,j
+      type(rnd_t) :: state
+c-- alloc
+      rnd_nstate = n
+      allocate(rnd_states(rnd_nstate))
+c-- init
+      state%part = [521288629, 362436069, 16163801, 1131199299]
+c-- advance to the requested offset
+      call rnd_advance(state,n*ioffset*4)
+c-- draw four random numbers per state
+      do i=1,n
+       do j=1,4
+        call rnd_i(rnd_states(i)%part(j),state)
+       enddo
+      enddo
+!}}}
+      end subroutine rnd_init
 c
 c
       pure subroutine rnd_i(i,state)
@@ -80,29 +109,6 @@ c
       imz = imz + state%part(4)
       x = 0.5d0 + 0.23283064d-9*imz !(0,1)!}}}
       end subroutine rnd_rp
-c
-c
-      pure subroutine rnd_seed(state,i)
-c     ----------------------------!{{{
-      implicit none
-      integer,intent(in) :: i
-      type(rnd_t),intent(out) :: state
-************************************************************************
-* Return a random initial state of the random number generator.
-************************************************************************
-      integer :: j
-      type(rnd_t) :: st
-c-- init
-      state%part = [521288629, 362436069, 16163801, 1131199299]
-c-- advance to the selected offset
-      call rnd_advance(state,i*4)
-c-- draw four random numbers
-      do j=1,4
-       call rnd_i(st%part(j),state)
-      enddo
-c-- save
-      state = st!}}}
-      end subroutine rnd_seed
 c
 c
       pure subroutine rnd_advance(state,n)

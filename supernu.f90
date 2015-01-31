@@ -136,7 +136,9 @@ program supernu
   call particle_alloc(lmpi0,in_norestart,nmpi)
 
 !-- initialize random number generator, use different seeds for each rank
-  call rnd_seed(rnd_state,in_nomp*impi)
+  call rnd_init(in_nomp,impi)
+!-- use extra stream for non-threaded code
+  rnd_state = rnd_states(1)
 
 !-- reading restart rand() count
   if(tsp_ntres>1.and..not.in_norestart) then
