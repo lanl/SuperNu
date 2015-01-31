@@ -4,6 +4,7 @@ subroutine particle_advance_gamgrey(nmpi)
   use randommod
   use sourcemod
   use particlemod
+  use transportmod
   use gridmod
   use physconstmod
   use inputparmod
@@ -294,7 +295,7 @@ subroutine particle_advance_gamgrey(nmpi)
 !
      do while (.not.ptcl2%done)
         icold = ic
-        call transport11_gamgrey(ptcl,ptcl2,rnd_state,edep,ierr)
+        call transport_gamgrey(ptcl,ptcl2,rnd_state,edep,ierr)
         grd_edep(icold) = grd_edep(icold) + edep
 
 !-- verify position

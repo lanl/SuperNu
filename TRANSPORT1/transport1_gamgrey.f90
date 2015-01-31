@@ -1,4 +1,4 @@
-subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
+pure subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
   use randommod
   use miscmod
@@ -268,8 +268,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
      if(grd_capgrey(ic)>0d0) then
-        r1 = rnd_r(rndstate)
-        prt_tlyrand = prt_tlyrand+1
+        call rnd_rp(r1,rndstate)
         dcol = -log(r1)*thelpinv/(grd_capgrey(ic)*elabfact)
      else
         dcol = far
@@ -415,7 +414,7 @@ subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
         y=grd_yarr(iy)
      elseif(iynext==iy+1) then
         if(abs(y-grd_yarr(iy+1))>1d-9) then
-           write(0,*) 'transport1_gamgrey: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1)
+!          write(0,*) 'transport1_gamgrey: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1)
            ierr = -2
         endif
         if(iynext>grd_ny) then

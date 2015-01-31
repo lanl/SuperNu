@@ -1,4 +1,4 @@
-subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
+pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
   use randommod
   use miscmod
@@ -25,7 +25,7 @@ subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   real*8,parameter :: dt = pc_year !give grey transport infinite time
 
   logical :: loutx,louty,loutz
-  integer :: imu, iom, ihelp
+  integer :: ihelp
   real*8 :: elabfact, eta, xi
   real*8 :: thelp, thelpinv
   real*8 :: dcol,dbx,dby,dbz,d
