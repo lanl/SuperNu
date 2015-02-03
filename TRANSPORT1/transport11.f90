@@ -22,7 +22,6 @@ subroutine transport11(ptcl,ptcl2)
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
 !
-  integer,external :: emitgroup
   real*8 :: r1, r2, thelp,thelpinv
   real*8 :: db, dcol, dcen, dthm, ddop, d
   real*8 :: darr(5)
@@ -282,7 +281,10 @@ subroutine transport11(ptcl,ptcl2)
 !-- sample wavelength
         r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
-        if(grp_ng>1) ig = emitgroup(r1,ic)
+        if(grp_ng>1) then
+           ig = emitgroup(r1,ic)
+           if(ig>grp_ng) stop 'transport11: emitgroup ig>ng'
+        endif
 !
 !(rev 121): calculating radiation energy tally per group
         !grd_eraddens(ic)=grd_eraddens(ic)+e*elabfact

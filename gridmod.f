@@ -76,6 +76,14 @@ c
 c-- temperature structure history (allocated only if used)
       real*8,allocatable :: grd_temppreset(:,:) !(ncp,tim_nt)
 c
+      interface
+      pure function emitgroup(r,ic) result(ig)
+      integer :: ig
+      real*8,intent(in) :: r
+      integer,intent(in) :: ic
+      end function emitgroup
+      end interface
+c
       save
 c
       contains

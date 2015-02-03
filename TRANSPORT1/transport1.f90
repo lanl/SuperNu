@@ -22,7 +22,6 @@ subroutine transport1(ptcl,ptcl2)
   !corresponding DDMC diffusion routine.
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
-  integer,external :: emitgroup
 
   logical :: lredir !direction resampled
   logical :: lout
@@ -512,7 +511,10 @@ subroutine transport1(ptcl,ptcl2)
 !-- effective scattering
 !-- redistributing wavelength
         r1 = rnd_r(rnd_state)
-        if(grp_ng>1) ig = emitgroup(r1,ic)
+        if(grp_ng>1) then
+           ig = emitgroup(r1,ic)
+           if(ig>grp_ng) stop 'transport1: emitgroup ig>ng'
+        endif
 !-- uniformly in new group
         r1 = rnd_r(rnd_state)
         wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))

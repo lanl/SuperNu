@@ -24,7 +24,6 @@ subroutine diffusion3(ptcl,ptcl2,icspec,specarr)
   !is set to true, this routine is not used.
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
-  integer,external :: emitgroup
 !
   integer :: iig, iiig, imu, iom
   logical :: lhelp
@@ -1248,6 +1247,7 @@ subroutine diffusion3(ptcl,ptcl2,icspec,specarr)
 
      if(glump==0) then
         iiig = emitgroup(r1,ic)
+        if(iiig>grp_ng) stop 'diffusion3: emitgroup ig>ng'
      else
         denom3 = 0d0
         denom2 = 1d0-emitlump

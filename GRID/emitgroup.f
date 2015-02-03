@@ -1,4 +1,4 @@
-      function emitgroup(r,ic) result(ig)
+      pure function emitgroup(r,ic) result(ig)
 c     --------------------------------------
       use miscmod
       use groupmod
@@ -38,6 +38,6 @@ c-- step up until target r1 is reached
        emitprob = emitprob + specval(l)*grd_cap(ig,ic)
        if(emitprob>r1) exit
       enddo
-      if(ig>grp_ng) stop 'transport1: ig not valid'
+!     if(ig>grp_ng) stop 'transport1: ig not valid'
 c
       end function emitgroup

@@ -28,7 +28,6 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
 !
   integer :: iig, iiig
   logical :: lhelp
-  integer,external :: emitgroup
   real*8 :: r1, r2, thelp
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus, pa
@@ -520,6 +519,7 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
 
      if(glump==0) then
         iiig = emitgroup(r1,ic)
+        if(iiig>grp_ng) stop 'diffusion11: emitgroup ig>ng'
      else
         denom2 = 1d0-emitlump
         denom2 = 1d0/denom2
