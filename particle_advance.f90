@@ -35,6 +35,9 @@ subroutine particle_advance
   real*8 :: eta, xi
   real*8 :: t0,t1  !timing
   real*8 :: labfact, mu1, mu2
+!
+  integer :: icold, ierr
+  real*8 :: edep, eraddens, eamp
 !-- specint cache
   real*8 :: specarr(grp_ng)
   integer :: icell(3)
@@ -107,8 +110,6 @@ subroutine particle_advance
      ptcl2%ipart = ipart
      npckt = npckt + 1
 
-     ptcl2%done = .false.
-
 !-- cell position
      ix = binsrch(x,grd_xarr,grd_nx+1,.false.)
      iy = binsrch(y,grd_yarr,grd_ny+1,.false.)
@@ -178,229 +179,101 @@ subroutine particle_advance
 !-----------------------------------------------------------------------
 !-- Advancing particle until census, absorption, or escape from domain
 !Calling either diffusion or transport depending on particle type (ptcl2%itype)
-     select case(in_igeom)
+     ptcl2%istep = 0
+     ptcl2%idist = -1
 
-!-- 3D spherical
-     case(1)
-        ptcl2%istep = 0!{{{
-        ptcl2%idist = -1
-        do while ((.not.ptcl2%done).and.(.not.ptcl2%isvacant))
-           ptcl2%istep = ptcl2%istep + 1
-           if(ptcl2%itype==1 .or. in_puretran) then
-              nimc = nimc + 1
-              call transport1(ptcl,ptcl2)
-           else
-              nddmc = nddmc + 1
-              call diffusion1(ptcl,ptcl2,icell,specarr)
-              ptcl2%idist = 0
-           endif
-           ndist(ptcl2%idist) = ndist(ptcl2%idist) + 1
-!-- verify position
-           if(ptcl2%itype==1 .and. .not.ptcl2%done) then
-              if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
-                 write(0,*) 'prt_adv: r not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu, &
-                    ptcl2%ipart,ptcl2%istep,ptcl2%idist
-              endif
-              if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-                 write(0,*) 'prt_adv: theta not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu, &
-                    ptcl2%ipart,ptcl2%istep,ptcl2%idist
-              endif
-              if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
-                 write(0,*) 'prt_adv: phi not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu,om, &
-                    ptcl2%ipart,ptcl2%istep,ptcl2%idist
-              endif
-           endif
-!-- verify direction
-           if(ptcl2%itype==1 .and. .not.ptcl2%done) then
-              if(x==grd_xarr(ix+1).and.mu>0d0 .or. x==grd_xarr(ix).and.mu<0d0) then
-!                write(0,*) 'prt_adv: mu pointing out of cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu, &
-!                   ptcl2%ipart,ptcl2%istep,ptcl2%idist
-              endif
-              if(y==grd_yarr(iy+1).and.cos(om)>0d0 .or. y==grd_yarr(iy).and.cos(om)<0d0) then
-!                write(0,*) 'prt_adv: eta pointing out of cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),cos(om), &
-!                   ptcl2%ipart,ptcl2%istep,ptcl2%idist
-              endif
-              if(z==grd_zarr(iz+1).and.sin(om)>0d0 .or. z==grd_zarr(iz).and.sin(om)<0d0) then
-                 write(0,*) 'prt_adv: xi pointing out of cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),sin(om), &
-                    ptcl2%ipart,ptcl2%istep,ptcl2%idist
-              endif
-           endif
+     ptcl2%done = .false.
+     ptcl2%lflux = .false.
+     ptcl2%lcens = .false.
+
+     do while (.not.ptcl2%done)
+        ptcl2%istep = ptcl2%istep + 1
+        icold = ic
+        if(ptcl2%itype==1 .or. in_puretran) then
+           nimc = nimc + 1
+           call transport11(ptcl,ptcl2,rnd_state,edep,eraddens,eamp,tot_evelo,ierr)
+           if(ptcl2%itype/=1) grd_methodswap(icold) = grd_methodswap(icold)+1
+        else
+           nddmc = nddmc + 1
+           ptcl2%idist = 0
+           call diffusion11(ptcl,ptcl2,rnd_state,edep,eraddens,tot_evelo,icell,specarr,ierr)
+           if(ptcl2%itype==1) grd_methodswap(icold) = grd_methodswap(icold)+1
+        endif
+        ndist(ptcl2%idist) = ndist(ptcl2%idist) + 1
+!-- tally
+        grd_edep(icold) = grd_edep(icold) + edep
+        grd_eraddens(icold) = grd_eraddens(icold) + eraddens
+        grd_eamp(icold) = grd_eamp(icold) + eamp
+        if(ptcl2%lcens) grd_numcensus(icold) = grd_numcensus(icold) + 1
+!
+!-- outbound luminosity tally
+        if(ptcl2%lflux) then
+           tot_eout = tot_eout+e
+           if(grd_igeom/=11) stop 'pa: igeom/=11'
+           flx_luminos(ig,1,1) = flx_luminos(ig,1,1)+e
+           flx_lumdev(ig,1,1) = flx_lumdev(ig,1,1)+e**2
+           flx_lumnum(ig,1,1) = flx_lumnum(ig,1,1)+1
+        endif
+!
 !-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*e0 .and. .not.ptcl2%isvacant .and. &
-                 grd_capgrey(ic)+grd_sig(ic)>0d0) then
-!-- transformation factor
-              if(grd_isvelocity .and. ptcl2%itype==1) then
+        if(e<1d-6*e0 .and. .not.ptcl2%isvacant .and. &
+              grd_capgrey(ic)+grd_sig(ic)>0d0) then
+!-- transformation factor!{{{
+           if(.not.grd_isvelocity .or. ptcl2%itype==2) then
+              labfact = 1d0
+           else
+              select case(in_igeom)
+              case(1,11)
                  labfact = 1d0 - mu*x/pc_c
-              else
-                 labfact = 1d0
-              endif
-!
-              r1 = rnd_r(rnd_state)
-              prt_tlyrand = prt_tlyrand+1
-              if(r1<0.5d0) then
-                 ptcl2%isvacant = .true.
-                 ptcl2%done = .true.
-                 grd_edep(ic) = grd_edep(ic) + e*labfact
-!-- velocity effects accounting
-                 if(ptcl2%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
-              else
-!-- weight addition accounted for in external source
-                 tot_eext = tot_eext + e
-!
-                 e = 2d0*e
-                 e0 = 2d0*e0
-              endif
-           endif
-        enddo !}}}
-
-!-- 2D
-     case(2)
-        ptcl2%istep = 0!{{{
-        do while ((.not.ptcl2%done).and.(.not.ptcl2%isvacant))
-           ptcl2%istep = ptcl2%istep + 1
-           if(ptcl2%itype == 1.or.in_puretran) then
-              nimc = nimc + 1
-              call transport2(ptcl,ptcl2)
-           else
-              nddmc = nddmc + 1
-              call diffusion2(ptcl,ptcl2,icell,specarr)
-           endif
-!-- verify position
-           if(ptcl2%itype==1 .and. .not.ptcl2%done) then
-              if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
-                 write(0,*) 'prt_adv: r not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
-              endif
-              if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-                 write(0,*) 'prt_adv: z not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
-              endif
-           endif
-!-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*e0 .and. .not.ptcl2%isvacant .and. &
-                 grd_capgrey(ic)+grd_sig(ic)>0d0) then
-!-- transformation factor
-              if(grd_isvelocity .and. ptcl2%itype==1) then
+              case(2)
                  labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
-                      cos(om)*x)/pc_c
-              else
-                 labfact = 1d0
-              endif
-!
-              r1 = rnd_r(rnd_state)
-              prt_tlyrand = prt_tlyrand+1
-              if(r1<0.5d0) then
-                 ptcl2%isvacant = .true.
-                 ptcl2%done = .true.
-                 grd_edep(ic) = grd_edep(ic) + e*labfact
-!-- velocity effects accounting
-                 if(ptcl2%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
-              else
-!-- weight addition accounted for in external source
-                 tot_eext = tot_eext + e
-!
-                 e = 2d0*e
-                 e0 = 2d0*e0
-              endif
-           endif
-        enddo !}}}
-
-!-- 3D
-     case(3)
-        ptcl2%istep = 0!{{{
-        do while ((.not.ptcl2%done).and.(.not.ptcl2%isvacant))
-           ptcl2%istep = ptcl2%istep + 1
-           if(ptcl2%itype == 1.or.in_puretran) then
-              nimc = nimc + 1
-              call transport3(ptcl,ptcl2)
-           else
-              nddmc = nddmc + 1
-              call diffusion3(ptcl,ptcl2,icell,specarr)
-           endif
-!-- verify position
-           if(ptcl2%itype==1 .and. .not.ptcl2%done) then
-              if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
-                 write(0,*) 'prt_adv: x not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu,om
-              endif
-              if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-                 write(0,*) 'prt_adv: y not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu,om
-              endif
-              if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
-                 write(0,*) 'prt_adv: z not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu,om
-              endif
-           endif
-!-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*e0 .and. .not.ptcl2%isvacant .and. &
-                 grd_capgrey(ic)+grd_sig(ic)>0d0) then
-!-- transformation factor
-              if(grd_isvelocity .and. ptcl2%itype==1) then
+                    cos(om)*x)/pc_c
+              case(3)
                  labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &
-                      (cos(om)*x+sin(om)*y))/pc_c
-              else
-                 labfact = 1d0
-              endif
-!
-              r1 = rnd_r(rnd_state)
-              prt_tlyrand = prt_tlyrand+1
-              if(r1<0.5d0) then
-                 ptcl2%isvacant = .true.
-                 ptcl2%done = .true.
-                 grd_edep(ic) = grd_edep(ic) + e*labfact
-!-- velocity effects accounting
-                 if(ptcl2%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
-              else
-!-- weight addition accounted for in external source
-                 tot_eext = tot_eext + e
-!
-                 e = 2d0*e
-                 e0 = 2d0*e0
-              endif
+                    (cos(om)*x+sin(om)*y))/pc_c
+              endselect
            endif
-        enddo!}}}
-
-!-- 1D
-     case(11)
-        ptcl2%istep = 0!{{{
-        do while ((.not.ptcl2%done).and.(.not.ptcl2%isvacant))
-           ptcl2%istep = ptcl2%istep + 1
-           if(ptcl2%itype == 1.or.in_puretran) then
-              nimc = nimc + 1
-              call transport11(ptcl,ptcl2)
+!
+           r1 = rnd_r(rnd_state)
+           prt_tlyrand = prt_tlyrand+1
+           if(r1<0.5d0) then
+              ptcl2%isvacant = .true.
+              ptcl2%done = .true.
+              grd_edep(ic) = grd_edep(ic) + e*labfact
+!-- velocity effects accounting
+              if(ptcl2%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
            else
-              nddmc = nddmc + 1
-              call diffusion11(ptcl,ptcl2,icell,specarr)
-           endif
-!-- verify position
-           if(ptcl2%itype==1 .and. .not.ptcl2%done .and. &
-                  (x>grd_xarr(ix+1) .or. x<grd_xarr(ix))) then
-              write(0,*) 'prt_adv: not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
-           endif
-!-- Russian roulette for termination of exhausted particles
-           if(e<1d-6*e0 .and. .not.ptcl2%isvacant .and. &
-                 grd_capgrey(ic)+grd_sig(ic)>0d0) then
-!-- transformation factor
-              if(grd_isvelocity .and. ptcl2%itype==1) then
-                 labfact = 1d0 - mu*x/pc_c
-              else
-                 labfact = 1d0
-              endif
-!
-              r1 = rnd_r(rnd_state)
-              prt_tlyrand = prt_tlyrand+1
-              if(r1<0.5d0) then
-                 ptcl2%isvacant = .true.
-                 ptcl2%done = .true.
-                 grd_edep(ic) = grd_edep(ic) + e*labfact
-!-- velocity effects accounting
-                 if(ptcl2%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
-              else
 !-- weight addition accounted for in external source
-                 tot_eext = tot_eext + e
+              tot_eext = tot_eext + e
 !
-                 e = 2d0*e
-                 e0 = 2d0*e0
-              endif
+              e = 2d0*e
+              e0 = 2d0*e0
+           endif!}}}
+        endif
+
+!-- verify position
+        if(ptcl2%itype==1 .and. .not.ptcl2%done) then
+           if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then!{{{
+              write(0,*) 'prt_adv: x not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu, &
+                 ptcl2%ipart,ptcl2%istep,ptcl2%idist
            endif
-        enddo!}}}
-     endselect
+           if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
+              write(0,*) 'prt_adv: y not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu, &
+                 ptcl2%ipart,ptcl2%istep,ptcl2%idist
+           endif
+           if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
+              write(0,*) 'prt_adv: z not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu, &
+                 ptcl2%ipart,ptcl2%istep,ptcl2%idist
+           endif!}}}
+        endif
+
+!-- check exit status
+        if(ierr/=0) then
+           write(0,*) 'ierr:',ierr
+           write(0,*) 'ipart,istep,idist:',ptcl2%ipart,ptcl2%istep,ptcl2%idist
+           stop 'particle_advance: fatal transport error'
+        endif
+     enddo
 
 !-- max step counter
      nstepmax = max(nstepmax,ptcl2%istep)
@@ -561,6 +434,12 @@ subroutine particle_advance
 
   enddo !ipart
 !write(0,*) nstepmax, ndist
+
+!-- convert to flux per second
+  help = 1d0/tsp_dt
+  flx_luminos = flx_luminos*help
+  flx_lumdev = flx_lumdev*help**2
+
 
   t1 = t_time()
   t_pckt_stat = t1-t0  !register timing
