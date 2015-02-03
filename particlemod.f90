@@ -107,11 +107,13 @@ module particlemod
     endif
 !
 !-- output
-    write(6,*)
-    write(6,*) 'particle array:'
-    write(6,*) '===================='
-    write(6,*) 'npart :',prt_npartmax
-    write(6,*)
+    if(ltalk) then
+       write(6,*)
+       write(6,*) 'particle array:'
+       write(6,*) '===================='
+       write(6,*) 'npart :',prt_npartmax
+       write(6,*)
+    endif
 !}}}
   end subroutine particle_alloc
 

@@ -52,9 +52,7 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- start clock
   t0 = t_time()
 
-!$ if(.false.) then
   grd_edep = 0d0
-!$ endif
   flx_gamluminos = 0d0
   flx_gamlumdev = 0d0
   flx_gamlumnum = 0
@@ -121,11 +119,11 @@ subroutine particle_advance_gamgrey(nmpi)
 !$omp    rndstate,edep,ierr, iomp, &
 !$omp    x,y,z,mu,om,e,e0,ix,iy,iz,ic,icold,r1, &
 !$omp    i,j,k) &
-!$omp reduction(+:grd_edep)
+!$omp reduction(+:grd_edep,flx_gamluminos,flx_gamlumnum,flx_gamlumdev)
 
 !-- thread id                                                               
 !$ iomp = omp_get_thread_num()
-  rndstate = rnd_states(iomp)
+  rndstate = rnd_states(iomp+1)
 
 !
 !-- primary particle properties
@@ -141,6 +139,10 @@ subroutine particle_advance_gamgrey(nmpi)
   iy => ptcl2%iy
   iz => ptcl2%iz
   ic => ptcl2%ic
+
+!-- default values in bounds
+  y = grd_yarr(1)
+  z = grd_zarr(1)
 
 !$omp do schedule(static,1) !round-robin
   do ipart=1,npart
@@ -378,7 +380,7 @@ subroutine particle_advance_gamgrey(nmpi)
 !$omp end do
 !
 !-- save state
-  rnd_states(iomp) = rndstate
+  rnd_states(iomp+1) = rndstate
 !$omp end parallel
 
   deallocate(ipospart)
