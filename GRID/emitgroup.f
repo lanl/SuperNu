@@ -2,7 +2,7 @@
 c     --------------------------------------
       use miscmod
       use groupmod
-      use gridmod
+      use gridmod, dummy=>emitgroup
       use physconstmod
       implicit none
       integer :: ig

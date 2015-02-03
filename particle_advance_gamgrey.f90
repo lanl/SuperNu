@@ -24,7 +24,7 @@ subroutine particle_advance_gamgrey(nmpi)
 !##################################################
   integer :: ierr
   integer :: nhere, nemit, ndmy
-  real*8 :: r1, edep
+  real*8 :: r1, edep, help
   integer :: i,j,k,l, ii, iimpi
   integer :: imu, iom, icold
   integer,pointer :: ic
@@ -312,22 +312,18 @@ subroutine particle_advance_gamgrey(nmpi)
      do while (.not.ptcl2%done)
         icold = ic
         call transport_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
+!-- tally
         grd_edep(icold) = grd_edep(icold) + edep
-
-!-- verify position
-        if(.not.ptcl2%done) then
-           if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
-             write(0,*) 'prt_adv_ggrey: x not in cell', &
-                ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
-           endif
-           if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-             write(0,*) 'prt_adv_ggrey: y not in cell', &
-                iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
-           endif
-           if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
-              write(0,*) 'prt_adv_ggrey: z not in cell', &
-                iz,z,grd_zarr(iz),grd_zarr(iz+1),mu
-           endif
+!
+!-- outbound luminosity tally
+        if(ptcl2%lflux) then
+!-- lab frame flux group, polar, azimuthal bin
+           iom = binsrch(om,flx_om,flx_nom+1,.false.)
+           imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
+!-- tally outbound luminosity
+           flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e
+           flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+e**2
+           flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1
         endif
 
 !-- Russian roulette for termination of exhausted particles
@@ -357,21 +353,26 @@ subroutine particle_advance_gamgrey(nmpi)
               e0 = 2d0*e0
            endif
         endif
-!
-!-- outbound luminosity tally
-        if(ptcl2%lflux) then
-!-- lab frame flux group, polar, azimuthal bin
-           iom = binsrch(om,flx_om,flx_nom+1,.false.)
-           imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
-!-- tally outbound luminosity
-           flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e/tsp_dt
-           flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+(e/tsp_dt)**2
-           flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1
+
+!-- verify position
+        if(.not.ptcl2%done) then
+           if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
+             write(0,*) 'prt_adv_ggrey: x not in cell', &
+                ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
+           endif
+           if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
+             write(0,*) 'prt_adv_ggrey: y not in cell', &
+                iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
+           endif
+           if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
+              write(0,*) 'prt_adv_ggrey: z not in cell', &
+                iz,z,grd_zarr(iz),grd_zarr(iz+1),mu
+           endif
         endif
 
 !-- check for errors
         if(ierr/=0) then
-           write(0,*) ierr
+           write(0,*) 'ierr:',ierr
            stop 'particle_advance_gg: fatal transport error'
         endif
      enddo
@@ -382,6 +383,11 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- save state
   rnd_states(iomp+1) = rndstate
 !$omp end parallel
+
+!-- convert to flux per second
+  help = 1d0/tsp_dt
+  flx_gamluminos = flx_gamluminos(imu,iom)*help
+  flx_gamlumdev = flx_gamlumdev(imu,iom)*help**2
 
   deallocate(ipospart)
 
