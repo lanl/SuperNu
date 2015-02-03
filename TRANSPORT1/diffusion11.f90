@@ -367,7 +367,6 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
      if(ix==grd_nx) then
         ptcl2%isvacant = .true.!{{{
         ptcl2%done = .true.
-        tot_eout = tot_eout+e
 !-- outbound luminosity tally
         r1 = rnd_r(rnd_state)
         prt_tlyrand = prt_tlyrand+1
@@ -385,6 +384,7 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
            else
               help = 1d0
            endif
+           tot_eout = tot_eout+e*help
            iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
            flx_luminos(iiig,1,1) = flx_luminos(iiig,1,1) + e*dtinv*help
            flx_lumdev(iiig,1,1) = flx_lumdev(iiig,1,1) + (e*dtinv*help)**2
@@ -416,6 +416,7 @@ subroutine diffusion11(ptcl,ptcl2,icspec,specarr)
               help = 1d0
            endif
 !-- obtaining lab frame flux group
+           tot_eout = tot_eout+e*help
            iiig = binsrch(wl,flx_wl,flx_ng+1,.false.)
            flx_luminos(iiig,1,1) = flx_luminos(iiig,1,1) + e*dtinv*help
            flx_lumdev(iiig,1,1) = flx_lumdev(iiig,1,1) + (e*dtinv*help)**2
