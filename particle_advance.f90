@@ -32,6 +32,7 @@ subroutine particle_advance
   integer, pointer :: ig, ic
   integer, pointer :: ix, iy, iz
   real*8, pointer :: x,y,z, mu, e, e0, wl, om
+  integer :: iom, imu
   real*8 :: eta, xi
   real*8 :: t0,t1  !timing
   real*8 :: labfact, mu1, mu2
@@ -40,7 +41,7 @@ subroutine particle_advance
   real*8 :: edep, eraddens, eamp
 !-- specint cache
   real*8 :: specarr(grp_ng)
-  integer :: icell(3)
+  integer :: icell
   integer :: ndist(0:7)
 !
   type(packet),target :: ptcl
@@ -191,12 +192,12 @@ subroutine particle_advance
         icold = ic
         if(ptcl2%itype==1 .or. in_puretran) then
            nimc = nimc + 1
-           call transport11(ptcl,ptcl2,rnd_state,edep,eraddens,eamp,tot_evelo,ierr)
+           call transport(ptcl,ptcl2,rnd_state,edep,eraddens,eamp,tot_evelo,ierr)
            if(ptcl2%itype/=1) grd_methodswap(icold) = grd_methodswap(icold)+1
         else
            nddmc = nddmc + 1
            ptcl2%idist = 0
-           call diffusion11(ptcl,ptcl2,rnd_state,edep,eraddens,tot_evelo,icell,specarr,ierr)
+           call diffusion(ptcl,ptcl2,rnd_state,edep,eraddens,tot_evelo,icell,specarr,ierr)
            if(ptcl2%itype==1) grd_methodswap(icold) = grd_methodswap(icold)+1
         endif
         ndist(ptcl2%idist) = ndist(ptcl2%idist) + 1
@@ -209,10 +210,14 @@ subroutine particle_advance
 !-- outbound luminosity tally
         if(ptcl2%lflux) then
            tot_eout = tot_eout+e
-           if(grd_igeom/=11) stop 'pa: igeom/=11'
-           flx_luminos(ig,1,1) = flx_luminos(ig,1,1)+e
-           flx_lumdev(ig,1,1) = flx_lumdev(ig,1,1)+e**2
-           flx_lumnum(ig,1,1) = flx_lumnum(ig,1,1)+1
+!-- retrieving lab frame flux group, polar, azimuthal bin
+           ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
+           imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
+           iom = binsrch(om,flx_om,flx_nom+1,.false.)
+!-- tallying outbound luminosity
+           flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+e
+           flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+e**2
+           flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1
         endif
 !
 !-- Russian roulette for termination of exhausted particles

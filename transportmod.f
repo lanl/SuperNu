@@ -7,8 +7,11 @@ c
 c
       private pc_c,pc_pi2
 c
+c-- explicit interfaces
       interface
-      pure subroutine advection1(pretrans,ptcl,ptcl2)!{{{
+c!{{{
+c-- advection
+      pure subroutine advection1(pretrans,ptcl,ptcl2)
       use particlemod
       logical,intent(in) :: pretrans
       type(packet),target,intent(inout) :: ptcl
@@ -29,7 +32,7 @@ c
       type(packet2),target,intent(inout) :: ptcl2
       end subroutine advection3
 c
-c
+c-- transport_gamgrey
       pure subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
       use randommod
       use particlemod
@@ -68,10 +71,121 @@ c
       type(rnd_t),intent(inout) :: rndstate
       real*8,intent(out) :: edep
       integer,intent(out) :: ierr
-      end subroutine transport11_gamgrey!}}}
+      end subroutine transport11_gamgrey
+c
+c-- transport
+      pure subroutine transport1(ptcl,ptcl2,rndstate,
+     &  edep,eraddens,eamp,totevelo,ierr)
+      use randommod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep, eraddens, eamp
+      real*8,intent(inout) :: totevelo
+      integer,intent(out) :: ierr
+      end subroutine transport1
+c
+      pure subroutine transport2(ptcl,ptcl2,rndstate,
+     &  edep,eraddens,eamp,totevelo,ierr)
+      use randommod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep, eraddens, eamp
+      real*8,intent(inout) :: totevelo
+      integer,intent(out) :: ierr
+      end subroutine transport2
+c
+      pure subroutine transport3(ptcl,ptcl2,rndstate,
+     &  edep,eraddens,eamp,totevelo,ierr)
+      use randommod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep, eraddens, eamp
+      real*8,intent(inout) :: totevelo
+      integer,intent(out) :: ierr
+      end subroutine transport3
+c
+      pure subroutine transport11(ptcl,ptcl2,rndstate,
+     &  edep,eraddens,eamp,totevelo,ierr)
+      use randommod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep, eraddens, eamp
+      real*8,intent(inout) :: totevelo
+      integer,intent(out) :: ierr
+      end subroutine transport11
+c
+c-- diffusion
+      pure subroutine diffusion1(ptcl,ptcl2,rndstate,
+     &  edep,eraddens,totevelo,icspec,specarr,ierr)
+      use randommod
+      use groupmod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep, eraddens
+      real*8,intent(inout) :: totevelo
+      integer,intent(inout) :: icspec
+      real*8,intent(inout) :: specarr(grp_ng)
+      integer,intent(out) :: ierr
+      end subroutine diffusion1
+c
+      pure subroutine diffusion2(ptcl,ptcl2,rndstate,
+     &  edep,eraddens,totevelo,icspec,specarr,ierr)
+      use randommod
+      use groupmod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep, eraddens
+      real*8,intent(inout) :: totevelo
+      integer,intent(inout) :: icspec
+      real*8,intent(inout) :: specarr(grp_ng)
+      integer,intent(out) :: ierr
+      end subroutine diffusion2
+c
+      pure subroutine diffusion3(ptcl,ptcl2,rndstate,
+     &  edep,eraddens,totevelo,icspec,specarr,ierr)
+      use randommod
+      use groupmod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep, eraddens
+      real*8,intent(inout) :: totevelo
+      integer,intent(inout) :: icspec
+      real*8,intent(inout) :: specarr(grp_ng)
+      integer,intent(out) :: ierr
+      end subroutine diffusion3
+c
+      pure subroutine diffusion11(ptcl,ptcl2,rndstate,
+     &  edep,eraddens,totevelo,icspec,specarr,ierr)
+      use randommod
+      use groupmod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep, eraddens
+      real*8,intent(inout) :: totevelo
+      integer,intent(inout) :: icspec
+      real*8,intent(inout) :: specarr(grp_ng)
+      integer,intent(out) :: ierr
+      end subroutine diffusion11
+!}}}
       end interface
 c
-c
+c-- abstract interfaces
       abstract interface
       subroutine direction2lab_(x0,y0,z0,mu0,om0)!{{{
 c     -------------------------------------------
@@ -89,6 +203,7 @@ c     -----------------------------------------------
 c
       pure subroutine transport_gamgrey_(ptcl,ptcl2,rndstate,edep,ierr)
       use randommod
+      use groupmod
       use particlemod
       type(packet),target,intent(inout) :: ptcl
       type(packet2),target,intent(inout) :: ptcl2
@@ -96,6 +211,34 @@ c
       real*8,intent(out) :: edep
       integer,intent(out) :: ierr
       end subroutine transport_gamgrey_
+c
+      pure subroutine transport_(ptcl,ptcl2,rndstate,
+     &  edep,eraddens,eamp,totevelo,ierr)
+      use randommod
+      use groupmod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep, eraddens, eamp
+      real*8,intent(inout) :: totevelo
+      integer,intent(out) :: ierr
+      end subroutine transport_
+c
+      pure subroutine diffusion_(ptcl,ptcl2,rndstate,
+     &  edep,eraddens,totevelo,icspec,specarr,ierr)
+      use randommod
+      use groupmod
+      use particlemod
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      type(rnd_t),intent(inout) :: rndstate
+      real*8,intent(out) :: edep, eraddens
+      real*8,intent(inout) :: totevelo
+      integer,intent(inout) :: icspec
+      real*8,intent(inout) :: specarr(grp_ng)
+      integer,intent(out) :: ierr
+      end subroutine diffusion_
 !}}}
       end interface
 c
@@ -104,6 +247,8 @@ c-- procedure pointers
       procedure(advection_),pointer :: advection => null()
       procedure(transport_gamgrey_),pointer ::
      &  transport_gamgrey => null()
+      procedure(transport_),pointer :: transport => null()
+      procedure(diffusion_),pointer :: diffusion => null()
 c
       contains
 c
@@ -112,6 +257,8 @@ c
       subroutine transportmod_init(igeom)
 c     --------------------------------
       integer,intent(in) :: igeom
+c
+c-- set procedure pointers
       select case(igeom)
       case(1)
 !      labfact => labfact1
@@ -119,24 +266,32 @@ c     --------------------------------
        direction2lab => direction2lab1
        advection => advection1
        transport_gamgrey => transport1_gamgrey
+       transport => transport1
+       diffusion => diffusion1
       case(2)
 !      labfact => labfact2
 !      cmffact => cmffact2
        direction2lab => direction2lab2
        advection => advection2
        transport_gamgrey => transport2_gamgrey
+       transport => transport2
+       diffusion => diffusion2
       case(3)
 !      labfact => labfact3
 !      cmffact => cmffact3
        direction2lab => direction2lab3
        advection => advection3
        transport_gamgrey => transport3_gamgrey
+       transport => transport3
+       diffusion => diffusion3
       case(11)
 !      labfact => labfact1
 !      cmffact => cmffact1
        direction2lab => direction2lab1
        advection => advection1
        transport_gamgrey => transport11_gamgrey
+       transport => transport11
+       diffusion => diffusion11
       case default
        stop 'transportmod_init: invalid igeom'
       end select
@@ -145,7 +300,7 @@ c
 c
 c
       subroutine direction2lab1(x0,y0,z0,mu0,om0)
-c     ----------------------------------------
+c     -------------------------------------------
       implicit none
       real*8,intent(in) :: x0,y0,z0
       real*8,intent(inout) :: mu0,om0
@@ -164,7 +319,7 @@ c
 c
 c
       subroutine direction2lab2(x0,y0,z0,mu0,om0)
-c     ----------------------------------------
+c     -------------------------------------------
       implicit none
       real*8,intent(in) :: x0,y0,z0
       real*8,intent(inout) :: mu0,om0
@@ -190,7 +345,7 @@ c
 c
 c
       subroutine direction2lab3(x0,y0,z0,mu0,om0)
-c     ----------------------------------------
+c     -------------------------------------------
       implicit none
       real*8,intent(in) :: x0,y0,z0
       real*8,intent(inout) :: mu0,om0

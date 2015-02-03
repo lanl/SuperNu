@@ -386,8 +386,8 @@ subroutine particle_advance_gamgrey(nmpi)
 
 !-- convert to flux per second
   help = 1d0/tsp_dt
-  flx_gamluminos = flx_gamluminos(imu,iom)*help
-  flx_gamlumdev = flx_gamlumdev(imu,iom)*help**2
+  flx_gamluminos = flx_gamluminos*help
+  flx_gamlumdev = flx_gamlumdev*help**2
 
   deallocate(ipospart)
 

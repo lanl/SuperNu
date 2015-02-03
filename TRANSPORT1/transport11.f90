@@ -354,8 +354,6 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
            ptcl2%done = .true.
            ptcl2%lflux = .true.
 !
-!-- retrieve lab frame flux group
-           ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
 !-- Checking if DDMC region right
         elseif (((grd_sig(l)+grd_cap(ig,l))*dx(ix+1) &
              *thelp >= prt_tauddmc) &

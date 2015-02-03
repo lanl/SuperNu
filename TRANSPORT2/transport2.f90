@@ -1,4 +1,4 @@
-subroutine transport2(ptcl,ptcl2)
+subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 
   use randommod
   use miscmod
@@ -9,11 +9,14 @@ subroutine transport2(ptcl,ptcl2)
   use particlemod
   use inputparmod
   use fluxmod
-  use totalsmod
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
   type(packet2),target,intent(inout) :: ptcl2
+  type(rnd_t),intent(inout) :: rndstate
+  real*8,intent(out) :: edep, eraddens, eamp
+  real*8,intent(inout) :: totevelo
+  integer,intent(out) :: ierr
 !##################################################
   !This subroutine passes particle parameters as input and modifies
   !them through one IMC transport event.  If
@@ -23,7 +26,7 @@ subroutine transport2(ptcl,ptcl2)
   real*8,parameter :: cinv = 1d0/pc_c
 
   logical :: loutx,louty
-  integer :: imu, ihelp
+  integer :: ihelp
   real*8 :: elabfact, dirdotu, mu0, gm
   real*8 :: dtinv, thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,ddop,d
@@ -53,6 +56,13 @@ subroutine transport2(ptcl,ptcl2)
   e => ptcl%e
   e0 => ptcl%e0
   wl => ptcl%wl
+
+!-- no error by default
+  ierr = 0
+!-- init
+  edep = 0d0
+  eraddens = 0d0
+  eamp = 0d0
 !
 !-- shortcut
   dtinv = 1d0/tsp_dt
@@ -111,7 +121,7 @@ subroutine transport2(ptcl,ptcl2)
 !
 !-- Thomson scattering distance
   if(grd_sig(ic)>0d0) then
-     r1 = rnd_r(rnd_state)
+     call rnd_rp(r1,rndstate)
      dthm = -log(r1)*thelpinv/(elabfact*grd_sig(ic))
   else
 !-- making greater than dcen
@@ -125,10 +135,10 @@ subroutine transport2(ptcl,ptcl2)
      dcol = far
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
-     r1 = rnd_r(rnd_state)
+     call rnd_rp(r1,rndstate)
      dcol = -log(r1)*thelpinv/(elabfact*grd_cap(ig,ic))
   elseif(grd_fcoef(ic)<1d0.and.grd_fcoef(ic)>=0d0) then
-     r1 = rnd_r(rnd_state)
+     call rnd_rp(r1,rndstate)
      dcol = -log(r1)*thelpinv/&
           (elabfact*(1d0-grd_fcoef(ic))*grd_cap(ig,ic))
   else
@@ -232,9 +242,9 @@ subroutine transport2(ptcl,ptcl2)
 !-- common manipulations for collisions
   if(d==dthm.or.d==dcol) then
 !-- resampling direction
-     r1 = rnd_r(rnd_state)
+     call rnd_rp(r1,rndstate)
      mu = 1d0 - 2d0*r1
-     r1 = rnd_r(rnd_state)
+     call rnd_rp(r1,rndstate)
      om = pc_pi2*r1
 !-- checking velocity dependence
      if(grd_isvelocity) then
@@ -260,15 +270,7 @@ subroutine transport2(ptcl,ptcl2)
 !-- ending particle
         ptcl2%isvacant = .true.
         ptcl2%done = .true.
-!-- retrieving lab frame flux group, polar bin
-        imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
-        ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-!-- tallying outbound luminosity
-        flx_luminos(ig,imu,1) = flx_luminos(ig,imu,1)+e*dtinv
-        flx_lumdev(ig,imu,1) = flx_lumdev(ig,imu,1)+(e*dtinv)**2
-        flx_lumnum(ig,imu,1) = flx_lumnum(ig,imu,1)+1
-!-- tallying outbound energy
-        tot_eout = tot_eout+e
+        ptcl2%lflux = .true.
         return
      endif
   endif
@@ -282,7 +284,7 @@ subroutine transport2(ptcl,ptcl2)
         wl = wl*(1d0-dirdotu*cinv)/elabfact
         help = elabfact/(1d0-dirdotu*cinv)
 !-- velocity effects accounting
-        tot_evelo=tot_evelo+e*(1d0-help)
+        totevelo=totevelo+e*(1d0-help)
 !
 !-- energy weight
         e = e*help
@@ -292,7 +294,7 @@ subroutine transport2(ptcl,ptcl2)
 !
 !-- effective collision
   elseif(d==dcol) then
-     r1 = rnd_r(rnd_state)
+     call rnd_rp(r1,rndstate)
 !-- checking if analog
      if(prt_isimcanlog.and.r1<=grd_fcoef(ic)) then
 !-- effective absorption
@@ -304,20 +306,20 @@ subroutine transport2(ptcl,ptcl2)
      else
 !-- effective scattering
 !-- redistributing wavelength
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         if(grp_ng>1) then
            ig = emitgroup(r1,ic)
            if(ig>grp_ng) stop 'transport2: emitgroup ig>ng'
         endif
 !-- uniformly in new group
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
 !-- transforming to lab
         if(grd_isvelocity) then
            wl = wl*(1d0-dirdotu*cinv)
            help = elabfact/(1d0-dirdotu*cinv)
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+e*(1d0-help)
+           totevelo=totevelo+e*(1d0-help)
 !
 !-- energy weight
            e = e*help
@@ -332,7 +334,7 @@ subroutine transport2(ptcl,ptcl2)
 !-- transforming to cmf
            if(grd_isvelocity) then
 !-- velocity effects accounting
-              tot_evelo=tot_evelo+e*dirdotu*cinv
+              totevelo=totevelo+e*dirdotu*cinv
 !
               e = e*(1d0-dirdotu*cinv)
               e0 = e0*(1d0-dirdotu*cinv)
@@ -384,7 +386,7 @@ subroutine transport2(ptcl,ptcl2)
            help = min(100d0, help) !-- truncate singularity
 !
 !-- velocity effects accounting
-           tot_evelo=tot_evelo-e*2d0 * &
+           totevelo=totevelo-e*2d0 * &
                 (0.55d0*help-1.25d0*abs(mu0))*x*cinv
 !
 !-- apply the excess (higher than factor 2d0) to the energy deposition
@@ -399,13 +401,13 @@ subroutine transport2(ptcl,ptcl2)
              dx(ix+ihelp)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         if (r1 < help*(1d0+1.5d0*abs(mu0))) then
            ptcl2%itype = 2
            grd_methodswap(ic)=grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
-              tot_evelo=tot_evelo+e*(1d0-elabfact)
+              totevelo=totevelo+e*(1d0-elabfact)
 !
               e = e*elabfact
               e0 = e0*elabfact
@@ -414,10 +416,10 @@ subroutine transport2(ptcl,ptcl2)
            ix = ix + ihelp
            ic = grd_icell(ix,iy,iz)
         else
-           r1 = rnd_r(rnd_state)
-           r2 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
+           call rnd_rp(r2,rndstate)
            mu0 = -ihelp*max(r1,r2)
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
 !-- resampling y-cosine
            mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
 !-- resampling azimuthal
@@ -470,7 +472,7 @@ subroutine transport2(ptcl,ptcl2)
               help = min(100d0, help) !-- truncate singularity
 !
 !-- velocity effects accounting
-              tot_evelo=tot_evelo-e*2d0 * &
+              totevelo=totevelo-e*2d0 * &
                    (0.55d0*help-1.25d0*abs(mu))*abs(y)*cinv
 !
 !-- apply the excess (higher than factor 2d0) to the energy deposition
@@ -486,13 +488,13 @@ subroutine transport2(ptcl,ptcl2)
              dy(iy+ihelp)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         if (r1 < help*(1d0+1.5d0*abs(mu))) then
            ptcl2%itype = 2
            grd_methodswap(ic)=grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
-              tot_evelo=tot_evelo+e*(1d0-elabfact)
+              totevelo=totevelo+e*(1d0-elabfact)
 !
               e = e*elabfact
               e0 = e0*elabfact
@@ -501,11 +503,11 @@ subroutine transport2(ptcl,ptcl2)
            iy = iy + ihelp
            ic = grd_icell(ix,iy,iz)
         else
-           r1 = rnd_r(rnd_state)
-           r2 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
+           call rnd_rp(r2,rndstate)
            mu = -ihelp*max(r1,r2)
 !-- resampling azimuthal
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            om = pc_pi2*r1
            if(grd_isvelocity) then
               dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
@@ -532,7 +534,7 @@ subroutine transport2(ptcl,ptcl2)
         wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*elabfact
      else
 !-- resampling wavelength in highest group
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         wl=1d0/(r1*grp_wlinv(grp_ng+1) + (1d0-r1)*grp_wlinv(grp_ng))
         wl = wl*elabfact
      endif
@@ -544,7 +546,7 @@ subroutine transport2(ptcl,ptcl2)
         grd_methodswap(ic)=grd_methodswap(ic)+1
         if(grd_isvelocity) then
 !-- velocity effects accounting
-           tot_evelo=tot_evelo+e*(1d0-elabfact)
+           totevelo=totevelo+e*(1d0-elabfact)
 !
            e = e*elabfact
            e0 = e0*elabfact
