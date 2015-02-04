@@ -1,4 +1,4 @@
-subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
+pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 
   use randommod
   use miscmod
@@ -135,7 +135,11 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      dbx = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*x**2)-mu*x)
   endif
 !-- sanity check
-  if(dbx/=dbx) stop 'transport1: dbx/=dbx'
+  if(dbx/=dbx) then
+!    stop 'transport1: dbx/=dbx'
+     ierr = 1
+     return
+  endif
 !
 !-- polar boundary distance (y)
 !-- dby1: iy->iy-1
@@ -267,9 +271,11 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !  if(dby2==0d0.and.idby2==4) write(0,*) '2: ',idby2, y, iy
   ! if(dby1==0d0.and.dby2==0d0) stop 'transport1: invalid dby[1,2]'
   if(dby1<0d0.and.dby2<0d0) then
-     write(0,*) iy, y
-     write(0,*) idby1, dby1, idby2, dby2
-     stop 'transport1: dby1<0 and dby2<0'
+!    write(0,*) iy, y
+!    write(0,*) idby1, dby1, idby2, dby2
+!    stop 'transport1: dby1<0 and dby2<0'
+     ierr = 2
+     return
   endif
   ! if(dby1==0d0) then
   !    write(0,*) '1: ', iy, y, dby2, eta
@@ -354,17 +360,25 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   darr = [dcen,dby,dbx,dbz,dthm,dcol,ddop]
   d = minval(darr)
   if(any(darr/=darr) .or. d<0d0) then
-     ierr = 1 !error
-     write(0,*) 'transport1: invalid distance'
+     ierr = 3 !error
+!    write(0,*) 'transport1: invalid distance'
   endif
   ptcl2%idist = minloc(darr,dim=1)
 
 !-- updating radius
   x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
-  if(dbx/=dbx) stop 'transport1: x/=x'
+  if(dbx/=dbx) then
+!    stop 'transport1: x/=x'
+     ierr = 4
+     return
+  endif
   if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
 !-- sanity check
-     if(d==dbx) stop 'transport1: x<1d-15*xarr(2),d==dbx,mu=-1'
+     if(d==dbx) then
+!       stop 'transport1: x<1d-15*xarr(2),d==dbx,mu=-1'
+        ierr = 5
+        return
+     endif
 !-- excluding dbz
      dbz = far
 !-- resetting direction
@@ -372,7 +386,11 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      eta = 0d0
      xi = 0d0
   else
-     if(x<1d-15*grd_xarr(2)) stop 'transport1: x=0 and muold/=-1'
+     if(x<1d-15*grd_xarr(2)) then
+!       stop 'transport1: x=0 and muold/=-1'
+        ierr = 6
+        return
+     endif
 !-- updating radial projection of direction
      mu = (xold*mu+d)/x
      mu = max(mu,-1d0)
@@ -399,7 +417,7 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- warn about inaccurate result
      if(abs(mu**2+eta**2+xi**2-1d0)>1d-9) then
         ierr = -1 !warning
-        write(0,*) 'transport1: invalid mu,eta,xi',mu**2+eta**2+xi**2-1d0,mu,eta,xi
+!       write(0,*) 'transport1: invalid mu,eta,xi',mu**2+eta**2+xi**2-1d0,mu,eta,xi
      endif
 !
 !-- normalize direction
@@ -415,29 +433,31 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- tallying energy densities
   if(prt_isimcanlog) then
 !-- analog energy density
-     grd_eraddens(ic)=grd_eraddens(ic)+e*elabfact* &
+     eraddens=e*elabfact* &
           d*thelp*cinv*dtinv
   else
 !-- nonanalog energy density
      if(grd_fcoef(ic)*grd_cap(ig,ic)* &
           min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) * &
           thelp>1d-6) then
-        grd_eraddens(ic) = grd_eraddens(ic)+e* &
+        eraddens = e* &
              (1.0d0-exp(-grd_fcoef(ic)*elabfact* &
              grd_cap(ig,ic)*d*thelp))* &
              elabfact/(grd_fcoef(ic)*elabfact * &
              grd_cap(ig,ic)*pc_c*tsp_dt)
      else
 !-- analog energy density
-        grd_eraddens(ic)=grd_eraddens(ic)+e*elabfact* &
+        eraddens=e*elabfact* &
              d*thelp*cinv*dtinv
      endif
 !-- depositing nonanalog absorbed energy
-     grd_edep(ic)=grd_edep(ic)+e* &
+     edep = e* &
           (1d0-exp(-grd_fcoef(ic)*grd_cap(ig,ic)* &
           elabfact*d*thelp))*elabfact
-     if(grd_edep(ic)/=grd_edep(ic)) then
-        stop 'transport1: invalid energy deposition'
+     if(edep/=edep) then
+!       stop 'transport1: invalid energy deposition'
+        ierr = 7
+        return
      endif
 !-- reducing particle energy
      e = e*exp(-grd_fcoef(ic)*grd_cap(ig,ic) * &
@@ -451,7 +471,7 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- census
   if(d==dcen) then
      ptcl2%done = .true.
-     grd_numcensus(ic)=grd_numcensus(ic)+1
+     ptcl2%lcens = .true.
      return
   endif
 
@@ -507,7 +527,7 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ptcl2%isvacant=.true.
         ptcl2%done=.true.
 !-- adding comoving energy to deposition energy
-        grd_edep(ic)=grd_edep(ic)+e*elabfact
+        edep=edep+e*elabfact
         return
      else
 !-- effective scattering
@@ -515,7 +535,11 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         call rnd_rp(r1,rndstate)
         if(grp_ng>1) then
            ig = emitgroup(r1,ic)
-           if(ig>grp_ng) stop 'transport1: emitgroup ig>ng'
+           if(ig>grp_ng) then
+!             stop 'transport1: emitgroup ig>ng'
+              ierr = 8
+              return
+           endif
         endif
 !-- uniformly in new group
         call rnd_rp(r1,rndstate)
@@ -536,7 +560,6 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
              min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) * &
              thelp>=prt_tauddmc.and..not.in_puretran) then
            ptcl2%itype = 2
-           grd_methodswap(ic)=grd_methodswap(ic)+1
 !-- transforming to cmf
            if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -557,7 +580,11 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ihelp=ix+1
         x = grd_xarr(ix+1)
      else
-        if(ix==1) stop 'transport1: ix=1 and mu<0'
+        if(ix==1) then
+!          stop 'transport1: ix=1 and mu<0'
+           ierr = 9
+           return
+        endif
         ihelp=ix-1
         x = grd_xarr(ix)
      endif
@@ -583,8 +610,7 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               totevelo = totevelo-e*2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv
 !
 !-- apply the excess (higher than factor 2d0) to the energy deposition
-              grd_eamp(ic) = grd_eamp(ic) + &
-                   e*2d0*0.55d0*max(0d0,help-2d0)*x*cinv
+              eamp = e*2d0*0.55d0*max(0d0,help-2d0)*x*cinv
 !-- apply limited correction to the particle
               help = min(2d0,help)
               e0 = e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv)
@@ -599,7 +625,6 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         if(r1<help*(1d0+1.5d0*abs(mu))) then
            if(grd_isvelocity) then
               ptcl2%itype = 2
-              grd_methodswap(ic)=grd_methodswap(ic)+1
 !-- velocity effects accounting
               totevelo=totevelo+e*(1d0-elabfact)
 !
@@ -641,23 +666,33 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
      elseif(iynext==iy-1) then
         if(abs(y-grd_yarr(iy))>1d-9) then
-           ierr = -1 !warning
-           write(0,*) 'transport1: y/=yarr(iy)',iy,y,grd_yarr(iy)
+           ierr = -2 !warning
+!          write(0,*) 'transport1: y/=yarr(iy)',iy,y,grd_yarr(iy)
         endif
-        if(iynext<1) stop 'transport1: iynext<1'
+        if(iynext<1) then
+!          stop 'transport1: iynext<1'
+           ierr = 10
+           return
+        endif
         y=grd_yarr(iy)
      elseif(iynext==iy+1) then
         if(abs(y-grd_yarr(iy+1))>1d-9) then
-           ierr = -1 !warning
-           write(0,*) 'transport1: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1),dby1,dby2,idby1,idby2
+           ierr = -3 !warning
+!          write(0,*) 'transport1: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1),dby1,dby2,idby1,idby2
         endif
-        if(iynext>grd_ny) stop 'transport1: iynext>ny'
+        if(iynext>grd_ny) then
+!          stop 'transport1: iynext>ny'
+           ierr = 11
+           return
+        endif
         y=grd_yarr(iy+1)
      else
 !-- sanity check
-        write(0,*) dby
-        write(0,*) y,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
-        stop 'transport1: invalid polar bound crossing'
+!       write(0,*) dby
+!       write(0,*) y,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
+!       stop 'transport1: invalid polar bound crossing'
+        ierr = 12
+        return
      endif
 
      l = grd_icell(ix,iynext,iznext)
@@ -682,7 +717,6 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         call rnd_rp(r1,rndstate)
         if(r1 < help*(1d0+1.5d0*abs(eta))) then
            ptcl2%itype = 2
-           grd_methodswap(ic)=grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
               totevelo=totevelo+e*(1d0-elabfact)
@@ -703,8 +737,8 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               elseif(y<grd_yarr(iy+1)) then
                  eta = max(r1,r2)
               else
-                 ierr = -1 !warning
-                 write(0,*) 'transport1: no idea how to calculate new eta'
+                 ierr = -4 !warning
+!                write(0,*) 'transport1: no idea how to calculate new eta'
                  eta = 2d0*r1 - 1d0
               endif
            else
@@ -733,7 +767,11 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- azimuthal bound
   elseif(d==dbz) then
 !-- sanity check
-     if(grd_nz==1) stop 'transport1: invalid z crossing'
+     if(grd_nz==1) then
+!       stop 'transport1: invalid z crossing'
+        ierr = 13
+        return
+     endif
      if(iznext==iz-1) then
         z=grd_zarr(iz)
         if(iznext==0) then
@@ -747,7 +785,9 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            z = 0d0
         endif
      else
-        stop 'transport1: invalid iznext'
+!       stop 'transport1: invalid iznext'
+        ierr = 14
+        return
      endif
 
      l = grd_icell(ix,iy,iznext)
@@ -771,7 +811,6 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         call rnd_rp(r1,rndstate)
         if (r1 < help*(1d0+1.5d0*abs(xi))) then
            ptcl2%itype = 2
-           grd_methodswap(ic)=grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
               totevelo=totevelo+e*(1d0-elabfact)
@@ -829,7 +868,11 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !
 !-- Doppler shift
   elseif(d==ddop) then
-     if(.not.grd_isvelocity) stop 'transport1: ddop and no velocity'
+     if(.not.grd_isvelocity) then
+!       stop 'transport1: ddop and no velocity'
+        ierr = 15
+        return
+     endif
      if(ig<grp_ng) then
 !-- shifting group
         ig = ig+1
@@ -845,7 +888,6 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
           min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) * &
           thelp>=prt_tauddmc.and..not.in_puretran) then
         ptcl2%itype = 2
-        grd_methodswap(ic)=grd_methodswap(ic)+1
         if(grd_isvelocity) then
 !-- velocity effects accounting
            totevelo=totevelo+e*(1d0-elabfact)
@@ -856,7 +898,9 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         endif
      endif
   else
-     stop 'transport1: invalid distance'
+!    stop 'transport1: invalid distance'
+     ierr = 16
+     return
   endif
 
 
@@ -874,45 +918,43 @@ subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 
 !-- sanity check
   if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-     ierr = -1 !warning
-     write(0,*) 'theta not in cell'
+     ierr = -5 !warning
+!    write(0,*) 'theta not in cell'
   endif
 
 !-- sanity check
   if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
-     ierr = -1 !warning
-     write(0,*) 'phi not in cell'
+     ierr = -6 !warning
+!    write(0,*) 'phi not in cell'
   endif
 
 !-- sanity check
   if(abs(y)==1d0) then
-     ierr = -1 !warning
-     write(0,*) '|y|==1'
+     ierr = -7 !warning
+!    write(0,*) '|y|==1'
   endif
 
-!-- verbose
-  if(ierr/=0) then
-     write(0,*) '(x): ',ix,xold,x,grd_xarr(ix),grd_xarr(ix+1)
-     write(0,*) '(y): ',iy,yold,y,grd_yarr(iy),grd_yarr(iy+1)
-     write(0,*) '(z): ',iz,zold,z,grd_zarr(iz),grd_zarr(iz+1)
-     write(0,*) 'y==1 ',abs(yold)-1d0, abs(y)-1d0
-     write(0,*) 'lredir',lredir
-     write(0,*) 'old ix,iy,iz:',ixold,iyold,izold
-     write(0,*) 'iynxt1|2:',iynext1,iynext2
-     write(0,*) 'dby1|2  :',dby1,dby2
-     write(0,*) 'idby1|2 : ',idby1,idby2
-     write(0,*) 'ptcl id:',ptcl2%ipart,ptcl2%istep
-     write(0,*) 'dirold: ', muold,etaold,xiold
-     write(0,*) 'dir: ', mux,muy,muz,mu,eta,xi
-     write(0,*) 'darrold:', idistold, darrold
-     write(0,*) 'darr   :', ptcl2%idist, darr
-     write(0,*) 'atan2:',sqrt(1d0-yold**2),sin(zold),cos(zold),xold*sqrt(1d0-yold**2),muy*d,mux*d
-!    z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
-!         xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
-     write(0,*)
-  endif
-
-  if(ierr>0) stop 'transport1: fatal error occurred'
+!!-- verbose
+!  if(ierr/=0) then
+!     write(0,*) '(x): ',ix,xold,x,grd_xarr(ix),grd_xarr(ix+1)
+!     write(0,*) '(y): ',iy,yold,y,grd_yarr(iy),grd_yarr(iy+1)
+!     write(0,*) '(z): ',iz,zold,z,grd_zarr(iz),grd_zarr(iz+1)
+!     write(0,*) 'y==1 ',abs(yold)-1d0, abs(y)-1d0
+!     write(0,*) 'lredir',lredir
+!     write(0,*) 'old ix,iy,iz:',ixold,iyold,izold
+!     write(0,*) 'iynxt1|2:',iynext1,iynext2
+!     write(0,*) 'dby1|2  :',dby1,dby2
+!     write(0,*) 'idby1|2 : ',idby1,idby2
+!     write(0,*) 'ptcl id:',ptcl2%ipart,ptcl2%istep
+!     write(0,*) 'dirold: ', muold,etaold,xiold
+!     write(0,*) 'dir: ', mux,muy,muz,mu,eta,xi
+!     write(0,*) 'darrold:', idistold, darrold
+!     write(0,*) 'darr   :', ptcl2%idist, darr
+!     write(0,*) 'atan2:',sqrt(1d0-yold**2),sin(zold),cos(zold),xold*sqrt(1d0-yold**2),muy*d,mux*d
+!!    z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
+!!         xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
+!     write(0,*)
+!  endif
 
 !-- save
   darrold = darr

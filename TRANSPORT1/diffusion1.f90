@@ -1,4 +1,4 @@
-subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,ierr)
+pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,ierr)
 
   use randommod
   use miscmod
@@ -356,24 +356,26 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
 !
 !-- calculating energy depostion and density
   if(prt_isddmcanlog) then
-     grd_eraddens(ic)= grd_eraddens(ic)+e*ddmct*dtinv
+     eraddens = e*ddmct*dtinv
   else
-     grd_edep(ic) = grd_edep(ic)+e * &
+     edep = e * &
           (1d0-exp(-grd_fcoef(ic)*caplump*pc_c*ddmct))
      if(grd_fcoef(ic)*caplump*min(dx(ix),xm(ix)*dyac(iy) , &
           xm(ix)*ym(iy)*dz(iz))*thelp>1d-6) then
         help = 1d0/(grd_fcoef(ic)*caplump)
-        grd_eraddens(ic)= &
-             grd_eraddens(ic)+e* &
+        eraddens = &
+             e* &
              (1d0-exp(-grd_fcoef(ic)*caplump*pc_c*ddmct))* &
              help*cinv*dtinv
      else
-        grd_eraddens(ic) = grd_eraddens(ic)+e*ddmct*dtinv
+        eraddens  = eraddens +e*ddmct*dtinv
      endif
 !
-     if(grd_edep(ic)/=grd_edep(ic)) then
+     if(edep/=edep) then
 !       write(0,*) e,grd_fcoef(ic),caplump,ddmct,glump,speclump,ig,tempinv
-        stop 'diffusion1: invalid energy deposition'
+!       stop 'diffusion1: invalid energy deposition'
+        ierr = 1
+        return
      endif
      e = e*exp(-grd_fcoef(ic)*caplump*pc_c*ddmct)
 !!}}}
@@ -388,7 +390,7 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
 !-- check for census
   if (ddmct /= tau) then
      ptcl2%done = .true.
-     grd_numcensus(ic) = grd_numcensus(ic)+1
+     ptcl2%lcens = .true.
      return
   endif
 
@@ -410,12 +412,16 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
   if(r1<pa) then
      ptcl2%isvacant = .true.
      ptcl2%done = .true.
-     grd_edep(ic) = grd_edep(ic)+e
+     edep = e
 
 !-- ix->ix-1 leakage
   elseif(r1>=pa.and.r1<pa+probleak(1)) then
 !-- sanity check
-     if(ix==1) stop 'diffusion1: invalid probleak(1)'
+     if(ix==1) then
+!       write(0,*) stop 'diffusion1: invalid probleak(1)'
+        ierr = 2
+        return
+     endif
 !
      l = grd_icell(ix-1,iy,iz)
 !-- sample next group
@@ -499,7 +505,6 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         endif
 !-- converting to IMC
         ptcl2%itype = 1
-        grd_methodswap(ic) = grd_methodswap(ic)+1
      endif
 !-- ix->ix-1
      ix = ix-1
@@ -619,7 +624,6 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         else
 !-- converting to IMC
            ptcl2%itype = 1
-           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- ix->ix+1
            ix = ix+1
            ic = grd_icell(ix,iy,iz)
@@ -629,8 +633,16 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
 !-- iy->iy-1 leakage
   elseif(r1>=pa+sum(probleak(1:2)).and.r1<pa+sum(probleak(1:3))) then
 !-- sanity check
-     if(grd_ny==1) stop 'diffusion1: probleak(3) and grd_ny=1'
-     if(iy==1) stop 'diffusion1: invalid probleak(3)'
+     if(grd_ny==1) then
+!       stop 'diffusion1: probleak(3) and grd_ny=1'
+        ierr = 3
+        return
+     endif
+     if(iy==1) then
+!       stop 'diffusion1: invalid probleak(3)'
+        ierr = 4
+        return
+     endif
 
 !-- sampling next group
      l = grd_icell(ix,iy-1,iz)
@@ -720,7 +732,6 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         endif
 !-- converting to IMC
         ptcl2%itype = 1
-        grd_methodswap(ic) = grd_methodswap(ic)+1
      endif
 !-- iy->iy+1
      iy = iy-1
@@ -729,8 +740,16 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
 !-- iy->iy+1 leakage
   elseif(r1>=pa+sum(probleak(1:3)).and.r1<pa+sum(probleak(1:4))) then
 !-- sanity check
-     if(grd_ny==1) stop 'diffusion1: probleak(4) and grd_ny=1'
-     if(iy==grd_ny) stop 'diffusion1: invalid probleak(4)'
+     if(grd_ny==1) then
+!       stop 'diffusion1: probleak(4) and grd_ny=1'
+        ierr = 5
+        return
+     endif
+     if(iy==grd_ny) then
+!       stop 'diffusion1: invalid probleak(4)'
+        ierr = 6
+        return
+     endif
 
 !-- sampling next group
      l = grd_icell(ix,iy+1,iz)
@@ -819,7 +838,6 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         endif
 !-- converting to IMC
         ptcl2%itype = 1
-        grd_methodswap(ic) = grd_methodswap(ic)+1
      endif
 !-- iy->iy+1
      iy = iy+1
@@ -828,7 +846,11 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
 !-- iz->iz-1 leakage
   elseif(r1>=pa+sum(probleak(1:4)).and.r1<pa+sum(probleak(1:5))) then
 !-- sanity check
-     if(grd_nz==1) stop 'diffusion1: probleak(5) and grd_nz=1'
+     if(grd_nz==1) then
+!       stop 'diffusion1: probleak(5) and grd_nz=1'
+        ierr = 7
+        return
+     endif
 !-- setting helper index
      if(iz==1) then
         iznext=grd_nz
@@ -927,7 +949,6 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         endif
 !-- converting to IMC
         ptcl2%itype = 1
-        grd_methodswap(ic) = grd_methodswap(ic)+1
      endif
 !-- iz->iz-1
      iz = iznext
@@ -936,7 +957,11 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
 !-- iz->iz+1 leakage
   elseif(r1>=pa+sum(probleak(1:5)).and.r1<pa+sum(probleak(1:6))) then
 !-- sanity check
-     if(grd_nz==1) stop 'diffusion1: probleak(6) and grd_nz=1'
+     if(grd_nz==1) then
+!       stop 'diffusion1: probleak(6) and grd_nz=1'
+        ierr = 8
+        return
+     endif
 !-- setting helper index
      if(iz==grd_nz) then
         iznext=1
@@ -1035,7 +1060,6 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         endif
 !-- converting to IMC
         ptcl2%itype = 1
-        grd_methodswap(ic) = grd_methodswap(ic)+1
      endif
 !-- iz->iz+1
      iz = iznext
@@ -1044,13 +1068,21 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
 !-- effective scattering
   else
 !
-     if(glump==grp_ng) stop 'diffusion1: effective scattering with glump==ng'
+     if(glump==grp_ng) then
+!       stop 'diffusion1: effective scattering with glump==ng'
+        ierr = 9
+        return
+     endif
 !
      call rnd_rp(r1,rndstate)
 
      if(glump==0) then
         iiig = emitgroup(r1,ic)
-        if(iiig>grp_ng) stop 'diffusion1: emitgroup ig>ng'
+        if(iiig>grp_ng) then
+!          stop 'diffusion1: emitgroup ig>ng'
+           ierr = 10
+           return
+        endif
      else
         denom3 = 0d0
         denom2 = 1d0-emitlump
@@ -1075,7 +1107,6 @@ subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
           min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) &
           *thelp < prt_tauddmc) then
         ptcl2%itype = 1
-        grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- direction sampled isotropically           
         lredir = .true.
         call rnd_rp(r1,rndstate)

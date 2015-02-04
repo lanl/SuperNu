@@ -1,4 +1,4 @@
-subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
+pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 
   use randommod
   use miscmod
@@ -143,9 +143,11 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- finding minimum distance
   darr = [dcen,dbx,dby,dbz,dthm,dcol,ddop]
   if(any(darr/=darr) .or. any(darr<0d0)) then
-     write(0,*) darr
-     write(*,*) ix,iy,iz,x,y,z,mu,eta,xi,om
-     stop 'transport3: invalid distance'
+!    write(0,*) darr
+!    write(*,*) ix,iy,iz,x,y,z,mu,eta,xi,om
+!    stop 'transport3: invalid distance'
+     ierr = 1
+     return
   endif
   d = minval(darr)
 
@@ -160,29 +162,31 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- tallying energy densities
   if(prt_isimcanlog) then
 !-- analog energy density
-     grd_eraddens(ic)=grd_eraddens(ic)+e*elabfact* &
+     eraddens = e*elabfact* &
           d*thelp*cinv*dtinv
   else
 !-- nonanalog energy density
      if(grd_fcoef(ic)*grd_cap(ig,ic)* &
           min(dx(ix),dy(iy),dz(iz))*thelp>1d-6) then
-        grd_eraddens(ic) = grd_eraddens(ic)+e* &
+        eraddens = e* &
              (1.0d0-exp(-grd_fcoef(ic)*elabfact* &
              grd_cap(ig,ic)*d*thelp))* &
              elabfact/(grd_fcoef(ic)*elabfact * &
              grd_cap(ig,ic)*pc_c*tsp_dt)
      else
 !-- analog energy density
-        grd_eraddens(ic) = grd_eraddens(ic)+e*elabfact* &
+        eraddens = e*elabfact* &
              d*thelp*cinv*dtinv
      endif
 !-- depositing nonanalog absorbed energy
-     grd_edep(ic) = grd_edep(ic)+e* &
+     edep = e* &
           (1d0-exp(-grd_fcoef(ic)*grd_cap(ig,ic)* &
           elabfact*d*thelp))*elabfact
-     if(grd_edep(ic)/=grd_edep(ic)) then
+     if(edep/=edep) then
 !       write(0,*) e,grd_fcoef(ic),grd_cap(ig,ic),elabfact,d,thelp
-        stop 'transport3: invalid energy deposition'
+!       stop 'transport3: invalid energy deposition'
+        ierr = 2
+        return
      endif
 !-- reducing particle energy
      e = e*exp(-grd_fcoef(ic)*grd_cap(ig,ic) * &
@@ -202,7 +206,7 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- census
   if(d==dcen) then
      ptcl2%done = .true.
-     grd_numcensus(ic) = grd_numcensus(ic)+1
+     ptcl2%lcens = .true.
      return
   endif
 
@@ -271,7 +275,7 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ptcl2%isvacant=.true.
         ptcl2%done=.true.
 !-- adding comoving energy to deposition energy
-        grd_edep(ic) = grd_edep(ic)+e*elabfact
+        edep = e*elabfact
         return
      else
 !-- effective scattering
@@ -279,7 +283,11 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         call rnd_rp(r1,rndstate)
         if(grp_ng>1) then
            ig = emitgroup(r1,ic)
-           if(ig>grp_ng) stop 'transport3: emitgroup ig>ng'
+           if(ig>grp_ng) then
+!             stop 'transport3: emitgroup ig>ng'
+              ierr = 3
+              return
+           endif
         endif
 !-- uniformly in new group
         call rnd_rp(r1,rndstate)
@@ -300,7 +308,6 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
              min(dx(ix),dy(iy),dz(iz))*thelp >= prt_tauddmc &
              .and..not.in_puretran) then
            ptcl2%itype = 2
-           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- transforming to cmf
            if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -352,8 +359,7 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
                    (0.55d0*help-1.25d0*abs(xi))*abs(x)*cinv
 !
 !-- apply the excess (higher than factor 2d0) to the energy deposition
-              grd_eamp(ic) = grd_eamp(ic) + &
-                 e*2d0*0.55d0*max(0d0,help-2d0)*abs(x)*cinv
+              eamp = e*2d0*0.55d0*max(0d0,help-2d0)*abs(x)*cinv
 !-- apply limited correction to the particle
               help = min(2d0,help)
               e0=e0*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(xi))*abs(x)*cinv)
@@ -367,7 +373,6 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         call rnd_rp(r1,rndstate)
         if (r1 < help*(1d0+1.5d0*abs(xi))) then
            ptcl2%itype = 2
-           grd_methodswap(ic) = grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
               totevelo=totevelo+e*(1d0-elabfact)
@@ -443,8 +448,7 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
                    (0.55d0*help-1.25d0*abs(eta))*abs(y)*cinv
 !
 !-- apply the excess (higher than factor 2d0) to the energy deposition
-              grd_eamp(ic) = grd_eamp(ic) + &
-                 e*2d0*0.55d0*max(0d0,help-2d0)*abs(y)*cinv
+              eamp = e*2d0*0.55d0*max(0d0,help-2d0)*abs(y)*cinv
 !-- apply limited correction to the particle
               help = min(2d0,help)
               e0=e0*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(eta))*abs(y)*cinv)
@@ -458,7 +462,6 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         call rnd_rp(r1,rndstate)
         if (r1 < help*(1d0+1.5d0*abs(eta))) then
            ptcl2%itype = 2
-           grd_methodswap(ic) = grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
               totevelo=totevelo+e*(1d0-elabfact)
@@ -534,8 +537,7 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
                    (0.55d0*help-1.25d0*abs(mu))*abs(z)*cinv
 !
 !-- apply the excess (higher than factor 2d0) to the energy deposition
-              grd_eamp(ic) = grd_eamp(ic) + &
-                 e*2d0*0.55d0*max(0d0,help-2d0)*abs(x)*cinv
+              eamp = e*2d0*0.55d0*max(0d0,help-2d0)*abs(x)*cinv
 !-- apply limited correction to the particle
               help = min(2d0,help)
               e0=e0*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(mu))*abs(z)*cinv)
@@ -549,7 +551,6 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         call rnd_rp(r1,rndstate)
         if (r1 < help*(1d0+1.5d0*abs(mu))) then
            ptcl2%itype = 2
-           grd_methodswap(ic) = grd_methodswap(ic)+1
            if(grd_isvelocity) then
 !-- velocity effects accounting
               totevelo=totevelo+e*(1d0-elabfact)
@@ -588,7 +589,11 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !
 !-- Doppler shift
   elseif(d==ddop) then
-     if(.not.grd_isvelocity) stop 'transport3: ddop and no velocity'
+     if(.not.grd_isvelocity) then
+!       stop 'transport3: ddop and no velocity'
+        ierr = 4
+        return
+     endif
      if(ig<grp_ng) then
 !-- shifting group
         ig = ig+1
@@ -604,7 +609,6 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
           min(dx(ix),dy(iy),dz(iz))*thelp >= prt_tauddmc &
           .and..not.in_puretran) then
         ptcl2%itype = 2
-        grd_methodswap(ic) = grd_methodswap(ic)+1
         if(grd_isvelocity) then
 !-- velocity effects accounting
            totevelo=totevelo+e*(1d0-elabfact)
@@ -615,7 +619,9 @@ subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         endif
      endif
   else
-     stop 'transport3: invalid distance'
+!    stop 'transport3: invalid distance'
+     ierr = 5
+     return
   endif
 
 end subroutine transport3

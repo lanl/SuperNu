@@ -1,4 +1,4 @@
-subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,ierr)
+pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,ierr)
 
   use randommod
   use miscmod
@@ -272,18 +272,17 @@ subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
 !
 !-- calculating energy depostion and density
   if(prt_isddmcanlog) then
-     grd_eraddens(ic) = grd_eraddens(ic)+e*ddmct*dtinv
+     eraddens = e*ddmct*dtinv
   else
-     grd_edep(ic) = grd_edep(ic)+e*(1d0-exp(-grd_fcoef(ic) &!{{{
+     edep = e*(1d0-exp(-grd_fcoef(ic) &!{{{
           *caplump*pc_c*ddmct))
      if(grd_fcoef(ic)*caplump*min(dx(ix),dy(iy))*thelp>1d-6) then
         help = 1d0/(grd_fcoef(ic)*caplump)
-        grd_eraddens(ic)= &
-             grd_eraddens(ic)+e* &
+        eraddens = e* &
              (1d0-exp(-grd_fcoef(ic)*caplump*pc_c*ddmct))* &
              help*cinv*dtinv
      else
-        grd_eraddens(ic) = grd_eraddens(ic)+e*ddmct*dtinv
+        eraddens = e*ddmct*dtinv
      endif
      e = e*exp(-grd_fcoef(ic)*caplump*pc_c*ddmct)
 !!}}}
@@ -300,7 +299,7 @@ subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
 !-- check for census
   if (ddmct /= tau) then
      ptcl2%done = .true.
-     grd_numcensus(ic) = grd_numcensus(ic)+1
+     ptcl2%lcens = .true.
      return
   endif
 
@@ -323,13 +322,17 @@ subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
   if(r1<pa) then
      ptcl2%isvacant = .true.
      ptcl2%done = .true.
-     grd_edep(ic) = grd_edep(ic)+e
+     edep = e
 
 !-- ix->ix-1 leakage
   elseif(r1>=pa.and.r1<pa+probleak(1)) then
 !{{{
 !-- sanity check
-     if (ix == 1) stop 'diffusion1: non-physical inward leakage'
+     if(ix==1) then
+!       stop 'diffusion1: non-physical inward leakage'
+        ierr = 1
+        return
+     endif
 
      l = grd_icell(ix-1,iy,iz)
 !-- sample next group
@@ -418,7 +421,6 @@ subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         endif
 !-- converting to IMC
         ptcl2%itype = 1
-        grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- ix->ix-1
         ix = ix-1
         ic = grd_icell(ix,iy,iz)
@@ -528,7 +530,6 @@ subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         else
 !-- converting to IMC
            ptcl2%itype = 1
-           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- ix->ix+1
            ix = ix+1
            ic = grd_icell(ix,iy,iz)
@@ -638,7 +639,6 @@ subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         else
 !-- converting to IMC
            ptcl2%itype = 1
-           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- iy->iy-1
            iy = iy-1
            ic = grd_icell(ix,iy,iz)
@@ -748,7 +748,6 @@ subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         else
 !-- converting to IMC
            ptcl2%itype = 1
-           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- iy->iy+1
            iy = iy+1
            ic = grd_icell(ix,iy,iz)
@@ -759,13 +758,21 @@ subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
 !-- effective scattering
   else
 !
-     if(glump==grp_ng) stop 'diffusion2: effective scattering with glump==ng'
+     if(glump==grp_ng) then
+!       stop 'diffusion2: effective scattering with glump==ng'
+        ierr = 2
+        return
+     endif
 
      call rnd_rp(r1,rndstate)
 
      if(glump==0) then
         iiig = emitgroup(r1,ic)
-        if(iiig>grp_ng) stop 'diffusion2: emitgroup ig>ng'
+        if(iiig>grp_ng) then
+!          stop 'diffusion2: emitgroup ig>ng'
+           ierr = 3
+           return
+        endif
      else
         denom3 = 0d0
         denom2 = 1d0-emitlump
@@ -790,7 +797,6 @@ subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
           min(dx(ix),dy(iy)) &
           *thelp < prt_tauddmc) then
         ptcl2%itype = 1
-        grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- direction sampled isotropically           
         call rnd_rp(r1,rndstate)
         mu = 1d0 - 2d0*r1

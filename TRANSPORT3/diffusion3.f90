@@ -1,4 +1,4 @@
-subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,ierr)
+pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,ierr)
 
   use randommod
   use miscmod
@@ -350,23 +350,25 @@ subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
 !
 !-- calculating energy depostion and density
   if(prt_isddmcanlog) then
-     grd_eraddens(ic)= grd_eraddens(ic)+e*ddmct*dtinv
+     eraddens = e*ddmct*dtinv
   else
-     grd_edep(ic) = grd_edep(ic)+e * &
+     edep = e * &
           (1d0-exp(-grd_fcoef(ic)*caplump*pc_c*ddmct))
      if(grd_fcoef(ic)*caplump*min(dx(ix),dy(iy),dz(iz))*thelp>1d-6) then
         help = 1d0/(grd_fcoef(ic)*caplump)
-        grd_eraddens(ic)= &
-             grd_eraddens(ic)+e* &
+        eraddens = &
+             e* &
              (1d0-exp(-grd_fcoef(ic)*caplump*pc_c*ddmct))* &
              help*cinv*dtinv
      else
-        grd_eraddens(ic) = grd_eraddens(ic)+e*ddmct*dtinv
+        eraddens = grd_eraddens(ic)+e*ddmct*dtinv
      endif
 !
-     if(grd_edep(ic)/=grd_edep(ic)) then
+     if(edep/=edep) then
 !       write(0,*) e,grd_fcoef(ic),caplump,ddmct,glump,speclump,ig,tempinv
-        stop 'diffusion3: invalid energy deposition'
+!       stop 'diffusion3: invalid energy deposition'
+        ierr = 1
+        return
      endif
      e = e*exp(-grd_fcoef(ic)*caplump*pc_c*ddmct)
 !!}}}
@@ -381,7 +383,7 @@ subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
 !-- check for census
   if (ddmct /= tau) then
      ptcl2%done = .true.
-     grd_numcensus(ic) = grd_numcensus(ic)+1
+     ptcl2%lcens = .true.
      return
   endif
 
@@ -404,7 +406,7 @@ subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
   if(r1<pa) then
      ptcl2%isvacant = .true.
      ptcl2%done = .true.
-     grd_edep(ic) = grd_edep(ic)+e
+     edep = e
 
 !-- ix->ix-1 leakage
   elseif(r1>=pa.and.r1<pa+probleak(1)) then
@@ -530,7 +532,6 @@ subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         else
 !-- converting to IMC
            ptcl2%itype = 1
-           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- ix->ix-1
            ix = ix-1
            ic = grd_icell(ix,iy,iz)
@@ -661,7 +662,6 @@ subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         else
 !-- converting to IMC
            ptcl2%itype = 1
-           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- ix->ix+1
            ix = ix+1
            ic = grd_icell(ix,iy,iz)
@@ -791,7 +791,6 @@ subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         else
 !-- converting to IMC
            ptcl2%itype = 1
-           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- iy->iy-1
            iy = iy-1
            ic = grd_icell(ix,iy,iz)
@@ -922,7 +921,6 @@ subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         else
 !-- converting to IMC
            ptcl2%itype = 1
-           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- iy->iy+1
            iy = iy+1
            ic = grd_icell(ix,iy,iz)
@@ -1052,7 +1050,6 @@ subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         else
 !-- converting to IMC
            ptcl2%itype = 1
-           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- iz->iz-1
            iz = iz-1
            ic = grd_icell(ix,iy,iz)
@@ -1182,7 +1179,6 @@ subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
         else
 !-- converting to IMC
            ptcl2%itype = 1
-           grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- iz->iz+1
            iz = iz+1
            ic = grd_icell(ix,iy,iz)
@@ -1192,13 +1188,21 @@ subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
 !-- effective scattering
   else
 !!{{{
-     if(glump==grp_ng) stop 'diffusion3: effective scattering with glump==ng'
+     if(glump==grp_ng) then
+!       stop 'diffusion3: effective scattering with glump==ng'
+        ierr = 1
+        return
+     endif
 !
      call rnd_rp(r1,rndstate)
 
      if(glump==0) then
         iiig = emitgroup(r1,ic)
-        if(iiig>grp_ng) stop 'diffusion3: emitgroup ig>ng'
+        if(iiig>grp_ng) then
+!          stop 'diffusion3: emitgroup ig>ng'
+           ierr = 1
+           return
+        endif
      else
         denom3 = 0d0
         denom2 = 1d0-emitlump
@@ -1223,7 +1227,6 @@ subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,
           min(dx(ix),dy(iy),dz(iz)) &
           *thelp < prt_tauddmc) then
         ptcl2%itype = 1
-        grd_methodswap(ic) = grd_methodswap(ic)+1
 !-- direction sampled isotropically           
         call rnd_rp(r1,rndstate)
         mu = 1d0 - 2d0*r1
