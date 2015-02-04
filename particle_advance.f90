@@ -1,5 +1,6 @@
 subroutine particle_advance
 
+!$ use omp_lib
   use randommod
   use transportmod
   use miscmod
@@ -23,7 +24,7 @@ subroutine particle_advance
   !total subroutine calls in program.
 !##################################################
   real*8,parameter :: cinv=1d0/pc_c
-  integer*8 :: nddmc, nimc, npckt, nstepmax
+  integer*8 :: nddmc, nimc, npckt
   real*8 :: r1, x1, x2, thelp, help
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
@@ -42,10 +43,13 @@ subroutine particle_advance
 !-- specint cache
   real*8 :: specarr(grp_ng)
   integer :: icell
-  integer :: ndist(0:7)
+  integer :: nstepmax, ndist(0:7)
 !
   type(packet),target :: ptcl
   type(packet2),target :: ptcl2
+!
+  type(rnd_t) :: rndstate
+  integer,save :: iomp=0
 !
 !-- statement function
   integer :: l
@@ -59,6 +63,47 @@ subroutine particle_advance
 !
 !-- start clock
   t0 = t_time()
+
+  if(grd_isvelocity) then
+     thelp = tsp_t
+  else
+     thelp = 1d0
+  endif
+!
+!-- energy tallies
+  grd_edep = 0d0
+  grd_eraddens = 0d0
+  grd_eamp = 0d0
+  tot_erad = 0d0
+
+  flx_luminos = 0d0
+  flx_lumdev = 0d0
+  flx_lumnum = 0
+  grd_methodswap = 0
+  grd_numcensus = 0
+
+!-- Propagate all particles that are not considered vacant
+  npckt = 0
+  nddmc = 0
+  nimc = 0
+
+  nstepmax = 0
+  ndist = 0
+
+!$omp parallel &
+!$omp private(ptcl,ptcl2, &
+!$omp    x,y,z,mu,om,wl,e,e0,ix,iy,iz,ic,ig,icold,r1, &
+!$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
+!$omp    rndstate,edep,eraddens,eamp,icell,specarr,ierr, iomp) &
+!$omp reduction(+:grd_edep,grd_eraddens,grd_eamp,grd_methodswap,grd_numcensus, &
+!$omp    tot_evelo,tot_erad, &
+!$omp    flx_luminos,flx_lumnum,flx_lumdev, &
+!$omp    npckt,nddmc,nimc,ndist) &
+!$omp reduction(max:nstepmax)
+
+!-- thread id                                                               
+!$ iomp = omp_get_thread_num()
+  rndstate = rnd_states(iomp+1)
 !
 !-- assigning pointers to corresponding particle properties
   x => ptcl%x
@@ -76,31 +121,9 @@ subroutine particle_advance
   ic => ptcl2%ic
   ig => ptcl2%ig
 
-  if(grd_isvelocity) then
-     thelp = tsp_t
-  else
-     thelp = 1d0
-  endif
-!
-!-- energy tallies
-  grd_eamp = 0d0
-  grd_edep = 0d0
-  grd_eraddens = 0d0
-  tot_erad = 0d0
-
-  flx_luminos = 0d0
-  flx_lumdev = 0d0
-  flx_lumnum = 0
-  grd_methodswap = 0
-  grd_numcensus = 0
-
-  ! Propagating all particles that are not considered vacant: loop
-  npckt = 0
-  nddmc = 0
-  nstepmax = 0
-  nimc = 0
   icell = 0
-  ndist = 0
+
+!$omp do schedule(static,1) !round-robin
   do ipart=1,prt_npartmax
      ! Checking vacancy
      if(prt_isvacant(ipart)) cycle
@@ -192,12 +215,12 @@ subroutine particle_advance
         icold = ic
         if(ptcl2%itype==1 .or. in_puretran) then
            nimc = nimc + 1
-           call transport(ptcl,ptcl2,rnd_state,edep,eraddens,eamp,tot_evelo,ierr)
+           call transport(ptcl,ptcl2,rndstate,edep,eraddens,eamp,tot_evelo,ierr)
            if(ptcl2%itype/=1) grd_methodswap(icold) = grd_methodswap(icold)+1
         else
            nddmc = nddmc + 1
            ptcl2%idist = 0
-           call diffusion(ptcl,ptcl2,rnd_state,edep,eraddens,tot_evelo,icell,specarr,ierr)
+           call diffusion(ptcl,ptcl2,rndstate,edep,eraddens,tot_evelo,icell,specarr,ierr)
            if(ptcl2%itype==1) grd_methodswap(icold) = grd_methodswap(icold)+1
         endif
         ndist(ptcl2%idist) = ndist(ptcl2%idist) + 1
@@ -239,7 +262,7 @@ subroutine particle_advance
               endselect
            endif
 !
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            if(r1<0.5d0) then
               ptcl2%isvacant = .true.
@@ -299,12 +322,12 @@ subroutine particle_advance
 !-- find group
         ig = binsrch(wl,grp_wl,grp_ng+1,.false.)
 !
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         prt_tlyrand = prt_tlyrand+1
         x1 = grd_cap(ig,ic)
         x2 = grp_wl(ig)/(pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig)))
         if(r1<x2/(x1+x2)) then
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
            wl = wl*exp(tsp_dt/tsp_t)
@@ -325,7 +348,7 @@ subroutine particle_advance
      if(ptcl2%itype==2) then
 !
 !-- sample wavelength
-        r1 = rnd_r(rnd_state)
+        call rnd_rp(r1,rndstate)
         wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
 !
 !-- sample position and direction
@@ -333,13 +356,13 @@ subroutine particle_advance
 !-- 3D spherical
         case(1)
 !-- sampling position uniformly!{{{
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
 !-- must be inside cell
@@ -350,35 +373,35 @@ subroutine particle_advance
            z = min(z,grd_zarr(iz+1))
            z = max(z,grd_zarr(iz))
 !-- sampling angle isotropically
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            mu = 1.0 - 2.0*r1
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            om = pc_pi2*r1!}}}
 !-- 2D
         case(2)
 !-- sampling position uniformly!{{{
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            x = sqrt(r1*grd_xarr(ix+1)**2 + (1d0-r1)*grd_xarr(ix)**2)
 !-- must be inside cell
            x = min(x,grd_xarr(ix+1))
            x = max(x,grd_xarr(ix))
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
 !-- sampling direction values
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            om = pc_pi2*r1
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            mu = 1d0 - 2d0*r1!}}}
 !-- 3D
         case(3)
 !-- sampling position uniformly !{{{
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
 !-- must be inside cell
            x = min(x,grd_xarr(ix+1))
@@ -388,21 +411,21 @@ subroutine particle_advance
            z = min(z,grd_zarr(iz+1))
            z = max(z,grd_zarr(iz))
 !-- sampling direction values
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            om = pc_pi2*r1
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            mu = 1d0 - 2d0*r1 !}}}
 !-- 1D spherical
         case(11)
 !-- sampling position uniformly!{{{
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
 !-- must be inside cell
            x = min(x,grd_xarr(ix+1))
            x = max(x,grd_xarr(ix))
 !-- sampling angle isotropically
-           r1 = rnd_r(rnd_state)
+           call rnd_rp(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            mu = 1.0 - 2.0*r1 !}}}
         endselect
@@ -438,6 +461,12 @@ subroutine particle_advance
      prt_particles(ipart) = ptcl
 
   enddo !ipart
+!$omp end do
+!
+!-- save state
+  rnd_states(iomp+1) = rndstate
+!$omp end parallel
+
 !write(0,*) nstepmax, ndist
 
 !-- convert to flux per second
