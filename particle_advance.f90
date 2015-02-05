@@ -43,7 +43,7 @@ subroutine particle_advance
 !-- specint cache
   real*8 :: specarr(grp_ng)
   integer :: icell
-  integer :: nstepmax, ndist(0:7)
+  integer :: nstepmax, ndist(-1:7)
 !
   type(packet),target :: ptcl
   type(packet2),target :: ptcl2
@@ -96,7 +96,7 @@ subroutine particle_advance
 !$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
 !$omp    rndstate,edep,eraddens,eamp,icell,specarr,ierr, iomp) &
 !$omp reduction(+:grd_edep,grd_eraddens,grd_eamp,grd_methodswap,grd_numcensus, &
-!$omp    tot_evelo,tot_erad, &
+!$omp    tot_evelo,tot_erad,tot_eout, &
 !$omp    flx_luminos,flx_lumnum,flx_lumdev, &
 !$omp    npckt,nddmc,nimc,ndist) &
 !$omp reduction(max:nstepmax)
@@ -217,6 +217,8 @@ subroutine particle_advance
            nimc = nimc + 1
            call transport(ptcl,ptcl2,rndstate,edep,eraddens,eamp,tot_evelo,ierr)
            if(ptcl2%itype/=1) grd_methodswap(icold) = grd_methodswap(icold)+1
+!-- tally eamp
+           grd_eamp(icold) = grd_eamp(icold) + eamp
         else
            nddmc = nddmc + 1
            ptcl2%idist = 0
@@ -224,10 +226,9 @@ subroutine particle_advance
            if(ptcl2%itype==1) grd_methodswap(icold) = grd_methodswap(icold)+1
         endif
         ndist(ptcl2%idist) = ndist(ptcl2%idist) + 1
-!-- tally
+!-- tally rest
         grd_edep(icold) = grd_edep(icold) + edep
         grd_eraddens(icold) = grd_eraddens(icold) + eraddens
-        grd_eamp(icold) = grd_eamp(icold) + eamp
         if(ptcl2%lcens) grd_numcensus(icold) = grd_numcensus(icold) + 1
 !
 !-- outbound luminosity tally
@@ -299,7 +300,7 @@ subroutine particle_advance
         if(ierr/=0) then
            write(0,*) 'ierr:',ierr
            write(0,*) 'ipart,istep,idist:',ptcl2%ipart,ptcl2%istep,ptcl2%idist
-           stop 'particle_advance: fatal transport error'
+           if(ierr>0) stop 'particle_advance: fatal transport error'
         endif
      enddo
 

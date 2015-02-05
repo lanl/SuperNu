@@ -398,6 +398,8 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
 !-- changing from comoving frame to observer frame
         if(grd_isvelocity) then
            help = 1d0+mu*grd_xarr(grd_nx+1)*cinv
+!-- velocity effects accounting
+           totevelo = totevelo+e*(1d0 - help)
            wl = wl/help
            e = e*help
            e0 = e0*help
