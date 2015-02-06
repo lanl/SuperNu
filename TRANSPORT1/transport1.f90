@@ -148,6 +148,8 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      yhelp2=mu*grd_yarr(iy)**2-muz*y
      yhelp3=grd_yarr(iy)**2-y**2
   endif
+  if(y==grd_yarr(iy).or.(y==grd_yarr(iy+1).and. &
+       abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9)) yhelp3=0d0
   if(iy==1) then
 !-- don't stop at axis
      idby1 = 8
@@ -210,6 +212,8 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      yhelp2=mu*grd_yarr(iy+1)**2-muz*y
      yhelp3=grd_yarr(iy+1)**2-y**2
   endif
+  if(y==grd_yarr(iy+1).or.(y==grd_yarr(iy).and. &
+       abs(grd_yarr(iy)+grd_yarr(iy+1))<1d-9)) yhelp3=0d0
   if(iy==grd_ny) then
 !-- don't stop at axis
      idby2 = 9
