@@ -639,16 +639,6 @@ c
 c-- scattering rand() count
       call mpi_scatter(prt_tlyrandarr,1,MPI_INTEGER,
      &     prt_tlyrand,1,MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
-c
-c-- iterating to correct rand() count
-      do isq = 1, prt_tlyrand-1
-         hlp = rnd_r(rnd_state)
-      enddo
-c
-c-- deallocations
-
-
-
 c!}}}
       end subroutine scatter_restart_data
 c

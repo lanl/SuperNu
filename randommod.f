@@ -68,27 +68,6 @@ c
       end subroutine rnd_i
 c
 c
-      real*8 function rnd_r(state)
-c     ----------------------------!{{{
-      implicit none
-      type(rnd_t),intent(inout) :: state
-************************************************************************
-* Draws a uniform real number on [0,1].
-************************************************************************
-      integer*4 :: imz
-c
-      imz = state%part(1) - state%part(3)
-      if(imz<0) imz = imz + 2147483579
-c
-      state%part(1) = state%part(2)
-      state%part(2) = state%part(3)
-      state%part(3) = imz
-      state%part(4) = 69069*state%part(4) + 1013904243
-      imz = imz + state%part(4)
-      rnd_r = 0.5d0 + 0.23283064d-9*imz !(0,1)!}}}
-      end function rnd_r
-c
-c
       pure subroutine rnd_rp(x,state)
 c     ----------------------------!{{{
       implicit none
