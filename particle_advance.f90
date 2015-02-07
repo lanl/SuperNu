@@ -263,7 +263,7 @@ subroutine particle_advance
               endselect
            endif
 !
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            if(r1<0.5d0) then
               ptcl2%isvacant = .true.
@@ -323,12 +323,12 @@ subroutine particle_advance
 !-- find group
         ig = binsrch(wl,grp_wl,grp_ng+1,.false.)
 !
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         prt_tlyrand = prt_tlyrand+1
         x1 = grd_cap(ig,ic)
         x2 = grp_wl(ig)/(pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig)))
         if(r1<x2/(x1+x2)) then
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
            wl = wl*exp(tsp_dt/tsp_t)
@@ -349,7 +349,7 @@ subroutine particle_advance
      if(ptcl2%itype==2) then
 !
 !-- sample wavelength
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
 !
 !-- sample position and direction
@@ -357,13 +357,13 @@ subroutine particle_advance
 !-- 3D spherical
         case(1)
 !-- sampling position uniformly!{{{
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
 !-- must be inside cell
@@ -374,35 +374,35 @@ subroutine particle_advance
            z = min(z,grd_zarr(iz+1))
            z = max(z,grd_zarr(iz))
 !-- sampling angle isotropically
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            mu = 1.0 - 2.0*r1
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            om = pc_pi2*r1!}}}
 !-- 2D
         case(2)
 !-- sampling position uniformly!{{{
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            x = sqrt(r1*grd_xarr(ix+1)**2 + (1d0-r1)*grd_xarr(ix)**2)
 !-- must be inside cell
            x = min(x,grd_xarr(ix+1))
            x = max(x,grd_xarr(ix))
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
 !-- sampling direction values
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            om = pc_pi2*r1
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            mu = 1d0 - 2d0*r1!}}}
 !-- 3D
         case(3)
 !-- sampling position uniformly !{{{
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
 !-- must be inside cell
            x = min(x,grd_xarr(ix+1))
@@ -412,21 +412,21 @@ subroutine particle_advance
            z = min(z,grd_zarr(iz+1))
            z = max(z,grd_zarr(iz))
 !-- sampling direction values
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            om = pc_pi2*r1
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            mu = 1d0 - 2d0*r1 !}}}
 !-- 1D spherical
         case(11)
 !-- sampling position uniformly!{{{
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
 !-- must be inside cell
            x = min(x,grd_xarr(ix+1))
            x = max(x,grd_xarr(ix))
 !-- sampling angle isotropically
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            prt_tlyrand = prt_tlyrand+1
            mu = 1.0 - 2.0*r1 !}}}
         endselect

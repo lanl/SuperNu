@@ -82,7 +82,7 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
      if(grd_capgrey(ic)>0d0) then
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         dcol = abs(log(r1)/(grd_capgrey(ic)*dcollabfact))
      else
         dcol = far
@@ -143,14 +143,14 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !-- fictitious scattering with implicit capture
   if (d == dcol) then
      !!{{{
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      if(r1<=1d0.and.prt_isimcanlog) then
         ptcl2%done = .true.
         edep = e*elabfact
 !-- velocity effects accounting
 !
      else
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         mu = 1d0-2d0*r1
         if(abs(mu)<0.0000001d0) then
            mu = 0.0000001d0
@@ -164,7 +164,7 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
            
         endif
 !
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
      endif
      !!}}}
 !

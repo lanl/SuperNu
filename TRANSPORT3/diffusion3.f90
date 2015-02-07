@@ -342,7 +342,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      denom = denom+grd_fcoef(ic)*caplump
   endif
 
-  call rnd_rp(r1,rndstate)
+  call rnd_r(r1,rndstate)
   tau = abs(log(r1)/(pc_c*denom))
   tcensus = tsp_t+tsp_dt-ptcl%t
   ddmct = min(tau,tcensus)
@@ -389,7 +389,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 
 
 !-- otherwise, perform event
-  call rnd_rp(r1,rndstate)
+  call rnd_r(r1,rndstate)
   help = 1d0/denom
 
 !-- leakage probabilities
@@ -417,7 +417,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      if(speclump<=0d0) then
         iiig = ig
      else
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         denom2 = 0d0
         help = 1d0/opacleak(1)
         do iig=1,glump
@@ -456,7 +456,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      endif
 
 !-- sampling wavelength
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
@@ -474,9 +474,9 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      else
 !-- sampling x,y,z
         x = grd_xarr(ix)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
 !-- must be inside cell
         y = min(y,grd_yarr(iy+1))
@@ -484,10 +484,10 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         z = min(z,grd_zarr(iz+1))
         z = max(z,grd_zarr(iz))
 !-- sampling direction
-        call rnd_rp(r1,rndstate)
-        call rnd_rp(r2,rndstate)
+        call rnd_r(r1,rndstate)
+        call rnd_r(r2,rndstate)
         xi = -max(r1,r2)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         eta = sqrt(1d0-xi**2)*cos(pc_pi2*r1)
         mu = sqrt(1d0-xi**2)*sin(pc_pi2*r1)
         om = atan2(eta,xi)
@@ -547,7 +547,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      if(speclump<=0d0) then
         iiig = ig
      else
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         denom2 = 0d0
         help = 1d0/opacleak(2)
         do iig = 1, glump
@@ -586,7 +586,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      endif
 
 !-- sampling wavelength
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
@@ -604,9 +604,9 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      else
 !-- sampling x,y,z
         x = grd_xarr(ix+1)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
 !-- must be inside cell
         y = min(y,grd_yarr(iy+1))
@@ -614,10 +614,10 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         z = min(z,grd_zarr(iz+1))
         z = max(z,grd_zarr(iz))
 !-- sampling direction
-        call rnd_rp(r1,rndstate)
-        call rnd_rp(r2,rndstate)
+        call rnd_r(r1,rndstate)
+        call rnd_r(r2,rndstate)
         xi = max(r1,r2)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         eta = sqrt(1d0-xi**2)*cos(pc_pi2*r1)
         mu = sqrt(1d0-xi**2)*sin(pc_pi2*r1)
         om = atan2(eta,xi)
@@ -676,7 +676,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      if(speclump<=0d0) then
         iiig = ig
      else
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         denom2 = 0d0
         help = 1d0/opacleak(3)
         do iig = 1, glump
@@ -715,7 +715,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      endif
 
 !-- sampling wavelength
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
@@ -732,10 +732,10 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         ic = grd_icell(ix,iy,iz)
      else
 !-- sampling x,y,z
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         x = (1d0-r1)*grd_xarr(ix)+r1*grd_xarr(ix+1)
         y = grd_yarr(iy)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
 !-- must be inside cell
         x = min(x,grd_xarr(ix+1))
@@ -743,10 +743,10 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         z = min(z,grd_zarr(iz+1))
         z = max(z,grd_zarr(iz))
 !-- sampling direction
-        call rnd_rp(r1,rndstate)
-        call rnd_rp(r2,rndstate)
+        call rnd_r(r1,rndstate)
+        call rnd_r(r2,rndstate)
         eta = -max(r1,r2)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         xi = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
         mu = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
         om = atan2(eta,xi)
@@ -806,7 +806,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      if(speclump<=0d0) then
         iiig = ig
      else
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         denom2 = 0d0
         help = 1d0/opacleak(4)
         do iig = 1, glump
@@ -845,7 +845,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      endif
 
 !-- sampling wavelength
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
@@ -862,10 +862,10 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         ic = grd_icell(ix,iy,iz)
      else
 !-- sampling x,y,z
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         x = (1d0-r1)*grd_xarr(ix)+r1*grd_xarr(ix+1)
         y = grd_yarr(iy+1)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
 !-- must be inside cell
         x = min(x,grd_xarr(ix+1))
@@ -873,10 +873,10 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         z = min(z,grd_zarr(iz+1))
         z = max(z,grd_zarr(iz))
 !-- sampling direction
-        call rnd_rp(r1,rndstate)
-        call rnd_rp(r2,rndstate)
+        call rnd_r(r1,rndstate)
+        call rnd_r(r2,rndstate)
         eta = max(r1,r2)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         xi = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
         mu = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
         om = atan2(eta,xi)
@@ -936,7 +936,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      if(speclump<=0d0) then
         iiig = ig
      else
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         denom2 = 0d0
         help = 1d0/opacleak(5)
         do iig = 1, glump
@@ -975,7 +975,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      endif
 
 !-- sampling wavelength
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
@@ -992,9 +992,9 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         ic = grd_icell(ix,iy,iz)
      else
 !-- sampling x,y,z
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         x = (1d0-r1)*grd_xarr(ix)+r1*grd_xarr(ix+1)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
         z = grd_zarr(iz)
 !-- must be inside cell
@@ -1003,10 +1003,10 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         y = min(y,grd_yarr(iy+1))
         y = max(y,grd_yarr(iy))
 !-- sampling direction
-        call rnd_rp(r1,rndstate)
-        call rnd_rp(r2,rndstate)
+        call rnd_r(r1,rndstate)
+        call rnd_r(r2,rndstate)
         mu = -max(r1,r2)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         om = pc_pi2*r1
         xi = sqrt(1d0-mu**2)*cos(om)
         eta = sqrt(1d0-mu**2)*sin(om)
@@ -1065,7 +1065,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      if(speclump<=0d0) then
         iiig = ig
      else
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         denom2 = 0d0
         help = 1d0/opacleak(6)
         do iig = 1, glump
@@ -1104,7 +1104,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      endif
 
 !-- sampling wavelength
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
 !-- checking adjacent
@@ -1121,9 +1121,9 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         ic = grd_icell(ix,iy,iz)
      else
 !-- sampling x,y,z
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         x = (1d0-r1)*grd_xarr(ix)+r1*grd_xarr(ix+1)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
         z = grd_zarr(iz+1)
 !-- must be inside cell
@@ -1132,10 +1132,10 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         y = min(y,grd_yarr(iy+1))
         y = max(y,grd_yarr(iy))
 !-- sampling direction
-        call rnd_rp(r1,rndstate)
-        call rnd_rp(r2,rndstate)
+        call rnd_r(r1,rndstate)
+        call rnd_r(r2,rndstate)
         mu = max(r1,r2)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         om = pc_pi2*r1
         xi = sqrt(1d0-mu**2)*cos(om)
         eta = sqrt(1d0-mu**2)*sin(om)
@@ -1194,7 +1194,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         return
      endif
 !
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
 
      if(glump==0) then
         iiig = emitgroup(r1,ic)
@@ -1220,7 +1220,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      endif
 !
      ig = iiig
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      wl = 1d0/((1d0-r1)*grp_wlinv(ig) + r1*grp_wlinv(ig+1))
 
      if((grd_sig(ic)+grd_cap(ig,ic)) * &
@@ -1228,18 +1228,18 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
           *thelp < prt_tauddmc) then
         ptcl2%itype = 1
 !-- direction sampled isotropically           
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         mu = 1d0 - 2d0*r1
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         om = pc_pi2*r1
         xi = sqrt(1d0-mu**2)*cos(om)
         eta = sqrt(1d0-mu**2)*sin(om)
 !-- position sampled uniformly
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
 !-- must be inside cell
         x = min(x,grd_xarr(ix+1))

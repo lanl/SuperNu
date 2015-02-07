@@ -142,7 +142,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
      dcol = far
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      dcol = -log(r1)*thelpinv/(elabfact*grd_capgrey(ic))
   else
 !-- making greater than dcen
@@ -211,9 +211,9 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !-- common manipulations for collisions
   if(d==dcol) then
 !-- resampling direction
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      mu = 1d0 - 2d0*r1
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      om = pc_pi2*r1
 !-- checking velocity dependence
      if(grd_isvelocity) then

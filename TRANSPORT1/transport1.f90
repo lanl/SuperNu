@@ -329,7 +329,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 
 !-- Thomson scattering distance
   if(grd_sig(ic)>0d0) then
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      dthm = -log(r1)*thelpinv/(elabfact*grd_sig(ic))
   else
      dthm = far
@@ -340,10 +340,10 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      dcol = far
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      dcol = -log(r1)*thelpinv/(elabfact*grd_cap(ig,ic))
   elseif(grd_fcoef(ic)<1d0.and.grd_fcoef(ic)>=0d0) then
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      dcol = -log(r1)*thelpinv/&
           (elabfact*(1d0-grd_fcoef(ic))*grd_cap(ig,ic))
   else
@@ -483,9 +483,9 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   if(d==dthm.or.d==dcol) then
 !-- resampling direction
      lredir = .true.
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      mu = 1d0 - 2d0*r1
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      om = pc_pi2*r1
 !-- checking velocity dependence
      if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+mu*x*cinv)
@@ -524,7 +524,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !
 !-- effective collision
   elseif(d==dcol) then
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
 !-- checking if analog
      if(prt_isimcanlog.and.r1<=grd_fcoef(ic)) then
 !-- effective absorption
@@ -536,7 +536,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      else
 !-- effective scattering
 !-- redistributing wavelength
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         if(grp_ng>1) then
            ig = emitgroup(r1,ic)
            if(ig>grp_ng) then
@@ -546,7 +546,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            endif
         endif
 !-- uniformly in new group
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
 !-- transforming to lab
         if(grd_isvelocity) then
@@ -625,7 +625,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
              dx(ihelp)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         if(r1<help*(1d0+1.5d0*abs(mu))) then
            if(grd_isvelocity) then
               ptcl2%itype = 2
@@ -641,11 +641,11 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         else
 !-- resampling x-cosine
            lredir = .true.
-           call rnd_rp(r1,rndstate)
-           call rnd_rp(r2,rndstate)
+           call rnd_r(r1,rndstate)
+           call rnd_r(r2,rndstate)
            mu=(ix-ihelp)*max(r1,r2)
 !-- resampling azimuthal
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            om = pc_pi2*r1
 !-- transforming mu to lab
            if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
@@ -718,7 +718,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
              xm(ix)*dyac(iynext)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         if(r1 < help*(1d0+1.5d0*abs(eta))) then
            ptcl2%itype = 2
            if(grd_isvelocity) then
@@ -733,8 +733,8 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            iz = iznext
            ic = grd_icell(ix,iy,iz)
         else
-           call rnd_rp(r1,rndstate)
-           call rnd_rp(r2,rndstate)
+           call rnd_r(r1,rndstate)
+           call rnd_r(r2,rndstate)
            if(iynext==iy) then
               if(y>grd_yarr(iy)) then
                  eta = -max(r1,r2)
@@ -750,7 +750,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            endif
 
            lredir = .true.
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            xi = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
 !-- resampling x-cosine
            mu = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
@@ -812,7 +812,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
              xm(ix)*ym(iy)*dz(iznext)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         if (r1 < help*(1d0+1.5d0*abs(xi))) then
            ptcl2%itype = 2
            if(grd_isvelocity) then
@@ -826,8 +826,8 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            iz = iznext
            ic = grd_icell(ix,iy,iz)
         else
-           call rnd_rp(r1,rndstate)
-           call rnd_rp(r2,rndstate)
+           call rnd_r(r1,rndstate)
+           call rnd_r(r2,rndstate)
 !-- resampling z-cosine
            if(grd_nz==2) then
 !-- rejection for 2 cells can occur at zarr(iz) and zarr(iz+1)
@@ -851,7 +851,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            endif
 
            lredir = .true.
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            eta = sqrt(1d0-xi**2)*cos(pc_pi2*r1)
 !-- resampling x-cosine
            mu = sqrt(1d0-xi**2)*sin(pc_pi2*r1)
@@ -883,7 +883,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*elabfact
      else
 !-- resampling wavelength in highest group
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         wl = 1d0/(r1*grp_wlinv(grp_ng+1) + (1d0-r1)*grp_wlinv(grp_ng))
         wl = wl*elabfact
      endif

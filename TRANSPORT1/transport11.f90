@@ -99,14 +99,14 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
      if(grd_cap(ig,ic)>0d0) then
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         dcol = abs(log(r1)/(grd_cap(ig,ic)*dcollabfact))
      else
         dcol = far
      endif
   else
      if((1d0-grd_fcoef(ic))*grd_cap(ig,ic)>0d0) then
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         dcol = abs(log(r1)/((1d0-grd_fcoef(ic))*grd_cap(ig,ic)*dcollabfact))
      else
         dcol = far
@@ -115,7 +115,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !
 !-- distance to Thomson-type collision = dthm
   if(grd_sig(ic)>0d0) then
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      dthm = abs(log(r1)/(grd_sig(ic)*dcollabfact))
   else
      dthm = far
@@ -126,7 +126,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !
 !-- distance to Doppler shift = ddop
   if(grd_isvelocity.and.ig<grp_ng) then
-!      call rnd_rp(r1,rndstate)
+!      call rnd_r(r1,rndstate)
 !      ddop = pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig))*abs(log(r1))/(grp_wl(ig)*dcollabfact)
 !     wl = r1*grp_wl(ig)+(1d0-r1)*grp_wl(ig+1) !uniform sample
 !      wl=1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))  !reciprocal sample
@@ -209,13 +209,13 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
      if(ig<grp_ng) then
         ig = ig+1
 !-- lab frame wavelength
-!     call rnd_rp(r1,rndstate)
+!     call rnd_r(r1,rndstate)
 !     wl = r1*grp_wl(ig)+(1d0-r1)*grp_wl(ig+1) !uniform sample
 !        wl=1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))  !reciprocal sample
 !        wl = wl*(1d0-mu*x*cinv)
         wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*(1d0-mu*x*cinv)
      else
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
 !     wl = r1*grp_wl(grp_ng)+(1d0-r1)*grp_wl(grp_ng+1) !uniform sample
         wl=1d0/(r1*grp_wlinv(grp_ng+1) + (1d0-r1)*grp_wlinv(grp_ng))  !reciprocal sample
         wl = wl*(1d0-mu*x*cinv)
@@ -240,7 +240,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !!}}}
   elseif (d == dthm) then  !physical scattering (Thomson-type)
      !!{{{
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      mu = 1d0-2d0*r1
      if(abs(mu)<0.0000001d0) then
         mu = 0.0000001d0
@@ -259,7 +259,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
      !!}}}
   elseif (d == dcol) then  !fictitious scattering with implicit capture
      !!{{{
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      if(r1<=grd_fcoef(ic).and.prt_isimcanlog) then
         ptcl2%isvacant = .true.
         ptcl2%done = .true.
@@ -268,7 +268,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         totevelo = totevelo+e*(1d0-elabfact)
 !
      else
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         mu = 1d0-2d0*r1
         if(abs(mu)<0.0000001d0) then
            mu = 0.0000001d0
@@ -285,7 +285,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         endif
 !
 !-- sample wavelength
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         if(grp_ng>1) then
            ig = emitgroup(r1,ic)
            if(ig>grp_ng) then
@@ -298,7 +298,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         !eraddens = e*elabfact
 !-------------------------------------------------------
 ! sampling comoving wavelength in group
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
         !wl = (1d0-r1)*grp_wl(ig)+r1*grp_wl(ig+1)
         !wl = 0.5d0*(grp_wl(ig)+grp_wl(ig+1))
@@ -313,12 +313,12 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !         else
 !            bmax = pc_plkpk
 !         endif
-!         call rnd_rp(r1,rndstate)
-!         call rnd_rp(r2,rndstate)
+!         call rnd_r(r1,rndstate)
+!         call rnd_r(r2,rndstate)
 !         xx0 = (1d0-r1)*x1+r1*x2
 !         do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
-!            call rnd_rp(r1,rndstate)
-!            call rnd_rp(r2,rndstate)
+!            call rnd_r(r1,rndstate)
+!            call rnd_r(r2,rndstate)
 !            xx0 = (1d0-r1)*x1+r1*x2
 !         enddo
 !         wl = pc_h*pc_c/(xx0*pc_kb*grd_temp(ic))
@@ -358,7 +358,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         elseif (((grd_sig(l)+grd_cap(ig,l))*dx(ix+1) &
              *thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            if(grd_isvelocity) then
               mu = (mu-x*cinv)/(1d0-x*mu*cinv)
            endif
@@ -379,8 +379,8 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
               ix = ix+1
               ic = grd_icell(ix,iy,iz)
            else
-              call rnd_rp(r1,rndstate)
-              call rnd_rp(r2,rndstate)
+              call rnd_r(r1,rndstate)
+              call rnd_r(r2,rndstate)
               mu = -max(r1,r2)
               if(grd_isvelocity) then
                  mu = (mu+x*cinv)/(1d0+x*mu*cinv)
@@ -400,7 +400,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
            if (((grd_sig(l)+grd_cap(ig,l))*dx(ix+1) &
                 *thelp >= prt_tauddmc) &
                 .and.(in_puretran.eqv..false.)) then
-              call rnd_rp(r1,rndstate)
+              call rnd_r(r1,rndstate)
               if(grd_isvelocity) then
                  mu = (mu-x*cinv)/(1d0-x*mu*cinv)
               endif
@@ -421,8 +421,8 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
                  ix = ix+1
                  ic = grd_icell(ix,iy,iz)
               else
-                 call rnd_rp(r1,rndstate)
-                 call rnd_rp(r2,rndstate)
+                 call rnd_r(r1,rndstate)
+                 call rnd_r(r2,rndstate)
                  mu = -max(r1,r2)
                  if(grd_isvelocity) then
                     mu = (mu+x*cinv)/(1d0+x*mu*cinv)
@@ -437,7 +437,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         elseif (((grd_sig(l)+grd_cap(ig,l))*dx(ix-1) &
              *thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
 !
 !-- amplification factor
            if(grd_isvelocity) then
@@ -479,8 +479,8 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
               ix = ix-1
               ic = grd_icell(ix,iy,iz)
            else
-              call rnd_rp(r1,rndstate)
-              call rnd_rp(r2,rndstate)
+              call rnd_r(r1,rndstate)
+              call rnd_r(r2,rndstate)
               mu = max(r1,r2)
               if(grd_isvelocity) then
                  mu = (mu+x*cinv)/(1d0+x*mu*cinv)

@@ -214,7 +214,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
      denom = denom+grd_fcoef(ic)*caplump
   endif
 
-  call rnd_rp(r1,rndstate)
+  call rnd_r(r1,rndstate)
   tau = abs(log(r1)/(pc_c*denom))
   tcensus = tsp_t+tsp_dt-ptcl%t
   ddmct = min(tau,tcensus)
@@ -255,7 +255,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
 
 
 !-- otherwise, perform event
-  call rnd_rp(r1,rndstate)
+  call rnd_r(r1,rndstate)
   help = 1d0/denom
 
 !-- leak probability
@@ -290,7 +290,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
         if(speclump<=0d0) then
            iiig = ig
         else
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            denom2 = 0d0
            help = 1d0/opacleak(1)
            do iig=1,glump
@@ -319,14 +319,14 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
 
         if((grd_sig(l)+grd_cap(iiig,l))*dx(ix-1) &
              *thelp >= prt_tauddmc) then
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 !-- update particle
            ix = ix-1
            ic = grd_icell(ix,iy,iz)
            ig = iiig
         else
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 !
 !-- method changed to IMC
@@ -336,8 +336,8 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
            r = grd_xarr(ix)
 !
 !-- particle angle sampled from isotropic b.c. inward
-           call rnd_rp(r1,rndstate)
-           call rnd_rp(r2,rndstate)
+           call rnd_r(r1,rndstate)
+           call rnd_r(r2,rndstate)
            mu = -max(r1,r2)
 !
 !-- doppler and aberration corrections
@@ -371,14 +371,14 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
         ptcl2%done = .true.
         ptcl2%lflux = .true.
 !-- outbound luminosity tally
-        call rnd_rp(r1,rndstate)
-        call rnd_rp(r2,rndstate)
+        call rnd_r(r1,rndstate)
+        call rnd_r(r2,rndstate)
         mu = max(r1,r2)
         if(speclump<=0d0) then
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            wl=1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))
         else
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            denom2 = 0d0
            help = 1d0/opacleak(2)
            do iig=1,glump
@@ -392,7 +392,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
               denom2 = denom2+specig*resopacleak*speclump*help
               if(denom2>r1) exit
            enddo
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            wl=1d0/(r1*grp_wlinv(iiig+1) + (1d0-r1)*grp_wlinv(iiig))
         endif
 !-- changing from comoving frame to observer frame
@@ -414,7 +414,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
         if(speclump<=0d0) then
            iiig = ig
         else
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            denom2 = 0d0
            help = 1d0/opacleak(2)
            do iig=1,glump
@@ -444,7 +444,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
         if((grd_sig(l)+grd_cap(iiig,l))*dx(ix+1) &
              *thelp >= prt_tauddmc) then
 !
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 !-- update particle
            ix = ix+1
@@ -452,7 +452,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
            ig = iiig
 !
         else
-           call rnd_rp(r1,rndstate)
+           call rnd_r(r1,rndstate)
            wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 !
 !-- method changed to IMC
@@ -462,8 +462,8 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
            r = grd_xarr(ix+1)
 !
 !-- particle angle sampled from isotropic b.c. outward
-           call rnd_rp(r1,rndstate)
-           call rnd_rp(r2,rndstate)
+           call rnd_r(r1,rndstate)
+           call rnd_r(r2,rndstate)
            mu = max(r1,r2)
 !
 !-- doppler and aberration corrections
@@ -496,7 +496,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
         return
      endif
 
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
 
      if(glump==0) then
         iiig = emitgroup(r1,ic)
@@ -521,7 +521,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
      endif
 !
      ig = iiig
-     call rnd_rp(r1,rndstate)
+     call rnd_r(r1,rndstate)
      wl = 1d0/((1d0-r1)*grp_wlinv(ig) + r1*grp_wlinv(ig+1))
 
      if((grd_sig(ic)+grd_cap(ig,ic))*dx(ix) &
@@ -530,10 +530,10 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
      else
         ptcl2%itype = 1
 !-- direction sampled isotropically           
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         mu = 1.0-2.0*r1
 !-- position sampled uniformly
-        call rnd_rp(r1,rndstate)
+        call rnd_r(r1,rndstate)
         r = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
 !-- must be inside cell
         r = min(r,grd_xarr(ix+1))

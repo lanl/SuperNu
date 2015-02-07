@@ -68,7 +68,7 @@ c
       end subroutine rnd_i
 c
 c
-      pure subroutine rnd_rp(x,state)
+      pure subroutine rnd_r(x,state)
 c     ----------------------------!{{{
       implicit none
       real*8,intent(out) :: x
@@ -87,7 +87,7 @@ c
       state%part(4) = 69069*state%part(4) + 1013904243
       imz = imz + state%part(4)
       x = 0.5d0 + 0.23283064d-9*imz !(0,1)!}}}
-      end subroutine rnd_rp
+      end subroutine rnd_r
 c
 c
       pure subroutine rnd_advance(state,n)

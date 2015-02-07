@@ -73,7 +73,7 @@ subroutine initial_particles
 
 !-- calculating wavelength
      denom2 = 0d0
-     call rnd_rp(r1,rnd_state)
+     call rnd_r(r1,rnd_state)
      prt_tlyrand = prt_tlyrand+1
      do ig = 1, grp_ng
         wl3 = grp_wlinv(ig+1)
@@ -82,7 +82,7 @@ subroutine initial_particles
         if(r1>=denom2.and.r1<denom2 + (wl4-wl3)/(wl2-wl1)) exit
         denom2 = denom2 + (wl4-wl3)/(wl2-wl1)
      enddo
-     call rnd_rp(r1,rnd_state)
+     call rnd_r(r1,rnd_state)
      wl0 = 1d0/((1d0-r1)*grp_wlinv(iig)+r1*grp_wlinv(iig+1))
      ptcl%wl = wl0
 
@@ -92,12 +92,12 @@ subroutine initial_particles
      ptcl%e0 = ep0
 
 !-- calculating direction cosine (comoving)
-     call rnd_rp(r1,rnd_state)
+     call rnd_r(r1,rnd_state)
      mu0 = 1d0-2d0*r1
      ptcl%mu = mu0
 
 !-- sampling azimuthal angle of direction
-     call rnd_rp(r1,rnd_state)
+     call rnd_r(r1,rnd_state)
      om0 = pc_pi2*r1
      ptcl%om = om0
 
@@ -108,14 +108,14 @@ subroutine initial_particles
 !-- 3D spherical
      case(1)
 !-- calculating position
-        call rnd_rp(r1,rnd_state)
+        call rnd_r(r1,rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1d0-r1)*grd_xarr(i)**3)**(1d0/3d0)
-        call rnd_rp(r1,rnd_state)
+        call rnd_r(r1,rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
-        call rnd_rp(r1,rnd_state)
+        call rnd_r(r1,rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
 !-- must be inside cell
@@ -131,10 +131,10 @@ subroutine initial_particles
 !-- setting 2nd cell index
         iy = j
 !-- calculating position
-        call rnd_rp(r1,rnd_state)
+        call rnd_r(r1,rnd_state)
         ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + &
              (1d0-r1)*grd_xarr(i)**2)
-        call rnd_rp(r1,rnd_state)
+        call rnd_r(r1,rnd_state)
         ptcl%y = r1*grd_yarr(j+1) + &
              (1d0-r1)*grd_yarr(j)
 !-- must be inside cell
@@ -149,13 +149,13 @@ subroutine initial_particles
         iy = j
         iz = k
 !-- calculating position
-        call rnd_rp(r1,rnd_state)
+        call rnd_r(r1,rnd_state)
         ptcl%x = r1*grd_xarr(i+1) + &
              (1d0-r1)*grd_xarr(i)
-        call rnd_rp(r1,rnd_state)
+        call rnd_r(r1,rnd_state)
         ptcl%y = r1*grd_yarr(j+1) + &
              (1d0-r1)*grd_yarr(j)
-        call rnd_rp(r1,rnd_state)
+        call rnd_r(r1,rnd_state)
         ptcl%z = r1*grd_zarr(k+1) + &
              (1d0-r1)*grd_zarr(k)
 !-- must be inside cell
@@ -169,7 +169,7 @@ subroutine initial_particles
 !-- 1D
      case(11)
 !-- calculating position
-        call rnd_rp(r1,rnd_state)
+        call rnd_r(r1,rnd_state)
         prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1d0-r1)*grd_xarr(i)**3)**(1d0/3d0)
