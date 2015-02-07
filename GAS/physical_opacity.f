@@ -27,6 +27,7 @@ c-- ffxs
       real*8,parameter :: c1 = 4d0*pc_e**6/(3d0*pc_h*pc_me*pc_c**4)*
      &  sqrt(pc_pi2/(3*pc_me*pc_h*pc_c))
       real*8 :: gg,u,gff,help
+      real*8 :: rgg,ru,dgg,du
       real*8 :: yend,dydx,dy !extrapolation
       integer :: iu,igg
 c-- bfxs
@@ -175,7 +176,7 @@ c-- simple variant: nearest data grid point
        lwarn = .true.
 c$omp parallel do
 c$omp& schedule(static)
-c$omp& private(wl,wlinv,u,iu,help,gg,igg,gff,yend,dydx,dy)
+c$omp& private(wl,wlinv,u,ru,du,iu,help,gg,rgg,dgg,igg,gff,yend,dydx,dy)
 c$omp& shared(lwarn,hckt,hlparr,gas_mass,cap)
        do ig=1,grp_ng
         wl = grp_wl(ig)  !in cm
@@ -184,38 +185,27 @@ c-- gcell loop
         do i=1,gas_ncell
          if(gas_mass(i)<=0d0) cycle
          u = hckt(i)*wlinv
-         iu = nint(10d0*(log10(u) + 4d0)) + 1
+         ru = 10d0*(log10(u) + 4d0) + 1d0
+         iu = floor(ru)
+         iu = max(iu,1)
+         iu = min(iu,ff_nu-1)
+         du = ru - iu
 c
-         help = c1*sqrt(hckt(i))*(1d0 - exp(-u))*wl**3*hlparr(i)
-         if(iu<1 .or. iu>ff_nu) then
-          if(lwarn) then
-           lwarn = .false.
-           write(6,*) 'opacity_calc ff: iu out of data limit',iu
-          endif
-          iu = min(iu,ff_nu)
-          iu = max(iu,1)
-         endif
 c-- element loop
+         help = c1*sqrt(hckt(i))*(1d0 - exp(-u))*wl**3*hlparr(i)
          do iz=1,gas_nelem
           gg = iz**2*pc_rydberg*hckt(i)
-          igg = nint(5d0*(log10(gg) + 4d0)) + 1
-c-- gff is approximately constant in the low igg data-limit, do trivial extrapolation:
+          rgg = 5d0*(log10(gg) + 4d0) + 1d0
+          igg = floor(rgg)
           igg = max(igg,1)
-          if(igg<=ff_ngg) then
-           gff = ff_gff(iu,igg)
-          else
-c-- extrapolate
-           yend = ff_gff(iu,ff_ngg)
-           dydx = .5d0*(yend - ff_gff(iu,ff_ngg-2))
-           dy = dydx*(igg - ff_ngg)
-           if(abs(dy)>abs(yend - 1d0) .or. !don't cross asymptotic value
-     &       sign(1d0,dy)==sign(1d0,yend - 1d0)) then !wrong slope
-c-- asymptotic value
-            gff = 1d0
-           else
-            gff = yend + dydx*(igg - ff_ngg)
-           endif
-          endif
+          igg = min(igg,ff_ngg-1)
+c
+c-- bilinear inter-extrapolation
+          gff = (1d0-du)*(1d0-dgg)*ff_gff(iu,igg) +
+     &          du*(1d0-dgg)*ff_gff(iu+1,igg) +
+     &          (1d0-du)*dgg*ff_gff(iu,igg+1) +
+     &          du*dgg*ff_gff(iu+1,igg+1)
+          if(rgg>ff_ngg) gff = max(gff,1d0)
 c-- cross section
           cap(i,ig) = cap(i,ig) +
      &      help*gff*iz**2*gas_natom1fr(iz,i)
