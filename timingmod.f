@@ -153,7 +153,8 @@ c
       write(6,1) 'gas opacleak      :',t_opacleak(i)
       write(6,1) 'mpi (bc|misc|red) :',tmpi,
      &  t_mpibcast(i),t_mpimisc(i),t_mpireduc(i)
-      write(6,1) 'packet transport  :',t_pcktmax(i)
+      write(6,1) 'transport min|max :',t_pcktmin(i),t_pcktmea(i),
+     &  t_pcktmax(i)
       write(6,1) 'gamma transport   :',t_pcktgam(i)
       write(6,1) 'output            :',t_output(i)
       write(6,1) 'unaccounted       :',t_all - taccounted

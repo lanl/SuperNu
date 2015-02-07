@@ -60,9 +60,10 @@ subroutine particle_advance
   xm(l) = 0.5*(grd_xarr(l+1) + grd_xarr(l))
   dyac(l) = grd_yacos(l) - grd_yacos(l+1)
   ym(l) = sqrt(1d0-0.25*(grd_yarr(l+1)+grd_yarr(l))**2)
+
 !
-!-- start clock
-  t0 = t_time()
+!-- init timers
+  t_pckt_stat = (/1d30, 0d0, 0d0/) !min,mean,max
 
   if(grd_isvelocity) then
      thelp = tsp_t
@@ -93,6 +94,7 @@ subroutine particle_advance
 !$omp parallel &
 !$omp private(ptcl,ptcl2, &
 !$omp    x,y,z,mu,om,wl,e,e0,ix,iy,iz,ic,ig,icold,r1, &
+!$omp    t0,t1, &
 !$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
 !$omp    rndstate,edep,eraddens,eamp,icell,specarr,ierr, iomp) &
 !$omp reduction(+:grd_edep,grd_eraddens,grd_eamp,grd_methodswap,grd_numcensus, &
@@ -103,7 +105,16 @@ subroutine particle_advance
 
 !-- thread id                                                               
 !$ iomp = omp_get_thread_num()
+
+!-- each thread uses its own rnd stream
   rndstate = rnd_states(iomp+1)
+
+!$!-- thread timing
+!$ if(.false.) then!{{{
+      t0 = t_time() !serial version
+!$ else
+!$    t0 = omp_get_wtime()
+!$ endif!}}}
 !
 !-- assigning pointers to corresponding particle properties
   x => ptcl%x
@@ -452,10 +463,25 @@ subroutine particle_advance
      prt_particles(ipart) = ptcl
 
   enddo !ipart
-!$omp end do
-!
+!$omp end do nowait
+
+! write(0,*) iomp,nstepmax, ndist
+
 !-- save state
   rnd_states(iomp+1) = rndstate
+
+!-- thread timing
+!$ if(.false.) then
+      t1 = t_time() !serial version
+!$ else
+!$    t1 = omp_get_wtime()
+!$ endif
+
+!$omp critical
+  t1 = t1 - t0
+  t_pckt_stat = (/min(t_pckt_stat(1),t1), t_pckt_stat(2)+t1/in_nomp, &
+     max(t_pckt_stat(3),t1)/) !min,mean,max
+!$omp end critical
 !$omp end parallel
 
 !write(0,*) nstepmax, ndist
@@ -465,9 +491,6 @@ subroutine particle_advance
   flx_luminos = flx_luminos*help
   flx_lumdev = flx_lumdev*help**2
 
-
-  t1 = t_time()
-  t_pckt_stat = t1-t0  !register timing
   call timereg(t_pcktnpckt, dble(npckt))
   call timereg(t_pcktnddmc, dble(nddmc))
   call timereg(t_pcktnimc, dble(nimc))
