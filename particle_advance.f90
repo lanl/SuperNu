@@ -264,7 +264,6 @@ subroutine particle_advance
            endif
 !
            call rnd_r(r1,rndstate)
-           prt_tlyrand = prt_tlyrand+1
            if(r1<0.5d0) then
               ptcl2%isvacant = .true.
               ptcl2%done = .true.
@@ -324,12 +323,10 @@ subroutine particle_advance
         ig = binsrch(wl,grp_wl,grp_ng+1,.false.)
 !
         call rnd_r(r1,rndstate)
-        prt_tlyrand = prt_tlyrand+1
         x1 = grd_cap(ig,ic)
         x2 = grp_wl(ig)/(pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig)))
         if(r1<x2/(x1+x2)) then
            call rnd_r(r1,rndstate)
-           prt_tlyrand = prt_tlyrand+1
            wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
            wl = wl*exp(tsp_dt/tsp_t)
         endif
@@ -358,13 +355,10 @@ subroutine particle_advance
         case(1)
 !-- sampling position uniformly!{{{
            call rnd_r(r1,rndstate)
-           prt_tlyrand = prt_tlyrand+1
            x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
            call rnd_r(r1,rndstate)
-           prt_tlyrand = prt_tlyrand+1
            y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
            call rnd_r(r1,rndstate)
-           prt_tlyrand = prt_tlyrand+1
            z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
 !-- must be inside cell
            x = min(x,grd_xarr(ix+1))
@@ -375,10 +369,8 @@ subroutine particle_advance
            z = max(z,grd_zarr(iz))
 !-- sampling angle isotropically
            call rnd_r(r1,rndstate)
-           prt_tlyrand = prt_tlyrand+1
            mu = 1.0 - 2.0*r1
            call rnd_r(r1,rndstate)
-           prt_tlyrand = prt_tlyrand+1
            om = pc_pi2*r1!}}}
 !-- 2D
         case(2)
@@ -420,14 +412,12 @@ subroutine particle_advance
         case(11)
 !-- sampling position uniformly!{{{
            call rnd_r(r1,rndstate)
-           prt_tlyrand = prt_tlyrand+1
            x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
 !-- must be inside cell
            x = min(x,grd_xarr(ix+1))
            x = max(x,grd_xarr(ix))
 !-- sampling angle isotropically
            call rnd_r(r1,rndstate)
-           prt_tlyrand = prt_tlyrand+1
            mu = 1.0 - 2.0*r1 !}}}
         endselect
 !

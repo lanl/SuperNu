@@ -635,10 +635,6 @@ c-- scattering part wavelength
       call mpi_scatter(prt_tlywlsrc,prt_npartmax,MPI_REAL8,
      &     prt_particles%wl,prt_npartmax,MPI_REAL8,impi0,
      &     MPI_COMM_WORLD,ierr)
-c
-c-- scattering rand() count
-      call mpi_scatter(prt_tlyrandarr,1,MPI_INTEGER,
-     &     prt_tlyrand,1,MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
 c!}}}
       end subroutine scatter_restart_data
 c
@@ -688,17 +684,6 @@ c-- gathering part wavelength
       call mpi_gather(prt_particles%wl,prt_npartmax,MPI_REAL8,
      &     prt_tlywlsrc,prt_npartmax,MPI_REAL8,impi0,MPI_COMM_WORLD,
      &     ierr)
-c
-c
-c====
-c
-c-- gathering rand() counts
-      call mpi_gather(prt_tlyrand,1,MPI_INTEGER,prt_tlyrandarr,1,
-     &     MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
-c
-c-- deallocations
-
-
 c!}}}
       end subroutine collect_restart_data    
 c

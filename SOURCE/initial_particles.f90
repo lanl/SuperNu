@@ -74,7 +74,6 @@ subroutine initial_particles
 !-- calculating wavelength
      denom2 = 0d0
      call rnd_r(r1,rnd_state)
-     prt_tlyrand = prt_tlyrand+1
      do ig = 1, grp_ng
         wl3 = grp_wlinv(ig+1)
         wl4 = grp_wlinv(ig)
@@ -109,14 +108,11 @@ subroutine initial_particles
      case(1)
 !-- calculating position
         call rnd_r(r1,rnd_state)
-        prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1d0-r1)*grd_xarr(i)**3)**(1d0/3d0)
         call rnd_r(r1,rnd_state)
-        prt_tlyrand = prt_tlyrand+1
         ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
         call rnd_r(r1,rnd_state)
-        prt_tlyrand = prt_tlyrand+1
         ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
@@ -170,7 +166,6 @@ subroutine initial_particles
      case(11)
 !-- calculating position
         call rnd_r(r1,rnd_state)
-        prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1d0-r1)*grd_xarr(i)**3)**(1d0/3d0)
 !-- must be inside cell

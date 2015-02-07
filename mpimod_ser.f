@@ -108,8 +108,6 @@ c
 c
 c
       subroutine collect_restart_data
-      use particlemod
-      prt_tlyrandarr=prt_tlyrand
       end subroutine collect_restart_data
 c
 c

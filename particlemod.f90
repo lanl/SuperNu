@@ -33,9 +33,6 @@ module particlemod
   real*8 :: prt_taulump
   character(4) :: prt_tauvtime ! unif|incr
 !
-!
-!-- rtw: random number counter added (rev. 262).
-  integer :: prt_tlyrand
 !-- rtw: array of rand counts from each rank
   integer, allocatable :: prt_tlyrandarr(:)
 !-- particle property restart arrays:

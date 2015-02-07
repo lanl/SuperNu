@@ -143,9 +143,6 @@ program supernu
 !-- reading restart rand() count
   if(tsp_ntres>1.and..not.in_norestart) then
      call scatter_restart_data !MPI
-     prt_tlyrand = 0 !mimicking end of tsp reset
-  else
-     prt_tlyrand = 1
   endif
 
 !-- initial radiation energy
@@ -260,9 +257,6 @@ program supernu
            call write_restart_particles !particle properties of current time step
         endif
      endif !impi
-
-!-- reset rand counters
-     prt_tlyrand = 0
 
 !-- write timestep timing to file
      if(it>0) call timing_timestep(impi)

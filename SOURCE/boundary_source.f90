@@ -102,13 +102,11 @@ subroutine boundary_source
 !
 !-- calculating particle time
      call rnd_r(r1,rnd_state)
-     prt_tlyrand = prt_tlyrand+1
      ptcl%t = tsp_t+r1*tsp_dt
 
 !-- calculating wavelength
      denom2 = 0d0
      call rnd_r(r1,rnd_state)
-     prt_tlyrand = prt_tlyrand+1
      do ig = 1, grp_ng
         iig = ig
         if(r1>=denom2.and.r1<denom2+emitsurfprobg(ig)) exit
@@ -118,7 +116,6 @@ subroutine boundary_source
         iig = 2
      endif
      call rnd_r(r1,rnd_state)
-     prt_tlyrand = prt_tlyrand+1
      wl0 = 1d0/((1d0-r1)*grp_wlinv(iig)+r1*grp_wlinv(iig+1))
 
 !-- sampling surface projection
@@ -126,9 +123,7 @@ subroutine boundary_source
         mu0 = 1d0
      elseif(in_surfsrcmu=='isot') then
         call rnd_r(r1,rnd_state)
-        prt_tlyrand = prt_tlyrand+1
         call rnd_r(r2,rnd_state)
-        prt_tlyrand = prt_tlyrand+1
         mu0 = max(r1,r2)
      endif
 !
@@ -141,10 +136,8 @@ subroutine boundary_source
         ptcl%x = grd_xarr(i+1)
         x0 = ptcl%x
         call rnd_r(r1,rnd_state)
-        prt_tlyrand = prt_tlyrand+1
         ptcl%y = 1d0-2d0*r1
         call rnd_r(r1,rnd_state)
-        prt_tlyrand = prt_tlyrand+1
         ptcl%z = pc_pi2*r1
         j = binsrch(ptcl%y,grd_yarr,grd_ny+1,.false.)
         k = binsrch(ptcl%z,grd_zarr,grd_nz+1,.false.)

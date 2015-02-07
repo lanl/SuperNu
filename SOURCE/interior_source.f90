@@ -69,13 +69,11 @@ subroutine interior_source
 !
 !-- calculating particle time
      call rnd_r(r1,rnd_state)
-     prt_tlyrand = prt_tlyrand+1
      ptcl%t = tsp_t+r1*tsp_dt
 
 !-- calculating wavelength
      denom2 = 0d0
      call rnd_r(r1,rnd_state)
-     prt_tlyrand = prt_tlyrand+1
      do ig = 1, grp_ng-1
         x3=grp_wlinv(ig+1)
         x4=grp_wlinv(ig)
@@ -109,14 +107,11 @@ subroutine interior_source
      case(1)
 !-- calculating position!{{{
         call rnd_r(r1,rnd_state)
-        prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
         call rnd_r(r1,rnd_state)
-        prt_tlyrand = prt_tlyrand+1
         ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
         call rnd_r(r1,rnd_state)
-        prt_tlyrand = prt_tlyrand+1
         ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
@@ -162,7 +157,6 @@ subroutine interior_source
      case(11)
 !-- calculating position!{{{
         call rnd_r(r1,rnd_state)
-        prt_tlyrand = prt_tlyrand+1
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
 !-- must be inside cell
@@ -212,13 +206,11 @@ subroutine interior_source
 !
 !-- calculating particle time
      call rnd_r(r1,rnd_state)
-     prt_tlyrand = prt_tlyrand+1
      ptcl%t = tsp_t+r1*tsp_dt
 
 !-- calculating wavelength
      denom2 = 0d0
      call rnd_r(r1,rnd_state)
-     prt_tlyrand = prt_tlyrand+1
      do ig = 1, grp_ng-1
         if (r1>=denom2.and.r1<denom2+emitprob(ig)) exit
         denom2 = denom2+emitprob(ig)
@@ -259,20 +251,16 @@ subroutine interior_source
         uur = uur/uumax
         do while (r2 > r3)
            call rnd_r(r1,rnd_state)
-           prt_tlyrand = prt_tlyrand+1
            x0 = (r1*grd_xarr(i+1)**3+(1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
            r3 = (x0-grd_xarr(i))/dx(i)
            r3 = r3*uur+(1.0-r3)*uul
            call rnd_r(r2,rnd_state)
-           prt_tlyrand = prt_tlyrand+1
         enddo
         ptcl%x = x0
 !-- uniform in angles
         call rnd_r(r1,rnd_state)
-        prt_tlyrand = prt_tlyrand+1
         ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
         call rnd_r(r1,rnd_state)
-        prt_tlyrand = prt_tlyrand+1
         ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
@@ -389,12 +377,10 @@ subroutine interior_source
         uur = uur/uumax
         do while (r2 > r3)
            call rnd_r(r1,rnd_state)
-           prt_tlyrand = prt_tlyrand+1
            x0 = (r1*grd_xarr(i+1)**3+(1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
            r3 = (x0-grd_xarr(i))/dx(i)
            r3 = r3*uur+(1.0-r3)*uul
            call rnd_r(r2,rnd_state)
-           prt_tlyrand = prt_tlyrand+1
         enddo
         ptcl%x = x0
 !-- must be inside cell
