@@ -373,7 +373,7 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- check for errors
         if(ierr/=0) then
            write(0,*) 'ierr:',ierr
-           stop 'particle_advance_gg: fatal transport error'
+           if(ierr>0) stop 'particle_advance_gg: fatal transport error'
         endif
      enddo
 
