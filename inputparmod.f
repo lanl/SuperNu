@@ -408,17 +408,17 @@ c
        if(in_srctype=='surf' .and.
      &      any((/'in  ','top ','botm'/)==in_surfsrcloc))
      &      stop 'in_srctype and in_surfsrcloc invalid'
+       if(in_flx_ndim(3)/=1) stop 'in_flx_ndim(3) inval'
       case(3)
       case(11)
        if(in_ndim(2)>1 .or. in_ndim(3)>1) stop 'in_ndim invalid'
        if(in_srctype=='surf'.and.in_surfsrcloc/='out') stop
      &   'in_srctype and in_surfsrcloc invalid'
+       if(in_flx_ndim(2)/=1) stop 'in_flx_ndim(2) inval'
+       if(in_flx_ndim(3)/=1) stop 'in_flx_ndim(3) inval'
       case default
        stop 'in_igeom invalid'
       endselect
-c
-      if(in_ndim(2)==1.and.in_flx_ndim(2)/=1) stop'in_flx_ndim(2) inval'
-      if(in_ndim(3)==1.and.in_flx_ndim(3)/=1) stop'in_flx_ndim(3) inval'
 c
       if(in_isvelocity) then
        if(in_lx>0d0) stop 'vel grid: use in_velout, not in_lx'
