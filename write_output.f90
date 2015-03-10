@@ -80,7 +80,8 @@ subroutine write_output
 !==========
   open(unit=4,file='output.tsp_time',status=fstat,position=pos)
   if(lfirst) write(4,*) "#",tsp_nt
-  write(4,*) tsp_t
+  if(lfirst) write(4,*) tsp_t  !beginning of first time step
+  write(4,*) tsp_t + tsp_dt  !end of time step
   close(4)
 
   open(unit=4,file='output.tot_energy',status=fstat,position=pos,recl=7*12)
