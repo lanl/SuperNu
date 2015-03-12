@@ -64,7 +64,8 @@ c     --------------------------------------------------------!{{{
 ************************************************************************
 * Read the input structure file
 ************************************************************************
-      integer :: i,j,k,l,ierr,nx_r,ny_r,nz_r,ini56,nvar,ncol,imass
+      integer :: i,j,k,l,ierr,nx_r,ny_r,nz_r,ini56,nvar,ncol
+      integer :: jmass,jxleft
       integer :: ncorner,nvoid,ncell,ncpr
       character(2) :: dmy
       character(8),allocatable :: labl(:)
@@ -105,6 +106,15 @@ c-- read labels
       read(4,*,iostat=ierr) dmy, labl, str_abundlabl
       if(ierr/=0) stop 'read_inputstr: input.str fmt err: col labels'
 c
+c-- var pointers
+      jmass = 0
+      jxleft = 0
+      do i=1,nvar
+       if(lcase(trim(labl(i)))=='mass') jmass = i
+       if(lcase(trim(labl(i)))=='x_left') jxleft = i
+      enddo
+      if(jmass==0) stop 'read_inputstr: mass label not found'
+c
 c-- allocate data arrays
       allocate(str_xleft(nx+1))
       allocate(str_yleft(ny+1))
@@ -124,7 +134,7 @@ c-- validity check
 c
 c-- transer data to final arrays
 c-- dim 1
-      if(igeom==11) then
+      if(igeom==11 .and. jxleft==0) then
        str_xleft(1) = 0d0
        str_xleft(2:) = raw(1,:nx)
       else
@@ -167,20 +177,14 @@ c-- verify approximate values
        str_zleft(nz+1) = pc_pi2
       endif
 c
-c-- var pointers
-      imass = 0
-      do i=1,nvar
-       if(lcase(trim(labl(i)))=='mass') imass = i
-      enddo
-      if(imass==0) stop 'read_inputstr: mass label not found'
 c-- vars
-!     str_mass(:,:,:) = reshape(raw(imass,:),[nx,ny,nz]) !-- memory hog in ifort 13.1.3
+!     str_mass(:,:,:) = reshape(raw(jmass,:),[nx,ny,nz]) !-- memory hog in ifort 13.1.3
       l = 0
       do k=1,nz
       do j=1,ny
       do i=1,nx
        l = l+1
-       str_mass(i,j,k) = raw(imass,l)
+       str_mass(i,j,k) = raw(jmass,l)
       enddo
       enddo
       enddo
