@@ -280,7 +280,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
 !-- checking if at inner bound
      if(ix==1) then
 !       stop 'diffusion11: non-physical inward leakage'
-        ierr = 1
+        ierr = 101
         return
 
 !-- sample adjacent group (assumes aligned ig bounds)
@@ -492,7 +492,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
 !{{{
      if(glump==grp_ng) then
 !       stop 'diffusion11: effective scattering with glump==ng'
-        ierr = 2
+        ierr = 102
         return
      endif
 
@@ -501,7 +501,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
      if(glump==0) then
         iiig = emitgroup(r1,ic)
         if(iiig>grp_ng) then
-           ierr = 3
+           ierr = 103
            return
         endif
      else

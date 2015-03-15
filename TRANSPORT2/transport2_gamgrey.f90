@@ -49,7 +49,9 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   e => ptcl%e
   e0 => ptcl%e0
 
+!-- no error by default
   ierr = 0
+!-- init
   edep = 0d0
 !
 !-- setting vel-grid helper variables

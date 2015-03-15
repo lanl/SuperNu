@@ -374,7 +374,7 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      if(edep/=edep) then
 !       write(0,*) e,grd_fcoef(ic),caplump,ddmct,glump,speclump,ig,tempinv
 !       stop 'diffusion1: invalid energy deposition'
-        ierr = 1
+        ierr = 101
         return
      endif
      e = e*exp(-grd_fcoef(ic)*caplump*pc_c*ddmct)
@@ -419,7 +419,7 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !-- sanity check
      if(ix==1) then
 !       write(0,*) stop 'diffusion1: invalid probleak(1)'
-        ierr = 2
+        ierr = 102
         return
      endif
 !
@@ -635,12 +635,12 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !-- sanity check
      if(grd_ny==1) then
 !       stop 'diffusion1: probleak(3) and grd_ny=1'
-        ierr = 3
+        ierr = 103
         return
      endif
      if(iy==1) then
 !       stop 'diffusion1: invalid probleak(3)'
-        ierr = 4
+        ierr = 104
         return
      endif
 
@@ -742,12 +742,12 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !-- sanity check
      if(grd_ny==1) then
 !       stop 'diffusion1: probleak(4) and grd_ny=1'
-        ierr = 5
+        ierr = 105
         return
      endif
      if(iy==grd_ny) then
 !       stop 'diffusion1: invalid probleak(4)'
-        ierr = 6
+        ierr = 106
         return
      endif
 
@@ -848,7 +848,7 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !-- sanity check
      if(grd_nz==1) then
 !       stop 'diffusion1: probleak(5) and grd_nz=1'
-        ierr = 7
+        ierr = 107
         return
      endif
 !-- setting helper index
@@ -959,7 +959,7 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !-- sanity check
      if(grd_nz==1) then
 !       stop 'diffusion1: probleak(6) and grd_nz=1'
-        ierr = 8
+        ierr = 108
         return
      endif
 !-- setting helper index
@@ -1070,7 +1070,7 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !
      if(glump==grp_ng) then
 !       stop 'diffusion1: effective scattering with glump==ng'
-        ierr = 9
+        ierr = 109
         return
      endif
 !
@@ -1080,7 +1080,7 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         iiig = emitgroup(r1,ic)
         if(iiig>grp_ng) then
 !          stop 'diffusion1: emitgroup ig>ng'
-           ierr = 10
+           ierr = 110
            return
         endif
      else

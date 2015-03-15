@@ -330,7 +330,7 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !-- sanity check
      if(ix==1) then
 !       stop 'diffusion1: non-physical inward leakage'
-        ierr = 1
+        ierr = 101
         return
      endif
 
@@ -760,7 +760,7 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !
      if(glump==grp_ng) then
 !       stop 'diffusion2: effective scattering with glump==ng'
-        ierr = 2
+        ierr = 102
         return
      endif
 
@@ -770,7 +770,7 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         iiig = emitgroup(r1,ic)
         if(iiig>grp_ng) then
 !          stop 'diffusion2: emitgroup ig>ng'
-           ierr = 3
+           ierr = 103
            return
         endif
      else

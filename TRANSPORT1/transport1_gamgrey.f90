@@ -56,7 +56,9 @@ pure subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   ic => ptcl2%ic
   ig => ptcl2%ig
 
+!-- no error by default
   ierr = 0
+!-- init
   edep = 0d0
 
 !-- spherical projections

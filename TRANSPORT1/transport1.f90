@@ -84,7 +84,6 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- direction resample flag
   lredir = .false.
 
-  ierr = 0 !no error by default
 !
 !-- shortcut
   dtinv = 1d0/tsp_dt

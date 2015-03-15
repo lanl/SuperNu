@@ -367,7 +367,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      if(edep/=edep) then
 !       write(0,*) e,grd_fcoef(ic),caplump,ddmct,glump,speclump,ig,tempinv
 !       stop 'diffusion3: invalid energy deposition'
-        ierr = 1
+        ierr = 101
         return
      endif
      e = e*exp(-grd_fcoef(ic)*caplump*pc_c*ddmct)
@@ -1190,7 +1190,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !!{{{
      if(glump==grp_ng) then
 !       stop 'diffusion3: effective scattering with glump==ng'
-        ierr = 1
+        ierr = 102
         return
      endif
 !
@@ -1200,7 +1200,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         iiig = emitgroup(r1,ic)
         if(iiig>grp_ng) then
 !          stop 'diffusion3: emitgroup ig>ng'
-           ierr = 1
+           ierr = 103
            return
         endif
      else
