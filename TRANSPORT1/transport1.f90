@@ -361,25 +361,29 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !
 !-- finding minimum distance
   darr = [dcen,dby,dbx,dbz,dthm,dcol,ddop]
-  d = minval(darr)
-  if(any(darr/=darr) .or. d<0d0) then
-     ierr = 3 !error
-!    write(0,*) 'transport1: invalid distance'
-  endif
   ptcl2%idist = minloc(darr,dim=1)
+  d = minval(darr)
+  if(any(darr/=darr)) then
+     ierr = 3
+     return
+  endif
+  if(d<0d0) then
+     ierr = 4
+     return
+  endif
 
 !-- updating radius
   x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
   if(dbx/=dbx) then
 !    stop 'transport1: x/=x'
-     ierr = 4
+     ierr = 5
      return
   endif
   if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
 !-- sanity check
      if(d==dbx) then
 !       stop 'transport1: x<1d-15*xarr(2),d==dbx,mu=-1'
-        ierr = 5
+        ierr = 6
         return
      endif
 !-- excluding dbz
@@ -391,7 +395,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   else
      if(x<1d-15*grd_xarr(2)) then
 !       stop 'transport1: x=0 and muold/=-1'
-        ierr = 6
+        ierr = 7
         return
      endif
 !-- updating radial projection of direction
@@ -459,7 +463,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
           elabfact*d*thelp))*elabfact
      if(edep/=edep) then
 !       stop 'transport1: invalid energy deposition'
-        ierr = 7
+        ierr = 8
         return
      endif
 !-- reducing particle energy
@@ -540,7 +544,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            ig = emitgroup(r1,ic)
            if(ig>grp_ng) then
 !             stop 'transport1: emitgroup ig>ng'
-              ierr = 8
+              ierr = 9
               return
            endif
         endif
@@ -585,7 +589,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      else
         if(ix==1) then
 !          stop 'transport1: ix=1 and mu<0'
-           ierr = 9
+           ierr = 10
            return
         endif
         ihelp=ix-1
@@ -674,7 +678,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         endif
         if(iynext<1) then
 !          stop 'transport1: iynext<1'
-           ierr = 10
+           ierr = 11
            return
         endif
         y=grd_yarr(iy)
@@ -685,7 +689,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         endif
         if(iynext>grd_ny) then
 !          stop 'transport1: iynext>ny'
-           ierr = 11
+           ierr = 12
            return
         endif
         y=grd_yarr(iy+1)
@@ -694,7 +698,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !       write(0,*) dby
 !       write(0,*) y,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
 !       stop 'transport1: invalid polar bound crossing'
-        ierr = 12
+        ierr = 13
         return
      endif
 
@@ -772,7 +776,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- sanity check
      if(grd_nz==1) then
 !       stop 'transport1: invalid z crossing'
-        ierr = 13
+        ierr = 14
         return
      endif
      if(iznext==iz-1) then
@@ -789,7 +793,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         endif
      else
 !       stop 'transport1: invalid iznext'
-        ierr = 14
+        ierr = 15
         return
      endif
 
@@ -873,7 +877,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   elseif(d==ddop) then
      if(.not.grd_isvelocity) then
 !       stop 'transport1: ddop and no velocity'
-        ierr = 15
+        ierr = 16
         return
      endif
      if(ig<grp_ng) then
@@ -902,7 +906,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      endif
   else
 !    stop 'transport1: invalid distance'
-     ierr = 16
+     ierr = 17
      return
   endif
 

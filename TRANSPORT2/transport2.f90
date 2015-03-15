@@ -172,14 +172,21 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !
 !-- finding minimum distance
   darr = [dcen,dbx,dby,dthm,dcol,ddop]
-  if(any(darr/=darr) .or. any(darr<0d0)) then
+  ptcl2%idist = minloc(darr,dim=1)
+  d = minval(darr)
+! if(any(darr/=darr) .or. d<0d0) then
 !    write(0,*) darr
 !    write(*,*) ix,iy,x,y,mu,om
 !    stop 'transport2: invalid distance'
+! endif
+  if(any(darr/=darr)) then
      ierr = 4
      return
   endif
-  d = minval(darr)
+  if(d<0d0) then
+     ierr = 5
+     return
+  endif
 !
 !-- updating position
   rold = x
@@ -199,7 +206,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   if(om/=om) then
 !    write(*,*) d, x, rold, omold, om, mu
 !    stop 'transport2: om is nan'
-     ierr = 5
+     ierr = 6
      return
   endif
 !
@@ -231,7 +238,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
           elabfact*d*thelp))*elabfact
      if(edep/=edep) then
 !       stop 'transport2: invalid energy deposition'
-        ierr = 6
+        ierr = 7
         return
      endif
 !-- reducing particle energy
@@ -329,7 +336,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            ig = emitgroup(r1,ic)
            if(ig>grp_ng) then
 !             stop 'transport2: emitgroup ig>ng'
-              ierr = 8
+              ierr = 9
               return
            endif
         endif
@@ -374,7 +381,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      else
         if(ix==1) then
 !          stop 'transport2_gamgrey: cos(om)<0 and ix=1'
-           ierr = 9
+           ierr = 10
            return
         endif
         ihelp = -1
@@ -549,7 +556,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   elseif(d==ddop) then
      if(.not.grd_isvelocity) then
 !       stop 'transport2: ddop and no velocity'
-        ierr = 10
+        ierr = 11
         return
      endif
      if(ig<grp_ng) then
@@ -578,7 +585,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      endif
   else
 !    stop 'transport2: invalid distance'
-     ierr = 11
+     ierr = 12
      return
   endif
 

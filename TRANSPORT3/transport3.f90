@@ -142,14 +142,21 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !
 !-- finding minimum distance
   darr = [dcen,dbx,dby,dbz,dthm,dcol,ddop]
-  if(any(darr/=darr) .or. any(darr<0d0)) then
+  ptcl2%idist = minloc(darr,dim=1)
+  d = minval(darr)
+! if(any(darr/=darr) .or. d<0d0) then
 !    write(0,*) darr
 !    write(*,*) ix,iy,iz,x,y,z,mu,eta,xi,om
 !    stop 'transport3: invalid distance'
+! endif
+  if(any(darr/=darr)) then
      ierr = 1
      return
   endif
-  d = minval(darr)
+  if(d<0d0) then
+     ierr = 2
+     return
+  endif
 
 !-- updating position
   x = x + xi*d
@@ -185,7 +192,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      if(edep/=edep) then
 !       write(0,*) e,grd_fcoef(ic),grd_cap(ig,ic),elabfact,d,thelp
 !       stop 'transport3: invalid energy deposition'
-        ierr = 2
+        ierr = 3
         return
      endif
 !-- reducing particle energy
@@ -285,7 +292,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            ig = emitgroup(r1,ic)
            if(ig>grp_ng) then
 !             stop 'transport3: emitgroup ig>ng'
-              ierr = 3
+              ierr = 4
               return
            endif
         endif
@@ -591,7 +598,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   elseif(d==ddop) then
      if(.not.grd_isvelocity) then
 !       stop 'transport3: ddop and no velocity'
-        ierr = 4
+        ierr = 5
         return
      endif
      if(ig<grp_ng) then
@@ -620,7 +627,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      endif
   else
 !    stop 'transport3: invalid distance'
-     ierr = 5
+     ierr = 6
      return
   endif
 
