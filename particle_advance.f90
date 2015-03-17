@@ -309,6 +309,9 @@ subroutine particle_advance
 !-- check exit status
         if(ierr/=0) then
            write(0,*) 'ierr,ipart,istep,idist:',ierr,ptcl2%ipart,ptcl2%istep,ptcl2%idist
+           write(0,*) 'ix,iy,iz,ic,ig:',ptcl2%ix,ptcl2%iy,ptcl2%iz,ptcl2%ic,ptcl2%ig
+           write(0,*) 'x,y,z:',ptcl%x,ptcl%y,ptcl%z
+           write(0,*) 'mu,om:',ptcl%mu,ptcl%om
            if(ierr>0) stop 'particle_advance: fatal transport error'
         endif
      enddo
