@@ -199,6 +199,7 @@ c-- element loop
           igg = floor(rgg)
           igg = max(igg,1)
           igg = min(igg,ff_ngg-1)
+          dgg = rgg - igg
 c
 c-- bilinear inter-extrapolation
           gff = (1d0-du)*(1d0-dgg)*ff_gff(iu,igg) +
