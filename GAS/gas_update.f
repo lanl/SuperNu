@@ -140,11 +140,7 @@ c
        if(in_opacanaltype/='none') then
         call analytic_opacity
        else
-        if(in_ngs==0) then
-         call physical_opacity
-        else
-         call physical_opacity_subgrid
-        endif
+        call physical_opacity
        endif
        call opacity_planckmean
 c
@@ -186,11 +182,7 @@ c-- test existence of input.opac file
        inquire(file='input.opac',exist=lexist)
        if(.not.lexist) then
 c-- calculate opacities
-        if(in_ngs==0) then
-         call physical_opacity
-        else
-         call physical_opacity_subgrid
-        endif
+        call physical_opacity
        else
 c-- read in opacities
         open(4,file='input.opac',status='old',iostat=istat)!{{{

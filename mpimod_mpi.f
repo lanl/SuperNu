@@ -597,10 +597,6 @@ c     -------------------------------!{{{
 * scatter restart data from master rank to subordinate ranks.
 * allows for restart at some time step, tsp_it.
 ************************************************************************
-c-- helper variables
-      integer :: isq
-      real*8 :: hlp
-c
 c-- scattering part vacancy
       call mpi_scatter(prt_tlyvacant,prt_npartmax,MPI_LOGICAL,
      &     prt_isvacant,prt_npartmax,MPI_LOGICAL,impi0,
