@@ -25,9 +25,9 @@ c     ------------------------------
       integer :: i,j,l,istat
       real*8 :: help
       real*8 :: dtempfrac = 0.99d0
-      real*8 :: natom1fr(gas_ncell,-2:-1) !todo: memory storage order?
-      real*8 :: natom2fr(gas_ncell,-2:-1)
-      real*8 :: nisource0(gas_ncell)
+      real*8 :: natom1fr(-2:gas_nelem,gas_ncell)
+      real*8 :: natom2fr(-2:gas_nelem,gas_ncell)
+      real*8 :: decay0(gas_ncell)
 c-- previous values
       real*8,allocatable,save :: tempalt(:),capgreyalt(:)
 !     real*8 :: hlparr(grd_nx),hlparrdd(gas_ncell)
@@ -45,30 +45,29 @@ c
 c-- initial decay, prior to first time step
       if(tsp_it==1 .and. grd_isvelocity.and.in_srctype=='none') then
        call update_natomfr(0d0)!{{{
-       forall(i=-2:-1) natom1fr(:,i) = gas_natom1fr(i,:)
+       natom1fr = gas_natom1fr
 c-- end of time step
        call update_natomfr(tsp_t)
-       forall(i=-2:-1) natom2fr(:,i) = gas_natom1fr(i,:)
+       natom2fr = gas_natom1fr
 c-- energy deposition
-       nisource0 =  !per average atom (mix of stable and unstable)
-     &   (natom1fr(:,gas_ini56) - natom2fr(:,gas_ini56)) *
+       decay0 =  !per average atom (mix of stable and unstable)
+     &   (natom1fr(gas_ini56,:) - natom2fr(gas_ini56,:)) *
      &     (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
-     &   (natom1fr(:,gas_ico56) - natom2fr(:,gas_ico56)) *
-     &     pc_qhl_co56
-c-- total, units=ergs
-       nisource0 = nisource0 * gas_natom
-       tot_eext0 = sum(nisource0)!}}}
+     &   (natom1fr(gas_ico56,:) - natom2fr(gas_ico56,:)) *
+     &     pc_qhl_co56 !+
+c-- off for backwards compatibility
+c    &   (natom2fr(26,:) - natom1fr(26,:))*pc_q_poskin !beta decay
+       tot_eext0 = sum(decay0*gas_natom) !total, units=ergs !}}}
       endif
 c
 c-- current time step
       if(grd_isvelocity.and.in_srctype=='none') then
 c-- beginning of time step
-       help = tsp_t
-       call update_natomfr(help)
-       forall(i=-2:-1) natom1fr(:,i) = gas_natom1fr(i,:)
+       call update_natomfr(tsp_t)
+       natom1fr = gas_natom1fr
 c-- end of time step
        call update_natomfr(tsp_t + tsp_dt)
-       forall(i=-2:-1) natom2fr(:,i) = gas_natom1fr(i,:)
+       natom2fr = gas_natom1fr
 c
 c-- update the abundances for the center time
        !call update_natomfr(tsp_tcenter)
@@ -76,13 +75,16 @@ c-- update the abundances for the center time
        call update_ye
 c
 c-- energy deposition
-       gas_nisource =  !per average atom (mix of stable and unstable)
-     &   (natom1fr(:,gas_ini56) - natom2fr(:,gas_ini56)) *
+c-- gamma decay
+       gas_decaygamma =  !per average atom (mix of stable and unstable)
+     &   (natom1fr(gas_ini56,:) - natom2fr(gas_ini56,:)) *
      &     (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
-     &   (natom1fr(:,gas_ico56) - natom2fr(:,gas_ico56)) *
+     &   (natom1fr(gas_ico56,:) - natom2fr(gas_ico56,:)) *
      &     pc_qhl_co56
-c-- total, units=ergs
-       gas_nisource = gas_nisource * gas_natom
+       gas_decaygamma = gas_decaygamma * gas_natom !total, units=ergs
+c-- beta decay (off for backwards compatibility)
+c      gas_decaybeta = (natom2fr(26,:) - natom1fr(26,:))*pc_q_poskin
+c      gas_decaybeta = gas_decaybeta * gas_natom !total, units=ergs
 c
 c-- We assume that half of the source energy goes into doppler losses
 c-- the other half into heating the radiation field.
@@ -90,7 +92,10 @@ c-- We keep adding nisource/2 until the radiation field converges.
 c-- The doppler losses are then equal to nisource/2.  We give two full
 c-- nisource shots to bring the radiation field up to speed and help
 c-- converge more quickly.
-       if(it<1 .and. it>in_ntres+1) gas_nisource = gas_nisource*.5
+       if(it<1 .and. it>in_ntres+1) then
+        gas_decaygamma = gas_decaygamma*.5
+        gas_decaybeta = gas_decaybeta*.5
+       endif
       endif
 !}}}
 c

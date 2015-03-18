@@ -2,8 +2,9 @@
 c     ----------------
       implicit none
 ************************************************************************
-* energy conservation check quantities
+* Miscellaneous domain-integrated quantities.
 ************************************************************************
+c-- energy conservation check quantities
       real*8 :: tot_eext = 0d0 !time-integrated input energy from external source
       real*8 :: tot_emat = 0d0 !material energy
       real*8 :: tot_erad = 0d0 !census radiation energy
@@ -11,9 +12,23 @@ c     ----------------
       real*8 :: tot_evelo = 0d0 !total energy change to rad field from fluid
       real*8 :: tot_eerror = 0d0 !error in integral problem energy
       real*8 :: tot_esurf = 0d0
-c
 c-- initial external energy
       real*8 :: tot_eext0 = 0d0
+c
+c-- sources (domain integrated, not time integrated)
+c-- gas_ sources (need to be collected)
+      real*8 :: tot_sthermal = 0d0
+      real*8 :: tot_smanufac = 0d0
+      real*8 :: tot_sdecaygamma = 0d0
+      real*8 :: tot_sdecaybeta = 0d0
+c-- grd_ sources
+      real*8 :: tot_sdeposgamma = 0d0
+      real*8 :: tot_samp = 0d0
+      real*8 :: tot_sanalvol = 0d0
+      real*8 :: tot_sanalsurf = 0d0
+c-- flx_ sources (negative)
+      real*8 :: tot_sfluxgamma = 0d0
+      real*8 :: tot_sflux = 0d0
 c
       save
 c

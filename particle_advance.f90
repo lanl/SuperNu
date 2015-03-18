@@ -488,6 +488,8 @@ subroutine particle_advance
 
 !write(0,*) nstepmax, ndist
 
+  tot_sflux = -sum(flx_luminos)
+
 !-- convert to flux per second
   help = 1d0/tsp_dt
   flx_luminos = flx_luminos*help

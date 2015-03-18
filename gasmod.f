@@ -19,7 +19,8 @@ c-- domain decomposed grid variables used to calculate the state of the material
       real*8,allocatable :: gas_ur(:)
       real*8,allocatable :: gas_rho(:)
       real*8,allocatable :: gas_bcoef(:)
-      real*8,allocatable :: gas_nisource(:)
+      real*8,allocatable :: gas_decaygamma(:)
+      real*8,allocatable :: gas_decaybeta(:)
       real*8,allocatable :: gas_vol(:)        !cell volume [cm^3]
       real*8,allocatable :: gas_mass(:)       !cell mass [g]
       real*8,allocatable :: gas_ye(:)         !electron fraction
@@ -90,8 +91,10 @@ c-- ndim=1 alloc
       allocate(gas_ur(gas_ncell))
       allocate(gas_rho(gas_ncell))
       allocate(gas_bcoef(gas_ncell))
-      allocate(gas_nisource(gas_ncell))
-      gas_nisource = 0d0
+      allocate(gas_decaygamma(gas_ncell))
+      gas_decaygamma = 0d0
+      allocate(gas_decaybeta(gas_ncell))
+      gas_decaybeta = 0d0
       allocate(gas_vol(gas_ncell))
       allocate(gas_mass(gas_ncell))
       allocate(gas_ye(gas_ncell))
@@ -133,7 +136,8 @@ c
       deallocate(gas_ur)
       deallocate(gas_rho)
       deallocate(gas_bcoef)
-      deallocate(gas_nisource)
+      deallocate(gas_decaygamma)
+      deallocate(gas_decaybeta)
       deallocate(gas_vol)
       deallocate(gas_mass)
       deallocate(gas_ye)

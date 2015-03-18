@@ -84,9 +84,18 @@ subroutine write_output
   write(4,*) tsp_t + tsp_dt  !end of time step
   close(4)
 
-  open(unit=4,file='output.tot_energy',status=fstat,position=pos,recl=7*12)
-  if(lfirst) write(4,'("#",6a12)') 'error','erad','emat','eext','eout','evelo'
-  write(4,'(1p,10e12.4)') tot_eerror,tot_erad,tot_emat,tot_eext,tot_eout,tot_evelo
+  open(unit=4,file='output.tot_energy',status=fstat,position=pos,recl=17*12)
+  if(lfirst) then
+     write(4,'("#",i5)') 16 !number of columns
+     write(4,'("#",16a12)') 'eerror','erad','emat','eext','eout','evelo', &
+        'sfluxgamma','sflux', &
+        'sthermal','smanufac','sanalvol','sanalsurf','samp', &
+        'sdecaygamma','sdecaybeta','sdeposgamma'
+  endif
+  write(4,'(1x,1p,16e12.4)') tot_eerror,tot_erad,tot_emat,tot_eext,tot_eout,tot_evelo, &
+      tot_sfluxgamma,tot_sflux, &
+      tot_sthermal,tot_smanufac,tot_sanalvol,tot_sanalsurf,tot_samp, &
+      tot_sdecaygamma,tot_sdecaybeta,tot_sdeposgamma
   close(4)
 
 !

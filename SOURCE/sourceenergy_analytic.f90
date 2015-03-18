@@ -178,6 +178,9 @@ subroutine sourceenergy_analytic(lmpi0)
      stop 'sourceenergy_analytic: in_srctype invalid'
   endif
 
+!-- totals
+  if(lmpi0) tot_sanalvol = sum(grd_emitex)
+  if(lmpi0) tot_sanalsurf = tot_esurf
 !
 !-- add analytic radiation source tot total
   if(lmpi0) tot_eext = tot_eext + sum(grd_emitex) + tot_esurf

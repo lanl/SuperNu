@@ -558,11 +558,14 @@ c
      &   impi0,MPI_COMM_WORLD,ierr)
 c
 c-- dim==0
-      n = 6
+      n = 12
       allocate(sndvec(n))
       allocate(rcvvec(n))
-      sndvec = [tot_erad,tot_eout,tot_eext,tot_evelo,tot_emat,
-     &  tot_eext0]
+      sndvec = [
+     &  tot_erad,tot_eout,tot_eext,tot_evelo,tot_emat,tot_eext0,
+     &  tot_sthermal,tot_smanufac,tot_sdecaygamma,tot_sdecaybeta,
+     &  tot_sfluxgamma,tot_sflux]
+c
       call mpi_reduce(sndvec,rcvvec,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -573,6 +576,12 @@ c-- copy back
          tot_evelo = rcvvec(4)
          tot_emat = rcvvec(5)
          tot_eext0 = rcvvec(6)
+         tot_sthermal = rcvvec(7)
+         tot_smanufac = rcvvec(8)
+         tot_sdecaygamma = rcvvec(9)
+         tot_sdecaybeta = rcvvec(10)
+         tot_sfluxgamma = rcvvec(11)
+         tot_sflux = rcvvec(12)
       else
 c-- zero out cumulative values on all other ranks to avoid double counting.
          tot_eout = 0d0

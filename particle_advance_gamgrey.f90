@@ -11,6 +11,7 @@ subroutine particle_advance_gamgrey(nmpi)
   use inputparmod
   use timingmod
   use timestepmod
+  use totalsmod
   use fluxmod
   implicit none
   integer,intent(in) :: nmpi
@@ -383,6 +384,8 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- save state
   rnd_states(iomp+1) = rndstate
 !$omp end parallel
+
+  tot_sfluxgamma = -sum(flx_gamluminos)
 
 !-- convert to flux per second
   help = 1d0/tsp_dt

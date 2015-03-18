@@ -32,7 +32,6 @@ c-- ffxs
       real*8 :: gg,u,gff,help
       real*8 :: rgg,ru,dgg,du
       integer :: iu,igg
-      real*8 :: dy,dydx,yend
 c-- bfxs
       integer :: il,ig,igs,iigs,iz,ii,ie
       logical :: dirty
