@@ -609,7 +609,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- transforming x-cosine to cmf
            mu = (mu-x*cinv)/elabfact
 !-- amplification factor
-           if(mu<0d0) then
+           if(.not.in_trn_noamp .and. mu<0d0) then
               help = 1d0/abs(mu)
               help = min(100d0, help) !-- truncate singularity
 !

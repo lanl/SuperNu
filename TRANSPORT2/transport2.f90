@@ -31,7 +31,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   real*8 :: dtinv, thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,ddop,d
   real*8 :: darr(6)
-  real*8 :: rold, zold, omold
+  real*8 :: xold, yold, omold
   real*8 :: r1, r2
 !-- distance out of physical reach
   real*8 :: far
@@ -189,22 +189,22 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   endif
 !
 !-- updating position
-  rold = x
-  zold = y
-  x = sqrt(rold**2+(1d0-mu**2)*d**2+2d0*rold*sqrt(1d0-mu**2)*d*cos(om))
-  y = zold+mu*d
+  xold = x
+  yold = y
+  x = sqrt(xold**2 + (1d0-mu**2)*d**2 + 2d0*xold*sqrt(1d0-mu**2)*d*cos(om))
+  y = yold + mu*d
 !-- updating azimuthal direction
   omold = om
   if(om>pc_pi.and.om<pc_pi2) then
      om = pc_pi2 + &
-          atan2(-sqrt(max(x**2-(rold*cos(omold)+d*sqrt(1d0-mu**2))**2,0d0)), &
-          rold*cos(omold)+d*sqrt(1d0-mu**2))
+          atan2(-sqrt(max(x**2-(xold*cos(omold)+d*sqrt(1d0-mu**2))**2,0d0)), &
+          xold*cos(omold)+d*sqrt(1d0-mu**2))
   else
-     om = atan2(sqrt(max(x**2-(rold*cos(omold)+d*sqrt(1d0-mu**2))**2,0d0)), &
-          rold*cos(omold)+d*sqrt(1d0-mu**2))
+     om = atan2(sqrt(max(x**2-(xold*cos(omold)+d*sqrt(1d0-mu**2))**2,0d0)), &
+          xold*cos(omold)+d*sqrt(1d0-mu**2))
   endif
   if(om/=om) then
-!    write(*,*) d, x, rold, omold, om, mu
+!    write(*,*) d, x, xold, omold, om, mu
 !    stop 'transport2: om is nan'
      ierr = 6
      return
@@ -408,31 +408,32 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- y-projection
            mu = (mu-gm*y*cinv*(1d0-gm*dirdotu*cinv/(1d0+gm))) / &
                 (gm*(1d0-dirdotu*cinv))
-        endif
 !-- x-cosine
-        mu0 = sqrt(1d0-mu**2)*cos(om)
+           mu0 = sqrt(1d0-mu**2)*cos(om)
 !-- amplification factor
-        if(grd_isvelocity.and.mu0<0d0) then
-           help=1d0/abs(mu0)
-           help = min(100d0, help) !-- truncate singularity
-!
-!-- velocity effects accounting
-           totevelo=totevelo-e*2d0 * &
-                (0.55d0*help-1.25d0*abs(mu0))*x*cinv
-!
-!-- apply the excess (higher than factor 2d0) to the energy deposition
-           eamp = e*2d0*0.55d0*max(0d0,help-2d0)*x*cinv
-!-- apply limited correction to the particle
-           help = min(2d0,help)
-           e0=e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu0))*x*cinv)
-           e=e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu0))*x*cinv)
+           if(.not.in_trn_noamp .and. mu0<0d0) then
+              help=1d0/abs(mu0)
+              help = min(100d0, help) !-- truncate singularity
+   !
+   !-- velocity effects accounting
+              totevelo=totevelo-e*2d0 * &
+                   (0.55d0*help-1.25d0*abs(mu0))*x*cinv
+   !
+   !-- apply the excess (higher than factor 2d0) to the energy deposition
+              eamp = e*2d0*0.55d0*max(0d0,help-2d0)*x*cinv
+   !-- apply limited correction to the particle
+              help = min(2d0,help)
+              e0=e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu0))*x*cinv)
+              e=e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu0))*x*cinv)
+           endif
         endif
         help = (grd_cap(ig,l)+grd_sig(l)) * &
              dx(ix+ihelp)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
+        help = help*(1d0 + 1.5d0*abs(mu0))
 !-- sampling
         call rnd_r(r1,rndstate)
-        if (r1 < help*(1d0+1.5d0*abs(mu0))) then
+        if (r1 < help) then
            ptcl2%itype = 2
            if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -490,13 +491,15 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         iy = iy+ihelp
         ic = grd_icell(ix,iy,iz)
      else
+!-- DDMC in adjacent cell
         if(grd_isvelocity) then
            gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
 !-- y-projection
            mu = (mu-gm*y*cinv*(1d0-gm*dirdotu*cinv/(1d0+gm))) / &
                 (gm*(1d0-dirdotu*cinv))
 !-- amplification factor
-           if((mu<0d0.and.y>0d0).or.(mu>0d0.and.y<0d0)) then
+           if(.not.in_trn_noamp .and. &
+                 ((mu<0d0.and.y>0d0).or.(mu>0d0.and.y<0d0))) then
               help=1d0/abs(mu)
               help = min(100d0, help) !-- truncate singularity
 !
@@ -515,9 +518,10 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         help = (grd_cap(ig,l)+grd_sig(l)) * &
              dy(iy+ihelp)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
+        help = help*(1d0 + 1.5d0*abs(mu))
 !-- sampling
         call rnd_r(r1,rndstate)
-        if (r1 < help*(1d0+1.5d0*abs(mu))) then
+        if (r1 < help) then
            ptcl2%itype = 2
            if(grd_isvelocity) then
 !-- velocity effects accounting

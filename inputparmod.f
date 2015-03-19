@@ -64,6 +64,7 @@ c<< backwards compatibility
       logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
       logical :: in_isimcanlog = .false. !use analog IMC tally if true
       logical :: in_isddmcanlog = .true. !use analog DDMC tally if true
+      logical :: in_trn_noamp = .true.  !disable amplification factor
       real*8 :: in_tauddmc = 5d0 !number of mean free paths per cell required for DDMC
       real*8 :: in_taulump = 10d0 !number of of mean free paths needed to lump DDMC groups
 c-- time dependence of in_tauddmc and in_taulump
@@ -164,7 +165,7 @@ c-- runtime parameter namelist
      & in_suolpick1,in_ldisp1,in_ldisp2,
      & in_srctype,in_theav,in_nheav,in_srcmax,in_srcepwr,
      & in_surfsrcloc,in_surfsrcmu,
-     & in_isimcanlog, in_isddmcanlog,
+     & in_isimcanlog, in_isddmcanlog, in_trn_noamp,
      & in_nogriddump,
      & in_tauddmc,in_dentype,in_noreadstruct,
      & in_norestart,in_taulump,in_tauvtime,

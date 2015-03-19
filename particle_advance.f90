@@ -181,12 +181,12 @@ subroutine particle_advance
         case(1,11)
            labfact = 1d0-x*mu/pc_c
         case(2)
-           labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
+           labfact = 1d0-(mu*y + sqrt(1d0-mu**2) * cos(om)*x)/pc_c
         case(3)
            help = sqrt(1d0-mu**2)
            mu1 = help*cos(om)
            mu2 = help*sin(om)
-           labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c
+           labfact = 1d0-(mu*z + mu1*x + mu2*y)/pc_c
         endselect
 !-- transform into lab frame
         wl = wl*labfact
@@ -229,7 +229,7 @@ subroutine particle_advance
            call transport(ptcl,ptcl2,rndstate,edep,eraddens,eamp,tot_evelo,ierr)
            if(ptcl2%itype/=1) grd_methodswap(icold) = grd_methodswap(icold)+1
 !-- tally eamp
-           grd_eamp(icold) = grd_eamp(icold) + eamp
+           if(.not.in_trn_noamp) grd_eamp(icold) = grd_eamp(icold) + eamp
         else
            nddmc = nddmc + 1
            ptcl2%idist = 0

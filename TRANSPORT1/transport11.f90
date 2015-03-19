@@ -155,8 +155,8 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !
 !-- position, angle, time update  
   xold = x
-  x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
-!  x = sqrt(x**2+d**2+2d0*d*x*mu)
+! x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
+  x = sqrt(x**2 + d**2 + 2d0*d*x*mu)
 !
   ptcl%t = ptcl%t + thelp*d*cinv
   muold = mu
@@ -257,7 +257,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
      endif
      !
      !!}}}
-  elseif (d == dcol) then  !fictitious scattering with implicit capture
+  elseif(d == dcol) then  !fictitious scattering with implicit capture
      !!{{{
      call rnd_r(r1,rndstate)
      if(r1<=grd_fcoef(ic).and.prt_isimcanlog) then
@@ -345,17 +345,58 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         endif
      endif
      !!}}}
-  elseif (d == db) then   !------boundary crossing ----
-     if (mu>=0d0) then!{{{
-        if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
-        if(ix == grd_nx) then
+  elseif(d==db .and. mu>=0d0) then   !------ outwards boundary crossing ----
+     if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)!{{{
+     if(ix == grd_nx) then
 !           if(ig/=1) then
-           ptcl2%isvacant = .true.
-           ptcl2%done = .true.
-           ptcl2%lflux = .true.
+        ptcl2%isvacant = .true.
+        ptcl2%done = .true.
+        ptcl2%lflux = .true.
 !
 !-- Checking if DDMC region right
-        elseif (((grd_sig(l)+grd_cap(ig,l))*dx(ix+1) &
+     elseif (((grd_sig(l)+grd_cap(ig,l))*dx(ix+1) &
+          *thelp >= prt_tauddmc) &
+          .and.(in_puretran.eqv..false.)) then
+        call rnd_r(r1,rndstate)
+        if(grd_isvelocity) then
+           mu = (mu-x*cinv)/(1d0-x*mu*cinv)
+        endif
+        help = (grd_cap(ig,l)+grd_sig(l))*dx(ix+1)*thelp
+        ppl = 4d0/(3d0*help+6d0*pc_dext)
+        P = ppl*(1d0+1.5*abs(mu))
+!--
+        if (r1 < P) then
+           ptcl2%itype = 2
+           if(grd_isvelocity) then
+!-- velocity effects accounting
+              totevelo=totevelo+e*(1d0-elabfact)
+              e = e*elabfact
+              e0 = e0*elabfact
+              wl = wl/elabfact
+           endif
+!-- update
+           ix = ix+1
+           ic = grd_icell(ix,iy,iz)
+        else
+           call rnd_r(r1,rndstate)
+           call rnd_r(r2,rndstate)
+           mu = -max(r1,r2)
+           if(grd_isvelocity) then
+              mu = (mu+x*cinv)/(1d0+x*mu*cinv)
+           endif
+           x = grd_xarr(ix+1)
+        endif
+     ! End of check
+     else
+        x = grd_xarr(ix+1)
+        ix = ix+1
+        ic = grd_icell(ix,iy,iz)
+     endif!}}}
+  elseif(d==db .and. mu<0d0) then   !------ inwards boundary crossing ----
+     if(ix/=1) l = grd_icell(ix-1,iy,iz)!{{{
+     if(ix==1) then
+        l = grd_icell(ix+1,iy,iz)
+        if (((grd_sig(l)+grd_cap(ig,l))*dx(ix+1) &
              *thelp >= prt_tauddmc) &
              .and.(in_puretran.eqv..false.)) then
            call rnd_r(r1,rndstate)
@@ -365,12 +406,12 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
            help = (grd_cap(ig,l)+grd_sig(l))*dx(ix+1)*thelp
            ppl = 4d0/(3d0*help+6d0*pc_dext)
            P = ppl*(1d0+1.5*abs(mu))
-!--
            if (r1 < P) then
               ptcl2%itype = 2
               if(grd_isvelocity) then
 !-- velocity effects accounting
                  totevelo=totevelo+e*(1d0-elabfact)
+!
                  e = e*elabfact
                  e0 = e0*elabfact
                  wl = wl/elabfact
@@ -387,65 +428,23 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
               endif
               x = grd_xarr(ix+1)
            endif
-        ! End of check
         else
            x = grd_xarr(ix+1)
            ix = ix+1
            ic = grd_icell(ix,iy,iz)
         endif
-     else
-        if(ix/=1) l = grd_icell(ix-1,iy,iz)
-        if(ix==1) then
-           l = grd_icell(ix+1,iy,iz)
-           if (((grd_sig(l)+grd_cap(ig,l))*dx(ix+1) &
-                *thelp >= prt_tauddmc) &
-                .and.(in_puretran.eqv..false.)) then
-              call rnd_r(r1,rndstate)
-              if(grd_isvelocity) then
-                 mu = (mu-x*cinv)/(1d0-x*mu*cinv)
-              endif
-              help = (grd_cap(ig,l)+grd_sig(l))*dx(ix+1)*thelp
-              ppl = 4d0/(3d0*help+6d0*pc_dext)
-              P = ppl*(1d0+1.5*abs(mu))
-              if (r1 < P) then
-                 ptcl2%itype = 2
-                 if(grd_isvelocity) then
-!-- velocity effects accounting
-                    totevelo=totevelo+e*(1d0-elabfact)
-!
-                    e = e*elabfact
-                    e0 = e0*elabfact
-                    wl = wl/elabfact
-                 endif
-!-- update
-                 ix = ix+1
-                 ic = grd_icell(ix,iy,iz)
-              else
-                 call rnd_r(r1,rndstate)
-                 call rnd_r(r2,rndstate)
-                 mu = -max(r1,r2)
-                 if(grd_isvelocity) then
-                    mu = (mu+x*cinv)/(1d0+x*mu*cinv)
-                 endif
-                 x = grd_xarr(ix+1)
-              endif
-           else
-              x = grd_xarr(ix+1)
-              ix = ix+1
-              ic = grd_icell(ix,iy,iz)
-           endif
-        elseif (((grd_sig(l)+grd_cap(ig,l))*dx(ix-1) &
-             *thelp >= prt_tauddmc) &
-             .and.(in_puretran.eqv..false.)) then
-           call rnd_r(r1,rndstate)
+     elseif (((grd_sig(l)+grd_cap(ig,l))*dx(ix-1) &
+          *thelp >= prt_tauddmc) &
+          .and.(in_puretran.eqv..false.)) then
+        call rnd_r(r1,rndstate)
 !
 !-- amplification factor
-           if(grd_isvelocity) then
-              mu = (mu-x*cinv)/(1d0-x*mu*cinv)
+        if(grd_isvelocity) then
+           mu = (mu-x*cinv)/(1d0-x*mu*cinv)
 !
 !             e0=e0*(1d0+2d0*min(0.055d0*prt_tauddmc,1d0)*x*cinv)
 !             e = e*(1d0+2d0*min(0.055d0*prt_tauddmc,1d0)*x*cinv)
-              if(mu<0d0) then
+              if(.not.in_trn_noamp .and. mu<0d0) then
                  help = 1d0/abs(mu)
                  help = min(100d0, help) !-- truncate singularity
 !
@@ -460,41 +459,40 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
                  e = e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv)
               endif
 !--
-           endif
-           help = (grd_cap(ig,l)+grd_sig(l))*dx(ix-1)*thelp
-           ppr = 4d0/(3d0*help+6d0*pc_dext)
-           P = ppr*(1d0+1.5*abs(mu))
+        endif
+        help = (grd_cap(ig,l)+grd_sig(l))*dx(ix-1)*thelp
+        ppr = 4d0/(3d0*help+6d0*pc_dext)
+        P = ppr*(1d0+1.5*abs(mu))
 !--
-           if (r1 < P) then
-              ptcl2%itype = 2
-              if(grd_isvelocity) then
+        if (r1 < P) then
+           ptcl2%itype = 2
+           if(grd_isvelocity) then
 !-- velocity effects accounting
-                 totevelo = totevelo+e*(1d0-elabfact)
+              totevelo = totevelo+e*(1d0-elabfact)
 !
-                 e = e*elabfact
-                 e0 = e0*elabfact
-                 wl = wl/elabfact
-              endif
-!-- update
-              ix = ix-1
-              ic = grd_icell(ix,iy,iz)
-           else
-              call rnd_r(r1,rndstate)
-              call rnd_r(r2,rndstate)
-              mu = max(r1,r2)
-              if(grd_isvelocity) then
-                 mu = (mu+x*cinv)/(1d0+x*mu*cinv)
-              endif
-              x = grd_xarr(ix)
+              e = e*elabfact
+              e0 = e0*elabfact
+              wl = wl/elabfact
            endif
-        ! End of check
-        else
-           x = grd_xarr(ix)
+!-- update
            ix = ix-1
            ic = grd_icell(ix,iy,iz)
+        else
+           call rnd_r(r1,rndstate)
+           call rnd_r(r2,rndstate)
+           mu = max(r1,r2)
+           if(grd_isvelocity) then
+              mu = (mu+x*cinv)/(1d0+x*mu*cinv)
+           endif
+           x = grd_xarr(ix)
         endif
+     ! End of check
+     else
+        x = grd_xarr(ix)
+        ix = ix-1
+        ic = grd_icell(ix,iy,iz)
      endif!}}}
-  elseif (d == dcen) then
+  elseif(d == dcen) then
      ptcl2%done = .true.
      ptcl2%lcens = .true.
 !     toterad = toterad + e*elabfact

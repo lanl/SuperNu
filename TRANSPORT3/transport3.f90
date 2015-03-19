@@ -357,7 +357,8 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               xi = -1
            endif
 !-- amplification factor
-           if((xi<0d0.and.x>0d0).or.(xi>0d0.and.x<0d0)) then
+           if(.not.in_trn_noamp .and. &
+                 ((xi<0d0.and.x>0d0).or.(xi>0d0.and.x<0d0))) then
               help=1d0/abs(xi)
               help = min(100d0, help) !-- truncate singularity
 !
@@ -446,7 +447,8 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               eta = -1
            endif
 !-- amplification factor
-           if((eta<0d0.and.y>0d0).or.(eta>0d0.and.y<0d0)) then
+           if(.not.in_trn_noamp .and. &
+                 ((eta<0d0.and.y>0d0).or.(eta>0d0.and.y<0d0))) then
               help=1d0/abs(eta)
               help = min(100d0, help) !-- truncate singularity
 !
@@ -535,7 +537,8 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               mu = -1
            endif
 !-- amplification factor
-           if((mu<0d0.and.z>0d0).or.(mu>0d0.and.z<0d0)) then
+           if(.not.in_trn_noamp .and.&
+                 ((mu<0d0.and.z>0d0).or.(mu>0d0.and.z<0d0))) then
               help=1d0/abs(mu)
               help = min(100d0, help) !-- truncate singularity
 !
