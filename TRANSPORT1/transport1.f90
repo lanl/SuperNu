@@ -18,10 +18,10 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   real*8,intent(inout) :: totevelo
   integer,intent(out) :: ierr
 !##################################################
-  !This subroutine passes particle parameters as input and modifies
-  !them through one IMC transport event.  If
-  !the puretran boolean is set to false, this routine couples to the
-  !corresponding DDMC diffusion routine.
+!This subroutine passes particle parameters as input and modifies
+!them through one IMC transport event.  If
+!the puretran boolean is set to false, this routine couples to the
+!corresponding DDMC diffusion routine.
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
 
@@ -35,11 +35,14 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   real*8 :: darr(7),darrold(7)
   real*8 :: r1,r2
 
-  integer :: iynext,iynext1,iynext2,iznext,ixold,iyold,idby1,idby2,izold,idistold
+  integer :: iynext,iynext1,iynext2,iznext
+! integer :: ixold,iyold,izold,idistold
+  integer :: idby1,idby2
   real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
   real*8 :: zhelp
   real*8 :: xold,yold,zold
-  real*8 :: muold,etaold,xiold
+  real*8 :: muold
+! real*8 :: etaold,xiold
   real*8 :: ynew,znew
 !-- distance out of physical reach
   real*8 :: far
@@ -92,16 +95,16 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   xi = sqrt(1d0-mu**2)*sin(om)
 
 !-- storing old position
-  ixold = ix
-  iyold = iy
-  izold = iz
+! ixold = ix
+! iyold = iy
+! izold = iz
   xold = x
   yold = y
   zold = z
   muold = mu
-  etaold = eta
-  xiold = xi
-  idistold = ptcl2%idist
+! etaold = eta
+! xiold = xi
+! idistold = ptcl2%idist
 
   idby1=0
   idby2=0
@@ -109,7 +112,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- setting vel-grid helper variables
   if(grd_isvelocity) then
 !-- calculating initial transformation factors
-     elabfact=1d0-mu*x*cinv
+     elabfact = 1d0-mu*x*cinv
      thelp = tsp_t
   else
      elabfact = 1d0
@@ -374,7 +377,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 
 !-- updating radius
   x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
-  if(dbx/=dbx) then
+  if(x/=x) then
 !    stop 'transport1: x/=x'
      ierr = 5
      return
@@ -420,7 +423,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      eta = y*(cos(z)*mux+sin(z)*muy)-sqrt(1d0-y**2)*muz
      xi = cos(z)*muy-sin(z)*mux
      om = atan2(xi,eta)
-     if(om<0d0) om=om+pc_pi2
+     if(om<0d0) om = om+pc_pi2
 !-- warn about inaccurate result
      if(abs(mu**2+eta**2+xi**2-1d0)>1d-9) then
         ierr = -1 !warning
@@ -472,7 +475,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   endif
 !
 !-- updating transformation factors
-  if(grd_isvelocity) elabfact=1d0-mu*x*cinv
+  if(grd_isvelocity) elabfact = 1d0-mu*x*cinv
 
 !
 !-- census
@@ -492,8 +495,8 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      om = pc_pi2*r1
 !-- checking velocity dependence
      if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+mu*x*cinv)
-  elseif(d==dbx) then
 !-- checking if escaped domain
+  elseif(d==dbx) then
      lout = mu>=0d0.and.ix==grd_nx
      if(lout) then
 !-- ending particle
@@ -531,10 +534,10 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- checking if analog
      if(prt_isimcanlog.and.r1<=grd_fcoef(ic)) then
 !-- effective absorption
-        ptcl2%isvacant=.true.
-        ptcl2%done=.true.
+        ptcl2%isvacant = .true.
+        ptcl2%done = .true.
 !-- adding comoving energy to deposition energy
-        edep=edep+e*elabfact
+        edep = edep + e*elabfact
         return
      else
 !-- effective scattering
