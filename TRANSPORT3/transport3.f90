@@ -162,6 +162,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   x = x + xi*d
   y = y + eta*d
   z = z + mu*d
+
 !
 !-- updating time
   ptcl%t = ptcl%t + thelp*cinv*d

@@ -27,7 +27,7 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   logical :: loutx,louty,loutz
   integer :: ihelp
   real*8 :: elabfact, eta, xi
-  real*8 :: thelp, thelpinv
+  real*8 :: thelp, thelpinv, help
   real*8 :: dcol,dbx,dby,dbz,d
   real*8 :: darr(4)
   real*8 :: r1
@@ -79,31 +79,16 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   if(xi==0d0) then
      dbx = far
   else
-     if((grd_xarr(ix)-x)/xi>0d0.and.(grd_xarr(ix+1)-x)/xi>0d0) then
-!       stop 'transport3_gamgrey: x val out of cell'
-        ierr = 1
-        return
-     endif
      dbx = max((grd_xarr(ix)-x)/xi,(grd_xarr(ix+1)-x)/xi)
   endif
   if(eta==0d0) then
      dby = far
   else
-     if((grd_yarr(iy)-y)/eta>0d0.and.(grd_yarr(iy+1)-y)/eta>0d0) then
-!       stop 'transport3_gamgrey: y val out of cell'
-        ierr = 2
-        return
-     endif
      dby = max((grd_yarr(iy)-y)/eta,(grd_yarr(iy+1)-y)/eta)
   endif
   if(mu==0d0) then
      dbz = far
   else
-     if((grd_zarr(iz)-z)/mu>0d0.and.(grd_zarr(iz+1)-z)/mu>0d0) then
-!       stop 'transport3_gamgrey: z val out of cell'
-        ierr = 3
-        return
-     endif
      dbz = max((grd_zarr(iz)-z)/mu,(grd_zarr(iz+1)-z)/mu)
   endif
 !
@@ -120,25 +105,20 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !
 !-- finding minimum distance
   darr = [dbx,dby,dbz,dcol]
-  if(any(darr/=darr) .or. any(darr<0d0)) then
-!    write(0,*) darr
-!    write(*,*) ix,iy,iz,x,y,z,mu,eta,xi,om
-!    stop 'transport3_gamgrey: invalid distance'
-     ierr = 4
+  d = minval(darr)
+  if(any(darr/=darr)) then
+     ierr = 1
      return
   endif
-  d = minval(darr)
+  if(d<0d0) then
+     ierr = 2
+     return
+  endif
 
 !-- updating position
   x = x + xi*d
   y = y + eta*d
   z = z + mu*d
-
-!
-!-- updating transformation factors
-  if(grd_isvelocity) then
-     elabfact=1d0-(xi*x+eta*y+mu*z)*cinv
-  endif
 
 !-- tallying energy densities
   if(.not.prt_isimcanlog) then
@@ -148,12 +128,18 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
           elabfact*d*thelp))*elabfact
      if(edep/=edep) then
 !       stop 'transport3_gamgrey: invalid energy deposition'
-        ierr = 5
+        ierr = 3
         return
      endif
 !-- reducing particle energy
      e = e*exp(-grd_capgrey(ic) * &
           elabfact*d*thelp)
+  endif
+
+!
+!-- updating transformation factors
+  if(grd_isvelocity) then
+     elabfact=1d0-(xi*x+eta*y+mu*z)*cinv
   endif
 
 !
@@ -208,9 +194,14 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
         edep = e*elabfact
         return
      else
+!-- transforming to lab
+        if(grd_isvelocity) then
+           help = elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
+!
 !-- energy weight
-        e = e*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
-        e0 = e0*elabfact/(1d0-(mu*z+eta*y+xi*x)*cinv)
+           e = e*help
+           e0 = e0*help
+        endif
      endif
 
 !
