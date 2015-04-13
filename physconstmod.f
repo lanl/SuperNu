@@ -56,8 +56,6 @@ c-- nuclear decay gamma emission, 1MeV=1.602176d-6 erg
       real*8,parameter :: pc_qhl_co56 = (3440d0 + .19d0*2*511d0)*pc_kev!direct gamma's plus positron annihilation
 c-- average kinetic energy of co56->fe56 emergent positron
       real*8,parameter :: pc_q_poskin = .19d0*116*pc_kev
-c-- gamma ray gray absorption cross section
-      real*8,parameter :: pc_capgam = .06d0 !cm^2/g
 c
 c
       contains
