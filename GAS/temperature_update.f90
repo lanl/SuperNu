@@ -1,6 +1,7 @@
 subroutine temperature_update
 
   use gasmod
+  use gridmod
   use totalsmod
   use timestepmod
   use physconstmod
@@ -20,9 +21,9 @@ subroutine temperature_update
   gas_eraddens = gas_eraddens
 
 !-- calculating temperature
-  if(allocated(gas_temppreset)) then
+  if(allocated(grd_temppreset)) then
 !-- apply read-in temperature profile
-     gas_temp = gas_temppreset(:,tsp_it)
+     gas_temp = grd_temppreset(grd_idd1:grd_idd1+grd_ndd-1,tsp_it)
   else
 !!-- calculate temp correction
      do i=1,gas_ncell
