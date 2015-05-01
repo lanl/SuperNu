@@ -17,50 +17,39 @@ subroutine initial_particles
   type(packet) :: ptcl
 !
   logical :: lhelp
-  integer :: ig, i,j,k,l, iig, ipart
+  integer :: ig, i,j,k,l, iig, ipart, ii
+  integer :: nhere,ndmy,iimpi,nemit
   integer :: ix,iy,iz
-  integer :: iused
   real*8 :: wl0, mu0, om0, ep0
   real*8 :: denom2
+  real*8 :: pwr
   real*8 :: r1
   real*8 :: wl1,wl2,wl3,wl4
+  real*8 :: specarr(grp_ng)
 
 !-- helper quantities
   wl1=grp_wlinv(grp_ng+1)
   wl2=grp_wlinv(1)
-
+  if(in_tempradinit>0d0) then
+     specarr = specintv(1d0/in_tempradinit,1)
+     specarr = specarr/sum(specarr)
+  else
+     specarr = 1d0
+  endif
+!-- shortcut
+  pwr = in_srcepwr
+  
 !-- instantiating initial particles
-  i = 1
-  j = 1
-  k = 1
-  iused = 0
-  l = grd_icell(i,j,k)
-  do ipart=1,src_ninitnew
-
-!-----------------------------------------------------------------------
-!TODO: make this an outer loop, like in interior_source
-!-- incrementing to next vacant cell
-     loopk: do k=k,grd_nz
-        do j=j,grd_ny
-           do i=i,grd_nx
-              l = grd_icell(i,j,k)
-              lhelp = iused<grd_nvolinit(l)
-              if(lhelp) then
-                 iused = iused + 1
-                 exit loopk
-              endif
-              iused = 0
-           enddo
-           iused = 0
-           i = 1
-        enddo
-        iused = 0
-        j = 1
-     enddo loopk
-!-----------------------------------------------------------------------
-!
-!-- sanity check
-     if(.not.lhelp) stop 'initial_particles: invalid particle'
+  ipart = 0
+  iimpi = 0
+  do k=1,grd_nz
+  do j=1,grd_ny
+  do i=1,grd_nx
+     l = grd_icell(i,j,k)
+     call sourcenumbers_roundrobin(iimpi,grd_evolinit(l)**pwr, &
+        0.0d0,grd_nvolinit(l),nemit,nhere,ndmy)
+  do ii=1,nhere
+     ipart = ipart + 1!{{{
 !
 !-- setting 1st cell index
      ix = i
@@ -78,15 +67,15 @@ subroutine initial_particles
         wl3 = grp_wlinv(ig+1)
         wl4 = grp_wlinv(ig)
         iig = ig
-        if(r1>=denom2.and.r1<denom2 + (wl4-wl3)/(wl2-wl1)) exit
-        denom2 = denom2 + (wl4-wl3)/(wl2-wl1)
+        if(r1>=denom2.and.r1<denom2 + specarr(ig)) exit
+        denom2 = denom2 + specarr(ig)
      enddo
      call rnd_r(r1,rnd_state)
      wl0 = 1d0/((1d0-r1)*grp_wlinv(iig)+r1*grp_wlinv(iig+1))
      ptcl%wl = wl0
 
 !-- calculating particle energy
-     ep0 = grd_evolinit(l)/dble(grd_nvolinit(l))
+     ep0 = grd_evolinit(l)/dble(nemit)
      ptcl%e = ep0
      ptcl%e0 = ep0
 
@@ -178,6 +167,9 @@ subroutine initial_particles
      prt_particles(ipart) = ptcl
 
   enddo !ipart
-
-
+!
+  enddo !i
+  enddo !j
+  enddo !k
+  
 end subroutine initial_particles

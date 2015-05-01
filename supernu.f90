@@ -128,7 +128,7 @@ program supernu
   ns = int(int(2,8)**in_src_n2s/nmpi)
   ns = max(ns,in_ns/nmpi)
   nsinit = int(int(2,8)**in_src_n2sinit/nmpi)
-  nsinit = max(nsinit,in_ns/nmpi)
+  nsinit = max(nsinit,in_ns0/nmpi)
   call sourcemod_init(ns,nsinit)
 
 !-- allocate arrays of sizes retreived in bcast_permanent
@@ -146,7 +146,7 @@ program supernu
   endif
 
 !-- initial radiation energy
-  call initialnumbers
+  call initialnumbers(nmpi)
 !-- instantiating initial particles (if any)
   call initial_particles
 

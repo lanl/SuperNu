@@ -24,14 +24,15 @@ subroutine emission_probability
      do l=grd_idd1,grd_idd1+grd_ndd-1
         grd_emitprob(1,l) = in_suolpick1*grd_cap(1,l)
         grd_emitprob(2,l) = (1d0 - in_suolpick1)*grd_cap(2,l)
-        grd_emitprob(3:grp_ng,l) = 0d0  !-- not necessary
      enddo !l
      return
   endif
 
 !-- one group
   if(grp_ng==1) then
-     grd_emitprob(:,grd_idd1:grd_idd1+grd_ndd-1) = 1d0
+     if(grd_nepg>1) stop 'emis_prob: grp_ng=1 & grd_nepg>1'
+     grd_emitprob(1,grd_idd1:grd_idd1+grd_ndd-1) = &
+          grd_capgrey(grd_idd1:grd_idd1+grd_ndd-1)
      return
   endif
 
@@ -42,15 +43,16 @@ subroutine emission_probability
 !-- cumulative sum of unnormalized emission probability
      ig = 1
      help = 0d0
-     do iep=1,grd_nep
+     do iep=1,grd_nep-1
         nepg = min(iep*grd_nepg,grp_ng) - ig + 1
         igp1 = ig + nepg - 1
         help = help + sum(specarr(ig:igp1)*grd_cap(ig:igp1,l))
         grd_emitprob(iep,l) = help
         ig = igp1 + 1
      enddo !iep
+     grd_emitprob(grd_nep,l)=grd_capgrey(l)
   enddo !l
-
+  
   t1 = t_time()
   call timereg(t_emitp,t1-t0)
 
