@@ -18,17 +18,17 @@ c     --------------------------------------
 c
 c-- search unnormalized cumulative emission probability values
       r1 = r*grd_capgrey(ic)
-      iep = binsrch(r1,[0d0,grd_emitprob(:,ic)],grd_nep+1,.true.)
-      ig = (iep-1)*grd_nepg + 1
+      iep = binsrch(r1,grd_emitprob(:,ic),grd_nep,.true.)
+      ig = iep*grd_nepg + 1
       igp1 = min(ig + grd_nepg - 1, grp_ng)
       nepg = igp1 - ig + 1
       specval(:nepg) = specintvp(1d0/grd_temp(ic),ig,igp1)
 c
 c-- start value
-      if(iep==1) then
+      if(iep==0) then
        emitprob = 0d0
       else
-       emitprob = grd_emitprob(iep-1,ic)
+       emitprob = grd_emitprob(iep,ic)
       endif
 c
 c-- step up until target r1 is reached
