@@ -177,6 +177,7 @@ c-- simpson's rule
 c
 c-- cubic
       case(11)
+       farr = f(xarr) !edge values
 c-- quarter points
        f2arr = 12d0*f(.5d0*(xarr(2:) + xarr(:grp_ng))) + 32d0*(
      &   f(.25d0*xarr(2:) + .75d0*xarr(:grp_ng)) +
@@ -255,6 +256,7 @@ c-- simpson's rule
 c
 c-- cubic
       case(11)
+       farr = f(xarr) !edge values
 c-- quarter points
        f2arr = 12d0*f(.5d0*(xarr(2:) + xarr(:n))) + 32d0*(
      &   f(.25d0*xarr(2:) + .75d0*xarr(:n)) +

@@ -1,26 +1,149 @@
-This is SuperNu, a IMC+DDMC Radiation Transport Code.
+SuperNu - a IMC-DDMC Radiation Transport Code for Explosive Outflows
+--------------------------------------------------------------------
+Copyright (c) 2013-2015 Ryan Wollaeger and Daniel van Rossum.  All rights reserved.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, version 3 of the License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    Please find a copy of the GNU General Public License in the COPYING
+    file provided along with this program, or see <http://www.gnu.org/licenses/>.
+
+If you use SuperNu, we ask you to appropriately acknowledge SuperNu and cite the papers in which the methods are described.
+Thank you,
+the authors
+
+wollaeger@wisc.edu
+daan@flash.uchicago.edu
+
+
+SUPERNU METHOD PAPERS
+=====================
+Wollaeger, van Rossum et al. 2013, ApJS 209, 37
+Wollaeger & van Rossum 2014, ApJS 214, 28
+van Rossum & Wollaeger 2015, in preparation
+Wollaeger & van Rossum 2015, in preparation
+
+
+SUMMARY OF SUPERNU PHYSICS
+==========================
+SuperNu is a program for simulating time-dependent radiation transport in local thermodynamic equilibrium with matter.  It applies the methods of Implicit Monte Carlo (IMC) [1] and Discrete Diffusion Monte Carlo (DDMC) [2] for static or homologously expanding spatial grids.  The radiation field affects material temperature but does not affect the motion of the fluid.  SuperNu may be applied to simulate radiation transport for supernovae with ejecta velocities that are not affected by radiation momentum [3].  The physical opacity calculation includes elements from Hydrogen up to Cobalt [3].  SuperNu is motivated by the ongoing research into the effect of variation in the structure of progenitor star explosions on observables: the brightness and shape of light curves and the temporal evolution of the spectra.  Consequently, the code may be used to post-process data from hydrodynamic simulations.  SuperNu does not include any capabilities or methods that allow for non-trivial hydrodynamics.
+
+[1] JA Fleck Jr, JD Cummings Jr, "An implicit Monte Carlo scheme for calculating time and frequency dependent nonlinear radiation transport", (1971)
+[2] JD Densmore, TJ Urbatsch, TM Evans, MW Buksas, "A hybrid transport-diffusion method for Monte Carlo radiative-transfer simulations", (2007)
+[3] RT Wollaeger, DR van Rossum, "Radiation Transport for Explosive Outflows: Opacity Regrouping", (2014)
+
+
+CODE FEATURES
+=============
+The time-dependent equations for photon transport and diffusion are solved with Monte Carlo (MC) by discretizing the radiation energy in the system in the form of MC packets (particles).  These particles are transported over the computational domain (spatial grid) where they interact with the gas according to multi-group opacities (groups).  Particles that leave the domain are tallied per timestep and flux wavelength bin, and written to disk.
+
+Particles:
+- MC Particles are generated in locations where energy sources are non-zero.
+- The number of particles generated locally is determined by:
+  - a power law of the local energy source,
+  - the fraction of the local energy source to the total energy source,
+  - a minimal number of particles per grid cell with non-zero energy source.
+- Energy sources include:
+  - analytic boundary and volume sources,
+  - manufactured-solution sources,
+  - energy deposition by radioactive decay of supernova explosion products.
+- Particles that get censused at the end of a timestep are stored in the particle array.
+  - particle direction is stored in the lab frame,
+  - particle energy/wavelength is stored in the comoving frame.
+
+Transport:
+— Particle transport methods are:
+  — Implicit Monte Carlo (IMC),
+  — Discrete Diffusion Monte Carlo (DDMC).
+— DDMC is used in optically thick regions of a domain.
+— Geometries:
+  — 3D spherical,
+  — 2D cylindrical,
+  — 3D cartesian.
+— Assumptions:
+  — local thermodynamic equilibrium (LTE),
+  — material either static or in homologous expansion.
+- particle transport is parallelized using a hybrid of MPI and OpenMP
+
+Spatial grid:
+— The grid is the domain over which MC particles are tracked.
+— The grid can either be a spatial or a velocity mesh.
+— If the grid is physically moving:
+  — the grid has units of velocity,
+  — the velocity grid is not affected by the radiation radiation field,
+  — the velocity grid is constant.
+— If the grid is physically static:
+  — the grid is in units of length,
+  — the domain is static (no velocity field).
+- The grid array is geometry-agnostic
+— The grid array is compressed by not storing regions of zero opacity (zero mass).
+- The grid array only stores quantities that are needed for the transport step
+
+Gas:
+— Gas properties are domain decomposed.
+- Gas properties are updated after transport steps.
+— Gas properties include:
+  - chemical composition,
+  — density,
+  — material temperature,
+  — heat capacity,
+  — opacity: Thomson scattering, and multi-group absorption.
+— Leakage (DDMC) and Planck opacities are calculated from scattering and absorption opacities.
+— Mutli-group absorption opacity includes bound-bound (bb), bound-free (bf), and free-free (ff) data for Hydrogen to Cobalt:
+  — line data for bound-bound opacities are taken from http://kurucz.harvard.edu/atoms.html.
+
+Groups:
+— Opacity frequency dependence is discretized with multi-group.
+— The frequency-resolved opacities are averaged within each group.
+— The code may use a constant multi-group grid in units of either:
+  — wavelength,
+  — non-dimensional wavelength (wavelength multiplied by material temperature).
+
+IO:
+- input is divided in two categories:
+  - models specific input files are named input.* and (see the Input/ directory):
+    - input.par: runtime parameters,
+    - input.str: velocity-density-composition structure on the computational domain.
+  - model independent data files are named data.* (see the Data/ directory):
+    - data.bf_verner: bound-free cross section data (Verner et al. 1996, ApJ 465, 487)
+    - data.ff_sutherland: free-free gaunt factor data (Sutherland 1998, MNRAS 300, 321)
+    - data.ion: atomic level data (http://kurucz.harvard.edu/atoms.html)
+- output files are named output.*
+  - flux variables are saved as output.flx_*
+  - grid variables are saved as output.grd_*
+  - total (integrated over the domain) energy budget numbers are saved as output.tot_energy
+
+
+SUPERNU OUTPUT
+==============
+Flux:
+SuperNu writes flux output in ascii (output.flx_luminos) as a sequence of spectra, one spectrum per line, one line per viewing angle, repeated in each time step.  So the number of columns equals the number of wl-bins, and the number of rows equals nmu*nphi*ntimestep, where mu=cos(theta).  The luminos values are in units [erg/s].  The 'output.flx_grid' file describes the wavelength, viewing angle, and time bins.
+
+
+CODING STANDARDS
+================
+- Source files with the .f suffix adhere to fortran fixed format standard
+  - indentation width is one character
+- Source files with the .f90 suffix adhere to fortran free format standard
+  - indentation width is three characters
+- Each subroutine/function contains a comment section that explicitly states its purpose
+- Each new paragraph in a source file starts with a comment line detailing the purpose of the following paragraph
+- Module variables have a threeletter_ prefix that is unique for that module.
+- All variables/subroutines/functions/intrinsics etc. have lowercase names.
+  - the only exeception is a USE statement for modules that are defined in the same file in which they are used.
 
 
 SETUP INSTRUCTIONS
 ==================
-The following procedure should produce a working supernu executable.
+The following procedure produces two supernu executables, one serial and one MPI-parallel version.  Please report build errors to the authors.
 
-- if you do not have the hg-versioninfo module installed:
-  # cp ./Tools/hgversioninfo.py ~/py/
-  # export PYTHONPATH=$PYTHONPATH:~/py
-# cp -f ./System/Makefile.compiler.gfortran ./Makefile.compiler
-  - modify the compiler flags to your liking (e.g. optimization, debug flags etc.)
-- a serial run is configured by default, mpimod.f is linked to mpimod_ser.f.  If you want to run in MPI mode:
-  # ln -sf ./mpimod_mpi.f ./mpimod.f
-  - make sure to update the ./Makefile.compiler to something like: FC=mpif90
-# make -j
-- report any errors to: daan at flash.uchicago.edu
-
-
-SETUP TIPS
-==========
-In order to create multiple builds (e.g. serial and MPI) from a single source, use lndir in the following way:
-
+# mkdir supernu
 # hg clone https://drrossum@bitbucket.org/drrossum/supernu supernu/src
 # mkdir supernu/bin
 # mkdir supernu/bin-mpi
@@ -28,15 +151,13 @@ In order to create multiple builds (e.g. serial and MPI) from a single source, u
 # lndir ../src
 # cd ../bin-mpi
 # lndir ../src
-
-
-NOTES
-=====
-The particle array saves particle direction in the lab frame and particle energy/wavelength in the comoving frame.
-
-
-REFERENCES
-==========
-Wollaeger, van Rossum et al. 2014
-Wollaeger, van Rossum et al. 2013
-Densmoore 201x
+- if you do not have the hg-versioninfo module installed:
+  # cp ./Tools/hgversioninfo.py ~/py/
+  # export PYTHONPATH=$PYTHONPATH:~/py
+# cp -f ./System/Makefile.compiler.gfortran ./Makefile.compiler
+  - modify the compiler flags to your liking (e.g. optimization, debug flags etc.)
+- let mpimod.f link symbolically to either mpimod_ser.f or mpimod_mpi.f:
+  # ln -sf ./mpimod_ser.f ./mpimod.f
+  # ln -sf ./mpimod_mpi.f ./mpimod.f
+    - update the ./Makefile.compiler to something like: FC=mpif90
+# make -j

@@ -33,48 +33,48 @@ c-- compressed domain
       logical :: grd_lvoid  !number of cells
 c
 c-- Probability of emission in a given zone and group
-      real*8,allocatable :: grd_emitprob(:,:) !(nep,ncp)
+      real*8,allocatable :: grd_emitprob(:,:) !(nep,ncell)
 c-- Line+Cont extinction coeff
-      real*4,allocatable :: grd_cap(:,:) !(ng,ncp)
+      real*4,allocatable :: grd_cap(:,:) !(ng,ncell)
 c-- leakage opacities
-      real*8,allocatable :: grd_opacleak(:,:) !(6,ncp)
+      real*8,allocatable :: grd_opacleak(:,:) !(6,ncell)
 
 c
-      real*8,allocatable :: grd_vol(:)  !(ncp)
-      real*8,allocatable :: grd_temp(:) !(ncp)
+      real*8,allocatable :: grd_vol(:)  !(ncell)
+      real*8,allocatable :: grd_temp(:) !(ncell)
 
 c-- scattering coefficient
-      real*8,allocatable :: grd_sig(:) !(ncp) !grey scattering opacity
+      real*8,allocatable :: grd_sig(:) !(ncell) !grey scattering opacity
 c-- Planck opacity (gray)
-      real*8,allocatable :: grd_capgrey(:) !(ncp)
+      real*8,allocatable :: grd_capgrey(:) !(ncell)
 c-- Fleck factor
-      real*8,allocatable :: grd_fcoef(:)  !(ncp)
+      real*8,allocatable :: grd_fcoef(:)  !(ncell)
 
 
 c-- energy absorbed by material
-      real*8,allocatable :: grd_edep(:)   !(ncp)
-      real*8,allocatable :: grd_eamp(:)   !(ncp)
+      real*8,allocatable :: grd_edep(:)   !(ncell)
+      real*8,allocatable :: grd_eamp(:)   !(ncell)
 c-- radiation energy density in tsp_dt
-      real*8,allocatable :: grd_eraddens(:) !(ncp)
+      real*8,allocatable :: grd_eraddens(:) !(ncell)
 
 
 c-- number of IMC-DDMC method changes per cell per time step
-      integer,allocatable :: grd_methodswap(:) !(ncp)
+      integer,allocatable :: grd_methodswap(:) !(ncell)
 c-- number of census prt_particles per cell
-      integer,allocatable :: grd_numcensus(:) !(ncp)
+      integer,allocatable :: grd_numcensus(:) !(ncell)
 
 c
 c-- packet number and energy distribution
 c========================================
-      integer,allocatable :: grd_nvol(:) !(ncp) number of thermal source particles generated per cell
-      integer,allocatable :: grd_nvolinit(:) !(ncp) number of initial (t=tfirst) particles per cell
+      integer,allocatable :: grd_nvol(:) !(ncell) number of thermal source particles generated per cell
+      integer,allocatable :: grd_nvolinit(:) !(ncell) number of initial (t=tfirst) particles per cell
 c      
-      real*8,allocatable :: grd_emit(:) !(ncp) amount of fictitious thermal energy emitted per cell in a time step
-      real*8,allocatable :: grd_emitex(:) !(ncp) amount of external energy emitted per cell in a time step
-      real*8,allocatable :: grd_evolinit(:) !(ncp) amount of initial energy per cell per group
+      real*8,allocatable :: grd_emit(:) !(ncell) amount of fictitious thermal energy emitted per cell in a time step
+      real*8,allocatable :: grd_emitex(:) !(ncell) amount of external energy emitted per cell in a time step
+      real*8,allocatable :: grd_evolinit(:) !(ncell) amount of initial energy per cell per group
 c
 c-- temperature structure history (allocated only if used)
-      real*8,allocatable :: grd_temppreset(:,:) !(ncp,tim_nt)
+      real*8,allocatable :: grd_temppreset(:,:) !(ncell,tim_nt)
 c
       interface
       pure function emitgroup(r,ic) result(ig)
