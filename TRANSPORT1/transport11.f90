@@ -126,15 +126,6 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !
 !-- distance to Doppler shift = ddop
   if(grd_isvelocity.and.ig<grp_ng) then
-!      call rnd_r(r1,rndstate)
-!      ddop = pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig))*abs(log(r1))/(grp_wl(ig)*dcollabfact)
-!     wl = r1*grp_wl(ig)+(1d0-r1)*grp_wl(ig+1) !uniform sample
-!      wl=1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))  !reciprocal sample
-!      wl=wl*(1d0-mu*x*cinv)
-!      ddop = pc_c*(1d0-mu*x*cinv)*(1d0-wl/(1d0-mu*x*cinv*grp_wl(ig+1)))
-!     ddop = pc_c*(1d0-mu*x*cinv)*(1d0-&
-!          grp_wl(ig)*log(grp_wl(ig+1)*grp_wlinv(ig))/(grp_wl(ig+1)-grp_wl(ig)))
-!     write(*,*) pc_c*(wl*grp_wlinv(ig+1)-1d0)+x*mu
      ddop = abs(pc_c*(1d0-wl*grp_wlinv(ig+1))-x*mu)
   else
      ddop = far
@@ -209,10 +200,6 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
      if(ig<grp_ng) then
         ig = ig+1
 !-- lab frame wavelength
-!     call rnd_r(r1,rndstate)
-!     wl = r1*grp_wl(ig)+(1d0-r1)*grp_wl(ig+1) !uniform sample
-!        wl=1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))  !reciprocal sample
-!        wl = wl*(1d0-mu*x*cinv)
         wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*(1d0-mu*x*cinv)
      else
         call rnd_r(r1,rndstate)
@@ -300,30 +287,6 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 ! sampling comoving wavelength in group
         call rnd_r(r1,rndstate)
         wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
-        !wl = (1d0-r1)*grp_wl(ig)+r1*grp_wl(ig+1)
-        !wl = 0.5d0*(grp_wl(ig)+grp_wl(ig+1))
-        !
-        ! sampling sub-group Planck function:
-!         x1 = pc_h*pc_c/(grp_wl(ig+1)*pc_kb*grd_temp(ic))
-!         x2 = pc_h*pc_c/(grp_wl(ig)*pc_kb*grd_temp(ic))
-!         if (x2<pc_plkpk) then
-!            bmax = x2**3/(exp(x2)-1d0)
-!         elseif (x1>pc_plkpk) then
-!            bmax = x1**3/(exp(x1)-1d0)
-!         else
-!            bmax = pc_plkpk
-!         endif
-!         call rnd_r(r1,rndstate)
-!         call rnd_r(r2,rndstate)
-!         xx0 = (1d0-r1)*x1+r1*x2
-!         do while (r2>xx0**3/(exp(xx0)-1d0)/bmax)
-!            call rnd_r(r1,rndstate)
-!            call rnd_r(r2,rndstate)
-!            xx0 = (1d0-r1)*x1+r1*x2
-!         enddo
-!         wl = pc_h*pc_c/(xx0*pc_kb*grd_temp(ic))
-        !
-        !
         if(grd_isvelocity) then
 !-- converting comoving wavelength to lab frame wavelength
            wl = wl*(1d0-x*mu*cinv)

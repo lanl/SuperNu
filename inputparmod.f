@@ -10,6 +10,7 @@ c     ------------------
 * 4) sanity conditions
 ************************************************************************
 c-- write stdout to file
+      character(40) :: in_name = "spn" !simulation name/title, for post-processing identification
       character(80) :: in_comment = "" !why did I run this simulation?
       logical :: in_grabstdout = .false. !write stdout to file
 c-- parallelization
@@ -142,6 +143,7 @@ c--
 c     
 c-- runtime parameter namelist
       namelist /inputpars/
+     & in_name,in_comment,
      & in_igeom,in_ndim,
      & in_isvelocity,in_voidcorners,in_novolsrc,
      & in_lx,in_ly,in_lz,
@@ -170,7 +172,7 @@ c-- runtime parameter namelist
      & in_tauddmc,in_dentype,in_noreadstruct,
      & in_norestart,in_taulump,in_tauvtime,
      & in_tempradinit,in_ismodimc,
-     & in_comment,in_noeos,in_flx_ndim,in_flx_wlmin,in_flx_wlmax
+     & in_noeos,in_flx_ndim,in_flx_wlmin,in_flx_wlmax
 c
 c-- pointers
 c
@@ -392,6 +394,15 @@ c-- dump namelist to stdout
       write(6,*) 'namelist read:'
       write(6,nml=inputpars)
       write(6,*)
+c
+c-- write simulation name to file
+      open(4,file='output.name',iostat=istat)
+      if(istat/=0) then
+       stop 'parse_inputpars: open output.name error'
+      else
+       write(4,*) in_name
+       close(4)
+      endif
 c
 c-- check input parameter validity
       if(in_nomp<0) stop 'in_nomp invalid'!{{{

@@ -53,6 +53,7 @@ c
       write(6,*) 'simulation date : ', t_startdate//" / "//t_starttime
       write(6,*) 'processor name  : ', trim(pname)
       write(6,*)
+      write(6,*) '#: ',in_name
       write(6,*) '#: ',in_comment
       write(6,*)
 c
