@@ -29,7 +29,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   integer :: ihelp
   real*8 :: elabfact, dirdotu, mu0, gm
   real*8 :: dtinv, thelp, thelpinv, help
-  real*8 :: dcen,dcol,dthm,dbx,dby,ddop,d
+  real*8 :: dcen,dcol,dthm,dbx,dby,ddop
   real*8 :: darr(6)
   real*8 :: xold, yold, omold
   real*8 :: r1, r2
@@ -38,7 +38,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 
   integer,pointer :: ix, iy, ic, ig
   integer,parameter :: iz=1
-  real*8,pointer :: x,y,mu,om,e,e0,wl
+  real*8,pointer :: x,y,mu,om,e,e0,wl,d
 !-- statement functions
   integer :: l
   real*8 :: dx,dy
@@ -49,6 +49,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   iy => ptcl2%iy
   ic => ptcl2%ic
   ig => ptcl2%ig
+  d => ptcl2%dist
   x => ptcl%x
   y => ptcl%y
   mu => ptcl%mu
@@ -288,7 +289,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
      endif
   elseif(any([dbx,dby]==d)) then
-!-- checking if escapted domain
+!-- checking if escaped domain
      loutx = d==dbx.and.(cos(om)>=0d0.and.ix==grd_nx)
      louty = d==dby.and.((mu>=0d0.and.iy==grd_ny).or.(mu<0.and.iy==1))
      if(loutx.or.louty) then

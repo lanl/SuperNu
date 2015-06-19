@@ -31,7 +31,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   real*8 :: elabfact, eta, xi
   real*8,pointer :: mux,muy,muz
   real*8 :: dtinv, thelp, thelpinv, help
-  real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop,d
+  real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop
   real*8 :: darr(7),darrold(7)
   real*8 :: r1,r2
 
@@ -48,7 +48,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   real*8 :: far
 
   integer,pointer :: ix,iy,iz,ic,ig
-  real*8,pointer :: x,y,z,mu,om,e,e0,wl
+  real*8,pointer :: x,y,z,mu,om,e,e0,wl,d
 !-- statement functions
   integer :: l
   real*8 :: dx,dz,xm,dyac,ym
@@ -71,6 +71,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   mux => ptcl2%mux
   muy => ptcl2%muy
   muz => ptcl2%muz
+  d => ptcl2%dist
   ix => ptcl2%ix
   iy => ptcl2%iy
   iz => ptcl2%iz

@@ -26,7 +26,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   real*8,parameter :: cinv = 1d0/pc_c
 !
   real*8 :: r1, r2, thelp,thelpinv
-  real*8 :: db, dcol, dcen, dthm, ddop, d
+  real*8 :: db, dcol, dcen, dthm, ddop
   real*8 :: darr(5)
   real*8 :: siglabfact, dcollabfact, elabfact
   real*8 :: xold, P, muold
@@ -39,7 +39,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 
   integer,pointer :: ix,ic,ig
   integer,parameter :: iy=1, iz=1
-  real*8,pointer :: x, mu, e, e0, wl
+  real*8,pointer :: x, mu, e, e0, wl, d
 !-- statement function
   integer :: l
   real*8 :: dx
@@ -48,6 +48,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   ix => ptcl2%ix
   ic => ptcl2%ic
   ig => ptcl2%ig
+  d => ptcl2%dist
   x => ptcl%x
   mu => ptcl%mu
   e => ptcl%e

@@ -28,7 +28,7 @@ pure subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   real*8 :: elabfact, eta, xi
   real*8,pointer :: mux,muy,muz
   real*8 :: thelp, thelpinv, help
-  real*8 :: dcol,dbx,dby,dbz,d
+  real*8 :: dcol,dbx,dby,dbz
   real*8 :: darr(4)
   real*8 :: r1
 
@@ -43,7 +43,7 @@ pure subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   real*8 :: far
 
   integer,pointer :: ix,iy,iz,ic,ig
-  real*8,pointer :: x,y,z,mu,om,e,e0
+  real*8,pointer :: x,y,z,mu,om,e,e0,d
 
   x => ptcl%x
   y => ptcl%y
@@ -56,6 +56,7 @@ pure subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   mux => ptcl2%mux
   muy => ptcl2%muy
   muz => ptcl2%muz
+  d => ptcl2%dist
   ix => ptcl2%ix
   iy => ptcl2%iy
   iz => ptcl2%iz

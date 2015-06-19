@@ -29,14 +29,14 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   integer :: ihelp
   real*8 :: elabfact, eta, xi
   real*8 :: dtinv, thelp, thelpinv, help
-  real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop,d
+  real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop
   real*8 :: darr(7)
   real*8 :: r1, r2
 !-- distance out of physical reach
   real*8 :: far
 
   integer,pointer :: ix, iy, iz, ic, ig
-  real*8,pointer :: x,y,z,mu,om,e,e0,wl
+  real*8,pointer :: x,y,z,mu,om,e,e0,wl,d
 !-- statement functions
   integer :: l
   real*8 :: dx,dy,dz
@@ -49,6 +49,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   iz => ptcl2%iz
   ic => ptcl2%ic
   ig => ptcl2%ig
+  d => ptcl2%dist
   x => ptcl%x
   y => ptcl%y
   z => ptcl%z

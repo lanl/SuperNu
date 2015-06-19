@@ -28,20 +28,21 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   integer :: ihelp
   real*8 :: elabfact, eta, xi
   real*8 :: thelp, thelpinv, help
-  real*8 :: dcol,dbx,dby,dbz,d
+  real*8 :: dcol,dbx,dby,dbz
   real*8 :: darr(4)
   real*8 :: r1
 !-- distance out of physical reach
   real*8 :: far
 
   integer,pointer :: ix, iy, iz, ic, ig
-  real*8,pointer :: x,y,z,mu,om,e,e0
+  real*8,pointer :: x,y,z,mu,om,e,e0,d
 
   ix => ptcl2%ix
   iy => ptcl2%iy
   iz => ptcl2%iz
   ic => ptcl2%ic
   ig => ptcl2%ig
+  d => ptcl2%dist
   x => ptcl%x
   y => ptcl%y
   z => ptcl%z

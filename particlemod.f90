@@ -11,6 +11,7 @@ module particlemod
 !-- secondary particle properties
   type packet2
      real*8 :: mux,muy,muz   !particle direction in lab frame cartesian coordinates
+     real*8 :: dist          !particle travel distance
      integer :: ix, iy, iz   !positional cell indices
      integer :: ic, ig       !index into compressed domain arrays, group index
      integer :: itype        !IMC or DDMC type

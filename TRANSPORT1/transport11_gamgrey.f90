@@ -23,7 +23,7 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   real*8,parameter :: dt = pc_year !give grey transport infinite time
 !
   real*8 :: r1, thelp,thelpinv
-  real*8 :: db, dcol, d
+  real*8 :: db, dcol
   real*8 :: darr(2)
   real*8 :: siglabfact, dcollabfact, elabfact
   real*8 :: rold, muold
@@ -34,11 +34,12 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
   integer,pointer :: ix,ic,ig
   integer,parameter :: iy=1,iz=1
-  real*8,pointer :: x, mu, e, e0
+  real*8,pointer :: x, mu, e, e0, d
 
   ix => ptcl2%ix
   ic => ptcl2%ic
   ig => ptcl2%ig
+  d => ptcl2%dist
   x => ptcl%x
   mu => ptcl%mu
   e => ptcl%e
