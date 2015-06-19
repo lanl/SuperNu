@@ -361,7 +361,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
              (1d0-exp(-grd_fcoef(ic)*caplump*pc_c*ddmct))* &
              help*cinv*dtinv
      else
-        eraddens = grd_eraddens(ic)+e*ddmct*dtinv
+        eraddens = eraddens + e*ddmct*dtinv
      endif
 !
      if(edep/=edep) then
