@@ -70,18 +70,30 @@ subroutine particle_advance
   else
      thelp = 1d0
   endif
+
+!$omp parallel &
+!$omp shared(grd_numcensus,flx_luminos,thelp) &
+!$omp private(ptcl,ptcl2, &
+!$omp    x,y,z,mu,om,wl,e,e0,ix,iy,iz,ic,ig,icold,r1, &
+!$omp    t0,t1, &
+!$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
+!$omp    rndstate,edep,eraddens,eamp,icell,specarr,ierr, iomp) &
+!$omp reduction(+:grd_edep,grd_eraddens,grd_eamp,grd_methodswap, &
+!$omp    tot_evelo,tot_erad,tot_eout, &
+!$omp    npckt,nddmc,nimc,ndist) &
+!$omp reduction(max:nstepmax)
+
 !
 !-- energy tallies
   grd_edep = 0d0
   grd_eraddens = 0d0
   grd_eamp = 0d0
+  grd_methodswap = 0
+  grd_numcensus = 0
+
   tot_erad = 0d0
 
   flx_luminos = 0d0
-  flx_lumdev = 0d0
-  flx_lumnum = 0
-  grd_methodswap = 0
-  grd_numcensus = 0
 
 !-- Propagate all particles that are not considered vacant
   npckt = 0
@@ -90,18 +102,6 @@ subroutine particle_advance
 
   nstepmax = 0
   ndist = 0
-
-!$omp parallel &
-!$omp private(ptcl,ptcl2, &
-!$omp    x,y,z,mu,om,wl,e,e0,ix,iy,iz,ic,ig,icold,r1, &
-!$omp    t0,t1, &
-!$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
-!$omp    rndstate,edep,eraddens,eamp,icell,specarr,ierr, iomp) &
-!$omp reduction(+:grd_edep,grd_eraddens,grd_eamp,grd_methodswap,grd_numcensus, &
-!$omp    tot_evelo,tot_erad,tot_eout, &
-!$omp    flx_luminos,flx_lumnum,flx_lumdev, &
-!$omp    npckt,nddmc,nimc,ndist) &
-!$omp reduction(max:nstepmax)
 
 !-- thread id                                                               
 !$ iomp = omp_get_thread_num()
@@ -250,9 +250,7 @@ subroutine particle_advance
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
            iom = binsrch(om,flx_om,flx_nom+1,.false.)
 !-- tallying outbound luminosity
-           flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+e
-           flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+e**2
-           flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1
+           flx_luminos(:,ig,imu,iom) = flx_luminos(:,ig,imu,iom) + [e,e**2,1]
         endif
 !
 !-- Russian roulette for termination of exhausted particles
@@ -489,12 +487,12 @@ subroutine particle_advance
 
 !write(0,*) nstepmax, ndist
 
-  tot_sflux = -sum(flx_luminos)
+  tot_sflux = -sum(flx_luminos(1,:,:,:))
 
 !-- convert to flux per second
   help = 1d0/tsp_dt
-  flx_luminos = flx_luminos*help
-  flx_lumdev = flx_lumdev*help**2
+  flx_luminos(1,:,:,:) = flx_luminos(1,:,:,:)*help
+  flx_luminos(2,:,:,:) = flx_luminos(2,:,:,:)*help**2
 
   call timereg(t_pcktnpckt, dble(npckt))
   call timereg(t_pcktnddmc, dble(nddmc))

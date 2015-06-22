@@ -55,8 +55,6 @@ subroutine particle_advance_gamgrey(nmpi)
 
   grd_edep = 0d0
   flx_gamluminos = 0d0
-  flx_gamlumdev = 0d0
-  flx_gamlumnum = 0
 
 !-- initializing volume numbers
   grd_nvol = 0
@@ -116,11 +114,12 @@ subroutine particle_advance_gamgrey(nmpi)
 
 
 !$omp parallel &
+!$omp shared(flx_gamluminos) &
 !$omp private(ptcl,ptcl2,x0,y0,z0,mu0,om0,cmffact,gm,mu1,mu2,eta,xi,labfact,iom,imu, &
 !$omp    rndstate,edep,ierr, iomp, &
 !$omp    x,y,z,mu,om,e,e0,ix,iy,iz,ic,icold,r1, &
 !$omp    i,j,k) &
-!$omp reduction(+:grd_edep,flx_gamluminos,flx_gamlumnum,flx_gamlumdev)
+!$omp reduction(+:grd_edep)
 
 !-- thread id                                                               
 !$ iomp = omp_get_thread_num()
@@ -322,9 +321,7 @@ subroutine particle_advance_gamgrey(nmpi)
            iom = binsrch(om,flx_om,flx_nom+1,.false.)
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
 !-- tally outbound luminosity
-           flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e
-           flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+e**2
-           flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1
+           flx_gamluminos(:,imu,iom) = flx_gamluminos(:,imu,iom) + [e,e**2,1d0]
         endif
 
 !-- Russian roulette for termination of exhausted particles
@@ -385,12 +382,12 @@ subroutine particle_advance_gamgrey(nmpi)
   rnd_states(iomp+1) = rndstate
 !$omp end parallel
 
-  tot_sfluxgamma = -sum(flx_gamluminos)
+  tot_sfluxgamma = -sum(flx_gamluminos(1,:,:))
 
 !-- convert to flux per second
   help = 1d0/tsp_dt
-  flx_gamluminos = flx_gamluminos*help
-  flx_gamlumdev = flx_gamlumdev*help**2
+  flx_gamluminos(1,:,:) = flx_gamluminos(1,:,:)*help
+  flx_gamluminos(2,:,:) = flx_gamluminos(2,:,:)*help**2
 
   deallocate(ipospart)
 

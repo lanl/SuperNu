@@ -105,7 +105,7 @@ subroutine write_output
   open(unit=4,file='output.flx_luminos',status=fstat,position='append',recl=reclen)
   do k=1,flx_nom
   do j=1,flx_nmu
-     write(4,'(1p,10000e12.4)') merge(flx_luminos(:,j,k),0d0,flx_luminos(:,j,k)>1d-99) !prevent fortran number truncation, e.g. 1.1234-123
+     write(4,'(1p,10000e12.4)') merge(flx_luminos(1,:,j,k),0d0,flx_luminos(1,:,j,k)>1d-99) !prevent fortran number truncation, e.g. 1.1234-123
   enddo
   enddo
   close(4)
@@ -113,7 +113,7 @@ subroutine write_output
   open(unit=4,file='output.flx_lumnum',status=fstat,position='append',recl=reclen)
   do k=1,flx_nom
   do j=1,flx_nmu
-     write(4,'(10000i12)') flx_lumnum(:,j,k)
+     write(4,'(10000i12)') nint(flx_luminos(3,:,j,k))
   enddo
   enddo
   close(4)
@@ -121,7 +121,7 @@ subroutine write_output
   open(unit=4,file='output.flx_lumdev',status=fstat,position='append',recl=reclen)
   do k=1,flx_nom
   do j=1,flx_nmu
-     write(4,'(1p,10000e12.4)') flx_lumdev(:,j,k)
+     write(4,'(1p,10000e12.4)') flx_luminos(2,:,j,k)
   enddo
   enddo
   close(4)
@@ -130,7 +130,7 @@ subroutine write_output
   open(unit=4,file='output.flx_gamluminos',status=fstat,position='append',recl=reclen)
   do k=1,flx_nom
   do j=1,flx_nmu
-     write(4,'(1p,10000e12.4)') merge(flx_gamluminos(j,k),0d0,flx_gamluminos(j,k)>1d-99) !prevent fortran number truncation, e.g. 1.1234-123
+     write(4,'(1p,10000e12.4)') merge(flx_gamluminos(1,j,k),0d0,flx_gamluminos(1,j,k)>1d-99) !prevent fortran number truncation, e.g. 1.1234-123
   enddo
   enddo
   close(4)
