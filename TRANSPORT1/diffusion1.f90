@@ -1092,16 +1092,18 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
            return
         endif
      else
+!-- this is needed now and may be useful in following steps
+        if(icspec/=ic) then
+           icspec = ic
+           specarr = specintv(tempinv,0) !this is slow!
+        endif
+!
         denom3 = 0d0
         denom2 = 1d0-emitlump
         denom2 = 1d0/denom2
         do iig = glump+1,grp_ng
-           iiig=glumps(iig)
-           if(icspec==ic) then
-              help = specarr(iiig)*grd_cap(iiig,ic)*capgreyinv
-           else
-              help = specint0(tempinv,iiig)*grd_cap(iiig,ic)*capgreyinv
-           endif
+           iiig = glumps(iig)
+           help = specarr(iiig)*grd_cap(iiig,ic)*capgreyinv
            denom3 = denom3 + help*denom2
            if(denom3>r1) exit
         enddo
