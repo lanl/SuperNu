@@ -31,7 +31,7 @@ subroutine particle_advance
 ! real*8 :: xx0, bmax
 ! real*8 :: uul, uur, uumax, r0,r2,r3
   integer :: ipart
-  integer, pointer :: ig, ic
+  integer, pointer :: ig, ic, icorig
   integer, pointer :: ix, iy, iz
   real*8, pointer :: x,y,z, mu, e, e0, wl, om
   integer :: iom, imu
@@ -81,6 +81,7 @@ subroutine particle_advance
   flx_luminos = 0d0
   grd_methodswap = 0
   grd_numcensus = 0
+  grd_numfluxorig = 0
 
 !-- Propagate all particles that are not considered vacant
   npckt = 0
@@ -94,9 +95,9 @@ subroutine particle_advance
   ndist = 0
 
 !$omp parallel &
-!$omp shared(grd_numcensus,flx_luminos,thelp) &
+!$omp shared(grd_numcensus,grd_numfluxorig,flx_luminos,thelp) &
 !$omp private(ptcl,ptcl2, &
-!$omp    x,y,z,mu,om,wl,e,e0,ix,iy,iz,ic,ig,icold,r1, &
+!$omp    x,y,z,mu,om,wl,e,e0,ix,iy,iz,ic,ig,icold,icorig,r1, &
 !$omp    t0,t1, &
 !$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
 !$omp    rndstate,edep,eraddens,eamp,icell,specarr,ierr, iomp) &
@@ -127,6 +128,7 @@ subroutine particle_advance
   wl => ptcl%wl
   e => ptcl%e
   e0 => ptcl%e0
+  icorig => ptcl%icorig
 !-- secondary particle properties
   ix => ptcl2%ix
   iy => ptcl2%iy
@@ -175,6 +177,7 @@ subroutine particle_advance
         ptcl2%itype = 1 !IMC
      else
         ptcl2%itype = 2 !DDMC
+        icorig = 0
      endif
 
 !
@@ -218,7 +221,7 @@ subroutine particle_advance
 !-- Advancing particle until census, absorption, or escape from domain
 !Calling either diffusion or transport depending on particle type (ptcl2%itype)
      ptcl2%istep = 0
-     ptcl2%idist = -1
+     ptcl2%idist = 0
 
      ptcl2%done = .false.
      ptcl2%lflux = .false.
@@ -230,14 +233,20 @@ subroutine particle_advance
         if(ptcl2%itype==1 .or. in_puretran) then
            nstepimc = nstepimc+1
            call transport(ptcl,ptcl2,rndstate,edep,eraddens,eamp,tot_evelo,ierr)
-           if(ptcl2%itype/=1) grd_methodswap(icold) = grd_methodswap(icold)+1
+           if(ptcl2%itype/=1) then
+              grd_methodswap(icold) = grd_methodswap(icold)+1
+              icorig = 0
+           endif
 !-- tally eamp
            if(.not.in_trn_noamp) grd_eamp(icold) = grd_eamp(icold) + eamp
         else
            nstepddmc = nstepddmc+1
-           ptcl2%idist = 0
+           ptcl2%idist = -1
            call diffusion(ptcl,ptcl2,rndstate,edep,eraddens,tot_evelo,icell,specarr,ierr)
-           if(ptcl2%itype==1) grd_methodswap(icold) = grd_methodswap(icold)+1
+           if(ptcl2%itype==1) then
+              grd_methodswap(icold) = grd_methodswap(icold)+1
+              icorig = ptcl2%ic
+           endif
         endif
         ndist(ptcl2%idist) = ndist(ptcl2%idist)+1
 !-- tally rest
@@ -255,6 +264,7 @@ subroutine particle_advance
 !-- outbound luminosity tally
         if(ptcl2%lflux) then
            nflux = nflux+1
+           if(icorig>0) grd_numfluxorig(icorig) = grd_numfluxorig(icorig)+1
            tot_eout = tot_eout+e
 !-- retrieving lab frame flux group, polar, azimuthal bin
            ig = binsrch(wl,flx_wl,flx_ng+1,.false.)

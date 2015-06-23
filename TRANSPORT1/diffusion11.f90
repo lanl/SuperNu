@@ -538,7 +538,5 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
      endif
 !}}}
   endif
- 
-  !if(ptcl2%itype==1) ptcl%icorig = ic
 
 end subroutine diffusion11

@@ -11,6 +11,7 @@ subroutine interior_source
   use physconstmod
   use inputparmod
   use manufacmod
+  use countersmod
 
   implicit none
 
@@ -20,7 +21,7 @@ subroutine interior_source
   !particle loop (2nd).
 !##################################################
   integer :: i,j,k, ipart,ivac,ig,ii
-  integer :: nhere,ndmy,iimpi,nemit
+  integer :: nhere,ndmy,iimpi,nemit,ncreate
   real*8 :: pwr
   real*8 :: r1, r2, r3, uul, uur, uumax
   real*8 :: om0, mu0, x0, y0, ep0, wl0
@@ -65,6 +66,9 @@ subroutine interior_source
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
+
+!-- particle origin
+     ptcl%icorig = l
 
 !
 !-- calculating particle time
@@ -202,6 +206,9 @@ subroutine interior_source
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
+
+!-- particle origin
+     ptcl%icorig = l
 
 !
 !-- calculating particle time
@@ -396,5 +403,6 @@ subroutine interior_source
   enddo !k
   if(ipart/=src_nnew) stop 'interior_source: n/=nnew'
 
+  call counterreg(ct_npcreate, src_nnew)
 
 end subroutine interior_source

@@ -326,6 +326,8 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               e0 = e0*(1d0-(mu*z+eta*y+xi*x)*cinv)
               wl = wl/(1d0-(mu*z+eta*y+xi*x)*cinv)
            endif
+        else
+           ptcl%icorig = ic
         endif
      endif
 

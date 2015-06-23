@@ -369,6 +369,8 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               e0 = e0*(1d0-dirdotu*cinv)
               wl = wl/(1d0-dirdotu*cinv)
            endif
+        else
+           ptcl%icorig = ic
         endif
      endif
 

@@ -473,6 +473,10 @@ c-- dim==3
       call mpi_reduce(isnd,grd_numcensus,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
+      isnd = grd_numfluxorig
+      call mpi_reduce(isnd,grd_numfluxorig,n,MPI_INTEGER,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
       isnd = grd_methodswap
       call mpi_reduce(isnd,grd_methodswap,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)

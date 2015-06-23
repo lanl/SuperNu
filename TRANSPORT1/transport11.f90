@@ -308,7 +308,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
            endif
         else
            ptcl2%itype = 1
-           !ptcl%icorig = ic
+           ptcl%icorig = ic
         endif
      endif
      !!}}}
