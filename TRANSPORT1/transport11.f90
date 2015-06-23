@@ -133,15 +133,17 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   endif
 !
 !-- minimum distance = d
-  darr = [dcol,dthm,db,dcen,ddop]
-  if(any(darr/=darr) .or. any(darr<0d0)) then
-!    write(0,*) darr
-!    write(*,*) ix,x,mu
-!    stop 'transport11: invalid distance'
-     ierr = 2
+  darr = [dcen,dcol,dthm,ddop,db]
+  ptcl2%idist = minloc(darr,dim=1)
+  d = minval(darr)
+  if(any(darr/=darr)) then
+     ierr = 3
      return
   endif
-  d = minval(darr)
+  if(d<0d0) then
+     ierr = 4
+     return
+  endif
 !
 !== END OF DISTANCE CALCULATIONS
 !
@@ -277,7 +279,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         if(grp_ng>1) then
            ig = emitgroup(r1,ic)
            if(ig>grp_ng) then
-              ierr = 3
+              ierr = 5
               return
            endif
         endif
@@ -306,6 +308,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
            endif
         else
            ptcl2%itype = 1
+           !ptcl%icorig = ic
         endif
      endif
      !!}}}

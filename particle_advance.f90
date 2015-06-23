@@ -12,6 +12,7 @@ subroutine particle_advance
   use physconstmod
   use inputparmod
   use timingmod
+  use countersmod
   use fluxmod
   implicit none
 !
@@ -24,7 +25,7 @@ subroutine particle_advance
   !total subroutine calls in program.
 !##################################################
   real*8,parameter :: cinv=1d0/pc_c
-  integer*8 :: nddmc, nimc, npckt
+  integer :: nstepddmc, nstepimc, npckt, nflux, ncensimc, ncensddmc
   real*8 :: r1, x1, x2, thelp, help, tau
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
@@ -83,8 +84,11 @@ subroutine particle_advance
 
 !-- Propagate all particles that are not considered vacant
   npckt = 0
-  nddmc = 0
-  nimc = 0
+  nflux = 0
+  ncensimc = 0
+  ncensddmc = 0
+  nstepddmc = 0
+  nstepimc = 0
 
   nstepmax = 0
   ndist = 0
@@ -98,7 +102,7 @@ subroutine particle_advance
 !$omp    rndstate,edep,eraddens,eamp,icell,specarr,ierr, iomp) &
 !$omp reduction(+:grd_edep,grd_eraddens,grd_eamp,grd_methodswap, &
 !$omp    tot_evelo,tot_erad,tot_eout, &
-!$omp    npckt,nddmc,nimc,ndist) &
+!$omp    npckt,nflux,ncensimc,ncensddmc,nstepddmc,nstepimc,ndist) &
 !$omp reduction(max:nstepmax)
 
 !-- thread id                                                               
@@ -141,7 +145,7 @@ subroutine particle_advance
 !-- active particle
      ptcl = prt_particles(ipart) !copy properties out of array
      ptcl2%ipart = ipart
-     npckt = npckt + 1
+     npckt = npckt+1
 
 !-- cell position
      ix = binsrch(x,grd_xarr,grd_nx+1,.false.)
@@ -221,28 +225,36 @@ subroutine particle_advance
      ptcl2%lcens = .false.
 
      do while (.not.ptcl2%done)
-        ptcl2%istep = ptcl2%istep + 1
+        ptcl2%istep = ptcl2%istep+1
         icold = ic
         if(ptcl2%itype==1 .or. in_puretran) then
-           nimc = nimc + 1
+           nstepimc = nstepimc+1
            call transport(ptcl,ptcl2,rndstate,edep,eraddens,eamp,tot_evelo,ierr)
            if(ptcl2%itype/=1) grd_methodswap(icold) = grd_methodswap(icold)+1
 !-- tally eamp
            if(.not.in_trn_noamp) grd_eamp(icold) = grd_eamp(icold) + eamp
         else
-           nddmc = nddmc + 1
+           nstepddmc = nstepddmc+1
            ptcl2%idist = 0
            call diffusion(ptcl,ptcl2,rndstate,edep,eraddens,tot_evelo,icell,specarr,ierr)
            if(ptcl2%itype==1) grd_methodswap(icold) = grd_methodswap(icold)+1
         endif
-        ndist(ptcl2%idist) = ndist(ptcl2%idist) + 1
+        ndist(ptcl2%idist) = ndist(ptcl2%idist)+1
 !-- tally rest
         grd_edep(icold) = grd_edep(icold) + edep
         grd_eraddens(icold) = grd_eraddens(icold) + eraddens
-        if(ptcl2%lcens) grd_numcensus(icold) = grd_numcensus(icold) + 1
+        if(ptcl2%lcens) then
+           if(ptcl2%itype==1) then
+              ncensimc = ncensimc+1
+           else
+              ncensddmc = ncensddmc+1
+           endif
+           grd_numcensus(icold) = grd_numcensus(icold)+1
+        endif
 !
 !-- outbound luminosity tally
         if(ptcl2%lflux) then
+           nflux = nflux+1
            tot_eout = tot_eout+e
 !-- retrieving lab frame flux group, polar, azimuthal bin
            ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
@@ -485,7 +497,8 @@ subroutine particle_advance
 !$omp end critical
 !$omp end parallel
 
-!write(0,*) nstepmax, ndist
+!-- print distance counters
+! write(6,'(7(i6,"k"))',advance='no') ndist(1:7)/1000
 
   tot_sflux = -sum(flx_luminos(1,:,:,:))
 
@@ -494,9 +507,14 @@ subroutine particle_advance
   flx_luminos(1,:,:,:) = flx_luminos(1,:,:,:)*help
   flx_luminos(2,:,:,:) = flx_luminos(2,:,:,:)*help**2
 
-  call timereg(t_pcktnpckt, dble(npckt))
-  call timereg(t_pcktnddmc, dble(nddmc))
-  call timereg(t_pcktnimc, dble(nimc))
+  call counterreg(ct_nptransport, npckt)
+  call counterreg(ct_npstepimc, nstepimc)
+  call counterreg(ct_npstepddmc, nstepddmc)
+  call counterreg(ct_npstepmax, nstepmax)
+  call counterreg(ct_npcensimc, ncensimc)
+  call counterreg(ct_npcensddmc, ncensddmc)
+  call counterreg(ct_npmethswap, sum(grd_methodswap))
+  call counterreg(ct_npflux, nflux)
 
 
 end subroutine particle_advance

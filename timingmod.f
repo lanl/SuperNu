@@ -16,8 +16,8 @@ c-- timeline
       real*8 :: t_timelin(7)
       real*8 :: t_timeline(6)
 c
-      integer,private,parameter :: mreg = 20
-      real*8,private,target :: registers(3,mreg)
+      integer,private,parameter :: mreg = 16
+      real*8,private,target :: registers(4,mreg)
 c
 c-- global-flow time registers:
       real*8,pointer :: t_gasupd(:)   !update gas
@@ -38,10 +38,6 @@ c-- packet transport
       real*8,pointer :: t_pcktmea(:)
       real*8,pointer :: t_pcktmax(:)
       real*8,pointer :: t_pcktgam(:)  !gamma transport
-      real*8,pointer :: t_pcktnpckt(:)
-      real*8,pointer :: t_pcktnddmc(:)
-      real*8,pointer :: t_pcktnimc(:)
-      real*8,pointer :: t_pcktnmethswap(:) !method swap
 c
 c-- parallel statistics packet timer
       real*8 :: t_pckt_stat(3)  !min,mean,max
@@ -69,17 +65,13 @@ c     ----------------------
       t_pcktmea =>  registers(:,14)  !collect the mean runtimes across all ranks
       t_pcktmax =>  registers(:,15)  !collect the min runtimes across all ranks
       t_output =>   registers(:,16)  !collect the min runtimes across all ranks
-      t_pcktnpckt =>registers(:,17)
-      t_pcktnddmc =>registers(:,18)
-      t_pcktnimc => registers(:,19)
-      t_pcktnmethswap => registers(:,20)
       end subroutine timingmod_init
 c
 c
       subroutine timereg(reg,t)
 c     -------------------------!{{{
       implicit none
-      real*8,intent(inout) :: reg(3)
+      real*8,intent(inout) :: reg(4)
       real*8,intent(in) :: t
 ************************************************************************
 * Put the time t in the register reg. The first position in reg stores
@@ -105,6 +97,8 @@ c     -----------------------------------
 c
 c-- add to total
       registers(3,:) = registers(3,:) + registers(2,:)
+c-- update max
+      registers(4,:) = max(registers(4,:),registers(2,:))
 c
 c-- write output on master rank only
       if(impi==0) then
@@ -116,8 +110,7 @@ c-- header
          write(4,'("#",30a12)') 't_gasupd','t_eos','t_emitp',
      &   't_opacleak','t_opac','t_bb','t_bf','t_ff',
      &   't_mpibcast','t_mpimisc','t_mpireduc',
-     &   't_pgam','t_pmin','t_pmean','t_pmax','t_output',
-     &   'n_pckt','n_ddmc','n_imc','n_methswap'
+     &   't_pgam','t_pmin','t_pmean','t_pmax','t_output'
        endif
 c-- body
        write(4,'(1x,1p,30g12.4)') (registers(2,i),i=1,mreg)

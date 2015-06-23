@@ -364,7 +364,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   endif
 !
 !-- finding minimum distance
-  darr = [dcen,dby,dbx,dbz,dthm,dcol,ddop]
+  darr = [dcen,dcol,dthm,ddop,dbx,dby,dbz]
   ptcl2%idist = minloc(darr,dim=1)
   d = minval(darr)
   if(any(darr/=darr)) then

@@ -23,7 +23,7 @@ PROGRAMS := supernu
 MODULES := elemdatamod.o physconstmod.o randommod.o mpimod.o \
   miscmod.o ionsmod.o ffxsmod.o bfxsmod.o bbxsmod.o \
   inputparmod.o timestepmod.o groupmod.o gridmod.o gasmod.o inputstrmod.o \
-  particlemod.o timingmod.o manufacmod.o fluxmod.o totalsmod.o \
+  particlemod.o timingmod.o countersmod.o manufacmod.o fluxmod.o totalsmod.o \
   transportmod.o sourcemod.o
 
 FILES := banner.o \

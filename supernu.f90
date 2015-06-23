@@ -21,6 +21,7 @@ program supernu
   use bfxsmod, only:bfxs_read_data
   use ffxsmod, only:ffxs_read_data
   use timingmod
+  use countersmod
 
   implicit none
 !***********************************************************************
@@ -43,6 +44,7 @@ program supernu
 !
 !-- initialize timing module
   call timingmod_init
+  call countersmod_init
 !
 !--
 !-- read and distribut input data
@@ -173,9 +175,7 @@ program supernu
      call tau_update(tsp_t,tfirst,tlast) !updating prt_tauddmc and prt_taulump
 
 !-- write timestep
-     help = merge(tot_eerror,tot_erad,it>1)
-     if(lmpi0) write(6,'(1x,a,i5,f8.3,"d",i10,1p,2e10.2)') 'timestep:', &
-        it,tsp_t/pc_day,count(.not.prt_isvacant),help
+     if(lmpi0) write(6,'(1x,a,i5,f8.3,"d")',advance='no') 'tsp:',it,tsp_t/pc_day
 
 !-- update all non-permanent variables
      call grid_update(tsp_t)
@@ -233,7 +233,6 @@ program supernu
         call timereg(t_pcktmin,t_pckt_stat(1))
         call timereg(t_pcktmea,t_pckt_stat(2))
         call timereg(t_pcktmax,t_pckt_stat(3))
-        call timereg(t_pcktnmethswap,dble(sum(grd_methodswap)))
      endif
 
 !-- collect data necessary for restart (tobe written by impi0)
@@ -257,10 +256,17 @@ program supernu
            call write_restart_randcount !rand() count
            call write_restart_particles !particle properties of current time step
         endif
+
+!-- write stdout
+        help = merge(tot_eerror,tot_erad,it>0)
+        write(6,'(1p,e10.2,2(i7,"k"),0p,f6.3)') help, &
+           ct_nptransport(2)/1000,(ct_npcensimc(2)+ct_npcensddmc(2))/1000, &
+           ct_npcensimc(2)/dble(ct_npcensimc(2)+ct_npcensddmc(2))
      endif !impi
 
 !-- write timestep timing to file
      if(it>0) call timing_timestep(impi)
+     if(it>0) call counters_timestep(impi)
      t_timelin(7) = t_time() !timeline
      t_timeline(:6) = t_timeline(:6) + (t_timelin(2:) - t_timelin(:6))
   enddo !tsp_it
@@ -270,18 +276,20 @@ program supernu
 !-- FINISH UP:
 !=============
   call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
-!-- Print timing output.
+!-- Print timing output
   if(lmpi0) then
 !
 !-- print memory usage
      msg = 'post loop:'
      write(6,*)
      write(6,*) 'memusg: ',msg,memusg()
+     write(6,*) 'particle array usage:',ct_nptransport(4)/float(prt_npartmax)
 
 !-- print cpu timing usage
      t1 = t_time()
      t_all = t1 - t0
-     call print_timing  !print timing results
+     call print_counters
+     call print_timing
      write(6,*)
      write(6,*) 'SuperNu finished'
      if(in_grabstdout) write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
