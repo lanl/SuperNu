@@ -98,8 +98,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !
 !-- find lumpable groups
   dist = min(dx(ix),dy(iy),dz(iz))*thelp
-  if(grd_cap(ig,ic)*dist >= prt_taulump .and. &
-       (grd_sig(ic) + grd_cap(ig,ic))*dist >= prt_tauddmc) then
+  if(grd_cap(ig,ic)*dist >= prt_taulump) then
      do iig=1,grp_ng
         if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
              (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
@@ -112,17 +111,18 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      enddo
   endif
 ! write(0,*) ipart,istep,glump,g,ix,iy,iz
+!
+!-- sanity check
+  if((grd_sig(ic) + grd_cap(ig,ic))*dist < prt_tauddmc) then
+     ierr = 100
+     return
+  endif
 
 !
 !-- only do this if needed
   if(glump>0 .and. icspec/=ic) then
      icspec = ic
      specarr = specintv(tempinv,0) !this is slow!
-  endif
-
-!
-  if(glump==0) then
-     forall(iig=1:grp_ng) glumps(iig)=iig
   endif
 
 !
@@ -467,11 +467,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
              min(dx(ix-1),dy(iy),dz(iz))*thelp<prt_tauddmc
      endif
 
-     if(.not.lhelp) then
-!-- ix->ix-1
-        ix = ix-1
-        ic = grd_icell(ix,iy,iz)
-     else
+     if(lhelp) then
 !-- sampling x,y,z
         x = grd_xarr(ix)
         call rnd_r(r1,rndstate)
@@ -532,11 +528,14 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         else
 !-- converting to IMC
            ptcl2%itype = 1
-!-- ix->ix-1
-           ix = ix-1
-           ic = grd_icell(ix,iy,iz)
+!-- ix->ix-cell(ix,iy,iz)
         endif
-     endif !}}}
+     endif
+!
+!-- update particle: ix->ix-1
+     ix = ix-1
+     ic = grd_icell(ix,iy,iz)
+     ig = iiig!}}}
 
 !-- ix->ix+1 leakage
   elseif(r1>=pa+probleak(1).and.r1<pa+sum(probleak(1:2))) then
@@ -597,11 +596,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
              min(dx(ix+1),dy(iy),dz(iz))*thelp<prt_tauddmc
      endif
 
-     if(.not.lhelp) then
-!-- ix->ix+1
-        ix = ix+1
-        ic = grd_icell(ix,iy,iz)
-     else
+     if(lhelp) then
 !-- sampling x,y,z
         x = grd_xarr(ix+1)
         call rnd_r(r1,rndstate)
@@ -662,11 +657,13 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         else
 !-- converting to IMC
            ptcl2%itype = 1
-!-- ix->ix+1
-           ix = ix+1
-           ic = grd_icell(ix,iy,iz)
         endif
-     endif!}}}
+     endif
+!
+!-- update particle: ix->ix+1
+     ix = ix+1
+     ic = grd_icell(ix,iy,iz)
+     ig = iiig!}}}
 
 !-- iy->iy-1 leakage
   elseif(r1>=pa+sum(probleak(1:2)).and.r1<pa+sum(probleak(1:3))) then
@@ -726,11 +723,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
              min(dx(ix),dy(iy-1),dz(iz))*thelp<prt_tauddmc
      endif
 
-     if(.not.lhelp) then
-!-- iy->iy-1
-        iy = iy-1
-        ic = grd_icell(ix,iy,iz)
-     else
+     if(lhelp) then
 !-- sampling x,y,z
         call rnd_r(r1,rndstate)
         x = (1d0-r1)*grd_xarr(ix)+r1*grd_xarr(ix+1)
@@ -791,11 +784,13 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         else
 !-- converting to IMC
            ptcl2%itype = 1
-!-- iy->iy-1
-           iy = iy-1
-           ic = grd_icell(ix,iy,iz)
         endif
-     endif!}}}
+     endif
+!
+!-- update particle: iy->iy-1
+     iy = iy-1
+     ic = grd_icell(ix,iy,iz)
+     ig = iiig!}}}
 
 !-- iy->iy+1 leakage
   elseif(r1>=pa+sum(probleak(1:3)).and.r1<pa+sum(probleak(1:4))) then
@@ -856,11 +851,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
              min(dx(ix),dy(iy+1),dz(iz))*thelp<prt_tauddmc
      endif
 
-     if(.not.lhelp) then
-!-- iy->iy+1
-        iy = iy+1
-        ic = grd_icell(ix,iy,iz)
-     else
+     if(lhelp) then
 !-- sampling x,y,z
         call rnd_r(r1,rndstate)
         x = (1d0-r1)*grd_xarr(ix)+r1*grd_xarr(ix+1)
@@ -921,11 +912,13 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         else
 !-- converting to IMC
            ptcl2%itype = 1
-!-- iy->iy+1
-           iy = iy+1
-           ic = grd_icell(ix,iy,iz)
         endif
-     endif!}}}
+     endif
+!
+!-- update particle: iy->iy+1
+     iy = iy+1
+     ic = grd_icell(ix,iy,iz)
+     ig = iiig!}}}
 
 !-- iz->iz-1 leakage
   elseif(r1>=pa+sum(probleak(1:4)).and.r1<pa+sum(probleak(1:5))) then
@@ -986,11 +979,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
              min(dx(ix),dy(iy),dz(iz-1))*thelp<prt_tauddmc
      endif
 
-     if(.not.lhelp) then
-!-- iz->iz-1
-        iz = iz-1
-        ic = grd_icell(ix,iy,iz)
-     else
+     if(lhelp) then
 !-- sampling x,y,z
         call rnd_r(r1,rndstate)
         x = (1d0-r1)*grd_xarr(ix)+r1*grd_xarr(ix+1)
@@ -1050,11 +1039,13 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         else
 !-- converting to IMC
            ptcl2%itype = 1
-!-- iz->iz-1
-           iz = iz-1
-           ic = grd_icell(ix,iy,iz)
         endif
-     endif!}}}
+     endif
+!
+!-- update particle: iz->iz-1
+     iz = iz-1
+     ic = grd_icell(ix,iy,iz)
+     ig = iiig!}}}
 
 !-- iz->iz+1 leakage
   elseif(r1>=pa+sum(probleak(1:5)).and.r1<pa+sum(probleak(1:6))) then
@@ -1115,11 +1106,7 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
              min(dx(ix),dy(iy),dz(iz+1))*thelp<prt_tauddmc
      endif
 
-     if(.not.lhelp) then
-!-- iz->iz+1
-        iz = iz+1
-        ic = grd_icell(ix,iy,iz)
-     else
+     if(lhelp) then
 !-- sampling x,y,z
         call rnd_r(r1,rndstate)
         x = (1d0-r1)*grd_xarr(ix)+r1*grd_xarr(ix+1)
@@ -1179,11 +1166,13 @@ pure subroutine diffusion3(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         else
 !-- converting to IMC
            ptcl2%itype = 1
-!-- iz->iz+1
-           iz = iz+1
-           ic = grd_icell(ix,iy,iz)
         endif
-     endif!}}}
+     endif
+!
+!-- update particle: iz->iz+1
+     iz = iz+1
+     ic = grd_icell(ix,iy,iz)
+     ig = iiig!}}}
 
 !-- effective scattering
   else

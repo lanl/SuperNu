@@ -25,7 +25,7 @@ subroutine particle_advance
 !##################################################
   real*8,parameter :: cinv=1d0/pc_c
   integer*8 :: nddmc, nimc, npckt
-  real*8 :: r1, x1, x2, thelp, help
+  real*8 :: r1, x1, x2, thelp, help, tau
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
 ! real*8 :: uul, uur, uumax, r0,r2,r3
@@ -70,6 +70,24 @@ subroutine particle_advance
   else
      thelp = 1d0
   endif
+!
+!-- energy tallies
+  grd_edep = 0d0
+  grd_eraddens = 0d0
+  grd_eamp = 0d0
+  tot_erad = 0d0
+
+  flx_luminos = 0d0
+  grd_methodswap = 0
+  grd_numcensus = 0
+
+!-- Propagate all particles that are not considered vacant
+  npckt = 0
+  nddmc = 0
+  nimc = 0
+
+  nstepmax = 0
+  ndist = 0
 
 !$omp parallel &
 !$omp shared(grd_numcensus,flx_luminos,thelp) &
@@ -82,26 +100,6 @@ subroutine particle_advance
 !$omp    tot_evelo,tot_erad,tot_eout, &
 !$omp    npckt,nddmc,nimc,ndist) &
 !$omp reduction(max:nstepmax)
-
-!
-!-- energy tallies
-  grd_edep = 0d0
-  grd_eraddens = 0d0
-  grd_eamp = 0d0
-  grd_methodswap = 0
-  grd_numcensus = 0
-
-  tot_erad = 0d0
-
-  flx_luminos = 0d0
-
-!-- Propagate all particles that are not considered vacant
-  npckt = 0
-  nddmc = 0
-  nimc = 0
-
-  nstepmax = 0
-  ndist = 0
 
 !-- thread id                                                               
 !$ iomp = omp_get_thread_num()
@@ -159,16 +157,17 @@ subroutine particle_advance
 !-- determine particle type
      select case(in_igeom)
      case(1)
-        help = min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) 
+        help = thelp*min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) 
      case(2)
-        help = min(dx(ix),dy(iy))
+        help = thelp*min(dx(ix),dy(iy))
      case(3)
-        help = min(dx(ix),dy(iy),dz(iz))
+        help = thelp*min(dx(ix),dy(iy),dz(iz))
      case(11)
-        help = dx(ix)
+        help = thelp*dx(ix)
      endselect
 !-- IMC or DDMC
-     if(in_puretran .or. (grd_sig(ic)+grd_cap(ig,ic))*help*thelp<prt_tauddmc) then
+     tau = (grd_sig(ic)+grd_cap(ig,ic))*help
+     if(in_puretran .or. tau<prt_tauddmc) then
         ptcl2%itype = 1 !IMC
      else
         ptcl2%itype = 2 !DDMC
@@ -196,7 +195,7 @@ subroutine particle_advance
 
 
 !-- First portion of operator split particle velocity position adjustment
-     if((grd_isvelocity).and.(ptcl2%itype==1)) then
+     if(grd_isvelocity.and.ptcl2%itype==1) then
         call advection(.true.,ptcl,ptcl2) !procedure pointer to advection[123]
      endif
 
@@ -250,7 +249,7 @@ subroutine particle_advance
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
            iom = binsrch(om,flx_om,flx_nom+1,.false.)
 !-- tallying outbound luminosity
-           flx_luminos(:,ig,imu,iom) = flx_luminos(:,ig,imu,iom) + [e,e**2,1]
+           flx_luminos(:,ig,imu,iom) = flx_luminos(:,ig,imu,iom) + [e,e**2,1d0]
         endif
 !
 !-- Russian roulette for termination of exhausted particles
@@ -308,6 +307,7 @@ subroutine particle_advance
         if(ierr/=0) then
            write(0,*) 'pa: ierr,ipart,istep,idist:',ierr,ptcl2%ipart,ptcl2%istep,ptcl2%idist
            write(0,*) 'dist:',ptcl2%dist
+           write(0,*) 'tddmc:',tau
            write(0,*) 'ix,iy,iz,ic,ig:',ptcl2%ix,ptcl2%iy,ptcl2%iz,ptcl2%ic,ptcl2%ig
            write(0,*) 'x,y,z:',ptcl%x,ptcl%y,ptcl%z
            write(0,*) 'mu,om:',ptcl%mu,ptcl%om

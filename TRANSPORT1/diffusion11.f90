@@ -93,8 +93,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
 !
 !-- find lumpable groups
   dist = dx(ix)*thelp
-  if(grd_cap(ig,ic)*dist >= prt_taulump .and. &
-       (grd_sig(ic) + grd_cap(ig,ic))*dist >= prt_tauddmc) then
+  if(grd_cap(ig,ic)*dist >= prt_taulump) then
      do iig=1,grp_ng
         if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
              (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
@@ -107,17 +106,18 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
      enddo
   endif
 ! write(0,*) ptcl2%ipart,ptcl2%istep,glump,ig,ix
+!
+!-- sanity check
+  if((grd_sig(ic) + grd_cap(ig,ic))*dist < prt_tauddmc) then
+     ierr = 100
+     return
+  endif
 
 !
 !-- only do this if needed
   if(glump>0 .and. icspec/=ic) then
      icspec = ic
      specarr = specintv(tempinv,0) !this is slow!
-  endif
-
-!
-  if(glump==0) then
-     forall(iig=1:grp_ng) glumps(iig)=iig
   endif
 
 !
@@ -315,21 +315,14 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
               if(denom2>r1) exit
            enddo
         endif
-
-
-        if((grd_sig(l)+grd_cap(iiig,l))*dx(ix-1) &
-             *thelp >= prt_tauddmc) then
-           call rnd_r(r1,rndstate)
-           wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
-!-- update particle
-           ix = ix-1
-           ic = grd_icell(ix,iy,iz)
-           ig = iiig
-        else
-           call rnd_r(r1,rndstate)
-           wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 !
-!-- method changed to IMC
+!-- sampling wavelength
+        call rnd_r(r1,rndstate)
+        wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
+!
+!-- method changes to IMC
+        if((grd_sig(l)+grd_cap(iiig,l))*dx(ix-1) &
+             *thelp < prt_tauddmc) then
            ptcl2%itype = 1
 !
 !-- location set right bound of left cell
@@ -351,13 +344,12 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
               e0 = e0*help
               wl = wl*(1.0-r*mu*cinv)
            endif
+        endif
 !
 !-- update particle
-           ix = ix-1
-           ic = grd_icell(ix,iy,iz)
-           ig = iiig
-!
-        endif
+        ix = ix-1
+        ic = grd_icell(ix,iy,iz)
+        ig = iiig
 
      endif!}}}
 
@@ -440,22 +432,14 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
            enddo
         endif
 
+!-- sampling wavelength
+        call rnd_r(r1,rndstate)
+        wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
+!-- method changes to IMC
         if((grd_sig(l)+grd_cap(iiig,l))*dx(ix+1) &
-             *thelp >= prt_tauddmc) then
+             *thelp < prt_tauddmc) then
 !
-           call rnd_r(r1,rndstate)
-           wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
-!-- update particle
-           ix = ix+1
-           ic = grd_icell(ix,iy,iz)
-           ig = iiig
-!
-        else
-           call rnd_r(r1,rndstate)
-           wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
-!
-!-- method changed to IMC
            ptcl2%itype = 1
 !
 !-- location set left bound of right cell
@@ -477,13 +461,13 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
               e0 = e0*help
               wl = wl*(1.0-r*mu*cinv)
            endif
+        endif
 !
 !-- update particle
-           ix = ix+1
-           ic = grd_icell(ix,iy,iz)
-           ig = iiig
+        ix = ix+1
+        ic = grd_icell(ix,iy,iz)
+        ig = iiig
 !
-        endif
      endif!!}}}
 
 
