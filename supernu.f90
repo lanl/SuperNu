@@ -233,6 +233,7 @@ program supernu
         call timereg(t_pcktmin,t_pckt_stat(1))
         call timereg(t_pcktmea,t_pckt_stat(2))
         call timereg(t_pcktmax,t_pckt_stat(3))
+        call timereg(t_pcktnmethswap,dble(sum(grd_methodswap)))
      endif
 
 !-- collect data necessary for restart (tobe written by impi0)

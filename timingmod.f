@@ -16,7 +16,7 @@ c-- timeline
       real*8 :: t_timelin(7)
       real*8 :: t_timeline(6)
 c
-      integer,private,parameter :: mreg = 19
+      integer,private,parameter :: mreg = 20
       real*8,private,target :: registers(3,mreg)
 c
 c-- global-flow time registers:
@@ -41,6 +41,7 @@ c-- packet transport
       real*8,pointer :: t_pcktnpckt(:)
       real*8,pointer :: t_pcktnddmc(:)
       real*8,pointer :: t_pcktnimc(:)
+      real*8,pointer :: t_pcktnmethswap(:) !method swap
 c
 c-- parallel statistics packet timer
       real*8 :: t_pckt_stat(3)  !min,mean,max
@@ -71,6 +72,7 @@ c     ----------------------
       t_pcktnpckt =>registers(:,17)
       t_pcktnddmc =>registers(:,18)
       t_pcktnimc => registers(:,19)
+      t_pcktnmethswap => registers(:,20)
       end subroutine timingmod_init
 c
 c
@@ -115,10 +117,10 @@ c-- header
      &   't_opacleak','t_opac','t_bb','t_bf','t_ff',
      &   't_mpibcast','t_mpimisc','t_mpireduc',
      &   't_pgam','t_pmin','t_pmean','t_pmax','t_output',
-     &   'n_pckt','n_ddmc','n_imc'
+     &   'n_pckt','n_ddmc','n_imc','n_methswap'
        endif
 c-- body
-       write(4,'(1x,30g12.2)') (registers(2,i),i=1,mreg)
+       write(4,'(1x,1p,30g12.4)') (registers(2,i),i=1,mreg)
        close(4)
       endif
 c
