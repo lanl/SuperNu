@@ -30,7 +30,11 @@ c-- temperature
       elseif(in_consttemp==0d0) then
        call read_restart_file
       else
-       gas_temp = in_consttemp
+       if(str_ltemp) then
+         gas_temp = str_tempdd
+       else
+         gas_temp = in_consttemp
+       endif
       endif
 c
 c

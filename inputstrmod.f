@@ -6,6 +6,7 @@ c     ------------------
 ************************************************************************
       character(9),private :: fname='input.str'
       integer :: str_nabund=0
+      logical :: str_ltemp=.false.
       integer,allocatable :: str_iabund(:) !(nabund)
 c
       real*8,allocatable :: str_xleft(:) !(nx+1)
@@ -13,6 +14,7 @@ c
       real*8,allocatable :: str_zleft(:) !(nz+1)
       real*8,allocatable :: str_mass(:,:,:) !(nx,ny,nz)
       real*8,allocatable :: str_massfr(:,:,:,:) !(nabund,nx,ny,nz)
+      real*8,allocatable :: str_temp(:,:,:) !(nx,ny,nz)
 c
 c-- domain compression
       logical :: str_lvoid=.false.  !flag existence of void cells
@@ -20,10 +22,12 @@ c-- domain compression
       integer,allocatable :: str_idcell(:) !(nc)
       real*8,allocatable :: str_massdc(:) !(nc)
       real*8,allocatable :: str_massfrdc(:,:) !(nabund,nc)
+      real*8,allocatable :: str_tempdc(:) !(nc)
 c
 c-- domain decomposition
       real*8,allocatable :: str_massdd(:) !(gas_ncell)
       real*8,allocatable :: str_massfrdd(:,:) !(nabund,gas_ncell)
+      real*8,allocatable :: str_tempdd(:) !(nc)
 c
       character(8),allocatable,private :: str_abundlabl(:) !(nabund)
 c
