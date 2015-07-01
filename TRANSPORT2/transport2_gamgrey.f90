@@ -36,7 +36,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
   integer,pointer :: ix, iy, ic, ig
   integer,parameter :: iz=1
-  real*8,pointer :: x,y,mu,om,e,e0,d
+  real*8,pointer :: x,y,mu,om,e,d
 
   ix => ptcl2%ix
   iy => ptcl2%iy
@@ -48,7 +48,6 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   mu => ptcl%mu
   om => ptcl%om
   e => ptcl%e
-  e0 => ptcl%e0
 
 !-- no error by default
   ierr = 0
@@ -260,7 +259,6 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !-- transforming to cmf, then to lab:
 !-- energy weight
         e = e*elabfact/(1d0-dirdotu*cinv)
-        e0 = e0*elabfact/(1d0-dirdotu*cinv)
      endif!}}}
 
 !

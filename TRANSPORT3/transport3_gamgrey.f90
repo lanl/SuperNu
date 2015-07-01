@@ -35,7 +35,7 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   real*8 :: far
 
   integer,pointer :: ix, iy, iz, ic, ig
-  real*8,pointer :: x,y,z,mu,om,e,e0,d
+  real*8,pointer :: x,y,z,mu,om,e,d
 
   ix => ptcl2%ix
   iy => ptcl2%iy
@@ -49,7 +49,6 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   mu => ptcl%mu
   om => ptcl%om
   e => ptcl%e
-  e0 => ptcl%e0
 
 !-- no error by default
   ierr = 0
@@ -201,7 +200,6 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !
 !-- energy weight
            e = e*help
-           e0 = e0*help
         endif
      endif
 

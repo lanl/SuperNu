@@ -34,7 +34,7 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
   integer,pointer :: ix,ic,ig
   integer,parameter :: iy=1,iz=1
-  real*8,pointer :: x, mu, e, e0, d
+  real*8,pointer :: x, mu, e, d
 
   ix => ptcl2%ix
   ic => ptcl2%ic
@@ -43,7 +43,6 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   x => ptcl%x
   mu => ptcl%mu
   e => ptcl%e
-  e0 => ptcl%e0
 
 !-- no error by default
   ierr = 0
