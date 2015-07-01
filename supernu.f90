@@ -265,8 +265,8 @@ program supernu
      endif !impi
 
 !-- write timestep timing to file
-     if(it>0) call timing_timestep(impi)
-     if(it>0) call counters_timestep(impi)
+     call timing_timestep(impi,it<=0)
+     call counters_timestep(impi,it<=0)
      t_timelin(7) = t_time() !timeline
      t_timeline(:6) = t_timeline(:6) + (t_timelin(2:) - t_timelin(:6))
   enddo !tsp_it

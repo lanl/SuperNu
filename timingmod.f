@@ -85,10 +85,11 @@ c     -------------------------!{{{
       end subroutine timereg
 c
 c
-      subroutine timing_timestep(impi)
-c     -----------------------------------
+      subroutine timing_timestep(impi,ldummystep)
+c     -------------------------------------------
       implicit none
       integer,intent(in) :: impi
+      logical,intent(in) :: ldummystep
 ************************************************************************
 * reset timestep timers and dump timing output (on master rank only).
 ************************************************************************
@@ -113,7 +114,11 @@ c-- header
      &   't_pgam','t_pmin','t_pmean','t_pmax','t_output'
        endif
 c-- body
-       write(4,'(1x,1p,30g12.4)') (registers(2,i),i=1,mreg)
+       if(ldummystep) then
+        write(4,'("#",1p,30g12.4)') (registers(2,i),i=1,mreg)
+       else
+        write(4,'(1x,1p,30g12.4)') (registers(2,i),i=1,mreg)
+       endif
        close(4)
       endif
 c

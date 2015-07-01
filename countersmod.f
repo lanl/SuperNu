@@ -56,10 +56,11 @@ c     -----------------------------!{{{
       end subroutine counterreg
 c
 c
-      subroutine counters_timestep(impi)
-c     ----------------------------------
+      subroutine counters_timestep(impi,ldummystep)
+c     --------------------------------------------
       implicit none
       integer,intent(in) :: impi
+      logical,intent(in) :: ldummystep
 ************************************************************************
 * reset timestep timers and dump timing output (on master rank only).
 ************************************************************************
@@ -78,12 +79,16 @@ c-- write output on master rank only
        if(istat/=0) stop 'counters_timestep: file open error'
 c-- header
        if(.not.lexist) then
-         write(4,'("#",30a12)') 'npcreate','nptransport',
-     &     'npflux','npcensimc','npcensddmc','npstepimc',
-     &     'npstepddmc','nstepmax','npmethswap'
+         write(4,'("#",30a12)') 'create','transport',
+     &     'flux','censusimc','censusddmc','stepimc',
+     &     'stepddmc','stepmax','methswap'
        endif
 c-- body
-       write(4,'(1x,1p,30g12.4)') (iregisters(2,i),i=1,mreg)
+       if(ldummystep) then
+        write(4,'("#",1p,30g12.4)') (iregisters(2,i),i=1,mreg)
+       else
+        write(4,'(1x,1p,30g12.4)') (iregisters(2,i),i=1,mreg)
+       endif
        close(4)
       endif
 c
