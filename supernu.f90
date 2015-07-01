@@ -209,7 +209,7 @@ program supernu
      call allgather_leakage !MPI
 
      t_timelin(4) = t_time()    !timeline
-     call sourcenumbers(nmpi)   !number of source prt_particles per cell
+     call sourcenumbers         !number of source prt_particles
 
      if(src_nnew>0) then
         allocate(src_ivacant(src_nnew))

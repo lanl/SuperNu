@@ -22,6 +22,7 @@ subroutine interior_source
 !##################################################
   integer :: i,j,k, ipart,ivac,ig,ii
   integer :: nhere,ndmy,iimpi,nemit
+  integer,allocatable :: nvacantall(:)
   real*8 :: pwr
   real*8 :: r1, r2, r3, uul, uur, uumax
   real*8 :: om0, mu0, x0, y0, ep0, wl0
@@ -48,16 +49,19 @@ subroutine interior_source
   x1=grp_wlinv(grp_ng+1)
   x2=grp_wlinv(1)
 
+  allocate(nvacantall(size(src_nvacantall)))
+
 !Volume particle instantiation: loop
 !Loop run over the number of new particles that aren't surface source
 !particles.
   ipart = src_nsurf
-  iimpi = 0
+  iimpi = -1
+  nvacantall = src_nvacantall
   do k=1,grd_nz
   do j=1,grd_ny
   do i=1,grd_nx
      l = grd_icell(i,j,k)
-     call sourcenumbers_roundrobin(iimpi,grd_emit(l)**pwr, &
+     call sourcenumbers_roundrobin_limit(iimpi,nvacantall,grd_emit(l)**pwr, &
         grd_emitex(l)**pwr,grd_nvol(l),nemit,ndmy,nhere)
   do ii=1,nhere
      ipart = ipart + 1!{{{
@@ -181,12 +185,13 @@ subroutine interior_source
   
 
 !-- Thermal volume particle instantiation: loop
-  iimpi = 0
+  iimpi = -1
+  nvacantall = src_nvacantall
   do k=1,grd_nz
   do j=1,grd_ny
   do i=1,grd_nx
      l = grd_icell(i,j,k)
-     call sourcenumbers_roundrobin(iimpi,grd_emit(l)**pwr, &
+     call sourcenumbers_roundrobin_limit(iimpi,nvacantall,grd_emit(l)**pwr, &
         grd_emitex(l)**pwr,grd_nvol(l),nemit,nhere,ndmy)
      if(nhere<1) cycle
 !-- integrate planck function over each group

@@ -1,12 +1,13 @@
-subroutine sourcenumbers(nmpi)
+subroutine sourcenumbers!(nflux)
 !{{{
   use sourcemod
   use totalsmod
   use gridmod
   use particlemod
   use inputparmod
+  use mpimod
   implicit none
-  integer,intent(in) :: nmpi
+  !integer,intent(in) :: nflux
 
 !##################################################
 !This subroutine computes the distribution of source particles each
@@ -15,10 +16,11 @@ subroutine sourcenumbers(nmpi)
 !##################################################
 
   integer :: l,iimpi
-  real*8 :: base
   integer :: n,ndone
+  integer :: ncactive,nvacantall,nextra
+  integer :: nvacant(nmpi)
   real*8,parameter :: basefrac=.1d0
-  integer*8 :: nstot,nsavail,nsbase
+  integer*8 :: nstot,nsavail,nsmean
   real*8 :: etot,einv,pwr,edone,en,invn
   integer :: nemit,nvol,nvolex
 ! tot_esurf for any new prt_particles from a surface source
@@ -32,49 +34,65 @@ subroutine sourcenumbers(nmpi)
   pwr = in_srcepwr
 
 !-- total particle number
-  nstot = nmpi*int(src_ns,8)
+  nstot = nmpi*src_ns
+  !nstot = max(nstot,nflux)
+!-- limit total particle number
+  nvacantall = sum(src_nvacantall)
+  nstot = min(nstot,nvacantall)
 
 !-- etot
   etot = sum(grd_emit**pwr) + sum(grd_emitex**pwr) + tot_esurf**pwr
-  if(etot/=etot) stop 'sourcenumber: etot nan'
+  if(etot/=etot) stop 'sourcenumbers: etot nan'
 
-!-- calculating number of boundary particles (if any)
+!-- number of boundary particles (if any)
   src_nsurf = nint(tot_esurf**pwr*nstot/etot)
 
-!-- base (flat,constant) particle number per cell over ALL RANKS
-  n = count(grd_emit>0d0 .or. grd_emitex>0d0)  !number of cells with nonzero energy
-  base = dble(nstot - src_nsurf)/n  !uniform distribution
-  base = basefrac*base
+!-- number of cells with nonzero energy
+  ncactive = count(grd_emit>0d0 .or. grd_emitex>0d0)
+  if(nvacantall<ncactive) stop 'sourcenumbers: nvacantall<ncactive'
 
 !-- number of particles available for proportional distribution
-  nsbase = int(n*base,8)  !total number of base particles
-  nsavail = nstot - nsbase - src_nsurf
+  nsavail = nstot - src_nsurf
 
-
-!-- total particle number per cell
+!-- particle number per cell
   edone = 0d0
   ndone = 0
-  invn = 1d0/(nsavail + nsbase)
+  invn = 1d0/nsavail
   einv = 1d0/etot
+  if(etot==0d0) einv = 0d0
   do l=1,grd_ncell
      en = grd_emit(l)**pwr + grd_emitex(l)**pwr
      if(en==0d0) cycle
 !-- continuously guide the rounding towards the correct cumulative value
-     n = int(en*nsavail*einv + base)  !round down
+     n = max(1,int(en*nsavail*einv))  !round down
      if(edone*einv>ndone*invn) n = n + 1  !round up
      grd_nvol(l) = n
      edone = edone + en
      ndone = ndone + n
   enddo
 
+!-- too many particles
+  nextra = int(nstot - sum(grd_nvol) - src_nsurf)
+  if(nextra>grd_ncell) stop 'sourcenumbers: nextra>grd_ncell'
+!-- correct to exact target number
+  nsmean = nstot/ncactive
+  do while(nextra/=0)
+     do l=1,grd_ncell
+        if(nextra==0) exit
+        if(grd_nvol(l)<nsmean) cycle
+        grd_nvol(l) = grd_nvol(l) + sign(1,nextra)
+        nextra = nextra - sign(1,nextra)
+     enddo
+  enddo
 
 !-- from total nvol (over ALL RANKS) to nvol PER RANK
 !-- also convert emit to energy PER PARTICLE
   src_nnew = src_nsurf
   src_nnonth = 0
-  iimpi = 0
+  iimpi = -1
+  nvacant = src_nvacantall
   do l=1,grd_ncell
-     call sourcenumbers_roundrobin(iimpi,grd_emit(l)**pwr, &
+     call sourcenumbers_roundrobin_limit(iimpi,nvacant,grd_emit(l)**pwr, &
         grd_emitex(l)**pwr,grd_nvol(l),nemit,nvol,nvolex)
 !-- particle counts
      src_nnew = src_nnew + nvol + nvolex
@@ -82,6 +100,100 @@ subroutine sourcenumbers(nmpi)
   enddo
 !}}}
 end subroutine sourcenumbers
+
+
+
+subroutine sourcenumbers_roundrobin_limit(iimpi,nvacant,evol,evolex,ntot,mvol,nvol,nvolex)
+  use mpimod!{{{
+  implicit none
+  integer,intent(inout) :: iimpi,nvacant(0:nmpi-1)
+  real*8,intent(in) :: evol,evolex
+  integer,intent(in) :: ntot
+  integer,intent(out) :: mvol  !particle number on all ranks
+  integer,intent(out) :: nvol,nvolex !particle numbers on this rank
+!-----------------------------------------------------------------------
+! Distribute the source particle numbers over the mpi ranks in a
+! round-robin fashion using iimpi as tracker.
+!-----------------------------------------------------------------------
+  real*8 :: help
+  integer :: i,n,l
+  integer :: nmpiavail,neach,nhere
+!
+!-- quick exit
+  if(evol+evolex==0d0) then
+     mvol = 0
+     nvol = 0
+     nvolex = 0
+     return
+  endif
+!
+!-- 
+  help = evol/(evol + evolex)
+  mvol = nint(ntot*help)
+  nvolex = ntot - mvol
+  n = mod(mvol,nmpi) !remainder
+!-- constant part
+  nvol = mvol/nmpi !on each rank
+!-- add to remainder whatever does not fit in vacancies
+  do l=0,nmpi-1
+     n = n + max(0,nvol-nvacant(l))
+     if(l==impi) nvol = min(nvol,nvacant(l)) !current rank
+     nvacant(l) = max(0,nvacant(l)-nvol)
+  enddo
+!-- sanity check
+  if(n>sum(nvacant)) stop 'srcnr_roundrobin_limit: not enough vacancies'
+!-- remaining particles are distributed round robin over ranks
+  nmpiavail = count(nvacant>0)
+  do while(n>0)
+     neach = max(1,n/nmpiavail) !number of particles to add to this rank
+     do i=1,nmpi
+        iimpi = iimpi + 1
+        if(iimpi==nmpi) iimpi = 0
+!-- no space on current rank
+        if(nvacant(iimpi)==0) cycle
+!-- number of particles that can be added to this rank
+        nhere = min(neach,nvacant(iimpi))
+        if(iimpi==impi) nvol = nvol + nhere  !current rank
+!-- remaining
+        nvacant(iimpi) = nvacant(iimpi) - nhere
+        n = n - nhere
+        if(n==0) exit
+        if(nvacant(iimpi)==0) nmpiavail = nmpiavail - 1
+     enddo
+  enddo
+
+  n = mod(nvolex,nmpi) !remainder
+!-- constant part
+  nvolex = nvolex/nmpi !on each rank
+!-- add to remainder whatever does not fit in vacancies
+  do l=0,nmpi-1
+     n = n + max(0,nvolex-nvacant(l))
+     if(l==impi) nvolex = min(nvolex,nvacant(l)) !current rank
+     nvacant(l) = max(0,nvacant(l)-nvolex)
+  enddo
+!-- sanity check
+  if(n>sum(nvacant)) stop 'srcnr_roundrobin_limit: not enough vacancies'
+!-- remaining particles are distributed round robin over ranks
+  nmpiavail = count(nvacant>0)
+  do while(n>0)
+     neach = max(1,n/nmpiavail) !number of particles to add to this rank
+     do i=1,nmpi
+        iimpi = iimpi + 1
+        if(iimpi==nmpi) iimpi = 0
+!-- no space on current rank
+        if(nvacant(iimpi)==0) cycle
+!-- number of particles that can be added to this rank
+        nhere = min(neach,nvacant(iimpi))
+        if(iimpi==impi) nvolex = nvolex + nhere  !current rank
+!-- remaining
+        nvacant(iimpi) = nvacant(iimpi) - nhere
+        n = n - nhere
+        if(n==0) exit
+        if(nvacant(iimpi)==0) nmpiavail = nmpiavail - 1
+     enddo
+  enddo
+!}}}
+end subroutine sourcenumbers_roundrobin_limit
 
 
 
