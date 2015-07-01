@@ -133,7 +133,7 @@ ifeq ($(VERSIONPY), version.py)
 	@echo "      build_date = '$(DATE)'" >>$@
 else
   version.inc: version_dummy.inc $(VERSIONDEP)
-	@cp -vu version_dummy.inc version.inc
+	@cp -v version_dummy.inc version.inc
 	@echo "      build_date = '$(DATE)'" >>$@
 endif
 

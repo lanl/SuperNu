@@ -16,7 +16,6 @@ subroutine initial_particles
 !##################################################
   type(packet) :: ptcl
 !
-  logical :: lhelp
   integer :: ig, i,j,k,l, iig, ipart, ii
   integer :: nhere,ndmy,iimpi,nemit
   integer :: ix,iy,iz

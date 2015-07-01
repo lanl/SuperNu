@@ -95,13 +95,14 @@ c-- everything else
 c==================
 c-- broadcast constants
 c-- logical
-      n = 1
+      n = 2
       allocate(lsndvec(n))
-      if(lmpi0) lsndvec = [str_lvoid]
+      if(lmpi0) lsndvec = [str_lvoid,str_ltemp]
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       str_lvoid = lsndvec(1)
+      str_ltemp = lsndvec(2)
       deallocate(lsndvec)
 c
 c-- integer
@@ -292,6 +293,15 @@ c-- mass fractions if available
        call mpi_scatterv(str_massfrdc,n*counts,n*displs,MPI_REAL8,
      &   str_massfrdd,n*ncell,MPI_REAL8,
      &   impi0,MPI_COMM_WORLD,ierr)
+      endif
+c
+c-- gas temperature structure if available
+      if(str_ltemp) then
+       if(impi/=impi0) allocate(str_tempdc(str_nc))
+       allocate(str_tempdd(ncell))
+       call mpi_scatterv(str_tempdc,counts,displs,MPI_REAL8,
+     &  str_tempdd,ncell,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
       endif
 !}}}
       end subroutine scatter_inputstruct

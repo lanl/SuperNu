@@ -72,6 +72,8 @@ program supernu
 !== generate_inputstr development in progress
        call generate_inputstr(in_igeom)
      endif
+!-- read gas temperature structure
+     call read_temp_str(in_igeom,in_ndim)
 !-- compressed domain, serialize non-void cells
      call inputstr_compress
 

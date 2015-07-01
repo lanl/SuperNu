@@ -27,7 +27,7 @@ c
 c-- domain decomposition
       real*8,allocatable :: str_massdd(:) !(gas_ncell)
       real*8,allocatable :: str_massfrdd(:,:) !(nabund,gas_ncell)
-      real*8,allocatable :: str_tempdd(:) !(nc)
+      real*8,allocatable :: str_tempdd(:) !(gas_ncell)
 c
       character(8),allocatable,private :: str_abundlabl(:) !(nabund)
 c
@@ -53,6 +53,7 @@ c     ---------------------------!{{{
        if(allocated(str_abundlabl)) deallocate(str_abundlabl) !only on impi0
       endif
       str_nabund=0!}}}
+      if(str_ltemp) deallocate(str_tempdc,str_tempdd)
       end subroutine inputstr_dealloc
 c
 c
@@ -288,12 +289,15 @@ c
       allocate(str_idcell(str_nc))
       allocate(str_massdc(str_nc))
       if(str_nabund>0) then
-         allocate(str_massfrdc(str_nabund,str_nc))
-         str_massfrdc = 0d0
+       allocate(str_massfrdc(str_nabund,str_nc))
+       str_massfrdc = 0d0
       endif
+      if(str_ltemp) allocate(str_tempdc(str_nc))
 c-- zero all, including the dummy cell
       str_idcell = 0
       str_massdc = 0d0
+c-- void temp [K]
+      if(str_ltemp) str_tempdc = 1000d0
 c
       l = 0
       idcell = 0
@@ -308,6 +312,7 @@ c-- insert
        str_idcell(l) = idcell
        str_massdc(l) = str_mass(i,j,k)
        if(str_nabund>0) str_massfrdc(:,l) = str_massfr(:,i,j,k)
+       if(str_ltemp) str_tempdc(l) = str_temp(i,j,k)
       enddo !i
       enddo !j
       enddo !k
@@ -319,6 +324,7 @@ c
 c-- deallocate full grid
       deallocate(str_mass)
       if(allocated(str_massfr)) deallocate(str_massfr)
+      if(allocated(str_temp)) deallocate(str_temp)
 c!}}}
       end subroutine inputstr_compress
 c

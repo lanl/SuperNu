@@ -1,6 +1,7 @@
       subroutine read_temp_str(igeom,ndim)
 c     --------------------------------------------------------
       use inputstrmod
+      use inputparmod, only:in_ntres,in_consttemp
       implicit none
       integer,intent(in) :: igeom
       integer,intent(in) :: ndim(3)
@@ -8,14 +9,16 @@ c     --------------------------------------------------------
 * Read the input gas temperature structure file if it exists.
 * Like read_inputstr, but for 1 column (header info is sanity checked).
 ************************************************************************
+      logical :: lexist
       integer :: igeom_r,nx_r,ny_r,nz_r
-      integer :: nx,ny,nz,l, ierr
+      integer :: nx,ny,nz, ierr
       character(2) :: dmy
-      real*8,allocatable :: raw(:)
+      character(14) :: fname='input.temp_str'
 c
-c-- check for input.str_temp
-      inquire(file='input.str_temp',exist=str_ltemp)
+c-- check for input.temp_str
+      inquire(file=fname,exist=lexist)
 c-- quick exit
+      str_ltemp=lexist.and.in_ntres<=1.and.in_consttemp==0d0
       if(.not.str_ltemp) return
 c
 c-- copy
@@ -24,7 +27,7 @@ c-- copy
       nz=ndim(3)
 c
 c-- open file
-      open(4,file='input.str_temp',status='old')
+      open(4,file=fname,status='old')
 c
 c-- read dimensions
       read(4,*)
@@ -40,12 +43,12 @@ c-- allocate temperature structure
 c
 c-- read body
       read(4,*,iostat=ierr) str_temp
-      if(ierr/=0) stop 'read_temp_str: input.str_temp fmt err: body'
+      if(ierr/=0) stop 'read_temp_str: input.temp_str fmt err: body'
       read(4,*,iostat=ierr) dmy
-      if(ierr/=-1) stop 'read_temp_str: input.str_temp body too long'
+      if(ierr/=-1) stop 'read_temp_str: input.temp_str body too long'
 c
 c-- validity check
-      if(any(temp/=temp)) stop 'read_temp_str: nan in input'
+      if(any(str_temp/=str_temp)) stop 'read_temp_str: nan in input'
 c
 c-- close file
       close(4)
