@@ -469,8 +469,12 @@ c-- flux dim==3
 c
 c-- dim==3
       n = grd_ncell
-      isnd = grd_numcensus
-      call mpi_reduce(isnd,grd_numcensus,n,MPI_INTEGER,MPI_SUM,
+      isnd = grd_numcensimc
+      call mpi_reduce(isnd,grd_numcensimc,n,MPI_INTEGER,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      isnd = grd_numcensddmc
+      call mpi_reduce(isnd,grd_numcensddmc,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
       isnd = grd_numfluxorig

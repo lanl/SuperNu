@@ -61,7 +61,8 @@ c-- radiation energy density in tsp_dt
 c-- number of IMC-DDMC method changes per cell per time step
       integer,allocatable :: grd_methodswap(:) !(ncell)
 c-- number of census prt_particles per cell
-      integer,allocatable :: grd_numcensus(:) !(ncell)
+      integer,allocatable :: grd_numcensimc(:) !(ncell)
+      integer,allocatable :: grd_numcensddmc(:) !(ncell)
 c-- number of flux prt_particles originating from each cell
       integer,allocatable :: grd_numfluxorig(:) !(ncell)
 
@@ -139,7 +140,7 @@ c
 c-- print alloc size (keep this updated)
 c---------------------------------------
       if(ltalk) then
-       n = int((int(grd_ncell,8)*(8*(11+6) + 5*4))/1024) !kB
+       n = int((int(grd_ncell,8)*(8*(12+6) + 5*4))/1024) !kB
        write(6,*) 'ALLOC grd      :',n,"kB",n/1024,"MB",n/1024**2,"GB"
        n = int((int(grd_ncell,8)*4*ng)/1024) !kB
        write(6,*) 'ALLOC grd_cap  :',n,"kB",n/1024,"MB",n/1024**2,"GB"
@@ -162,10 +163,12 @@ c
 c
 c-- ndim=3 integer
       allocate(grd_nvol(grd_ncell))
+      grd_nvol = 0
       allocate(grd_nvolinit(grd_ncell))
 c
       allocate(grd_methodswap(grd_ncell))
-      allocate(grd_numcensus(grd_ncell))
+      allocate(grd_numcensimc(grd_ncell))
+      allocate(grd_numcensddmc(grd_ncell))
       allocate(grd_numfluxorig(grd_ncell))
 c
 c-- ndim=4 alloc
@@ -202,7 +205,8 @@ c-- ndim=3 integer
       deallocate(grd_nvol)
       deallocate(grd_nvolinit)
       deallocate(grd_methodswap)
-      deallocate(grd_numcensus)
+      deallocate(grd_numcensimc)
+      deallocate(grd_numcensddmc)
       deallocate(grd_numfluxorig)
 c-- ndim=4 alloc
       deallocate(grd_opacleak)

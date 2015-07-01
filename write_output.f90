@@ -158,8 +158,15 @@ subroutine write_output
      enddo
      close(4)
 !
-     iarr(:grd_ncell) = grd_numcensus
-     open(unit=4,file='output.grd_numcensus',status=fstat,position='append',recl=reclen)
+     iarr(:grd_ncell) = grd_numcensimc
+     open(unit=4,file='output.grd_numcensimc',status=fstat,position='append',recl=reclen)
+     do i=1,nrow
+        write(4,'(10000i12)') iarr((i-1)*ncpr+1:i*ncpr)
+     enddo
+     close(4)
+!
+     iarr(:grd_ncell) = grd_numcensddmc
+     open(unit=4,file='output.grd_numcensddmc',status=fstat,position='append',recl=reclen)
      do i=1,nrow
         write(4,'(10000i12)') iarr((i-1)*ncpr+1:i*ncpr)
      enddo
