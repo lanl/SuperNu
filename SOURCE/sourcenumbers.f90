@@ -1,4 +1,4 @@
-subroutine sourcenumbers!(nflux)
+subroutine sourcenumbers(keephigh)
 !{{{
   use sourcemod
   use totalsmod
@@ -7,7 +7,7 @@ subroutine sourcenumbers!(nflux)
   use inputparmod
   use mpimod
   implicit none
-  !integer,intent(in) :: nflux
+  logical,intent(in) :: keephigh
 
 !##################################################
 !This subroutine computes the distribution of source particles each
@@ -17,7 +17,7 @@ subroutine sourcenumbers!(nflux)
 
   integer :: l,iimpi
   integer :: n,ndone
-  integer :: ncactive,nvacantall,nextra
+  integer :: ncactive,nextra,nvacantall,nnewvacant
   integer :: nvacant(nmpi)
   real*8,parameter :: basefrac=.1d0
   integer*8 :: nstot,nsavail,nsmean
@@ -33,11 +33,18 @@ subroutine sourcenumbers!(nflux)
 !-- shortcut
   pwr = in_srcepwr
 
+!-- total number of vacancies on all ranks
+  nvacantall = sum(src_nvacantall)
+!-- number of new vacancies
+  nnewvacant = nvacantall - src_nvacantmin
+!-- keep record of maximum number of active particles
+  src_nvacantmin = min(src_nvacantmin,nvacantall)
+
 !-- total particle number
   nstot = nmpi*src_ns
-  !nstot = max(nstot,nflux)
+!-- keep at least at level of minimum vacancies
+  if(keephigh) nstot = max(nmpi*src_ns,nnewvacant,src_nflux)
 !-- limit total particle number
-  nvacantall = sum(src_nvacantall)
   nstot = min(nstot,nvacantall)
 
 !-- etot
