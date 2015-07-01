@@ -37,6 +37,8 @@ subroutine particle_advance_gamgrey(nmpi)
   real*8 :: etot,pwr
   real*8 :: om0, mu0, x0, y0, z0
 !
+  integer :: nvol(grd_ncell)
+!
   type(rnd_t) :: rndstate
   integer,save :: iomp=0
 !
@@ -57,7 +59,7 @@ subroutine particle_advance_gamgrey(nmpi)
   flx_gamluminos = 0d0
 
 !-- initializing volume numbers
-  grd_nvol = 0
+  nvol = 0
 
 !-- shortcut
   pwr = in_srcepwr
@@ -97,12 +99,12 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- continuously guide the rounding towards the correct cumulative value
      n = int(en*nsavail*einv + base)  !round down
      if(edone*einv>ndone*invn) n = n + 1  !round up
-     grd_nvol(l) = n
+     nvol(l) = n
      edone = edone + en
      ndone = ndone + n
 !-- particle count on this rank
      call sourcenumbers_roundrobin(iimpi,grd_emitex(l), &
-        0d0,grd_nvol(l),nemit,nhere,ndmy)
+        0d0,nvol(l),nemit,nhere,ndmy)
      do ii=1,nhere
         npart = npart + 1
         if(npart>mpart) stop 'particle_advance_gamgrey: npart>npartmax'
@@ -114,7 +116,7 @@ subroutine particle_advance_gamgrey(nmpi)
 
 
 !$omp parallel &
-!$omp shared(flx_gamluminos) &
+!$omp shared(flx_gamluminos,nvol) &
 !$omp private(ptcl,ptcl2,x0,y0,z0,mu0,om0,cmffact,gm,mu1,mu2,eta,xi,labfact,iom,imu, &
 !$omp    rndstate,edep,ierr, iomp, &
 !$omp    x,y,z,mu,om,e,e0,ix,iy,iz,ic,icold,r1, &
@@ -300,7 +302,7 @@ subroutine particle_advance_gamgrey(nmpi)
      endif
 !
 !-- emission energy per particle
-     e = grd_emitex(ic)/grd_nvol(ic)
+     e = grd_emitex(ic)/nvol(ic)
      if(grd_isvelocity) e = e*cmffact
      e0 = e
 
