@@ -129,6 +129,7 @@ subroutine initial_particles
         ptcl%x = max(ptcl%x,grd_xarr(i))
         ptcl%y = min(ptcl%y,grd_yarr(j+1))
         ptcl%y = max(ptcl%y,grd_yarr(j))
+        ptcl%z = grd_zarr(1)
 
 !-- 3D
      case(3)
@@ -162,6 +163,8 @@ subroutine initial_particles
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
+        ptcl%y = grd_yarr(1)
+        ptcl%z = grd_zarr(1)
      endselect
 
 !-- save particle result

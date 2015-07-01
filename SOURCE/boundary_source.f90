@@ -207,6 +207,7 @@ subroutine boundary_source
            mu2 = mu0
            mu0 = mu1
         endif
+        ptcl%z = grd_zarr(1)
 
 !-- calculating albedo
         l = grd_icell(i,j,1)
@@ -335,6 +336,8 @@ subroutine boundary_source
 !-- calculating position!{{{
         ptcl%x = grd_xarr(i+1)
         x0 = ptcl%x
+        ptcl%y = grd_yarr(1)
+        ptcl%z = grd_zarr(1)
 !-- setting cell index
         ix = i
         iy = j

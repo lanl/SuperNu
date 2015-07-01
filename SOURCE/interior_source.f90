@@ -21,7 +21,7 @@ subroutine interior_source
   !particle loop (2nd).
 !##################################################
   integer :: i,j,k, ipart,ivac,ig,ii
-  integer :: nhere,ndmy,iimpi,nemit,ncreate
+  integer :: nhere,ndmy,iimpi,nemit
   real*8 :: pwr
   real*8 :: r1, r2, r3, uul, uur, uumax
   real*8 :: om0, mu0, x0, y0, ep0, wl0
@@ -138,6 +138,7 @@ subroutine interior_source
         ptcl%x = max(ptcl%x,grd_xarr(i))
         ptcl%y = min(ptcl%y,grd_yarr(j+1))
         ptcl%y = max(ptcl%y,grd_yarr(j))!}}}
+        ptcl%z = grd_zarr(1)
 !-- 3D
      case(3)
 !-- calculating position!{{{
@@ -166,6 +167,8 @@ subroutine interior_source
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i)) !}}}
+        ptcl%y = grd_yarr(1)
+        ptcl%z = grd_zarr(1)
 
      endselect
 !}}}
@@ -316,6 +319,7 @@ subroutine interior_source
         ptcl%x = max(ptcl%x,grd_xarr(i))
         ptcl%y = min(ptcl%y,grd_yarr(j+1))
         ptcl%y = max(ptcl%y,grd_yarr(j))
+        ptcl%z = grd_zarr(1)
 !}}}
 !-- 3D
      case(3)
@@ -393,6 +397,8 @@ subroutine interior_source
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
+        ptcl%y = grd_yarr(1)
+        ptcl%z = grd_zarr(1)
 !}}}
      endselect
 !}}}
