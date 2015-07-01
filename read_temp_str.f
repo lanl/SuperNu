@@ -1,8 +1,8 @@
-      subroutine read_temp_str(igeom,ndim,nmpi)
+      subroutine read_temp_str(igeom,ndim)
 c     --------------------------------------------------------
       use inputstrmod
       implicit none
-      integer,intent(in) :: igeom,nmpi
+      integer,intent(in) :: igeom
       integer,intent(in) :: ndim(3)
 ************************************************************************
 * Read the input gas temperature structure file if it exists.
@@ -43,5 +43,11 @@ c-- read body
       if(ierr/=0) stop 'read_temp_str: input.str_temp fmt err: body'
       read(4,*,iostat=ierr) dmy
       if(ierr/=-1) stop 'read_temp_str: input.str_temp body too long'
+c
+c-- validity check
+      if(any(temp/=temp)) stop 'read_temp_str: nan in input'
+c
+c-- close file
+      close(4)
 c
       end subroutine read_temp_str
