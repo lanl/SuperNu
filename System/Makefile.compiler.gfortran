@@ -9,7 +9,7 @@ FCFLAGS = -O3
 #FCFLAGS = -g -O0 -Wall -fbounds-check -fbacktrace
 
 #-- additional flags
-FCFLAGS += -m64
+FCFLAGS += -m64 -msse3
 FCFLAGS += -fopenmp
 FCFLAGS_FF = -ffixed-form
 LDFLAGS = -fopenmp
