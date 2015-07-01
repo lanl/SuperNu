@@ -344,6 +344,7 @@ c     -----------------------------!{{{
       use gridmod
       use gasmod
       use groupmod
+      use sourcemod
       use totalsmod
       use particlemod
       use timestepmod
@@ -354,6 +355,7 @@ c     -----------------------------!{{{
 ************************************************************************
       real*8 :: t0,t1
       real*8 :: snd(grd_ncell)
+      integer :: nvacant
 c
       call mpi_barrier(MPI_COMM_WORLD,ierr)
       t0 = t_time()
@@ -390,6 +392,12 @@ c
 c-- allreduce
       snd = grd_eamp
       call mpi_allreduce(snd,grd_eamp,grd_ncell,MPI_REAL8,MPI_SUM,
+     &  MPI_COMM_WORLD,ierr)
+c
+c-- allgather
+      nvacant = count(prt_isvacant)
+      call mpi_allgather(nvacant,1,MPI_INTEGER,
+     &  src_nvacantall,1,MPI_INTEGER,
      &  MPI_COMM_WORLD,ierr)
 c
       t1 = t_time()

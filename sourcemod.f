@@ -5,21 +5,23 @@ c     ----------------
       integer :: src_nsurf,src_nnonth,src_nnew,src_ninitnew
 
       integer,allocatable :: src_ivacant(:) !array of vacant particle array locations
+      integer,allocatable :: src_nvacantall(:) !(nmpi) number of vacancies on each of the ranks
 c
       save
 c
       contains
 
-      subroutine sourcemod_init(ns,ninit)
-c     ------------------------------------------!{{{
+      subroutine sourcemod_init(nmpi,ns,ninit)
+c     ----------------------------------------!{{{
       implicit none
-      integer,intent(in) :: ns, ninit
+      integer,intent(in) :: nmpi,ns,ninit
 ************************************************************************
 * init particle module
 ************************************************************************
 !-- adopt input values in module internal storage
       src_ns = ns
       src_ninit = ninit
+      allocate(src_nvacantall(nmpi))
 !}}}
       end subroutine sourcemod_init
 c

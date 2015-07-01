@@ -58,6 +58,8 @@ c
       use gridmod
       use gasmod
       use groupmod
+      use sourcemod
+      use particlemod
 ************************************************************************
 * Broadcast the data that changes with time.
 * - stub
@@ -72,6 +74,8 @@ c
       grd_sig = reshape(gas_sig,[grd_ncell])
       grd_capgrey = reshape(gas_capgrey,[grd_ncell])
       grd_fcoef = reshape(gas_fcoef,[grd_ncell])
+c
+      src_nvacantall(1) = count(prt_isvacant)
       end subroutine bcast_nonpermanent
 c
 c

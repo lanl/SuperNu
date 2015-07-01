@@ -131,7 +131,7 @@ program supernu
   ns = max(ns,in_ns/nmpi)
   nsinit = int(int(2,8)**in_src_n2sinit/nmpi)
   nsinit = max(nsinit,in_ns0/nmpi)
-  call sourcemod_init(ns,nsinit)
+  call sourcemod_init(nmpi,ns,nsinit)
 
 !-- allocate arrays of sizes retreived in bcast_permanent
   call ions_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
