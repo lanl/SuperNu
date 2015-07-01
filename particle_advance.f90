@@ -25,7 +25,7 @@ subroutine particle_advance
   !total subroutine calls in program.
 !##################################################
   real*8,parameter :: cinv=1d0/pc_c
-  integer :: i, nstepddmc, nstepimc, npckt, nflux
+  integer :: nstepddmc, nstepimc, npckt, nflux
   real*8 :: r1, x1, x2, thelp, help, tau
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
@@ -79,6 +79,8 @@ subroutine particle_advance
   tot_erad = 0d0
 
   flx_luminos = 0d0
+  flx_lumdev = 0d0
+  flx_lumnum = 0
   grd_methodswap = 0
   grd_numcensimc = 0
   grd_numcensddmc = 0
@@ -94,14 +96,15 @@ subroutine particle_advance
   ndist = 0
 
 !$omp parallel &
-!$omp shared(grd_numcensimc,grd_numcensddmc,grd_numfluxorig,flx_luminos,thelp) &
+!$omp shared(grd_numcensimc,grd_numcensddmc,grd_numfluxorig,thelp) &
 !$omp private(ptcl,ptcl2, &
-!$omp    x,y,z,mu,om,wl,e,e0,i,ix,iy,iz,ic,ig,icold,icorig,r1, &
+!$omp    x,y,z,mu,om,wl,e,e0,ix,iy,iz,ic,ig,icold,r1, &
 !$omp    t0,t1, &
 !$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
 !$omp    rndstate,edep,eraddens,eamp,icell,specarr,ierr, iomp) &
 !$omp reduction(+:grd_edep,grd_eraddens,grd_eamp,grd_methodswap, &
 !$omp    tot_evelo,tot_erad,tot_eout, &
+!$omp    flx_luminos,flx_lumnum,flx_lumdev, &
 !$omp    npckt,nflux,nstepddmc,nstepimc,ndist) &
 !$omp reduction(max:nstepmax)
 
@@ -262,7 +265,9 @@ subroutine particle_advance
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
            iom = binsrch(om,flx_om,flx_nom+1,.false.)
 !-- tallying outbound luminosity
-           flx_luminos(:,ig,imu,iom) = flx_luminos(:,ig,imu,iom) + [e,e**2,1d0]
+           flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+e
+           flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+e**2
+           flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1
         endif
 !
 !-- Russian roulette for termination of exhausted particles
@@ -510,12 +515,12 @@ subroutine particle_advance
 !-- print distance counters
 ! write(6,'(7(i6,"k"))',advance='no') ndist(1:7)/1000
 
-  tot_sflux = -sum(flx_luminos(1,:,:,:))
+  tot_sflux = -sum(flx_luminos)
 
 !-- convert to flux per second
   help = 1d0/tsp_dt
-  flx_luminos(1,:,:,:) = flx_luminos(1,:,:,:)*help
-  flx_luminos(2,:,:,:) = flx_luminos(2,:,:,:)*help**2
+  flx_luminos = flx_luminos*help
+  flx_lumdev = flx_lumdev*help**2
 
   call counterreg(ct_nptransport, npckt)
   call counterreg(ct_npstepimc, nstepimc)

@@ -455,8 +455,10 @@ c     -----------------------!{{{
       integer :: n
       integer :: isnd(grd_ncell)
       real*8 :: snd(grd_ncell)
-      real*8 :: snd4f(3,flx_ng,flx_nmu,flx_nom)
-      real*8 :: snd3f(3,flx_nmu,flx_nom)
+      integer :: isnd3f(flx_ng,flx_nmu,flx_nom)
+      real*8 :: snd3f(flx_ng,flx_nmu,flx_nom)
+      integer :: isnd2f(flx_nmu,flx_nom)
+      real*8 :: snd2f(flx_nmu,flx_nom)
       real*8 :: help
       real*8 :: t0,t1
 c
@@ -464,15 +466,31 @@ c
       t0 = t_time()
 c
 c-- flux dim==2
-      n = 3*flx_nmu*flx_nom
-      snd3f = flx_gamluminos
-      call mpi_reduce(snd3f,flx_gamluminos,n,MPI_REAL8,MPI_SUM,
+      n = flx_nmu*flx_nom
+      isnd2f = flx_gamlumnum
+      call mpi_reduce(isnd2f,flx_gamlumnum,n,MPI_INTEGER,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      snd2f = flx_gamluminos
+      call mpi_reduce(snd2f,flx_gamluminos,n,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      snd2f = flx_gamlumdev
+      call mpi_reduce(snd2f,flx_gamlumdev,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- flux dim==3
-      n = 3*flx_ng*flx_nmu*flx_nom
-      snd4f = flx_luminos
-      call mpi_reduce(snd4f,flx_luminos,n,MPI_REAL8,MPI_SUM,
+      n = flx_ng*flx_nmu*flx_nom
+      isnd3f = flx_lumnum
+      call mpi_reduce(isnd3f,flx_lumnum,n,MPI_INTEGER,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      snd3f = flx_luminos
+      call mpi_reduce(snd3f,flx_luminos,n,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      snd3f = flx_lumdev
+      call mpi_reduce(snd3f,flx_lumdev,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- dim==3

@@ -10,20 +10,20 @@ c-- wavelength (wl), polar (mu), and azimuthal (om) bins
       real*8,allocatable :: flx_wl(:) !(flx_ng)
       real*8,allocatable :: flx_mu(:) !(flx_nmu)
       real*8,allocatable :: flx_om(:) !(flx_nom)
-c
-c-- radiative flux
-c=================
-c-- outbound grouped luminosity
-c 1: flux in units erg/s
-c 2: sampled devation of group luminosity
-c 3: number of escaped particles per group
-      real*8,allocatable :: flx_luminos(:,:,:,:) !(3,flx_ng,flx_nmu,flx_nom)
+!
+!-- radiative flux
+!=================
+!-- outbound grouped luminosity
+      real*8,allocatable :: flx_luminos(:,:,:) !(flx_ng,flx_nmu,flx_nom)
+!-- sampled devation of group luminosity
+      real*8,allocatable :: flx_lumdev(:,:,:) !(flx_ng,flx_nmu,flx_nom)
+!-- number of escaped particles per group
+      integer,allocatable :: flx_lumnum(:,:,:) !(flx_ng,flx_nmu,flx_nom)
 c
 c-- grey gamma flux
-c 1: flux in units erg/s
-c 2: sampled devation of group luminosity
-c 3: number of escaped particles per group
-      real*8,allocatable :: flx_gamluminos(:,:,:) !(3,flx_nmu,flx_nom)
+      real*8,allocatable :: flx_gamluminos(:,:) !(flx_nmu,flx_nom)
+      real*8,allocatable :: flx_gamlumdev(:,:)  !(flx_nmu,flx_nom)
+      integer,allocatable :: flx_gamlumnum(:,:) !(flx_nmu,flx_nom)
 c
       save
 c
@@ -62,9 +62,14 @@ c-- check if bins are read or generated
       enddo
 c
 c-- allocate flux tally arrays
-      allocate(flx_luminos(3,flx_ng,flx_nmu,flx_nom))
+      allocate(flx_luminos(flx_ng,flx_nmu,flx_nom))
+      allocate(flx_lumdev(flx_ng,flx_nmu,flx_nom))
+      allocate(flx_lumnum(flx_ng,flx_nmu,flx_nom))
+c
 c-- grey gamma flux
-      allocate(flx_gamluminos(3,flx_nmu,flx_nom))
+      allocate(flx_gamluminos(flx_nmu,flx_nom))
+      allocate(flx_gamlumdev(flx_nmu,flx_nom))
+      allocate(flx_gamlumnum(flx_nmu,flx_nom))
 c
       end subroutine fluxgrid_setup
 c
@@ -204,8 +209,12 @@ c
       deallocate(flx_mu)
       deallocate(flx_om)
       deallocate(flx_luminos)
+      deallocate(flx_lumdev)
+      deallocate(flx_lumnum)
 c-- grey gamma flux
-      deallocate(flx_gamluminos)!}}}
+      deallocate(flx_gamluminos)
+      deallocate(flx_gamlumdev)
+      deallocate(flx_gamlumnum)!}}}
       end subroutine flux_dealloc
 c
 c
