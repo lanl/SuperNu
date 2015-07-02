@@ -98,8 +98,8 @@ subroutine particle_advance
 !$omp parallel &
 !$omp shared(grd_numcensimc,grd_numcensddmc,grd_numfluxorig,thelp) &
 !$omp private(ptcl,ptcl2, &
-!$omp    x,y,z,mu,om,wl,e,e0,ix,iy,iz,ic,ig,icold,r1, &
-!$omp    t0,t1, &
+!$omp    x,y,z,mu,om,wl,e,e0,icorig,ix,iy,iz,ic,ig,icold,r1, &
+!$omp    t0,t1,x1,x2,help,tau, &
 !$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
 !$omp    rndstate,edep,eraddens,eamp,icell,specarr,ierr, iomp) &
 !$omp reduction(+:grd_edep,grd_eraddens,grd_eamp,grd_methodswap, &
@@ -164,14 +164,14 @@ subroutine particle_advance
 !
 !-- determine particle type
      select case(in_igeom)
+     case(11)
+        help = thelp*dx(ix)
      case(1)
         help = thelp*min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) 
      case(2)
         help = thelp*min(dx(ix),dy(iy))
      case(3)
         help = thelp*min(dx(ix),dy(iy),dz(iz))
-     case(11)
-        help = thelp*dx(ix)
      endselect
 !-- IMC or DDMC
      tau = (grd_sig(ic)+grd_cap(ig,ic))*help
@@ -390,6 +390,17 @@ subroutine particle_advance
 !
 !-- sample position and direction
         select case(in_igeom)
+!-- 1D spherical
+        case(11)
+!-- sampling position uniformly!{{{
+           call rnd_r(r1,rndstate)
+           x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
+!-- must be inside cell
+           x = min(x,grd_xarr(ix+1))
+           x = max(x,grd_xarr(ix))
+!-- sampling angle isotropically
+           call rnd_r(r1,rndstate)
+           mu = 1.0 - 2.0*r1 !}}}
 !-- 3D spherical
         case(1)
 !-- sampling position uniformly!{{{
@@ -447,17 +458,6 @@ subroutine particle_advance
            om = pc_pi2*r1
            call rnd_r(r1,rndstate)
            mu = 1d0 - 2d0*r1 !}}}
-!-- 1D spherical
-        case(11)
-!-- sampling position uniformly!{{{
-           call rnd_r(r1,rndstate)
-           x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
-!-- must be inside cell
-           x = min(x,grd_xarr(ix+1))
-           x = max(x,grd_xarr(ix))
-!-- sampling angle isotropically
-           call rnd_r(r1,rndstate)
-           mu = 1.0 - 2.0*r1 !}}}
         endselect
 !
         if(grd_isvelocity) call direction2lab(x,y,z,mu,om)

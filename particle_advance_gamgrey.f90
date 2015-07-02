@@ -165,6 +165,22 @@ subroutine particle_advance_gamgrey(nmpi)
 
 !-- particle propagation
      select case(in_igeom)
+     case(11)
+!-- calculating position!{{{
+        call rnd_r(r1,rndstate)
+        x = (r1*grd_xarr(i+1)**3 + &
+             (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
+!-- must be inside cell
+        x = min(x,grd_xarr(i+1))
+        x = max(x,grd_xarr(i))
+!--
+        if(grd_isvelocity) then
+           x0 = x
+           cmffact = 1d0+mu0*x0/pc_c !-- 1+dir*v/c
+           mu = (mu0+x0/pc_c)/cmffact
+        else
+           mu = mu0
+        endif!}}}
      case(1)
 !-- calculating position!{{{
         call rnd_r(r1,rndstate)
@@ -273,22 +289,6 @@ subroutine particle_advance_gamgrey(nmpi)
         else
            mu = mu0
            om = om0
-        endif!}}}
-     case(11)
-!-- calculating position!{{{
-        call rnd_r(r1,rndstate)
-        x = (r1*grd_xarr(i+1)**3 + &
-             (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
-!-- must be inside cell
-        x = min(x,grd_xarr(i+1))
-        x = max(x,grd_xarr(i))
-!--
-        if(grd_isvelocity) then
-           x0 = x
-           cmffact = 1d0+mu0*x0/pc_c !-- 1+dir*v/c
-           mu = (mu0+x0/pc_c)/cmffact
-        else
-           mu = mu0
         endif!}}}
      endselect
 
