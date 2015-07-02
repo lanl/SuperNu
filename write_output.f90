@@ -141,37 +141,11 @@ subroutine write_output
   if(.not.in_nogriddump) then
      reclen = ncpr*12
 !-- alloc
-     allocate(iarr(ncpr*nrow))
+     allocate(iarr(ncpr*nrow),arr(ncpr*nrow))
      iarr(grd_ncell+1:) = 0
+     arr(grd_ncell+1:) = 0d0
 !
-     iarr(:grd_ncell) = grd_methodswap
-     open(unit=4,file='output.grd_methodswap',status=fstat,position='append',recl=reclen)
-     do i=1,nrow
-        write(4,'(10000i12)') iarr((i-1)*ncpr+1:i*ncpr)
-     enddo
-     close(4)
-!
-     iarr(:grd_ncell) = grd_numcensimc
-     open(unit=4,file='output.grd_numcensimc',status=fstat,position='append',recl=reclen)
-     do i=1,nrow
-        write(4,'(10000i12)') iarr((i-1)*ncpr+1:i*ncpr)
-     enddo
-     close(4)
-!
-     iarr(:grd_ncell) = grd_numcensddmc
-     open(unit=4,file='output.grd_numcensddmc',status=fstat,position='append',recl=reclen)
-     do i=1,nrow
-        write(4,'(10000i12)') iarr((i-1)*ncpr+1:i*ncpr)
-     enddo
-     close(4)
-!
-     iarr(:grd_ncell) = grd_numfluxorig
-     open(unit=4,file='output.grd_numfluxorig',status=fstat,position='append',recl=reclen)
-     do i=1,nrow
-        write(4,'(10000i12)') iarr((i-1)*ncpr+1:i*ncpr)
-     enddo
-     close(4)
-!
+!-- grd input values
      iarr(:grd_ncell) = grd_nvol
      open(unit=4,file='output.grd_nvol',status=fstat,position='append',recl=reclen)
      do i=1,nrow
@@ -179,39 +153,27 @@ subroutine write_output
      enddo
      close(4)
 !
-!-- alloc
-     deallocate(iarr)
-     allocate(arr(ncpr*nrow))
-     arr(grd_ncell+1:) = 0d0
-
      arr(:grd_ncell) = grd_temp
      open(unit=4,file='output.grd_temp',status=fstat,position='append',recl=reclen)
      do i=1,nrow
         write(4,'(1p,10000e12.4)') arr((i-1)*ncpr+1:i*ncpr)
      enddo
      close(4)
-
+!
      arr(:grd_ncell) = grd_fcoef
      open(unit=4,file='output.grd_fcoef',status=fstat,position='append',recl=reclen)
      do i=1,nrow
         write(4,'(1p,10000e12.4)') arr((i-1)*ncpr+1:i*ncpr)
      enddo
      close(4)
-
-     arr(:grd_ncell) = grd_eraddens/grd_vol
-     open(unit=4,file='output.grd_eraddens',status=fstat,position='append',recl=reclen)
-     do i=1,nrow
-        write(4,'(1p,10000e12.4)') arr((i-1)*ncpr+1:i*ncpr)
-     enddo
-     close(4)
-
+!
      arr(:grd_ncell) = grd_capgrey
      open(unit=4,file='output.grd_capgrey',status=fstat,position='append',recl=reclen)
      do i=1,nrow
         write(4,'(1p,10000e12.4)') arr((i-1)*ncpr+1:i*ncpr)
      enddo
      close(4)
-
+!
      arr(:grd_ncell) = grd_sig
      open(unit=4,file='output.grd_sig',status=fstat,position='append',recl=reclen)
      do i=1,nrow
@@ -219,8 +181,46 @@ subroutine write_output
      enddo
      close(4)
 !
-     deallocate(arr)
-  endif
+     arr(:grd_ncell) = grd_eraddens/grd_vol
+     open(unit=4,file='output.grd_eraddens',status=fstat,position='append',recl=reclen)
+     do i=1,nrow
+        write(4,'(1p,10000e12.4)') arr((i-1)*ncpr+1:i*ncpr)
+     enddo
+     close(4)
+!
+!-- grd tally values
+     if(grd_ltally) then
+        iarr(:grd_ncell) = grd_methodswap
+        open(unit=4,file='output.grd_methodswap',status=fstat,position='append',recl=reclen)
+        do i=1,nrow
+           write(4,'(10000i12)') iarr((i-1)*ncpr+1:i*ncpr)
+        enddo
+        close(4)
+!
+        iarr(:grd_ncell) = grd_numcensimc
+        open(unit=4,file='output.grd_numcensimc',status=fstat,position='append',recl=reclen)
+        do i=1,nrow
+           write(4,'(10000i12)') iarr((i-1)*ncpr+1:i*ncpr)
+        enddo
+        close(4)
+!
+        iarr(:grd_ncell) = grd_numcensddmc
+        open(unit=4,file='output.grd_numcensddmc',status=fstat,position='append',recl=reclen)
+        do i=1,nrow
+           write(4,'(10000i12)') iarr((i-1)*ncpr+1:i*ncpr)
+        enddo
+        close(4)
+!
+        iarr(:grd_ncell) = grd_numfluxorig
+        open(unit=4,file='output.grd_numfluxorig',status=fstat,position='append',recl=reclen)
+        do i=1,nrow
+           write(4,'(10000i12)') iarr((i-1)*ncpr+1:i*ncpr)
+        enddo
+        close(4)
+     endif
+!
+     deallocate(iarr,arr)
+  endif !grd_ltally
 
 !
 !-- after the first iteration open files in append mode

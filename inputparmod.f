@@ -31,6 +31,7 @@ c-- outbound flux group and direction bins
 c
 c-- output
       logical :: in_nogriddump = .false. !don't write grid cell variables
+      logical :: in_grd_ltally = .false. !transport tallies per grid cell
 c
 c-- do read input structure file instead of specifying the stucture with input parameters
 c==================
@@ -168,7 +169,7 @@ c-- runtime parameter namelist
      & in_srctype,in_theav,in_nheav,in_srcmax,in_srcepwr,
      & in_surfsrcloc,in_surfsrcmu,
      & in_isimcanlog, in_isddmcanlog, in_trn_noamp,
-     & in_nogriddump,
+     & in_nogriddump, in_grd_ltally,
      & in_tauddmc,in_dentype,in_noreadstruct,
      & in_norestart,in_taulump,in_tauvtime,
      & in_tempradinit,in_ismodimc,
@@ -235,6 +236,7 @@ c
       call insertr(in_flx_wlmin,in_r,ir)
       call insertr(in_flx_wlmax,in_r,ir)
       call insertl(in_nogriddump,in_l,il)
+      call insertl(in_grd_ltally,in_l,il)
       call insertl(in_noreadstruct,in_l,il)
       call insertl(in_isvelocity,in_l,il)
       call insertl(in_voidcorners,in_l,il)
@@ -444,6 +446,8 @@ c
        if(in_velout>0d0) 
      &      stop 'static grid: use in_lx,in_ly,in_lz, not in_velout'
       endif
+c
+      if(in_nogriddump .and. in_grd_ltally) stop 'ltally and !griddump'
 c
       if(in_voidcorners.and.in_igeom==1) stop 'voidcorners && igeom=1'
       if(in_voidcorners.and.in_igeom==11) stop 'voidcorners && igeom=11'

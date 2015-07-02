@@ -111,7 +111,7 @@ program supernu
 
 !-- setup spatial grid
   call gridmod_init(lmpi0,grp_ng,in_igeom,in_ndim,str_nc,icell1,ncell, &
-          str_lvoid,in_isvelocity)
+          str_lvoid,in_isvelocity,in_grd_ltally)
   call grid_setup
 !-- setup gas
   call gasmod_init(lmpi0,icell1,ncell,grp_ng)

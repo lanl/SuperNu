@@ -25,7 +25,7 @@ subroutine particle_advance
   !total subroutine calls in program.
 !##################################################
   real*8,parameter :: cinv=1d0/pc_c
-  integer :: nstepddmc, nstepimc, npckt, nflux
+  integer :: nstepddmc, nstepimc, nmethodswap, ncensimc, ncensddmc, npckt, nflux
   real*8 :: r1, x1, x2, thelp, help, tau
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
@@ -73,39 +73,47 @@ subroutine particle_advance
   endif
 !
 !-- energy tallies
+  tot_erad = 0d0
+
   grd_edep = 0d0
   grd_eraddens = 0d0
-  grd_eamp = 0d0
-  tot_erad = 0d0
+  if(.not.in_trn_noamp) grd_eamp = 0d0
 
   flx_luminos = 0d0
   flx_lumdev = 0d0
   flx_lumnum = 0
-  grd_methodswap = 0
-  grd_numcensimc = 0
-  grd_numcensddmc = 0
-  grd_numfluxorig = 0
+
+!-- optional grid tally
+  if(grd_ltally) then
+     grd_methodswap = 0
+     grd_numcensimc = 0
+     grd_numcensddmc = 0
+     grd_numfluxorig = 0
+  endif
 
 !-- Propagate all particles that are not considered vacant
   npckt = 0
   nflux = 0
   nstepddmc = 0
   nstepimc = 0
+  nmethodswap = 0
+  ncensimc = 0
+  ncensddmc = 0
 
   nstepmax = 0
   ndist = 0
 
 !$omp parallel &
-!$omp shared(grd_numcensimc,grd_numcensddmc,grd_numfluxorig,thelp) &
+!$omp shared(thelp,flx_luminos,flx_lumnum,flx_lumdev, &
+!$omp    grd_numcensimc,grd_numcensddmc,grd_numfluxorig,grd_eamp,grd_methodswap) &
 !$omp private(ptcl,ptcl2, &
 !$omp    x,y,z,mu,om,wl,e,e0,icorig,ix,iy,iz,ic,ig,icold,r1, &
 !$omp    t0,t1,x1,x2,help,tau, &
 !$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
 !$omp    rndstate,edep,eraddens,eamp,icell,specarr,ierr, iomp) &
-!$omp reduction(+:grd_edep,grd_eraddens,grd_eamp,grd_methodswap, &
+!$omp reduction(+:grd_edep,grd_eraddens, &
 !$omp    tot_evelo,tot_erad,tot_eout, &
-!$omp    flx_luminos,flx_lumnum,flx_lumdev, &
-!$omp    npckt,nflux,nstepddmc,nstepimc,ndist) &
+!$omp    npckt,nflux,nstepddmc,nstepimc,nmethodswap,ncensimc,ncensddmc,ndist) &
 !$omp reduction(max:nstepmax)
 
 !-- thread id                                                               
@@ -236,7 +244,8 @@ subroutine particle_advance
            nstepimc = nstepimc + 1
            call transport(ptcl,ptcl2,rndstate,edep,eraddens,eamp,tot_evelo,ierr)
            if(ptcl2%itype/=1) then
-              grd_methodswap(icold) = grd_methodswap(icold) + 1
+              nmethodswap = nmethodswap + 1
+              if(grd_ltally) grd_methodswap(icold) = grd_methodswap(icold) + 1
               icorig = 0
            endif
 !-- tally eamp
@@ -246,7 +255,8 @@ subroutine particle_advance
            ptcl2%idist = -1
            call diffusion(ptcl,ptcl2,rndstate,edep,eraddens,tot_evelo,icell,specarr,ierr)
            if(ptcl2%itype==1) then
-              grd_methodswap(icold) = grd_methodswap(icold) + 1
+              nmethodswap = nmethodswap + 1
+              if(grd_ltally) grd_methodswap(icold) = grd_methodswap(icold) + 1
               icorig = ptcl2%ic
            endif
         endif
@@ -258,7 +268,7 @@ subroutine particle_advance
 !-- outbound luminosity tally
         if(ptcl2%lflux) then
            nflux = nflux + 1
-           if(icorig>0) grd_numfluxorig(icorig) = grd_numfluxorig(icorig) + 1
+           if(icorig>0 .and. grd_ltally) grd_numfluxorig(icorig) = grd_numfluxorig(icorig) + 1
            tot_eout = tot_eout+e
 !-- retrieving lab frame flux group, polar, azimuthal bin
            ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
@@ -308,9 +318,11 @@ subroutine particle_advance
 !-- tally census
         if(ptcl2%lcens) then
            if(ptcl2%itype==1) then
-              grd_numcensimc(ic) = grd_numcensimc(ic) + 1
+              ncensimc = ncensimc + 1
+              if(grd_ltally) grd_numcensimc(ic) = grd_numcensimc(ic) + 1
            else
-              grd_numcensddmc(ic) = grd_numcensddmc(ic) + 1
+              ncensddmc = ncensddmc + 1
+              if(grd_ltally) grd_numcensddmc(ic) = grd_numcensddmc(ic) + 1
            endif
         endif
 
@@ -526,9 +538,9 @@ subroutine particle_advance
   call counterreg(ct_npstepimc, nstepimc)
   call counterreg(ct_npstepddmc, nstepddmc)
   call counterreg(ct_npstepmax, nstepmax)
-  call counterreg(ct_npcensimc, sum(grd_numcensimc))
-  call counterreg(ct_npcensddmc, sum(grd_numcensddmc))
-  call counterreg(ct_npmethswap, sum(grd_methodswap))
+  call counterreg(ct_npcensimc, ncensimc)
+  call counterreg(ct_npcensddmc, ncensddmc)
+  call counterreg(ct_npmethswap, nmethodswap)
   call counterreg(ct_npflux, nflux)
 
 

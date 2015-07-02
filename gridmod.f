@@ -6,6 +6,8 @@ c
 c
       integer :: grd_igeom = 0
 c
+      logical :: grd_ltally = .false.
+c
       integer,private :: ng=0
 c
       integer :: grd_nep=0 !number of emission probability bins
@@ -92,14 +94,14 @@ c
       contains
 c
       subroutine gridmod_init(ltalk,ngin,igeom,ndim,ncell,idd1,ndd,
-     &  lvoid,isvelocity)
+     &  lvoid,isvelocity,ltally)
 c     -------------------------------------------------------------!{{{
       implicit none
       logical,intent(in) :: ltalk,isvelocity
       integer,intent(in) :: ngin,igeom
       integer,intent(in) :: ndim(3)
       integer,intent(in) :: ncell,idd1,ndd
-      logical,intent(in) :: lvoid
+      logical,intent(in) :: lvoid,ltally
 ************************************************************************
 * Allocate grd variables.
 *
@@ -109,6 +111,8 @@ c     -------------------------------------------------------------!{{{
       integer :: n
 c
       grd_igeom = igeom
+c
+      grd_ltally = ltally
 c
       ng = ngin
 c
