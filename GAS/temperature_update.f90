@@ -18,7 +18,6 @@ subroutine temperature_update
 
   !calculating radiation energy density
   gas_eraddens = gas_eraddens/gas_vol
-  gas_eraddens = gas_eraddens
 
 !-- calculating temperature
   if(allocated(grd_temppreset)) then
@@ -35,7 +34,7 @@ subroutine temperature_update
            dtemp2 = (gas_fcoef(i)/gas_bcoef(i))*tsp_dt* &
                 gas_matsrc(i)
            gas_temp(i) = gas_temp(i)+dtemp+dtemp2
-        elseif(gas_rho(i)>0d0.and.any(gas_cap(:,i)>0d0)) then
+        elseif(gas_capgrey(i)>0d0) then
            gas_temp(i) = max(1000d0,(gas_eraddens(i)/pc_acoef)**(.25d0))
         else
 !-- void?

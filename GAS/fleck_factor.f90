@@ -27,7 +27,7 @@ subroutine fleck_factor(tempalt,capgreyalt)
      elseif(gas_capgrey(i)<=0d0.or.capgreyalt(i)<=0d0) then
         beta = 4.0*gas_ur(i)/Um
      else
-        if(.not.in_ismodimc .or. gas_temp(i)==tempalt(i)) then
+        if(.not.in_ismodimc .or. gas_temp(i)==tempalt(i) .or. gas_eraddens(i)==0d0) then
            beta2 = 0d0
         else
            dlogsig = log(gas_capgrey(i)/(capgreyalt(i)*gas_rho(i)))/& !-- convert from per gram
