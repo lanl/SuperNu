@@ -323,14 +323,14 @@ c     ------------------------------------!{{{
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
 ************************************************************************
-      real*8 :: snd(grd_ncell)
+      real*8 :: snd(2,grd_ncell)
       real*8 :: t0,t1
 c
       call mpi_barrier(MPI_COMM_WORLD,ierr)
       t0 = t_time()
 c
-      snd = grd_edep
-      call mpi_allreduce(snd,grd_edep,grd_ncell,MPI_REAL8,MPI_SUM,
+      snd = grd_tally
+      call mpi_allreduce(snd,grd_tally,2*grd_ncell,MPI_REAL8,MPI_SUM,
      &  MPI_COMM_WORLD,ierr)
 c
       t1 = t_time()
@@ -454,12 +454,13 @@ c     -----------------------!{{{
 * temperature correction.
 ************************************************************************
       integer :: n
-      integer :: isnd(grd_ncell)
-      real*8 :: snd(grd_ncell)
-      integer :: isnd3f(flx_ng,flx_nmu,flx_nom)
-      real*8 :: snd3f(flx_ng,flx_nmu,flx_nom)
+      integer,allocatable :: isnd(:)
+      real*8,allocatable :: snd(:)
+      real*8,allocatable :: snd2(:,:)
       integer :: isnd2f(flx_nmu,flx_nom)
+      integer :: isnd3f(flx_ng,flx_nmu,flx_nom)
       real*8 :: snd2f(flx_nmu,flx_nom)
+      real*8 :: snd3f(flx_ng,flx_nmu,flx_nom)
       real*8 :: help
       real*8 :: t0,t1
 c
@@ -495,6 +496,7 @@ c
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- dim==3
+      allocate(isnd(grd_ncell))
       n = grd_ncell
       isnd = grd_numcensimc
       call mpi_reduce(isnd,grd_numcensimc,n,MPI_INTEGER,MPI_SUM,
@@ -511,14 +513,13 @@ c
       isnd = grd_methodswap
       call mpi_reduce(isnd,grd_methodswap,n,MPI_INTEGER,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
+      deallocate(isnd)
 c
-      snd = grd_edep
-      call mpi_reduce(snd,grd_edep,n,MPI_REAL8,MPI_SUM,
+      allocate(snd2(2,grd_ncell))
+      snd2 = grd_tally
+      call mpi_reduce(snd2,grd_tally,2*n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
-c
-      snd = grd_eraddens
-      call mpi_reduce(snd,grd_eraddens,n,MPI_REAL8,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
+      deallocate(snd2)
 c
 c-- bcast
       src_nflux = sum(flx_lumnum)
@@ -526,12 +527,17 @@ c-- bcast
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- scatter
-      call mpi_scatterv(grd_edep,counts,displs,MPI_REAL8,
+      allocate(snd(grd_ncell))
+      snd = grd_tally(1,:)
+      call mpi_scatterv(snd,counts,displs,MPI_REAL8,
      &  gas_edep,gas_ncell,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
-      call mpi_scatterv(grd_eraddens,counts,displs,MPI_REAL8,
+c
+      snd = grd_tally(2,:)
+      call mpi_scatterv(snd,counts,displs,MPI_REAL8,
      &  gas_eraddens,gas_ncell,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
+      deallocate(snd)
 c
 c-- timing statistics
       help = t_pckt_stat(1)

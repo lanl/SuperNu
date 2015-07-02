@@ -191,9 +191,9 @@ program supernu
         call allgather_gammacap
         call particle_advance_gamgrey(nmpi)
         call allreduce_gammaenergy !MPI
-!       grd_edep = grd_emitex !for testing: local deposition
+!       grd_tally(1,:) = grd_emitex !for testing: local deposition
      else
-        grd_edep = 0d0
+        grd_tally(1,:) = 0d0 !edep
      endif
 
 !-- gather from gas workers and broadcast to world ranks

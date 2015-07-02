@@ -75,8 +75,7 @@ subroutine particle_advance
 !-- energy tallies
   tot_erad = 0d0
 
-  grd_edep = 0d0
-  grd_eraddens = 0d0
+  grd_tally = 0d0
   if(.not.in_trn_noamp) grd_eamp = 0d0
 
   flx_luminos = 0d0
@@ -104,14 +103,13 @@ subroutine particle_advance
   ndist = 0
 
 !$omp parallel &
-!$omp shared(thelp,flx_luminos,flx_lumnum,flx_lumdev, &
-!$omp    grd_numcensimc,grd_numcensddmc,grd_numfluxorig,grd_eamp,grd_methodswap) &
+!$omp shared(thelp) &
 !$omp private(ptcl,ptcl2, &
 !$omp    x,y,z,mu,om,wl,e,e0,icorig,ix,iy,iz,ic,ig,icold,r1, &
 !$omp    t0,t1,x1,x2,help,tau, &
 !$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
 !$omp    rndstate,edep,eraddens,eamp,icell,specarr,ierr, iomp) &
-!$omp reduction(+:grd_edep,grd_eraddens, &
+!$omp reduction(+:grd_tally, &
 !$omp    tot_evelo,tot_erad,tot_eout, &
 !$omp    npckt,nflux,nstepddmc,nstepimc,nmethodswap,ncensimc,ncensddmc,ndist) &
 !$omp reduction(max:nstepmax)
@@ -262,8 +260,7 @@ subroutine particle_advance
         endif
         ndist(ptcl2%idist) = ndist(ptcl2%idist) + 1
 !-- tally rest
-        grd_edep(icold) = grd_edep(icold) + edep
-        grd_eraddens(icold) = grd_eraddens(icold) + eraddens
+        grd_tally(:,icold) = grd_tally(:,icold) + [edep,eraddens]
 !
 !-- outbound luminosity tally
         if(ptcl2%lflux) then
@@ -303,7 +300,7 @@ subroutine particle_advance
            if(r1<0.5d0) then
               ptcl2%isvacant = .true.
               ptcl2%done = .true.
-              grd_edep(ic) = grd_edep(ic) + e*labfact
+              grd_tally(1,ic) = grd_tally(1,ic) + e*labfact
 !-- velocity effects accounting
               if(ptcl2%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
            else

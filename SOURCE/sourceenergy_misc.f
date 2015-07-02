@@ -14,16 +14,16 @@ c
 c-- dump whole profile (1D only)
 !      do i=grd_nx,1,-1
 !       l = grd_icell(i,1,1)
-!       write(6,*) 65-i,grd_emitex(l)/tsp_dt,grd_edep(l)/tsp_dt,
-!     &   grd_edep(l)/grd_emitex(l)
+!       write(6,*) 65-i,grd_emitex(l)/tsp_dt,grd_tally(1,l)/tsp_dt,
+!     &   grd_tally(1,l)/grd_emitex(l)
 !      enddo
 c
 c-- sanity check energy deposition
-      if(any(grd_edep<0d0)) stop 'sourceenergy_misc: negative energy'
+      if(any(grd_tally(1,:)<0d0)) stop 'sourceenergy_misc: energy<0'
 c
 c-- gamma deposition is energy source
-      grd_emit = grd_emit + grd_edep
-      if(lmpi0) tot_sdeposgamma = sum(grd_edep)
+      grd_emit = grd_emit + grd_tally(1,:)
+      if(lmpi0) tot_sdeposgamma = sum(grd_tally(1,:))
 c-- clear eamp in the dummy cell
       if(grd_lvoid) grd_eamp(grd_ncell) = 0d0
 c-- 'particle-amplification' factor
@@ -34,6 +34,6 @@ c-- verify zero emission energy in dummy cell
      &  stop 'soureceenergy_misc: emission energy in dummy cell'
 c
 c-- add gamma radiation source tot total
-      if(lmpi0) tot_eext = tot_eext + sum(grd_edep)
+      if(lmpi0) tot_eext = tot_eext + sum(grd_tally(1,:))
 c
       end subroutine sourceenergy_misc

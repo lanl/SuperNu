@@ -53,11 +53,9 @@ c-- Fleck factor
       real*8,allocatable :: grd_fcoef(:)  !(ncell)
 
 
-c-- energy absorbed by material
-      real*8,allocatable :: grd_edep(:)   !(ncell)
+      real*8,allocatable :: grd_tally(:,:)   !(2,ncell) (edep,eraddens)
+c-- amplification factor excess
       real*8,allocatable :: grd_eamp(:)   !(ncell)
-c-- radiation energy density in tsp_dt
-      real*8,allocatable :: grd_eraddens(:) !(ncell)
 
 
 c-- number of IMC-DDMC method changes per cell per time step
@@ -151,12 +149,11 @@ c---------------------------------------
       endif
 c
 c-- ndim=3 alloc
-      allocate(grd_edep(grd_ncell))
+      allocate(grd_tally(2,grd_ncell))
       allocate(grd_eamp(grd_ncell))
       allocate(grd_capgrey(grd_ncell))
       allocate(grd_sig(grd_ncell))
       allocate(grd_fcoef(grd_ncell))
-      allocate(grd_eraddens(grd_ncell))
       allocate(grd_temp(grd_ncell))
       allocate(grd_vol(grd_ncell))
 c
@@ -193,12 +190,11 @@ c-- polar
 c-- complete domain
       deallocate(grd_icell)
 c-- gasmod
-      deallocate(grd_edep)
+      deallocate(grd_tally)
       deallocate(grd_eamp)
       deallocate(grd_capgrey)
       deallocate(grd_sig)
       deallocate(grd_fcoef)
-      deallocate(grd_eraddens)
       deallocate(grd_temp)
       deallocate(grd_vol)
 c

@@ -55,7 +55,7 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- start clock
   t0 = t_time()
 
-  grd_edep = 0d0
+  grd_tally = 0d0
   flx_gamluminos = 0d0
   flx_gamlumdev = 0d0
   flx_gamlumnum = 0
@@ -123,7 +123,7 @@ subroutine particle_advance_gamgrey(nmpi)
 !$omp    rndstate,edep,ierr, iomp, &
 !$omp    x,y,z,mu,om,e,e0,ix,iy,iz,ic,icold,r1, &
 !$omp    i,j,k) &
-!$omp reduction(+:grd_edep,flx_gamluminos,flx_gamlumnum,flx_gamlumdev)
+!$omp reduction(+:grd_tally,flx_gamluminos,flx_gamlumnum,flx_gamlumdev)
 
 !-- thread id                                                               
 !$ iomp = omp_get_thread_num()
@@ -317,7 +317,7 @@ subroutine particle_advance_gamgrey(nmpi)
         icold = ic
         call transport_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !-- tally
-        grd_edep(icold) = grd_edep(icold) + edep
+        grd_tally(1,icold) = grd_tally(1,icold) + edep
 !
 !-- outbound luminosity tally
         if(ptcl2%lflux) then
@@ -351,7 +351,7 @@ subroutine particle_advance_gamgrey(nmpi)
               endif
 !
               ptcl2%done = .true.
-              grd_edep(ic) = grd_edep(ic) + e*labfact
+              grd_tally(1,ic) = grd_tally(1,ic) + e*labfact
            else
               e = 2d0*e
               e0 = 2d0*e0
