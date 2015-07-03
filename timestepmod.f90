@@ -8,7 +8,7 @@ module timestepmod
   real*8 :: tsp_t
   real*8,allocatable :: tsp_tpreset(:)  !store preset time steps from input.tsp_time
   real*8 :: tsp_tcenter
-  real*8 :: tsp_dt
+  real*8 :: tsp_dt,tsp_dtinv
 
   private read_timestep_preset
 
@@ -49,6 +49,7 @@ module timestepmod
 !-- preset time step sizes
     if(allocated(tsp_tpreset)) then
        tsp_dt = tsp_tpreset(tsp_it+1) - tsp_tpreset(tsp_it)
+       tsp_dtinv = 1d0/tsp_dt
        tsp_t = tsp_tpreset(tsp_it)
        tsp_tcenter = .5*(tsp_tpreset(tsp_it+1) + tsp_tpreset(tsp_it))
        return
@@ -56,6 +57,7 @@ module timestepmod
 !
 !-- update time step size
     tsp_dt = dt
+    tsp_dtinv = 1d0/dt
 !
 !-- update time
     if(tsp_it==tsp_ntres) then

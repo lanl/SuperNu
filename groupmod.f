@@ -6,6 +6,16 @@ c-- wavelength grid (gridmod has a copy as well)
       real*8,allocatable :: grp_wl(:) !(grp_ng) wavelength grid
       real*8,allocatable :: grp_wlinv(:) !(grp_ng) wavelength grid
 c
+      type grp_t_cache
+       integer :: ic=0
+       integer :: nlump !number of groups in the lump
+       real*8 :: tempinv,capgreyinv
+       real*8 :: speclump,emitlump,caplump
+       real*8,pointer :: specarr(:) !(grp_ng)
+       integer,pointer :: glumps(:) !(grp_ng)
+       logical,pointer :: llumps(:) !(grp_ng) this group belongs to the lump
+      end type grp_t_cache
+c
       save
 c
       contains

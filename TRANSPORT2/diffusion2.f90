@@ -1,4 +1,4 @@
-pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,ierr)
+pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr)
 
   use randommod
   use miscmod
@@ -13,11 +13,10 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !
   type(packet),target,intent(inout) :: ptcl
   type(packet2),target,intent(inout) :: ptcl2
+  type(grp_t_cache),target,intent(inout) :: cache
   type(rnd_t),intent(inout) :: rndstate
   real*8,intent(out) :: edep, eraddens
   real*8,intent(inout) :: totevelo
-  integer,intent(inout) :: icspec
-  real*8,intent(inout) :: specarr(grp_ng)
   integer,intent(out) :: ierr
 !##################################################
   !This subroutine passes particle parameters as input and modifies
@@ -47,6 +46,7 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
   integer :: glumps(grp_ng)
   real*8 :: dtinv, tempinv, capgreyinv
   real*8 :: dist, help
+  real*8 :: specarr(grp_ng)
 
   integer,pointer :: ix, iy, ic, ig
   integer,parameter :: iz=1
@@ -119,8 +119,8 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 
 !
 !-- only do this if needed
-  if(glump>0 .and. icspec/=ic) then
-     icspec = ic
+  if(glump>0 .and. cache%ic/=ic) then
+     cache%ic = ic
      specarr = specintv(tempinv,0) !this is slow!
   endif
 
@@ -774,8 +774,8 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
         endif
      else
 !-- this is needed now and may be useful in following steps
-        if(icspec/=ic) then
-           icspec = ic
+        if(cache%ic/=ic) then
+           cache%ic = ic
            specarr = specintv(tempinv,0) !this is slow!
         endif
 !

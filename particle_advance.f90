@@ -44,12 +44,14 @@ subroutine particle_advance(lmpi0)
   integer :: icold, ierr
   real*8 :: edep, eraddens, eamp
 !-- specint cache
-  real*8 :: specarr(grp_ng)
-  integer :: icell
   integer :: nstepmax, ndist(-3:7)
 !
   type(packet),target :: ptcl
   type(packet2),target :: ptcl2
+  type(grp_t_cache),target :: cache
+  real*8,target :: specarr(grp_ng)
+  integer,target :: glumps(grp_ng)
+  logical,target :: llumps(grp_ng)
 !
   type(rnd_t) :: rndstate
   integer,save :: iomp=0
@@ -106,11 +108,12 @@ subroutine particle_advance(lmpi0)
 
 !$omp parallel &
 !$omp shared(thelp) &
-!$omp private(ptcl,ptcl2, &
+!$omp private(ptcl,ptcl2,cache, &
+!$omp    specarr,glumps,llumps, &
 !$omp    x,y,z,mu,om,wl,e,e0,icorig,ix,iy,iz,ic,ig,icold,r1, &
 !$omp    i,t0,t1,x1,x2,help,tau, &
 !$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
-!$omp    rndstate,edep,eraddens,eamp,icell,specarr,ierr, iomp) &
+!$omp    rndstate,edep,eraddens,eamp,ierr, iomp) &
 !$omp reduction(+:grd_tally, &
 !$omp    tot_evelo,tot_erad,tot_eout, &
 !$omp    npckt,nflux,nstepddmc,nstepimc,nmethodswap,ncensimc,ncensddmc,ndist) &
@@ -145,8 +148,10 @@ subroutine particle_advance(lmpi0)
   iz => ptcl2%iz
   ic => ptcl2%ic
   ig => ptcl2%ig
-
-  icell = 0
+!-- alloc
+  cache%specarr => specarr
+  cache%glumps => glumps
+  cache%llumps => llumps
 
 !$omp do schedule(static,1) !round-robin
   do ipart=1,prt_npartmax
@@ -252,7 +257,7 @@ subroutine particle_advance(lmpi0)
            if(.not.in_trn_noamp) grd_eamp(icold) = grd_eamp(icold) + eamp
         else
            nstepddmc = nstepddmc + 1
-           call diffusion(ptcl,ptcl2,rndstate,edep,eraddens,tot_evelo,icell,specarr,ierr)
+           call diffusion(ptcl,ptcl2,cache,rndstate,edep,eraddens,tot_evelo,ierr)
            if(ptcl2%itype==1) then
               nmethodswap = nmethodswap + 1
               if(grd_ltally) grd_methodswap(icold) = grd_methodswap(icold) + 1

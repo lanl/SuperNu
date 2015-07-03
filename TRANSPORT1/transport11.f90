@@ -31,7 +31,6 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   real*8 :: siglabfact, dcollabfact, elabfact
   real*8 :: xold, P, muold
 ! real*8 :: x1, x2, xx0
-  real*8 :: dtinv
   real*8 :: help
   real*8 :: ppl, ppr
 !-- distance out of physical reach
@@ -62,9 +61,6 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   eraddens = 0d0
   eamp = 0d0
 !
-!-- shortcut
-  dtinv = 1d0/tsp_dt
-
   if(grd_isvelocity) then
      siglabfact = 1d0 - mu*x*cinv
      dcollabfact = tsp_t*(1d0-mu*x*cinv)
@@ -178,7 +174,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
              elabfact/(grd_fcoef(ic)*siglabfact*grd_cap(ig,ic)*pc_c*tsp_dt)
      else
         eraddens = e* &
-             elabfact*d*dcollabfact*cinv*dtinv
+             elabfact*d*dcollabfact*cinv*tsp_dtinv
      endif
      !--
 !     e = e*exp(-grd_fcoef(ic)*grd_cap(ig,ic)*d*dcollabfact)
@@ -187,7 +183,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   else
      !
      eraddens = e* &
-          elabfact*d*dcollabfact*cinv*dtinv
+          elabfact*d*dcollabfact*cinv*tsp_dtinv
   endif
 
 !-- transformation factor reset
@@ -206,10 +202,8 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*(1d0-mu*x*cinv)
      else
         call rnd_r(r1,rndstate)
-!     wl = r1*grp_wl(grp_ng)+(1d0-r1)*grp_wl(grp_ng+1) !uniform sample
         wl=1d0/(r1*grp_wlinv(grp_ng+1) + (1d0-r1)*grp_wlinv(grp_ng))  !reciprocal sample
         wl = wl*(1d0-mu*x*cinv)
-!        wl = grp_wl(grp_ng+1)*(1d0-mu*x*cinv)
      endif
 !-- check if ddmc region
      if (((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)* &

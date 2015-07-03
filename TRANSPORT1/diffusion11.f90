@@ -1,4 +1,4 @@
-pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,specarr,ierr)
+pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr)
 
   use randommod
   use miscmod
@@ -13,11 +13,10 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
 !
   type(packet),target,intent(inout) :: ptcl
   type(packet2),target,intent(inout) :: ptcl2
+  type(grp_t_cache),target,intent(inout) :: cache
   type(rnd_t),intent(inout) :: rndstate
   real*8,intent(out) :: edep, eraddens
   real*8,intent(inout) :: totevelo
-  integer,intent(inout) :: icspec
-  real*8,intent(inout) :: specarr(grp_ng)
   integer,intent(out) :: ierr
 !##################################################
   !This subroutine passes particle parameters as input and modifies
@@ -27,7 +26,6 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
   !is set to true, this routine is not used.
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
-  real*8,parameter :: deleff=0.38d0
 !
   integer :: iig, iiig
   logical :: lhelp
@@ -36,16 +34,18 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
   real*8 :: ddmct, tau, tcensus, pa
 !-- lumped quantities -----------------------------------------
 
-  real*8 :: emitlump, speclump
-  real*8 :: caplump
   real*8 :: specig
   real*8 :: mfphelp, ppl, ppr
   real*8 :: opacleak(2)
   real*8 :: probleak(2)
   real*8 :: resopacleak
   integer :: glump, gunlump
-  integer :: glumps(grp_ng)
-  real*8 :: dtinv, tempinv, capgreyinv
+  integer,pointer :: glumps(:)
+  logical,pointer :: llumps(:)
+  real*8,pointer :: specarr(:)
+  real*8,pointer :: tempinv, capgreyinv
+  real*8,pointer :: speclump
+  real*8 :: emitlump, caplump
   real*8 :: dist, help
 
   integer,pointer :: ix, ic, ig
@@ -66,16 +66,18 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
   e0 => ptcl%e0
   wl => ptcl%wl
 
+  tempinv => cache%tempinv
+  capgreyinv => cache%capgreyinv
+  speclump => cache%speclump
+  glumps => cache%glumps
+  llumps => cache%llumps
+  specarr => cache%specarr
+
 !-- no error by default
   ierr = 0
 !-- init
   edep = 0d0
   eraddens = 0d0
-!
-!-- shortcuts
-  dtinv = 1d0/tsp_dt
-  tempinv = 1d0/grd_temp(ic)
-  capgreyinv = max(1d0/grd_capgrey(ic),0d0) !catch nans
 
 !
 !-- set expansion helper
@@ -84,66 +86,57 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
   else
      thelp = 1d0
   endif
+  dist = dx(ix)*thelp
+
+!
+!-- update cache
+  if(ic/=cache%ic) then
+     cache%ic = ic!{{{
+     tempinv = 1d0/grd_temp(ic)
+     capgreyinv = max(1d0/grd_capgrey(ic),0d0) !catch nans
 
 !
 !-- lump testing ---------------------------------------------
-  glump = 0
-  gunlump = grp_ng
-  glumps = 0
+     glump = 0
+     gunlump = grp_ng
+     glumps = 0
 !
 !-- find lumpable groups
-  dist = dx(ix)*thelp
-  if(grd_cap(ig,ic)*dist >= prt_taulump) then
      do iig=1,grp_ng
         if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
              (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
+           llumps(iig) = .true.
            glump=glump+1
            glumps(glump)=iig
         else
+           llumps(iig) = .false.
            glumps(gunlump)=iig
            gunlump=gunlump-1
         endif
      enddo
-  endif
-! write(0,*) ptcl2%ipart,ptcl2%istep,glump,ig,ix
-!
-!-- sanity check
-  if((grd_sig(ic) + grd_cap(ig,ic))*dist < prt_tauddmc) then
-     ierr = 100
-     return
-  endif
-
 !
 !-- only do this if needed
-  if(glump>0 .and. icspec/=ic) then
-     icspec = ic
-     specarr = specintv(tempinv,0) !this is slow!
-  endif
-
+     specarr = specintv(tempinv,0) !this is slow!  TODO: mask
 !
 !-- lumping
-  speclump = 0d0
-  do iig=1,glump
-     iiig = glumps(iig)
-     specig = specarr(iiig)
-     speclump = speclump + specig
-  enddo
-  if(speclump>0d0) then
-     speclump = 1d0/speclump
-  else
      speclump = 0d0
-  endif
-
-!write(0,*) impi,glump,speclump
+     do iig=1,glump
+        iiig = glumps(iig)
+        speclump = speclump + specarr(iiig)
+     enddo
+     if(speclump>0d0) then
+        speclump = 1d0/speclump
+     else
+        speclump = 0d0
+     endif
 !
-  emitlump = 0d0
-  caplump = 0d0
 !-- calculate lumped values
-  if(glump>0 .and. speclump>0d0) then
-     if(glump==grp_ng) then!{{{
+     if(glump==grp_ng) then
         emitlump = 1d0
         caplump = grd_capgrey(ic)
      else
+        emitlump = 0d0
+        caplump = 0d0
         do iig=1,glump
            iiig = glumps(iig)
            specig = specarr(iiig)
@@ -154,13 +147,46 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
         enddo
         emitlump = min(emitlump,1d0)
      endif
+!
+!-- save
+     cache%nlump = glump
+     cache%emitlump = emitlump
+     cache%caplump = caplump
+!}}}
+  endif !cache%ic /= ic
+
+!
+!-- in lump?
+  if(grd_cap(ig,ic)*dist >= prt_taulump) then
+     glump = cache%nlump
+  else
+     glump = 0
+  endif
+!
+!-- sanity check
+  if((grd_sig(ic) + grd_cap(ig,ic))*dist < prt_tauddmc) then
+     ierr = 100
+     return
+  endif
+!
+!-- retrieve from cache
+  if(glump>0 .and. speclump>0d0) then
+     emitlump = cache%emitlump
+     caplump = cache%caplump
+  else
+!-- outside the lump
+     emitlump = specint0(tempinv,ig)*capgreyinv*grd_cap(ig,ic)
+     caplump = grd_cap(ig,ic)
+  endif
+
+
+
+
+  if(glump>0 .and. speclump>0d0) then
 !-- leakage opacities
      opacleak = grd_opacleak(:2,ic)
-!!}}}
 !-- calculating unlumped values
   else
-     emitlump = specint0(tempinv,ig)*capgreyinv*grd_cap(ig,ic)!{{{
-     caplump = grd_cap(ig,ic)
 !-- inward
      if(ix/=1) l = grd_icell(ix-1,iy,iz)
      if(ix==1) then
@@ -201,7 +227,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
              (grd_sig(l)+grd_cap(ig,l))*dx(ix+1))*thelp
         opacleak(2)=2.0d0*(thelp*grd_xarr(ix+1))**2/ &
              (mfphelp*thelp**3*dx3(ix))
-     endif!}}}
+     endif
   endif
 !
 !-------------------------------------------------------------
@@ -216,14 +242,14 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
   denom = 1d0/denom
 
   call rnd_r(r1,rndstate)
-  tau = abs(log(r1)*denom/pc_c)
+  tau = abs(log(r1)*denom*cinv)
   tcensus = tsp_t+tsp_dt-ptcl%t
   ddmct = min(tau,tcensus)
 
 !
 !-- calculating energy depostion and density
   if(prt_isddmcanlog) then
-     eraddens = e*ddmct*dtinv
+     eraddens = e*ddmct*tsp_dtinv
   else
      edep = e*(1d0-exp(-grd_fcoef(ic) &!{{{
           *caplump*pc_c*ddmct))
@@ -231,9 +257,9 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
         help = 1d0/(grd_fcoef(ic)*caplump)
         eraddens = e* &
              (1d0-exp(-grd_fcoef(ic)*caplump*pc_c*ddmct))* &
-             help*cinv*dtinv
+             help*cinv*tsp_dtinv
      else
-        eraddens  = e*ddmct*dtinv
+        eraddens  = e*ddmct*tsp_dtinv
      endif
      e = e*exp(-grd_fcoef(ic)*caplump*pc_c*ddmct)
 !!}}}
@@ -289,7 +315,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
      else
 
         l = grd_icell(ix-1,iy,iz)
-        if(speclump<=0d0) then
+        if(glump==0 .or. speclump<=0d0) then
            iiig = ig
         else
            call rnd_r(r1,rndstate)
@@ -364,7 +390,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
         call rnd_r(r1,rndstate)
         call rnd_r(r2,rndstate)
         mu = max(r1,r2)
-        if(speclump<=0d0) then
+        if(glump==0 .or. speclump<=0d0) then
         else
            call rnd_r(r1,rndstate)
            denom2 = 0d0
@@ -401,7 +427,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
 
         l = grd_icell(ix+1,iy,iz)
 !-- sample adjacent group (assumes aligned ig bounds)
-        if(speclump<=0d0) then
+        if(glump==0 .or. speclump<=0d0) then
            iiig = ig
         else
            call rnd_r(r1,rndstate)
@@ -484,14 +510,7 @@ pure subroutine diffusion11(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,sp
            return
         endif
      else
-!-- this is needed now and may be useful in following steps
-        if(icspec/=ic) then
-           icspec = ic
-           specarr = specintv(tempinv,0) !this is slow!
-        endif
-!
-        denom2 = 1d0-emitlump
-        denom2 = 1d0/denom2
+        denom2 = 1d0/(1d0-emitlump)
         denom3 = 0d0
         do iig=glump+1,grp_ng
            iiig = glumps(iig)
