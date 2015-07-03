@@ -347,9 +347,10 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
   if(prt_isddmcanlog) then
      denom = denom+grd_fcoef(ic)*caplump
   endif
+  denom = 1d0/denom
 
   call rnd_r(r1,rndstate)
-  tau = abs(log(r1)/(pc_c*denom))
+  tau = abs(log(r1)*denom/pc_c)
   tcensus = tsp_t+tsp_dt-ptcl%t
   ddmct = min(tau,tcensus)
 
@@ -396,27 +397,28 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 
 !-- otherwise, perform event
   call rnd_r(r1,rndstate)
-  help = 1d0/denom
 
 !-- leakage probabilities
-  probleak = opacleak*help
+  probleak = opacleak*denom
 !  write(*,*) probleak
 !-- absorption probability
   if(prt_isddmcanlog) then
-     pa = grd_fcoef(ic)*caplump*help
+     pa = grd_fcoef(ic)*caplump*denom
   else
      pa = 0d0
   endif
 
 !-- absorption
   if(r1<pa) then
+     ptcl2%idist = -1
      ptcl2%isvacant = .true.
      ptcl2%done = .true.
      edep = e
 
 !-- ix->ix-1 leakage
   elseif(r1>=pa.and.r1<pa+probleak(1)) then
-!-- sanity check
+     ptcl2%idist = -3
+!-- sanity check!{{{
      if(ix==1) then
 !       write(0,*) stop 'diffusion1: invalid probleak(1)'
         ierr = 102
@@ -510,11 +512,12 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !-- update particle: ix->ix-1
      ix = ix-1
      ic = grd_icell(ix,iy,iz)
-     ig = iiig
+     ig = iiig!}}}
 
 !-- ix->ix+1 leakage
   elseif(r1>=pa+probleak(1).and.r1<pa+sum(probleak(1:2))) then
-
+     ptcl2%idist = -4
+!{{{
 !-- sampling next group
      if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
      if(speclump<=0d0) then
@@ -628,11 +631,12 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !-- update particle: ix->ix+1
      ix = ix+1
      ic = grd_icell(ix,iy,iz)
-     ig = iiig
+     ig = iiig!}}}
 
 !-- iy->iy-1 leakage
   elseif(r1>=pa+sum(probleak(1:2)).and.r1<pa+sum(probleak(1:3))) then
-!-- sanity check
+     ptcl2%idist = -5
+!-- sanity check!{{{
      if(grd_ny==1) then
 !       stop 'diffusion1: probleak(3) and grd_ny=1'
         ierr = 103
@@ -737,11 +741,12 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !-- update particle: iy->iy+1
      iy = iy-1
      ic = grd_icell(ix,iy,iz)
-     ig = iiig
+     ig = iiig!}}}
 
 !-- iy->iy+1 leakage
   elseif(r1>=pa+sum(probleak(1:3)).and.r1<pa+sum(probleak(1:4))) then
-!-- sanity check
+     ptcl2%idist = -6
+!-- sanity check!{{{
      if(grd_ny==1) then
 !       stop 'diffusion1: probleak(4) and grd_ny=1'
         ierr = 105
@@ -845,11 +850,12 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !-- update particle: iy->iy+1
      iy = iy+1
      ic = grd_icell(ix,iy,iz)
-     ig = iiig
+     ig = iiig!}}}
 
 !-- iz->iz-1 leakage
   elseif(r1>=pa+sum(probleak(1:4)).and.r1<pa+sum(probleak(1:5))) then
-!-- sanity check
+     ptcl2%idist = -7
+!-- sanity check!{{{
      if(grd_nz==1) then
 !       stop 'diffusion1: probleak(5) and grd_nz=1'
         ierr = 107
@@ -958,11 +964,12 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !-- update particle: iz->iz-1
      iz = iznext
      ic = grd_icell(ix,iy,iz)
-     ig = iiig
+     ig = iiig!}}}
 
 !-- iz->iz+1 leakage
   elseif(r1>=pa+sum(probleak(1:5)).and.r1<pa+sum(probleak(1:6))) then
-!-- sanity check
+     ptcl2%idist = -8
+!-- sanity check!{{{
      if(grd_nz==1) then
 !       stop 'diffusion1: probleak(6) and grd_nz=1'
         ierr = 108
@@ -1071,11 +1078,12 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 !-- update particle: iz->iz+1
      iz = iznext
      ic = grd_icell(ix,iy,iz)
-     ig = iiig
+     ig = iiig!}}}
 
 !-- effective scattering
   else
-!
+     ptcl2%idist = -2
+!!{{{
      if(glump==grp_ng) then
 !       stop 'diffusion1: effective scattering with glump==ng'
         ierr = 109
@@ -1155,7 +1163,7 @@ pure subroutine diffusion1(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
            e0 = e0*help
         endif
      endif
-
+!}}}
   endif
 
   if(lredir) then

@@ -223,7 +223,7 @@ program supernu
 
 !-- advance particles
      t_timelin(5) = t_time() !timeline
-     call particle_advance
+     call particle_advance(lmpi0)
      call reduce_tally !MPI  !collect particle results from all workers
      t_timelin(6) = t_time() !timeline
 

@@ -1,4 +1,4 @@
-subroutine particle_advance
+subroutine particle_advance(lmpi0)
 
 !$ use omp_lib
   use randommod
@@ -15,6 +15,7 @@ subroutine particle_advance
   use countersmod
   use fluxmod
   implicit none
+  logical,intent(in) :: lmpi0
 !
 !##################################################
   !This subroutine propagates all existing particles that are not vacant
@@ -25,6 +26,7 @@ subroutine particle_advance
   !total subroutine calls in program.
 !##################################################
   real*8,parameter :: cinv=1d0/pc_c
+  integer :: i
   integer :: nstepddmc, nstepimc, nmethodswap, ncensimc, ncensddmc, npckt, nflux
   real*8 :: r1, x1, x2, thelp, help, tau
 ! integer :: irl,irr
@@ -44,7 +46,7 @@ subroutine particle_advance
 !-- specint cache
   real*8 :: specarr(grp_ng)
   integer :: icell
-  integer :: nstepmax, ndist(-1:7)
+  integer :: nstepmax, ndist(-3:7)
 !
   type(packet),target :: ptcl
   type(packet2),target :: ptcl2
@@ -106,7 +108,7 @@ subroutine particle_advance
 !$omp shared(thelp) &
 !$omp private(ptcl,ptcl2, &
 !$omp    x,y,z,mu,om,wl,e,e0,icorig,ix,iy,iz,ic,ig,icold,r1, &
-!$omp    t0,t1,x1,x2,help,tau, &
+!$omp    i,t0,t1,x1,x2,help,tau, &
 !$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
 !$omp    rndstate,edep,eraddens,eamp,icell,specarr,ierr, iomp) &
 !$omp reduction(+:grd_tally, &
@@ -250,7 +252,6 @@ subroutine particle_advance
            if(.not.in_trn_noamp) grd_eamp(icold) = grd_eamp(icold) + eamp
         else
            nstepddmc = nstepddmc + 1
-           ptcl2%idist = -1
            call diffusion(ptcl,ptcl2,rndstate,edep,eraddens,tot_evelo,icell,specarr,ierr)
            if(ptcl2%itype==1) then
               nmethodswap = nmethodswap + 1
@@ -258,7 +259,8 @@ subroutine particle_advance
               icorig = ptcl2%ic
            endif
         endif
-        ndist(ptcl2%idist) = ndist(ptcl2%idist) + 1
+        i = max(-3,ptcl2%idist)
+        ndist(i) = ndist(i) + 1
 !-- tally rest
         grd_tally(:,icold) = grd_tally(:,icold) + [edep,eraddens]
 !
@@ -522,7 +524,7 @@ subroutine particle_advance
 !$omp end parallel
 
 !-- print distance counters
-! write(6,'(7(i6,"k"))',advance='no') ndist(1:7)/1000
+  if(lmpi0) write(6,'(7(i6,"k"))',advance='no') ndist(-3:7)/1000
 
   tot_sflux = -sum(flx_luminos)
 

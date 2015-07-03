@@ -263,9 +263,10 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
   if(prt_isddmcanlog) then
      denom = denom+grd_fcoef(ic)*caplump
   endif
+  denom = 1d0/denom
 
   call rnd_r(r1,rndstate)
-  tau = abs(log(r1)/(pc_c*denom))
+  tau = abs(log(r1)*denom/pc_c)
   tcensus = tsp_t+tsp_dt-ptcl%t
   ddmct = min(tau,tcensus)
 
@@ -306,14 +307,13 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 
 !-- otherwise, perform event
   call rnd_r(r1,rndstate)
-  help = 1d0/denom
 
 !-- leakage probabilities
-  probleak = opacleak*help
+  probleak = opacleak*denom
 
 !-- absorption probability
   if(prt_isddmcanlog) then
-     pa = grd_fcoef(ic)*caplump*help
+     pa = grd_fcoef(ic)*caplump*denom
   else
      pa = 0d0
   endif
@@ -323,9 +323,11 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
      ptcl2%isvacant = .true.
      ptcl2%done = .true.
      edep = e
+     ptcl2%idist = -1
 
 !-- ix->ix-1 leakage
   elseif(r1>=pa.and.r1<pa+probleak(1)) then
+     ptcl2%idist = -3
 !{{{
 !-- sanity check
      if(ix==1) then
@@ -427,6 +429,7 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 
 !-- ix->ix+1 leakage
   elseif (r1>=pa+probleak(1).and.r1<pa+sum(probleak(1:2))) then
+     ptcl2%idist = -4
 !{{{
      if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
 !-- sampling next group
@@ -535,6 +538,7 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 
 !-- iy->iy-1 leakage
   elseif(r1>=pa+sum(probleak(1:2)).and.r1<pa+sum(probleak(1:3))) then
+     ptcl2%idist = -5
 !{{{
      if(iy/=1) l = grd_icell(ix,iy-1,iz)
 !-- sampling next group
@@ -642,6 +646,7 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 
 !-- iy->iy+1 leakage
   elseif(r1>=pa+sum(probleak(1:3)).and.r1<pa+sum(probleak(1:4))) then
+     ptcl2%idist = -6
 !{{{
      if(iy/=grd_ny) l = grd_icell(ix,iy+1,iz)
 !-- sampling next group
@@ -750,7 +755,8 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
 
 !-- effective scattering
   else
-!
+     ptcl2%idist = -2
+!!{{{
      if(glump==grp_ng) then
 !       stop 'diffusion2: effective scattering with glump==ng'
         ierr = 102
@@ -833,7 +839,7 @@ pure subroutine diffusion2(ptcl,ptcl2,rndstate,edep,eraddens,totevelo,icspec,spe
            e0 = e0*help
         endif
      endif
-
+!}}}
   endif
 
 end subroutine diffusion2
