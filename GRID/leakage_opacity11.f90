@@ -14,7 +14,7 @@ subroutine leakage_opacity11
   logical :: lhelp
   integer :: i,j,k, ig
   real*8 :: thelp, dist, help
-  real*8 :: speclump, specval
+  real*8 :: speclump, caplump, specval
   real*8 :: specarr(grp_ng)
   real*8 :: ppl, ppr
   integer :: icnb(2) !neighbor cell pointers
@@ -42,7 +42,7 @@ subroutine leakage_opacity11
      if(l>grd_idd1+grd_ndd-1) cycle
 !
 !-- zero
-     grd_opacleak(:,l) = 0d0
+     grd_opaclump(:,l) = 0d0
 !
 !-- neighbors
      icnb(1) = grd_icell(max(i-1,1),j,k)      !left neighbor
@@ -60,6 +60,17 @@ subroutine leakage_opacity11
      else
         speclump = 0d0
      endif
+     grd_opaclump(0,l) = speclump
+!
+!-- caplump
+     caplump = 0d0
+     do ig=1,grp_ng
+        if(grd_cap(ig,l)*dist < prt_taulump) cycle
+        if((grd_sig(l) + grd_cap(ig,l))*dist < prt_tauddmc) cycle
+        caplump = caplump + specarr(ig)*grd_cap(ig,l)
+     enddo
+     grd_opaclump(-1,l) = caplump
+!
 !-- lumping opacity
      do ig=1,grp_ng
         if(grd_cap(ig,l)*dist < prt_taulump) cycle
@@ -80,14 +91,14 @@ subroutine leakage_opacity11
 !-- DDMC interface
            help = (grd_cap(ig,l)+grd_sig(l))*dx(i)*thelp
            ppl = 4d0/(3d0*help+6d0*pc_dext)
-           grd_opacleak(1,l)=grd_opacleak(1,l)+(specval*speclump)*&
+           grd_opaclump(1,l)=grd_opaclump(1,l)+(specval*speclump)*&
                 1.5d0*ppl*(thelp*grd_xarr(i))**2/ &
                 (3d0*grd_vol(l)/pc_pi4)
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dx(i)+&
                 (grd_sig(icnb(1))+grd_cap(ig,icnb(1)))*dx(i-1))*thelp
-           grd_opacleak(1,l)=grd_opacleak(1,l)+(specval*speclump)*&
+           grd_opaclump(1,l)=grd_opaclump(1,l)+(specval*speclump)*&
                 2.0d0*(thelp*grd_xarr(i))**2/ &
                 (help*3d0*grd_vol(l)/pc_pi4)
         endif
@@ -105,14 +116,14 @@ subroutine leakage_opacity11
 !-- DDMC interface
            help = (grd_cap(ig,l)+grd_sig(l))*dx(i)*thelp
            ppr = 4d0/(3d0*help+6d0*pc_dext)
-           grd_opacleak(2,l)=grd_opacleak(2,l)+(specval*speclump)*&
+           grd_opaclump(2,l)=grd_opaclump(2,l)+(specval*speclump)*&
                 1.5d0*ppr*(thelp*grd_xarr(i+1))**2/ &
                 (3d0*grd_vol(l)/pc_pi4)
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dx(i)+&
                 (grd_sig(icnb(2))+grd_cap(ig,icnb(2)))*dx(i+1))*thelp
-           grd_opacleak(2,l)=grd_opacleak(2,l)+(specval*speclump)*&
+           grd_opaclump(2,l)=grd_opaclump(2,l)+(specval*speclump)*&
                 2.0d0*(thelp*grd_xarr(i+1))**2/ &
                 (help*3d0*grd_vol(l)/pc_pi4)
         endif

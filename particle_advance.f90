@@ -152,6 +152,7 @@ subroutine particle_advance(lmpi0)
   cache%specarr => specarr
   cache%glumps => glumps
   cache%llumps => llumps
+  cache%ic = 0
 
 !$omp do schedule(static,1) !round-robin
   do ipart=1,prt_npartmax

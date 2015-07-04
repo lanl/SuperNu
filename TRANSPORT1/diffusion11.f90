@@ -115,35 +115,20 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         endif
      enddo
 !
-!-- only do this if needed
+!-- specarr
      specarr = specintv(tempinv,0) !this is slow!  TODO: mask
 !
-!-- lumping
-     speclump = 0d0
-     do iig=1,glump
-        iiig = glumps(iig)
-        speclump = speclump + specarr(iiig)
-     enddo
-     if(speclump>0d0) then
-        speclump = 1d0/speclump
-     else
-        speclump = 0d0
-     endif
+!-- only do this if needed
+     speclump = grd_opaclump(0,ic)
 !
 !-- calculate lumped values
      if(glump==grp_ng) then
         emitlump = 1d0
         caplump = grd_capgrey(ic)
      else
-        emitlump = 0d0
-        do iig=1,glump
-           iiig = glumps(iig)
-!-- emission lump
-           emitlump = emitlump + specarr(iiig)*grd_cap(iiig,ic)
-        enddo
 !-- Planck x-section lump
-        caplump = emitlump*speclump
-        emitlump = emitlump*capgreyinv
+        caplump = grd_opaclump(-1,ic)*speclump
+        emitlump = grd_opaclump(-1,ic)*capgreyinv
         emitlump = min(emitlump,1d0)
      endif
 !
@@ -183,7 +168,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 
   if(glump>0 .and. speclump>0d0) then
 !-- leakage opacities
-     opacleak = grd_opacleak(:2,ic)
+     opacleak = grd_opaclump(1:2,ic)
 !-- calculating unlumped values
   else
 !-- inward
@@ -520,9 +505,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
      endif
      ig = iiig
 
-     if((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)*thelp >= prt_tauddmc) then
-        ptcl2%itype = 2
-     else
+     if((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)*thelp < prt_tauddmc) then
         ptcl2%itype = 1
 !-- sample wavelength
         call rnd_r(r1,rndstate)

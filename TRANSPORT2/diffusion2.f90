@@ -159,7 +159,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         emitlump = min(emitlump,1d0)
      endif
 !-- leakage opacities
-     opacleak = grd_opacleak(:4,ic)
+     opacleak = grd_opaclump(1:4,ic)
 !!}}}
   else
 !

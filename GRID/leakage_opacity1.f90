@@ -15,7 +15,7 @@ subroutine leakage_opacity1
   integer :: i,j,k, ig, khelp
   integer :: icnb(6) !neighbor cells
   real*8 :: thelp, dist, help
-  real*8 :: speclump, specval
+  real*8 :: speclump, caplump, specval
   real*8 :: specarr(grp_ng)
   real*8 :: pp
 !-- statement functions
@@ -49,7 +49,7 @@ subroutine leakage_opacity1
      if(l>grd_idd1+grd_ndd-1) cycle
 !
 !-- zero
-     grd_opacleak(:,l) = 0d0
+     grd_opaclump(:,l) = 0d0
 !
 !-- neighbors
      icnb(1) = grd_icell(max(i-1,1),j,k)      !left neighbor
@@ -80,6 +80,17 @@ subroutine leakage_opacity1
      else
         speclump = 0d0
      endif
+     grd_opaclump(0,l) = speclump
+!
+!-- caplump
+     caplump = 0d0
+     do ig=1,grp_ng
+        if(grd_cap(ig,l)*dist < prt_taulump) cycle
+        if((grd_sig(l) + grd_cap(ig,l))*dist < prt_tauddmc) cycle
+        caplump = caplump + specarr(ig)*grd_cap(ig,l)
+     enddo
+     grd_opaclump(-1,l) = caplump
+!
 !-- lumping opacity
      do ig=1,grp_ng
         if(grd_cap(ig,l)*dist < prt_taulump) cycle
@@ -101,13 +112,13 @@ subroutine leakage_opacity1
 !-- DDMC interface
            help = (grd_cap(ig,l)+grd_sig(l))*dx(i)*thelp
            pp = 4d0/(3d0*help+6d0*pc_dext)
-           grd_opacleak(1,l)=grd_opacleak(1,l)+(specval*speclump)*&
+           grd_opaclump(1,l)=grd_opaclump(1,l)+(specval*speclump)*&
                 1.5d0*pp*grd_xarr(i)**2/(dx3(i)*thelp)
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dx(i)+&
                 (grd_sig(icnb(1))+grd_cap(ig,icnb(1)))*dx(i-1))*thelp
-           grd_opacleak(1,l)=grd_opacleak(1,l)+(specval*speclump)*&
+           grd_opaclump(1,l)=grd_opaclump(1,l)+(specval*speclump)*&
                 2.0d0*grd_xarr(i)**2/(dx3(i)*thelp*help)
         endif
 
@@ -125,13 +136,13 @@ subroutine leakage_opacity1
 !-- DDMC interface
            help = (grd_cap(ig,l)+grd_sig(l))*dx(i)*thelp
            pp = 4d0/(3d0*help+6d0*pc_dext)
-           grd_opacleak(2,l)=grd_opacleak(2,l)+(specval*speclump)*&
+           grd_opaclump(2,l)=grd_opaclump(2,l)+(specval*speclump)*&
                 1.5d0*pp*grd_xarr(i+1)**2/(dx3(i)*thelp)
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dx(i)+&
                 (grd_sig(icnb(2))+grd_cap(ig,icnb(2)))*dx(i+1))*thelp
-           grd_opacleak(2,l)=grd_opacleak(2,l)+(specval*speclump)*&
+           grd_opaclump(2,l)=grd_opaclump(2,l)+(specval*speclump)*&
                 2.0d0*grd_xarr(i+1)**2/(dx3(i)*thelp*help)
         endif
 
@@ -149,13 +160,13 @@ subroutine leakage_opacity1
 !-- DDMC interface
            help = (grd_cap(ig,l)+grd_sig(l))*xm(i)*dyac(j)*thelp
            pp = 4d0/(3d0*help+6d0*pc_dext)
-           grd_opacleak(3,l)=grd_opacleak(3,l)+(specval*speclump)*&
+           grd_opaclump(3,l)=grd_opaclump(3,l)+(specval*speclump)*&
                 0.75d0*pp*dx2(i)*sqrt(1d0-grd_yarr(j)**2)/(dy(j)*dx3(i)*thelp)
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dyac(j) + &
                 (grd_sig(icnb(3))+grd_cap(ig,icnb(3)))*dyac(j-1))
-           grd_opacleak(3,l)=grd_opacleak(3,l)+(specval*speclump)*&
+           grd_opaclump(3,l)=grd_opaclump(3,l)+(specval*speclump)*&
                 2.0d0*sqrt(1d0-grd_yarr(j)**2)*dx(i) / &
                 (dy(j)*dx3(i)*help*thelp**2)
         endif
@@ -174,13 +185,13 @@ subroutine leakage_opacity1
 !-- DDMC interface
            help = (grd_cap(ig,l)+grd_sig(l))*xm(i)*dyac(j)*thelp
            pp = 4d0/(3d0*help+6d0*pc_dext)
-           grd_opacleak(4,l)=grd_opacleak(4,l)+(specval*speclump)*&
+           grd_opaclump(4,l)=grd_opaclump(4,l)+(specval*speclump)*&
                 0.75d0*pp*dx2(i)*sqrt(1d0-grd_yarr(j+1)**2)/(dy(j)*dx3(i)*thelp)
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dyac(j) + &
                 (grd_sig(icnb(4))+grd_cap(ig,icnb(4)))*dyac(j+1))
-           grd_opacleak(4,l)=grd_opacleak(4,l)+(specval*speclump)*&
+           grd_opaclump(4,l)=grd_opaclump(4,l)+(specval*speclump)*&
                 2.0d0*sqrt(1d0-grd_yarr(j+1)**2)*dx(i) / &
                 (dy(j)*dx3(i)*help*thelp**2)
         endif
@@ -203,13 +214,13 @@ subroutine leakage_opacity1
            help = (grd_cap(ig,l)+grd_sig(l))*xm(i)*ym(j) * &
               dz(k)*thelp
            pp = 4d0/(3d0*help+6d0*pc_dext)
-           grd_opacleak(5,l)=grd_opacleak(5,l)+(specval*speclump)*&
+           grd_opaclump(5,l)=grd_opaclump(5,l)+(specval*speclump)*&
                 0.75d0*pp*dx2(i)*dyac(j)/(dy(j)*dx3(i)*dz(k)*thelp)
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dz(k) + &
                 (grd_sig(icnb(5))+grd_cap(ig,icnb(5)))*dz(khelp))
-           grd_opacleak(5,l)=grd_opacleak(5,l)+(specval*speclump)*&
+           grd_opaclump(5,l)=grd_opaclump(5,l)+(specval*speclump)*&
                 2.0d0*dyac(j)*dx(i) / &
                 (ym(j)*dy(j)*dz(k)*dx3(i)*help*thelp**2)
         endif
@@ -230,19 +241,19 @@ subroutine leakage_opacity1
            help = (grd_cap(ig,l)+grd_sig(l))*xm(i)*ym(j) * &
               dz(k)*thelp
            pp = 4d0/(3d0*help+6d0*pc_dext)
-           grd_opacleak(6,l)=grd_opacleak(6,l)+(specval*speclump)*&
+           grd_opaclump(6,l)=grd_opaclump(6,l)+(specval*speclump)*&
                 0.75d0*pp*dx2(i)*dyac(j)/(dy(j)*dx3(i)*dz(k)*thelp)
         else
 !-- DDMC interior
            help = ((grd_sig(l)+grd_cap(ig,l))*dz(k) + &
                 (grd_sig(icnb(6))+grd_cap(ig,icnb(6)))*dz(khelp))
-           grd_opacleak(6,l)=grd_opacleak(6,l)+(specval*speclump)*&
+           grd_opaclump(6,l)=grd_opaclump(6,l)+(specval*speclump)*&
                 2.0d0*dyac(j)*dx(i) / &
                 (ym(j)*dy(j)*dz(k)*dx3(i)*help*thelp**2)
         endif
-!if(i==20 .and. k==1) write(0,*) help,pp,grd_opacleak(6,l),grd_sig(l),grd_sig(icnb(6)),grd_cap(ig,l),grd_cap(ig,icnb(6)), &
+!if(i==20 .and. k==1) write(0,*) help,pp,grd_opaclump(6,l),grd_sig(l),grd_sig(icnb(6)),grd_cap(ig,l),grd_cap(ig,icnb(6)), &
 !  specval,speclump,specval*speclump
-!if(i==20 .and. k==1) write(0,*) help,pp,grd_opacleak(6,l),lhelp,xm(i),ym(j),dz(k)
+!if(i==20 .and. k==1) write(0,*) help,pp,grd_opaclump(6,l),lhelp,xm(i),ym(j),dz(k)
 
      enddo !ig
   enddo !i

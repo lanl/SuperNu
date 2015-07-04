@@ -419,10 +419,10 @@ c
       call mpi_barrier(MPI_COMM_WORLD,ierr)
       t0 = t_time()
 c
-      allocate(snd(6,grd_ndd))
-      snd = grd_opacleak(:,grd_idd1:grd_idd1+grd_ndd-1)
-      call mpi_allgatherv(snd,6*grd_ndd,MPI_REAL8,
-     &  grd_opacleak,6*counts,6*displs,MPI_REAL8,
+      allocate(snd(8,grd_ndd))
+      snd = grd_opaclump(:,grd_idd1:grd_idd1+grd_ndd-1)
+      call mpi_allgatherv(snd,8*grd_ndd,MPI_REAL8,
+     &  grd_opaclump,8*counts,8*displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)
       deallocate(snd)
 c
