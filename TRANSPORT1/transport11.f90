@@ -208,7 +208,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !-- check if ddmc region
      if (((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)* &
           thelp >= prt_tauddmc) &
-          .and.(in_puretran.eqv..false.)) then
+          .and. .not.in_puretran) then
         ptcl2%itype = 2
         if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -218,8 +218,6 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
            e0 = e0*(1d0-x*mu*cinv)
            wl = wl/(1d0-x*mu*cinv)
         endif
-     else
-        ptcl2%itype = 1
      endif
 !!}}}
   elseif (d == dthm) then  !physical scattering (Thomson-type)
@@ -265,32 +263,19 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !
            e = e*elabfact*help
 !           wl = wl*(1d0-mu*x*cinv)/elabfact
-           
         endif
 !
 !-- sample wavelength
         call rnd_r(r1,rndstate)
-        if(grp_ng>1) then
-           ig = emitgroup(r1,ic)
-           if(ig>grp_ng) then
-              ierr = 5
-              return
-           endif
-        endif
-!
-!(rev 121): calculating radiation energy tally per group
-        !eraddens = e*elabfact
-!-------------------------------------------------------
+        if(grp_ng>1) ig = emitgroup(r1,ic)
 ! sampling comoving wavelength in group
         call rnd_r(r1,rndstate)
         wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
-        if(grd_isvelocity) then
 !-- converting comoving wavelength to lab frame wavelength
-           wl = wl*(1d0-x*mu*cinv)
-        endif
-        if (((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)* &
-             thelp >= prt_tauddmc) &
-             .and.(in_puretran.eqv..false.)) then
+        if(grd_isvelocity) wl = wl*(1d0-x*mu*cinv)
+!
+        if (((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)*thelp >= prt_tauddmc) &
+             .and. .not.in_puretran) then
            ptcl2%itype = 2
            if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -298,10 +283,8 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !
               e = e*(1d0-x*mu*cinv)
               e0 = e0*(1d0-x*mu*cinv)
-              wl = wl/(1d0-x*mu*cinv)
            endif
         else
-           ptcl2%itype = 1
            ptcl%icorig = ic
         endif
      endif
@@ -317,7 +300,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !-- Checking if DDMC region right
      elseif (((grd_sig(l)+grd_cap(ig,l))*dx(ix+1) &
           *thelp >= prt_tauddmc) &
-          .and.(in_puretran.eqv..false.)) then
+          .and. .not.in_puretran) then
         call rnd_r(r1,rndstate)
         if(grd_isvelocity) then
            mu = (mu-x*cinv)/(1d0-x*mu*cinv)
@@ -359,7 +342,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         l = grd_icell(ix+1,iy,iz)
         if (((grd_sig(l)+grd_cap(ig,l))*dx(ix+1) &
              *thelp >= prt_tauddmc) &
-             .and.(in_puretran.eqv..false.)) then
+             .and. .not.in_puretran) then
            call rnd_r(r1,rndstate)
            if(grd_isvelocity) then
               mu = (mu-x*cinv)/(1d0-x*mu*cinv)
@@ -396,7 +379,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         endif
      elseif (((grd_sig(l)+grd_cap(ig,l))*dx(ix-1) &
           *thelp >= prt_tauddmc) &
-          .and.(in_puretran.eqv..false.)) then
+          .and. .not.in_puretran) then
         call rnd_r(r1,rndstate)
 !
 !-- amplification factor

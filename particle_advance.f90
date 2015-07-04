@@ -530,7 +530,7 @@ subroutine particle_advance(lmpi0)
 !$omp end parallel
 
 !-- print distance counters
-  if(lmpi0) write(6,'(7(i6,"k"))',advance='no') ndist(-3:7)/1000
+  if(lmpi0) write(6,'(11(i6,"k"))',advance='no') ndist(-3:7)/1000
 
   tot_sflux = -sum(flx_luminos)
 
