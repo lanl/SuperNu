@@ -136,15 +136,14 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         caplump = grd_capgrey(ic)
      else
         emitlump = 0d0
-        caplump = 0d0
         do iig=1,glump
            iiig = glumps(iig)
-           specig = specarr(iiig)
 !-- emission lump
-           emitlump = emitlump + specig*capgreyinv*grd_cap(iiig,ic)
-!-- Planck x-section lump
-           caplump = caplump + specig*grd_cap(iiig,ic)*speclump
+           emitlump = emitlump + specarr(iiig)*grd_cap(iiig,ic)
         enddo
+!-- Planck x-section lump
+        caplump = emitlump*speclump
+        emitlump = emitlump*capgreyinv
         emitlump = min(emitlump,1d0)
      endif
 !
