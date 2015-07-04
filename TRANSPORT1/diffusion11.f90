@@ -298,19 +298,19 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         if(glump==0 .or. speclump<=0d0) then
            iiig = ig
         else
-!!-- update specarr cache. this is slow
-!           if(iand(cache%istat,2)==0) then
-!              cache%istat = cache%istat + 2
-!              call specintw(tempinv,cache%specarr,mode=0,mask=.not.llumps)
-!           endif
-!!-- sample group
+!-- update specarr cache. this is slow
+           if(iand(cache%istat,2)==0) then
+              cache%istat = cache%istat + 2
+              call specintw(tempinv,cache%specarr,mode=0,mask=.not.llumps)
+           endif
+!-- sample group
            call rnd_r(r1,rndstate)
            denom2 = 0d0
            help = 1d0/opacleak(1)
            do iig=1,glump
               iiig = glumps(iig)
-              !specig = cache%specarr(iiig)
-              specig = specint0(tempinv,iiig)
+              specig = cache%specarr(iiig)
+              !specig = specint0(tempinv,iiig)
 !-- calculating resolved leakage opacities
               if((grd_cap(iiig,l)+ &
                    grd_sig(l))*dx(ix-1)*thelp<prt_tauddmc) then
@@ -379,19 +379,19 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         mu = max(r1,r2)
         if(glump==0 .or. speclump<=0d0) then
         else
-!!-- update specarr cache. this is slow
-!           if(iand(cache%istat,2)==0) then
-!              cache%istat = cache%istat + 2
-!              call specintw(tempinv,cache%specarr,mode=0,mask=.not.llumps)
-!           endif
-!!-- sample group
+!-- update specarr cache. this is slow
+           if(iand(cache%istat,2)==0) then
+              cache%istat = cache%istat + 2
+              call specintw(tempinv,cache%specarr,mode=0,mask=.not.llumps)
+           endif
+!-- sample group
            call rnd_r(r1,rndstate)
            denom2 = 0d0
            help = 1d0/opacleak(2)
            do iig=1,glump
               iiig=glumps(iig)
-              !specig = cache%specarr(iiig)
-              specig = specint0(tempinv,iiig)
+              specig = cache%specarr(iiig)
+              !specig = specint0(tempinv,iiig)
 !-- calculating resolved leakage opacities
               mfphelp = (grd_cap(iiig,ic)+grd_sig(ic))*dx(ix)*thelp
               ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
@@ -424,19 +424,19 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         if(glump==0 .or. speclump<=0d0) then
            iiig = ig
         else
-!!-- update specarr cache. this is slow
-!           if(iand(cache%istat,2)==0) then
-!              cache%istat = cache%istat + 2
-!              call specintw(tempinv,cache%specarr,mode=0,mask=.not.llumps)
-!           endif
-!!-- sample group
+!-- update specarr cache. this is slow
+           if(iand(cache%istat,2)==0) then
+              cache%istat = cache%istat + 2
+              call specintw(tempinv,cache%specarr,mode=0,mask=.not.llumps)
+           endif
+!-- sample group
            call rnd_r(r1,rndstate)
            denom2 = 0d0
            help = 1d0/opacleak(2)
            do iig=1,glump
               iiig = glumps(iig)
-              !specig = cache%specarr(iiig)
-              specig = specint0(tempinv,iiig)
+              specig = cache%specarr(iiig)
+              !specig = specint0(tempinv,iiig)
 !-- calculating resolved leakage opacities
               if((grd_cap(iiig,l)+ &
                    grd_sig(l))*dx(ix+1)*thelp<prt_tauddmc) then
@@ -506,10 +506,6 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 
      if(glump==0) then
         iiig = emitgroup(r1,ic)
-        if(iiig>grp_ng) then
-           ierr = 103
-           return
-        endif
      else
 !
 !-- update specarr cache. this is slow
@@ -520,7 +516,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !
         denom2 = 1d0/(1d0-emitlump)
         denom3 = 0d0
-        do iig=glump+1,grp_ng
+        do iig=grp_ng,glump+1,-1
            iiig = glumps(iig)
            help = cache%specarr(iiig)*grd_cap(iiig,ic)*capgreyinv
            denom3 = denom3 + help*denom2
