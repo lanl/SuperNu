@@ -42,7 +42,6 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
   integer :: glump, gunlump
   integer,pointer :: glumps(:)
   logical,pointer :: llumps(:)
-  real*8,pointer :: specarr(:)
   real*8,pointer :: tempinv, capgreyinv
   real*8,pointer :: speclump
   real*8 :: emitlump, caplump
@@ -71,7 +70,6 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
   speclump => cache%speclump
   glumps => cache%glumps
   llumps => cache%llumps
-  specarr => cache%specarr
 
 !-- no error by default
   ierr = 0
@@ -92,6 +90,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !-- update cache
   if(ic/=cache%ic) then
      cache%ic = ic!{{{
+     cache%istat = 0 !specarr is not cached yet
      tempinv = 1d0/grd_temp(ic)
      capgreyinv = max(1d0/grd_capgrey(ic),0d0) !catch nans
 
@@ -105,18 +104,15 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
      do iig=1,grp_ng
         if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
              (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
-           llumps(iig) = .true.
+           llumps(iig) = .false.
            glump=glump+1
            glumps(glump)=iig
         else
-           llumps(iig) = .false.
+           llumps(iig) = .true.
            glumps(gunlump)=iig
            gunlump=gunlump-1
         endif
      enddo
-!
-!-- specarr
-     specarr = specintv(tempinv,0) !this is slow!  TODO: mask
 !
 !-- only do this if needed
      speclump = grd_opaclump(0,ic)
@@ -307,7 +303,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
            help = 1d0/opacleak(1)
            do iig=1,glump
               iiig = glumps(iig)
-              specig = specarr(iiig)
+              specig = specint0(tempinv,iiig)
 !-- calculating resolved leakage opacities
               if((grd_cap(iiig,l)+ &
                    grd_sig(l))*dx(ix-1)*thelp<prt_tauddmc) then
@@ -381,7 +377,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
            help = 1d0/opacleak(2)
            do iig=1,glump
               iiig=glumps(iig)
-              specig = specarr(iiig)
+              specig = specint0(tempinv,iiig)
 !-- calculating resolved leakage opacities
               mfphelp = (grd_cap(iiig,ic)+grd_sig(ic))*dx(ix)*thelp
               ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
@@ -419,7 +415,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
            help = 1d0/opacleak(2)
            do iig=1,glump
               iiig = glumps(iig)
-              specig = specarr(iiig)
+              specig = specint0(tempinv,iiig)
 !-- calculating resolved leakage opacities
               if((grd_cap(iiig,l)+ &
                    grd_sig(l))*dx(ix+1)*thelp<prt_tauddmc) then
@@ -494,11 +490,18 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
            return
         endif
      else
+!
+!-- update specarr cache. this is slow
+        if(iand(cache%istat,1)==0) then
+           cache%istat = cache%istat + 1
+           cache%specarr = specintv(tempinv,mode=0)
+        endif
+!
         denom2 = 1d0/(1d0-emitlump)
         denom3 = 0d0
         do iig=glump+1,grp_ng
            iiig = glumps(iig)
-           help = specarr(iiig)*grd_cap(iiig,ic)*capgreyinv
+           help = cache%specarr(iiig)*grd_cap(iiig,ic)*capgreyinv
            denom3 = denom3 + help*denom2
            if(denom3>r1) exit
         enddo
