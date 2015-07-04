@@ -54,11 +54,18 @@ subroutine leakage_opacity3
      icnb(5) = grd_icell(i,j,max(k-1,1))      !left neighbor
      icnb(6) = grd_icell(i,j,min(k+1,grd_nz)) !right neighbor
 !
+!-- distance
+     dist = min(dx(i),dy(j),dz(k))*thelp
+!
 !-- initializing Planck integral vectorized
      specarr = specintv(1d0/grd_temp(l),0)
-     dist = min(dx(i),dy(j),dz(k))*thelp
-     speclump = 1d0/sum(specarr, grd_cap(:,l)*dist>=prt_taulump .and. &
+     speclump = sum(specarr, grd_cap(:,l)*dist>=prt_taulump .and. &
        (grd_sig(l) + grd_cap(:,l))*dist >= prt_tauddmc)
+     if(speclump>0d0) then
+        speclump = 1d0/speclump
+     else
+        speclump = 0d0
+     endif
 !-- lumping opacity
      do ig=1,grp_ng
         if(grd_cap(ig,l)*dist < prt_taulump) cycle
