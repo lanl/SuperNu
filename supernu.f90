@@ -148,7 +148,7 @@ program supernu
 !
      write(6,*)
      write(6,*) "starting time loop:"
-     write(6,*) "===================="
+     write(6,'(1x,a,4x,4(a7,1x))') "====================",'nsrc','ncens','nflux','ntrnsp'
   endif
 !
   do it=in_ntres,tsp_nt
@@ -161,7 +161,7 @@ program supernu
      call tau_update(tsp_t,tsp_tfirst,tsp_tlast) !updating prt_tauddmc and prt_taulump
 
 !-- write timestep
-     if(lmpi0) write(6,'(1x,a,i5,f8.3,"d")',advance='no') 'tsp:',it,tsp_t/pc_day
+     if(lmpi0) write(6,'(1x,i5,f8.3,"d")',advance='no') it,tsp_t/pc_day
 
 !-- update all non-permanent variables
      call grid_update(tsp_t)
