@@ -20,7 +20,7 @@ subroutine sourcenumbers(keephigh)
   integer :: ncactive,nextra,nvacantall,nnewvacant
   integer :: nvacant(nmpi)
   real*8,parameter :: basefrac=.1d0
-  integer*8 :: nstot,nsavail,nsmean
+  integer*8 :: nstot,nstotd,nsavail,nsmean
   real*8 :: etot,einv,pwr,edone,en,invn
   integer :: nemit,nvol,nvolex
 ! tot_esurf for any new prt_particles from a surface source
@@ -45,6 +45,10 @@ subroutine sourcenumbers(keephigh)
 !-- keep at least at level of minimum vacancies
   if(keephigh) nstot = max(nmpi*src_ns,nnewvacant,src_nflux)
 !-- limit total particle number
+  nstotd = nstot - src_nflux
+  nstotd = min(nstotd,(nvacantall-src_nflux)/2 + 1)
+  nstot = src_nflux + nstotd
+!-- limit total particle number
   nstot = min(nstot,nvacantall)
 
 !-- etot
@@ -56,7 +60,8 @@ subroutine sourcenumbers(keephigh)
 
 !-- number of cells with nonzero energy
   ncactive = count(grd_emit>0d0 .or. grd_emitex>0d0)
-  if(nvacantall<ncactive) stop 'sourcenumbers: nvacantall<ncactive'
+  if(nvacantall<ncactive) stop &
+     'sourcenumbers: nvacantall < number of source cells'
 
 !-- number of particles available for proportional distribution
   nsavail = nstot - src_nsurf
@@ -77,6 +82,7 @@ subroutine sourcenumbers(keephigh)
      edone = edone + en
      ndone = ndone + n
   enddo
+  if(ndone==0) stop 'sourcenumbers: no volume source particles distributed'
 
 !-- too many particles
   nextra = int(nstot - sum(grd_nvol) - src_nsurf)
