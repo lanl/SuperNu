@@ -35,6 +35,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
   real*8 :: ddmct, tau, tcensus, pa
 !-- lumped quantities -----------------------------------------
 
+  real*8 :: emitlump, caplump
   real*8 :: specig
   real*8 :: mfphelp, ppl, ppr
   real*8 :: opacleak(2)
@@ -45,7 +46,6 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
   logical,pointer :: llumps(:)
   real*8,pointer :: tempinv, capgreyinv
   real*8,pointer :: speclump
-  real*8 :: emitlump, caplump
   real*8 :: dist, help
 
   integer,pointer :: ix, ic, ig
@@ -151,7 +151,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
   endif
 !
 !-- retrieve from cache
-  if(glump>0 .and. speclump>0d0) then
+  if(speclump>0d0) then
      emitlump = cache%emitlump
      caplump = cache%caplump
   else
@@ -163,11 +163,12 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 
 
 
-  if(glump>0 .and. speclump>0d0) then
+  if(speclump>0d0) then
 !-- leakage opacities
      opacleak = grd_opaclump(1:2,ic)
 !-- calculating unlumped values
   else
+!{{{
 !-- inward
      if(ix/=1) l = grd_icell(ix-1,iy,iz)
      if(ix==1) then
@@ -208,7 +209,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
              (grd_sig(l)+grd_cap(ig,l))*dx(ix+1))*thelp
         opacleak(2)=2.0d0*(thelp*grd_xarr(ix+1))**2/ &
              (mfphelp*thelp**3*dx3(ix))
-     endif
+     endif!}}}
   endif
 !
 !-------------------------------------------------------------
@@ -275,6 +276,13 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
      pa = 0d0
   endif
 
+!-- update specarr cache only when necessary. this is slow
+  if(r1>=pa .and. r1<pa+sum(probleak) .and. speclump>0d0 .and. &
+        iand(cache%istat,2)==0) then
+     cache%istat = cache%istat + 2
+     call specintw(tempinv,cache%specarr,mode=0,mask=.not.llumps)
+  endif
+
 !-- absorption sample
   if(r1<pa) then
      ptcl2%idist = -1
@@ -296,14 +304,9 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
      else
 
         l = grd_icell(ix-1,iy,iz)
-        if(glump==0 .or. speclump<=0d0) then
+        if(speclump<=0d0) then
            iiig = ig
         else
-!-- update specarr cache. this is slow
-           if(iand(cache%istat,2)==0) then
-              cache%istat = cache%istat + 2
-              call specintw(tempinv,cache%specarr,mode=0,mask=.not.llumps)
-           endif
 !-- sample group
            call rnd_r(r1,rndstate)
            denom2 = 0d0
@@ -378,13 +381,8 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         call rnd_r(r1,rndstate)
         call rnd_r(r2,rndstate)
         mu = max(r1,r2)
-        if(glump==0 .or. speclump<=0d0) then
+        if(speclump<=0d0) then
         else
-!-- update specarr cache. this is slow
-           if(iand(cache%istat,2)==0) then
-              cache%istat = cache%istat + 2
-              call specintw(tempinv,cache%specarr,mode=0,mask=.not.llumps)
-           endif
 !-- sample group
            call rnd_r(r1,rndstate)
            denom2 = 0d0
@@ -422,14 +420,9 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 
         l = grd_icell(ix+1,iy,iz)
 !-- sample adjacent group (assumes aligned ig bounds)
-        if(glump==0 .or. speclump<=0d0) then
+        if(speclump<=0d0) then
            iiig = ig
         else
-!-- update specarr cache. this is slow
-           if(iand(cache%istat,2)==0) then
-              cache%istat = cache%istat + 2
-              call specintw(tempinv,cache%specarr,mode=0,mask=.not.llumps)
-           endif
 !-- sample group
            call rnd_r(r1,rndstate)
            denom2 = 0d0

@@ -7,6 +7,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   use timestepmod
   use physconstmod
   use particlemod
+  use transportmod
   use inputparmod
   use fluxmod
   implicit none
@@ -34,8 +35,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   real*8 :: ddmct, tau, tcensus
   real*8 :: dirdotu, gm
 !-- lumped quantities
-  real*8 :: emitlump, speclump
-  real*8 :: caplump
+  real*8 :: emitlump, caplump
   real*8 :: specig
   real*8 :: opacleak(4)
   real*8 :: probleak(4) !leakage probabilities
@@ -43,10 +43,11 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   real*8 :: mfphelp, pp
   real*8 :: resopacleak
   integer :: glump, gunlump
-  integer :: glumps(grp_ng)
-  real*8 :: tempinv, capgreyinv
+  integer,pointer :: glumps(:)
+  logical,pointer :: llumps(:)
+  real*8,pointer :: tempinv, capgreyinv
+  real*8,pointer :: speclump
   real*8 :: dist, help
-  real*8 :: specarr(grp_ng)
 
   integer,pointer :: ix, iy, ic, ig
   integer,parameter :: iz=1
@@ -70,15 +71,17 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   e0 => ptcl%e0
   wl => ptcl%wl
 
+  tempinv => cache%tempinv
+  capgreyinv => cache%capgreyinv
+  speclump => cache%speclump
+  glumps => cache%glumps
+  llumps => cache%llumps
+
 !-- no error by default
   ierr = 0
 !-- init
   edep = 0d0
   eraddens = 0d0
-!
-!-- shortcut
-  tempinv = 1d0/grd_temp(ic)
-  capgreyinv = max(1d0/grd_capgrey(ic),0d0) !catch nans
 
 !
 !-- set expansion helper
@@ -87,85 +90,87 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   else
      thelp = 1d0
   endif
+  dist = min(dx(ix),dy(iy)) * thelp
+
+!
+!-- update cache
+  if(ic/=cache%ic) then
+     cache%ic = ic!{{{
+     cache%istat = 0 !specarr is not cached yet
+     tempinv = 1d0/grd_temp(ic)
+     capgreyinv = max(1d0/grd_capgrey(ic),0d0) !catch nans
 
 !
 !-- opacity regrouping --------------------------
-  glump = 0
-  gunlump = grp_ng
-  glumps = 0
+     glump = 0
+     gunlump = grp_ng
+     glumps = 0
 !
 !-- find lumpable groups
-  dist = min(dx(ix),dy(iy)) * thelp
-  if(grd_cap(ig,ic)*dist >= prt_taulump) then
      do iig=1,grp_ng
         if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
              (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
+           llumps(iig) = .false.
            glump=glump+1
            glumps(glump)=iig
         else
+           llumps(iig) = .true.
            glumps(gunlump)=iig
            gunlump=gunlump-1
         endif
      enddo
+!
+!-- only do this if needed
+     speclump = grd_opaclump(0,ic)
+!
+!-- calculate lumped values
+     if(glump==grp_ng) then
+        emitlump = 1d0
+        caplump = grd_capgrey(ic)
+     else
+!-- Planck x-section lump
+        caplump = grd_opaclump(-1,ic)*speclump
+        emitlump = grd_opaclump(-1,ic)*capgreyinv
+        emitlump = min(emitlump,1d0)
+     endif
+!
+!-- save
+     cache%nlump = glump
+     cache%emitlump = emitlump
+     cache%caplump = caplump
+!}}}
+  endif !cache%ic /= ic
+!
+!-- in lump?
+  if(grd_cap(ig,ic)*dist >= prt_taulump) then
+     glump = cache%nlump
+  else
+     glump = 0
   endif
-! write(0,*) ipart,istep,glump,g,ix,iy
 !
 !-- sanity check
   if((grd_sig(ic) + grd_cap(ig,ic))*dist < prt_tauddmc) then
      ierr = 100
      return
   endif
-
 !
-!-- only do this if needed
-  if(glump>0 .and. cache%ic/=ic) then
-     cache%ic = ic
-     specarr = specintv(tempinv,0) !this is slow!
-  endif
-
-!
-!-- lumping
-  speclump = 0d0
-  do iig=1,glump
-     iiig = glumps(iig)
-     specig = specarr(iiig)
-     speclump = speclump + specig
-  enddo
+!-- retrieve from cache
   if(speclump>0d0) then
-     speclump = 1d0/speclump
+     emitlump = cache%emitlump
+     caplump = cache%caplump
   else
-     speclump = 0d0
+!-- outside the lump
+     emitlump = specint0(tempinv,ig)*capgreyinv*grd_cap(ig,ic)
+     caplump = grd_cap(ig,ic)
   endif
 
-!write(0,*) impi,glump,speclump
-!
-  emitlump = 0d0
-  caplump = 0d0
 !-- calculate lumped values
   if(speclump>0d0) then
-     if(glump==grp_ng) then!{{{
-        emitlump = 1d0
-        caplump = grd_capgrey(ic)
-     else
-        do iig=1,glump
-           iiig = glumps(iig)
-           specig = specarr(iiig)
-!-- emission lump
-           emitlump = emitlump + specig*capgreyinv*grd_cap(iiig,ic)
-!-- Planck x-section lump
-           caplump = caplump + specig*grd_cap(iiig,ic)*speclump
-        enddo
-        emitlump = min(emitlump,1d0)
-     endif
 !-- leakage opacities
      opacleak = grd_opaclump(1:4,ic)
-!!}}}
   else
-!
+!!{{{
 !-- calculating unlumped values
-     emitlump = specint0(tempinv,ig)*capgreyinv*grd_cap(ig,ic)!{{{
-     caplump = grd_cap(ig,ic)
-
 !-- inward
      if(ix/=1) l = grd_icell(ix-1,iy,iz)
      if(ix==1) then
@@ -249,8 +254,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         dist = ((grd_sig(ic)+grd_cap(ig,ic))*dy(iy)+&
              (grd_sig(l)+grd_cap(ig,l))*dy(iy+1))*thelp
         opacleak(4)=(2d0/3d0)/(dist*dy(iy)*thelp)
-     endif
-!}}}
+     endif!}}}
   endif
 !
 !--------------------------------------------------------
@@ -317,6 +321,13 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      pa = 0d0
   endif
 
+!-- update specarr cache only when necessary. this is slow
+  if(r1>=pa .and. r1<pa+sum(probleak(1:4)) .and. speclump>0d0 .and. &
+        iand(cache%istat,2)==0) then
+     cache%istat = cache%istat + 2
+     call specintw(tempinv,cache%specarr,mode=0,mask=.not.llumps)
+  endif
+
 !-- absorption
   if(r1<pa) then
      ptcl2%isvacant = .true.
@@ -345,7 +356,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         help = 1d0/opacleak(1)
         do iig=1,glump
            iiig = glumps(iig)
-           specig = specarr(iiig)
+           specig = cache%specarr(iiig)
 !-- calculating resolved leakage opacities
            if((grd_cap(iiig,l) + &
                 grd_sig(l))*min(dx(ix-1),dy(iy)) * &
@@ -440,7 +451,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         help = 1d0/opacleak(2)
         do iig = 1, glump
            iiig=glumps(iig)
-           specig = specarr(iiig)
+           specig = cache%specarr(iiig)
 !-- calculating resolved leakage opacities
            if(ix==grd_nx) then
               lhelp = .true.
@@ -549,7 +560,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         help = 1d0/opacleak(3)
         do iig= 1, glump
            iiig = glumps(iig)
-           specig = specarr(iiig)
+           specig = cache%specarr(iiig)
 !-- calculating resolved leakage opacities
            if(iy==1) then
               lhelp = .true.
@@ -657,7 +668,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         help = 1d0/opacleak(4)
         do iig= 1, glump
            iiig = glumps(iig)
-           specig = specarr(iiig)
+           specig = cache%specarr(iiig)
 !-- calculating resolved leakage opacities
            if(iy==grd_ny) then
               lhelp = .true.
@@ -762,41 +773,43 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         return
      endif
 
-     call rnd_r(r1,rndstate)
-
      if(glump==0) then
-        iiig = emitgroup(r1,ic)
-        if(iiig>grp_ng) then
-!          stop 'diffusion2: emitgroup ig>ng'
-           ierr = 103
+!-- sample group
+        if(cache%emitlump<.99d0 .or. trn_nolumpshortcut) then
+           call rnd_r(r1,rndstate)
+           iiig = emitgroup(r1,ic)
+!-- don't sample, it will end up in the lump anyway
+        else
+!-- always put this in the single most likely group
+           ig = nint(grd_opaclump(-2,ic))
            return
         endif
      else
-!-- this is needed now and may be useful in following steps
-        if(cache%ic/=ic) then
-           cache%ic = ic
-           specarr = specintv(tempinv,0) !this is slow!
+!
+!-- update specarr cache. this is slow
+        if(iand(cache%istat,1)==0) then
+           cache%istat = cache%istat + 1
+           call specintw(tempinv,cache%specarr,mode=0,mask=llumps)
         endif
 !
+        call rnd_r(r1,rndstate)
         denom3 = 0d0
-        denom2 = 1d0-emitlump
-        denom2 = 1d0/denom2
-        do iig = glump+1,grp_ng
+        denom2 = 1d0/(1d0-emitlump)
+        do iig = grp_ng,glump+1,-1
            iiig = glumps(iig)
-           help = specarr(iiig)*grd_cap(iiig,ic)*capgreyinv
+           help = cache%specarr(iiig)*grd_cap(iiig,ic)*capgreyinv
            denom3 = denom3 + help*denom2
            if(denom3>r1) exit
         enddo
      endif
 !
      ig = iiig
-     call rnd_r(r1,rndstate)
-     wl = 1d0/((1d0-r1)*grp_wlinv(ig) + r1*grp_wlinv(ig+1))
 
-     if((grd_sig(ic)+grd_cap(ig,ic)) * &
-          min(dx(ix),dy(iy)) &
-          *thelp < prt_tauddmc) then
+     if((grd_sig(ic)+grd_cap(ig,ic))*dist < prt_tauddmc) then
         ptcl2%itype = 1
+!-- sample wavelength
+        call rnd_r(r1,rndstate)
+        wl = 1d0/((1d0-r1)*grp_wlinv(ig) + r1*grp_wlinv(ig+1))
 !-- direction sampled isotropically           
         call rnd_r(r1,rndstate)
         mu = 1d0 - 2d0*r1
