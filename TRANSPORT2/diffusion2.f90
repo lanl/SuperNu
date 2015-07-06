@@ -44,7 +44,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   real*8 :: resopacleak
   integer :: glump, gunlump
   integer :: glumps(grp_ng)
-  real*8 :: dtinv, tempinv, capgreyinv
+  real*8 :: tempinv, capgreyinv
   real*8 :: dist, help
   real*8 :: specarr(grp_ng)
 
@@ -77,7 +77,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   eraddens = 0d0
 !
 !-- shortcut
-  dtinv = 1d0/tsp_dt
   tempinv = 1d0/grd_temp(ic)
   capgreyinv = max(1d0/grd_capgrey(ic),0d0) !catch nans
 
@@ -273,7 +272,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !
 !-- calculating energy depostion and density
   if(prt_isddmcanlog) then
-     eraddens = e*ddmct*dtinv
+     eraddens = e*ddmct*tsp_dtinv
   else
      edep = e*(1d0-exp(-grd_fcoef(ic) &!{{{
           *caplump*pc_c*ddmct))
@@ -281,9 +280,9 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         help = 1d0/(grd_fcoef(ic)*caplump)
         eraddens = e* &
              (1d0-exp(-grd_fcoef(ic)*caplump*pc_c*ddmct))* &
-             help*cinv*dtinv
+             help*cinv*tsp_dtinv
      else
-        eraddens = e*ddmct*dtinv
+        eraddens = e*ddmct*tsp_dtinv
      endif
      e = e*exp(-grd_fcoef(ic)*caplump*pc_c*ddmct)
 !!}}}

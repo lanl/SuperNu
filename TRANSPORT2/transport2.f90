@@ -29,13 +29,14 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   logical :: loutx,louty
   integer :: ihelp
   real*8 :: elabfact, dirdotu, mu0, gm
-  real*8 :: dtinv, thelp, thelpinv, help
+  real*8 :: thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,ddop
   real*8 :: darr(6)
   real*8 :: xold, yold, omold
   real*8 :: r1, r2
 !-- distance out of physical reach
   real*8 :: far
+  real*8 :: emitlump
 
   integer,pointer :: ix, iy, ic, ig
   integer,parameter :: iz=1
@@ -65,9 +66,6 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   edep = 0d0
   eraddens = 0d0
   eamp = 0d0
-!
-!-- shortcut
-  dtinv = 1d0/tsp_dt
 !
 !-- setting vel-grid helper variables
   if(grd_isvelocity) then
@@ -219,7 +217,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   if(prt_isimcanlog) then
 !-- analog energy density
      eraddens = e*elabfact* &
-          d*thelp*cinv*dtinv
+          d*thelp*cinv*tsp_dtinv
   else
 !-- nonanalog energy density
      if(grd_fcoef(ic)*grd_cap(ig,ic)* &
@@ -232,7 +230,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      else
 !-- analog energy density
         eraddens = e*elabfact* &
-             d*thelp*cinv*dtinv
+             d*thelp*cinv*tsp_dtinv
      endif
 !-- depositing nonanalog absorbed energy
      edep = e* &
@@ -332,46 +330,52 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         return
      else
 !-- effective scattering
-!-- redistributing wavelength
-        call rnd_r(r1,rndstate)
-        if(grp_ng>1) then
-           ig = emitgroup(r1,ic)
-           if(ig>grp_ng) then
-!             stop 'transport2: emitgroup ig>ng'
-              ierr = 9
-              return
-           endif
-        endif
-!-- uniformly in new group
-        call rnd_r(r1,rndstate)
-        wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
+!
 !-- transforming to lab
         if(grd_isvelocity) then
-           wl = wl*(1d0-dirdotu*cinv)
            help = elabfact/(1d0-dirdotu*cinv)
 !-- velocity effects accounting
            totevelo=totevelo+e*(1d0-help)
-!
 !-- energy weight
            e = e*help
            e0 = e0*help
         endif
+!
+!-- sample group
+        emitlump = grd_opaclump(-1,ic)/grd_capgrey(ic)
+        if(grp_ng==1) then
+        elseif(emitlump<.99d0 .or. trn_nolumpshortcut .or. in_puretran) then
+           call rnd_r(r1,rndstate)
+           ig = emitgroup(r1,ic)
 !-- checking if DDMC in new group
-        if((grd_cap(ig,ic)+grd_sig(ic)) * &
-             min(dx(ix),dy(iy))*thelp >= prt_tauddmc &
-             .and..not.in_puretran) then
+           if((grd_cap(ig,ic)+grd_sig(ic)) * &
+              min(dx(ix),dy(iy))*thelp >= prt_tauddmc &
+              .and. .not.in_puretran) ptcl2%itype = 2
+!-- don't sample, it will end up in the lump anyway
+        else
            ptcl2%itype = 2
+!-- always put this in the single most likely group
+           ig = nint(grd_opaclump(-2,ic))
+        endif
+!
+!-- sample wavelength
+        if(ptcl2%itype==2) then
 !-- transforming to cmf
            if(grd_isvelocity) then
 !-- velocity effects accounting
               totevelo=totevelo+e*dirdotu*cinv
-!
+!-- energy weight
               e = e*(1d0-dirdotu*cinv)
               e0 = e0*(1d0-dirdotu*cinv)
-              wl = wl/(1d0-dirdotu*cinv)
            endif
+           wl = 0d0 !workaround ifort 13.1.3 bug
         else
            ptcl%icorig = ic
+!-- uniformly in new group
+           call rnd_r(r1,rndstate)
+           wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
+!-- converting comoving wavelength to lab frame wavelength
+           if(grd_isvelocity) wl = wl*(1d0-dirdotu*cinv)
         endif
      endif
 
