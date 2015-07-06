@@ -87,7 +87,7 @@ subroutine particle_advance(lmpi0)
   flx_lumnum = 0
 
 !-- optional grid tally
-  if(grd_ltally) then
+  if(in_io_dogrdtally) then
      grd_methodswap = 0
      grd_numcensimc = 0
      grd_numcensddmc = 0
@@ -251,7 +251,7 @@ subroutine particle_advance(lmpi0)
            call transport(ptcl,ptcl2,rndstate,edep,eraddens,eamp,tot_evelo,ierr)
            if(ptcl2%itype/=1) then
               nmethodswap = nmethodswap + 1
-              if(grd_ltally) grd_methodswap(icold) = grd_methodswap(icold) + 1
+              if(in_io_dogrdtally) grd_methodswap(icold) = grd_methodswap(icold) + 1
               icorig = 0
            endif
 !-- tally eamp
@@ -261,7 +261,7 @@ subroutine particle_advance(lmpi0)
            call diffusion(ptcl,ptcl2,cache,rndstate,edep,eraddens,tot_evelo,ierr)
            if(ptcl2%itype==1) then
               nmethodswap = nmethodswap + 1
-              if(grd_ltally) grd_methodswap(icold) = grd_methodswap(icold) + 1
+              if(in_io_dogrdtally) grd_methodswap(icold) = grd_methodswap(icold) + 1
               icorig = ptcl2%ic
            endif
         endif
@@ -273,7 +273,7 @@ subroutine particle_advance(lmpi0)
 !-- outbound luminosity tally
         if(ptcl2%lflux) then
            nflux = nflux + 1
-           if(icorig>0 .and. grd_ltally) grd_numfluxorig(icorig) = grd_numfluxorig(icorig) + 1
+           if(icorig>0 .and. in_io_dogrdtally) grd_numfluxorig(icorig) = grd_numfluxorig(icorig) + 1
            tot_eout = tot_eout+e
 !-- retrieving lab frame flux group, polar, azimuthal bin
            ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
@@ -324,10 +324,10 @@ subroutine particle_advance(lmpi0)
         if(ptcl2%lcens) then
            if(ptcl2%itype==1) then
               ncensimc = ncensimc + 1
-              if(grd_ltally) grd_numcensimc(ic) = grd_numcensimc(ic) + 1
+              if(in_io_dogrdtally) grd_numcensimc(ic) = grd_numcensimc(ic) + 1
            else
               ncensddmc = ncensddmc + 1
-              if(grd_ltally) grd_numcensddmc(ic) = grd_numcensddmc(ic) + 1
+              if(in_io_dogrdtally) grd_numcensddmc(ic) = grd_numcensddmc(ic) + 1
            endif
         endif
 

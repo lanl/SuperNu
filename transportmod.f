@@ -3,12 +3,11 @@ c     -------------------
       use physconstmod, only:pc_c,pc_pi2
       implicit none
 c
+      private pc_c,pc_pi2
+c
       real*8,private,parameter :: cinv=1d0/pc_c
 c
-      logical :: trn_nolumpshortcut
-c
-      private pc_c,pc_pi2
-      save
+      logical :: trn_nolumpshortcut !allow group sampling to shortcut to single most likely group if emitlump very large
 c
 c-- explicit interfaces
       interface
@@ -247,6 +246,15 @@ c-- procedure pointers
      &  transport_gamgrey => null()
       procedure(transport_),pointer :: transport => null()
       procedure(diffusion_),pointer :: diffusion => null()
+c
+c-- private interfaces
+      private diffusion11,diffusion1,diffusion2,diffusion3
+      private transport11,transport1,transport2,transport3
+      private transport11_gamgrey,transport1_gamgrey,transport2_gamgrey,
+     &  transport3_gamgrey
+      private advection1,advection2,advection3
+c
+      save
 c
       contains
 c

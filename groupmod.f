@@ -50,7 +50,6 @@ c
       subroutine read_wlgrid(ng)
 c     --------------------------!{{{
       use gasmod
-      use inputparmod
       implicit none
       integer,intent(out) :: ng
 ************************************************************************
@@ -233,7 +232,7 @@ c     ----------------------------------------------------!{{{
       real*8 :: xarr(grp_ng+1)
       real*8 :: farr(grp_ng+1)
       real*8 :: f2arr(grp_ng)
-      integer :: i,imode
+      integer :: imode
 c
 c-- default mode is linear
       imode = 1

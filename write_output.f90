@@ -189,7 +189,7 @@ subroutine write_output
      close(4)
 !
 !-- grd tally values
-     if(grd_ltally) then
+     if(in_io_dogrdtally) then
         iarr(:grd_ncell) = grd_methodswap
         open(unit=4,file='output.grd_methodswap',status=fstat,position='append',recl=reclen)
         do i=1,nrow
@@ -217,10 +217,10 @@ subroutine write_output
            write(4,'(10000i12)') iarr((i-1)*ncpr+1:i*ncpr)
         enddo
         close(4)
-     endif
+     endif !in_io_dogrdtally
 !
      deallocate(iarr,arr)
-  endif !grd_ltally
+  endif
 
 !
 !-- after the first iteration open files in append mode

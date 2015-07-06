@@ -8,12 +8,12 @@ c     -----------------
 c
 c
 c-- max and min values for constant linear profile function
-      real*8,parameter :: man_aa11 = 1.371d14*2.997924562d10 !erg/cm^2/s
-      real*8,parameter :: man_aa22 = 1.371d12*2.997924562d10 !erg/cm^2/s
+      real*8,parameter,private :: mnf_aa11 = 1.371d14*2.997924562d10 !erg/cm^2/s
+      real*8,parameter,private :: mnf_aa22 = 1.371d12*2.997924562d10 !erg/cm^2/s
 c
 c-- a uniform temperature value (or possibly nominal temperature value)
-!      real*8,parameter :: man_temp0 = 1.1602621d7 !K
-      real*8,parameter :: man_temp0 = 1.160237998048407d7 !K
+!      real*8,parameter :: mnf_temp0 = 1.1602621d7 !K
+      real*8,parameter,private :: mnf_temp0 = 1.160237998048407d7 !K
 c
       save
 c
@@ -77,12 +77,12 @@ c-- grey solution
                l = grd_icell(i,1,1)
                grd_emitex(l)= (1d0/dt)*(
      &            log((texp+dt)/texp)
-     &            *(4d0*man_aa11/pc_c)+
+     &            *(4d0*mnf_aa11/pc_c)+
      &            (3d0*totmass*sigcoef/
      &            (8d0*pc_pi*in_velout))*
      &            ((in_velout*texp)**(-2d0)-
      &            (in_velout*(texp+dt))**(-2d0))*
-     &            (man_aa11-pc_acoef*pc_c*man_temp0**4)
+     &            (mnf_aa11-pc_acoef*pc_c*mnf_temp0**4)
      &            )
 !
             enddo
@@ -137,7 +137,7 @@ c--   grey solution
      &           (3d0*totmass*sigcoef/(8d0*pc_pi*in_velout))*
      &           ((in_velout*texp)**(-2d0)-
      &           (in_velout*(texp+dt))**(-2d0))*
-     &           (pc_acoef*pc_c*man_temp0**4d0-man_aa11)
+     &           (pc_acoef*pc_c*mnf_temp0**4d0-mnf_aa11)
 c
          case ('mono')
             stop 'generate_manutempsrc: in_opacanaltype=mono'
@@ -186,7 +186,7 @@ c-- implement/modify velocity dependent manufactured initial profile
          select case (in_opacanaltype)
          case ('grey')
 c-- grey solution
-           grd_evolinit = (man_aa11/pc_c) * grd_vol
+           grd_evolinit = (mnf_aa11/pc_c) * grd_vol
 c
          case ('mono')
             stop 'init_manuprofile: in_opacanaltype=mono'
@@ -226,7 +226,7 @@ c-- implement/modify velocity dependent manufactured initial profile
          select case (in_opacanaltype)
          case ('grey')
 c-- grey solution (uniform nominal temperature)
-            gas_temp = man_temp0
+            gas_temp = mnf_temp0
 c
          case ('mono')
             stop 'init_manutemp: in_opacanaltype=mono'
@@ -239,7 +239,7 @@ c-- line solution
             if(in_ldisp1/in_ldisp2>=1d-3)
      &           stop 'init_manutemp: in_ldisp1/in_ldisp2>=1d-3'
 c
-            gas_temp = man_temp0
+            gas_temp = mnf_temp0
 c
          case default
             stop 'in_opacanaltype unknown'
