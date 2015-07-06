@@ -7,6 +7,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
   use timestepmod
   use physconstmod
   use particlemod
+  use transportmod
   use inputparmod
   use fluxmod
   implicit none
@@ -502,10 +503,17 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         return
      endif
 
-     call rnd_r(r1,rndstate)
-
      if(glump==0) then
-        iiig = emitgroup(r1,ic)
+!-- sample group
+        if(cache%emitlump<.99d0 .or. trn_nolumpshortcut) then
+           call rnd_r(r1,rndstate)
+           iiig = emitgroup(r1,ic)
+!-- don't sample, it will end up in the lump anyway
+        else
+!-- always put this in the single most likely group
+           ig = nint(grd_opaclump(-2,ic))
+           return
+        endif
      else
 !
 !-- update specarr cache. this is slow
@@ -514,6 +522,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
            call specintw(tempinv,cache%specarr,mode=0,mask=llumps)
         endif
 !
+        call rnd_r(r1,rndstate)
         denom2 = 1d0/(1d0-emitlump)
         denom3 = 0d0
         do iig=grp_ng,glump+1,-1

@@ -12,9 +12,9 @@ subroutine leakage_opacity2
   !DDMC 2D lumped leakage opacities.
 !##################################################
   logical :: lhelp
-  integer :: i,j,k, ig
+  integer :: i,j,k, ig,igemitmax
   integer :: icnb(4) !neighbor cells
-  real*8 :: thelp, dist, help
+  real*8 :: thelp, dist, help, emitmax
   real*8 :: speclump, caplump, specval
   real*8 :: specarr(grp_ng)
   real*8 :: ppl, ppr
@@ -68,11 +68,19 @@ subroutine leakage_opacity2
 !
 !-- caplump
      caplump = 0d0
+     emitmax = 0d0
+     igemitmax = 0
      do ig=1,grp_ng
         if(grd_cap(ig,l)*dist < prt_taulump) cycle
         if((grd_sig(l) + grd_cap(ig,l))*dist < prt_tauddmc) cycle
-        caplump = caplump + specarr(ig)*grd_cap(ig,l)
+        help = specarr(ig)*grd_cap(ig,l)
+        caplump = caplump + help
+        if(help > emitmax) then
+           emitmax = help
+           igemitmax = ig
+        endif
      enddo
+     grd_opaclump(-2,l) = igemitmax
      grd_opaclump(-1,l) = caplump
 !
 !-- lumping opacity

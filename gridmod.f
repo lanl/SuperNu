@@ -39,7 +39,7 @@ c-- Probability of emission in a given zone and group
 c-- Line+Cont extinction coeff
       real*4,allocatable :: grd_cap(:,:) !(ng,ncell)
 c-- leakage opacities
-      real*8,allocatable :: grd_opaclump(:,:) !(-1:6,ncell) caplump,speclump,leak(6)
+      real*8,allocatable :: grd_opaclump(:,:) !(-2:6,ncell) igemitmax,caplump,speclump,leak(6)
 
 c
       real*8,allocatable :: grd_vol(:)  !(ncell)
@@ -173,7 +173,7 @@ c
       allocate(grd_numfluxorig(grd_ncell))
 c
 c-- ndim=4 alloc
-      allocate(grd_opaclump(-1:6,grd_ncell))
+      allocate(grd_opaclump(-2:6,grd_ncell))
       allocate(grd_emitprob(grd_nep,grd_ncell))
 c-- ndim=4 alloc
       allocate(grd_cap(ng,grd_ncell))

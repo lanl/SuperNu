@@ -7,6 +7,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   use timestepmod
   use physconstmod
   use particlemod
+  use transportmod
   use inputparmod
   use fluxmod
   implicit none
@@ -35,6 +36,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   real*8 :: ppl, ppr
 !-- distance out of physical reach
   real*8 :: far
+  real*8 :: emitlump
 
   integer,pointer :: ix,ic,ig
   integer,parameter :: iy=1, iz=1
@@ -267,12 +269,25 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !
 !-- sample wavelength
         call rnd_r(r1,rndstate)
-        if(grp_ng>1) ig = emitgroup(r1,ic)
-! sampling comoving wavelength in group
-        call rnd_r(r1,rndstate)
-        wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
-!-- converting comoving wavelength to lab frame wavelength
-        if(grd_isvelocity) wl = wl*(1d0-x*mu*cinv)
+        emitlump = grd_opaclump(-1,ic)/grd_capgrey(ic)
+        if(grp_ng==1) then
+        elseif(emitlump<.99d0 .or. trn_nolumpshortcut) then
+           ig = emitgroup(r1,ic)
+!-- don't sample, it will end up in the lump anyway
+        else
+           ptcl2%itype = 2
+!-- always put this in the single most likely group
+           ig = nint(grd_opaclump(-2,ic))
+           if(grd_isvelocity) then
+!-- velocity effects accounting
+              totevelo = totevelo+e*x*mu*cinv
+              e = e*(1d0-x*mu*cinv)
+              e0 = e0*(1d0-x*mu*cinv)
+           endif
+!write(0,*) ig,grd_cap(ig,ic)*dx(ix)*thelp > prt_taulump
+           wl = 0d0 !workaround ifort 13.1.3 bug
+           return
+        endif
 !
         if (((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)*thelp >= prt_tauddmc) &
              .and. .not.in_puretran) then
@@ -284,7 +299,14 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
               e = e*(1d0-x*mu*cinv)
               e0 = e0*(1d0-x*mu*cinv)
            endif
+!write(0,*) ig,grd_cap(ig,ic)*dx(ix)*thelp > prt_taulump
+           wl = 0d0 !workaround ifort 13.1.3 bug
         else
+! sampling comoving wavelength in group
+           call rnd_r(r1,rndstate)
+           wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
+!-- converting comoving wavelength to lab frame wavelength
+           if(grd_isvelocity) wl = wl*(1d0-x*mu*cinv)
            ptcl%icorig = ic
         endif
      endif

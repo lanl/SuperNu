@@ -125,7 +125,7 @@ program supernu
   call particlemod_init(mpart,in_isimcanlog, &
        in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime)
 !-- create procedure pointers for the selected geometry
-  call transportmod_init(in_igeom)
+  call transportmod_init(in_igeom,in_trn_nolumpshortcut)
 !-- source particles
   ns = int(int(2,8)**in_src_n2s/nmpi)
   ns = max(ns,in_ns/nmpi)

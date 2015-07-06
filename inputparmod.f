@@ -69,6 +69,7 @@ c<< backwards compatibility
       logical :: in_trn_noamp = .true.  !disable amplification factor
       real*8 :: in_tauddmc = 5d0 !number of mean free paths per cell required for DDMC
       real*8 :: in_taulump = 10d0 !number of of mean free paths needed to lump DDMC groups
+      logical :: in_trn_nolumpshortcut = .false. !don't collapse effective scattering group to the single most likely group if emitlump large
 c-- time dependence of in_tauddmc and in_taulump
       character(4) :: in_tauvtime = 'unif' ! unif|incr = constant or limiting (s-curve) to more conservative constant
 c
@@ -153,7 +154,7 @@ c-- runtime parameter namelist
      & in_consttemp,
      &    in_ns,in_ns0,in_prt_nmax, !compat
      & in_src_n2s,in_src_n2sinit,in_trn_n2part,
-     & in_puretran,in_alpha,
+     & in_trn_nolumpshort,in_puretran,in_alpha,
      & in_tsp_tfirst,in_tsp_tlast,
      &    in_tfirst,in_tlast, !compat
      & in_nt,in_ntres,
@@ -255,6 +256,7 @@ c
       call inserti(in_src_n2sinit,in_i,ii)
       call inserti(in_trn_n2part,in_i,ii)
       call insertl(in_puretran,in_l,il)
+      call insertl(in_trn_nolumpshort,in_l,il)
       call insertl(in_isimcanlog,in_l,il)
       call insertl(in_isddmcanlog,in_l,il)
       call insertr(in_tauddmc,in_r,ir)
