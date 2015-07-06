@@ -13,18 +13,14 @@ c
 c
       contains
 
-      subroutine sourcemod_init(nmpi,ns,ninit)
-c     ----------------------------------------!{{{
+      subroutine sourcemod_init(nmpi)
+c     ----------------------------------------
       implicit none
-      integer,intent(in) :: nmpi,ns,ninit
+      integer,intent(in) :: nmpi
 ************************************************************************
 * init particle module
 ************************************************************************
-!-- adopt input values in module internal storage
-      src_ns = ns
-      src_ninit = ninit
       allocate(src_nvacantall(nmpi))
-!}}}
       end subroutine sourcemod_init
 c
       end module sourcemod

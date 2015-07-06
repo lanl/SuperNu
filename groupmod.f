@@ -3,6 +3,7 @@
 c
 c-- wavelength grid (gridmod has a copy as well)
       integer,target :: grp_ng=0
+      real*8 :: grp_wlmin,grp_wlmax
       real*8,allocatable :: grp_wl(:) !(grp_ng) wavelength grid
       real*8,allocatable :: grp_wlinv(:) !(grp_ng) wavelength grid
 c
@@ -22,24 +23,22 @@ c
       contains
 c
 c
-      subroutine groupmod_init(ng,wldex,wlmin,wlmax)
-c     -------------------------------------------!{{{
+      subroutine groupmod_init(wldex)
+c     -------------------------------!{{{
       implicit none
-      integer,intent(in) :: ng,wldex
-      real*8,intent(in) :: wlmin,wlmax
+      integer,intent(in) :: wldex
 ************************************************************************
 * setup wavelength grid
 ************************************************************************
       integer :: ig
 c
 c-- read wavelength grid from file
-      if(ng==0) then
-       call read_wlgrid(grp_ng)
+      if(grp_ng==0) then
+       call read_wlgrid(wldex,grp_ng)
       else
-       grp_ng = ng
        allocate(grp_wl(grp_ng+1))
        forall(ig=1:grp_ng+1) grp_wl(ig) =
-     &   wlmin*(wlmax/dble(wlmin))**((ig-1d0)/grp_ng)
+     &   grp_wlmin*(grp_wlmax/dble(grp_wlmin))**((ig-1d0)/grp_ng)
       endif
 c
       allocate(grp_wlinv(grp_ng+1))
@@ -47,10 +46,11 @@ c
 c
       contains
 c
-      subroutine read_wlgrid(ng)
-c     --------------------------!{{{
+      subroutine read_wlgrid(wldex,ng)
+c     --------------------------------!{{{
       use gasmod
       implicit none
+      integer,intent(in) :: wldex
       integer,intent(out) :: ng
 ************************************************************************
 * read wavelength grid from file

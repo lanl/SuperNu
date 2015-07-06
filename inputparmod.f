@@ -586,4 +586,81 @@ c$    endif
 c
       end subroutine parse_inputpars
 c
+c
+c
+      subroutine provide_inputpars(nmpi)
+c     -------------------------------------!{{{
+      use physconstmod
+      use particlemod
+      use sourcemod
+      use transportmod
+      use timestepmod
+      use fluxmod
+      use groupmod
+      use gridmod
+      implicit none
+      integer,intent(in) :: nmpi
+************************************************************************
+* Distribute the input parameter values to the respective modules.
+* This needs to be called AFTER the values are bcast.
+************************************************************************
+      integer :: mpart
+      integer :: ns,nsinit
+      real*8 :: tfirst,tlast
+c
+      mpart = int(int(2,8)**in_trn_n2part/nmpi) !max number of particles
+      mpart = max(mpart,in_prt_nmax/nmpi)
+      prt_npartmax = mpart
+      prt_isimcanlog = in_isimcanlog
+      prt_isddmcanlog = in_isddmcanlog
+      prt_tauddmc = in_tauddmc
+      prt_taulump = in_taulump
+      prt_tauvtime = in_tauvtime
+c
+      ns = int(int(2,8)**in_src_n2s/nmpi)
+      ns = max(ns,in_ns/nmpi)
+      nsinit = int(int(2,8)**in_src_n2sinit/nmpi)
+      nsinit = max(nsinit,in_ns0/nmpi)
+      src_ns = ns
+      src_ninit = nsinit
+c
+      tfirst = max(in_tsp_tfirst,in_tfirst*pc_day)
+      tlast = max(in_tsp_tlast,in_tlast*pc_day)
+      tsp_nt     = in_nt
+      tsp_ntres  = in_ntres
+      tsp_tfirst = tfirst
+      tsp_tlast  = tlast
+c
+      !gas_sigcoef = in_gas_sigcoef
+      !gas_sigtpwr = in_gas_sigtpwr
+      !gas_sigrpwr = in_gas_sigrpwr
+      !gas_capcoef = in_gas_capcoef
+      !gas_captpwr = in_gas_captpwr
+      !gas_caprpwr = in_gas_caprpwr
+      !gas_cvcoef  = in_gas_cvcoef
+      !gas_cvtpwr  = in_gas_cvtpwr
+      !gas_cvrpwr  = in_gas_cvrpwr
+c
+      trn_nolumpshortcut = in_trn_nolumpshortcut
+      trn_noampfact = in_trn_noamp
+c
+      !io_dogrdtally = in_io_dogrdtally
+c
+      flx_ndim  = in_flx_ndim
+      flx_wlmin = in_flx_wlmin
+      flx_wlmax = in_flx_wlmax
+c
+      grp_ng    = in_ng
+      grp_wlmin = in_wlmin
+      grp_wlmax = in_wlmax
+c
+      grd_igeom = in_igeom
+      grd_nx    = in_ndim(1)
+      grd_ny    = in_ndim(2)
+      grd_nz    = in_ndim(3)
+      grd_lvoid = in_voidcorners
+      grd_isvelocity = in_isvelocity
+c!}}}
+      end subroutine provide_inputpars
+c
       end module inputparmod

@@ -14,6 +14,7 @@ subroutine particle_advance(lmpi0)
   use timingmod
   use countersmod
   use fluxmod
+  use sourcemod
   implicit none
   logical,intent(in) :: lmpi0
 !
@@ -80,7 +81,7 @@ subroutine particle_advance(lmpi0)
   tot_erad = 0d0
 
   grd_tally = 0d0
-  if(.not.in_trn_noamp) grd_eamp = 0d0
+  if(.not.trn_noampfact) grd_eamp = 0d0
 
   flx_luminos = 0d0
   flx_lumdev = 0d0
@@ -177,7 +178,7 @@ subroutine particle_advance(lmpi0)
 
 !
 !-- determine particle type
-     select case(in_igeom)
+     select case(grd_igeom)
      case(11)
         help = thelp*dx(ix)
      case(1)
@@ -199,7 +200,7 @@ subroutine particle_advance(lmpi0)
 !
 !-- transform IMC particle into lab frame
      if(grd_isvelocity.and.ptcl2%itype==1) then
-        select case(in_igeom)
+        select case(grd_igeom)
         case(1,11)
            labfact = 1d0-x*mu/pc_c
         case(2)
@@ -255,7 +256,7 @@ subroutine particle_advance(lmpi0)
               icorig = 0
            endif
 !-- tally eamp
-           if(.not.in_trn_noamp) grd_eamp(icold) = grd_eamp(icold) + eamp
+           if(.not.trn_noampfact) grd_eamp(icold) = grd_eamp(icold) + eamp
         else
            nstepddmc = nstepddmc + 1
            call diffusion(ptcl,ptcl2,cache,rndstate,edep,eraddens,tot_evelo,ierr)
@@ -292,7 +293,7 @@ subroutine particle_advance(lmpi0)
            if(.not.grd_isvelocity .or. ptcl2%itype==2) then
               labfact = 1d0
            else
-              select case(in_igeom)
+              select case(grd_igeom)
               case(1,11)
                  labfact = 1d0 - mu*x/pc_c
               case(2)
@@ -406,7 +407,7 @@ subroutine particle_advance(lmpi0)
         wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
 !
 !-- sample position and direction
-        select case(in_igeom)
+        select case(grd_igeom)
 !-- 1D spherical
         case(11)
 !-- sampling position uniformly!{{{
@@ -483,7 +484,7 @@ subroutine particle_advance(lmpi0)
 !
 !-- transform IMC particle energy to comoving frame for storage
      if(grd_isvelocity.and.ptcl2%itype==1) then
-        select case(in_igeom)
+        select case(grd_igeom)
 !-- [123]D spherical
         case(1,11)
            labfact = 1d0-x*mu/pc_c
@@ -530,7 +531,9 @@ subroutine particle_advance(lmpi0)
 !$omp end parallel
 
 !-- print distance counters
-  if(lmpi0) write(6,'(11(i6,"k"))',advance='no') ndist(-3:7)/1000
+! if(lmpi0) write(6,'(11(i6,"k"))',advance='no') ndist(-3:7)/1000
+
+  src_nflux = nflux
 
   tot_sflux = -sum(flx_luminos)
 

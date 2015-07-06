@@ -31,8 +31,6 @@ program supernu
   real*8 :: dt
   integer :: ierr, it
   integer :: icell1, ncell !number of cells per rank (gas_ncell)
-  integer :: ns, nsinit, mpart
-  real*8 :: tfirst, tlast
   real*8 :: t0, t1 !timing
   character(15) :: msg
 !
@@ -92,26 +90,23 @@ program supernu
   endif !impi
 !-- broadcast init info from impi0 rank to all others
   call bcast_permanent !MPI
+  call provide_inputpars(nmpi)
 !-- domain-decompose input structure
   call scatter_inputstruct(in_ndim,icell1,ncell) !MPI
 
 !--
 !-- setup remaining modules
 !==========================
-!-- time step init
-  tfirst = max(in_tsp_tfirst,in_tfirst*pc_day)
-  tlast = max(in_tsp_tlast,in_tlast*pc_day)
-  call timestepmod_init(in_nt,in_ntres,tfirst)
+  call timestepmod_init
 !-- constant time step, may be coded to loop if time step is not uniform
-  dt = (tlast - tfirst)/in_nt
+  dt = (tsp_tlast - tsp_tfirst)/tsp_nt
 
 !-- wlgrid (before grid setup)
-  call groupmod_init(in_ng,in_wldex,in_wlmin,in_wlmax)
-  call fluxgrid_setup(in_flx_ndim,in_flx_wlmin,in_flx_wlmax)
+  call groupmod_init(in_wldex)
+  call fluxgrid_setup
 
 !-- setup spatial grid
-  call gridmod_init(lmpi0,grp_ng,in_igeom,in_ndim,str_nc,icell1,ncell, &
-          str_lvoid,in_isvelocity)
+  call gridmod_init(lmpi0,grp_ng,str_nc,icell1,ncell)
   call grid_setup
 !-- setup gas
   call gasmod_init(lmpi0,icell1,ncell,grp_ng)
@@ -119,19 +114,10 @@ program supernu
 !-- inputstr no longer needed
   call inputstr_dealloc
 
-!-- particle init
-  mpart = int(int(2,8)**in_trn_n2part/nmpi) !max number of particles
-  mpart = max(mpart,in_prt_nmax/nmpi)
-  call particlemod_init(mpart,in_isimcanlog, &
-       in_isddmcanlog,in_tauddmc,in_taulump,in_tauvtime)
 !-- create procedure pointers for the selected geometry
-  call transportmod_init(in_igeom,in_trn_nolumpshortcut)
+  call transportmod_init(in_igeom)
 !-- source particles
-  ns = int(int(2,8)**in_src_n2s/nmpi)
-  ns = max(ns,in_ns/nmpi)
-  nsinit = int(int(2,8)**in_src_n2sinit/nmpi)
-  nsinit = max(nsinit,in_ns0/nmpi)
-  call sourcemod_init(nmpi,ns,nsinit)
+  call sourcemod_init(nmpi)
 
 !-- allocate arrays of sizes retreived in bcast_permanent
   call ions_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
@@ -172,7 +158,7 @@ program supernu
 
 !-- Update tsp_t etc
      call timestep_update(dt)  !dt is input here, any value can be passed
-     call tau_update(tsp_t,tfirst,tlast) !updating prt_tauddmc and prt_taulump
+     call tau_update(tsp_t,tsp_tfirst,tsp_tlast) !updating prt_tauddmc and prt_taulump
 
 !-- write timestep
      if(lmpi0) write(6,'(1x,a,i5,f8.3,"d")',advance='no') 'tsp:',it,tsp_t/pc_day
@@ -259,9 +245,15 @@ program supernu
 
 !-- write stdout
         help = merge(tot_eerror,tot_erad,it>0)
-        write(6,'(1p,e10.2,2(i7,"k"),0p,f6.3)') help, &
-           ct_nptransport(2)/1000,(ct_npcensimc(2)+ct_npcensddmc(2))/1000, &
-           ct_npcensimc(2)/dble(ct_npcensimc(2)+ct_npcensddmc(2))
+        if(ct_nptransport(2)<1000000) then
+           write(6,'(1p,e10.2,4(i7,1x))') help, &
+              ct_npcreate(2),(ct_npcensimc(2)+ct_npcensddmc(2)), &
+              ct_npflux(2),ct_nptransport(2)
+        else
+           write(6,'(1p,e10.2,4(i7,"k"))') help, &
+              ct_npcreate(2)/1000,(ct_npcensimc(2)+ct_npcensddmc(2))/1000, &
+              ct_npflux(2)/1000,ct_nptransport(2)
+        endif
      endif !impi
 
 !-- write timestep timing to file

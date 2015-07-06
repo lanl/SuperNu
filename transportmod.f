@@ -8,6 +8,7 @@ c
       real*8,private,parameter :: cinv=1d0/pc_c
 c
       logical :: trn_nolumpshortcut !allow group sampling to shortcut to single most likely group if emitlump very large
+      logical :: trn_noampfact      !don't use the particle amplification factor
 c
 c-- explicit interfaces
       interface
@@ -260,12 +261,9 @@ c
 c
 c
 c
-      subroutine transportmod_init(igeom,nolumpshortcut)
+      subroutine transportmod_init(igeom)
 c     -----------------------------------------------
       integer,intent(in) :: igeom
-      logical,intent(in) :: nolumpshortcut
-c
-      trn_nolumpshortcut = nolumpshortcut
 c
 c-- set procedure pointers
       select case(igeom)

@@ -26,7 +26,7 @@ module particlemod
 !
   integer :: prt_npartmax
 
-  logical :: prt_isimcanlog !sets flux tally and energy deposition ...
+  logical :: prt_isimcanlog  !sets flux tally and energy deposition ...
   !to analog in IMC
   logical :: prt_isddmcanlog !sets flux tally and energy deposition ...
   !to analog in DDMC
@@ -46,28 +46,6 @@ module particlemod
   save
 
   contains
-
-  subroutine particlemod_init(npartmax,isimcanlog, &
-       isddmcanlog,tauddmc,taulump,tauvtime)!{{{
-!--------------------------------------
-    implicit none
-    integer,intent(in) :: npartmax
-    logical,intent(in) :: isimcanlog, isddmcanlog
-    real*8,intent(in) :: tauddmc, taulump
-    character(4),intent(in) :: tauvtime
-!***********************************************************************
-! init particle module
-!***********************************************************************
-!-- adopt input values in module internal storage
-    prt_npartmax = npartmax
-    prt_isimcanlog = isimcanlog
-    prt_isddmcanlog = isddmcanlog
-    prt_tauddmc = tauddmc
-    prt_taulump = taulump
-    prt_tauvtime = tauvtime
-!!}}}
-  end subroutine particlemod_init
-
 
   subroutine particle_alloc(ltalk,norestart,nummespasint)
 !--------------------------------------------------!{{{

@@ -410,7 +410,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !
 !             e0=e0*(1d0+2d0*min(0.055d0*prt_tauddmc,1d0)*x*cinv)
 !             e = e*(1d0+2d0*min(0.055d0*prt_tauddmc,1d0)*x*cinv)
-              if(.not.in_trn_noamp .and. mu<0d0) then
+              if(.not.trn_noampfact .and. mu<0d0) then
                  help = 1d0/abs(mu)
                  help = min(100d0, help) !-- truncate singularity
 !

@@ -89,15 +89,12 @@ c
 c
       contains
 c
-      subroutine gridmod_init(ltalk,ngin,igeom,ndim,ncell,idd1,ndd,
-     &  lvoid,isvelocity)
-c     -------------------------------------------------------------!{{{
+      subroutine gridmod_init(ltalk,ngin,ncell,idd1,ndd)
+c     --------------------------------------------------!{{{
       implicit none
-      logical,intent(in) :: ltalk,isvelocity
-      integer,intent(in) :: ngin,igeom
-      integer,intent(in) :: ndim(3)
+      logical,intent(in) :: ltalk
+      integer,intent(in) :: ngin
       integer,intent(in) :: ncell,idd1,ndd
-      logical,intent(in) :: lvoid
 ************************************************************************
 * Allocate grd variables.
 *
@@ -106,31 +103,22 @@ c     -------------------------------------------------------------!{{{
 ************************************************************************
       integer :: n
 c
-      grd_igeom = igeom
-c
       ng = ngin
 c
 c-- emission probability
       grd_nep = nint(sqrt(dble(ng)))
       grd_nepg = ceiling(ng/(grd_nep + 1d0))
 c
-      grd_nx = ndim(1)
-      grd_ny = ndim(2)
-      grd_nz = ndim(3)
-c
 c-- number of non-void cells, plus one optional dummy cell if void cells exist
       grd_ncell = ncell
       grd_idd1 = idd1
       grd_ndd = ndd
-      grd_lvoid = lvoid
-c
-      grd_isvelocity = isvelocity
 c
       allocate(grd_xarr(grd_nx+1))
       allocate(grd_yarr(grd_ny+1))
       allocate(grd_zarr(grd_nz+1))
 c-- polar
-      if(igeom==1) allocate(grd_yacos(grd_ny+1))
+      if(grd_igeom==1) allocate(grd_yacos(grd_ny+1))
 c
 c-- complete domain
       allocate(grd_icell(grd_nx,grd_ny,grd_nz))

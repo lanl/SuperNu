@@ -7,6 +7,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   use timestepmod
   use physconstmod
   use particlemod
+  use transportmod
   use inputparmod
   use fluxmod
   implicit none
@@ -414,7 +415,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- x-cosine
            mu0 = sqrt(1d0-mu**2)*cos(om)
 !-- amplification factor
-           if(.not.in_trn_noamp .and. mu0<0d0) then
+           if(.not.trn_noampfact .and. mu0<0d0) then
               help=1d0/abs(mu0)
               help = min(100d0, help) !-- truncate singularity
    !
@@ -501,7 +502,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            mu = (mu-gm*y*cinv*(1d0-gm*dirdotu*cinv/(1d0+gm))) / &
                 (gm*(1d0-dirdotu*cinv))
 !-- amplification factor
-           if(.not.in_trn_noamp .and. &
+           if(.not.trn_noampfact .and. &
                  ((mu<0d0.and.y>0d0).or.(mu>0d0.and.y<0d0))) then
               help=1d0/abs(mu)
               help = min(100d0, help) !-- truncate singularity

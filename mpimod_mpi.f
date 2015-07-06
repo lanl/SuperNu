@@ -522,7 +522,6 @@ c
       deallocate(snd2)
 c
 c-- bcast
-      src_nflux = sum(flx_lumnum)
       call mpi_bcast(src_nflux,1,MPI_INTEGER,
      &  impi0,MPI_COMM_WORLD,ierr)
 c

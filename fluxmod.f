@@ -2,6 +2,8 @@
 c     ------------------
       implicit none
 
+      integer :: flx_ndim(3)=0  !number of flux groups (1D,2D,3D)
+      real*8 :: flx_wlmin,flx_wlmax
       integer :: flx_ng=0  !number of flux groups (1D,2D,3D)
       integer :: flx_nmu=0 !number of polar bins (2D,3D)
       integer :: flx_nom=0 !number of azimuthal bins (3D)
@@ -30,11 +32,9 @@ c
       contains
 c
 c
-      subroutine fluxgrid_setup(nflx,wlmin,wlmax)
-c     --------------------------------------------
+      subroutine fluxgrid_setup
+c     -------------------------
       implicit none
-      integer,intent(in) :: nflx(3)
-      real*8,intent(in) :: wlmin,wlmax
 *******************************************************
 * calculate flux grid and tally arrays:
 * -- if any dimensions of flux grid are negative, a
@@ -43,7 +43,7 @@ c     --------------------------------------------
 * index.
 * -- if a dimension number is positive, it could be
 * treated as the grid size.
-* -- for wavelength: if nflx(1)=0, then gas_wl could
+* -- for wavelength: if nflx(1)=0, then grp_wl could
 * be used as the tally grid, flx_wl.
 *******************************************************
       integer :: i
@@ -54,10 +54,10 @@ c
 c
 c-- check if bins are read or generated
       do i = 1,3
-         if(nflx(i)<0) then
-            call read_fluxgrid(i,nflx(i),fnames(i))
+         if(flx_ndim(i)<0) then
+            call read_fluxgrid(i,flx_ndim(i),fnames(i))
          else
-            call generate_fluxgrid(i,nflx(i),wlmin,wlmax)
+            call generate_fluxgrid(i,flx_ndim(i),flx_wlmin,flx_wlmax)
          endif
       enddo
 c

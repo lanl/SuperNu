@@ -7,6 +7,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   use timestepmod
   use physconstmod
   use particlemod
+  use transportmod
   use inputparmod
   use fluxmod
   implicit none
@@ -361,7 +362,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               xi = -1
            endif
 !-- amplification factor
-           if(.not.in_trn_noamp .and. &
+           if(.not.trn_noampfact .and. &
                  ((xi<0d0.and.x>0d0).or.(xi>0d0.and.x<0d0))) then
               help=1d0/abs(xi)
               help = min(100d0, help) !-- truncate singularity
@@ -451,7 +452,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               eta = -1
            endif
 !-- amplification factor
-           if(.not.in_trn_noamp .and. &
+           if(.not.trn_noampfact .and. &
                  ((eta<0d0.and.y>0d0).or.(eta>0d0.and.y<0d0))) then
               help=1d0/abs(eta)
               help = min(100d0, help) !-- truncate singularity
@@ -541,7 +542,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               mu = -1
            endif
 !-- amplification factor
-           if(.not.in_trn_noamp .and.&
+           if(.not.trn_noampfact .and.&
                  ((mu<0d0.and.z>0d0).or.(mu>0d0.and.z<0d0))) then
               help=1d0/abs(mu)
               help = min(100d0, help) !-- truncate singularity
