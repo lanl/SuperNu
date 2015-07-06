@@ -102,21 +102,23 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
      glumps = 0
 !
 !-- find lumpable groups
-     do iig=1,grp_ng
-        if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
-             (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
-           llumps(iig) = .false.
-           glump=glump+1
-           glumps(glump)=iig
-        else
-           llumps(iig) = .true.
-           glumps(gunlump)=iig
-           gunlump=gunlump-1
-        endif
-     enddo
-!
-!-- only do this if needed
      speclump = grd_opaclump(0,ic)
+     if(speclump==0d0) then
+        glump=0
+     else
+        do iig=1,grp_ng
+           if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
+                (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
+              llumps(iig) = .false.
+              glump=glump+1
+              glumps(glump)=iig
+           else
+              llumps(iig) = .true.
+              glumps(gunlump)=iig
+              gunlump=gunlump-1
+           endif
+        enddo
+     endif
 !
 !-- calculate lumped values
      if(glump==grp_ng) then
@@ -151,7 +153,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
   endif
 !
 !-- retrieve from cache
-  if(speclump>0d0) then
+  if(glump>0) then
      emitlump = cache%emitlump
      caplump = cache%caplump
   else
@@ -163,7 +165,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 
 
 
-  if(speclump>0d0) then
+  if(glump>0) then
 !-- leakage opacities
      opacleak = grd_opaclump(1:2,ic)
 !-- calculating unlumped values
@@ -304,7 +306,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
      else
 
         l = grd_icell(ix-1,iy,iz)
-        if(speclump<=0d0) then
+        if(glump==0) then
            iiig = ig
         else
 !-- sample group
@@ -381,7 +383,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         call rnd_r(r1,rndstate)
         call rnd_r(r2,rndstate)
         mu = max(r1,r2)
-        if(speclump<=0d0) then
+        if(glump==0) then
         else
 !-- sample group
            call rnd_r(r1,rndstate)
@@ -420,7 +422,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 
         l = grd_icell(ix+1,iy,iz)
 !-- sample adjacent group (assumes aligned ig bounds)
-        if(speclump<=0d0) then
+        if(glump==0) then
            iiig = ig
         else
 !-- sample group

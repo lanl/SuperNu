@@ -117,21 +117,23 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      glumps = 0
 !
 !-- find lumpable groups
-     do iig=1,grp_ng
-        if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
-             (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
-           llumps(iig) = .false.
-           glump=glump+1
-           glumps(glump)=iig
-        else
-           llumps(iig) = .true.
-           glumps(gunlump)=iig
-           gunlump=gunlump-1
-        endif
-     enddo
-!
-!-- only do this if needed
      speclump = grd_opaclump(0,ic)
+     if(speclump==0d0) then
+        glump=0
+     else
+        do iig=1,grp_ng
+           if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
+                (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
+              llumps(iig) = .false.
+              glump=glump+1
+              glumps(glump)=iig
+           else
+              llumps(iig) = .true.
+              glumps(gunlump)=iig
+              gunlump=gunlump-1
+           endif
+        enddo
+     endif
 !
 !-- calculate lumped values
      if(glump==grp_ng) then
@@ -165,7 +167,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   endif
 !
 !-- retrieve from cache
-  if(glump>0 .and. speclump>0d0) then
+  if(glump>0) then
      emitlump = cache%emitlump
      caplump = cache%caplump
   else
@@ -175,7 +177,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   endif
 !
 !-- calculate lumped values
-  if(speclump>0d0) then
+  if(glump>0) then
 !-- leakage opacities
      opacleak = grd_opaclump(1:,ic)
   else
@@ -438,7 +440,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !
      l = grd_icell(ix-1,iy,iz)
 !-- sample next group
-     if(speclump<=0d0) then
+     if(glump==0) then
         iiig = ig
      else
         call rnd_r(r1,rndstate)
@@ -531,7 +533,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !{{{
 !-- sampling next group
      if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
-     if(speclump<=0d0) then
+     if(glump==0) then
         iiig = ig
      else
         call rnd_r(r1,rndstate)
@@ -661,7 +663,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 
 !-- sampling next group
      l = grd_icell(ix,iy-1,iz)
-     if(speclump<=0d0) then
+     if(glump==0) then
         iiig = ig
      else
         call rnd_r(r1,rndstate)
@@ -771,7 +773,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 
 !-- sampling next group
      l = grd_icell(ix,iy+1,iz)
-     if(speclump<=0d0) then
+     if(glump==0) then
         iiig = ig
      else
         call rnd_r(r1,rndstate)
@@ -880,7 +882,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
      l = grd_icell(ix,iy,iznext)
 !-- sampling next group
-     if(speclump<=0d0) then
+     if(glump==0) then
         iiig = ig
      else
         call rnd_r(r1,rndstate)
@@ -994,7 +996,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
      l = grd_icell(ix,iy,iznext)
 !-- sampling next group
-     if(speclump<=0d0) then
+     if(glump==0) then
         iiig = ig
      else
         call rnd_r(r1,rndstate)

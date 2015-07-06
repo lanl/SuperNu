@@ -107,21 +107,23 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      glumps = 0
 !
 !-- find lumpable groups
-     do iig=1,grp_ng
-        if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
-             (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
-           llumps(iig) = .false.
-           glump=glump+1
-           glumps(glump)=iig
-        else
-           llumps(iig) = .true.
-           glumps(gunlump)=iig
-           gunlump=gunlump-1
-        endif
-     enddo
-!
-!-- only do this if needed
      speclump = grd_opaclump(0,ic)
+     if(speclump==0d0) then
+        glump=0
+     else
+        do iig=1,grp_ng
+           if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
+                (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
+              llumps(iig) = .false.
+              glump=glump+1
+              glumps(glump)=iig
+           else
+              llumps(iig) = .true.
+              glumps(gunlump)=iig
+              gunlump=gunlump-1
+           endif
+        enddo
+     endif
 !
 !-- calculate lumped values
      if(glump==grp_ng) then
@@ -156,7 +158,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   endif
 !
 !-- retrieve from cache
-  if(speclump>0d0) then
+  if(glump>0) then
      emitlump = cache%emitlump
      caplump = cache%caplump
   else
@@ -166,7 +168,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   endif
 
 !-- calculate lumped values
-  if(speclump>0d0) then
+  if(glump>0) then
 !-- leakage opacities
      opacleak = grd_opaclump(1:,ic)
   else
@@ -407,7 +409,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   endif
 
 !-- update specarr cache only when necessary. this is slow
-  if(r1>=pa .and. r1<pa+sum(probleak) .and. speclump>0d0 .and. &
+  if(r1>=pa .and. r1<pa+sum(probleak) .and. glump>0 .and. &
         iand(cache%istat,2)==0) then
      cache%istat = cache%istat + 2
      call specintw(tempinv,cache%specarr,mode=0,mask=.not.llumps)
@@ -427,7 +429,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      if(ix/=1) l = grd_icell(ix-1,iy,iz)
 
 !-- sample next group
-     if(speclump<=0d0) then
+     if(glump==0) then
         iiig = ig
      else
         call rnd_r(r1,rndstate)
@@ -557,7 +559,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)
 
 !-- sampling next group
-     if(speclump<=0d0) then
+     if(glump==0) then
         iiig = ig
      else
         call rnd_r(r1,rndstate)
@@ -685,7 +687,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !{{{
      if(iy/=1) l = grd_icell(ix,iy-1,iz)
 !-- sampling next group
-     if(speclump<=0d0) then
+     if(glump==0) then
         iiig = ig
      else
         call rnd_r(r1,rndstate)
@@ -814,7 +816,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      if(iy/=grd_ny) l = grd_icell(ix,iy+1,iz)
 
 !-- sampling next group
-     if(speclump<=0d0) then
+     if(glump==0) then
         iiig = ig
      else
         call rnd_r(r1,rndstate)
@@ -943,7 +945,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      if(iz/=1) l = grd_icell(ix,iy,iz-1)
 
 !-- sampling next group
-     if(speclump<=0d0) then
+     if(glump==0) then
         iiig = ig
      else
         call rnd_r(r1,rndstate)
@@ -1071,7 +1073,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      if(iz/=grd_nz) l = grd_icell(ix,iy,iz+1)
 
 !-- sampling next group
-     if(speclump<=0d0) then
+     if(glump==0) then
         iiig = ig
      else
         call rnd_r(r1,rndstate)
