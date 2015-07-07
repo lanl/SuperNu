@@ -13,9 +13,9 @@ c
        real*8 :: tempinv,capgreyinv
        real*8 :: speclump,emitlump,caplump
        real*8,pointer :: specarr(:) !(grp_ng)
-       integer,pointer :: glumps(:) !(grp_ng)
-       logical,pointer :: llumps(:) !(grp_ng) this group belongs to the lump
        integer :: istat
+       integer*2,pointer :: glumps(:) !(grp_ng)
+       logical*2,pointer :: llumps(:) !(grp_ng) this group belongs to the lump
       end type grp_t_cache
 c
       save
@@ -31,6 +31,10 @@ c     -------------------------------!{{{
 * setup wavelength grid
 ************************************************************************
       integer :: ig
+c
+c-- verify data range
+      if(grp_ng>2**15-1) stop 'groupmod_init: grp_ng > 2^15. '//
+     &  'Increase glumps int*2 data range'
 c
 c-- read wavelength grid from file
       if(grp_ng==0) then
@@ -218,7 +222,7 @@ c     ----------------------------------------------------!{{{
       real*8,intent(inout) :: ss(grp_ng)
       real*8,intent(in) :: tempinv
       integer,intent(in),optional :: mode
-      logical,intent(in),optional :: mask(grp_ng)
+      logical*2,intent(in),optional :: mask(grp_ng)
 ************************************************************************
 * Integrate normalized Planck spectrum using Newton-Cotes formulae of
 * different degrees.

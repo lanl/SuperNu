@@ -43,8 +43,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   real*8 :: mfphelp, pp
   real*8 :: resopacleak
   integer :: glump, gunlump
-  integer,pointer :: glumps(:)
-  logical,pointer :: llumps(:)
+  integer*2,pointer :: glumps(:)
+  logical*2,pointer :: llumps(:)
   real*8,pointer :: tempinv, capgreyinv
   real*8,pointer :: speclump
   real*8 :: dist, help
@@ -116,10 +116,10 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
                 (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
               llumps(iig) = .false.
               glump=glump+1
-              glumps(glump)=iig
+              glumps(glump) = int(iig,2)
            else
               llumps(iig) = .true.
-              glumps(gunlump)=iig
+              glumps(gunlump) = int(iig,2)
               gunlump=gunlump-1
            endif
         enddo
@@ -452,7 +452,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         denom2 = 0d0
         help = 1d0/opacleak(2)
         do iig = 1, glump
-           iiig=glumps(iig)
+           iiig = glumps(iig)
            specig = cache%specarr(iiig)
 !-- calculating resolved leakage opacities
            if(ix==grd_nx) then

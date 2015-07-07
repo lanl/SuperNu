@@ -1,4 +1,4 @@
-subroutine particle_advance(lmpi0)
+subroutine particle_advance
 
 !$ use omp_lib
   use randommod
@@ -16,7 +16,6 @@ subroutine particle_advance(lmpi0)
   use fluxmod
   use sourcemod
   implicit none
-  logical,intent(in) :: lmpi0
 !
 !##################################################
   !This subroutine propagates all existing particles that are not vacant
@@ -51,8 +50,8 @@ subroutine particle_advance(lmpi0)
   type(packet2),target :: ptcl2
   type(grp_t_cache),target :: cache
   real*8,target :: specarr(grp_ng)
-  integer,target :: glumps(grp_ng)
-  logical,target :: llumps(grp_ng)
+  integer*2,target :: glumps(grp_ng)
+  logical*2,target :: llumps(grp_ng)
 !
   type(rnd_t) :: rndstate
   integer,save :: iomp=0
