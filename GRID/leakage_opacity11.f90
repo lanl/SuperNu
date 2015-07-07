@@ -60,7 +60,7 @@ subroutine leakage_opacity11
      else
         speclump = 0d0
      endif
-     grd_opaclump(0,l) = speclump
+     grd_opaclump(7,l) = speclump
 !
 !-- caplump
      caplump = 0d0
@@ -76,8 +76,8 @@ subroutine leakage_opacity11
            igemitmax = ig
         endif
      enddo
-     grd_opaclump(-2,l) = igemitmax
-     grd_opaclump(-1,l) = caplump
+     grd_opaclump(8,l) = caplump
+     grd_opaclump(9,l) = igemitmax
 !
 !-- lumping opacity
      do ig=1,grp_ng

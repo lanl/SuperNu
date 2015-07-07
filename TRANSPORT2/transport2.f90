@@ -342,7 +342,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         endif
 !
 !-- sample group
-        emitlump = grd_opaclump(-1,ic)/grd_capgrey(ic)
+        emitlump = grd_opaclump(8,ic)/grd_capgrey(ic)
         if(grp_ng==1) then
         elseif(emitlump<.99d0 .or. trn_nolumpshortcut .or. in_puretran) then
            call rnd_r(r1,rndstate)
@@ -355,7 +355,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         else
            ptcl2%itype = 2
 !-- always put this in the single most likely group
-           ig = nint(grd_opaclump(-2,ic))
+           ig = nint(grd_opaclump(9,ic))
         endif
 !
 !-- sample wavelength

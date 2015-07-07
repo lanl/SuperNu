@@ -102,7 +102,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
      glumps = 0
 !
 !-- find lumpable groups
-     speclump = grd_opaclump(0,ic)
+     speclump = grd_opaclump(7,ic)
      if(speclump==0d0) then
         glump=0
      else
@@ -126,8 +126,8 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         caplump = grd_capgrey(ic)
      else
 !-- Planck x-section lump
-        caplump = grd_opaclump(-1,ic)*speclump
-        emitlump = grd_opaclump(-1,ic)*capgreyinv
+        caplump = grd_opaclump(8,ic)*speclump
+        emitlump = grd_opaclump(8,ic)*capgreyinv
         emitlump = min(emitlump,1d0)
      endif
 !
@@ -504,7 +504,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !-- don't sample, it will end up in the lump anyway
         else
 !-- always put this in the single most likely group
-           ig = nint(grd_opaclump(-2,ic))
+           ig = nint(grd_opaclump(9,ic))
            return
         endif
      else

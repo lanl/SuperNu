@@ -34,21 +34,20 @@ c-- compressed domain
 c
 c-- Probability of emission in a given zone and group
       real*8,allocatable :: grd_emitprob(:,:) !(nep,ncell)
+
 c-- Line+Cont extinction coeff
       real*4,allocatable :: grd_cap(:,:) !(ng,ncell)
+
 c-- leakage opacities
-      real*8,allocatable :: grd_opaclump(:,:) !(-2:6,ncell) igemitmax,caplump,speclump,leak(6)
-
-c
-      real*8,allocatable :: grd_vol(:)  !(ncell)
+      real*8,allocatable :: grd_opaclump(:,:) !(9,ncell) leak(6),speclump,caplump,igemitmax
       real*8,allocatable :: grd_temp(:) !(ncell)
-
 c-- scattering coefficient
       real*8,allocatable :: grd_sig(:) !(ncell) !grey scattering opacity
 c-- Planck opacity (gray)
       real*8,allocatable :: grd_capgrey(:) !(ncell)
 c-- Fleck factor
       real*8,allocatable :: grd_fcoef(:)  !(ncell)
+
 
 
       real*8,allocatable :: grd_tally(:,:)   !(2,ncell) (edep,eraddens)
@@ -67,6 +66,8 @@ c-- number of flux prt_particles originating from each cell
 c
 c-- packet number and energy distribution
 c========================================
+      real*8,allocatable :: grd_vol(:)  !(ncell)
+c
       integer,allocatable :: grd_nvol(:) !(ncell) number of thermal source particles generated per cell
       integer,allocatable :: grd_nvolinit(:) !(ncell) number of initial (t=tfirst) particles per cell
 c      
@@ -157,7 +158,7 @@ c
       allocate(grd_numfluxorig(grd_ncell))
 c
 c-- ndim=4 alloc
-      allocate(grd_opaclump(-2:6,grd_ncell))
+      allocate(grd_opaclump(9,grd_ncell))
       allocate(grd_emitprob(grd_nep,grd_ncell))
 c-- ndim=4 alloc
       allocate(grd_cap(ng,grd_ncell))
