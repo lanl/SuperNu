@@ -114,11 +114,11 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         do iig=1,grp_ng
            if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
                 (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
-              llumps(iig) = .false.
+              llumps(iig) = .true.
               glump=glump+1
               glumps(glump) = int(iig,2)
            else
-              llumps(iig) = .true.
+              llumps(iig) = .false.
               glumps(gunlump) = int(iig,2)
               gunlump=gunlump-1
            endif
@@ -412,7 +412,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   if(r1>=pa .and. r1<pa+sum(probleak) .and. glump>0 .and. &
         iand(cache%istat,2)==0) then
      cache%istat = cache%istat + 2
-     call specintv(tempinv,grp_ng,cache%specarr,mask=.not.llumps)
+     call specintv(tempinv,grp_ng,cache%specarr,mask=llumps,maskval=.true.)
   endif
 
 !-- absorption
@@ -1220,7 +1220,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- update specarr cache. this is slow
         if(iand(cache%istat,1)==0) then
            cache%istat = cache%istat + 1
-           call specintv(tempinv,grp_ng,cache%specarr,mask=llumps)
+           call specintv(tempinv,grp_ng,cache%specarr,mask=llumps,maskval=.false.)
         endif
 !
         call rnd_r(r1,rndstate)

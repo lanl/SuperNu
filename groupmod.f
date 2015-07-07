@@ -138,7 +138,7 @@ c!}}}
       end function specint0
 c
 c
-      pure subroutine specintv(tempinv,n,ss,offset,mode,mask)
+      pure subroutine specintv(tempinv,n,ss,offset,mode,mask,maskval)
 c     -----------------------------------------------!{{{
       use physconstmod
       implicit none
@@ -148,6 +148,7 @@ c     -----------------------------------------------!{{{
       integer,intent(in),optional :: offset
       integer,intent(in),optional :: mode
       logical*2,intent(in),optional :: mask(n)
+      logical,intent(in),optional :: maskval
 ************************************************************************
 * Integrate normalized Planck spectrum using Newton-Cotes formulae of
 * different degrees.
@@ -170,7 +171,7 @@ c-- defaults
       if(present(mode)) imode = mode
 c
 c-- sanity check
-      if(ioff+n>grp_ng+1) then
+      if(ioff+n>grp_ng+1 .or. present(mask).neqv.present(maskval)) then
        ss = -1d0
        return
       endif
@@ -182,7 +183,7 @@ c
 c-- constant
       case(0)
        if(present(mask)) then
-        where(mask)
+        where(mask.eqv.maskval)
          ss = one*abs(xarr(2:)-xarr(:n)) *
      &    f(.5d0*(xarr(2:)+xarr(:n)))
         endwhere
@@ -194,7 +195,7 @@ c
 c-- linear
       case(1)
        if(present(mask)) then
-        where(mask)
+        where(mask.eqv.maskval)
          farr = f(xarr) !edge values
          ss = onehalf*abs(xarr(2:)-xarr(:n)) *
      &     (farr(2:)+farr(:n))
@@ -208,7 +209,7 @@ c
 c-- quadratic
       case(2)
        if(present(mask)) then
-        where(mask)
+        where(mask.eqv.maskval)
          farr = f(xarr) !edge values
          f2arr = f(.5d0*(xarr(2:) + xarr(:n))) !midpoints
 c-- simpson's rule
@@ -226,7 +227,7 @@ c
 c-- cubic
       case(11)
        if(present(mask)) then
-        where(mask)
+        where(mask.eqv.maskval)
          farr = f(xarr) !edge values
 c-- quarter points
          f2arr = 12d0*f(.5d0*(xarr(2:) + xarr(:n))) + 32d0*(
