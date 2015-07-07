@@ -57,14 +57,6 @@ program supernu
 !-- parse and verify runtime parameters
      call parse_inputpars(nmpi)
 !
-!-- rand() count and prt restarts
-     if(tsp_ntres>1.and..not.in_norestart) then
-!-- read rand() count
-       call read_restart_randcount
-!-- read particle properties
-       call read_restart_particles
-     endif
-!
 !-- read input structure
      if(.not.in_noreadstruct.and.in_isvelocity) then
        call read_inputstr(in_igeom,in_ndim,in_voidcorners,nmpi)
@@ -121,17 +113,12 @@ program supernu
 
 !-- allocate arrays of sizes retreived in bcast_permanent
   call ions_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
-  call particle_alloc(lmpi0,in_norestart,nmpi)
+  call particle_alloc(lmpi0)
 
 !-- initialize random number generator, use different seeds for each rank
   call rnd_init(in_nomp,impi)
 !-- use extra stream for non-threaded code
   rnd_state = rnd_states(1)
-
-!-- reading restart rand() count
-  if(tsp_ntres>1.and..not.in_norestart) then
-     call scatter_restart_data !MPI
-  endif
 
 !-- initial radiation energy
   call initialnumbers(nmpi)
@@ -221,9 +208,6 @@ program supernu
         call timereg(t_pcktmax,t_pckt_stat(3))
      endif
 
-!-- collect data necessary for restart (tobe written by impi0)
-     if(.not.in_norestart) call collect_restart_data !MPI
-
 !-- update temperature
      call temperature_update
      call reduce_gastemp !MPI
@@ -236,12 +220,6 @@ program supernu
 
 !-- write output
         if(it>0) call write_output
-!-- restart writers
-        if(.not.in_norestart .and. it>0) then
-           call write_restart_file !temp
-           call write_restart_randcount !rand() count
-           call write_restart_particles !particle properties of current time step
-        endif
 
 !-- write stdout
         help = merge(tot_eerror,tot_erad,it>0)

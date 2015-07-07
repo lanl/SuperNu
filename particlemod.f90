@@ -34,24 +34,15 @@ module particlemod
   real*8 :: prt_tauddmc
   real*8 :: prt_taulump
   character(4) :: prt_tauvtime ! unif|incr
-!
-!-- rtw: array of rand counts from each rank
-  integer, allocatable :: prt_tlyrandarr(:)
-!-- particle property restart arrays:
-   logical, allocatable :: prt_tlyvacant(:,:)
-  integer, allocatable :: prt_tlyzsrc(:,:), prt_tlyrtsrc(:,:)
-  real*8, allocatable :: prt_tlyrsrc(:,:), prt_tlymusrc(:,:), prt_tlytsrc(:,:)
-  real*8, allocatable :: prt_tlyesrc(:,:), prt_tlyebirth(:,:), prt_tlywlsrc(:,:)
 
   save
 
   contains
 
-  subroutine particle_alloc(ltalk,norestart,nummespasint)
+  subroutine particle_alloc(ltalk)
 !--------------------------------------------------!{{{
     implicit none
-    logical,intent(in) :: ltalk,norestart
-    integer,intent(in) :: nummespasint
+    logical,intent(in) :: ltalk
 
     integer :: n
 
@@ -63,24 +54,6 @@ module particlemod
     if(ltalk) then
       n = int(sizeof(prt_particles)/1024) !kB
       write(6,*) 'ALLOC particles:',n,"kB",n/1024,"MB",n/1024**2,"GB"
-    endif
-
-!
-!-- restart capabilities
-    if(.not.norestart) then
-!-- rand() count per rank allocation
-       allocate(prt_tlyrandarr(nummespasint))
-       prt_tlyrandarr = 0
-!-- mpi gather arrays for particles
-       allocate(prt_tlyvacant(prt_npartmax,nummespasint))
-       allocate(prt_tlyzsrc(prt_npartmax,nummespasint))
-       allocate(prt_tlyrtsrc(prt_npartmax,nummespasint))
-       allocate(prt_tlyrsrc(prt_npartmax,nummespasint))
-       allocate(prt_tlymusrc(prt_npartmax,nummespasint))
-       allocate(prt_tlytsrc(prt_npartmax,nummespasint))
-       allocate(prt_tlyesrc(prt_npartmax,nummespasint))
-       allocate(prt_tlyebirth(prt_npartmax,nummespasint))
-       allocate(prt_tlywlsrc(prt_npartmax,nummespasint))
     endif
 !
 !-- output
@@ -96,21 +69,8 @@ module particlemod
 
 
   subroutine particle_dealloc
+    implicit none
     deallocate(prt_particles,prt_isvacant)
-!-- restart capabilities
-    if(allocated(prt_tlyrandarr)) then
-       deallocate(prt_tlyrandarr)
-!-- mpi gather arrays for particles
-       deallocate(prt_tlyvacant)
-       deallocate(prt_tlyzsrc)
-       deallocate(prt_tlyrtsrc)
-       deallocate(prt_tlyrsrc)
-       deallocate(prt_tlymusrc)
-       deallocate(prt_tlytsrc)
-       deallocate(prt_tlyesrc)
-       deallocate(prt_tlyebirth)
-       deallocate(prt_tlywlsrc)
-    endif
   end subroutine particle_dealloc
 
 

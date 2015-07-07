@@ -452,6 +452,8 @@ c
       if(in_nogriddump .and. in_io_dogrdtally) stop
      &   'dogridtally and !griddump'
 c
+      if(.not.in_norestart) stop 'restart functionality obsolete'
+c
       if(in_voidcorners.and.in_igeom==1) stop 'voidcorners && igeom=1'
       if(in_voidcorners.and.in_igeom==11) stop 'voidcorners && igeom=11'
 c
