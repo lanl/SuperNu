@@ -161,10 +161,8 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
      emitlump = specint0(tempinv,ig)*capgreyinv*grd_cap(ig,ic)
      caplump = grd_cap(ig,ic)
   endif
-
-
-
-
+!
+!-- calculate lumped values
   if(glump>0) then
 !-- leakage opacities
      opacleak = grd_opaclump(1:2,ic)
@@ -529,14 +527,14 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
      endif
      ig = iiig
 
-     if((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)*thelp < prt_tauddmc) then
+     if((grd_sig(ic)+grd_cap(ig,ic))*dist < prt_tauddmc) then
         ptcl2%itype = 1
 !-- sample wavelength
         call rnd_r(r1,rndstate)
         wl = 1d0/((1d0-r1)*grp_wlinv(ig) + r1*grp_wlinv(ig+1))
 !-- direction sampled isotropically           
         call rnd_r(r1,rndstate)
-        mu = 1.0-2.0*r1
+        mu = 1d0-2d0*r1
 !-- position sampled uniformly
         call rnd_r(r1,rndstate)
         r = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)

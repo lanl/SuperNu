@@ -185,20 +185,20 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
      if(lhelp) then
 !-- DDMC interface
-        dist = (grd_cap(ig,ic)+grd_sig(ic))*dx(ix)*thelp
+        mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*dx(ix)*thelp
         alb = grd_fcoef(ic)*grd_cap(ig,ic)/ &
              (grd_cap(ig,ic)+grd_sig(ic))
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
-        beta = 1.5d0*alb*dist**2+sqrt(3d0*alb*dist**2 + &
-             2.25d0*alb**2*dist**4)
-        pp = 0.5d0*eps*beta/(beta-0.75*eps*dist)
-!        pp = 4d0/(3d0*dist+6d0*pc_dext)
+        beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
+             2.25d0*alb**2*mfphelp**4)
+        pp = 0.5d0*eps*beta/(beta-0.75*eps*mfphelp)
+!        pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
         opacleak(1)=0.5d0*pp/(thelp*dx(ix))
      else
 !-- DDMC interior
-        dist = ((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)+&
+        mfphelp = ((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)+&
              (grd_sig(l)+grd_cap(ig,l))*dx(ix-1))*thelp
-        opacleak(1)=(2d0/3d0)/(dist*dx(ix)*thelp)
+        opacleak(1)=(2d0/3d0)/(mfphelp*dx(ix)*thelp)
      endif
 
 !-- x right (opacleak(2))
@@ -212,20 +212,20 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
      if(lhelp) then
 !-- DDMC interface
-        dist = (grd_cap(ig,ic)+grd_sig(ic))*dx(ix)*thelp
+        mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*dx(ix)*thelp
         alb = grd_fcoef(ic)*grd_cap(ig,ic)/ &
              (grd_cap(ig,ic)+grd_sig(ic))
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
-        beta = 1.5d0*alb*dist**2+sqrt(3d0*alb*dist**2 + &
-             2.25d0*alb**2*dist**4)
-        pp = 0.5d0*eps*beta/(beta-0.75*eps*dist)
-!        pp = 4d0/(3d0*dist+6d0*pc_dext)
+        beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
+             2.25d0*alb**2*mfphelp**4)
+        pp = 0.5d0*eps*beta/(beta-0.75*eps*mfphelp)
+!        pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
         opacleak(2)=0.5d0*pp/(thelp*dx(ix))
      else
 !-- DDMC interior
-        dist = ((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)+&
+        mfphelp = ((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)+&
              (grd_sig(l)+grd_cap(ig,l))*dx(ix+1))*thelp
-        opacleak(2)=(2d0/3d0)/(dist*dx(ix)*thelp)
+        opacleak(2)=(2d0/3d0)/(mfphelp*dx(ix)*thelp)
      endif
 
 !-- y down (opacleak(3))
@@ -239,20 +239,20 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
      if(lhelp) then
 !-- DDMC interface
-        dist = (grd_cap(ig,ic)+grd_sig(ic))*dy(iy)*thelp
+        mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*dy(iy)*thelp
         alb = grd_fcoef(ic)*grd_cap(ig,ic)/ &
              (grd_cap(ig,ic)+grd_sig(ic))
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
-        beta = 1.5d0*alb*dist**2+sqrt(3d0*alb*dist**2 + &
-             2.25d0*alb**2*dist**4)
-        pp = 0.5d0*eps*beta/(beta-0.75*eps*dist)
-!        pp = 4d0/(3d0*dist+6d0*pc_dext)
+        beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
+             2.25d0*alb**2*mfphelp**4)
+        pp = 0.5d0*eps*beta/(beta-0.75*eps*mfphelp)
+!        pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
         opacleak(3)=0.5d0*pp/(thelp*dy(iy))
      else
 !-- DDMC interior
-        dist = ((grd_sig(ic)+grd_cap(ig,ic))*dy(iy)+&
+        mfphelp = ((grd_sig(ic)+grd_cap(ig,ic))*dy(iy)+&
              (grd_sig(l)+grd_cap(ig,l))*dy(iy-1))*thelp
-        opacleak(3)=(2d0/3d0)/(dist*dy(iy)*thelp)
+        opacleak(3)=(2d0/3d0)/(mfphelp*dy(iy)*thelp)
      endif
 
 !-- y up (opacleak(4))
@@ -266,20 +266,20 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
      if(lhelp) then
 !-- DDMC interface
-        dist = (grd_cap(ig,ic)+grd_sig(ic))*dy(iy)*thelp
+        mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*dy(iy)*thelp
         alb = grd_fcoef(ic)*grd_cap(ig,ic)/ &
              (grd_cap(ig,ic)+grd_sig(ic))
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
-        beta = 1.5d0*alb*dist**2+sqrt(3d0*alb*dist**2 + &
-             2.25d0*alb**2*dist**4)
-        pp = 0.5d0*eps*beta/(beta-0.75*eps*dist)
-!        pp = 4d0/(3d0*dist+6d0*pc_dext)
+        beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
+             2.25d0*alb**2*mfphelp**4)
+        pp = 0.5d0*eps*beta/(beta-0.75*eps*mfphelp)
+!        pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
         opacleak(4)=0.5d0*pp/(thelp*dy(iy))
      else
 !-- DDMC interior
-        dist = ((grd_sig(ic)+grd_cap(ig,ic))*dy(iy)+&
+        mfphelp = ((grd_sig(ic)+grd_cap(ig,ic))*dy(iy)+&
              (grd_sig(l)+grd_cap(ig,l))*dy(iy+1))*thelp
-        opacleak(4)=(2d0/3d0)/(dist*dy(iy)*thelp)
+        opacleak(4)=(2d0/3d0)/(mfphelp*dy(iy)*thelp)
      endif
 
 !-- z bottom (opacleak(5))
@@ -293,20 +293,20 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
      if(lhelp) then
 !-- DDMC interface
-        dist = (grd_cap(ig,ic)+grd_sig(ic))*dz(iz)*thelp
+        mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*dz(iz)*thelp
         alb = grd_fcoef(ic)*grd_cap(ig,ic)/ &
              (grd_cap(ig,ic)+grd_sig(ic))
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
-        beta = 1.5d0*alb*dist**2+sqrt(3d0*alb*dist**2 + &
-             2.25d0*alb**2*dist**4)
-        pp = 0.5d0*eps*beta/(beta-0.75*eps*dist)
-!        pp = 4d0/(3d0*dist+6d0*pc_dext)
+        beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
+             2.25d0*alb**2*mfphelp**4)
+        pp = 0.5d0*eps*beta/(beta-0.75*eps*mfphelp)
+!        pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
         opacleak(5)=0.5d0*pp/(thelp*dz(iz))
      else
 !-- DDMC interior
-        dist = ((grd_sig(ic)+grd_cap(ig,ic))*dz(iz)+&
+        mfphelp = ((grd_sig(ic)+grd_cap(ig,ic))*dz(iz)+&
              (grd_sig(l)+grd_cap(ig,l))*dz(iz-1))*thelp
-        opacleak(5)=(2d0/3d0)/(dist*dz(iz)*thelp)
+        opacleak(5)=(2d0/3d0)/(mfphelp*dz(iz)*thelp)
      endif
 
 !-- z top (opacleak(6))
@@ -320,20 +320,20 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
      if(lhelp) then
 !-- DDMC interface
-        dist = (grd_cap(ig,ic)+grd_sig(ic))*dz(iz)*thelp
+        mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*dz(iz)*thelp
         alb = grd_fcoef(ic)*grd_cap(ig,ic)/ &
              (grd_cap(ig,ic)+grd_sig(ic))
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
-        beta = 1.5d0*alb*dist**2+sqrt(3d0*alb*dist**2 + &
-             2.25d0*alb**2*dist**4)
-        pp = 0.5d0*eps*beta/(beta-0.75*eps*dist)
-!        pp = 4d0/(3d0*dist+6d0*pc_dext)
+        beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
+             2.25d0*alb**2*mfphelp**4)
+        pp = 0.5d0*eps*beta/(beta-0.75*eps*mfphelp)
+!        pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
         opacleak(6)=0.5d0*pp/(thelp*dz(iz))
      else
 !-- DDMC interior
-        dist = ((grd_sig(ic)+grd_cap(ig,ic))*dz(iz)+&
+        mfphelp = ((grd_sig(ic)+grd_cap(ig,ic))*dz(iz)+&
              (grd_sig(l)+grd_cap(ig,l))*dz(iz+1))*thelp
-        opacleak(6)=(2d0/3d0)/(dist*dz(iz)*thelp)
+        opacleak(6)=(2d0/3d0)/(mfphelp*dz(iz)*thelp)
      endif
 !}}}
   endif
