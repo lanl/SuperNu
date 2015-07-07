@@ -92,8 +92,8 @@ c
       use totalsmod
       use gridmod
       use gasmod
-      gas_edep = grd_tally(1,:)
-      gas_eraddens = grd_tally(2,:)
+      gas_edep = reshape(grd_tally(1,:),[grd_ncell])
+      gas_eraddens = reshape(grd_tally(2,:),[grd_ncell])
       end subroutine reduce_tally
 c
 c
