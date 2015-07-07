@@ -4,7 +4,6 @@ subroutine sourceenergy(nmpi)
   use sourcemod
   use totalsmod
   use timestepmod
-  use particlemod
   use physconstmod
   use inputparmod
   use manufacmod
@@ -16,8 +15,6 @@ subroutine sourceenergy(nmpi)
 !time step.  A fraction of the source particle number src_ns is given
 !to each cell based on the amount of energy emitted by the cell.
 !##################################################
-! src_nsurf = number of surface prt_particles
-! src_nnew = total number of new prt_particles~=src_ns
   
 !-- prepare manufactured solution temperature source
   if(in_srctype=='manu') then

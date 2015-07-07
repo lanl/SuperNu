@@ -4,6 +4,7 @@ subroutine advection3(pretrans,ptcl,ptcl2)
   use timestepmod
   use gridmod
   use particlemod
+  use transportmod
   use inputparmod
   implicit none
   logical,intent(in) :: pretrans
@@ -131,7 +132,7 @@ subroutine advection3(pretrans,ptcl,ptcl2)
            l = grd_icell(i+1,j,k)
            if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j),dx(i+1),dz(k))*tsp_t >= &
-                prt_tauddmc) then
+                trn_tauddmc) then
               x = grd_xarr(i+1)
               y = (yold/xold)*grd_xarr(i+1)
               z = (zold/xold)*grd_xarr(i+1)
@@ -144,7 +145,7 @@ subroutine advection3(pretrans,ptcl,ptcl2)
            l = grd_icell(i-1,j,k)
            if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j),dx(i-1),dz(k))*tsp_t >= &
-                prt_tauddmc) then
+                trn_tauddmc) then
               x = grd_xarr(i)
               y = (yold/xold)*grd_xarr(i)
               z = (zold/xold)*grd_xarr(i)
@@ -161,7 +162,7 @@ subroutine advection3(pretrans,ptcl,ptcl2)
            l = grd_icell(i,j+1,k)
            if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j+1),dx(i),dz(k))*tsp_t >= &
-                prt_tauddmc) then
+                trn_tauddmc) then
               x = (xold/yold)*grd_yarr(j+1)
               y = grd_yarr(j+1)
               z = (zold/yold)*grd_yarr(j+1)
@@ -174,7 +175,7 @@ subroutine advection3(pretrans,ptcl,ptcl2)
            l = grd_icell(i,j-1,k)
            if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j-1),dx(i),dz(k))*tsp_t >= &
-                prt_tauddmc) then
+                trn_tauddmc) then
               x = (xold/yold)*grd_yarr(j)
               y = grd_yarr(j)
               z = (zold/yold)*grd_yarr(j)
@@ -191,7 +192,7 @@ subroutine advection3(pretrans,ptcl,ptcl2)
            l = grd_icell(i,j,k+1)
            if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j),dx(i),dz(k+1))*tsp_t >= &
-                prt_tauddmc) then
+                trn_tauddmc) then
               x = (xold/zold)*grd_zarr(k+1)
               y = (yold/zold)*grd_zarr(k+1)
               z = grd_zarr(k+1)
@@ -204,7 +205,7 @@ subroutine advection3(pretrans,ptcl,ptcl2)
            l = grd_icell(i,j,k-1)
            if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j),dx(i),dz(k-1))*tsp_t >= &
-                prt_tauddmc) then
+                trn_tauddmc) then
               x = (xold/zold)*grd_zarr(k)
               y = (yold/zold)*grd_zarr(k)
               z = grd_zarr(k)

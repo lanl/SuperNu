@@ -30,8 +30,6 @@ c     --------------------------!{{{
       use gridmod
       use gasmod
       use groupmod
-      use particlemod
-      use timestepmod
       use fluxmod
       implicit none
 ************************************************************************
@@ -347,7 +345,6 @@ c     -----------------------------!{{{
       use sourcemod
       use totalsmod
       use particlemod
-      use timestepmod
       use timingmod
       implicit none
 ************************************************************************

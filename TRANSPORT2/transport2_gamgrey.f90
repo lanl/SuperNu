@@ -6,7 +6,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   use timestepmod
   use physconstmod
   use particlemod
-  use fluxmod
+  use transportmod
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
@@ -142,7 +142,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   if(grd_capgam(ic)<=0d0) then
 !-- making greater than dcen
      dcol = far
-  elseif(prt_isimcanlog) then
+  elseif(trn_isimcanlog) then
 !-- calculating dcol for analog MC
      call rnd_r(r1,rndstate)
      dcol = -log(r1)*thelpinv/(elabfact*grd_capgam(ic))
@@ -192,7 +192,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
 !
 !-- tallying energy densities
-  if(.not.prt_isimcanlog) then
+  if(.not.trn_isimcanlog) then
 !-- depositing nonanalog absorbed energy
      edep = e* &
           (1d0-exp(-grd_capgam(ic)* &
@@ -248,7 +248,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !-- effective collision
   if(d==dcol) then
 !-- checking if analog!{{{
-     if(prt_isimcanlog) then
+     if(trn_isimcanlog) then
 !-- effective absorption:
 !-- ending particle
         ptcl2%done=.true.

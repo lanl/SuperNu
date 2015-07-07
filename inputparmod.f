@@ -613,11 +613,6 @@ c
       mpart = int(int(2,8)**in_trn_n2part/nmpi) !max number of particles
       mpart = max(mpart,in_prt_nmax/nmpi)
       prt_npartmax = mpart
-      prt_isimcanlog = in_isimcanlog
-      prt_isddmcanlog = in_isddmcanlog
-      prt_tauddmc = in_tauddmc
-      prt_taulump = in_taulump
-      prt_tauvtime = in_tauvtime
 c
       ns = int(int(2,8)**in_src_n2s/nmpi)
       ns = max(ns,in_ns/nmpi)
@@ -643,6 +638,11 @@ c
       !gas_cvtpwr  = in_gas_cvtpwr
       !gas_cvrpwr  = in_gas_cvrpwr
 c
+      trn_isimcanlog = in_isimcanlog
+      trn_isddmcanlog = in_isddmcanlog
+      trn_tauddmc = in_tauddmc
+      trn_taulump = in_taulump
+      trn_tauvtime = in_tauvtime
       trn_nolumpshortcut = in_trn_nolumpshortcut
       trn_noampfact = in_trn_noamp
 c

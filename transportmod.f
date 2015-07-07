@@ -4,11 +4,17 @@ c     -------------------
       implicit none
 c
       private pc_c,pc_pi2
-c
       real*8,private,parameter :: cinv=1d0/pc_c
 c
       logical :: trn_nolumpshortcut !allow group sampling to shortcut to single most likely group if emitlump very large
       logical :: trn_noampfact      !don't use the particle amplification factor
+c
+      logical :: trn_isimcanlog  !sets flux tally and energy deposition to analog in IMC
+      logical :: trn_isddmcanlog !sets flux tally and energy deposition to analog in DDMC
+c
+      real*8 :: trn_tauddmc
+      real*8 :: trn_taulump
+      character(4) :: trn_tauvtime ! unif|incr
 c
 c-- explicit interfaces
       interface

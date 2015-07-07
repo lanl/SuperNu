@@ -52,7 +52,6 @@ c
 c
       subroutine read_wlgrid(wldex,ng)
 c     --------------------------------!{{{
-      use gasmod
       implicit none
       integer,intent(in) :: wldex
       integer,intent(out) :: ng

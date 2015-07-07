@@ -2,6 +2,7 @@ subroutine boundary_source
 
   use randommod
   use particlemod
+  use transportmod
   use sourcemod
   use timestepmod
   use physconstmod
@@ -156,7 +157,7 @@ subroutine boundary_source
         P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
         lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
              min(dx(i),xm(i)*dyac(j),xm(i)*ym(j)*dz(k)) * &
-             thelp < prt_tauddmc) &
+             thelp < trn_tauddmc) &
              .or.in_puretran.or.P>1d0.or.P<0d0
         ptcl%mu = -mu0!}}}
 
@@ -214,7 +215,7 @@ subroutine boundary_source
         mfphelp = (grd_cap(iig,l)+grd_sig(l))*help*thelp
         P = 4d0*(1.0+1.5*abs(mu2))/(3d0*mfphelp+6d0*pc_dext)
         lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
-             min(dx(i),dy(j))*thelp < prt_tauddmc) &
+             min(dx(i),dy(j))*thelp < trn_tauddmc) &
              .or.in_puretran.or.P>1d0.or.P<0d0
 
         ptcl%mu = mu0
@@ -325,7 +326,7 @@ subroutine boundary_source
         P = 0.5d0*eps*beta*(1d0+1.5d0*abs(mu2))/(beta-0.75*eps*mfphelp)
 !        P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
         lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
-             min(dx(i),dy(j),dz(k))*thelp < prt_tauddmc) &
+             min(dx(i),dy(j),dz(k))*thelp < trn_tauddmc) &
              .or.in_puretran.or.P>1d0.or.P<0d0
 
         ptcl%mu = mu0
@@ -346,7 +347,7 @@ subroutine boundary_source
         mfphelp = (grd_cap(iig,l)+grd_sig(l))*dx(i)*thelp
         P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
         lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
-             dx(i)*thelp < prt_tauddmc) &
+             dx(i)*thelp < trn_tauddmc) &
              .or.in_puretran.or.P>1d0.or.P<0d0
 
         ptcl%mu = -mu0!}}}

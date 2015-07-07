@@ -4,6 +4,7 @@ pure subroutine advection1(pretrans,ptcl,ptcl2)
   use timestepmod
   use gridmod
   use particlemod
+  use transportmod
   use inputparmod
   implicit none
   logical,intent(in) :: pretrans
@@ -68,7 +69,7 @@ pure subroutine advection1(pretrans,ptcl,ptcl2)
   do i=ix-1,zholder,-1
      l = grd_icell(i,iy,iz)
      if((grd_sig(l)+grd_cap(ig,l))*dx(i) &
-          *help>=prt_tauddmc) then
+          *help>=trn_tauddmc) then
         zfdiff = i
         exit
      endif

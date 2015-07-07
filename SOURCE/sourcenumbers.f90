@@ -3,7 +3,6 @@ subroutine sourcenumbers(keephigh)
   use sourcemod
   use totalsmod
   use gridmod
-  use particlemod
   use inputparmod
   use mpimod
   implicit none

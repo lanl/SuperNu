@@ -145,7 +145,7 @@ program supernu
 
 !-- Update tsp_t etc
      call timestep_update(dt)  !dt is input here, any value can be passed
-     call tau_update(tsp_t,tsp_tfirst,tsp_tlast) !updating prt_tauddmc and prt_taulump
+     call tau_update(tsp_t,tsp_tfirst,tsp_tlast) !updating trn_tauddmc and trn_taulump
 
 !-- write timestep
      if(lmpi0) write(6,'(1x,i5,f8.3,"d")',advance='no') it,tsp_t/pc_day

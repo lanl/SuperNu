@@ -3,7 +3,6 @@ subroutine initialnumbers(nmpi)
   use gridmod
   use sourcemod
   use totalsmod
-  use particlemod
   use inputparmod
   implicit none
   integer,intent(in) :: nmpi

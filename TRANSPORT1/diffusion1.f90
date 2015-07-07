@@ -8,8 +8,6 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   use physconstmod
   use particlemod
   use transportmod
-  use inputparmod
-  use fluxmod
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
@@ -122,8 +120,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         glump=0
      else
         do iig=1,grp_ng
-           if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
-                (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
+           if(grd_cap(iig,ic)*dist >= trn_taulump .and. &
+                (grd_sig(ic) + grd_cap(iig,ic))*dist >= trn_tauddmc) then
               llumps(iig) = .true.
               glump=glump+1
               glumps(glump) = int(iig,2)
@@ -155,14 +153,14 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 
 !
 !-- in lump?
-  if(grd_cap(ig,ic)*dist >= prt_taulump) then
+  if(grd_cap(ig,ic)*dist >= trn_taulump) then
      glump = cache%nlump
   else
      glump = 0
   endif
 !
 !-- sanity check
-  if((grd_sig(ic) + grd_cap(ig,ic))*dist < prt_tauddmc) then
+  if((grd_sig(ic) + grd_cap(ig,ic))*dist < trn_tauddmc) then
      ierr = 100
      return
   endif
@@ -191,7 +189,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         l = grd_icell(ix-1,iy,iz)
         lhelp = (grd_cap(ig,l)+ &
            grd_sig(l))*min(dx(ix-1),xm(ix-1)*dyac(iy) , &
-           xm(ix-1)*ym(iy)*dz(iz))*thelp<prt_tauddmc
+           xm(ix-1)*ym(iy)*dz(iz))*thelp<trn_tauddmc
      endif
      if(lhelp) then
 !-- DDMC interface
@@ -213,7 +211,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         l = grd_icell(ix+1,iy,iz)
         lhelp = (grd_cap(ig,l)+grd_sig(l)) * &
              min(dx(ix+1),xm(ix+1)*dyac(iy),xm(ix+1)*ym(iy)*dz(iz)) * &
-             thelp<prt_tauddmc
+             thelp<trn_tauddmc
      endif
      if(lhelp) then
 !-- DDMC interface
@@ -235,7 +233,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         l = grd_icell(ix,iy-1,iz)
         lhelp = (grd_cap(ig,l)+ &
              grd_sig(l))*min(dx(ix),xm(ix)*dyac(iy-1), &
-             xm(ix)*ym(iy-1)*dz(iz))*thelp<prt_tauddmc
+             xm(ix)*ym(iy-1)*dz(iz))*thelp<trn_tauddmc
      endif
 !
      if(lhelp) then
@@ -260,7 +258,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         l = grd_icell(ix,iy+1,iz)
         lhelp = (grd_cap(ig,l)+ &
              grd_sig(l))*min(dx(ix),xm(ix)*dyac(iy+1), &
-             xm(ix)*ym(iy+1)*dz(iz))*thelp<prt_tauddmc
+             xm(ix)*ym(iy+1)*dz(iz))*thelp<trn_tauddmc
      endif
 !
      if(lhelp) then
@@ -288,13 +286,13 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            l = grd_icell(ix,iy,grd_nz)
            lhelp = (grd_cap(ig,l)+ &
               grd_sig(l))*min(dx(ix),xm(ix)*dyac(iy), &
-              xm(ix)*ym(iy)*dz(grd_nz))*thelp<prt_tauddmc
+              xm(ix)*ym(iy)*dz(grd_nz))*thelp<trn_tauddmc
            iznext = grd_nz
         else
            l = grd_icell(ix,iy,iz-1)
            lhelp = (grd_cap(ig,l)+ &
               grd_sig(l))*min(dx(ix),xm(ix)*dyac(iy), &
-              xm(ix)*ym(iy)*dz(iz-1))*thelp<prt_tauddmc
+              xm(ix)*ym(iy)*dz(iz-1))*thelp<trn_tauddmc
            iznext = iz-1
         endif
 !
@@ -317,13 +315,13 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            l = grd_icell(ix,iy,1)
            lhelp = (grd_cap(ig,l)+ &
               grd_sig(l))*min(dx(ix),xm(ix)*dyac(iy), &
-              xm(ix)*ym(iy)*dz(1))*thelp<prt_tauddmc
+              xm(ix)*ym(iy)*dz(1))*thelp<trn_tauddmc
            iznext = 1
         else
            l = grd_icell(ix,iy,iz+1)
            lhelp = (grd_cap(ig,l)+ &
               grd_sig(l))*min(dx(ix),xm(ix)*dyac(iy), &
-              xm(ix)*ym(iy)*dz(iz+1))*thelp<prt_tauddmc
+              xm(ix)*ym(iy)*dz(iz+1))*thelp<trn_tauddmc
            iznext = iz+1
         endif
 !
@@ -350,7 +348,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- calculate time to census or event
   denom = sum(opacleak) + &
        (1d0-emitlump)*(1d0-grd_fcoef(ic))*caplump
-  if(prt_isddmcanlog) then
+  if(trn_isddmcanlog) then
      denom = denom+grd_fcoef(ic)*caplump
   endif
   denom = 1d0/denom
@@ -362,7 +360,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 
 !
 !-- calculating energy depostion and density
-  if(prt_isddmcanlog) then
+  if(trn_isddmcanlog) then
      eraddens = e*ddmct*tsp_dtinv
   else
      edep = e * &
@@ -408,7 +406,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   probleak = opacleak*denom
 !  write(*,*) probleak
 !-- absorption probability
-  if(prt_isddmcanlog) then
+  if(trn_isddmcanlog) then
      pa = grd_fcoef(ic)*caplump*denom
   else
      pa = 0d0
@@ -453,7 +451,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- calculating resolved leakage opacities
            lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
                    min(dx(ix-1),xm(ix-1)*dyac(iy),xm(ix-1)*ym(iy) * &
-                   dz(iz))*thelp<prt_tauddmc
+                   dz(iz))*thelp<trn_tauddmc
            if(lhelp) then
 !-- DDMC interface
               mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
@@ -478,7 +476,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- checking adjacent
      lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
           min(dx(ix-1),xm(ix-1)*dyac(iy),xm(ix-1)*ym(iy)*dz(iz)) * &
-          thelp<prt_tauddmc
+          thelp<trn_tauddmc
 
      if(lhelp) then
 !-- sampling x,y,z
@@ -549,7 +547,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            else
               lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
                    min(dx(ix+1),xm(ix+1)*dyac(iy),xm(ix+1)*ym(iy) * &
-                   dz(iz))*thelp<prt_tauddmc
+                   dz(iz))*thelp<trn_tauddmc
            endif
            if(lhelp) then
 !-- DDMC interface
@@ -578,7 +576,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      else
         lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
              min(dx(ix+1),xm(ix+1)*dyac(iy),xm(ix+1)*ym(iy)*dz(iz)) * &
-             thelp<prt_tauddmc
+             thelp<trn_tauddmc
      endif
 
      if(lhelp) then
@@ -676,7 +674,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- calculating resolved leakage opacities
            lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
                 min(dx(ix),xm(ix)*dyac(iy-1),xm(ix)*ym(iy-1)*dz(iz)) * &
-                thelp<prt_tauddmc
+                thelp<trn_tauddmc
            if(lhelp) then
 !-- DDMC interface
               mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
@@ -703,7 +701,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- checking adjacent
      lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
           min(dx(ix),xm(ix)*dyac(iy-1),xm(ix)*ym(iy-1)*dz(iz)) * &
-          thelp<prt_tauddmc
+          thelp<trn_tauddmc
 
      if(lhelp) then
 !-- sampling x,y,z
@@ -785,7 +783,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            specig = cache%specarr(iiig)
            lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
                 min(dx(ix),xm(ix)*dyac(iy+1),xm(ix)*ym(iy+1)*dz(iz)) * &
-                thelp<prt_tauddmc
+                thelp<trn_tauddmc
            if(lhelp) then
 !-- DDMC interface
               mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
@@ -812,7 +810,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- checking adjacent
      lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
           min(dx(ix),xm(ix)*dyac(iy+1),xm(ix)*ym(iy+1)*dz(iz)) * &
-          thelp<prt_tauddmc
+          thelp<trn_tauddmc
 
      if(lhelp) then
 !-- sampling x,y,z
@@ -895,7 +893,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- calculating resolved leakage opacities
            lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
                 min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iznext)) * &
-                thelp<prt_tauddmc
+                thelp<trn_tauddmc
 !
            if(lhelp) then
 !-- DDMC interface
@@ -921,7 +919,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
      lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
-          min(dx(ix),dy(iy),dz(iznext))*thelp<prt_tauddmc
+          min(dx(ix),dy(iy),dz(iznext))*thelp<trn_tauddmc
 
      if(lhelp) then
 !-- sampling x,y,z
@@ -1009,7 +1007,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- calculating resolved leakage opacities
            lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
                 min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iznext)) * &
-                thelp<prt_tauddmc
+                thelp<trn_tauddmc
 !
            if(lhelp) then
 !-- DDMC interface
@@ -1035,7 +1033,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
      lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
-          min(dx(ix),dy(iy),dz(iznext))*thelp<prt_tauddmc
+          min(dx(ix),dy(iy),dz(iznext))*thelp<trn_tauddmc
 
      if(lhelp) then
 !-- sampling x,y,z
@@ -1135,7 +1133,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
      ig = iiig
 
-     if((grd_sig(ic)+grd_cap(ig,ic))*dist < prt_tauddmc) then
+     if((grd_sig(ic)+grd_cap(ig,ic))*dist < trn_tauddmc) then
         ptcl2%itype = 1
 !-- sample wavelength
         call rnd_r(r1,rndstate)

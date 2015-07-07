@@ -5,7 +5,7 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   use timestepmod
   use physconstmod
   use particlemod
-  use fluxmod
+  use transportmod
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
@@ -82,7 +82,7 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   endif
 !
 !-- distance to fictitious collision = dcol
-  if(prt_isimcanlog) then
+  if(trn_isimcanlog) then
      if(grd_capgam(ic)>0d0) then
         call rnd_r(r1,rndstate)
         dcol = abs(log(r1)/(grd_capgam(ic)*dcollabfact))
@@ -126,7 +126,7 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   endif
   !calculating energy deposition and density
   !
-  if(.not.prt_isimcanlog) then
+  if(.not.trn_isimcanlog) then
      edep = e*(1d0-exp( &
           -grd_capgam(ic)*siglabfact*d*thelp))*elabfact
      !--
@@ -146,7 +146,7 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   if (d == dcol) then
      !!{{{
      call rnd_r(r1,rndstate)
-     if(r1<=1d0.and.prt_isimcanlog) then
+     if(r1<=1d0.and.trn_isimcanlog) then
         ptcl2%done = .true.
         edep = e*elabfact
 !-- velocity effects accounting

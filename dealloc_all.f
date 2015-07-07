@@ -7,7 +7,6 @@ c     ----------------------
       use groupmod
       use gasmod
       use particlemod
-      use inputparmod
       use fluxmod
       implicit none
 ************************************************************************
@@ -20,7 +19,7 @@ c-- ionsmod
       call gas_dealloc
       call grid_dealloc
       call flux_dealloc
-      call particle_dealloc
+      deallocate(prt_particles,prt_isvacant)
       call mpimod_dealloc
       deallocate(grp_wl,grp_wlinv)
       if(allocated(bb_xs)) deallocate(bb_xs) !only impi==impi0, but only if nobbopac==f

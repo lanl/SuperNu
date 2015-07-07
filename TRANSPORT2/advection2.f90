@@ -1,9 +1,10 @@
-subroutine advection2(pretrans,ptcl,ptcl2)
+pure subroutine advection2(pretrans,ptcl,ptcl2)
 
   use miscmod
   use timestepmod
   use gridmod
   use particlemod
+  use transportmod
   use inputparmod
   implicit none
   logical,intent(in) :: pretrans
@@ -57,10 +58,10 @@ subroutine advection2(pretrans,ptcl,ptcl2)
 !-- nothing to do
   if(x>=grd_xarr(ix) .and. abs(y)>=ymag(iy)) return
 
-!
-!-- sanity check
-  if(xold==0d0.and.yold==0d0) &
-       stop 'advection2: invalid position update'
+!!
+!!-- sanity check
+!  if(xold==0d0.and.yold==0d0) &
+!       stop 'advection2: invalid position update'
 
 !-- finding tentative new index
   ixholder = binsrch(x,grd_xarr,grd_nx+1,.false.)
@@ -110,7 +111,7 @@ subroutine advection2(pretrans,ptcl,ptcl2)
      if(help == rx) then
         l = grd_icell(i-1,j,iz)
         if((grd_sig(l)+grd_cap(ig,l)) * &!{{{
-             min(dy(j),dx(i-1))*tsp_t >= prt_tauddmc) then
+             min(dy(j),dx(i-1))*tsp_t >= trn_tauddmc) then
            x = grd_xarr(i)
            y = (yold/xold)*grd_xarr(i)
            exit
@@ -125,7 +126,7 @@ subroutine advection2(pretrans,ptcl,ptcl2)
            l = grd_icell(i,j+1,iz)
            if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j+1),dx(i))*tsp_t >= &
-                prt_tauddmc) then
+                trn_tauddmc) then
               x = (xold/yold)*grd_yarr(j+1)
               y = grd_yarr(j+1)
               exit
@@ -137,7 +138,7 @@ subroutine advection2(pretrans,ptcl,ptcl2)
            l = grd_icell(i,j-1,iz)
            if((grd_sig(l)+grd_cap(ig,l)) * &
                 min(dy(j-1),dx(i))*tsp_t >= &
-                prt_tauddmc) then
+                trn_tauddmc) then
               x = (xold/yold)*grd_yarr(j)
               y = grd_yarr(j)
               exit

@@ -4,7 +4,7 @@ subroutine leakage_opacity2
   use groupmod
   use gridmod
   use timestepmod
-  use particlemod
+  use transportmod
   use physconstmod
   implicit none
 !##################################################
@@ -57,8 +57,8 @@ subroutine leakage_opacity2
 !
 !-- initializing Planck integral vectorized
      call specintv(grd_tempinv(l),grp_ng,specarr)
-     speclump = sum(specarr, grd_cap(:,l)*dist>=prt_taulump .and. &
-       (grd_sig(l) + grd_cap(:,l))*dist >= prt_tauddmc)
+     speclump = sum(specarr, grd_cap(:,l)*dist>=trn_taulump .and. &
+       (grd_sig(l) + grd_cap(:,l))*dist >= trn_tauddmc)
      if(speclump>0d0) then
         speclump = 1d0/speclump
      else
@@ -71,8 +71,8 @@ subroutine leakage_opacity2
      emitmax = 0d0
      igemitmax = 0
      do ig=1,grp_ng
-        if(grd_cap(ig,l)*dist < prt_taulump) cycle
-        if((grd_sig(l) + grd_cap(ig,l))*dist < prt_tauddmc) cycle
+        if(grd_cap(ig,l)*dist < trn_taulump) cycle
+        if((grd_sig(l) + grd_cap(ig,l))*dist < trn_tauddmc) cycle
         help = specarr(ig)*grd_cap(ig,l)
         caplump = caplump + help
         if(help > emitmax) then
@@ -85,8 +85,8 @@ subroutine leakage_opacity2
 !
 !-- lumping opacity
      do ig=1,grp_ng
-        if(grd_cap(ig,l)*dist < prt_taulump) cycle
-        if((grd_sig(l) + grd_cap(ig,l))*dist < prt_tauddmc) cycle
+        if(grd_cap(ig,l)*dist < trn_taulump) cycle
+        if((grd_sig(l) + grd_cap(ig,l))*dist < trn_tauddmc) cycle
 !
 !-- obtaining spectral weight
         specval = specarr(ig)
@@ -96,7 +96,7 @@ subroutine leakage_opacity2
            lhelp = .true.
         else
            lhelp = (grd_cap(ig,icnb(1))+ &
-              grd_sig(icnb(1)))*min(dx(i-1),dy(j))*thelp<prt_tauddmc
+              grd_sig(icnb(1)))*min(dx(i-1),dy(j))*thelp<trn_tauddmc
         endif
 !
         if(lhelp) then
@@ -120,7 +120,7 @@ subroutine leakage_opacity2
         else
            lhelp = (grd_cap(ig,icnb(2))+ &
                 grd_sig(icnb(2)))*min(dx(i+1),dy(j)) * &
-                thelp<prt_tauddmc
+                thelp<trn_tauddmc
         endif
 !
         if(lhelp) then
@@ -144,7 +144,7 @@ subroutine leakage_opacity2
         else
            lhelp = (grd_cap(ig,icnb(3))+ &
                 grd_sig(icnb(3)))*min(dx(i),dy(j-1)) * &
-                thelp<prt_tauddmc
+                thelp<trn_tauddmc
         endif
 !
         if(lhelp) then
@@ -168,7 +168,7 @@ subroutine leakage_opacity2
         else
            lhelp = (grd_cap(ig,icnb(4))+ &
                 grd_sig(icnb(4)))*min(dx(i),dy(j+1)) * &
-                thelp<prt_tauddmc
+                thelp<trn_tauddmc
         endif
 !
         if(lhelp) then

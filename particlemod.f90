@@ -26,15 +26,6 @@ module particlemod
 !
   integer :: prt_npartmax
 
-  logical :: prt_isimcanlog  !sets flux tally and energy deposition ...
-  !to analog in IMC
-  logical :: prt_isddmcanlog !sets flux tally and energy deposition ...
-  !to analog in DDMC
-
-  real*8 :: prt_tauddmc
-  real*8 :: prt_taulump
-  character(4) :: prt_tauvtime ! unif|incr
-
   save
 
   contains
@@ -67,37 +58,5 @@ module particlemod
 !}}}
   end subroutine particle_alloc
 
-
-  subroutine particle_dealloc
-    implicit none
-    deallocate(prt_particles,prt_isvacant)
-  end subroutine particle_dealloc
-
-
-  subroutine tau_update(t,tfirst,tlast)
-    use physconstmod
-    implicit none
-    real*8,intent(in) :: t,tfirst,tlast
-!-------------------------------------------------
-! Update mfp thresholds for DDMC:
-! - IMC-DDMC transition,
-! - DDMC group lumping.
-!-------------------------------------------------
-    real*8 :: slp1,slp2
-
-    if(prt_tauvtime=='unif') then
-!-- constant thresholds
-       return
-    elseif(prt_tauvtime=='incr') then
-!-- linear increase in thresholds (max mfp thresh = 5)
-       slp1=0.667d0*prt_tauddmc/(tlast-tfirst)
-       slp2=0.667d0*prt_taulump/(tlast-tfirst)
-
-       prt_tauddmc = prt_tauddmc+(t-tfirst)*slp1
-       prt_taulump = prt_taulump+(t-tfirst)*slp2
-    else
-       stop 'tau_update: prt_tauvtime invalid'
-    endif
-  end subroutine tau_update
 
 end module particlemod

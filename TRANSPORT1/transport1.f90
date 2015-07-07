@@ -9,7 +9,6 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   use particlemod
   use transportmod
   use inputparmod
-  use fluxmod
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
@@ -341,7 +340,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- effective collision distance
   if(grd_cap(ig,ic)<=0d0) then
      dcol = far
-  elseif(prt_isimcanlog) then
+  elseif(trn_isimcanlog) then
 !-- calculating dcol for analog MC
      call rnd_r(r1,rndstate)
      dcol = -log(r1)*thelpinv/(elabfact*grd_cap(ig,ic))
@@ -442,7 +441,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   ptcl%t = ptcl%t + thelp*d*cinv
 
 !-- tallying energy densities
-  if(prt_isimcanlog) then
+  if(trn_isimcanlog) then
 !-- analog energy density
      eraddens=e*elabfact* &
           d*thelp*cinv*tsp_dtinv
@@ -532,7 +531,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   elseif(d==dcol) then
      call rnd_r(r1,rndstate)
 !-- checking if analog
-     if(prt_isimcanlog.and.r1<=grd_fcoef(ic)) then
+     if(trn_isimcanlog.and.r1<=grd_fcoef(ic)) then
 !-- effective absorption
         ptcl2%isvacant = .true.
         ptcl2%done = .true.
@@ -560,7 +559,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            ig = emitgroup(r1,ic)
            if((grd_cap(ig,ic)+grd_sig(ic)) * &
               min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) * &
-              thelp>=prt_tauddmc .and. .not.in_puretran) ptcl2%itype = 2
+              thelp>=trn_tauddmc .and. .not.in_puretran) ptcl2%itype = 2
 !-- don't sample, it will end up in the lump anyway
         else
            ptcl2%itype = 2
@@ -609,7 +608,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      l = grd_icell(ihelp,iy,iz)
      if((grd_cap(ig,l)+grd_sig(l)) * &
           min(dx(ihelp),xm(ihelp)*dyac(iy),xm(ihelp) * &
-          ym(iy)*dz(iz))*thelp<prt_tauddmc .or. in_puretran) then
+          ym(iy)*dz(iz))*thelp<trn_tauddmc .or. in_puretran) then
 !-- IMC in adjacent cell
         ix = ihelp
         ic = grd_icell(ix,iy,iz)
@@ -715,7 +714,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      l = grd_icell(ix,iynext,iznext)
      if((grd_cap(ig,l)+grd_sig(l)) * &
           min(dx(ix),xm(ix)*dyac(iynext),xm(ix)*ym(iynext) * &
-          dz(iznext))*thelp<prt_tauddmc .or. in_puretran) then
+          dz(iznext))*thelp<trn_tauddmc .or. in_puretran) then
 !-- IMC in adjacent cell
         iy = iynext
         iz = iznext
@@ -810,7 +809,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      l = grd_icell(ix,iy,iznext)
      if((grd_cap(ig,l)+grd_sig(l)) * &
           min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy) * &
-          dz(iznext))*thelp<prt_tauddmc .or. in_puretran) then
+          dz(iznext))*thelp<trn_tauddmc .or. in_puretran) then
 !-- IMC in adjacent cell
         iz = iznext
         ic = grd_icell(ix,iy,iz)
@@ -903,7 +902,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- check if ddmc region
      if((grd_cap(ig,ic)+grd_sig(ic)) * &
           min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) * &
-          thelp>=prt_tauddmc .and. .not.in_puretran) then
+          thelp>=trn_tauddmc .and. .not.in_puretran) then
         ptcl2%itype = 2
         if(grd_isvelocity) then
 !-- velocity effects accounting

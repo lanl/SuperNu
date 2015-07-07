@@ -9,7 +9,6 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   use particlemod
   use transportmod
   use inputparmod
-  use fluxmod
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl
@@ -96,7 +95,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   endif
 !
 !-- distance to fictitious collision = dcol
-  if(prt_isimcanlog) then
+  if(trn_isimcanlog) then
      if(grd_cap(ig,ic)>0d0) then
         call rnd_r(r1,rndstate)
         dcol = abs(log(r1)/(grd_cap(ig,ic)*dcollabfact))
@@ -166,7 +165,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   endif
   !calculating energy deposition and density
   !
-  if(.not.prt_isimcanlog) then
+  if(.not.trn_isimcanlog) then
      edep = e*(1d0-exp(-grd_fcoef(ic) &
           *grd_cap(ig,ic)*siglabfact*d*thelp))*elabfact
      !--
@@ -209,7 +208,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
      endif
 !-- check if ddmc region
      if (((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)* &
-          thelp >= prt_tauddmc) &
+          thelp >= trn_tauddmc) &
           .and. .not.in_puretran) then
         ptcl2%itype = 2
         if(grd_isvelocity) then
@@ -244,7 +243,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   elseif(d == dcol) then  !fictitious scattering with implicit capture
      !!{{{
      call rnd_r(r1,rndstate)
-     if(r1<=grd_fcoef(ic).and.prt_isimcanlog) then
+     if(r1<=grd_fcoef(ic).and.trn_isimcanlog) then
         ptcl2%isvacant = .true.
         ptcl2%done = .true.
         edep = e*elabfact
@@ -274,7 +273,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
            call rnd_r(r1,rndstate)
            ig = emitgroup(r1,ic)
 !-- checking if DDMC in new group
-           if(((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)*thelp >= prt_tauddmc) &
+           if(((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)*thelp >= trn_tauddmc) &
               .and. .not.in_puretran) ptcl2%itype = 2
 !-- don't sample, it will end up in the lump anyway
         else
@@ -313,7 +312,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !
 !-- Checking if DDMC region right
      elseif (((grd_sig(l)+grd_cap(ig,l))*dx(ix+1) &
-          *thelp >= prt_tauddmc) &
+          *thelp >= trn_tauddmc) &
           .and. .not.in_puretran) then
         call rnd_r(r1,rndstate)
         if(grd_isvelocity) then
@@ -355,7 +354,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
      if(ix==1) then
         l = grd_icell(ix+1,iy,iz)
         if (((grd_sig(l)+grd_cap(ig,l))*dx(ix+1) &
-             *thelp >= prt_tauddmc) &
+             *thelp >= trn_tauddmc) &
              .and. .not.in_puretran) then
            call rnd_r(r1,rndstate)
            if(grd_isvelocity) then
@@ -392,7 +391,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
            ic = grd_icell(ix,iy,iz)
         endif
      elseif (((grd_sig(l)+grd_cap(ig,l))*dx(ix-1) &
-          *thelp >= prt_tauddmc) &
+          *thelp >= trn_tauddmc) &
           .and. .not.in_puretran) then
         call rnd_r(r1,rndstate)
 !
@@ -400,8 +399,8 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         if(grd_isvelocity) then
            mu = (mu-x*cinv)/(1d0-x*mu*cinv)
 !
-!             e0=e0*(1d0+2d0*min(0.055d0*prt_tauddmc,1d0)*x*cinv)
-!             e = e*(1d0+2d0*min(0.055d0*prt_tauddmc,1d0)*x*cinv)
+!             e0=e0*(1d0+2d0*min(0.055d0*trn_tauddmc,1d0)*x*cinv)
+!             e = e*(1d0+2d0*min(0.055d0*trn_tauddmc,1d0)*x*cinv)
               if(.not.trn_noampfact .and. mu<0d0) then
                  help = 1d0/abs(mu)
                  help = min(100d0, help) !-- truncate singularity

@@ -189,7 +189,7 @@ subroutine particle_advance
      endselect
 !-- IMC or DDMC
      tau = (grd_sig(ic)+grd_cap(ig,ic))*help
-     if(in_puretran .or. tau<prt_tauddmc) then
+     if(in_puretran .or. tau<trn_tauddmc) then
         ptcl2%itype = 1 !IMC
      else
         ptcl2%itype = 2 !DDMC

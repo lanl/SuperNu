@@ -8,7 +8,6 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
   use physconstmod
   use particlemod
   use transportmod
-  use inputparmod
   use fluxmod
   implicit none
 !
@@ -107,8 +106,8 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         glump=0
      else
         do iig=1,grp_ng
-           if(grd_cap(iig,ic)*dist >= prt_taulump .and. &
-                (grd_sig(ic) + grd_cap(iig,ic))*dist >= prt_tauddmc) then
+           if(grd_cap(iig,ic)*dist >= trn_taulump .and. &
+                (grd_sig(ic) + grd_cap(iig,ic))*dist >= trn_tauddmc) then
               llumps(iig) = .true.
               glump=glump+1
               glumps(glump) = int(iig,2)
@@ -140,14 +139,14 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 
 !
 !-- in lump?
-  if(grd_cap(ig,ic)*dist >= prt_taulump) then
+  if(grd_cap(ig,ic)*dist >= trn_taulump) then
      glump = cache%nlump
   else
      glump = 0
   endif
 !
 !-- sanity check
-  if((grd_sig(ic) + grd_cap(ig,ic))*dist < prt_tauddmc) then
+  if((grd_sig(ic) + grd_cap(ig,ic))*dist < trn_tauddmc) then
      ierr = 100
      return
   endif
@@ -174,7 +173,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
      if(ix==1) then
         opacleak(1) = 0d0
      elseif((grd_cap(ig,l)+ &
-          grd_sig(l))*dx(ix-1)*thelp<prt_tauddmc) then
+          grd_sig(l))*dx(ix-1)*thelp<trn_tauddmc) then
 !-- DDMC interface
         mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*dx(ix)*thelp
         ppl = 4d0/(3d0*mfphelp+6d0*pc_dext)
@@ -194,7 +193,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
      else
         l = grd_icell(ix+1,iy,iz)
         lhelp = (grd_cap(ig,l)+ &
-           grd_sig(l))*dx(ix+1)*thelp<prt_tauddmc
+           grd_sig(l))*dx(ix+1)*thelp<trn_tauddmc
      endif
 !
      if(lhelp) then
@@ -218,7 +217,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !-- calculate time to census or event
   denom = sum(opacleak) + &
        (1d0-emitlump)*(1d0-grd_fcoef(ic))*caplump
-  if(prt_isddmcanlog) then
+  if(trn_isddmcanlog) then
      denom = denom+grd_fcoef(ic)*caplump
   endif
   denom = 1d0/denom
@@ -230,7 +229,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 
 !
 !-- calculating energy depostion and density
-  if(prt_isddmcanlog) then
+  if(trn_isddmcanlog) then
      eraddens = e*ddmct*tsp_dtinv
   else
      edep = e*(1d0-exp(-grd_fcoef(ic) &!{{{
@@ -270,7 +269,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
   probleak = opacleak*denom
 
 !-- absorption probability
-  if(prt_isddmcanlog) then
+  if(trn_isddmcanlog) then
      pa = grd_fcoef(ic)*caplump*denom
   else
      pa = 0d0
@@ -317,7 +316,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
               !specig = specint0(tempinv,iiig)
 !-- calculating resolved leakage opacities
               if((grd_cap(iiig,l)+ &
-                   grd_sig(l))*dx(ix-1)*thelp<prt_tauddmc) then
+                   grd_sig(l))*dx(ix-1)*thelp<trn_tauddmc) then
 !-- DDMC interface
                  mfphelp = (grd_cap(iiig,ic)+grd_sig(ic))*dx(ix)*thelp
                  ppl = 4d0/(3d0*mfphelp+6d0*pc_dext)
@@ -336,7 +335,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         endif
 !
 !-- method changes to IMC
-        if((grd_sig(l)+grd_cap(iiig,l))*dx(ix-1)*thelp < prt_tauddmc) then
+        if((grd_sig(l)+grd_cap(iiig,l))*dx(ix-1)*thelp < trn_tauddmc) then
            ptcl2%itype = 1
 !-- sampling wavelength
            call rnd_r(r1,rndstate)
@@ -433,7 +432,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
               !specig = specint0(tempinv,iiig)
 !-- calculating resolved leakage opacities
               if((grd_cap(iiig,l)+ &
-                   grd_sig(l))*dx(ix+1)*thelp<prt_tauddmc) then
+                   grd_sig(l))*dx(ix+1)*thelp<trn_tauddmc) then
 !-- DDMC interface
                  mfphelp = (grd_cap(iiig,ic)+grd_sig(ic))*dx(ix)*thelp
                  ppr = 4d0/(3d0*mfphelp+6d0*pc_dext)
@@ -452,7 +451,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         endif
 
 !-- method changes to IMC
-        if((grd_sig(l)+grd_cap(iiig,l))*dx(ix+1)*thelp < prt_tauddmc) then
+        if((grd_sig(l)+grd_cap(iiig,l))*dx(ix+1)*thelp < trn_tauddmc) then
 !
            ptcl2%itype = 1
 !-- sampling wavelength
@@ -527,7 +526,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
      endif
      ig = iiig
 
-     if((grd_sig(ic)+grd_cap(ig,ic))*dist < prt_tauddmc) then
+     if((grd_sig(ic)+grd_cap(ig,ic))*dist < trn_tauddmc) then
         ptcl2%itype = 1
 !-- sample wavelength
         call rnd_r(r1,rndstate)

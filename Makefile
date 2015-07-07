@@ -29,7 +29,7 @@ MODULES := elemdatamod.o physconstmod.o randommod.o mpimod.o \
 FILES := banner.o \
   particle_advance.o particle_advance_gamgrey.o \
   write_output.o restart_file.o dealloc_all.o \
-  read_bbxs_data.o 
+  read_bbxs_data.o tau_update.o
 
 LIBRARIES := TRANSPORT1/transport1.a TRANSPORT2/transport2.a TRANSPORT3/transport3.a \
   SOURCE/source.a GAS/gas.a GRID/grid.a MISC/misc.a
@@ -110,20 +110,6 @@ supernu: $(SUPERNUDEP)
 #-- libraries
 $(SUBDIRS):
 	$(MAKE) -C $@
-
-##
-##-- modules
-#bbxsmod.o bbxsmod.mod: bbxsmod.f elemdatamod.o miscmod.o 
-#gasmod.o gasmod.mod: gasmod.f90 inputparmod.o 
-#inputparmod.o inputparmod.mod: inputparmod.f miscmod.o physconstmod.o 
-#inputstrmod.o inputstrmod.mod: inputstrmod.f elemdatamod.o gasmod.o inputparmod.o miscmod.o physconstmod.o 
-#ionsmod.o ionsmod.mod: ionsmod.f miscmod.o physconstmod.o 
-#manufacmod.o manufacmod.mod: manufacmod.f gasmod.o inputparmod.o miscmod.o physconstmod.o 
-#miscmod.o miscmod.mod: miscmod.f MISC/lcase.f MISC/warn.f 
-#mpimod.o mpimod.mod: mpimod.f gasmod.o inputparmod.o particlemod.o timestepmod.o timingmod.o
-#timestepmod.o timestepmod.mod: timestepmod.f90 physconstmod.o 
-#profiledatamod.o profiledatamod.mod: profiledatamod.f
-
 
 #
 #-- inc files
