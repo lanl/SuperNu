@@ -83,9 +83,9 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !
 !-- distance to fictitious collision = dcol
   if(prt_isimcanlog) then
-     if(grd_capgrey(ic)>0d0) then
+     if(grd_capgam(ic)>0d0) then
         call rnd_r(r1,rndstate)
-        dcol = abs(log(r1)/(grd_capgrey(ic)*dcollabfact))
+        dcol = abs(log(r1)/(grd_capgam(ic)*dcollabfact))
      else
         dcol = far
      endif
@@ -128,9 +128,9 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   !
   if(.not.prt_isimcanlog) then
      edep = e*(1d0-exp( &
-          -grd_capgrey(ic)*siglabfact*d*thelp))*elabfact
+          -grd_capgam(ic)*siglabfact*d*thelp))*elabfact
      !--
-     e = e*exp(-grd_capgrey(ic)*siglabfact*d*thelp)
+     e = e*exp(-grd_capgam(ic)*siglabfact*d*thelp)
 
   endif
 

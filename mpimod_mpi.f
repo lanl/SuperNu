@@ -304,13 +304,13 @@ c     -----------------------------!{{{
       use gasmod
       implicit none
 ************************************************************************
-* gather gas_capgam to grd_capgrey
+* gather gas_capgam to grd_capgam
 ************************************************************************
       call mpi_allgatherv(gas_emitex,gas_ncell,MPI_REAL8,
      &  grd_emitex,counts,displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)
       call mpi_allgatherv(gas_capgam,gas_ncell,MPI_REAL8,
-     &  grd_capgrey,counts,displs,MPI_REAL8,
+     &  grd_capgam,counts,displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)!}}}
       end subroutine allgather_gammacap
 c

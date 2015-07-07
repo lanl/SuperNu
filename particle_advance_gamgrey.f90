@@ -331,7 +331,7 @@ subroutine particle_advance_gamgrey(nmpi)
         endif
 
 !-- Russian roulette for termination of exhausted particles
-        if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgrey(ic)>0d0) then
+        if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgam(ic)>0d0) then
            call rnd_r(r1,rndstate)
            if(r1<0.5d0) then
 !-- transformation factor

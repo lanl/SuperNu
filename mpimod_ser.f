@@ -45,7 +45,7 @@ c
 c     ---------------------------
       use gridmod
       use gasmod
-      grd_capgrey = reshape(gas_capgam,[grd_ncell])
+      grd_capgam = reshape(gas_capgam,[grd_ncell])
       grd_emitex = reshape(gas_emitex,[grd_ncell])
       end subroutine allgather_gammacap
 c

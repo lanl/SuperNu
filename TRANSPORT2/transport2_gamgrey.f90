@@ -139,13 +139,13 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
 !
 !-- calculating distance to effective collision:
-  if(grd_capgrey(ic)<=0d0) then
+  if(grd_capgam(ic)<=0d0) then
 !-- making greater than dcen
      dcol = far
   elseif(prt_isimcanlog) then
 !-- calculating dcol for analog MC
      call rnd_r(r1,rndstate)
-     dcol = -log(r1)*thelpinv/(elabfact*grd_capgrey(ic))
+     dcol = -log(r1)*thelpinv/(elabfact*grd_capgam(ic))
   else
 !-- making greater than dcen
      dcol = far
@@ -195,7 +195,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   if(.not.prt_isimcanlog) then
 !-- depositing nonanalog absorbed energy
      edep = e* &
-          (1d0-exp(-grd_capgrey(ic)* &
+          (1d0-exp(-grd_capgam(ic)* &
           elabfact*d*thelp))*elabfact
      if(edep/=edep) then
 !       stop 'transport2_gamgrey: invalid energy deposition'
@@ -203,7 +203,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
         return
      endif
 !-- reducing particle energy
-     e = e*exp(-grd_capgrey(ic) * &
+     e = e*exp(-grd_capgam(ic) * &
           elabfact*d*thelp)
   endif
 

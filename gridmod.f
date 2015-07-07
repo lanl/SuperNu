@@ -66,6 +66,8 @@ c-- number of flux prt_particles originating from each cell
 c
 c-- packet number and energy distribution
 c========================================
+      real*8,allocatable :: grd_capgam(:)   !(ncell) gray gamma opacity
+c
       real*8,allocatable :: grd_vol(:)  !(ncell)
 c
       integer,allocatable :: grd_nvol(:) !(ncell) number of thermal source particles generated per cell
@@ -142,6 +144,7 @@ c-- ndim=3 alloc
       allocate(grd_tempinv(grd_ncell))
       allocate(grd_vol(grd_ncell))
 c
+      allocate(grd_capgam(grd_ncell))
       allocate(grd_emit(grd_ncell))
       grd_emit = 0d0
       allocate(grd_emitex(grd_ncell))
@@ -183,6 +186,7 @@ c-- gasmod
       deallocate(grd_tempinv)
       deallocate(grd_vol)
 c
+      deallocate(grd_capgam)
       deallocate(grd_emit)
       deallocate(grd_emitex)
       deallocate(grd_evolinit)
