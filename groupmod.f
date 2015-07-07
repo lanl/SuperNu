@@ -138,13 +138,16 @@ c!}}}
       end function specint0
 c
 c
-      pure function specintv(tempinv,mode) result(ss)
+      pure subroutine specintv(tempinv,n,ss,offset,mode,mask)
 c     -----------------------------------------------!{{{
       use physconstmod
       implicit none
-      real*8 :: ss(grp_ng)
       real*8,intent(in) :: tempinv
+      integer,intent(in) :: n
+      real*8,intent(out) :: ss(n)
+      integer,intent(in),optional :: offset
       integer,intent(in),optional :: mode
+      logical*2,intent(in),optional :: mask(n)
 ************************************************************************
 * Integrate normalized Planck spectrum using Newton-Cotes formulae of
 * different degrees.
@@ -155,137 +158,98 @@ c     -----------------------------------------------!{{{
       real*8,parameter :: one90th=ftpi4/90d0
       real*8,parameter :: onehalf=ftpi4/2d0
       real*8,parameter :: one=ftpi4
-      real*8 :: xarr(grp_ng+1)
-      real*8 :: farr(grp_ng+1)
-      real*8 :: f2arr(grp_ng)
-      integer :: imode
+      real*8 :: xarr(n+1)
+      real*8 :: farr(n+1)
+      real*8 :: f2arr(n)
+      integer :: imode,ioff
 c
-c-- default mode is linear
-      imode = 1
+c-- defaults
+      ioff = 1
+      if(present(offset)) ioff = offset
+      imode = 0
       if(present(mode)) imode = mode
 c
-c-- x
-      xarr = hck*tempinv*grp_wlinv
-c
-c-- edge values are always used
-c
-      select case(imode)
-c-- constant
-      case(0)
-       ss = one*abs(xarr(2:)-xarr(:grp_ng)) *
-     &   f(.5d0*(xarr(2:)+xarr(:grp_ng)))
-c
-c-- linear
-      case(1)
-       farr = f(xarr) !edge values
-       ss = onehalf*abs(xarr(2:)-xarr(:grp_ng)) *
-     &   (farr(2:)+farr(:grp_ng))
-c
-c-- quadratic
-      case(2)
-       farr = f(xarr) !edge values
-       f2arr = f(.5d0*(xarr(2:) + xarr(:grp_ng))) !midpoints
-c-- simpson's rule
-       ss = one6th*abs(xarr(2:)-xarr(:grp_ng)) *
-     &  (farr(2:) + farr(:grp_ng) + 4d0*f2arr)
-c
-c-- cubic
-      case(11)
-       farr = f(xarr) !edge values
-c-- quarter points
-       f2arr = 12d0*f(.5d0*(xarr(2:) + xarr(:grp_ng))) + 32d0*(
-     &   f(.25d0*xarr(2:) + .75d0*xarr(:grp_ng)) +
-     &   f(.75d0*xarr(2:) + .25d0*xarr(:grp_ng)))
-c-- Boole's rule
-       ss = one90th*abs(xarr(2:)-xarr(:grp_ng)) *
-     &   (7d0*(farr(2:) + farr(:grp_ng)) + f2arr)
-c
-c-- invalid
-      case default
-       ss = 0d0
-      endselect
-c
-      contains
-c
-      elemental real*8 function f(x)
-      real*8,intent(in) :: x
-      f = x**3/(exp(x) - 1d0)
-      end function
-c!}}}
-      end function specintv
-c
-c
-      pure subroutine specintw(tempinv,ss,mode,mask)
-c     ----------------------------------------------------!{{{
-      use physconstmod
-      implicit none
-      real*8,intent(inout) :: ss(grp_ng)
-      real*8,intent(in) :: tempinv
-      integer,intent(in),optional :: mode
-      logical*2,intent(in),optional :: mask(grp_ng)
-************************************************************************
-* Integrate normalized Planck spectrum using Newton-Cotes formulae of
-* different degrees.
-************************************************************************
-      real*8,parameter :: ftpi4=15d0/pc_pi**4
-      real*8,parameter :: hck=pc_h*pc_c/pc_kb
-      real*8,parameter :: one6th=ftpi4/6d0
-      real*8,parameter :: one90th=ftpi4/90d0
-      real*8,parameter :: onehalf=ftpi4/2d0
-      real*8,parameter :: one=ftpi4
-      real*8 :: xarr(grp_ng+1)
-      real*8 :: farr(grp_ng+1)
-      real*8 :: f2arr(grp_ng)
-      integer :: imode
-c
-c-- default mode is linear
-      imode = 1
-      if(present(mode)) imode = mode
+c-- sanity check
+      if(ioff+n>grp_ng+1) then
+       ss = -1d0
+       return
+      endif
 c
 c-- x
-      xarr = hck*tempinv*grp_wlinv
-c
-c-- edge values are always used
+      xarr = hck*tempinv*grp_wlinv(ioff:ioff+n)
 c
       select case(imode)
 c-- constant
       case(0)
        if(present(mask)) then
-        where(mask) ss = one*abs(xarr(2:)-xarr(:grp_ng)) *
-     &    f(.5d0*(xarr(2:)+xarr(:grp_ng)))
+        where(mask)
+         ss = one*abs(xarr(2:)-xarr(:n)) *
+     &    f(.5d0*(xarr(2:)+xarr(:n)))
+        endwhere
        else
-        ss = one*abs(xarr(2:)-xarr(:grp_ng)) *
-     &    f(.5d0*(xarr(2:)+xarr(:grp_ng)))
+         ss = one*abs(xarr(2:)-xarr(:n)) *
+     &     f(.5d0*(xarr(2:)+xarr(:n)))
        endif
 c
 c-- linear
       case(1)
-       farr = f(xarr) !edge values
-       ss = onehalf*abs(xarr(2:)-xarr(:grp_ng)) *
-     &   (farr(2:)+farr(:grp_ng))
+       if(present(mask)) then
+        where(mask)
+         farr = f(xarr) !edge values
+         ss = onehalf*abs(xarr(2:)-xarr(:n)) *
+     &     (farr(2:)+farr(:n))
+        endwhere
+       else
+         farr = f(xarr) !edge values
+         ss = onehalf*abs(xarr(2:)-xarr(:n)) *
+     &     (farr(2:)+farr(:n))
+       endif
 c
 c-- quadratic
       case(2)
-       farr = f(xarr) !edge values
-       f2arr = f(.5d0*(xarr(2:) + xarr(:grp_ng))) !midpoints
+       if(present(mask)) then
+        where(mask)
+         farr = f(xarr) !edge values
+         f2arr = f(.5d0*(xarr(2:) + xarr(:n))) !midpoints
 c-- simpson's rule
-       ss = one6th*abs(xarr(2:)-xarr(:grp_ng)) *
-     &  (farr(2:) + farr(:grp_ng) + 4d0*f2arr)
+         ss = one6th*abs(xarr(2:)-xarr(:n)) *
+     &    (farr(2:) + farr(:n) + 4d0*f2arr)
+        endwhere
+       else
+         farr = f(xarr) !edge values
+         f2arr = f(.5d0*(xarr(2:) + xarr(:n))) !midpoints
+c-- simpson's rule
+         ss = one6th*abs(xarr(2:)-xarr(:n)) *
+     &    (farr(2:) + farr(:n) + 4d0*f2arr)
+       endif
 c
 c-- cubic
       case(11)
-       farr = f(xarr) !edge values
+       if(present(mask)) then
+        where(mask)
+         farr = f(xarr) !edge values
 c-- quarter points
-       f2arr = 12d0*f(.5d0*(xarr(2:) + xarr(:grp_ng))) + 32d0*(
-     &   f(.25d0*xarr(2:) + .75d0*xarr(:grp_ng)) +
-     &   f(.75d0*xarr(2:) + .25d0*xarr(:grp_ng)))
+         f2arr = 12d0*f(.5d0*(xarr(2:) + xarr(:n))) + 32d0*(
+     &     f(.25d0*xarr(2:) + .75d0*xarr(:n)) +
+     &     f(.75d0*xarr(2:) + .25d0*xarr(:n)))
 c-- Boole's rule
-       ss = one90th*abs(xarr(2:)-xarr(:grp_ng)) *
-     &   (7d0*(farr(2:) + farr(:grp_ng)) + f2arr)
+         ss = one90th*abs(xarr(2:)-xarr(:n)) *
+     &     (7d0*(farr(2:) + farr(:n)) + f2arr)
+        endwhere
+       else
+         farr = f(xarr) !edge values
+c-- quarter points
+         f2arr = 12d0*f(.5d0*(xarr(2:) + xarr(:n))) + 32d0*(
+     &     f(.25d0*xarr(2:) + .75d0*xarr(:n)) +
+     &     f(.75d0*xarr(2:) + .25d0*xarr(:n)))
+c-- Boole's rule
+         ss = one90th*abs(xarr(2:)-xarr(:n)) *
+     &     (7d0*(farr(2:) + farr(:n)) + f2arr)
+       endif
 c
 c-- invalid
       case default
-       ss = 0d0
+       ss = -1d0
       endselect
 c
       contains
@@ -295,86 +259,7 @@ c
       f = x**3/(exp(x) - 1d0)
       end function
 c!}}}
-      end subroutine specintw
-c
-c
-      pure function specintvp(tempinv,i1,i2,mode) result(ss)
-c     -----------------------------------------------!{{{
-      use physconstmod
-      implicit none
-      real*8 :: ss(i2-i1+1)
-      real*8,intent(in) :: tempinv
-      integer,intent(in) :: i1,i2
-      integer,intent(in),optional :: mode
-************************************************************************
-* Integrate normalized Planck spectrum using Newton-Cotes formulae of
-* different degrees.
-************************************************************************
-      real*8,parameter :: ftpi4=15d0/pc_pi**4
-      real*8,parameter :: hck=pc_h*pc_c/pc_kb
-      real*8,parameter :: one6th=ftpi4/6d0
-      real*8,parameter :: one90th=ftpi4/90d0
-      real*8,parameter :: onehalf=ftpi4/2d0
-      real*8,parameter :: one=ftpi4
-      real*8 :: xarr(i2-i1+2)
-      real*8 :: farr(i2-i1+2)
-      real*8 :: f2arr(i2-i1+1)
-      integer :: imode,n
-c
-c-- default mode is linear
-      imode = 1
-      if(present(mode)) imode = mode
-c
-c-- x
-      n = i2 - i1 + 1
-      xarr = hck*tempinv*grp_wlinv(i1:i2+1)
-c
-c-- edge values are always used
-c
-      select case(imode)
-c-- constant
-      case(0)
-       ss = one*abs(xarr(2:)-xarr(:n)) *
-     &   f(.5d0*(xarr(2:)+xarr(:n)))
-c
-c-- linear
-      case(1)
-       farr = f(xarr) !edge values
-       ss = onehalf*abs(xarr(2:)-xarr(:n)) *
-     &   (farr(2:)+farr(:n))
-c
-c-- quadratic
-      case(2)
-       farr = f(xarr) !edge values
-       f2arr = f(.5d0*(xarr(2:) + xarr(:n))) !midpoints
-c-- simpson's rule
-       ss = one6th*abs(xarr(2:)-xarr(:n)) *
-     &  (farr(2:) + farr(:n) + 4d0*f2arr)
-c
-c-- cubic
-      case(11)
-       farr = f(xarr) !edge values
-c-- quarter points
-       f2arr = 12d0*f(.5d0*(xarr(2:) + xarr(:n))) + 32d0*(
-     &   f(.25d0*xarr(2:) + .75d0*xarr(:n)) +
-     &   f(.75d0*xarr(2:) + .25d0*xarr(:n)))
-c-- Boole's rule
-       ss = one90th*abs(xarr(2:)-xarr(:n)) *
-     &   (7d0*(farr(2:) + farr(:n)) + f2arr)
-c
-c-- invalid
-      case default
-       ss = 0d0
-      endselect
-c
-      contains
-c
-      elemental real*8 function f(x)
-      real*8,intent(in) :: x
-      f = x**3/(exp(x) - 1d0)
-      end function
-c!}}}
-      end function specintvp
+      end subroutine specintv
 c
 c
       end module groupmod

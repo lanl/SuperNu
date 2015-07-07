@@ -280,7 +280,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
   if(r1>=pa .and. r1<pa+sum(probleak) .and. speclump>0d0 .and. &
         iand(cache%istat,2)==0) then
      cache%istat = cache%istat + 2
-     call specintw(tempinv,cache%specarr,mode=0,mask=.not.llumps)
+     call specintv(tempinv,grp_ng,cache%specarr,mask=.not.llumps)
   endif
 
 !-- absorption sample
@@ -512,7 +512,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !-- update specarr cache. this is slow
         if(iand(cache%istat,1)==0) then
            cache%istat = cache%istat + 1
-           call specintw(tempinv,cache%specarr,mode=0,mask=llumps)
+           call specintv(tempinv,grp_ng,cache%specarr,mask=llumps)
         endif
 !
         call rnd_r(r1,rndstate)

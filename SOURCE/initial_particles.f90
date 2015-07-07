@@ -30,7 +30,7 @@ subroutine initial_particles
   wl1=grp_wlinv(grp_ng+1)
   wl2=grp_wlinv(1)
   if(in_tempradinit>0d0) then
-     specarr = specintv(1d0/in_tempradinit,1)
+     call specintv(1d0/in_tempradinit,grp_ng,specarr,1)
      specarr = specarr/sum(specarr)
   else
      specarr = 1d0

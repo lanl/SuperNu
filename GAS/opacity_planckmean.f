@@ -13,6 +13,7 @@ c     -----------------------------
 !     integer :: ig
 !     real*8 :: x1,x2
 !     real*8 :: help,hlparr(grp_ng+1)
+      real*8 :: specarr(grp_ng)
 c
 c-- grey exception
       if(in_opacanaltype=='grey') then
@@ -21,7 +22,8 @@ c-- grey exception
       endif
 c-- Planck opacity
       do i=1,gas_ncell
-       gas_capgrey(i) = sum(gas_cap(:,i)*specintv(1d0/gas_temp(i),0))
+       call specintv(1/gas_temp(i),grp_ng,specarr)
+       gas_capgrey(i) = sum(gas_cap(:,i)*specarr)
       enddo !i
 c
 c
