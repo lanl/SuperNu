@@ -230,7 +230,7 @@ program supernu
         else
            write(6,'(1p,e10.2,4(i7,"k"))') help, &
               ct_npcreate(2)/1000,(ct_npcensimc(2)+ct_npcensddmc(2))/1000, &
-              ct_npflux(2)/1000,ct_nptransport(2)
+              ct_npflux(2)/1000,ct_nptransport(2)/1000
         endif
      endif !impi
 
