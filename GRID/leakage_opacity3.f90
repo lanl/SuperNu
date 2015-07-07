@@ -58,7 +58,7 @@ subroutine leakage_opacity3
      dist = min(dx(i),dy(j),dz(k))*thelp
 !
 !-- initializing Planck integral vectorized
-     call specintv(1d0/grd_temp(l),grp_ng,specarr)
+     call specintv(grd_tempinv(l),grp_ng,specarr)
      speclump = sum(specarr, grd_cap(:,l)*dist>=prt_taulump .and. &
        (grd_sig(l) + grd_cap(:,l))*dist >= prt_tauddmc)
      if(speclump>0d0) then

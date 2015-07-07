@@ -92,7 +92,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
   if(ic/=cache%ic) then
      cache%ic = ic!{{{
      cache%istat = 0 !specarr is not cached yet
-     tempinv = 1d0/grd_temp(ic)
+     tempinv = grd_tempinv(ic)
      capgreyinv = max(1d0/grd_capgrey(ic),0d0) !catch nans
 
 !

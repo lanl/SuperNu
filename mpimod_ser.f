@@ -65,7 +65,7 @@ c
 * - stub
 ************************************************************************
 c-- domain decomposition
-      grd_temp = reshape(gas_temp,[grd_ncell])
+      grd_tempinv = reshape(1d0/gas_temp,[grd_ncell])
       grd_emit = reshape(gas_emit,[grd_ncell])
       grd_emitex = reshape(gas_emitex,[grd_ncell])
       grd_evolinit = reshape(gas_evolinit,[grd_ncell])
@@ -104,7 +104,7 @@ c
 c     -------------------------
       use gridmod
       use gasmod
-      grd_temp = reshape(gas_temp,[grd_ncell])
+      grd_tempinv = reshape(1d0/gas_temp,[grd_ncell])
       end subroutine reduce_gastemp
 c
       subroutine scatter_restart_data

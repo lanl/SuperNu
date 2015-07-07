@@ -354,15 +354,17 @@ c     -----------------------------!{{{
 * Broadcast the data that changes with time/temperature.
 ************************************************************************
       real*8 :: t0,t1
-      real*8 :: snd(grd_ncell)
+      real*8 :: sndgas(gas_ncell)
+      real*8 :: sndgrd(grd_ncell)
       integer :: nvacant
 c
       call mpi_barrier(MPI_COMM_WORLD,ierr)
       t0 = t_time()
 c
 c-- gather
-      call mpi_allgatherv(gas_temp,gas_ncell,MPI_REAL8,
-     &  grd_temp,counts,displs,MPI_REAL8,
+      sndgas = 1d0/gas_temp
+      call mpi_allgatherv(sndgas,gas_ncell,MPI_REAL8,
+     &  grd_tempinv,counts,displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)
       call mpi_allgatherv(gas_fcoef,gas_ncell,MPI_REAL8,
      &  grd_fcoef,counts,displs,MPI_REAL8,
@@ -390,8 +392,8 @@ c-- broadcast
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- allreduce
-      snd = grd_eamp
-      call mpi_allreduce(snd,grd_eamp,grd_ncell,MPI_REAL8,MPI_SUM,
+      sndgrd = grd_eamp
+      call mpi_allreduce(sndgrd,grd_eamp,grd_ncell,MPI_REAL8,MPI_SUM,
      &  MPI_COMM_WORLD,ierr)
 c
 c-- allgather
@@ -568,13 +570,15 @@ c     -------------------------------------!{{{
 ************************************************************************
       integer :: n
       real*8,allocatable :: sndvec(:),rcvvec(:)
+      real*8 :: sndgas(gas_ncell)
       real*8 :: t0,t1
 c
       call mpi_barrier(MPI_COMM_WORLD,ierr)
       t0 = t_time()
 c
-      call mpi_gatherv(gas_temp,gas_ncell,MPI_REAL8,
-     &   grd_temp,counts,displs,MPI_REAL8,
+      sndgas = 1d0/gas_temp
+      call mpi_gatherv(sndgas,gas_ncell,MPI_REAL8,
+     &   grd_tempinv,counts,displs,MPI_REAL8,
      &   impi0,MPI_COMM_WORLD,ierr)
 c
 c-- dim==0

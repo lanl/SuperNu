@@ -16,7 +16,7 @@ c-- assumes no header
       do it = 1, tsp_ntres-2
          read(4,*)
       enddo
-      read(4,*) grd_temp
+      read(4,*) grd_tempinv
       close(4)
       end subroutine read_restart_file
 c
@@ -31,6 +31,6 @@ c     -----------------------------
 ************************************************************************
       character(14) :: fname = 'output.restart'
       open(unit=4,file=fname,status='unknown',position='append')
-      write(4,*) grd_temp
+      write(4,*) grd_tempinv
       close(4)
       end subroutine write_restart_file

@@ -40,7 +40,7 @@ c-- Line+Cont extinction coeff
 
 c-- leakage opacities
       real*8,allocatable :: grd_opaclump(:,:) !(9,ncell) leak(6),speclump,caplump,igemitmax
-      real*8,allocatable :: grd_temp(:) !(ncell)
+      real*8,allocatable :: grd_tempinv(:) !(ncell)
 c-- scattering coefficient
       real*8,allocatable :: grd_sig(:) !(ncell) !grey scattering opacity
 c-- Planck opacity (gray)
@@ -139,7 +139,7 @@ c-- ndim=3 alloc
       allocate(grd_capgrey(grd_ncell))
       allocate(grd_sig(grd_ncell))
       allocate(grd_fcoef(grd_ncell))
-      allocate(grd_temp(grd_ncell))
+      allocate(grd_tempinv(grd_ncell))
       allocate(grd_vol(grd_ncell))
 c
       allocate(grd_emit(grd_ncell))
@@ -180,7 +180,7 @@ c-- gasmod
       deallocate(grd_capgrey)
       deallocate(grd_sig)
       deallocate(grd_fcoef)
-      deallocate(grd_temp)
+      deallocate(grd_tempinv)
       deallocate(grd_vol)
 c
       deallocate(grd_emit)

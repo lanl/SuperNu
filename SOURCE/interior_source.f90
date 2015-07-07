@@ -195,7 +195,7 @@ subroutine interior_source
         grd_emitex(l)**pwr,grd_nvol(l),nemit,nhere,ndmy)
      if(nhere<1) cycle
 !-- integrate planck function over each group
-     call specintv(1d0/grd_temp(l),grp_ng,emitprob)
+     call specintv(grd_tempinv(l),grp_ng,emitprob)
      emitprob = emitprob*grd_cap(:,l)/grd_capgrey(l)
 !
 !-- neighbors

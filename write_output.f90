@@ -153,7 +153,7 @@ subroutine write_output
      enddo
      close(4)
 !
-     arr(:grd_ncell) = grd_temp
+     arr(:grd_ncell) = 1d0/grd_tempinv
      open(unit=4,file='output.grd_temp',status=fstat,position='append',recl=reclen)
      do i=1,nrow
         write(4,'(1p,10000e12.4)') arr((i-1)*ncpr+1:i*ncpr)
