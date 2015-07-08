@@ -10,7 +10,7 @@ c
       type grp_t_cache
        integer :: ic=0
        integer :: nlump !number of groups in the lump
-       real*8 :: tempinv,capgreyinv
+       real*8 :: capgreyinv
        real*8 :: speclump,emitlump,caplump
        real*8,pointer :: specarr(:) !(grp_ng)
        integer :: istat

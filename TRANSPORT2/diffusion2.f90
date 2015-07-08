@@ -43,7 +43,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   integer :: glump, gunlump
   integer*2,pointer :: glumps(:)
   logical*2,pointer :: llumps(:)
-  real*8,pointer :: tempinv, capgreyinv
+  real*8,pointer :: capgreyinv
   real*8,pointer :: speclump
   real*8 :: dist, help
 
@@ -69,7 +69,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   e0 => ptcl%e0
   wl => ptcl%wl
 
-  tempinv => cache%tempinv
   capgreyinv => cache%capgreyinv
   speclump => cache%speclump
   glumps => cache%glumps
@@ -95,7 +94,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   if(ic/=cache%ic) then
      cache%ic = ic!{{{
      cache%istat = 0 !specarr is not cached yet
-     tempinv = grd_tempinv(ic)
      capgreyinv = max(1d0/grd_capgrey(ic),0d0) !catch nans
 
 !
@@ -160,7 +158,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      caplump = cache%caplump
   else
 !-- outside the lump
-     emitlump = specint0(tempinv,ig)*capgreyinv*grd_cap(ig,ic)
+     emitlump = specint0(grd_tempinv(ic),ig)*capgreyinv*grd_cap(ig,ic)
      caplump = grd_cap(ig,ic)
   endif
 
@@ -325,7 +323,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   if(r1>=pa .and. r1<pa+sum(probleak(1:4)) .and. glump>0 .and. &
         iand(cache%istat,2)==0) then
      cache%istat = cache%istat + 2
-     call specintv(tempinv,grp_ng,cache%specarr,mask=llumps,maskval=.true.)
+     call specintv(grd_tempinv(ic),grp_ng,cache%specarr,&
+        mask=llumps,maskval=.true.)
   endif
 
 !-- absorption
@@ -789,7 +788,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- update specarr cache. this is slow
         if(iand(cache%istat,1)==0) then
            cache%istat = cache%istat + 1
-           call specintv(tempinv,grp_ng,cache%specarr,mask=llumps,maskval=.false.)
+           call specintv(grd_tempinv(ic),grp_ng,cache%specarr,&
+              mask=llumps,maskval=.false.)
         endif
 !
         call rnd_r(r1,rndstate)
