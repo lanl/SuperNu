@@ -660,7 +660,6 @@ c
       grd_nx    = in_ndim(1)
       grd_ny    = in_ndim(2)
       grd_nz    = in_ndim(3)
-      grd_lvoid = in_voidcorners
       grd_isvelocity = in_isvelocity
 c!}}}
       end subroutine provide_inputpars

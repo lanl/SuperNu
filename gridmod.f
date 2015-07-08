@@ -92,10 +92,10 @@ c
 c
       contains
 c
-      subroutine gridmod_init(ltalk,ngin,ncell,idd1,ndd)
+      subroutine gridmod_init(ltalk,ngin,ncell,lvoid,idd1,ndd)
 c     --------------------------------------------------!{{{
       implicit none
-      logical,intent(in) :: ltalk
+      logical,intent(in) :: ltalk,lvoid
       integer,intent(in) :: ngin
       integer,intent(in) :: ncell,idd1,ndd
 ************************************************************************
@@ -107,6 +107,8 @@ c     --------------------------------------------------!{{{
       integer :: n
 c
       ng = ngin
+c-- void cell exists
+      grd_lvoid = lvoid
 c
 c-- emission probability
       grd_nep = nint(sqrt(dble(ng)))

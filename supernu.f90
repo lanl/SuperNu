@@ -98,7 +98,7 @@ program supernu
   call fluxgrid_setup
 
 !-- setup spatial grid
-  call gridmod_init(lmpi0,grp_ng,str_nc,icell1,ncell)
+  call gridmod_init(lmpi0,grp_ng,str_nc,str_lvoid,icell1,ncell)
   call grid_setup
 !-- setup gas
   call gasmod_init(lmpi0,icell1,ncell,grp_ng)
