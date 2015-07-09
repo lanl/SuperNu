@@ -60,8 +60,6 @@ c-- number of IMC-DDMC method changes per cell per time step
 c-- number of census prt_particles per cell
       integer,allocatable :: grd_numcensimc(:) !(ncell)
       integer,allocatable :: grd_numcensddmc(:) !(ncell)
-c-- number of flux prt_particles originating from each cell
-      integer,allocatable :: grd_numfluxorig(:) !(ncell)
 
 c
 c-- packet number and energy distribution
@@ -160,7 +158,6 @@ c
       allocate(grd_methodswap(grd_ncell))
       allocate(grd_numcensimc(grd_ncell))
       allocate(grd_numcensddmc(grd_ncell))
-      allocate(grd_numfluxorig(grd_ncell))
 c
 c-- ndim=4 alloc
       allocate(grd_opaclump(9,grd_ncell))
@@ -198,7 +195,6 @@ c-- ndim=3 integer
       deallocate(grd_methodswap)
       deallocate(grd_numcensimc)
       deallocate(grd_numcensddmc)
-      deallocate(grd_numfluxorig)
 c-- ndim=4 alloc
       deallocate(grd_opaclump)
       deallocate(grd_emitprob)

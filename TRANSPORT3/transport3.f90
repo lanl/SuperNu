@@ -327,7 +327,6 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            endif
            wl = 0d0 !workaround ifort 13.1.3 bug
         else
-           ptcl%icorig = ic
 !-- uniformly in new group
            call rnd_r(r1,rndstate)
            wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))

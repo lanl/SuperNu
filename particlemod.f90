@@ -6,7 +6,6 @@ module particlemod
      real*8 :: x, y, z
      real*8 :: mu, om, t
      real*8 :: e, e0, wl
-     integer :: icorig
   end type packet
 !
 !-- secondary particle properties

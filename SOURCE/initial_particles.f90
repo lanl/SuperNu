@@ -55,9 +55,6 @@ subroutine initial_particles
 
 !-- setting particle index to not vacant
      prt_isvacant(ipart) = .false.
-
-!-- particle origin
-     ptcl%icorig = l
 !
 !-- calculating particle time
      ptcl%t = tsp_t

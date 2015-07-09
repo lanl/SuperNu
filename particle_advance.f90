@@ -33,7 +33,7 @@ subroutine particle_advance
 ! real*8 :: xx0, bmax
 ! real*8 :: uul, uur, uumax, r0,r2,r3
   integer :: ipart
-  integer, pointer :: ig, ic, icorig
+  integer, pointer :: ig, ic
   integer, pointer :: ix, iy, iz
   real*8, pointer :: x,y,z, mu, e, e0, wl, om
   integer :: iom, imu
@@ -91,7 +91,6 @@ subroutine particle_advance
      grd_methodswap = 0
      grd_numcensimc = 0
      grd_numcensddmc = 0
-     grd_numfluxorig = 0
   endif
 
 !-- Propagate all particles that are not considered vacant
@@ -110,7 +109,7 @@ subroutine particle_advance
 !$omp shared(thelp) &
 !$omp private(ptcl,ptcl2,cache, &
 !$omp    specarr,glumps,llumps, &
-!$omp    x,y,z,mu,om,wl,e,e0,icorig,ix,iy,iz,ic,ig,icold,r1, &
+!$omp    x,y,z,mu,om,wl,e,e0,ix,iy,iz,ic,ig,icold,r1, &
 !$omp    i,t0,t1,x1,x2,help,tau, &
 !$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
 !$omp    rndstate,edep,eraddens,eamp,ierr, iomp) &
@@ -141,7 +140,6 @@ subroutine particle_advance
   wl => ptcl%wl
   e => ptcl%e
   e0 => ptcl%e0
-  icorig => ptcl%icorig
 !-- secondary particle properties
   ix => ptcl2%ix
   iy => ptcl2%iy
@@ -193,7 +191,6 @@ subroutine particle_advance
         ptcl2%itype = 1 !IMC
      else
         ptcl2%itype = 2 !DDMC
-        icorig = 0
      endif
 
 !
@@ -252,7 +249,6 @@ subroutine particle_advance
            if(ptcl2%itype/=1) then
               nmethodswap = nmethodswap + 1
               if(in_io_dogrdtally) grd_methodswap(icold) = grd_methodswap(icold) + 1
-              icorig = 0
            endif
 !-- tally eamp
            if(.not.trn_noampfact) grd_eamp(icold) = grd_eamp(icold) + eamp
@@ -262,7 +258,6 @@ subroutine particle_advance
            if(ptcl2%itype==1) then
               nmethodswap = nmethodswap + 1
               if(in_io_dogrdtally) grd_methodswap(icold) = grd_methodswap(icold) + 1
-              icorig = ptcl2%ic
            endif
         endif
         i = max(-3,ptcl2%idist)
@@ -273,7 +268,6 @@ subroutine particle_advance
 !-- outbound luminosity tally
         if(ptcl2%lflux) then
            nflux = nflux + 1
-           if(icorig>0 .and. in_io_dogrdtally) grd_numfluxorig(icorig) = grd_numfluxorig(icorig) + 1
            tot_eout = tot_eout+e
 !-- retrieving lab frame flux group, polar, azimuthal bin
            ig = binsrch(wl,flx_wl,flx_ng+1,.false.)

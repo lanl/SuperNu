@@ -71,9 +71,6 @@ subroutine interior_source
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
 
-!-- particle origin
-     ptcl%icorig = l
-
 !
 !-- calculating particle time
      call rnd_r(r1,rnd_state)
@@ -214,10 +211,6 @@ subroutine interior_source
 
 !-- setting particle index to not vacant
      prt_isvacant(ivac) = .false.
-
-!-- particle origin
-     ptcl%icorig = l
-
 !
 !-- calculating particle time
      call rnd_r(r1,rnd_state)

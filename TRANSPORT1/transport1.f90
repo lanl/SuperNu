@@ -584,7 +584,6 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
 !-- converting comoving wavelength to lab frame wavelength
            if(grd_isvelocity) wl = wl*(1d0-mu*x*cinv)
-           ptcl%icorig = ic
         endif
      endif
 

@@ -210,13 +210,6 @@ subroutine write_output
            write(4,'(10000i12)') iarr((i-1)*ncpr+1:i*ncpr)
         enddo
         close(4)
-!
-        iarr(:grd_ncell) = grd_numfluxorig
-        open(unit=4,file='output.grd_numfluxorig',status=fstat,position='append',recl=reclen)
-        do i=1,nrow
-           write(4,'(10000i12)') iarr((i-1)*ncpr+1:i*ncpr)
-        enddo
-        close(4)
      endif !in_io_dogrdtally
 !
      deallocate(iarr,arr)

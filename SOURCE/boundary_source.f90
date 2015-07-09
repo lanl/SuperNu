@@ -100,9 +100,6 @@ subroutine boundary_source
 !-- filling vacant spot in vacancy array
      ivac = src_ivacant(ipart)
      prt_isvacant(ivac) = .false.
-
-!-- particle origin
-     ptcl%icorig = l
 !
 !-- calculating particle time
      call rnd_r(r1,rnd_state)
