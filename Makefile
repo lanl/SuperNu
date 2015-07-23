@@ -29,7 +29,7 @@ MODULES := elemdatamod.o physconstmod.o randommod.o mpimod.o \
 FILES := banner.o \
   particle_advance.o particle_advance_gamgrey.o \
   write_output.o restart_file.o dealloc_all.o \
-  read_bbxs_data.o read_temp_str.o
+  read_bbxs_data.o
 
 LIBRARIES := TRANSPORT1/transport1.a TRANSPORT2/transport2.a TRANSPORT3/transport3.a \
   SOURCE/source.a GAS/gas.a GRID/grid.a MISC/misc.a

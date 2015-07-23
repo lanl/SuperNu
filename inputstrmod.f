@@ -70,7 +70,7 @@ c     --------------------------------------------------------!{{{
 * Read the input structure file
 ************************************************************************
       integer :: i,j,k,l,ierr,nx_r,ny_r,nz_r,ini56,nvar,ncol
-      integer :: jmass,jxleft
+      integer :: jmass,jxleft,jtemp
       integer :: ncorner,nvoid,ncell,ncpr
       character(2) :: dmy
       character(8),allocatable :: labl(:)
@@ -114,9 +114,14 @@ c
 c-- var pointers
       jmass = 0
       jxleft = 0
+      jtemp = 0
       do i=1,nvar
        if(lcase(trim(labl(i)))=='mass') jmass = i
        if(lcase(trim(labl(i)))=='x_left') jxleft = i
+       if(lcase(trim(labl(i)))=='temp') then
+         jtemp = i
+         str_ltemp=.true.
+       endif
       enddo
       if(jmass==0) stop 'read_inputstr: mass label not found'
 c
@@ -126,6 +131,7 @@ c-- allocate data arrays
       allocate(str_zleft(nz+1))
       allocate(str_mass(nx,ny,nz))
       allocate(str_massfr(str_nabund,nx,ny,nz))
+      if(str_ltemp) allocate(str_temp(nx,ny,nz))
       allocate(raw(ncol,nx*ny*nz))
 c
 c-- read body
@@ -190,6 +196,7 @@ c-- vars
       do i=1,nx
        l = l+1
        str_mass(i,j,k) = raw(jmass,l)
+       if(str_ltemp) str_temp(i,j,k)=raw(jtemp,l)
       enddo
       enddo
       enddo
