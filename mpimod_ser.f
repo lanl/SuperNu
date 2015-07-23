@@ -37,6 +37,10 @@ c
        allocate(str_massfrdd(str_nabund,ncell))
        str_massfrdd = reshape(str_massfrdc,[str_nabund,ncell])
       endif
+      if(str_ltemp) then
+       allocate(str_tempdd(ncell))
+       str_tempdd = reshape(str_tempdc,[ncell])
+      endif
       str_massdd = reshape(str_massdc,[ncell]) !}}}
       end subroutine scatter_inputstruct
 c
