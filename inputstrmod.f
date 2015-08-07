@@ -60,7 +60,6 @@ c
       subroutine read_inputstr(igeomin,ndim,lvoidcorners,nmpi)
 c     --------------------------------------------------------!{{{
       use physconstmod
-      use gasmod, only:gas_ini56,gas_ico56
       use miscmod
       implicit none
       integer,intent(in) :: igeomin,nmpi
@@ -664,7 +663,7 @@ c
       subroutine elnam2elcode(ini56)
 c     ------------------------------!{{{
       use miscmod, only:lcase
-      use gasmod, only:gas_ini56,gas_ico56
+      use gasmod
       use elemdatamod
       implicit none
       integer,intent(out) :: ini56
@@ -685,15 +684,22 @@ c-- determine atomic z number
       do l=1,str_nabund
        iabund = 0
        elname = lcase(trim(str_abundlabl(l)))
-       if(elname=='ni56') then
-c-- special case
+       select case(elname)
+c-- special cases
+       case('ni56')
         iabund = gas_ini56
         ini56 = l
-       elseif(elname=='co56') then
-c-- special case
+       case('co56')
         iabund = gas_ico56
-       else
-c
+       case('fe52')
+        iabund = gas_ife52
+       case('mn52')
+        iabund = gas_imn52
+       case('cr48')
+        iabund = gas_icr48
+       case('v48 ')
+        iabund = gas_iv48
+       case default
 c-- normal case, search elem_data for corresponding entry
         do j=1,elem_neldata
          if(lcase(trim(elem_data(j)%sym))==elname) exit
@@ -704,7 +710,8 @@ c-- verify hit
          stop 'elnam2elcode: no such element found in elemdata'
         endif
         iabund = j
-       endif
+       endselect
+       write(6,*) 'el found: ',elname,iabund
 c
 c-- store element code (pointer to mass0fr)
        str_iabund(l) = iabund

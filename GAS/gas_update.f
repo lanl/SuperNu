@@ -26,8 +26,8 @@ c     -------------------------
       integer :: i,j,l,istat
       real*8 :: help
       real*8 :: dtempfrac = 0.99d0
-      real*8 :: natom1fr(-2:gas_nelem,gas_ncell)
-      real*8 :: natom2fr(-2:gas_nelem,gas_ncell)
+      real*8 :: natom1fr(-2*gas_nchain:gas_nelem,gas_ncell)
+      real*8 :: natom2fr(-2*gas_nchain:gas_nelem,gas_ncell)
       real*8 :: decay0(gas_ncell)
 c-- previous values
       real*8,allocatable,save :: tempalt(:),capgreyalt(:)
@@ -272,41 +272,52 @@ c     ----------------------------!{{{
       integer :: i
       real*8 :: x(gas_ncell,0:2)
 c
+c-- zero
+      gas_natom1fr(22:28,:) = 0d0
+c
 c-- ni56->co56->fe56
 c-- initial radioactive natom
-      x(:,2) = gas_natom0fr(gas_ini56,:,1)
-      x(:,1) = gas_natom0fr(gas_ico56,:,1)
+      x(:,2) = gas_natom0fr(-2,:,1)
+      x(:,1) = gas_natom0fr(-1,:,1)
       x(:,0) = 0d0
       call nucdecay3(gas_ncell,t,nuc_thl_ni56,nuc_thl_co56,x)
 c-- current radioactive natom
       gas_natom1fr(gas_ini56,:) = x(:,2)
       gas_natom1fr(gas_ico56,:) = x(:,1)
-c-- current total natom
-      forall(i=0:2) gas_natom1fr(26+i,:) = x(:,i) + gas_natom0fr(i,:,1) !radioactive + stable
+c-- add decayed fraction to total natom
+      forall(i=0:2) gas_natom1fr(26+i,:) = gas_natom1fr(26+i,:) + x(:,i)
 c
 c-- fe52->mn52->cr52
 c-- initial radioactive natom
-      x(:,2) = gas_natom0fr(gas_ife52,:,2)
-      x(:,1) = gas_natom0fr(gas_imn52,:,2)
+      x(:,2) = gas_natom0fr(-2,:,2)
+      x(:,1) = gas_natom0fr(-1,:,2)
       x(:,0) = 0d0
       call nucdecay3(gas_ncell,t,nuc_thl_fe52,nuc_thl_mn52,x)
 c-- current radioactive natom
       gas_natom1fr(gas_ife52,:) = x(:,2)
       gas_natom1fr(gas_imn52,:) = x(:,1)
-c-- current total natom
-      forall(i=0:2) gas_natom1fr(24+i,:) = x(:,i) + gas_natom0fr(i,:,2) !radioactive + stable
+c-- add decayed fraction to total natom
+      forall(i=0:2) gas_natom1fr(24+i,:) = gas_natom1fr(24+i,:) + x(:,i)
 c
 c-- cr48->v48->ti48
 c-- initial radioactive natom
-      x(:,2) = gas_natom0fr(gas_icr48,:,3)
-      x(:,1) = gas_natom0fr(gas_iv48,:,3)
+      x(:,2) = gas_natom0fr(-2,:,3)
+      x(:,1) = gas_natom0fr(-1,:,3)
       x(:,0) = 0d0
       call nucdecay3(gas_ncell,t,nuc_thl_cr48,nuc_thl_v48,x)
 c-- current radioactive natom
       gas_natom1fr(gas_icr48,:) = x(:,2)
       gas_natom1fr(gas_iv48,:) = x(:,1)
-c-- current total natom
-      forall(i=0:2) gas_natom1fr(22+i,:) = x(:,i) + gas_natom0fr(i,:,3) !radioactive + stable
+c-- add decayed fraction to total natom
+      forall(i=0:2) gas_natom1fr(22+i,:) = gas_natom1fr(22+i,:) + x(:,i)
+c
+c-- add stable fraction to total natom
+      forall(i=1:2) gas_natom1fr(26+i,:) = gas_natom1fr(26+i,:) +
+     &  gas_natom0fr(i,:,1)
+      forall(i=1:2) gas_natom1fr(24+i,:) = gas_natom1fr(24+i,:) +
+     &  gas_natom0fr(i,:,2)
+      forall(i=1:2) gas_natom1fr(22+i,:) = gas_natom1fr(22+i,:) +
+     &  gas_natom0fr(i,:,3)
 c!}}}
       end subroutine update_natomfr
 c

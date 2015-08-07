@@ -12,7 +12,7 @@ c     --------------------------
 * temperature. The part that changes is done in gas_grid_update.
 ************************************************************************
       integer :: l,i
-      real*8 :: mass0fr(-2:gas_nelem,gas_ncell)
+      real*8 :: mass0fr(-2*gas_nchain:gas_nelem,gas_ncell)
 c
 c-- agnostic mass setup
       gas_mass = str_massdd
@@ -77,7 +77,7 @@ c     ----------------------------------!{{{
       use elemdatamod, only:elem_data
       use gasmod
       implicit none
-      real*8,intent(inout) :: mass0fr(-2:gas_nelem,gas_ncell)
+      real*8,intent(inout) :: mass0fr(-2*gas_nchain:gas_nelem,gas_ncell)
 ************************************************************************
 * convert mass fractions to natom fractions, and mass to natom.
 ************************************************************************
@@ -97,39 +97,53 @@ c-- renormalize (the container fraction (unused elements) is taken out)
 c
 c-- partial mass
        gas_natom1fr(:,i) = mass0fr(:,i)*gas_mass(i)
-c-- only stable nickel and cobalt
+c
+c-- take out radioactive part
        gas_natom1fr(28,i) = gas_natom1fr(28,i) -
      &   gas_natom1fr(gas_ini56,i)
        gas_natom1fr(27,i) = gas_natom1fr(27,i) -
      &   gas_natom1fr(gas_ico56,i)
+       gas_natom1fr(26,i) = gas_natom1fr(26,i) -
+     &   gas_natom1fr(gas_ife52,i)
+       gas_natom1fr(25,i) = gas_natom1fr(25,i) -
+     &   gas_natom1fr(gas_imn52,i)
+       gas_natom1fr(24,i) = gas_natom1fr(24,i) -
+     &   gas_natom1fr(gas_icr48,i)
+       gas_natom1fr(23,i) = gas_natom1fr(23,i) -
+     &   gas_natom1fr(gas_iv48,i)
 c
 c-- convert to natoms
        do l=1,gas_nelem
-        gas_natom1fr(l,i) = gas_natom1fr(l,i)/
-     &    (elem_data(l)%m*pc_amu)
+        gas_natom1fr(l,i) = gas_natom1fr(l,i)/ (elem_data(l)%m*pc_amu)
        enddo !j
-c-- special care for ni56 and co56
-!      help = elem_data(26)%m*pc_amu
-       help = elem_data(28)%m*pc_amu !phoenix compatible
-       gas_natom1fr(gas_ini56,i) =
-     &   gas_natom1fr(gas_ini56,i)/help
-       help = elem_data(27)%m*pc_amu !phoenix compatible
-       gas_natom1fr(gas_ico56,i) =
-     &   gas_natom1fr(gas_ico56,i)/help
-c-- store initial ni/co/fe
+c-- ni56/co56
+       help = elem_data(26)%m*pc_amu
+       gas_natom1fr(gas_ini56,i) = gas_natom1fr(gas_ini56,i)/help
+       gas_natom1fr(gas_ico56,i) = gas_natom1fr(gas_ico56,i)/help
+c-- fe52/mn52
+       help = elem_data(24)%m*pc_amu
+       gas_natom1fr(gas_ife52,i) = gas_natom1fr(gas_ife52,i)/help
+       gas_natom1fr(gas_imn52,i) = gas_natom1fr(gas_imn52,i)/help
+c-- fe52/mn52
+       help = elem_data(22)%m*pc_amu
+       gas_natom1fr(gas_icr48,i) = gas_natom1fr(gas_icr48,i)/help
+       gas_natom1fr(gas_iv48,i) = gas_natom1fr(gas_iv48,i)/help
+c
+c-- store initial numbers
+c-- ni/co/fe
        gas_natom0fr(-2,i,1) = gas_natom1fr(gas_ini56,i)!unstable
        gas_natom0fr(-1,i,1) = gas_natom1fr(gas_ico56,i)!unstable
        gas_natom0fr(0:2,i,1) = gas_natom1fr(26:28,i)!stable
-c-- store initial fe/mn/cr
+c-- fe/mn/cr
        gas_natom0fr(-2,i,2) = gas_natom1fr(gas_ife52,i)!unstable
        gas_natom0fr(-1,i,2) = gas_natom1fr(gas_imn52,i)!unstable
        gas_natom0fr(0:2,i,2) = gas_natom1fr(24:26,i)!stable
-c-- store initial cr/v/ti
-       gas_natom0fr(-2,i,2) = gas_natom1fr(gas_icr48,i)!unstable
-       gas_natom0fr(-1,i,2) = gas_natom1fr(gas_iv48,i)!unstable
-       gas_natom0fr(0:2,i,2) = gas_natom1fr(22:24,i)!stable
+c-- cr/v/ti
+       gas_natom0fr(-2,i,3) = gas_natom1fr(gas_icr48,i)!unstable
+       gas_natom0fr(-1,i,3) = gas_natom1fr(gas_iv48,i)!unstable
+       gas_natom0fr(0:2,i,3) = gas_natom1fr(22:24,i)!stable
 c
-c-- add unstable to stable again
+c-- add radioactive part to stable again
        gas_natom1fr(28,i) = gas_natom1fr(28,i) +
      &   gas_natom1fr(gas_ini56,i)
        gas_natom1fr(27,i) = gas_natom1fr(27,i) +
@@ -148,7 +162,7 @@ c-- total natom
 c
 c-- convert natoms to natom fractions
        gas_natom1fr(:,i) = gas_natom1fr(:,i)/gas_natom(i)
-       gas_natom0fr(:,i,1) = gas_natom0fr(:,i,1)/gas_natom(i)
+       gas_natom0fr(:,i,:) = gas_natom0fr(:,i,:)/gas_natom(i)
 c
       enddo !i
 c!}}}
