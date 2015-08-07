@@ -116,22 +116,39 @@ c-- special care for ni56 and co56
        help = elem_data(27)%m*pc_amu !phoenix compatible
        gas_natom1fr(gas_ico56,i) =
      &   gas_natom1fr(gas_ico56,i)/help
-c-- store initial fe/co/ni
+c-- store initial ni/co/fe
        gas_natom0fr(-2,i,1) = gas_natom1fr(gas_ini56,i)!unstable
        gas_natom0fr(-1,i,1) = gas_natom1fr(gas_ico56,i)!unstable
        gas_natom0fr(0:2,i,1) = gas_natom1fr(26:28,i)!stable
+c-- store initial fe/mn/cr
+       gas_natom0fr(-2,i,2) = gas_natom1fr(gas_ife52,i)!unstable
+       gas_natom0fr(-1,i,2) = gas_natom1fr(gas_imn52,i)!unstable
+       gas_natom0fr(0:2,i,2) = gas_natom1fr(24:26,i)!stable
+c-- store initial cr/v/ti
+       gas_natom0fr(-2,i,2) = gas_natom1fr(gas_icr48,i)!unstable
+       gas_natom0fr(-1,i,2) = gas_natom1fr(gas_iv48,i)!unstable
+       gas_natom0fr(0:2,i,2) = gas_natom1fr(22:24,i)!stable
+c
 c-- add unstable to stable again
        gas_natom1fr(28,i) = gas_natom1fr(28,i) +
      &   gas_natom1fr(gas_ini56,i)
        gas_natom1fr(27,i) = gas_natom1fr(27,i) +
      &   gas_natom1fr(gas_ico56,i)
+       gas_natom1fr(26,i) = gas_natom1fr(26,i) +
+     &   gas_natom1fr(gas_ife52,i)
+       gas_natom1fr(25,i) = gas_natom1fr(25,i) +
+     &   gas_natom1fr(gas_imn52,i)
+       gas_natom1fr(24,i) = gas_natom1fr(24,i) +
+     &   gas_natom1fr(gas_icr48,i)
+       gas_natom1fr(23,i) = gas_natom1fr(23,i) +
+     &   gas_natom1fr(gas_iv48,i)
 c
 c-- total natom
        gas_natom(i) = sum(gas_natom1fr(1:,i))
 c
 c-- convert natoms to natom fractions
-       gas_natom1fr(:,i) = gas_natom1fr(:,i)/ gas_natom(i)
-       gas_natom0fr(:,i,1) = gas_natom0fr(:,i,1)/ gas_natom(i)
+       gas_natom1fr(:,i) = gas_natom1fr(:,i)/gas_natom(i)
+       gas_natom0fr(:,i,1) = gas_natom0fr(:,i,1)/gas_natom(i)
 c
       enddo !i
 c!}}}
