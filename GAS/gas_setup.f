@@ -117,7 +117,8 @@ c-- special care for ni56 and co56
        gas_natom1fr(gas_ico56,i) =
      &   gas_natom1fr(gas_ico56,i)/help
 c-- store initial fe/co/ni
-       gas_natom0fr(-2:-1,i,1) = gas_natom1fr(-2:-1,i)!unstable
+       gas_natom0fr(-2,i,1) = gas_natom1fr(gas_ini56,i)!unstable
+       gas_natom0fr(-1,i,1) = gas_natom1fr(gas_ico56,i)!unstable
        gas_natom0fr(0:2,i,1) = gas_natom1fr(26:28,i)!stable
 c-- add unstable to stable again
        gas_natom1fr(28,i) = gas_natom1fr(28,i) +
