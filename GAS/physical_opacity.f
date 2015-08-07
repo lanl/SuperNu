@@ -273,6 +273,23 @@ c-- sanity check
       if(iand(j,2)/=0) write(0,*) 'opacity_calc: some cap<0'
       if(iand(j,4)/=0) write(0,*) 'opacity_calc: some cap==NaN'
       if(iand(j,8)/=0) write(0,*) 'opacity_calc: some cap==inf'
+c-- refine sanity check
+      if(j>0) then
+       j = 0
+       do i=1,gas_ncell
+        if(gas_mass(i)<=0d0) cycle
+        do ig=1,grp_ng
+         if(gas_cap(ig,i)/=0.) j = ior(j,1)
+         if(gas_cap(ig,i)>=0.) j = ior(j,2)
+         if(gas_cap(ig,i)==gas_cap(ig,i)) j = ior(j,4)
+         if(gas_cap(ig,i)<=huge(gas_cap)) j = ior(j,8)
+        enddo !ig
+       enddo !i
+       if(iand(j,1)==0) write(0,*) 'opacity_calc: all cap==0'
+       if(iand(j,2)==0) write(0,*) 'opacity_calc: all cap<0'
+       if(iand(j,4)==0) write(0,*) 'opacity_calc: all cap==NaN'
+       if(iand(j,8)==0) write(0,*) 'opacity_calc: all cap==inf'
+      endif
 c
       deallocate(cap)
 c
