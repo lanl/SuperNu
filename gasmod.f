@@ -6,6 +6,7 @@ c gas grid structure
 c***********************************************************************
       integer,parameter :: gas_nelem=30
       integer,parameter :: gas_ini56=-1, gas_ico56=-2 !positions in mass0fr and natom1fr arrays
+      integer,parameter :: gas_nchain=3  !ni56/fe52/cr48
 c
 c-- wavelength grid (gridmod has a copy as well)
       integer,private :: ng=0
@@ -27,7 +28,7 @@ c-- domain decomposed grid variables used to calculate the state of the material
       real*8,allocatable :: gas_natom(:)      !cell number of atoms
       real*8,allocatable :: gas_nelec(:)      !cell number of electrons per atom
       real*8,allocatable :: gas_natom1fr(:,:) !(-2:gas_nelem,ncell)  !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
-      real*8,allocatable :: gas_natom0fr(:,:) !(-2:2,ncell)  !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
+      real*8,allocatable :: gas_natom0fr(:,:,:) !(-2:2,ncell,nchain) !initial natom fractions (0,1,2:stable fe/co/ni, -1:ni56, -2:co56)
 c-- mate,allocatablerial energy (temperature) source (may be manufactured), rev>244
       real*8,allocatable :: gas_matsrc(:)     !-- material energy (temperature) source (may be manufactured)
 c
@@ -121,7 +122,7 @@ c
 c-- ndim=2 alloc small
       allocate(gas_natom1fr(-2:gas_nelem,gas_ncell))
       gas_natom1fr = 0d0
-      allocate(gas_natom0fr(-2:2,gas_ncell))
+      allocate(gas_natom0fr(-2:2,gas_ncell,gas_nchain))
       gas_natom0fr = 0d0
 c
 c-- ndim=2 alloc big

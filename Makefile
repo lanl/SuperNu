@@ -20,7 +20,7 @@ include Makefile.include
 
 PROGRAMS := supernu
 
-MODULES := elemdatamod.o physconstmod.o randommod.o mpimod.o \
+MODULES := elemdatamod.o nucdatamod.o physconstmod.o randommod.o mpimod.o \
   miscmod.o ionsmod.o ffxsmod.o bfxsmod.o bbxsmod.o \
   inputparmod.o timestepmod.o groupmod.o gridmod.o gasmod.o inputstrmod.o \
   particlemod.o timingmod.o countersmod.o manufacmod.o fluxmod.o totalsmod.o \

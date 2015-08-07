@@ -1,7 +1,8 @@
       subroutine gas_update(it)
-c     ------------------------------
+c     -------------------------
       use gridmod
       use physconstmod
+      use nucdatamod
       use miscmod
       use ionsmod
       use timestepmod
@@ -52,11 +53,11 @@ c-- end of time step
 c-- energy deposition
        decay0 =  !per average atom (mix of stable and unstable)
      &   (natom1fr(gas_ini56,:) - natom2fr(gas_ini56,:)) *
-     &     (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
+     &     (nuc_qhl_ni56 + nuc_qhl_co56) +!ni56 that decays adds to co56
      &   (natom1fr(gas_ico56,:) - natom2fr(gas_ico56,:)) *
-     &     pc_qhl_co56 !+
+     &     nuc_qhl_co56 !+
 c-- off for backwards compatibility
-c    &   (natom2fr(26,:) - natom1fr(26,:))*pc_q_poskin !beta decay
+c    &   (natom2fr(26,:) - natom1fr(26,:))*nuc_q_poskin !beta decay
        tot_eext0 = sum(decay0*gas_natom) !total, units=ergs !}}}
       endif
 c
@@ -78,12 +79,12 @@ c-- energy deposition
 c-- gamma decay
        gas_decaygamma =  !per average atom (mix of stable and unstable)
      &   (natom1fr(gas_ini56,:) - natom2fr(gas_ini56,:)) *
-     &     (pc_qhl_ni56 + pc_qhl_co56) +!ni56 that decays adds to co56
+     &     (nuc_qhl_ni56 + nuc_qhl_co56) +!ni56 that decays adds to co56
      &   (natom1fr(gas_ico56,:) - natom2fr(gas_ico56,:)) *
-     &     pc_qhl_co56
+     &     nuc_qhl_co56
        gas_decaygamma = gas_decaygamma * gas_natom !total, units=ergs
 c-- beta decay (off for backwards compatibility)
-c      gas_decaybeta = (natom2fr(26,:) - natom1fr(26,:))*pc_q_poskin
+c      gas_decaybeta = (natom2fr(26,:) - natom1fr(26,:))*nuc_q_poskin
 c      gas_decaybeta = gas_decaybeta * gas_natom !total, units=ergs
 c
 c-- We assume that half of the source energy goes into doppler losses
@@ -261,50 +262,32 @@ c
 c
       subroutine update_natomfr(t)
 c     ----------------------------!{{{
-      use physconstmod
+      use nucdatamod
       use gasmod
-      use inputparmod
       implicit none
       real*8,intent(in) :: t
 ************************************************************************
 * update natom fractions for nuclear decay
 ************************************************************************
-      real*8 :: expni,expco,help
+      integer :: i
+      real*8 :: x(gas_ncell,0:2)
 c
-      expni = exp(-t/pc_thl_ni56)
-      expco = exp(-t/pc_thl_co56)
-c
-c-- update Fe
-      help = 1d0 + (pc_thl_co56*expco - pc_thl_ni56*expni)/
-     &  (pc_thl_ni56 - pc_thl_co56)
-      if(help.lt.0) stop 'update_natomfr: Ni->Fe < 0'
-      gas_natom1fr(26,:) = gas_natom0fr(gas_ini56,:)*help+!initial Ni56
-     &  gas_natom0fr(gas_ico56,:)*(1d0-expco) +          !initial Co56
-     &  gas_natom0fr(0,:)                                !initial Fe (stable)
-c
-c-- update Co56 and Co
-      help = pc_thl_co56*(expni - expco)/(pc_thl_ni56 - pc_thl_co56)
-      if(help.lt.0) stop 'update_natomfr: Ni->Co < 0'
-c-- Co56
-      gas_natom1fr(gas_ico56,:) =
-     &  gas_natom0fr(gas_ini56,:)*help +  !initial Ni56
-     &  gas_natom0fr(gas_ico56,:)*expco   !initial Co56
-c-- Co
-      gas_natom1fr(27,:) = gas_natom1fr(gas_ico56,:) +  !unstable
-     &  gas_natom0fr(1,:)                                      !initial Co (stable)
-c
-c-- update Ni56 and Ni
-c-- Ni56
-      gas_natom1fr(gas_ini56,:) =
-     &  gas_natom0fr(gas_ini56,:)*expni  !initial Ni56
-c-- Ni
-      gas_natom1fr(28,:) = gas_natom1fr(gas_ini56,:) + !unstable
-     &  gas_natom0fr(2,:)                              !initial Ni (stable)
+c-- ni56->co56->fe56
+c-- initial radioactive natom
+      x(:,2) = gas_natom0fr(gas_ini56,:,1)
+      x(:,1) = gas_natom0fr(gas_ico56,:,1)
+      x(:,0) = 0d0
+      call nucdecay3(gas_ncell,t,nuc_thl_ni56,nuc_thl_co56,x)
+c-- current radioactive natom
+      gas_natom1fr(gas_ini56,:) = x(:,2)
+      gas_natom1fr(gas_ico56,:) = x(:,1)
+c-- current total natom
+      forall(i=0:2) gas_natom1fr(26+i,:) = x(:,i) + gas_natom0fr(i,:,1) !radioactive + stable
 c!}}}
       end subroutine update_natomfr
-
-
-
+c
+c
+c
       subroutine update_ye
 c     --------------------!{{{
       use gasmod

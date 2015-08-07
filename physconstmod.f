@@ -47,17 +47,6 @@ c-- conversion factors
       real*8,parameter :: pc_ang = 1d-8 !cm
       real*8,parameter :: pc_mbarn = 1d-18 !cm^2 (Mega barn)
 c
-c-- nuclear data: http://ie.lbl.gov/
-c-- nuclear decay half-life times
-      real*8,parameter :: pc_thl_ni56 = 7.575d5 !sec, 6.077 days, converted to 1/exp life
-      real*8,parameter :: pc_thl_co56 = 9.632d6 !sec, 77.27 days, converted to 1/exp life
-c-- nuclear decay gamma emission, 1MeV=1.602176d-6 erg
-      real*8,parameter :: pc_qhl_ni56 = 1720d0*pc_kev                  !total gamma ray production
-      real*8,parameter :: pc_qhl_co56 = (3440d0 + .19d0*2*511d0)*pc_kev!direct gamma's plus positron annihilation
-c-- average kinetic energy of co56->fe56 emergent positron
-      real*8,parameter :: pc_q_poskin = .19d0*116*pc_kev
-c
-c
       contains
 c
 c
