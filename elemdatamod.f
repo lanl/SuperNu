@@ -10,7 +10,7 @@ c
       type element_data
        real*8       :: m
        character*2  :: sym
-       character*13 :: nam
+       character*14 :: nam
       end type element_data
       type(element_data) :: elem_data(elem_neldata)
 c
