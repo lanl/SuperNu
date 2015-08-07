@@ -711,7 +711,7 @@ c-- verify hit
         endif
         iabund = j
        endselect
-       write(6,*) 'el found: ',elname,iabund
+       !write(6,*) 'el found: ',elname,iabund
 c
 c-- store element code (pointer to mass0fr)
        str_iabund(l) = iabund

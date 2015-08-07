@@ -117,8 +117,10 @@ c-- convert to natoms
         gas_natom1fr(l,i) = gas_natom1fr(l,i)/ (elem_data(l)%m*pc_amu)
        enddo !j
 c-- ni56/co56
-       help = elem_data(26)%m*pc_amu
+       !help = elem_data(26)%m*pc_amu !correct
+       help = elem_data(28)%m*pc_amu !phoenix compatible
        gas_natom1fr(gas_ini56,i) = gas_natom1fr(gas_ini56,i)/help
+       help = elem_data(27)%m*pc_amu !phoenix compatible
        gas_natom1fr(gas_ico56,i) = gas_natom1fr(gas_ico56,i)/help
 c-- fe52/mn52
        help = elem_data(24)%m*pc_amu
