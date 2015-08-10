@@ -57,6 +57,7 @@ c     ---------------------------!{{{
       end subroutine inputstr_dealloc
 c
 c
+c
       subroutine read_inputstr(igeomin,ndim,lvoidcorners,nmpi)
 c     --------------------------------------------------------!{{{
       use physconstmod
@@ -111,18 +112,16 @@ c-- read labels
       if(ierr/=0) stop 'read_inputstr: input.str fmt err: col labels'
 c
 c-- var pointers
-      jmass = 0
       jxleft = 0
+      jmass = 0
       jtemp = 0
       do i=1,nvar
-       if(lcase(trim(labl(i)))=='mass') jmass = i
        if(lcase(trim(labl(i)))=='x_left') jxleft = i
-       if(lcase(trim(labl(i)))=='temp') then
-         jtemp = i
-         str_ltemp=.true.
-       endif
+       if(lcase(trim(labl(i)))=='mass') jmass = i
+       if(lcase(trim(labl(i)))=='temp') jtemp = i
       enddo
       if(jmass==0) stop 'read_inputstr: mass label not found'
+      if(jtemp>0) str_ltemp = .true.
 c
 c-- allocate data arrays
       allocate(str_xleft(nx+1))
@@ -138,6 +137,7 @@ c-- read body
       if(ierr/=0) stop 'read_inputstr: input.str format err: body'
       read(4,*,iostat=ierr) dmy
       if(ierr/=-1) stop 'read_inputstr: input.str body too long'
+      close(4)
 c
 c-- validity check
       if(any(raw/=raw)) stop 'read_inputstr: nan in input'
@@ -199,6 +199,9 @@ c-- vars
       enddo
       enddo
       enddo
+c-- sanity check
+      if(any(str_mass<0d0)) stop 'read_inputstr: mass<0'
+c
 c-- abundances
 !     str_massfr(:,:,:,:) =reshape(raw(nvar+1:,:),[str_nabund,nx,ny,nz]) !-- memory hog in ifort 13.1.3
       l = 0
@@ -210,9 +213,9 @@ c-- abundances
       enddo
       enddo
       enddo
+c-- sanity check
+      if(any(str_massfr<0d0)) stop 'read_inputstr: massfr<0'
 c
-c-- close file
-      close(4)
       deallocate(raw,labl)
 c
 c-- convert abundlabl to element codes

@@ -74,6 +74,8 @@ c-- update the abundances for the center time
        !call update_natomfr(tsp_tcenter)
        call update_natomfr(tsp_t)
        call update_ye
+c-- sanity check
+       if(any(gas_natom1fr<0d0)) stop 'gas_update: natom1fr<0'
 c
 c-- energy deposition
 c-- gamma decay

@@ -112,6 +112,13 @@ c-- take out radioactive part
        gas_natom1fr(23,i) = gas_natom1fr(23,i) -
      &   gas_natom1fr(gas_iv48,i)
 c
+c-- verify that 
+       if(any(gas_natom1fr(23:28,i)<0d0)) then
+        write(0,*) gas_natom1fr(:,i)
+        stop 'massfr2natomfr: Check input structure: ' //
+     &    'abund(unstable) > abund(stable+unstable)'
+       endif
+c
 c-- convert to natoms
        do l=1,gas_nelem
         gas_natom1fr(l,i) = gas_natom1fr(l,i)/ (elem_data(l)%m*pc_amu)
