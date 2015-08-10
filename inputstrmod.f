@@ -220,6 +220,13 @@ c
 c
 c-- convert abundlabl to element codes
       call elnam2elcode(ini56)
+c-- check codes are unique, i.e. no duplicate columns
+      do i=1,str_nabund-1
+       do j=i+1,str_nabund
+        if(str_iabund(j)==str_iabund(i)) stop
+     &    'read_inputstr: duplicate abund columns'
+       enddo
+      enddo
 c
 c
 c-- Zero out the cell mass in the corners of the domain
