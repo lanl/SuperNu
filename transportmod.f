@@ -6,7 +6,7 @@ c
       private pc_c,pc_pi2
       real*8,private,parameter :: cinv=1d0/pc_c
 c
-      logical :: trn_nolumpshortcut !allow group sampling to shortcut to single most likely group if emitlump very large
+      logical :: trn_nolumpshortcut !disable approximation for large emitlump that sampling outside the lump collapses to the single most likely group
       logical :: trn_noampfact      !don't use the particle amplification factor
 c
       logical :: trn_isimcanlog  !sets flux tally and energy deposition to analog in IMC

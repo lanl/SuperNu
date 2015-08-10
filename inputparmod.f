@@ -69,7 +69,7 @@ c<< backwards compatibility
       logical :: in_trn_noamp = .true.  !disable amplification factor
       real*8 :: in_tauddmc = 5d0 !number of mean free paths per cell required for DDMC
       real*8 :: in_taulump = 10d0 !number of of mean free paths needed to lump DDMC groups
-      logical :: in_trn_nolumpshortcut = .false. !don't collapse effective scattering group to the single most likely group if emitlump large
+      logical :: in_trn_nolumpshortcut = .false. !disable approximation for large emitlump that sampling outside the lump collapses to the single most likely group
 c-- time dependence of in_tauddmc and in_taulump
       character(4) :: in_tauvtime = 'unif' ! unif|incr = constant or limiting (s-curve) to more conservative constant
 c
