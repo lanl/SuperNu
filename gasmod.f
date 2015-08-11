@@ -5,10 +5,12 @@ c***********************************************************************
 c gas grid structure
 c***********************************************************************
       integer,parameter :: gas_nelem=30
+      integer,parameter :: gas_nchain=3  !number of hardwired decay chains: ni56, fe52, cr48 
+c
+c-- available isotopes
       integer,parameter :: gas_ini56=-1, gas_ico56=-2 !positions in mass0fr and natom1fr arrays
       integer,parameter :: gas_ife52=-3, gas_imn52=-4 !positions in mass0fr and natom1fr arrays
       integer,parameter :: gas_icr48=-5, gas_iv48=-6  !positions in mass0fr and natom1fr arrays
-      integer,parameter :: gas_nchain=3  !number of hardwired decay chains: ni56, fe52, cr48 
 c
 c-- wavelength grid (gridmod has a copy as well)
       integer,private :: ng=0

@@ -8,3 +8,10 @@
 version.py
 \.mod
 Makefile~
+Manual/manual.aux
+Manual/manual.log
+Manual/manual.bbl
+Manual/manual.blg
+Manual/manual.out
+Manual/manual.toc
+Manual/manualNotes.bib

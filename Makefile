@@ -132,6 +132,11 @@ $(TESTS):
 	@echo
 
 #
+#-- manual.pdf
+manual.pdf:
+	$(MAKE) Manual
+
+#
 #-- object dependencies
 include Makefile.dependmod
 include Makefile.depend

@@ -1,0 +1,131 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{geometry}
+\usepackage{enumitem}
+
+%- FAQ -----------------------------------------------------------------
+\usepackage{todonotes}
+\usepackage{tocloft} % Required to give customize the table of contents to display questions
+% Create and define the list of questions
+\newlistof{questions}{faq}{\large List of Frequently Asked Questions} % This creates a new table of contents-like environment that will output a file with extension .faq
+% Create the command used for questions
+\newcommand{\question}[1] % This is what you will use to create a new question
+{%
+\refstepcounter{questions} % Increases the questions counter, this can be referenced anywhere with \thequestions
+\par\noindent % Creates a new unindented paragraph
+\phantomsection % Needed for hyperref compatibility with the \addcontensline command
+\addcontentsline{faq}{questions}{#1} % Adds the question to the list of questions
+\todo[inline, color=green!40]{\textbf{#1}} % Uses the todonotes package to create a fancy box to put the question
+\vspace{1em} % White space after the question before the start of the answer
+}
+%-----------------------------------------------------------------------
+
+\setenumerate{noitemsep}
+
+\newcommand{\supernu}{\textsc{SuperNu}}
+
+\title{{\Huge SuperNu}\\
+Radiation Transport Software for Explosive Outflows\\
+Version 1.0}
+
+\author{Ryan Wollaeger\\
+Los Alamos National Laboratory\\
+Los Alamos, NM 87545\\
+{\tt wollaeger@lanl.gov}\\[24pt]
+Daniel R. van Rossum\\
+Department of Astronomy and Astrophysics\\
+University of Chicago -- Flash Center\\
+5747 S Ellis Ave\\
+Chicago, IL 60637\\
+{\tt daan@flash.uchicago.edu}\\[24pt]
+}
+
+\begin{document}
+\bibliographystyle{apj}
+
+\maketitle
+\vfill
+\section{Copyright and License}
+\begin{verbatim}
+  SuperNu -- Radiation Transport for Explosive Outflows
+  Copyright (C) 2013-2015 by Ryan T. Wollaeger and Daniel R. van Rossum.
+  All rights reserved.
+
+  SuperNu is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  A copy of the GNU General Public License can be found in the
+  COPYING file distributed with this program. If not, see
+  <http://www.gnu.org/licenses/>.
+\end{verbatim}
+
+\noindent
+If you publish a piece of work that uses \supernu\ or software that is derived from it, please acknowledge the authors and cite the papers in which \supernu\ and its methods are described.  Please offer co-authorship as appropriate.
+\vspace{1pt}\\
+Thank you,\\
+\indent
+The authors
+
+\section{SuperNu Methods and Papers}
+Wollaeger, van Rossum et al. 2013, ApJS 209, 37\\
+Wollaeger \& van Rossum 2014, ApJS 214, 28\\
+van Rossum \& Wollaeger 2015, in preparation\\
+
+\section{Program Units and Subdirectories}
+
+\section{Input}
+\subsection{Input.par}
+
+
+\subsection{Input.str}
+The \texttt{input.str} file header is three lines long and has the following layout
+\begin{verbatim}
+# geometry
+# nx ny nz ncolumn nabundance
+# column_labels
+\end{verbatim}
+Geometry is one of the following strings: ``spherical'', ``cylindrical'', ``cartesian''.
+
+The \texttt{input.str} file body consists of one row for each grid cell and one column for each variable.
+The order of variables is as follows:
+\begin{enumerate}
+\item cell position boundaries: $2$ columns per dimension.
+\item cell mass: 1 column.  This column needs to be labeled as ``mass''
+\item cell temperature (optional): 1 column.  This column needs to be labeled as ``temp''
+\item additional optional columns, these are ignored.
+\item abundances: elemental and isotope abundances.  These are labeled by their element name and isotope name like in ``Ni'' and ``Ni56''.
+\end{enumerate}
+
+There are two types of abundance columns: element abundances, and isotope abundances.
+The element abundances together need to add up to $1$ in each cell.
+Duplicate element or isotope names are not permitted.
+The list of isotopes treated in \supernu\ can be found in \texttt{gasmod.f} or \texttt{inputstrmod.f}.
+It includes the unstable alpha-chain isotopes $^{56}$Ni, $^{52}$Fe, and $^{48}$Cr, and the products of their decay chain.
+The isotope abundances are assumed to be included in the element abundances.
+Each isotope abundance shall not be greater than the corresponding element abundance.
+
+Example \texttt{input.str} files are available in the \texttt{Input/} directory.
+
+
+\subsection{Data Files}
+
+\section{Output}
+
+\section{Tools}
+
+\section{Frequently Asked Questions}
+\question{How can I ask questions?}\noindent
+Email the authors.
+ 
+\clearpage
+\bibliography{Bibliography}
+
+\end{document}
