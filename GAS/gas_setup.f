@@ -83,6 +83,9 @@ c     ----------------------------------!{{{
 ************************************************************************
       integer :: i,l
       real*8 :: help
+      logical :: lwarn
+c
+      lwarn = .true.
 c
       do i=1,gas_ncell
        if(gas_mass(i)<=0) cycle
@@ -93,7 +96,14 @@ c-- sanity test
      &    'massfr2natomfr: negative mass fractions'
 c
 c-- renormalize (the container fraction (unused elements) is taken out)
-       mass0fr(:,i) = mass0fr(:,i)/sum(mass0fr(1:,i))
+       help = sum(mass0fr(1:,i))
+       mass0fr(:,i) = mass0fr(:,i)/help
+c-- warn if renormalization factor is abnormal
+       if(abs(help-1d0)>.01 .and. lwarn) then
+        write(0,*) 'WARNING: large abundance normalization factor!',help
+        write(6,*) 'WARNING: large abundance normalization factor!',help
+        lwarn = .false. !warn once
+       endif
 c
 c-- partial mass
        gas_natom1fr(:,i) = mass0fr(:,i)*gas_mass(i)
