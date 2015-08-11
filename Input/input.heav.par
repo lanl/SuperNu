@@ -73,8 +73,7 @@ in_wlmax = 1.2398d-3
 
 !-- particle numbers
 in_src_n2s  = 16 !65k
-in_trn_n2part = 23 !2**7 times bigger than ns
-!in_srcepwr=1d0
+in_prt_n2max = 23 !2**7 times bigger than ns
 
 !-- imc tally method
 in_isimcanlog = f

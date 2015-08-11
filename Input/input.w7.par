@@ -34,8 +34,7 @@
 
 !-- particle numbers
  in_src_n2s = 10
- in_trn_n2part = 17 !2**7 times bigger than ns
- in_srcepwr = .5d0
+ in_prt_n2max = 17 !2**7 times bigger than ns
 
 !-- imc tally method
  in_isimcanlog = f

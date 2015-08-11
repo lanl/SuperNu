@@ -55,13 +55,16 @@ c-- analytic heat capacity terms
       real*8 :: in_gas_cvrpwr = 1d0 !power law heat capacity density exponent
 c
 c-- particles
+      integer :: in_src_ns = 0   !number of source particles generated per time step (total over all ranks)
       integer :: in_src_n2s = -1 !2^n source particles generated per time step (total over all ranks)
+      integer :: in_src_nsinit = 0   !number of initial particles at in_tfirst
       integer :: in_src_n2sinit = -1 !2^n number of initial particles at in_tfirst
-      integer :: in_trn_n2part = -1 !2^n length of particle array
+      integer :: in_prt_nmax = 0   !length of particle array
+      integer :: in_prt_n2max = -1 !2^n length of particle array
 c>> backwards compatibility
         integer :: in_ns = 0    !number of source particles generated per time step (total over all ranks)
         integer :: in_ns0 = 0   !number of initial particles at in_tfirst
-        integer :: in_prt_nmax = 0 !length of particle array
+        integer :: in_trn_n2part = -1 !2^n length of particle array
 c<< backwards compatibility
       logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
       logical :: in_isimcanlog = .false. !use analog IMC tally if true
@@ -152,8 +155,9 @@ c-- runtime parameter namelist
      & in_ng,in_ngs,in_wldex,in_wlmin,in_wlmax,
      & in_totmass,in_velout,
      & in_consttemp,
-     &    in_ns,in_ns0,in_prt_nmax, !compat
-     & in_src_n2s,in_src_n2sinit,in_trn_n2part,
+     &    in_ns,in_ns0,in_trn_n2part, !compat
+     & in_src_ns,in_src_nsinit,in_prt_nmax,
+     & in_src_n2s,in_src_n2sinit,in_prt_n2max,
      & in_trn_nolumpshortcut,in_puretran,in_alpha,
      & in_tsp_tfirst,in_tsp_tlast,
      &    in_tfirst,in_tlast, !compat
@@ -249,12 +253,12 @@ c
       call insertr(in_gas_cvcoef,in_r,ir)
       call insertr(in_gas_cvtpwr,in_r,ir)
       call insertr(in_gas_cvrpwr,in_r,ir)
-      call inserti(in_ns,in_i,ii)
-      call inserti(in_ns0,in_i,ii)
-      call inserti(in_prt_nmax,in_i,ii)
+      call inserti(in_src_ns,in_i,ii)
+      call inserti(in_src_nsinit,in_i,ii)
       call inserti(in_src_n2s,in_i,ii)
       call inserti(in_src_n2sinit,in_i,ii)
-      call inserti(in_trn_n2part,in_i,ii)
+      call inserti(in_prt_nmax,in_i,ii)
+      call inserti(in_prt_n2max,in_i,ii)
       call insertl(in_puretran,in_l,il)
       call insertl(in_trn_nolumpshortcut,in_l,il)
       call insertl(in_isimcanlog,in_l,il)
@@ -265,8 +269,6 @@ c
       call insertr(in_alpha,in_r,ir)
       call insertr(in_tsp_tfirst,in_r,ir)
       call insertr(in_tsp_tlast,in_r,ir)
-      call insertr(in_tfirst,in_r,ir)
-      call insertr(in_tlast,in_r,ir)
       call inserti(in_nt,in_i,ii)
       call inserti(in_ntres,in_i,ii)
       call insertl(in_norestart,in_l,il)
@@ -466,14 +468,17 @@ c
       if(in_wlmin<0) stop 'in_wlmin invalid'
       if(in_wlmax<=in_wlmin) stop 'in_wlmax invalid'
 c
-      if(in_ns<=0 .eqv. in_src_n2s<0) stop 'use in_ns or in_src_n2s'
-      if(in_ns0>0 .and. in_src_n2sinit>=0) stop
-     &  'use in_ns0 or in_src_n2sinit'
+      if(in_src_ns<=0 .eqv. in_src_n2s<0) stop
+     &  'use in_src_ns or in_src_n2s'
+      if(in_src_nsinit>0 .and. in_src_n2sinit>=0) stop
+     &  'use in_src_nsinit or in_src_n2sinit'
       if(in_prt_nmax>0) then
-       if(in_prt_nmax<max(int(in_ns,8),int(2,8)**in_src_n2s)) stop
+       if(in_prt_n2max>-1) stop 'use in_prt_nmax OR in_prt_n2max'
+       if(in_prt_nmax<max(int(in_src_ns,8),int(2,8)**in_src_n2s)) stop
      &   'in_prt_nmax too small'
       else
-       if(int(2,8)**in_trn_n2part < max(int(in_ns,8),
+       if(in_prt_nmax>0) stop 'use in_prt_nmax OR in_prt_n2max'
+       if(int(2,8)**in_prt_n2max < max(int(in_src_ns,8),
      &   int(2,8)**in_src_n2s)) stop 'in_prt_nmax too small'
       endif
 c
@@ -488,16 +493,7 @@ c-- temp init
 c
 c-- timestepping
       if(in_nt==0) stop 'in_nt invalid'
-      if(in_tfirst<=0d0 .eqv. in_tsp_tfirst<=0d0) stop
-     &  'use in_tfirst or in_tsp_tfirst'
-      if(in_tlast<=0d0 .eqv. in_tsp_tlast<=0d0) stop
-     &  'use in_tlast or in_tsp_tlast'
-      if(in_tsp_tlast>0d0) then
-       if(in_tsp_tlast<max(in_tfirst,in_tsp_tfirst)) stop
-     &   'in_tsp_tlast invalid'
-      else
-       if(in_tlast<max(in_tfirst,in_tsp_tfirst)) stop 'in_tlast invalid'
-      endif
+      if(in_tsp_tlast<in_tsp_tfirst) stop 'in_tsp_tlast invalid'
 c
 c-- special grid
       if(.not.in_noreadstruct) then
@@ -590,6 +586,18 @@ c
 c
 c
 c
+      subroutine warn_inputpars_deprecated
+c     ------------------------------------
+      if(in_ns/=0) stop 'deprecated: in_ns => in_src_ns'
+      if(in_ns0/=0) stop 'deprecated: in_ns0 => in_src_nsinit'
+      if(in_trn_n2part/=-1) stop
+     &  'deprecated: in_trn_n2part => in_prt_n2max'
+      if(in_tfirst/=0d0) stop 'deprecated: in_tfirst => in_tsp_tfirst'
+      if(in_tlast/=0d0) stop 'deprecated: in_tlast => in_tsp_tlast'
+      end subroutine warn_inputpars_deprecated
+c
+c
+c
       subroutine provide_inputpars(nmpi)
 c     -------------------------------------!{{{
       use physconstmod
@@ -608,25 +616,22 @@ c     -------------------------------------!{{{
 ************************************************************************
       integer :: mpart
       integer :: ns,nsinit
-      real*8 :: tfirst,tlast
 c
-      mpart = int(int(2,8)**in_trn_n2part/nmpi) !max number of particles
+      mpart = int(int(2,8)**in_prt_n2max/nmpi) !max number of particles
       mpart = max(mpart,in_prt_nmax/nmpi)
       prt_npartmax = mpart
 c
       ns = int(int(2,8)**in_src_n2s/nmpi)
-      ns = max(ns,in_ns/nmpi)
+      ns = max(ns,in_src_ns/nmpi)
       nsinit = int(int(2,8)**in_src_n2sinit/nmpi)
-      nsinit = max(nsinit,in_ns0/nmpi)
+      nsinit = max(nsinit,in_src_nsinit/nmpi)
       src_ns = ns
       src_ninit = nsinit
 c
-      tfirst = max(in_tsp_tfirst,in_tfirst*pc_day)
-      tlast = max(in_tsp_tlast,in_tlast*pc_day)
       tsp_nt     = in_nt
       tsp_ntres  = in_ntres
-      tsp_tfirst = tfirst
-      tsp_tlast  = tlast
+      tsp_tfirst = in_tsp_tfirst
+      tsp_tlast  = in_tsp_tlast
 c
       !gas_sigcoef = in_gas_sigcoef
       !gas_sigtpwr = in_gas_sigtpwr
