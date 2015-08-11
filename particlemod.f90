@@ -51,7 +51,7 @@ module particlemod
        write(6,*)
        write(6,*) 'particle array:'
        write(6,*) '===================='
-       write(6,*) 'npart :',prt_npartmax
+       write(6,*) 'npart :',prt_npartmax,prt_npartmax/1000,'k'
        write(6,*)
     endif
 !}}}

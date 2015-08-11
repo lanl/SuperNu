@@ -16,10 +16,12 @@ subroutine sourcenumbers(keephigh)
 
   integer :: l,iimpi
   integer :: n,ndone
-  integer :: ncactive,nextra,nvacantall,nnewvacant
+  integer :: nextra,nsmean
   integer :: nvacant(nmpi)
   real*8,parameter :: basefrac=.1d0
-  integer*8 :: nstot,nstotd,nsavail,nsmean
+  integer*8 :: nstot,nstotd,nsavail
+  integer*8 :: nvacantall,nnewvacant
+  integer*8 :: ncactive
   real*8 :: etot,einv,pwr,edone,en,invn
   integer :: nemit,nvol,nvolex
 ! tot_esurf for any new prt_particles from a surface source
@@ -87,7 +89,7 @@ subroutine sourcenumbers(keephigh)
   nextra = int(nstot - sum(grd_nvol) - src_nsurf)
   if(nextra>grd_ncell) stop 'sourcenumbers: nextra>grd_ncell'
 !-- correct to exact target number
-  nsmean = nstot/ncactive
+  nsmean = int(nstot/ncactive)
   do while(nextra/=0)
      do l=1,grd_ncell
         if(nextra==0) exit
