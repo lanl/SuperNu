@@ -39,6 +39,12 @@ c-- temperature
        gas_temp = in_consttemp
       endif
 c
+c-- initial electron fraction
+      if(str_lye) then
+       allocate(gas_ye0(gas_ncell))
+       gas_ye0 = str_yedd
+      endif
+c
 c
 c-- used in fleck_factor
       gas_eraddens = pc_acoef*in_tempradinit**4
@@ -65,7 +71,7 @@ c-- adopt partial masses from input file
 c
 c-- convert mass fractions to # atoms
       if(.not.in_noreadstruct.or..not.in_novolsrc) 
-     &     call massfr2natomfr(mass0fr)
+     &  call massfr2natomfr(mass0fr)
 c
       end subroutine gas_setup
 c

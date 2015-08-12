@@ -93,14 +93,15 @@ c-- everything else
 c==================
 c-- broadcast constants
 c-- logical
-      n = 2
+      n = 3
       allocate(lsndvec(n))
-      if(lmpi0) lsndvec = [str_lvoid,str_ltemp]
+      if(lmpi0) lsndvec = [str_lvoid,str_ltemp,str_lye]
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       str_lvoid = lsndvec(1)
       str_ltemp = lsndvec(2)
+      str_lye = lsndvec(3)
       deallocate(lsndvec)
 c
 c-- integer
@@ -266,12 +267,12 @@ c-- calculate offsets
       displs(1) = 0
       nc = str_nc
       do i=1,nmpi
-         n = ceiling(nc/(nmpi-i+1d0))
-         counts(i) = n
-         if(i-1==impi) ncell = n
-         if(i-1==impi) icell1 = displs(i) + 1
-         if(i<nmpi) displs(i+1) = displs(i) + n
-         nc = nc - n
+       n = ceiling(nc/(nmpi-i+1d0))
+       counts(i) = n
+       if(i-1==impi) ncell = n
+       if(i-1==impi) icell1 = displs(i) + 1
+       if(i<nmpi) displs(i+1) = displs(i) + n
+       nc = nc - n
       enddo
       if(sum(counts)/=str_nc) stop 'scatter_inputstr: counts/=str_nc'
       if(nc/=0) stop 'scatter_inputstr: nc/=0'
@@ -299,6 +300,14 @@ c-- gas temperature structure if available
        allocate(str_tempdd(ncell))
        call mpi_scatterv(str_tempdc,counts,displs,MPI_REAL8,
      &  str_tempdd,ncell,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      endif
+c-- ye structure if available
+      if(str_lye) then
+       if(impi/=impi0) allocate(str_yedc(str_nc))
+       allocate(str_yedd(ncell))
+       call mpi_scatterv(str_yedc,counts,displs,MPI_REAL8,
+     &  str_yedd,ncell,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       endif
 !}}}

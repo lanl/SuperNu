@@ -33,6 +33,7 @@ c
 c
       dmy = ndim(1) !use the intent(in) variable
       allocate(str_massdd(ncell))
+      str_massdd = reshape(str_massdc,[ncell]) !}}}
       if(str_nabund>0) then
        allocate(str_massfrdd(str_nabund,ncell))
        str_massfrdd = reshape(str_massfrdc,[str_nabund,ncell])
@@ -41,7 +42,10 @@ c
        allocate(str_tempdd(ncell))
        str_tempdd = reshape(str_tempdc,[ncell])
       endif
-      str_massdd = reshape(str_massdc,[ncell]) !}}}
+      if(str_lye) then
+       allocate(str_yedd(ncell))
+       str_yedd = reshape(str_yedc,[ncell])
+      endif
       end subroutine scatter_inputstruct
 c
 c

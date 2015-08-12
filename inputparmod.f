@@ -57,13 +57,13 @@ c
 c-- particles
       integer :: in_src_ns = 0   !number of source particles generated per time step (total over all ranks)
       integer :: in_src_n2s = -1 !2^n source particles generated per time step (total over all ranks)
-      integer :: in_src_nsinit = 0   !number of initial particles at in_tfirst
-      integer :: in_src_n2sinit = -1 !2^n number of initial particles at in_tfirst
+      integer :: in_src_nsinit = 0   !number of initial particles at in_tsp_tfirst
+      integer :: in_src_n2sinit = -1 !2^n number of initial particles at in_tsp_tfirst
       integer :: in_prt_nmax = 0   !length of particle array
       integer :: in_prt_n2max = -1 !2^n length of particle array
 c>> backwards compatibility
         integer :: in_ns = 0    !number of source particles generated per time step (total over all ranks)
-        integer :: in_ns0 = 0   !number of initial particles at in_tfirst
+        integer :: in_ns0 = 0   !number of initial particles at in_tsp_tfirst
         integer :: in_trn_n2part = -1 !2^n length of particle array
 c<< backwards compatibility
       logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid

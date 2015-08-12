@@ -7,14 +7,16 @@ c     ------------------
       character(9),private :: fname='input.str'
       integer :: str_nabund=0
       logical :: str_ltemp=.false.
+      logical :: str_lye=.false.
       integer,allocatable :: str_iabund(:) !(nabund)
 c
       real*8,allocatable :: str_xleft(:) !(nx+1)
       real*8,allocatable :: str_yleft(:) !(ny+1)
       real*8,allocatable :: str_zleft(:) !(nz+1)
       real*8,allocatable :: str_mass(:,:,:) !(nx,ny,nz)
-      real*8,allocatable :: str_massfr(:,:,:,:) !(nabund,nx,ny,nz)
       real*8,allocatable :: str_temp(:,:,:) !(nx,ny,nz)
+      real*8,allocatable :: str_ye(:,:,:) !(nx,ny,nz)
+      real*8,allocatable :: str_massfr(:,:,:,:) !(nabund,nx,ny,nz)
 c
 c-- domain compression
       logical :: str_lvoid=.false.  !flag existence of void cells
@@ -23,11 +25,13 @@ c-- domain compression
       real*8,allocatable :: str_massdc(:) !(nc)
       real*8,allocatable :: str_massfrdc(:,:) !(nabund,nc)
       real*8,allocatable :: str_tempdc(:) !(nc)
+      real*8,allocatable :: str_yedc(:) !(nc)
 c
 c-- domain decomposition
       real*8,allocatable :: str_massdd(:) !(gas_ncell)
       real*8,allocatable :: str_massfrdd(:,:) !(nabund,gas_ncell)
       real*8,allocatable :: str_tempdd(:) !(gas_ncell)
+      real*8,allocatable :: str_yedd(:) !(gas_ncell)
 c
       character(8),allocatable,private :: str_abundlabl(:) !(nabund)
 c
@@ -54,6 +58,7 @@ c     ---------------------------!{{{
       endif
       str_nabund=0!}}}
       if(str_ltemp) deallocate(str_tempdc,str_tempdd)
+      if(str_lye) deallocate(str_yedc,str_yedd)
       end subroutine inputstr_dealloc
 c
 c
@@ -70,7 +75,7 @@ c     --------------------------------------------------------!{{{
 * Read the input structure file
 ************************************************************************
       integer :: i,j,k,l,ierr,nx_r,ny_r,nz_r,ini56,nvar,ncol
-      integer :: jmass,jxleft,jtemp
+      integer :: jmass,jxleft,jye,jtemp
       integer :: ncorner,nvoid,ncell,ncpr
       character(2) :: dmy
       character(8),allocatable :: labl(:)
@@ -114,14 +119,17 @@ c
 c-- var pointers
       jxleft = 0
       jmass = 0
+      jye = 0
       jtemp = 0
       do i=1,nvar
        if(lcase(trim(labl(i)))=='x_left') jxleft = i
        if(lcase(trim(labl(i)))=='mass') jmass = i
+       if(lcase(trim(labl(i)))=='ye') jye = i
        if(lcase(trim(labl(i)))=='temp') jtemp = i
       enddo
       if(jmass==0) stop 'read_inputstr: mass label not found'
       if(jtemp>0) str_ltemp = .true.
+      if(jye>0) str_lye = .true.
 c
 c-- allocate data arrays
       allocate(str_xleft(nx+1))
@@ -130,6 +138,7 @@ c-- allocate data arrays
       allocate(str_mass(nx,ny,nz))
       allocate(str_massfr(str_nabund,nx,ny,nz))
       if(str_ltemp) allocate(str_temp(nx,ny,nz))
+      if(str_lye) allocate(str_ye(nx,ny,nz))
       allocate(raw(ncol,nx*ny*nz))
 c
 c-- read body
@@ -196,6 +205,7 @@ c-- vars
        l = l+1
        str_mass(i,j,k) = raw(jmass,l)
        if(str_ltemp) str_temp(i,j,k)=raw(jtemp,l)
+       if(str_lye) str_ye(i,j,k)=raw(jye,l)
       enddo
       enddo
       enddo
@@ -309,11 +319,13 @@ c
        str_massfrdc = 0d0
       endif
       if(str_ltemp) allocate(str_tempdc(str_nc))
+      if(str_lye) allocate(str_yedc(str_nc))
 c-- zero all, including the dummy cell
       str_idcell = 0
       str_massdc = 0d0
 c-- void temp [K]
       if(str_ltemp) str_tempdc = 1000d0
+      if(str_lye) str_yedc = .5d0
 c
       l = 0
       idcell = 0
@@ -329,6 +341,7 @@ c-- insert
        str_massdc(l) = str_mass(i,j,k)
        if(str_nabund>0) str_massfrdc(:,l) = str_massfr(:,i,j,k)
        if(str_ltemp) str_tempdc(l) = str_temp(i,j,k)
+       if(str_lye) str_yedc(l) = str_ye(i,j,k)
       enddo !i
       enddo !j
       enddo !k

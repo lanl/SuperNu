@@ -29,6 +29,7 @@ c-- domain decomposed grid variables used to calculate the state of the material
       real*8,allocatable :: gas_vol(:)        !cell volume [cm^3]
       real*8,allocatable :: gas_mass(:)       !cell mass [g]
       real*8,allocatable :: gas_ye(:)         !electron fraction
+      real*8,allocatable :: gas_ye0(:)        !initial electron fraction
       real*8,allocatable :: gas_natom(:)      !cell number of atoms
       real*8,allocatable :: gas_nelec(:)      !cell number of electrons per atom
       real*8,allocatable :: gas_natom1fr(:,:) !(-2*gas_nchain:gas_nelem,ncell)  !current natom fractions (>0:stable+unstable, -1:ni56, -2:co56, 0:container for unused elements)
@@ -146,6 +147,7 @@ c
       deallocate(gas_vol)
       deallocate(gas_mass)
       deallocate(gas_ye)
+      if(allocated(gas_ye0)) deallocate(gas_ye0)
       deallocate(gas_natom)
       deallocate(gas_nelec)
       deallocate(gas_matsrc)
