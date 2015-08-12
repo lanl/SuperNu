@@ -276,10 +276,15 @@ c     ----------------------------!{{{
       implicit none
       real*8,intent(in) :: t
 ************************************************************************
-* update natom fractions for nuclear decay
+* recalculate natom for nuclear decay from scratch
 ************************************************************************
       integer :: i
+      real*8 :: help
       real*8 :: x(gas_ncell,0:2)
+      real*8 :: natom(gas_ncell)
+c
+c-- save norm for conservation check
+      natom = sum(gas_natom1fr(22:28,:),dim=1)
 c
 c-- zero
       gas_natom1fr(22:28,:) = 0d0
@@ -325,8 +330,15 @@ c-- add stable fraction to total natom
      &  gas_natom0fr(i,:,1)
       forall(i=1:2) gas_natom1fr(24+i,:) = gas_natom1fr(24+i,:) +
      &  gas_natom0fr(i,:,2)
-      forall(i=1:2) gas_natom1fr(22+i,:) = gas_natom1fr(22+i,:) +
+      forall(i=0:2) gas_natom1fr(22+i,:) = gas_natom1fr(22+i,:) +
      &  gas_natom0fr(i,:,3)
+c
+c-- natom conservation check
+      do i=1,gas_ncell
+       help = sum(gas_natom1fr(22:28,i))
+       if(abs(help-natom(i))>1d-14*natom(i)) stop
+     &   'update_natomfr: natom not conserved'
+      enddo
 c!}}}
       end subroutine update_natomfr
 c
