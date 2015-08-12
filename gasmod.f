@@ -87,7 +87,8 @@ c
 c-- print alloc size (keep this updated)
 c---------------------------------------
       if(ltalk) then
-       n = gas_ncell*(8*(20 + (gas_nelem+3+5)) + 4*(2 + ng))/1024 !kB
+       n = gas_ncell*(8*(21 + (gas_nelem + 1 + 2*gas_nchain) +
+     &   (gas_nchain*5)) + 4*(2 + ng))/1024 !kB
        write(6,*) 'ALLOC gas      :',n,"kB",n/1024,"MB",n/1024**2,"GB"
       endif !ltalk
 c
@@ -104,7 +105,7 @@ c-- ndim=1 alloc
       allocate(gas_vol(gas_ncell))
       allocate(gas_mass(gas_ncell))
       allocate(gas_ye(gas_ncell))
-      gas_ye = .5d0
+      allocate(gas_ye0(gas_ncell))
       allocate(gas_natom(gas_ncell))
       gas_natom = 0d0
       allocate(gas_nelec(gas_ncell))
@@ -147,7 +148,7 @@ c
       deallocate(gas_vol)
       deallocate(gas_mass)
       deallocate(gas_ye)
-      if(allocated(gas_ye0)) deallocate(gas_ye0)
+      deallocate(gas_ye0)
       deallocate(gas_natom)
       deallocate(gas_nelec)
       deallocate(gas_matsrc)

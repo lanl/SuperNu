@@ -75,14 +75,11 @@ c-- update the abundances for the center time
        call update_natomfr(tsp_t)
 c-- sanity check
        if(any(gas_natom1fr<0d0)) stop 'gas_update: natom1fr<0'
-c
-c-- update electron fraction
-       if(allocated(gas_ye0)) then
-c-- TODO: evolve with decay
-        gas_ye = gas_ye0
-       else
-        call update_ye
-       endif
+!c-- print change in electron fraction
+!       do i=1,gas_ncell
+!        write(0,*) i,gas_ye(i),gas_ye0(i),
+!     &   2*(gas_ye(i) - gas_ye0(i))/(gas_ye(i) + gas_ye0(i))
+!       enddo
 c
 c-- energy deposition
 c-- gamma decay
@@ -282,48 +279,74 @@ c     ----------------------------!{{{
       real*8 :: help
       real*8 :: x(gas_ncell,0:2)
       real*8 :: natom(gas_ncell)
+      real*8 :: dye(gas_ncell) !delta natom*ye
 c
 c-- save norm for conservation check
       natom = sum(gas_natom1fr(22:28,:),dim=1)
 c
 c-- zero
       gas_natom1fr(22:28,:) = 0d0
+      dye = 0d0
 c
 c-- ni56->co56->fe56
 c-- initial radioactive natom
       x(:,2) = gas_natom0fr(-2,:,1)
       x(:,1) = gas_natom0fr(-1,:,1)
       x(:,0) = 0d0
+c-- subtract original ye*natom
+      dye = dye - x(:,2)*(28d0/56)
+      dye = dye - x(:,1)*(27d0/56)
+c-- update
       call nucdecay3(gas_ncell,t,nuc_thl_ni56,nuc_thl_co56,x)
 c-- current radioactive natom
       gas_natom1fr(gas_ini56,:) = x(:,2)
       gas_natom1fr(gas_ico56,:) = x(:,1)
 c-- add decayed fraction to total natom
       forall(i=0:2) gas_natom1fr(26+i,:) = gas_natom1fr(26+i,:) + x(:,i)
+c-- add current ye*natom
+      dye = dye + x(:,2)*(28d0/56)
+      dye = dye + x(:,1)*(27d0/56)
+      dye = dye + x(:,0)*(26d0/56)
 c
 c-- fe52->mn52->cr52
 c-- initial radioactive natom
       x(:,2) = gas_natom0fr(-2,:,2)
       x(:,1) = gas_natom0fr(-1,:,2)
       x(:,0) = 0d0
+c-- subtract original ye*natom
+      dye = dye - x(:,2)*(26d0/52)
+      dye = dye - x(:,1)*(25d0/52)
+c-- update
       call nucdecay3(gas_ncell,t,nuc_thl_fe52,nuc_thl_mn52,x)
 c-- current radioactive natom
       gas_natom1fr(gas_ife52,:) = x(:,2)
       gas_natom1fr(gas_imn52,:) = x(:,1)
 c-- add decayed fraction to total natom
       forall(i=0:2) gas_natom1fr(24+i,:) = gas_natom1fr(24+i,:) + x(:,i)
+c-- add current ye*natom
+      dye = dye + x(:,2)*(26d0/52)
+      dye = dye + x(:,1)*(25d0/52)
+      dye = dye + x(:,0)*(24d0/52)
 c
 c-- cr48->v48->ti48
 c-- initial radioactive natom
       x(:,2) = gas_natom0fr(-2,:,3)
       x(:,1) = gas_natom0fr(-1,:,3)
       x(:,0) = 0d0
+c-- subtract original ye*natom
+      dye = dye - x(:,2)*(24d0/48)
+      dye = dye - x(:,1)*(23d0/48)
+c-- update
       call nucdecay3(gas_ncell,t,nuc_thl_cr48,nuc_thl_v48,x)
 c-- current radioactive natom
       gas_natom1fr(gas_icr48,:) = x(:,2)
       gas_natom1fr(gas_iv48,:) = x(:,1)
 c-- add decayed fraction to total natom
       forall(i=0:2) gas_natom1fr(22+i,:) = gas_natom1fr(22+i,:) + x(:,i)
+c-- add current ye*natom
+      dye = dye + x(:,2)*(24d0/48)
+      dye = dye + x(:,1)*(23d0/48)
+      dye = dye + x(:,0)*(22d0/48)
 c
 c-- add stable fraction to total natom
       forall(i=1:2) gas_natom1fr(26+i,:) = gas_natom1fr(26+i,:) +
@@ -339,25 +362,8 @@ c-- natom conservation check
        if(abs(help-natom(i))>1d-14*natom(i)) stop
      &   'update_natomfr: natom not conserved'
       enddo
+c
+c-- calculate Ye
+      gas_ye = gas_ye0 + dye
 c!}}}
       end subroutine update_natomfr
-c
-c
-c
-      subroutine update_ye
-c     --------------------!{{{
-      use gasmod
-      use elemdatamod
-      implicit none
-************************************************************************
-* update nuclear electron fractions
-************************************************************************
-      integer :: l
-c
-      gas_ye = 0d0
-      do l=1,gas_nelem
-c-- wrong memory order, but this is a small array
-       gas_ye = gas_ye + gas_natom1fr(l,:)*l/elem_data(l)%m
-      enddo
-c!}}}
-      end subroutine update_ye

@@ -39,12 +39,6 @@ c-- temperature
        gas_temp = in_consttemp
       endif
 c
-c-- initial electron fraction
-      if(str_lye) then
-       allocate(gas_ye0(gas_ncell))
-       gas_ye0 = str_yedd
-      endif
-c
 c
 c-- used in fleck_factor
       gas_eraddens = pc_acoef*in_tempradinit**4
@@ -72,6 +66,15 @@ c
 c-- convert mass fractions to # atoms
       if(.not.in_noreadstruct.or..not.in_novolsrc) 
      &  call massfr2natomfr(mass0fr)
+c
+c-- electron fraction at t=0
+      if(str_lye) then
+c-- from input.str
+       gas_ye0 = str_yedd
+      else
+c-- as calculated in massfr2natomfr
+       gas_ye0 = gas_ye
+      endif
 c
       end subroutine gas_setup
 c
@@ -137,7 +140,7 @@ c-- verify that
 c
 c-- convert to natoms
        do l=1,gas_nelem
-        gas_natom1fr(l,i) = gas_natom1fr(l,i)/ (elem_data(l)%m*pc_amu)
+        gas_natom1fr(l,i) = gas_natom1fr(l,i)/(elem_data(l)%m*pc_amu)
        enddo !j
 c-- ni56/co56
        help = elem_data(26)%m*pc_amu
@@ -151,6 +154,23 @@ c-- fe52/mn52
        help = elem_data(22)%m*pc_amu
        gas_natom1fr(gas_icr48,i) = gas_natom1fr(gas_icr48,i)/help
        gas_natom1fr(gas_iv48,i) = gas_natom1fr(gas_iv48,i)/help
+c
+c-- calculate Ye
+       gas_ye(i) = gas_natom1fr(0,i)*.5d0 !container with unknown elements
+c-- stable abundances
+       do l=1,gas_nelem
+        gas_ye(i) = gas_ye(i) + gas_natom1fr(l,i)*l/elem_data(l)%m
+       enddo
+c-- unstable abundances
+       if(gas_nchain/=3) stop 'massfr2natomfr: gas_nchain updated'
+       gas_ye(i) = gas_ye(i) + gas_natom1fr(gas_ini56,i)*(28/56d0)
+       gas_ye(i) = gas_ye(i) + gas_natom1fr(gas_ico56,i)*(27/56d0)
+       gas_ye(i) = gas_ye(i) + gas_natom1fr(gas_ife52,i)*(26/52d0)
+       gas_ye(i) = gas_ye(i) + gas_natom1fr(gas_imn52,i)*(25/52d0)
+       gas_ye(i) = gas_ye(i) + gas_natom1fr(gas_icr48,i)*(24/48d0)
+       gas_ye(i) = gas_ye(i) + gas_natom1fr(gas_iv48,i)*(23/48d0)
+c-- normalize
+       gas_ye(i) = gas_ye(i)/sum(gas_natom1fr(:,i))
 c
 c-- store initial numbers
 c-- ni/co/fe
