@@ -88,21 +88,30 @@ van Rossum \& Wollaeger 2015, in preparation\\
 \subsection{Input.str}
 The \texttt{input.str} file header is three lines long and has the following layout
 \begin{verbatim}
-# geometry
+# comments
 # nx ny nz ncolumn nabundance
 # column_labels
 \end{verbatim}
-Geometry is one of the following strings: ``spherical'', ``cylindrical'', ``cartesian''.
+The comments line has the purpose of describing the data.
+It typically contains information like: creation date; author; simulation id; mapping details (e.g.\ by velocity or by position). It is ignored during read-in.
+
+The \texttt{ncolumn} field describes the total number of columns in the file body, including cell position columns.
+The \texttt{nabundance} field describes the number of columns that describe the chemical abundances.
 
 The \texttt{input.str} file body consists of one row for each grid cell and one column for each variable.
 The order of variables is as follows:
 \begin{enumerate}
 \item cell position boundaries: $2$ columns per dimension.
-\item cell mass: 1 column.  This column needs to be labeled as ``mass''
-\item cell temperature (optional): 1 column.  This column needs to be labeled as ``temp''
+\item cell mass: 1 column.  This column needs to be labeled as \texttt{mass}
+\item cell electron fraction (optional): 1 column.  This column needs to be labeled as \texttt{ye}
+\item cell temperature (optional): 1 column.  This column needs to be labeled as \texttt{temp}
 \item additional optional columns, these are ignored.
-\item abundances: elemental and isotope abundances.  These are labeled by their element name and isotope name like in ``Ni'' and ``Ni56''.
+\item abundances: elemental and isotope abundances.  These are labeled by their element name and isotope name like in \texttt{Ni} and \texttt{Ni56}.
 \end{enumerate}
+
+The input electron fraction \texttt{Ye} is the fraction at time $t=0$.
+Based on these initial values, the electron fraction is updated with radioactive decay in every time step.
+If the initial electron fraction is not provided it will be calculated from the abundance data assuming solar mean atomic masses.
 
 There are two types of abundance columns: element abundances, and isotope abundances.
 The element abundances together need to add up to $1$ in each cell.
