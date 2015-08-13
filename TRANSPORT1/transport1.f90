@@ -27,7 +27,6 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 
   logical :: lredir !direction resampled
   logical :: lout
-  integer :: ihelp
   real*8 :: elabfact, eta, xi
   real*8,pointer :: mux,muy,muz
   real*8 :: thelp, thelpinv, help
@@ -35,7 +34,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   real*8 :: darr(7),darrold(7)
   real*8 :: r1,r2
 
-  integer :: iynext,iynext1,iynext2,iznext
+  integer :: ixnext,iynext,iynext1,iynext2,iznext
 ! integer :: ixold,iyold,izold,idistold
   integer :: idby1,idby2
   real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
@@ -129,12 +128,12 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%t)*thelpinv)
 !
 !-- radial boundary distance (x)
-  if (ix == 1) then
+  if(ix==1 .or. mu>=-sqrt(1d0-(grd_xarr(ix)/x)**2)) then
      dbx = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*x**2)-mu*x)
-  elseif (mu < -sqrt(1d0-(grd_xarr(ix)/x)**2)) then
-     dbx = abs(sqrt(grd_xarr(ix)**2-(1d0-mu**2)*x**2)+mu*x)
+     ixnext = ix+1
   else
-     dbx = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*x**2)-mu*x)
+     dbx = abs(sqrt(grd_xarr(ix)**2-(1d0-mu**2)*x**2)+mu*x)
+     ixnext = ix-1
   endif
 !-- sanity check
   if(dbx/=dbx) then
@@ -591,25 +590,18 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- radial bound
   elseif(d==dbx .and. dbx<dby) then
 
-     if(mu>=0d0) then
-        ihelp=ix+1
+     if(ixnext>ix) then
         x = grd_xarr(ix+1)
      else
-        if(ix==1) then
-!          stop 'transport1: ix=1 and mu<0'
-           ierr = 10
-           return
-        endif
-        ihelp=ix-1
         x = grd_xarr(ix)
      endif
 
-     l = grd_icell(ihelp,iy,iz)
+     l = grd_icell(ixnext,iy,iz)
      if((grd_cap(ig,l)+grd_sig(l)) * &
-          min(dx(ihelp),xm(ihelp)*dyac(iy),xm(ihelp) * &
+          min(dx(ixnext),xm(ixnext)*dyac(iy),xm(ixnext) * &
           ym(iy)*dz(iz))*thelp<trn_tauddmc .or. in_puretran) then
 !-- IMC in adjacent cell
-        ix = ihelp
+        ix = ixnext
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
@@ -633,7 +625,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            endif
         endif
         help = (grd_cap(ig,l)+grd_sig(l)) * &
-             dx(ihelp)*thelp
+             dx(ixnext)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
         call rnd_r(r1,rndstate)
@@ -647,14 +639,14 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               e0 = e0*elabfact
               wl = wl/elabfact
            endif
-           ix = ihelp
+           ix = ixnext
            ic = grd_icell(ix,iy,iz)
         else
 !-- resampling x-cosine
            lredir = .true.
            call rnd_r(r1,rndstate)
            call rnd_r(r2,rndstate)
-           mu=(ix-ihelp)*max(r1,r2)
+           mu=(ix-ixnext)*max(r1,r2)
 !-- resampling azimuthal
            call rnd_r(r1,rndstate)
            om = pc_pi2*r1

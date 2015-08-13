@@ -26,7 +26,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   real*8,parameter :: cinv = 1d0/pc_c
 
   logical :: loutx,louty
-  integer :: ihelp
+  integer :: ixnext,iynext
   real*8 :: elabfact, dirdotu, mu0, gm
   real*8 :: thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,ddop
@@ -93,10 +93,11 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- making greater than dcen
      dbx = far
   else
-     if(abs(sin(om))<grd_xarr(ix)/x .and. cos(om)<0d0) then
+     if(abs(sin(om))*x<grd_xarr(ix) .and. cos(om)<0d0 .and. ix/=1) then
 !-- inner boundary
         dbx = abs(x*cos(om)/sqrt(1d0-mu**2) &
              +sqrt(((cos(om)*x)**2-x**2+grd_xarr(ix)**2)/(1d0-mu**2)))
+        ixnext = ix-1
      elseif(abs(grd_xarr(ix+1)-x)<1d-15*x .and. cos(om)>0d0) then
 !-- on outer boundary moving out
         dbx = 0d0
@@ -104,6 +105,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- outer boundary
         dbx = -x*cos(om)/sqrt(1d0-mu**2) &
              + sqrt(((cos(om)*x)**2 + grd_xarr(ix+1)**2-x**2)/(1d0-mu**2))
+        ixnext = ix+1
      endif
   endif
   if(dbx/=dbx) then
@@ -115,8 +117,10 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- to y-bound
   if(mu>0d0) then
      dby = (grd_yarr(iy+1)-y)/mu
+     iynext = iy+1
   elseif(mu<0d0) then
      dby = (grd_yarr(iy)-y)/mu
+     iynext = iy-1
   else
 !-- making greater than dcen
      dby = far
@@ -381,26 +385,19 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- x-bound
   elseif(d==dbx) then
 
-     if(cos(om)>=0d0) then
-        ihelp = 1
+     if(ixnext>ix) then
         x = grd_xarr(ix+1)
      else
-        if(ix==1) then
-!          stop 'transport2_gamgrey: cos(om)<0 and ix=1'
-           ierr = 10
-           return
-        endif
-        ihelp = -1
         x = grd_xarr(ix)
      endif
 
-     l = grd_icell(ix+ihelp,iy,iz)
+     l = grd_icell(ixnext,iy,iz)
 
      if((grd_cap(ig,l)+grd_sig(l)) * &
-          min(dx(ix+ihelp),dy(iy))*thelp < trn_tauddmc &
+          min(dx(ixnext),dy(iy))*thelp < trn_tauddmc &
           .or.in_puretran) then
 !-- IMC in adjacent cell
-        ix = ix+ihelp
+        ix = ixnext
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
@@ -434,7 +431,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            endif
         endif
         help = (grd_cap(ig,l)+grd_sig(l)) * &
-             dx(ix+ihelp)*thelp
+             dx(ixnext)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
         help = help*(1d0 + 1.5d0*abs(mu0))
 !-- sampling
@@ -449,12 +446,12 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               e0 = e0*elabfact
               wl = wl/elabfact
            endif
-           ix = ix + ihelp
+           ix = ixnext
            ic = grd_icell(ix,iy,iz)
         else
            call rnd_r(r1,rndstate)
            call rnd_r(r2,rndstate)
-           mu0 = -ihelp*max(r1,r2)
+           mu0 = (ix-ixnext)*max(r1,r2)
            call rnd_r(r1,rndstate)
 !-- resampling y-cosine
            mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
@@ -480,21 +477,19 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- y-bound
   elseif(d==dby) then
 
-     if(mu>=0d0) then
-        ihelp = 1
+     if(iynext>iy) then
         y = grd_yarr(iy+1)
      else
-        ihelp = -1
         y = grd_yarr(iy)
      endif
 
-     l = grd_icell(ix,iy+ihelp,iz)
+     l = grd_icell(ix,iynext,iz)
 
      if((grd_cap(ig,l)+grd_sig(l)) * &
-          min(dx(ix),dy(iy+ihelp))*thelp < trn_tauddmc &
+          min(dx(ix),dy(iynext))*thelp < trn_tauddmc &
           .or.in_puretran) then
 !-- IMC in adjacent cell
-        iy = iy+ihelp
+        iy = iynext
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
@@ -522,7 +517,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            endif
         endif
         help = (grd_cap(ig,l)+grd_sig(l)) * &
-             dy(iy+ihelp)*thelp
+             dy(iynext)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
         help = help*(1d0 + 1.5d0*abs(mu))
 !-- sampling
@@ -537,12 +532,12 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               e0 = e0*elabfact
               wl = wl/elabfact
            endif
-           iy = iy + ihelp
+           iy = iynext
            ic = grd_icell(ix,iy,iz)
         else
            call rnd_r(r1,rndstate)
            call rnd_r(r2,rndstate)
-           mu = -ihelp*max(r1,r2)
+           mu = (iy-iynext)*max(r1,r2)
 !-- resampling azimuthal
            call rnd_r(r1,rndstate)
            om = pc_pi2*r1

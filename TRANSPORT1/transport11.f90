@@ -25,6 +25,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
 !
+  integer :: ixnext
   real*8 :: r1, r2, thelp,thelpinv
   real*8 :: db, dcol, dcen, dthm, ddop
   real*8 :: darr(5)
@@ -80,12 +81,14 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !== DISTANCE CALCULATIONS
 !
 !-- distance to boundary = db
-  if (ix == 1) then
+  if(ix==1 .or. mu>=-sqrt(1d0-(grd_xarr(ix)/x)**2)) then
+!-- outer boundary
      db = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*x**2)-mu*x)
-  elseif (mu < -sqrt(1d0-(grd_xarr(ix)/x)**2)) then
-     db = abs(sqrt(grd_xarr(ix)**2-(1d0-mu**2)*x**2)+mu*x)
+     ixnext = ix+1
   else
-     db = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*x**2)-mu*x)
+!-- inner boundary
+     db = abs(sqrt(grd_xarr(ix)**2-(1d0-mu**2)*x**2)+mu*x)
+     ixnext = ix-1
   endif
 !-- sanity check
   if(db/=db) then
@@ -301,7 +304,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         endif
      endif
      !!}}}
-  elseif(d==db .and. mu>=0d0) then   !------ outwards boundary crossing ----
+  elseif(d==db .and. ixnext>ix) then   !------ outwards boundary crossing ----
      if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)!{{{
      if(ix == grd_nx) then
 !           if(ig/=1) then
@@ -348,48 +351,10 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         ix = ix+1
         ic = grd_icell(ix,iy,iz)
      endif!}}}
-  elseif(d==db .and. mu<0d0) then   !------ inwards boundary crossing ----
-     if(ix/=1) l = grd_icell(ix-1,iy,iz)!{{{
-     if(ix==1) then
-        l = grd_icell(ix+1,iy,iz)
-        if (((grd_sig(l)+grd_cap(ig,l))*dx(ix+1) &
-             *thelp >= trn_tauddmc) &
-             .and. .not.in_puretran) then
-           call rnd_r(r1,rndstate)
-           if(grd_isvelocity) then
-              mu = (mu-x*cinv)/(1d0-x*mu*cinv)
-           endif
-           help = (grd_cap(ig,l)+grd_sig(l))*dx(ix+1)*thelp
-           ppl = 4d0/(3d0*help+6d0*pc_dext)
-           P = ppl*(1d0+1.5*abs(mu))
-           if (r1 < P) then
-              ptcl2%itype = 2
-              if(grd_isvelocity) then
-!-- velocity effects accounting
-                 totevelo=totevelo+e*(1d0-elabfact)
+  elseif(d==db) then   !------ inwards boundary crossing ----
 !
-                 e = e*elabfact
-                 e0 = e0*elabfact
-                 wl = wl/elabfact
-              endif
-!-- update
-              ix = ix+1
-              ic = grd_icell(ix,iy,iz)
-           else
-              call rnd_r(r1,rndstate)
-              call rnd_r(r2,rndstate)
-              mu = -max(r1,r2)
-              if(grd_isvelocity) then
-                 mu = (mu+x*cinv)/(1d0+x*mu*cinv)
-              endif
-              x = grd_xarr(ix+1)
-           endif
-        else
-           x = grd_xarr(ix+1)
-           ix = ix+1
-           ic = grd_icell(ix,iy,iz)
-        endif
-     elseif (((grd_sig(l)+grd_cap(ig,l))*dx(ix-1) &
+     l = grd_icell(ix-1,iy,iz)!{{{
+     if(((grd_sig(l)+grd_cap(ig,l))*dx(ix-1) &
           *thelp >= trn_tauddmc) &
           .and. .not.in_puretran) then
         call rnd_r(r1,rndstate)
