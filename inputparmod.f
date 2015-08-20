@@ -485,7 +485,11 @@ c
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
       if(in_taulump<=.05d0*in_tauddmc) stop 'in_taulump too small' !don't let scattering dominate
 c
-      if(in_totmass<=0d0 .and. in_noreadstruct) stop 'in_totmass <= 0'
+      if(in_noreadstruct) then
+        if(in_totmass<=0d0) stop 'in_totmass <= 0'
+        if(in_noreadstruct.and.in_novolsrc.and.in_gas_cvcoef<=0d0)
+     &     stop 'in_noreadstruct && in_novolsrc && in_gas_cvcoef<=0'
+      endif
 c
 c-- temp init
       if(in_consttemp<0d0) stop 'in_consttemp < 0'

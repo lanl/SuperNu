@@ -116,8 +116,8 @@ c========================================
       enddo !l
 c
 c
-c-- update density, heat capacity
-c================================
+c-- update density, start temperature derivative
+c===============================================
       gas_rho = gas_mass/gas_vol
 c-- temperature
       gas_ur = pc_acoef*gas_temp**4
@@ -158,11 +158,12 @@ c-- change back
 c
 c
 c
-c-- solve LTE EOS
-c================
+c-- solve LTE EOS, heat capacity
+c===============================
       do_output = (in_pdensdump=='each' .or.
      &  (in_pdensdump=='one' .and. tsp_it==1))
       if(.not.in_noeos) call eos_update(do_output)
+c
       if(in_gas_cvcoef>0d0) then
 c-- calculate power law heat capacity
         gas_bcoef = in_gas_cvcoef * gas_temp**in_gas_cvtpwr *
