@@ -119,9 +119,14 @@ c
 c-- update density, heat capacity
 c================================
       gas_rho = gas_mass/gas_vol
-c-- Calculating power law heat capacity
-      gas_bcoef = in_gas_cvcoef * gas_temp**in_gas_cvtpwr *
-     &  gas_rho**in_gas_cvrpwr
+      if(in_gas_cvcoef>0d0) then
+c-- calculate power law heat capacity
+        gas_bcoef = in_gas_cvcoef * gas_temp**in_gas_cvtpwr *
+     &    gas_rho**in_gas_cvrpwr
+      else
+!-- calculate physical heat capacity
+        gas_bcoef = 1.5d0*pc_kb*gas_natom/gas_vol
+      endif
 c-- temperature
       gas_ur = pc_acoef*gas_temp**4
 c
