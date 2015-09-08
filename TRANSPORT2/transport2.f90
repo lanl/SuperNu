@@ -25,26 +25,33 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
 
+  logical :: lredir !direction resampled
   logical :: loutx,louty
   integer :: ixnext,iynext
   real*8 :: elabfact, dirdotu, mu0, gm
+  real*8,pointer :: mux,muy,muz
   real*8 :: thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,ddop
   real*8 :: darr(6)
-  real*8 :: xold, yold, omold
+  real*8 :: xold, omold, zold
   real*8 :: r1, r2
 !-- distance out of physical reach
   real*8 :: far
   real*8 :: emitlump
+
+  real*8 :: mux1,mux2
+  real*8 :: angrat1,angrat2,angrat3
 
   integer,pointer :: ix, iy, ic, ig
   integer,parameter :: iz=1
   real*8,pointer :: x,y,z,mu,om,e,e0,wl,d
 !-- statement functions
   integer :: l
-  real*8 :: dx,dy
+  real*8 :: dx,dy,muxf,zz
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
+  muxf(zz) = ptcl%x*sin(ptcl2%muz+zz)/sin(ptcl2%muz)
+  !muyf(zz) = ptcl%x*sin(zz)/sin(ptcl2%muz)
 
   ix => ptcl2%ix
   iy => ptcl2%iy
@@ -60,12 +67,19 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   e0 => ptcl%e0
   wl => ptcl%wl
 
+  mux => ptcl2%mux
+  muy => ptcl2%muy
+  muz => ptcl2%muz
+
 !-- no error by default
   ierr = 0
 !-- init
   edep = 0d0
   eraddens = 0d0
   eamp = 0d0
+
+!-- direction resample flag
+  lredir = .false.
 !
 !-- setting vel-grid helper variables
   if(grd_isvelocity) then
@@ -78,6 +92,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      elabfact = 1d0
      thelp = 1d0
   endif
+!write(0,*) ptcl2%ipart,ptcl2%istep,ptcl2%idist,x,z,mu,om,mux,x*sin(om)/sin(z+om),muy,x*sin(z)/sin(z+om)
 !
 !-- inverting vel-grid factor
   thelpinv = 1d0/thelp
@@ -193,27 +208,91 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      return
   endif
 !
-!-- updating position
+!-- store prev position
   xold = x
-  yold = y
-  x = sqrt(xold**2 + (1d0-mu**2)*d**2 + 2d0*xold*sqrt(1d0-mu**2)*d*cos(om))
-  y = yold + mu*d
-!-- updating azimuthal direction
+  zold = z
   omold = om
-  if(om>pc_pi.and.om<pc_pi2) then
-     om = pc_pi2 + &
-          atan2(-sqrt(max(x**2-(xold*cos(omold)+d*sqrt(1d0-mu**2))**2,0d0)), &
-          xold*cos(omold)+d*sqrt(1d0-mu**2))
-  else
-     om = atan2(sqrt(max(x**2-(xold*cos(omold)+d*sqrt(1d0-mu**2))**2,0d0)), &
-          xold*cos(omold)+d*sqrt(1d0-mu**2))
-  endif
-  if(om/=om) then
-!    write(*,*) d, x, xold, omold, om, mu
-!    stop 'transport2: om is nan'
-     ierr = 6
-     return
-  endif
+!
+!-- update distance to intercept
+  muy = muy + d*sqrt(1d0-mu**2)
+!
+!-- update position
+  if(d>0d0) then
+     y = y + mu*d!{{{
+
+     if(abs(abs(cos(muz))-1d0)<1d-2) then
+!-- muz calculation unreliable
+        x = sqrt(xold**2 + (1d0-mu**2)*d**2 + 2d0*xold*sqrt(1d0-mu**2)*d*cos(omold))
+     else
+        x = sqrt(mux**2 + muy**2 - 2d0*mux*muy*cos(muz))
+     endif
+!
+!-- special case: particle close to corners
+     if(abs(x-xold)<1d-15*(x+xold)) then
+        if(xold==grd_xarr(ix)) x = xold
+        if(xold==grd_xarr(ix+1)) x = xold
+     endif
+!
+!-- update direction
+     if(x==0) then
+!-- todo: implement exception for x==0
+        ierr = 8
+        return
+     endif
+
+!-- trigoniometric ratios
+     angrat3 = (sqrt(1d0-mu**2)*d + xold*cos(omold))/x
+     angrat2 = sin(muz)*muy/x
+     angrat1 = (x**2 + mux**2 - muy**2)/(2*x*mux)
+
+     if(abs(angrat1)<1d0 .and. abs(angrat1)<abs(angrat2)) then
+!-- method 1: calculate z from invariants
+        z = acos(angrat1)
+!-- check cos flip
+        mux1 = muxf(z)
+        mux2 = muxf(pc_pi2-z)
+        if(abs(mux1-mux) > abs(mux2-mux)) z = pc_pi2-z
+     elseif(abs(angrat2)<1d0) then
+!-- method 2: calculate z from invariants
+        z = asin(angrat2)
+!-- check sin flip
+        mux1 = muxf(z)
+        mux2 = muxf(pc_pi-z)
+        if(abs(mux1-mux) > abs(mux2-mux)) z = pc_pi-z
+     else
+!-- method 3: calculate om from xold and omold
+        om = acos(angrat3)
+!-- check cos flip
+        mux1 = muxf(zold+omold-om)
+        mux2 = muxf(-muz-pc_pi+om)
+        if(abs(mux1-mux) > abs(mux2-mux)) om = pc_pi2-om
+        z = zold - (om - omold)
+        if(z>pc_pi2) z = z - pc_pi2
+     endif
+
+     if(z<0d0) z = z + pc_pi2
+
+!-- update om
+     om = omold - (z - zold)
+     if(om<0d0) then
+        om = om+pc_pi2
+     elseif(om>pc_pi2) then
+        om = om-pc_pi2
+     endif
+
+!    if(abs(z)<1d-9.and.iz==1) then
+!       z = 0d0
+!    elseif(abs(z)<1d-9.and.iz==grd_nz) then
+!       z = pc_pi2
+!    endif
+
+     if(om/=om) then
+!       write(0,*) 'omnan',d, xold, x, zold, z, omold, om, mu
+!       stop 'transport2: om is nan'
+        ierr = 6
+        return
+     endif!}}}
+  endif !d>0d0
 !
 !-- updating time
   ptcl%t = ptcl%t + thelp*cinv*d
@@ -272,6 +351,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- common manipulations for collisions
   if(d==dthm.or.d==dcol) then
 !-- resampling direction
+     lredir = .true.
      call rnd_r(r1,rndstate)
      mu = 1d0 - 2d0*r1
      call rnd_r(r1,rndstate)
@@ -451,6 +531,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            ix = ixnext
            ic = grd_icell(ix,iy,iz)
         else
+           lredir = .true.
            call rnd_r(r1,rndstate)
            call rnd_r(r2,rndstate)
            mu0 = (ix-ixnext)*max(r1,r2)
@@ -537,6 +618,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            iy = iynext
            ic = grd_icell(ix,iy,iz)
         else
+           lredir = .true.
            call rnd_r(r1,rndstate)
            call rnd_r(r2,rndstate)
            mu = (iy-iynext)*max(r1,r2)
@@ -594,6 +676,17 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !    stop 'transport2: invalid distance'
      ierr = 12
      return
+  endif
+
+
+!-- update planar projections
+  if(lredir) then
+!-- planar projections (invariant until collision)
+     mux = x*sin(om)/sin(z+om)  !-- intercept
+     muy = x*sin(z)/sin(z+om)  !-- distance to intercept
+     muz = pc_pi-(z+om)  !-- direction angle
+     if(muz<0d0) muz = muz+pc_pi2
+     if(muz>pc_pi2) muz = muz-pc_pi2
   endif
 
 end subroutine transport2

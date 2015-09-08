@@ -25,6 +25,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   !is set to true, this routine is not used.
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
+  logical :: lredir
 !
   integer :: iig, iiig
   logical :: lhelp
@@ -80,6 +81,10 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- init
   edep = 0d0
   eraddens = 0d0
+
+
+!-- direction resample flag
+  lredir = .false.
 
 !
 !-- set expansion helper
@@ -389,7 +394,9 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
                 min(dx(ix-1),dy(iy))*thelp<trn_tauddmc
 
      if(lhelp) then
-!-- sampling x,y
+!-- direction resample flag
+        lredir = .true.
+!-- sampling x,y,z
         x = grd_xarr(ix)
         call rnd_r(r1,rndstate)
         y = grd_yarr(iy)*(1d0-r1)+grd_yarr(iy+1)*r1
@@ -497,6 +504,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
 
      if(lhelp) then
+!-- direction resample flag
+        lredir = .true.
 !-- sampling x,y
         x = grd_xarr(ix+1)
         call rnd_r(r1,rndstate)
@@ -611,6 +620,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
 
      if(lhelp) then
+!-- direction resample flag
+        lredir = .true.
 !-- sampling x,y
         call rnd_r(r1,rndstate)
         x = sqrt(grd_xarr(ix)**2*(1d0-r1)+grd_xarr(ix+1)**2*r1)
@@ -723,6 +734,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
 
      if(lhelp) then
+!-- direction resample flag
+        lredir = .true.
 !-- sampling x,y
         call rnd_r(r1,rndstate)
         x = sqrt(grd_xarr(ix)**2*(1d0-r1)+grd_xarr(ix+1)**2*r1)
@@ -827,6 +840,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 
      if((grd_sig(ic)+grd_cap(ig,ic))*dist < trn_tauddmc) then
         ptcl2%itype = 1
+!-- direction resample flag
+        lredir = .true.
 !-- sample wavelength
         call rnd_r(r1,rndstate)
         wl = 1d0/((1d0-r1)*grp_wlinv(ig) + r1*grp_wlinv(ig+1))
@@ -876,6 +891,16 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         endif
      endif
 !}}}
+  endif
+
+!-- update planar projections
+  if(lredir) then
+!-- planar projections (invariant until collision)
+     ptcl2%mux = x*sin(om)/sin(z+om)  !-- intercept
+     ptcl2%muy = x*sin(z)/sin(z+om)  !-- distance to intercept
+     ptcl2%muz = pc_pi-(z+om)  !-- direction angle
+     if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
+     if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
   endif
 
 end subroutine diffusion2
