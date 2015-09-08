@@ -241,9 +241,8 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      endif
 
 !-- trigoniometric ratios
-     angrat3 = (sqrt(1d0-mu**2)*d + xold*cos(omold))/x
-     angrat2 = sin(muz)*muy/x
      angrat1 = (x**2 + mux**2 - muy**2)/(2*x*mux)
+     angrat2 = sin(muz)*muy/x
 
      if(abs(angrat1)<1d0 .and. abs(angrat1)<abs(angrat2)) then
 !-- method 1: calculate z from invariants
@@ -261,6 +260,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         if(abs(mux1-mux) > abs(mux2-mux)) z = pc_pi-z
      else
 !-- method 3: calculate om from xold and omold
+        angrat3 = (sqrt(1d0-mu**2)*d + xold*cos(omold))/x
         om = acos(angrat3)
 !-- check cos flip
         mux1 = muxf(zold+omold-om)
@@ -274,17 +274,8 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 
 !-- update om
      om = omold - (z - zold)
-     if(om<0d0) then
-        om = om+pc_pi2
-     elseif(om>pc_pi2) then
-        om = om-pc_pi2
-     endif
-
-!    if(abs(z)<1d-9.and.iz==1) then
-!       z = 0d0
-!    elseif(abs(z)<1d-9.and.iz==grd_nz) then
-!       z = pc_pi2
-!    endif
+     if(om<0d0) om = om+pc_pi2
+     if(om>pc_pi2) om = om-pc_pi2
 
      if(om/=om) then
 !       write(0,*) 'omnan',d, xold, x, zold, z, omold, om, mu
