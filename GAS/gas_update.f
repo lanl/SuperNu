@@ -116,28 +116,15 @@ c========================================
       enddo !l
 c
 c
-c-- update density, heat capacity
-c================================
+c-- update density, start temperature derivative
+c===============================================
       gas_rho = gas_mass/gas_vol
-c-- Calculating power law heat capacity
-      gas_bcoef = in_gas_cvcoef * gas_temp**in_gas_cvtpwr *
-     &  gas_rho**in_gas_cvrpwr
 c-- temperature
       gas_ur = pc_acoef*gas_temp**4
 c
 c-- sanity check temperatures
       if(any(gas_temp/=gas_temp)) stop 'gas_temp NaN'
       if(any(gas_temp<=0d0)) stop 'gas_temp<=0'
-c
-c
-c-- totals
-c=========
-c-- add initial thermal input to dd_eext
-      if(tsp_it==1) then
-!-- total comoving material energy
-       tot_emat = sum(gas_bcoef*gas_temp*gas_vol)
-       tot_eext = tot_eext + tot_emat  !was initialized either in totalsmod or in totals_startup
-      endif
 c
 c
 c
@@ -171,11 +158,30 @@ c-- change back
 c
 c
 c
-c-- solve LTE EOS
-c================
+c-- solve LTE EOS, heat capacity
+c===============================
       do_output = (in_pdensdump=='each' .or.
      &  (in_pdensdump=='one' .and. tsp_it==1))
       if(.not.in_noeos) call eos_update(do_output)
+c
+      if(in_gas_cvcoef>0d0) then
+c-- calculate power law heat capacity
+        gas_bcoef = in_gas_cvcoef * gas_temp**in_gas_cvtpwr *
+     &    gas_rho**in_gas_cvrpwr
+      else
+!-- calculate physical heat capacity
+        gas_bcoef = 1.5d0*pc_kb*gas_natom/gas_vol
+      endif
+c
+c
+c-- totals
+c=========
+c-- add initial thermal input to dd_eext
+      if(tsp_it==1) then
+!-- total comoving material energy
+       tot_emat = sum(gas_bcoef*gas_temp*gas_vol)
+       tot_eext = tot_eext + tot_emat  !was initialized either in totalsmod or in totals_startup
+      endif      
 c
 c
 c
