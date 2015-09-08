@@ -328,15 +328,15 @@ subroutine particle_advance
 !-- verify position
         if(ptcl2%itype==1 .and. .not.ptcl2%done) then
            if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then!{{{
-              write(0,*) 'prt_adv: x not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),mu, &
+              write(0,*) 'prt_adv: x not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),y,z,mu,om, &
                  ptcl2%ipart,ptcl2%istep,ptcl2%idist
            endif
            if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-              write(0,*) 'prt_adv: y not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),mu, &
+              write(0,*) 'prt_adv: y not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),x,z,mu,om, &
                  ptcl2%ipart,ptcl2%istep,ptcl2%idist
            endif
            if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
-              write(0,*) 'prt_adv: z not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),mu, &
+              write(0,*) 'prt_adv: z not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),y,z,mu,om, &
                  ptcl2%ipart,ptcl2%istep,ptcl2%idist
            endif!}}}
         endif
@@ -421,13 +421,6 @@ subroutine particle_advance
            y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
            call rnd_r(r1,rndstate)
            z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
-!-- must be inside cell
-           x = min(x,grd_xarr(ix+1))
-           x = max(x,grd_xarr(ix))
-           y = min(y,grd_yarr(iy+1))
-           y = max(y,grd_yarr(iy))
-           z = min(z,grd_zarr(iz+1))
-           z = max(z,grd_zarr(iz))
 !-- sampling angle isotropically
            call rnd_r(r1,rndstate)
            mu = 1.0 - 2.0*r1
@@ -438,11 +431,10 @@ subroutine particle_advance
 !-- sampling position uniformly!{{{
            call rnd_r(r1,rndstate)
            x = sqrt(r1*grd_xarr(ix+1)**2 + (1d0-r1)*grd_xarr(ix)**2)
-!-- must be inside cell
-           x = min(x,grd_xarr(ix+1))
-           x = max(x,grd_xarr(ix))
            call rnd_r(r1,rndstate)
            y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
+           call rnd_r(r1,rndstate)
+           z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
 !-- sampling direction values
            call rnd_r(r1,rndstate)
            om = pc_pi2*r1
@@ -457,19 +449,20 @@ subroutine particle_advance
            y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
            call rnd_r(r1,rndstate)
            z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
-!-- must be inside cell
-           x = min(x,grd_xarr(ix+1))
-           x = max(x,grd_xarr(ix))
-           y = min(y,grd_yarr(iy+1))
-           y = max(y,grd_yarr(iy))
-           z = min(z,grd_zarr(iz+1))
-           z = max(z,grd_zarr(iz))
 !-- sampling direction values
            call rnd_r(r1,rndstate)
            om = pc_pi2*r1
            call rnd_r(r1,rndstate)
            mu = 1d0 - 2d0*r1 !}}}
         endselect
+
+!-- must be inside cell
+        x = min(x,grd_xarr(ix+1))
+        x = max(x,grd_xarr(ix))
+        y = min(y,grd_yarr(iy+1))
+        y = max(y,grd_yarr(iy))
+        z = min(z,grd_zarr(iz+1))
+        z = max(z,grd_zarr(iz))
 !
         if(grd_isvelocity) call direction2lab(x,y,z,mu,om)
      endif

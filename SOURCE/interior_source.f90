@@ -134,12 +134,15 @@ subroutine interior_source
         call rnd_r(r1,rnd_state)
         ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
              grd_yarr(j)
+        call rnd_r(r1,rnd_state)
+        ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
         ptcl%y = min(ptcl%y,grd_yarr(j+1))
-        ptcl%y = max(ptcl%y,grd_yarr(j))!}}}
-        ptcl%z = grd_zarr(1)
+        ptcl%y = max(ptcl%y,grd_yarr(j))
+        ptcl%z = min(ptcl%z,grd_zarr(k+1))
+        ptcl%z = max(ptcl%z,grd_zarr(k))!}}}
 !-- 3D
      case(3)
 !-- calculating position!{{{

@@ -39,7 +39,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 
   integer,pointer :: ix, iy, ic, ig
   integer,parameter :: iz=1
-  real*8,pointer :: x,y,mu,om,e,e0,wl,d
+  real*8,pointer :: x,y,z,mu,om,e,e0,wl,d
 !-- statement functions
   integer :: l
   real*8 :: dx,dy
@@ -53,6 +53,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   d => ptcl2%dist
   x => ptcl%x
   y => ptcl%y
+  z => ptcl%z
   mu => ptcl%mu
   om => ptcl%om
   e => ptcl%e

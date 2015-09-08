@@ -304,8 +304,10 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- counterclockwise
      iznext=iz+1
      zhelp = muy*cos(grd_zarr(iz+1))-mux*sin(grd_zarr(iz+1))
+!-- at boundary already
      if(z==grd_zarr(iz+1)) then
         dbz = 0d0
+!-- parallel to plane
      elseif(zhelp==0d0) then
         dbz = far
      else
@@ -316,8 +318,10 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- clockwise
      iznext=iz-1
      zhelp = muy*cos(grd_zarr(iz))-mux*sin(grd_zarr(iz))
+!-- at boundary already
      if(z==grd_zarr(iz)) then
         dbz = 0d0
+!-- parallel to plane
      elseif(zhelp==0d0) then
         dbz = far
      else
@@ -505,7 +509,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- redefine for flux tally
         mu = muz
         om = atan2(muy,mux)
-        if(om<0d0) om=om+pc_pi2
+        if(om<0d0) om = om+pc_pi2
         return
      endif
   endif
@@ -665,11 +669,11 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ynew = y !backup
         znew = z !backup
 !-- reflecting y
-        y=-y
+        y = -y
         iynext=binsrch(y,grd_yarr,grd_ny+1,.false.)
 !-- reflecting z
-        z=z+pc_pi !z is not updated with atan2 calculation
-        if(z>pc_pi2) z=z-pc_pi2
+        z = z+pc_pi !z is not updated with atan2 calculation
+        if(z>pc_pi2) z = z-pc_pi2
         if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
      elseif(iynext==iy-1) then
         if(abs(y-grd_yarr(iy))>1d-9) then
@@ -759,7 +763,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            mu = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
 !-- resampling azimuthal
            om = atan2(xi,eta)
-           if(om<0d0) om=om+pc_pi2
+           if(om<0d0) om = om+pc_pi2
 !-- transforming mu to lab
            if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
 !-- restore position: undo reflection
@@ -780,13 +784,13 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         return
      endif
      if(iznext==iz-1) then
-        z=grd_zarr(iz)
+        z = grd_zarr(iz)
         if(iznext==0) then
            iznext = grd_nz
            z = pc_pi2
         endif
      elseif(iznext==iz+1) then
-        z=grd_zarr(iz+1)
+        z = grd_zarr(iz+1)
         if(iznext==grd_nz+1) then
            iznext = 1
            z = 0d0
@@ -860,14 +864,14 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            mu = sqrt(1d0-xi**2)*sin(pc_pi2*r1)
 !-- resampling azimuthal
            om = atan2(xi,eta)
-           if(om<0d0) om=om+pc_pi2
+           if(om<0d0) om = om+pc_pi2
 !-- transforming mu to lab
            if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
 !-- reverting z
            if(iznext==grd_nz.and.iz==1) then
-              if(z==pc_pi2) z=0d0
+              if(z==pc_pi2) z = 0d0
            elseif(iznext==1.and.iz==grd_nz) then
-              if(z==0d0) z=pc_pi2
+              if(z==0d0) z = pc_pi2
            endif
         endif
      endif
