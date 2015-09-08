@@ -102,6 +102,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      elseif(abs(grd_xarr(ix+1)-x)<1d-15*x .and. cos(om)>0d0) then
 !-- on outer boundary moving out
         dbx = 0d0
+        ixnext = ix+1
      else
 !-- outer boundary
         dbx = -x*cos(om)/sqrt(1d0-mu**2) &
@@ -293,8 +294,8 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      endif
   elseif(any([dbx,dby]==d)) then
 !-- checking if escaped domain
-     loutx = d==dbx.and.(cos(om)>=0d0.and.ix==grd_nx)
-     louty = d==dby.and.((mu>=0d0.and.iy==grd_ny).or.(mu<0.and.iy==1))
+     loutx = d==dbx.and.ixnext==grd_nx+1
+     louty = d==dby.and.(iynext==grd_ny+1.or.iynext==0)
      if(loutx.or.louty) then
 !-- ending particle
         ptcl2%isvacant = .true.
