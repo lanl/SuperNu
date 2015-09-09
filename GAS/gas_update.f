@@ -170,7 +170,8 @@ c-- calculate power law heat capacity
      &    gas_rho**in_gas_cvrpwr
       else
 !-- calculate physical heat capacity
-        gas_bcoef = 1.5d0*pc_kb*gas_natom/gas_vol
+        gas_bcoef = 1.5d0*pc_kb*(1d0+gas_nelec)*gas_natom /
+     &     gas_vol
       endif
 c
 c
