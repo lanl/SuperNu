@@ -25,15 +25,15 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
 
-  logical :: lout, lthomson, labsorb
+  logical :: lout
   integer :: ixnext
   real*8 :: r1, r2, thelp,thelpinv
-  real*8 :: db, dcol, dcen, ddop
-  real*8 :: darr(4)
+  real*8 :: db, dcol, dcen, dthm, ddop
+  real*8 :: darr(5)
   real*8 :: elabfact
   real*8 :: xold, muold
+! real*8 :: x1, x2, xx0
   real*8 :: help
-  real*8 :: sigtot, opactot
 !-- distance out of physical reach
   real*8 :: far
   real*8 :: emitlump
@@ -98,19 +98,26 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
      ierr = 1
      return
   endif
-
-!-- general collision distance
-  opactot=elabfact*(grd_cap(ig,ic)+grd_sig(ic))
-  sigtot=opactot-elabfact*grd_fcoef(ic)*grd_cap(ig,ic)
-  if(opactot<=0d0) then
+!
+!-- Thomson scattering distance
+  if(grd_sig(ic)>0d0) then
+     call rnd_r(r1,rndstate)
+     dthm = -log(r1)*thelpinv/(elabfact*grd_sig(ic))
+  else
+     dthm = far
+  endif  
+!
+!-- effective collision distance
+  if(grd_cap(ig,ic)<=0d0) then
      dcol = far
   elseif(trn_isimcanlog) then
 !-- calculating dcol for analog MC
      call rnd_r(r1,rndstate)
-     dcol = -log(r1)*thelpinv/opactot
+     dcol = -log(r1)*thelpinv/(elabfact*grd_cap(ig,ic))
   elseif(grd_fcoef(ic)<1d0.and.grd_fcoef(ic)>=0d0) then
      call rnd_r(r1,rndstate)
-     dcol = -log(r1)*thelpinv/sigtot
+     dcol = -log(r1)*thelpinv/&
+          (elabfact*(1d0-grd_fcoef(ic))*grd_cap(ig,ic))
   else
      dcol = far
   endif
@@ -126,7 +133,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   endif
 !
 !--finding minimum distance
-  darr = [dcen,dcol,ddop,db]
+  darr = [dcen,dcol,dthm,ddop,db]
   ptcl2%idist = minloc(darr,dim=1)
   d = minval(darr)
   if(any(darr/=darr)) then
@@ -194,40 +201,14 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   endif
 
 !-- common manipulations for collisions
-  if(d==dcol) then
-!-- sampling event
-     labsorb = .false.
-     lthomson = .false.
+  if(d==dthm.or.d==dcol) then
      call rnd_r(r1,rndstate)
-     if(trn_isimcanlog) then
-        help=grd_fcoef(ic)*grd_cap(ig,ic)
-        if(r1*opactot<help) then
-           labsorb = .true.
-        elseif(r1*opactot<help+grd_sig(ic)) then
-           lthomson = .true.
-        endif
-     elseif(r1*sigtot<grd_sig(ic)) then
-        lthomson = .true.
+     mu = 1d0-2d0*r1
+     if(abs(mu)<0.0000001d0) then
+        mu = 0.0000001d0
      endif
-     if(lthomson.or..not.labsorb) then
-!-- resampling direction
-        call rnd_r(r1,rndstate)
-        mu = 1d0-2d0*r1
-        if(abs(mu)<0.0000001d0) then
-           mu = 0.0000001d0
-        endif
 !-- checking velocity dependence
-        if(grd_isvelocity) then
-!-- transforming direction
-           mu=(mu+x*cinv)/(1d0+x*mu*cinv)
-           help = elabfact/(1d0-mu*x*cinv)
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!-- energy weight
-           e = e*help
-           e0 = e0*help
-        endif
-     endif
+     if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
   elseif(d==db) then
      lout = mu>=0d0.and.ix==grd_nx
      if(lout) then
@@ -240,13 +221,26 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   endif
 
 !
-!-- effective collision
-  if(d == dcol) then
-     if(lthomson) then
-!-- thomson scattering
+!-- Thomson scatter
+  if(d == dthm) then
 !-- checking velocity dependence
-        if(grd_isvelocity) wl=wl*(1d0-mu*x*cinv)/elabfact
-     elseif(labsorb) then
+     if(grd_isvelocity) then
+!-- lab wavelength
+        wl = wl*(1d0-mu*x*cinv)/elabfact        
+        help = elabfact/(1d0-mu*x*cinv)
+!-- velocity effects accounting
+        totevelo=totevelo+e*(1d0-help)
+!-- energy weight
+        e = e*help
+        e0 = e0*help
+     endif
+
+!
+!-- effective collision
+  elseif(d == dcol) then
+     call rnd_r(r1,rndstate)
+!-- checking if analog
+     if(trn_isimcanlog.and.r1<=grd_fcoef(ic)) then
 !-- effective absorption
         ptcl2%isvacant = .true.
         ptcl2%done = .true.
@@ -257,6 +251,15 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         return
      else
 !-- effective scattering
+!-- transforming to lab
+        if(grd_isvelocity) then
+           help = elabfact/(1d0-mu*x*cinv)
+!-- velocity effects accounting
+           totevelo = totevelo+e*(1d0-help)
+!-- energy weight
+           e = e*help
+           e0 = e0*help
+        endif
 !-- redistributing wavelength
         emitlump = grd_opaclump(8,ic)/grd_capgrey(ic)
         if(grp_ng==1) then
