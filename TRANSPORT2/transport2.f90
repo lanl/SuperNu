@@ -291,7 +291,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- tallying energy densities
   if(trn_isimcanlog) then
 !-- analog energy density
-     eraddens = e*elabfact* &
+     eraddens = e*elabfact**2 * &
           d*thelp*cinv*tsp_dtinv
   else
 !-- nonanalog energy density
@@ -304,7 +304,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
              grd_cap(ig,ic)*pc_c*tsp_dt)
      else
 !-- analog energy density
-        eraddens = e*elabfact* &
+        eraddens = e*elabfact**2 * &
              d*thelp*cinv*tsp_dtinv
      endif
 !-- depositing nonanalog absorbed energy

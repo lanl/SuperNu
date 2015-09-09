@@ -29,11 +29,10 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   real*8 :: r1, r2, thelp,thelpinv
   real*8 :: db, dcol, dcen, dthm, ddop
   real*8 :: darr(5)
-  real*8 :: siglabfact, dcollabfact, elabfact
-  real*8 :: xold, P, muold
+  real*8 :: elabfact
+  real*8 :: xold, muold
 ! real*8 :: x1, x2, xx0
   real*8 :: help
-  real*8 :: ppl, ppr
 !-- distance out of physical reach
   real*8 :: far
   real*8 :: emitlump
@@ -63,24 +62,26 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   eraddens = 0d0
   eamp = 0d0
 !
+!-- setting vel-grid helper variables  
   if(grd_isvelocity) then
-     siglabfact = 1d0 - mu*x*cinv
-     dcollabfact = tsp_t*(1d0-mu*x*cinv)
+!-- calculating initial transformation factors
+     elabfact = 1d0 - mu*x*cinv
      thelp = tsp_t
   else
-     siglabfact = 1d0
-     dcollabfact = 1d0
+     elabfact = 1d0
      thelp = 1d0
   endif
+!
+!-- inverting vel-grid factor
   thelpinv = 1d0/thelp
 
 !-- distance longer than distance to census
   far = 2d0*abs(pc_c*tsp_dt*thelpinv)
 
+!-- census distance
+  dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%t)*thelpinv)
 !
-!== DISTANCE CALCULATIONS
-!
-!-- distance to boundary = db
+!-- boundary distances
   if(ix==1 .or. mu>=-sqrt(1d0-(grd_xarr(ix)/x)**2)) then
 !-- outer boundary
      db = abs(sqrt(grd_xarr(ix+1)**2-(1d0-mu**2)*x**2)-mu*x)
@@ -97,42 +98,40 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
      return
   endif
 !
-!-- distance to fictitious collision = dcol
-  if(trn_isimcanlog) then
-     if(grd_cap(ig,ic)>0d0) then
-        call rnd_r(r1,rndstate)
-        dcol = abs(log(r1)/(grd_cap(ig,ic)*dcollabfact))
-     else
-        dcol = far
-     endif
-  else
-     if((1d0-grd_fcoef(ic))*grd_cap(ig,ic)>0d0) then
-        call rnd_r(r1,rndstate)
-        dcol = abs(log(r1)/((1d0-grd_fcoef(ic))*grd_cap(ig,ic)*dcollabfact))
-     else
-        dcol = far
-     endif
-  endif
-!
-!-- distance to Thomson-type collision = dthm
+!-- Thomson scattering distance
   if(grd_sig(ic)>0d0) then
      call rnd_r(r1,rndstate)
-     dthm = abs(log(r1)/(grd_sig(ic)*dcollabfact))
+     dthm = -log(r1)*thelpinv/(elabfact*grd_sig(ic))
   else
      dthm = far
+  endif  
+!
+!-- effective collision distance
+  if(grd_cap(ig,ic)<=0d0) then
+     dcol = far
+  elseif(trn_isimcanlog) then
+!-- calculating dcol for analog MC
+     call rnd_r(r1,rndstate)
+     dcol = -log(r1)*thelpinv/(elabfact*grd_cap(ig,ic))
+  elseif(grd_fcoef(ic)<1d0.and.grd_fcoef(ic)>=0d0) then
+     call rnd_r(r1,rndstate)
+     dcol = -log(r1)*thelpinv/&
+          (elabfact*(1d0-grd_fcoef(ic))*grd_cap(ig,ic))
+  else
+     dcol = far
   endif
 !
-!-- distance to census = dcen
-  dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%t)*thelpinv)
-!
-!-- distance to Doppler shift = ddop
+!-- Doppler shift distance
   if(grd_isvelocity.and.ig<grp_ng) then
-     ddop = abs(pc_c*(1d0-wl*grp_wlinv(ig+1))-x*mu)
+     ddop = pc_c*(elabfact-wl*grp_wlinv(ig+1))
+     if(ddop<0d0) then
+        ddop = far
+     endif
   else
      ddop = far
   endif
 !
-!-- minimum distance = d
+!--finding minimum distance
   darr = [dcen,dcol,dthm,ddop,db]
   ptcl2%idist = minloc(darr,dim=1)
   d = minval(darr)
@@ -144,15 +143,10 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
      ierr = 4
      return
   endif
-!
-!== END OF DISTANCE CALCULATIONS
-!
-!-- position, angle, time update  
+
+!-- updating position, angle  
   xold = x
-! x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
   x = sqrt(x**2 + d**2 + 2d0*d*x*mu)
-!
-  ptcl%t = ptcl%t + thelp*d*cinv
   muold = mu
   if(x==0d0) then
      mu = 1d0
@@ -160,41 +154,49 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
      mu = (xold*mu+d)/x
   endif
 
-!-- transformation factor set
-  if(grd_isvelocity) then
-     elabfact = 1d0 - muold*xold*cinv
+!
+!-- updating time
+  ptcl%t = ptcl%t + thelp*cinv*d
+
+!-- tallying energy densities
+  if(trn_isimcanlog) then
+!-- analog energy density
+     eraddens = e*elabfact**2 * &
+          d*thelp*cinv*tsp_dtinv
   else
-     elabfact = 1d0
-  endif
-  !calculating energy deposition and density
-  !
-  if(.not.trn_isimcanlog) then
-     edep = e*(1d0-exp(-grd_fcoef(ic) &
-          *grd_cap(ig,ic)*siglabfact*d*thelp))*elabfact
-     !--
+!-- nonanalog energy density
      if(grd_fcoef(ic)*grd_cap(ig,ic)*dx(ix)*thelp>1d-6) then     
         eraddens = e* &
-             (1d0-exp(-grd_fcoef(ic)*siglabfact*grd_cap(ig,ic)*d*thelp))* &
-             elabfact/(grd_fcoef(ic)*siglabfact*grd_cap(ig,ic)*pc_c*tsp_dt)
+             (1d0-exp(-grd_fcoef(ic)*elabfact * &
+             grd_cap(ig,ic)*d*thelp)) * &
+             elabfact/(grd_fcoef(ic)*elabfact * &
+             grd_cap(ig,ic)*pc_c*tsp_dt)
      else
-        eraddens = e* &
-             elabfact*d*dcollabfact*cinv*tsp_dtinv
+!-- analog energy density
+        eraddens = e*elabfact**2 * &
+             d*thelp*cinv*tsp_dtinv
      endif
-     !--
-!     e = e*exp(-grd_fcoef(ic)*grd_cap(ig,ic)*d*dcollabfact)
-     e = e*exp(-grd_fcoef(ic)*grd_cap(ig,ic)*siglabfact*d*thelp)
-
-  else
-     !
-     eraddens = e* &
-          elabfact*d*dcollabfact*cinv*tsp_dtinv
+!-- depositing nonanalog absorbed energy
+     edep = e* &
+          (1d0-exp(-grd_fcoef(ic)*grd_cap(ig,ic) * &
+          elabfact*d*thelp))*elabfact
+!-- reducing particle energy
+     e = e*exp(-grd_fcoef(ic)*grd_cap(ig,ic) * &
+          elabfact*d*thelp)
   endif
 
-!-- transformation factor reset
+!
+!-- updating transformation factors
   if(grd_isvelocity) then
      elabfact = 1d0 - mu*x*cinv
-  else
-     elabfact = 1d0
+  endif
+
+!
+!-- census
+  if(d == dcen) then
+     ptcl2%done = .true.
+     ptcl2%lcens = .true.
+     return
   endif
 
   !
@@ -320,11 +322,10 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         if(grd_isvelocity) then
            mu = (mu-x*cinv)/(1d0-x*mu*cinv)
         endif
-        help = (grd_cap(ig,l)+grd_sig(l))*dx(ix+1)*thelp
-        ppl = 4d0/(3d0*help+6d0*pc_dext)
-        P = ppl*(1d0+1.5*abs(mu))
-!--
-        if (r1 < P) then
+        help= (grd_cap(ig,l)+grd_sig(l))*dx(ix+1)*thelp
+        help = 4d0/(3d0*help+6d0*pc_dext)
+!-- sampling
+        if (r1 < help*(1d0+1.5*abs(mu))) then
            ptcl2%itype = 2
            if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -379,13 +380,11 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
                  e0 = e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv)
                  e = e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv)
               endif
-!--
         endif
         help = (grd_cap(ig,l)+grd_sig(l))*dx(ix-1)*thelp
-        ppr = 4d0/(3d0*help+6d0*pc_dext)
-        P = ppr*(1d0+1.5*abs(mu))
-!--
-        if (r1 < P) then
+        help = 4d0/(3d0*help+6d0*pc_dext)
+!-- sampling
+        if (r1 < help*(1d0+1.5d0*abs(mu))) then
            ptcl2%itype = 2
            if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -413,11 +412,6 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         ix = ix-1
         ic = grd_icell(ix,iy,iz)
      endif!}}}
-  elseif(d == dcen) then
-     ptcl2%done = .true.
-     ptcl2%lcens = .true.
-!     toterad = toterad + e*elabfact
-!
   endif
 
 end subroutine transport11
