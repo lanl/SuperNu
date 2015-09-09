@@ -402,7 +402,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ptcl2%isvacant=.true.
         ptcl2%done=.true.
 !-- adding comoving energy to deposition energy
-        edep = edep + e*elabfact
+        edep = e*elabfact
         return
      else
 !-- effective scattering

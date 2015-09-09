@@ -24,7 +24,8 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !analogous DDMC diffusion routine through the advance.
 !##################################################
   real*8,parameter :: cinv = 1d0/pc_c
-!
+
+  logical :: lout
   integer :: ixnext
   real*8 :: r1, r2, thelp,thelpinv
   real*8 :: db, dcol, dcen, dthm, ddop
@@ -199,79 +200,67 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
      return
   endif
 
-  !
-  if(d == ddop) then !group shift
-!-- redshifting!{{{
-     if(ig<grp_ng) then
-        ig = ig+1
-!-- lab frame wavelength
-        wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*(1d0-mu*x*cinv)
-     else
-        call rnd_r(r1,rndstate)
-        wl=1d0/(r1*grp_wlinv(grp_ng+1) + (1d0-r1)*grp_wlinv(grp_ng))  !reciprocal sample
-        wl = wl*(1d0-mu*x*cinv)
-     endif
-!-- check if ddmc region
-     if (((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)* &
-          thelp >= trn_tauddmc) &
-          .and. .not.in_puretran) then
-        ptcl2%itype = 2
-        if(grd_isvelocity) then
-!-- velocity effects accounting
-           totevelo=totevelo+e*x*mu*cinv
-!
-           e = e*(1d0-x*mu*cinv)
-           e0 = e0*(1d0-x*mu*cinv)
-           wl = wl/(1d0-x*mu*cinv)
-        endif
-     endif
-!!}}}
-  elseif (d == dthm) then  !physical scattering (Thomson-type)
-     !!{{{
+!-- common manipulations for collisions
+  if(d==dthm.or.d==dcol) then
      call rnd_r(r1,rndstate)
      mu = 1d0-2d0*r1
      if(abs(mu)<0.0000001d0) then
         mu = 0.0000001d0
      endif
-     if(grd_isvelocity) then
-        mu = (mu+x*cinv)/(1d0+x*mu*cinv)
-!-- velocity effects accounting
-        help = 1d0/(1d0-mu*x*cinv)
-        totevelo=totevelo+e*(1d0-elabfact*help)
-!
-        e = e*elabfact*help
-!        e0 = e0*elabfact/(1d0-mu*x*cinv)
-        wl = wl*(1d0-mu*x*cinv)/elabfact
-     endif
-     !
-     !!}}}
-  elseif(d == dcol) then  !fictitious scattering with implicit capture
-     !!{{{
-     call rnd_r(r1,rndstate)
-     if(r1<=grd_fcoef(ic).and.trn_isimcanlog) then
+!-- checking velocity dependence
+     if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
+  elseif(d==db) then
+     lout = mu>=0d0.and.ix==grd_nx
+     if(lout) then
+!-- ending particle
         ptcl2%isvacant = .true.
         ptcl2%done = .true.
+        ptcl2%lflux = .true.
+        return
+     endif
+  endif
+
+!
+!-- Thomson scatter
+  if(d == dthm) then
+!-- checking velocity dependence
+     if(grd_isvelocity) then
+!-- lab wavelength
+        wl = wl*(1d0-mu*x*cinv)/elabfact        
+        help = elabfact/(1d0-mu*x*cinv)
+!-- velocity effects accounting
+        totevelo=totevelo+e*(1d0-help)
+!-- energy weight
+        e = e*help
+        e0 = e0*help
+     endif
+
+!
+!-- effective collision
+  elseif(d == dcol) then
+     call rnd_r(r1,rndstate)
+!-- checking if analog
+     if(trn_isimcanlog.and.r1<=grd_fcoef(ic)) then
+!-- effective absorption
+        ptcl2%isvacant = .true.
+        ptcl2%done = .true.
+!-- adding comoving energy to deposition energy
         edep = e*elabfact
 !-- velocity effects accounting
         totevelo = totevelo+e*(1d0-elabfact)
-!
+        return
      else
-        call rnd_r(r1,rndstate)
-        mu = 1d0-2d0*r1
-        if(abs(mu)<0.0000001d0) then
-           mu = 0.0000001d0
-        endif
+!-- effective scattering
+!-- transforming to lab
         if(grd_isvelocity) then
-           mu = (mu+x*cinv)/(1d0+x*mu*cinv)
-!-- velocity effects accounting
            help = elabfact/(1d0-mu*x*cinv)
+!-- velocity effects accounting
            totevelo = totevelo+e*(1d0-help)
-!
+!-- energy weight
            e = e*help
            e0 = e0*help
         endif
-!
-!-- sample group
+!-- redistributing wavelength
         emitlump = grd_opaclump(8,ic)/grd_capgrey(ic)
         if(grp_ng==1) then
         elseif(emitlump<.99d0 .or. trn_nolumpshortcut .or. in_puretran) then
@@ -286,45 +275,48 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !-- always put this in the single most likely group
            ig = nint(grd_opaclump(9,ic))
         endif
-!
-!-- sample wavelength
+
+!-- checking for DDMC in new group
         if(ptcl2%itype==2) then
+!-- transforming to cmf
            if(grd_isvelocity) then
 !-- velocity effects accounting
               totevelo = totevelo+e*x*mu*cinv
-!
+!-- energy weight
               e = e*(1d0-x*mu*cinv)
               e0 = e0*(1d0-x*mu*cinv)
            endif
            wl = 0d0 !workaround ifort 13.1.3 bug
         else
-!-- sampling comoving wavelength in group
+!-- uniformly in new group
            call rnd_r(r1,rndstate)
            wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
 !-- converting comoving wavelength to lab frame wavelength
            if(grd_isvelocity) wl = wl*(1d0-x*mu*cinv)
         endif
      endif
-     !!}}}
-  elseif(d==db .and. ixnext>ix) then   !------ outwards boundary crossing ----
-     if(ix/=grd_nx) l = grd_icell(ix+1,iy,iz)!{{{
-     if(ix == grd_nx) then
-!           if(ig/=1) then
-        ptcl2%isvacant = .true.
-        ptcl2%done = .true.
-        ptcl2%lflux = .true.
+     
 !
-!-- Checking if DDMC region right
-     elseif (((grd_sig(l)+grd_cap(ig,l))*dx(ix+1) &
-          *thelp >= trn_tauddmc) &
-          .and. .not.in_puretran) then
-        call rnd_r(r1,rndstate)
+!-- outer radial bound
+  elseif(d==db .and. ixnext>ix) then
+
+     l = grd_icell(ix+1,iy,iz)!{{{
+     if((grd_sig(l)+grd_cap(ig,l)) * &
+          dx(ix+1)*thelp < trn_tauddmc &
+          .or. in_puretran) then
+!-- IMC in adjacent cell
+        x = grd_xarr(ix+1)
+        ix = ix+1
+        ic = grd_icell(ix,iy,iz)    
+     else
+!-- DDMC in adjacent cell
         if(grd_isvelocity) then
            mu = (mu-x*cinv)/(1d0-x*mu*cinv)
         endif
         help= (grd_cap(ig,l)+grd_sig(l))*dx(ix+1)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
+        call rnd_r(r1,rndstate)
         if (r1 < help*(1d0+1.5*abs(mu))) then
            ptcl2%itype = 2
            if(grd_isvelocity) then
@@ -346,44 +338,45 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
            endif
            x = grd_xarr(ix+1)
         endif
-     ! End of check
-     else
-        x = grd_xarr(ix+1)
-        ix = ix+1
-        ic = grd_icell(ix,iy,iz)
      endif!}}}
-  elseif(d==db) then   !------ inwards boundary crossing ----
+
 !
+!-- inner radial bound
+  elseif(d==db) then
+
      l = grd_icell(ix-1,iy,iz)!{{{
-     if(((grd_sig(l)+grd_cap(ig,l))*dx(ix-1) &
-          *thelp >= trn_tauddmc) &
-          .and. .not.in_puretran) then
-        call rnd_r(r1,rndstate)
-!
-!-- amplification factor
+     if((grd_sig(l)+grd_cap(ig,l))*dx(ix-1) &
+          *thelp < trn_tauddmc .or. &
+          in_puretran) then
+!-- IMC in adjacent cell
+        x = grd_xarr(ix)
+        ix = ix-1
+        ic = grd_icell(ix,iy,iz)
+     else
+!-- DDMC in adjacent cell
         if(grd_isvelocity) then
+!-- transforming x-cosine to cmf
            mu = (mu-x*cinv)/(1d0-x*mu*cinv)
-!
-!             e0=e0*(1d0+2d0*min(0.055d0*trn_tauddmc,1d0)*x*cinv)
-!             e = e*(1d0+2d0*min(0.055d0*trn_tauddmc,1d0)*x*cinv)
-              if(.not.trn_noampfact .and. mu<0d0) then
-                 help = 1d0/abs(mu)
-                 help = min(100d0, help) !-- truncate singularity
+!-- amplification factor
+           if(.not.trn_noampfact .and. mu<0d0) then
+              help = 1d0/abs(mu)
+              help = min(100d0, help) !-- truncate singularity
 !
 !-- velocity effects accounting
-                 totevelo = totevelo-e*2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv
+              totevelo = totevelo-e*2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv
 !
 !-- apply the excess (higher than factor 2d0) to the energy deposition
-                 eamp = e*2d0*0.55d0*max(0d0,help-2d0)*x*cinv
+              eamp = e*2d0*0.55d0*max(0d0,help-2d0)*x*cinv
 !-- apply limited correction to the particle
-                 help = min(2d0,help)
-                 e0 = e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv)
-                 e = e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv)
-              endif
+              help = min(2d0,help)
+              e0 = e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv)
+              e = e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv)
+           endif
         endif
         help = (grd_cap(ig,l)+grd_sig(l))*dx(ix-1)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
+        call rnd_r(r1,rndstate)
         if (r1 < help*(1d0+1.5d0*abs(mu))) then
            ptcl2%itype = 2
            if(grd_isvelocity) then
@@ -394,24 +387,55 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
               e0 = e0*elabfact
               wl = wl/elabfact
            endif
-!-- update
            ix = ix-1
            ic = grd_icell(ix,iy,iz)
         else
+!-- resampling direction
            call rnd_r(r1,rndstate)
            call rnd_r(r2,rndstate)
            mu = max(r1,r2)
-           if(grd_isvelocity) then
-              mu = (mu+x*cinv)/(1d0+x*mu*cinv)
-           endif
+!-- transforming mu to lab
+           if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
            x = grd_xarr(ix)
         endif
-     ! End of check
-     else
-        x = grd_xarr(ix)
-        ix = ix-1
-        ic = grd_icell(ix,iy,iz)
      endif!}}}
+
+!
+!-- Doppler shift
+  elseif(d == ddop) then
+     if(.not.grd_isvelocity) then
+!       stop 'transport11: ddop and no velocity'
+        ierr = 16
+        return
+     endif
+     if(ig<grp_ng) then
+!-- shifting group
+        ig = ig+1
+        wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*elabfact
+     else
+!-- resampling wavelength in highest group
+        call rnd_r(r1,rndstate)
+        wl=1d0/(r1*grp_wlinv(grp_ng+1) + (1d0-r1)*grp_wlinv(grp_ng))
+        wl = wl*elabfact
+     endif
+!-- check if ddmc region
+     if (((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)* &
+          thelp >= trn_tauddmc) &
+          .and. .not.in_puretran) then
+        ptcl2%itype = 2
+        if(grd_isvelocity) then
+!-- velocity effects accounting
+           totevelo=totevelo+e*x*mu*cinv
+!
+           e = e*elabfact
+           e0 = e0*elabfact
+           wl = wl/elabfact
+        endif
+     endif
+  else
+!    stop 'transport11: invalid distance'
+     ierr = 17
+     return     
   endif
 
 end subroutine transport11

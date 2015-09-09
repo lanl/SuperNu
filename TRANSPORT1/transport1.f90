@@ -539,7 +539,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ptcl2%isvacant = .true.
         ptcl2%done = .true.
 !-- adding comoving energy to deposition energy
-        edep = edep + e*elabfact
+        edep = e*elabfact
 !-- velocity effects accounting
         totevelo = totevelo+e*(1d0-elabfact)
         return
