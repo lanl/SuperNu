@@ -12,18 +12,20 @@ subroutine leakage_opacity2
   !DDMC 2D lumped leakage opacities.
 !##################################################
   logical :: lhelp
-  integer :: i,j,k, ig,igemitmax
-  integer :: icnb(4) !neighbor cells
+  integer :: i,j,k, ig, khelp,igemitmax
+  integer :: icnb(6) !neighbor cells
   real*8 :: thelp, dist, help, emitmax
   real*8 :: speclump, caplump, specval
   real*8 :: specarr(grp_ng)
   real*8 :: ppl, ppr
 !-- statement functions
   integer :: l
-  real*8 :: dx,dx2,dy
+  real*8 :: dx,dx2,dy,xm,dz
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dx2(l)= grd_xarr(l+1)**2-grd_xarr(l)**2
+  xm(l) = 0.5*(grd_xarr(l+1) + grd_xarr(l))
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
+  dz(l) = grd_zarr(l+1) - grd_zarr(l)
 !
 !-- setting vel-space helper
   if(grd_isvelocity) then
@@ -51,9 +53,20 @@ subroutine leakage_opacity2
      icnb(2) = grd_icell(min(i+1,grd_nx),j,k) !right neighbor
      icnb(3) = grd_icell(i,max(j-1,1),k)      !left neighbor
      icnb(4) = grd_icell(i,min(j+1,grd_ny),k) !right neighbor
+!-- azimuthal neighbors are cyclic
+     if(k==1) then
+      icnb(5) = grd_icell(i,j,grd_nz) !left neighbor
+     else
+      icnb(5) = grd_icell(i,j,k-1) !left neighbor
+     endif
+     if(k==grd_nz) then
+      icnb(6) = grd_icell(i,j,1) !right neighbor
+     else
+      icnb(6) = grd_icell(i,j,k+1) !right neighbor
+     endif
 !
 !-- distance
-     dist = min(dx(i),dy(j))*thelp
+     dist = min(dx(i),dy(j),xm(i)*dz(k))*thelp
 !
 !-- initializing Planck integral vectorized
      call specintv(grd_tempinv(l),grp_ng,specarr)
@@ -96,7 +109,8 @@ subroutine leakage_opacity2
            lhelp = .true.
         else
            lhelp = (grd_cap(ig,icnb(1))+ &
-              grd_sig(icnb(1)))*min(dx(i-1),dy(j))*thelp<trn_tauddmc
+              grd_sig(icnb(1)))*min(dx(i-1),dy(j), &
+              xm(i-1)*dz(k))*thelp<trn_tauddmc
         endif
 !
         if(lhelp) then
@@ -119,8 +133,8 @@ subroutine leakage_opacity2
            lhelp = .true.
         else
            lhelp = (grd_cap(ig,icnb(2))+ &
-                grd_sig(icnb(2)))*min(dx(i+1),dy(j)) * &
-                thelp<trn_tauddmc
+              grd_sig(icnb(2)))*min(dx(i+1),dy(j), &
+              xm(i+1)*dz(k))*thelp<trn_tauddmc
         endif
 !
         if(lhelp) then
@@ -143,8 +157,8 @@ subroutine leakage_opacity2
            lhelp = .true.
         else
            lhelp = (grd_cap(ig,icnb(3))+ &
-                grd_sig(icnb(3)))*min(dx(i),dy(j-1)) * &
-                thelp<trn_tauddmc
+              grd_sig(icnb(3)))*min(dx(i),dy(j-1), &
+              xm(i)*dz(k))*thelp<trn_tauddmc
         endif
 !
         if(lhelp) then
@@ -167,8 +181,8 @@ subroutine leakage_opacity2
            lhelp = .true.
         else
            lhelp = (grd_cap(ig,icnb(4))+ &
-                grd_sig(icnb(4)))*min(dx(i),dy(j+1)) * &
-                thelp<trn_tauddmc
+              grd_sig(icnb(4)))*min(dx(i),dy(j+1), &
+              xm(i)*dz(k))*thelp<trn_tauddmc
         endif
 !
         if(lhelp) then
@@ -184,6 +198,61 @@ subroutine leakage_opacity2
            grd_opaclump(4,l)=grd_opaclump(4,l)+(specval*speclump)*&
                 (2d0/3d0)/(help*dy(j)*thelp)
         endif
+
+!-- 0 azimuthal leakage opacities if nz=1
+        if(grd_nz==1) cycle
+!
+!-- calculating k->k-1 leakage opacity
+        if(k==1) then
+           khelp = grd_nz
+        else
+           khelp = k-1
+        endif
+        lhelp = (grd_cap(ig,icnb(5))+ &
+           grd_sig(icnb(5)))*min(dx(i),dy(j), &
+           xm(i)*dz(khelp))*thelp<trn_tauddmc
+
+        if(lhelp) then
+!-- DDMC interface
+           help = (grd_cap(ig,l)+grd_sig(l))*xm(i) * &
+              dz(k)*thelp
+           ppl = 4d0/(3d0*help+6d0*pc_dext)
+           grd_opaclump(5,l)=grd_opaclump(5,l)+(specval*speclump)*&
+              0.5d0*ppl/(xm(i)*dz(k)*thelp)
+        else
+!-- DDMC interior
+           help = ((grd_sig(l)+grd_cap(ig,l))*dz(k) + &
+              (grd_sig(icnb(5))+grd_cap(ig,icnb(5)))*dz(khelp))
+           grd_opaclump(5,l)=grd_opaclump(5,l)+(specval*speclump)*&
+              2.0d0/(3d0*xm(i)**2*dz(k)*help*thelp**2)
+        endif
+
+!
+!-- calculating k->k+1 leakage opacity
+        if(k==grd_nz) then
+           khelp = 1
+        else
+           khelp = k+1
+        endif
+        lhelp = (grd_cap(ig,icnb(6))+ &
+           grd_sig(icnb(6)))*min(dx(i),dy(j), &
+           xm(i)*dz(khelp))*thelp<trn_tauddmc
+
+        if(lhelp) then
+!-- DDMC interface
+           help = (grd_cap(ig,l)+grd_sig(l))*xm(i) * &
+              dz(k)*thelp
+           ppr = 4d0/(3d0*help+6d0*pc_dext)
+           grd_opaclump(6,l)=grd_opaclump(6,l)+(specval*speclump)*&
+              0.5d0*ppr/(xm(i)*dz(k)*thelp)
+        else
+!-- DDMC interior
+           help = ((grd_sig(l)+grd_cap(ig,l))*dz(k) + &
+              (grd_sig(icnb(6))+grd_cap(ig,icnb(6)))*dz(khelp))
+           grd_opaclump(6,l)=grd_opaclump(6,l)+(specval*speclump)*&
+              2.0d0/(3d0*xm(i)**2*dz(k)*help*thelp**2)
+        endif
+        
      enddo !ig
   enddo !i
   enddo !j

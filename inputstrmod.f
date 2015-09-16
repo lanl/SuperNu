@@ -251,7 +251,9 @@ c
        do k=1,nz
        do j=1,ny
        do i=1,nx
-        r = sqrt(x(i)**2 + y(j)**2 + z(k)**2)
+        r = x(i)**2 + y(j)**2
+        if(igeom==3) r= r + z(k)**2
+        r = sqrt(r)
         if(r>rs) then
          ncorner = ncorner+1
          str_mass(i,j,k) = 0d0
