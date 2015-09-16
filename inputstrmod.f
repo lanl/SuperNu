@@ -401,7 +401,7 @@ c
       integer :: i, j, k
       real*8 :: help, dx, dy, dz
 c
-c-- 1D size
+c-- size
       nx = in_ndim(1)
       ny = in_ndim(2) ! number of polar bins
       nz = in_ndim(3) ! number of azimuthal bins
@@ -411,10 +411,6 @@ c-- verifications (input.par)
      &  stop 'generate_inputstr1: invalid in_velout'
       if(in_lx<=0.and..not.in_isvelocity)
      &  stop 'generate_inputstr1: invalid in_lx'
-      if(in_ly<=0.and..not.in_isvelocity)
-     &  stop 'generate_inputstr1: invalid in_ly'
-      if(in_lz<=0.and..not.in_isvelocity)
-     &  stop 'generate_inputstr1: invalid in_lz'
       if(in_totmass<0d0)
      &  stop 'generate_inputstr1: invalid in_totmass'
 c
@@ -426,7 +422,7 @@ c-- allocate arrays
       allocate(str_mass(nx,ny,nz))
 c
 c-- create unit sphere radii rout
-      dx = 1d0/real(nx)
+      dx = 1d0/nx
       forall(i=1:nx+1) rout(i) = (i-1)*dx
 c
 c-- outer shells
@@ -437,10 +433,10 @@ c-- outer shells
       endif
       str_xleft = help*rout
 c-- polar cosine grid
-      dy = 2d0/real(ny)
+      dy = 2d0/ny
       forall(j=1:ny+1) str_yleft(j)=-1d0+(j-1)*dy
 c-- azimuthal angle grid
-      dz = pc_pi2/real(nz)
+      dz = pc_pi2/nz
       forall(k=1:nz+1) str_zleft(k)=(k-1)*dz
 c
 c-- mass
@@ -453,7 +449,7 @@ c-- mass
        enddo
        str_mass = str_mass/(pc_pi4*(1d0 - rout(1)**3))
       elseif(in_dentype=='mass') then
-       str_mass = in_totmass/real(nx*ny*nz)
+       str_mass = in_totmass/(nx*ny*nz)
       else
        stop 'generate_inputstr1: invalid in_dentype'
       endif
@@ -471,13 +467,13 @@ c
 ************************************************************************
       real*8,allocatable :: xout(:) !(nx+1)
       real*8,allocatable :: yout(:) !(ny+1)
-      integer :: i,j
-      real*8 :: helpx,helpy, dx,dy,rmax
+      integer :: i,j,k
+      real*8 :: helpx,helpy, dx,dy,rmax,dz
 c
-c-- 2D size
+c-- size
       nx = in_ndim(1)
       ny = in_ndim(2)
-      nz = 1
+      nz = in_ndim(3)
 c
 c-- verifications (input.par)
       if(in_velout<=0d0.and.in_isvelocity)
@@ -486,8 +482,6 @@ c-- verifications (input.par)
      &  stop 'generate_inputstr2: invalid in_lx'
       if(in_ly<=0.and..not.in_isvelocity)
      &  stop 'generate_inputstr2: invalid in_ly'
-      if(in_lz<=0.and..not.in_isvelocity)
-     &  stop 'generate_inputstr2: invalid in_lz'
       if(in_totmass<0d0)
      &  stop 'generate_inputstr2: invalid in_totmass'
 c
@@ -496,14 +490,15 @@ c-- allocate arrays
       allocate(yout(ny+1))
       allocate(str_xleft(nx+1))
       allocate(str_yleft(ny+1))
-      allocate(str_mass(nx,ny,1))
+      allocate(str_zleft(nz+1))
+      allocate(str_mass(nx,ny,nz))
 c
 c-- create unit cylinder radii xout
-      dx = 1d0/real(nx)
+      dx = 1d0/nx
       forall(i=1:nx+1) xout(i) = (i-1)*dx
 c
 c-- create unit cylinder heights yout
-      dy = 1d0/real(ny)
+      dy = 1d0/ny
       forall(j=1:ny+1) yout(j) = -0.5d0+(j-1)*dy
 c
 c-- dimensional scaling
@@ -517,43 +512,56 @@ c-- dimensional scaling
       str_xleft = helpx*xout
       str_yleft = helpy*yout
 c
+c-- azimuthal angle grid
+      dz = pc_pi2/nz
+      forall(k=1:nz+1) str_zleft(k)=(k-1)*dz
+c
 c-- mass
       str_mass = 0d0
       if(in_dentype=='unif') then
 c-- uniform density sphere
-       rmax = min(helpy/2d0,helpx)
-       do j = 1,ny
+        rmax = min(helpy/2d0,helpx)
+        do k = 1,nz
+        do j = 1,ny
         do i = 1,nx
           helpx = 0.5*(str_xleft(i+1)+str_xleft(i))
           helpy = 0.5*(str_yleft(j+1)+str_yleft(j))
           if(helpy**2+helpx**2<rmax**2) then
-           str_mass(i,j,1)=(str_yleft(j+1)-str_yleft(j)) *
-     &       (str_xleft(i+1)**2-str_xleft(i)**2) *
-     &       in_totmass/(pc_pi43*rmax**3)
+            str_mass(i,j,k)=
+     &         .5d0*(str_xleft(i+1)**2-str_xleft(i)**2) *
+     &         (str_yleft(j+1)-str_yleft(j)) *
+     &         (str_zleft(k+1) - str_zleft(k)) *
+     &         in_totmass/(pc_pi43*rmax**3)
           endif
         enddo
-       enddo
+        enddo
+        enddo
       elseif(in_dentype=='mass') then
 c-- spherical 1/r^2 mass shells
-       rmax = min(helpy/2d0,helpx)
-       do j = 1,ny
+        rmax = min(helpy/2d0,helpx)
+        do k = 1,nz
+        do j = 1,ny
         do i = 1,nx
           helpx = 0.5*(str_xleft(i+1)+str_xleft(i))
           helpy = 0.5*(str_yleft(j+1)+str_yleft(j))
           if(helpy**2+helpx**2<rmax**2) then
-           str_mass(i,j,1)=(str_yleft(j+1)-str_yleft(j)) *
-     &       (str_xleft(i+1)**2-str_xleft(i)**2) *
-     &       in_totmass/(pc_pi4*rmax*(helpy**2+helpx**2))
+            str_mass(i,j,k)=
+     &         .5d0*(str_xleft(i+1)**2-str_xleft(i)**2) *
+     &         (str_yleft(j+1)-str_yleft(j)) *
+     &         (str_zleft(k+1) - str_zleft(k)) *
+     &         in_totmass/(pc_pi4*rmax*(helpy**2+helpx**2))
           endif
         enddo
-       enddo
+        enddo
+        enddo
       elseif(in_dentype=='ufil') then
 c-- uniform density for all cylinder
-       forall(j=1:ny) str_mass(:,j,1) = in_totmass *
-     &        (xout(2:)**2 - xout(:nx)**2)*dy
+       forall(j=1:ny,k=1:nz) str_mass(:,j,k) = in_totmass *
+     &     (xout(2:)**2 - xout(:nx)**2)*dy/nz
       elseif(in_dentype=='mfil') then
 c-- equal mass per cell for all cylinder
-       forall(j=1:ny)str_mass(:,j,1) = in_totmass*dx*dy
+       forall(j=1:ny,k=1:nz) str_mass(:,j,k) = in_totmass *
+     &     dx*dy/nz
       else
        stop 'generate_inputstr2: invalid in_dentype'
       endif
@@ -605,15 +613,15 @@ c-- allocate arrays
       allocate(str_mass(nx,ny,nz))
 c
 c-- create unit-length x array
-      dx = 1d0/real(nx)
+      dx = 1d0/nx
       forall(i=1:nx+1) xout(i) = -0.5d0+(i-1)*dx
 c
 c-- create unit-length y array
-      dy = 1d0/real(ny)
+      dy = 1d0/ny
       forall(j=1:ny+1) yout(j) = -0.5d0+(j-1)*dy
 c
 c-- create unit-length z array
-      dz = 1d0/real(nz)
+      dz = 1d0/nz
       forall(k=1:nz+1) zout(k) = -0.5d0+(k-1)*dz
 c
 c-- dimensional scaling
