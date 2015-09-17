@@ -57,7 +57,7 @@ subroutine sourcenumbers(keephigh)
   if(etot/=etot) stop 'sourcenumbers: etot nan'
 
 !-- number of boundary particles (if any)
-  src_nsurf = nint(tot_esurf**pwr*nstot/etot)
+  src_nsurftot = nint(tot_esurf**pwr*nstot/etot)
 
 !-- number of cells with nonzero energy
   ncactive = count(grd_emit>0d0 .or. grd_emitex>0d0)
@@ -65,7 +65,7 @@ subroutine sourcenumbers(keephigh)
      'sourcenumbers: nvacantall < number of source cells'
 
 !-- number of particles available for proportional distribution
-  nsavail = nstot - src_nsurf
+  nsavail = nstot - src_nsurftot
 
 !-- particle number per cell
   edone = 0d0
@@ -86,7 +86,7 @@ subroutine sourcenumbers(keephigh)
   if(ndone==0) stop 'sourcenumbers: no volume source particles distributed'
 
 !-- too many particles
-  nextra = int(nstot - sum(grd_nvol) - src_nsurf)
+  nextra = int(nstot - sum(grd_nvol) - src_nsurftot)
   if(nextra>grd_ncell) stop 'sourcenumbers: nextra>grd_ncell'
 !-- correct to exact target number
   nsmean = int(nstot/ncactive)
@@ -101,10 +101,18 @@ subroutine sourcenumbers(keephigh)
 
 !-- from total nvol (over ALL RANKS) to nvol PER RANK
 !-- also convert emit to energy PER PARTICLE
-  src_nnew = src_nsurf
+  src_nnew = 0
   src_nnonth = 0
-  iimpi = -1
+  if(src_nsurftot>0) then
+!-- from total nsurf to nsurf per rank
+     iimpi = -1
+     call sourcenumbers_roundrobin_limit(iimpi,src_nvacantall, &
+          tot_esurf**pwr,0d0,src_nsurftot,nemit,nvol,nvolex)
+     src_nnew = nvol
+     src_nsurf = nvol
+  endif
   nvacant = src_nvacantall
+  iimpi = -1
   do l=1,grd_ncell
      call sourcenumbers_roundrobin_limit(iimpi,nvacant,grd_emit(l)**pwr, &
         grd_emitex(l)**pwr,grd_nvol(l),nemit,nvol,nvolex)

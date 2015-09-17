@@ -33,7 +33,7 @@ subroutine boundary_source
   dyac(l) = grd_yacos(l) - grd_yacos(l+1)
   ym(l) = sqrt(1d0-0.25*(grd_yarr(l+1)+grd_yarr(l))**2)
 
-  esurfpart = tot_esurf/dble(src_nsurf)
+  esurfpart = tot_esurf/dble(src_nsurftot)
 
   if(grd_isvelocity) then
      thelp = tsp_t
