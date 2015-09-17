@@ -14,8 +14,8 @@ subroutine boundary_source
   implicit none
 
   logical :: lhelp
-  integer :: ipart, ivac, ig, iig, i,j,k, ix,iy,iz
-  real*8 :: r1, r2, P, mu0, x0,y0,z0, esurfpart, wl0, om0
+  integer :: ipart, ivac, ig, iig, i,j,k
+  real*8 :: r1, r2, p, mu0, x0,y0,z0, esurfpart, wl0, om0
   real*8 :: denom2, wl1, wl2, thelp, mfphelp, help, mu1, mu2
   real*8 :: srftemp = 1d4
   real*8 :: alb,beta,eps
@@ -62,7 +62,6 @@ subroutine boundary_source
         else
            i = grd_nx
         endif
-        k = 1
 !-- 3D
      case(3)
         if(in_surfsrcloc=='in') then
@@ -140,22 +139,19 @@ subroutine boundary_source
         ptcl%y = 1d0-2d0*r1
         call rnd_r(r1,rnd_state)
         ptcl%z = pc_pi2*r1
+!-- cell index
         j = binsrch(ptcl%y,grd_yarr,grd_ny+1,.false.)
         k = binsrch(ptcl%z,grd_zarr,grd_nz+1,.false.)
-!-- setting cell index
-        ix = i
-        iy = j
-        iz = k
 !-- sampling azimuthal direction angle
         ptcl%om = r1*pc_pi2
 !-- calculating albedo
         l = grd_icell(i,j,k)
         mfphelp = (grd_cap(iig,l)+grd_sig(l))*dx(i)*thelp
-        P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
+        p = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
         lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
              min(dx(i),xm(i)*dyac(j),xm(i)*ym(j)*dz(k)) * &
              thelp < trn_tauddmc) &
-             .or.in_puretran.or.P>1d0.or.P<0d0
+             .or.in_puretran.or.p>1d0.or.p<0d0
         ptcl%mu = -mu0!}}}
 
 !-- 2D
@@ -174,10 +170,7 @@ subroutine boundary_source
            endif
            y0 = ptcl%y
 !-- setting cell index
-           ix = binsrch(x0,grd_xarr,grd_nx+1,.false.)
-           i = ix
-           iy = j
-           iz = k
+           i = binsrch(x0,grd_xarr,grd_nx+1,.false.)
 !-- sampling direction helpers
            call rnd_r(r1,rnd_state)
            om0 = pc_pi2*r1
@@ -192,9 +185,7 @@ subroutine boundary_source
            ptcl%y = r1*grd_yarr(grd_ny+1)+(1d0-r1)*grd_yarr(1)
            y0 = ptcl%y
 !-- setting cell index
-           ix = i
-           iy = binsrch(y0,grd_yarr,grd_ny+1,.false.)
-           j = iy
+           j = binsrch(y0,grd_yarr,grd_ny+1,.false.)
 !-- sampling direction helpers
            call rnd_r(r1,rnd_state)
            mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
@@ -205,15 +196,17 @@ subroutine boundary_source
            mu2 = mu0
            mu0 = mu1
         endif
-        ptcl%z = grd_zarr(1)
+        call rnd_r(r1,rnd_state)
+        ptcl%z = pc_pi2*r1
+        k = binsrch(ptcl%z,grd_zarr,grd_nz+1,.false.)
 
 !-- calculating albedo
-        l = grd_icell(i,j,1)
+        l = grd_icell(i,j,k)
         mfphelp = (grd_cap(iig,l)+grd_sig(l))*help*thelp
-        P = 4d0*(1.0+1.5*abs(mu2))/(3d0*mfphelp+6d0*pc_dext)
+        p = 4d0*(1.0+1.5*abs(mu2))/(3d0*mfphelp+6d0*pc_dext)
         lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
-             min(dx(i),dy(j))*thelp < trn_tauddmc) &
-             .or.in_puretran.or.P>1d0.or.P<0d0
+             min(dx(i),dy(j),xm(i)*dz(k))*thelp < trn_tauddmc) &
+             .or.in_puretran.or.p>1d0.or.p<0d0
 
         ptcl%mu = mu0
         ptcl%om = om0!}}}
@@ -237,11 +230,8 @@ subroutine boundary_source
            ptcl%z = r1*grd_zarr(grd_nz+1)+(1d0-r1)*grd_zarr(1)
            z0 = ptcl%z
 !-- setting cell index
-           ix = i
-           iy = binsrch(y0,grd_yarr,grd_ny+1,.false.)
-           j = iy
-           iz = binsrch(z0,grd_zarr,grd_nz+1,.false.)
-           k = iz
+           j = binsrch(y0,grd_yarr,grd_ny+1,.false.)
+           k = binsrch(z0,grd_zarr,grd_nz+1,.false.)
 !-- sampling direction helpers
            call rnd_r(r1,rnd_state)
            mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
@@ -268,11 +258,8 @@ subroutine boundary_source
            ptcl%z = r1*grd_zarr(grd_nz+1)+(1d0-r1)*grd_zarr(1)
            z0 = ptcl%z
 !-- setting cell index
-           ix = binsrch(x0,grd_xarr,grd_nx+1,.false.)
-           i = ix
-           iy = j
-           iz = binsrch(z0,grd_zarr,grd_nz+1,.false.)
-           k = iz
+           i = binsrch(x0,grd_xarr,grd_nx+1,.false.)
+           k = binsrch(z0,grd_zarr,grd_nz+1,.false.)
 !-- sampling direction helpers
            call rnd_r(r1,rnd_state)
            mu1 = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
@@ -299,11 +286,8 @@ subroutine boundary_source
            endif
            z0 = ptcl%z
 !-- setting cell index
-           ix = binsrch(x0,grd_xarr,grd_nx+1,.false.)
-           i = ix
-           iy = binsrch(y0,grd_yarr,grd_ny+1,.false.)
-           j = iy
-           iz = k
+           i = binsrch(x0,grd_xarr,grd_nx+1,.false.)
+           j = binsrch(y0,grd_yarr,grd_ny+1,.false.)
 !-- sampling azimuthal angle of direction
            call rnd_r(r1,rnd_state)
            om0 = pc_pi2*r1
@@ -320,11 +304,11 @@ subroutine boundary_source
         eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
         beta = 1.5d0*alb*mfphelp**2+sqrt(3d0*alb*mfphelp**2 + &
              2.25d0*alb**2*mfphelp**4)
-        P = 0.5d0*eps*beta*(1d0+1.5d0*abs(mu2))/(beta-0.75*eps*mfphelp)
-!        P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
+        p = 0.5d0*eps*beta*(1d0+1.5d0*abs(mu2))/(beta-0.75*eps*mfphelp)
+!        p = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
         lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
              min(dx(i),dy(j),dz(k))*thelp < trn_tauddmc) &
-             .or.in_puretran.or.P>1d0.or.P<0d0
+             .or.in_puretran.or.p>1d0.or.p<0d0
 
         ptcl%mu = mu0
         ptcl%om = om0!}}}
@@ -336,16 +320,12 @@ subroutine boundary_source
         x0 = ptcl%x
         ptcl%y = grd_yarr(1)
         ptcl%z = grd_zarr(1)
-!-- setting cell index
-        ix = i
-        iy = j
-        iz = k
 !-- calculating albedo
         mfphelp = (grd_cap(iig,l)+grd_sig(l))*dx(i)*thelp
-        P = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
+        p = 4d0*(1.0+1.5*mu0)/(3d0*mfphelp+6d0*pc_dext)
         lhelp = ((grd_sig(l)+grd_cap(iig,l)) * &
              dx(i)*thelp < trn_tauddmc) &
-             .or.in_puretran.or.P>1d0.or.P<0d0
+             .or.in_puretran.or.p>1d0.or.p<0d0
 
         ptcl%mu = -mu0!}}}
      endselect
@@ -357,8 +337,8 @@ subroutine boundary_source
 
 !-- DDMC
      if(.not.lhelp) then
-        ptcl%e = ptcl%e*P
-        ptcl%e0 = ptcl%e0*P
+        ptcl%e = ptcl%e*p
+        ptcl%e0 = ptcl%e0*p
      endif
 
 !-- save particle result

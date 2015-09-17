@@ -89,15 +89,17 @@ subroutine sourceenergy_analytic(lmpi0)
            help = dble(min(in_nheav,nhelp))*help / &
                 dble(nhelp)
 !-- non-zero source within Heaviside sphere
+           do k=1,grd_nz
            do j=1,grd_ny
            ycent = 0.5d0*(grd_yarr(j+1)+grd_yarr(j))
            do i=1,grd_nx
-              l = grd_icell(i,j,1)
+              l = grd_icell(i,j,k)
               xcent = 0.5d0*(grd_xarr(i+1)+grd_xarr(i))
               if(xcent**2+ycent**2<help**2) then
                  grd_emitex(l) = in_srcmax * &
                       grd_vol(l)*tsp_dt/thelp**3
               endif
+           enddo
            enddo
            enddo
 !-- adjusting bulk source energy

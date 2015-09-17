@@ -181,7 +181,7 @@ subroutine particle_advance
      case(1)
         help = thelp*min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) 
      case(2)
-        help = thelp*min(dx(ix),dy(iy))
+        help = thelp*min(dx(ix),dy(iy),xm(ix)*dz(iz))
      case(3)
         help = thelp*min(dx(ix),dy(iy),dz(iz))
      endselect
