@@ -404,6 +404,8 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ptcl2%isvacant = .true.
         ptcl2%done = .true.
         ptcl2%lflux = .true.
+!-- redefine for flux tally
+        om = muz
         return
      endif
   endif

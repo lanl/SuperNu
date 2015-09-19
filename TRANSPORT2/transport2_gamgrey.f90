@@ -326,6 +326,8 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !-- ending particle
         ptcl2%done = .true.
         ptcl2%lflux = .true.
+!-- redefine for flux tally
+        om = muz
         return
      endif
   endif

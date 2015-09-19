@@ -620,6 +620,10 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            ptcl2%isvacant = .true.
            ptcl2%done = .true.
            ptcl2%lflux = .true.
+!-- redefine for flux tally
+           om = pc_pi-(z+om)  !-- direction angle
+           if(om<0d0) om = om+pc_pi2
+           if(om>pc_pi2) om = om-pc_pi2
            return
         else
 !-- converting to IMC
@@ -736,6 +740,10 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            ptcl2%isvacant = .true.
            ptcl2%done = .true.
            ptcl2%lflux = .true.
+!-- redefine for flux tally
+           om = pc_pi-(z+om)  !-- direction angle
+           if(om<0d0) om = om+pc_pi2
+           if(om>pc_pi2) om = om-pc_pi2
            return
         else
 !-- converting to IMC
@@ -852,6 +860,10 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            ptcl2%isvacant = .true.
            ptcl2%done = .true.
            ptcl2%lflux = .true.
+!-- redefine for flux tally
+           om = pc_pi-(z+om)  !-- direction angle
+           if(om<0d0) om = om+pc_pi2
+           if(om>pc_pi2) om = om-pc_pi2
            return
         else
 !-- converting to IMC
