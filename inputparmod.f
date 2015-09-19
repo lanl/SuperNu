@@ -421,11 +421,9 @@ c
        if(in_srctype=='surf'.and.in_surfsrcloc/='out') stop
      &   'in_srctype and in_surfsrcloc invalid'
       case(2)
-       if(in_ndim(3)>1) stop 'in_ndim invalid'
        if(in_srctype=='surf' .and.
      &      any((/'in  ','top ','botm'/)==in_surfsrcloc))
      &      stop 'in_srctype and in_surfsrcloc invalid'
-       if(in_flx_ndim(3)/=1) stop 'in_flx_ndim(3) inval'
       case(3)
       case(11)
        if(in_ndim(2)>1 .or. in_ndim(3)>1) stop 'in_ndim invalid'
