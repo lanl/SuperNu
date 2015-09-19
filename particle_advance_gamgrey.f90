@@ -170,9 +170,8 @@ subroutine particle_advance_gamgrey(nmpi)
         call rnd_r(r1,rndstate)
         x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
-!-- must be inside cell
-        x = min(x,grd_xarr(i+1))
-        x = max(x,grd_xarr(i))
+        y = grd_yarr(1)
+        z = grd_zarr(1)
 !--
         if(grd_isvelocity) then
            x0 = x
@@ -190,13 +189,6 @@ subroutine particle_advance_gamgrey(nmpi)
         y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
         call rnd_r(r1,rndstate)
         z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
-!-- must be inside cell
-        x = min(x,grd_xarr(i+1))
-        x = max(x,grd_xarr(i))
-        y = min(y,grd_yarr(j+1))
-        y = max(y,grd_yarr(j))
-        z = min(z,grd_zarr(k+1))
-        z = max(z,grd_zarr(k))
 !--
 !-- sampling azimuthal angle of direction
         call rnd_r(r1,rndstate)
@@ -216,13 +208,6 @@ subroutine particle_advance_gamgrey(nmpi)
         y = r1*grd_yarr(j+1) + (1d0-r1) * grd_yarr(j)
         call rnd_r(r1,rndstate)
         z = r1*grd_zarr(k+1) + (1d0-r1) * grd_zarr(k)
-!-- must be inside cell
-        x = min(x,grd_xarr(i+1))
-        x = max(x,grd_xarr(i))
-        y = min(y,grd_yarr(j+1))
-        y = max(y,grd_yarr(j))
-        z = min(z,grd_zarr(k+1))
-        z = max(z,grd_zarr(k))
 !-- sampling azimuthal angle of direction
         call rnd_r(r1,rndstate)
         om0 = pc_pi2*r1
@@ -246,23 +231,13 @@ subroutine particle_advance_gamgrey(nmpi)
            om = om0
         endif!}}}
      case(3)
-!-- calculating position
+!-- calculating position!{{{
         call rnd_r(r1,rndstate)
-        x = r1*grd_xarr(i+1) + (1d0-r1) * &
-             grd_xarr(i)
+        x = r1*grd_xarr(i+1) + (1d0-r1) * grd_xarr(i)
         call rnd_r(r1,rndstate)
-        y = r1*grd_yarr(j+1) + (1d0-r1) * &
-             grd_yarr(j)
+        y = r1*grd_yarr(j+1) + (1d0-r1) * grd_yarr(j)
         call rnd_r(r1,rndstate)
-        z = r1*grd_zarr(k+1) + (1d0-r1) * &
-             grd_zarr(k)
-!-- must be inside cell
-        x = min(x,grd_xarr(i+1))
-        x = max(x,grd_xarr(i))
-        y = min(y,grd_yarr(j+1))
-        y = max(y,grd_yarr(j))
-        z = min(z,grd_zarr(k+1))
-        z = max(z,grd_zarr(k))
+        z = r1*grd_zarr(k+1) + (1d0-r1) * grd_zarr(k)
 !-- sampling azimuthal angle of direction
         call rnd_r(r1,rndstate)
         om0 = pc_pi2*r1
@@ -290,6 +265,14 @@ subroutine particle_advance_gamgrey(nmpi)
            om = om0
         endif!}}}
      endselect
+!
+!-- must be inside cell
+     x = min(x,grd_xarr(i+1))
+     x = max(x,grd_xarr(i))
+     y = min(y,grd_yarr(j+1))
+     y = max(y,grd_yarr(j))
+     z = min(z,grd_zarr(k+1))
+     z = max(z,grd_zarr(k))
 
 !-- velocity components in cartesian basis
      if(grd_igeom==1) then
@@ -300,6 +283,14 @@ subroutine particle_advance_gamgrey(nmpi)
         ptcl2%mux = mu*sqrt(1d0-y**2)*cos(z)+eta*y*cos(z)-xi*sin(z)
         ptcl2%muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
         ptcl2%muz = mu*y-eta*sqrt(1d0-y**2)
+     endif
+!-- update invariant direction quantities
+     if(grd_igeom==2) then
+        ptcl2%mux = x*sin(om)/sin(z+om)  !-- intercept
+        ptcl2%muy = x*sin(z)/sin(z+om)  !-- distance to intercept
+        ptcl2%muz = pc_pi-(z+om)  !-- direction angle
+        if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
+        if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
      endif
 !
 !-- emission energy per particle
@@ -361,15 +352,21 @@ subroutine particle_advance_gamgrey(nmpi)
         if(.not.ptcl2%done) then
            if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
              write(0,*) 'prt_adv_ggrey: x not in cell', &
-                ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
+                ix,x,grd_xarr(ix),grd_xarr(ix+1), &
+                y,z,mu,om, &
+                ptcl2%ipart,ptcl2%istep,ptcl2%idist
            endif
            if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
              write(0,*) 'prt_adv_ggrey: y not in cell', &
-                iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
+                iy,y,grd_yarr(iy),grd_yarr(iy+1), &
+                x,z,mu,om, &
+                ptcl2%ipart,ptcl2%istep,ptcl2%idist
            endif
            if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
               write(0,*) 'prt_adv_ggrey: z not in cell', &
-                iz,z,grd_zarr(iz),grd_zarr(iz+1),mu
+                iz,z,grd_zarr(iz),grd_zarr(iz+1), &
+                x,y,mu,om, &
+                ptcl2%ipart,ptcl2%istep,ptcl2%idist
            endif
         endif
 

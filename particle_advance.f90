@@ -336,15 +336,21 @@ subroutine particle_advance
 !-- verify position
         if(ptcl2%itype==1 .and. .not.ptcl2%done) then
            if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then!{{{
-              write(0,*) 'prt_adv: x not in cell',ix,x,grd_xarr(ix),grd_xarr(ix+1),y,z,mu,om, &
+              write(0,*) 'prt_adv: x not in cell', &
+                 ix,x,grd_xarr(ix),grd_xarr(ix+1), &
+                 y,z,mu,om, &
                  ptcl2%ipart,ptcl2%istep,ptcl2%idist
            endif
            if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-              write(0,*) 'prt_adv: y not in cell',iy,y,grd_yarr(iy),grd_yarr(iy+1),x,z,mu,om, &
+              write(0,*) 'prt_adv: y not in cell', &
+                 iy,y,grd_yarr(iy),grd_yarr(iy+1), &
+                 x,z,mu,om, &
                  ptcl2%ipart,ptcl2%istep,ptcl2%idist
            endif
            if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
-              write(0,*) 'prt_adv: z not in cell',iz,z,grd_zarr(iz),grd_zarr(iz+1),y,z,mu,om, &
+              write(0,*) 'prt_adv: z not in cell', &
+                 iz,z,grd_zarr(iz),grd_zarr(iz+1), &
+                 x,y,mu,om, &
                  ptcl2%ipart,ptcl2%istep,ptcl2%idist
            endif!}}}
         endif
