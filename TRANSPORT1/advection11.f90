@@ -1,4 +1,4 @@
-pure subroutine advection1(pretrans,ptcl,ptcl2)
+pure subroutine advection11(pretrans,ptcl,ptcl2)
 
   use miscmod
   use timestepmod
@@ -26,12 +26,8 @@ pure subroutine advection1(pretrans,ptcl,ptcl2)
   real*8,pointer :: x
 !-- statement function
   integer :: l
-  real*8 :: dx,dz,xm,dyac,ym
+  real*8 :: dx
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
-  dz(l) = grd_zarr(l+1) - grd_zarr(l)
-  xm(l) = 0.5d0*(grd_xarr(l+1) + grd_xarr(l))
-  dyac(l) = grd_yacos(l) - grd_yacos(l+1)
-  ym(l) = sqrt(1d0-0.25d0*(grd_yarr(l+1)+grd_yarr(l))**2)
 
   ix => ptcl2%ix
   iy => ptcl2%iy
@@ -72,9 +68,8 @@ pure subroutine advection1(pretrans,ptcl,ptcl2)
   endif
   do i=ix-1,zholder,-1
      l = grd_icell(i,iy,iz)
-     if((grd_sig(l)+grd_cap(ig,l))* &
-          min(dx(i),xm(i)*dyac(iy),xm(i)*ym(iy)*dz(iz))* &
-          help>=trn_tauddmc) then
+     if((grd_sig(l)+grd_cap(ig,l))*dx(i) &
+          *help>=trn_tauddmc) then
         zfdiff = i
         exit
      endif
@@ -89,4 +84,4 @@ pure subroutine advection1(pretrans,ptcl,ptcl2)
   endif
   ic = grd_icell(ix,iy,iz)
 
-end subroutine advection1
+end subroutine advection11

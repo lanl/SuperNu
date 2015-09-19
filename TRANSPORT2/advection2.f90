@@ -20,23 +20,24 @@ pure subroutine advection2(pretrans,ptcl,ptcl2)
 !
   integer :: iyholder,ixholder
   real*8 :: rold,xold,yold,rx,ry
-  real*8 :: help
+  real*8 :: help,dz
   integer :: i,j
   integer :: imove,nmove
 !-- pointers
-  integer,pointer :: ix, iy, ic, ig
-  integer,parameter :: iz=1
+  integer,pointer :: ix, iy, iz, ic, ig
   real*8,pointer :: x 
   real*8,pointer :: y 
 !-- statement functions
   integer :: l
-  real*8 :: dx,dy,ymag
+  real*8 :: dx,dy,ymag,xm
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
   ymag(l) = min(abs(grd_yarr(l)),abs(grd_yarr(l+1)))
+  xm(l) = .5d0*(grd_xarr(l+1) + grd_xarr(l))
 
   ix => ptcl2%ix
   iy => ptcl2%iy
+  iz => ptcl2%iz
   ic => ptcl2%ic
   ig => ptcl2%ig
   x => ptcl%x
@@ -46,6 +47,7 @@ pure subroutine advection2(pretrans,ptcl,ptcl2)
   xold = x
   yold = y
   rold = sqrt(x**2+y**2)
+  dz=grd_zarr(iz+1)-grd_zarr(iz)
 !-- setting tentative new position
   if(pretrans) then
      x = x*tsp_t/(tsp_t+alph2*tsp_dt)
@@ -111,7 +113,7 @@ pure subroutine advection2(pretrans,ptcl,ptcl2)
      if(help == rx) then
         l = grd_icell(i-1,j,iz)
         if((grd_sig(l)+grd_cap(ig,l)) * &!{{{
-             min(dy(j),dx(i-1))*tsp_t >= trn_tauddmc) then
+             min(dy(j),dx(i-1),xm(i-1)*dz)*tsp_t >= trn_tauddmc) then
            x = grd_xarr(i)
            y = (yold/xold)*grd_xarr(i)
            exit
@@ -125,7 +127,7 @@ pure subroutine advection2(pretrans,ptcl,ptcl2)
 !-- y<0
            l = grd_icell(i,j+1,iz)
            if((grd_sig(l)+grd_cap(ig,l)) * &
-                min(dy(j+1),dx(i))*tsp_t >= &
+                min(dy(j+1),dx(i),xm(i)*dz)*tsp_t >= &
                 trn_tauddmc) then
               x = (xold/yold)*grd_yarr(j+1)
               y = grd_yarr(j+1)
@@ -137,7 +139,7 @@ pure subroutine advection2(pretrans,ptcl,ptcl2)
 !-- y>0
            l = grd_icell(i,j-1,iz)
            if((grd_sig(l)+grd_cap(ig,l)) * &
-                min(dy(j-1),dx(i))*tsp_t >= &
+                min(dy(j-1),dx(i),xm(i)*dz)*tsp_t >= &
                 trn_tauddmc) then
               x = (xold/yold)*grd_yarr(j)
               y = grd_yarr(j)

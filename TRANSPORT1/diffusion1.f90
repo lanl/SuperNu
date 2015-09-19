@@ -749,7 +749,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         ptcl2%itype = 1
      endif
 !
-!-- update particle: iy->iy+1
+!-- update particle: iy->iy-1
      iy = iy-1
      ic = grd_icell(ix,iy,iz)
      ig = iiig!}}}
@@ -918,7 +918,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
      lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
-          min(dx(ix),dy(iy),dz(iznext))*thelp<trn_tauddmc
+          min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iznext)) * &
+          thelp<trn_tauddmc
 
      if(lhelp) then
 !-- sampling x,y,z
@@ -1032,7 +1033,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 
      lhelp = (grd_cap(iiig,l)+grd_sig(l)) * &
-          min(dx(ix),dy(iy),dz(iznext))*thelp<trn_tauddmc
+          min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iznext)) * &
+          thelp<trn_tauddmc
 
      if(lhelp) then
 !-- sampling x,y,z

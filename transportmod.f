@@ -41,6 +41,13 @@ c
       type(packet2),target,intent(inout) :: ptcl2
       end subroutine advection3
 c
+      pure subroutine advection11(pretrans,ptcl,ptcl2)
+      use particlemod
+      logical,intent(in) :: pretrans
+      type(packet),target,intent(inout) :: ptcl
+      type(packet2),target,intent(inout) :: ptcl2
+      end subroutine advection11
+c
 c-- transport_gamgrey
       pure subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
       use randommod
@@ -259,7 +266,7 @@ c-- private interfaces
       private transport11,transport1,transport2,transport3
       private transport11_gamgrey,transport1_gamgrey,transport2_gamgrey,
      &  transport3_gamgrey
-      private advection1,advection2,advection3
+      private advection11,advection1,advection2,advection3
 c
       save
 c
@@ -301,7 +308,7 @@ c-- set procedure pointers
 !      labfact => labfact1
 !      cmffact => cmffact1
        direction2lab => direction2lab1
-       advection => advection1
+       advection => advection11
        transport_gamgrey => transport11_gamgrey
        transport => transport11
        diffusion => diffusion11

@@ -27,12 +27,12 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 
   logical :: lredir !direction resampled
   logical :: loutx,louty
-  integer :: ixnext,iynext
-  real*8 :: elabfact, dirdotu, mu0, gm
+  integer :: ixnext,iynext,iznext
+  real*8 :: elabfact, dirdotu, mu0, gm, xi
   real*8,pointer :: mux,muy,muz
-  real*8 :: thelp, thelpinv, help
-  real*8 :: dcen,dcol,dthm,dbx,dby,ddop
-  real*8 :: darr(6)
+  real*8 :: thelp, thelpinv, help, zhelp
+  real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop
+  real*8 :: darr(7)
   real*8 :: xold, omold, zold
   real*8 :: r1, r2
 !-- distance out of physical reach
@@ -42,19 +42,21 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   real*8 :: mux1,mux2
   real*8 :: angrat1,angrat2,angrat3
 
-  integer,pointer :: ix, iy, ic, ig
-  integer,parameter :: iz=1
+  integer,pointer :: ix, iy, iz, ic, ig
   real*8,pointer :: x,y,z,mu,om,e,e0,wl,d
 !-- statement functions
   integer :: l
-  real*8 :: dx,dy,muxf,zz
+  real*8 :: dx,dy,xm,dz,muxf,zz
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
+  xm(l) = .5d0*(grd_xarr(l+1) + grd_xarr(l))
+  dz(l) = grd_zarr(l+1) - grd_zarr(l)
   muxf(zz) = ptcl%x*sin(ptcl2%muz+zz)/sin(ptcl2%muz)
   !muyf(zz) = ptcl%x*sin(zz)/sin(ptcl2%muz)
 
   ix => ptcl2%ix
   iy => ptcl2%iy
+  iz => ptcl2%iz
   ic => ptcl2%ic
   ig => ptcl2%ig
   d => ptcl2%dist
@@ -77,6 +79,9 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   edep = 0d0
   eraddens = 0d0
   eamp = 0d0
+
+!-- azimuthal projection
+  xi = sqrt(1d0-mu**2)*sin(om)
 
 !-- direction resample flag
   lredir = .false.
@@ -142,6 +147,38 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- making greater than dcen
      dby = far
   endif
+
+!-- azimuthal boundary distance
+  if(xi==0d0 .or. grd_nz==1) then
+     dbz = far
+  elseif(xi>0d0 .and. z>grd_zarr(iz+1)-pc_pi) then
+!-- counterclockwise
+     iznext=iz+1
+     zhelp = sqrt(1d0-mu**2)*sin(om+z-grd_zarr(iz+1))
+     if(z==grd_zarr(iz+1)) then
+        dbz = 0d0
+     elseif(zhelp==0d0) then
+        dbz = far
+     else
+        dbz = x*sin(grd_zarr(iz+1)-z)/zhelp
+        if(dbz<=0d0) dbz = far
+     endif
+  elseif(xi<0d0 .and. z<grd_zarr(iz)+pc_pi) then
+!-- clockwise
+     iznext=iz-1
+     zhelp = sqrt(1d0-mu**2)*sin(om+z-grd_zarr(iz))
+     if(z==grd_zarr(iz)) then
+        dbz = 0d0
+     elseif(zhelp==0d0) then
+        dbz = far
+     else
+        dbz = x*sin(grd_zarr(iz)-z)/zhelp
+        if(dbz<=0d0) dbz = far
+     endif
+  else
+     dbz = far
+  endif
+  
 !
 !-- Thomson scattering distance
   if(grd_sig(ic)>0d0) then
@@ -191,7 +228,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   endif
 !
 !-- finding minimum distance
-  darr = [dcen,dcol,dthm,ddop,dbx,dby]
+  darr = [dcen,dcol,dthm,ddop,dbx,dby,dbz]
   ptcl2%idist = minloc(darr,dim=1)
   d = minval(darr)
 ! if(any(darr/=darr) .or. d<0d0) then
@@ -296,7 +333,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   else
 !-- nonanalog energy density
      if(grd_fcoef(ic)*grd_cap(ig,ic)* &
-          min(dx(ix),dy(iy))*thelp>1d-6) then
+          min(dx(ix),dy(iy),xm(ix)*dz(iz))*thelp>1d-6) then
         eraddens = e* &
              (1.0d0-exp(-grd_fcoef(ic)*elabfact* &
              grd_cap(ig,ic)*d*thelp))* &
@@ -425,7 +462,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            ig = emitgroup(r1,ic)
 !-- checking if DDMC in new group
            if((grd_cap(ig,ic)+grd_sig(ic)) * &
-              min(dx(ix),dy(iy))*thelp >= trn_tauddmc &
+              min(dx(ix),dy(iy),xm(ix)*dz(iz))*thelp >= trn_tauddmc &
               .and. .not.in_puretran) ptcl2%itype = 2
 !-- don't sample, it will end up in the lump anyway
         else
@@ -467,7 +504,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      l = grd_icell(ixnext,iy,iz)
 
      if((grd_cap(ig,l)+grd_sig(l)) * &
-          min(dx(ixnext),dy(iy))*thelp < trn_tauddmc &
+          min(dx(ixnext),dy(iy),xm(ixnext)*dz(iz))*thelp < trn_tauddmc &
           .or.in_puretran) then
 !-- IMC in adjacent cell
         ix = ixnext
@@ -560,7 +597,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      l = grd_icell(ix,iynext,iz)
 
      if((grd_cap(ig,l)+grd_sig(l)) * &
-          min(dx(ix),dy(iynext))*thelp < trn_tauddmc &
+          min(dx(ix),dy(iynext),xm(ix)*dz(iz))*thelp < trn_tauddmc &
           .or.in_puretran) then
 !-- IMC in adjacent cell
         iy = iynext
@@ -632,6 +669,125 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      endif
 
 !
+!-- z-bound
+  elseif(d==dbz) then
+!-- sanity check
+     if(grd_nz==1) then
+!       stop 'transport1: invalid z crossing'
+        ierr = 14
+        return
+     endif
+     if(iznext==iz-1) then
+        z = grd_zarr(iz)
+        if(iznext==0) then
+           iznext = grd_nz
+           z = pc_pi2
+        endif
+     elseif(iznext==iz+1) then
+        z = grd_zarr(iz+1)
+        if(iznext==grd_nz+1) then
+           iznext = 1
+           z = 0d0
+        endif
+     else
+!       stop 'transport1: invalid iznext'
+        ierr = 15
+        return
+     endif
+
+     l = grd_icell(ix,iy,iznext)
+     if((grd_cap(ig,l)+grd_sig(l)) * &
+          min(dx(ix),dy(iy),xm(ix)*dz(iznext)) * &
+          thelp<trn_tauddmc .or. in_puretran) then
+!-- IMC in adjacent cell
+        iz = iznext
+        ic = grd_icell(ix,iy,iz)
+     else
+!-- DDMC in adjacent cell
+        if(grd_isvelocity) then
+           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+!-- azimuthal direction angle
+           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                sqrt(1d0-mu**2)*cos(om)-gm*x*cinv * &
+                (1d0-gm*dirdotu*cinv/(gm+1d0)))
+           if(om<0d0) om=om+pc_pi2
+!-- y-projection
+           mu = (mu-gm*y*cinv*(1d0-gm*dirdotu*cinv/(1d0+gm))) / &
+                (gm*(1d0-dirdotu*cinv))
+!-- transforming z-cosine to cmf
+           xi = sqrt(1d0-mu**2)*sin(om)
+        endif
+        help = (grd_cap(ig,l)+grd_sig(l)) * &
+             xm(ix)*dz(iznext)*thelp
+        help = 4d0/(3d0*help+6d0*pc_dext)
+!-- sampling
+        call rnd_r(r1,rndstate)
+        if (r1 < help*(1d0+1.5d0*abs(xi))) then
+           ptcl2%itype = 2
+           if(grd_isvelocity) then
+!-- velocity effects accounting
+              totevelo=totevelo+e*(1d0-elabfact)
+              !
+              e = e*elabfact
+              e0 = e0*elabfact
+              wl = wl/elabfact
+           endif
+           iz = iznext
+           ic = grd_icell(ix,iy,iz)
+        else
+           call rnd_r(r1,rndstate)
+           call rnd_r(r2,rndstate)
+!-- resampling z-cosine
+           if(grd_nz==2) then
+!-- rejection for 2 cells can occur at zarr(iz) and zarr(iz+1)
+              if(iznext==1) then
+                 if(z==grd_zarr(2)) then
+                    xi = max(r1,r2)
+                 elseif(z==0d0) then
+                    xi = -max(r1,r2)
+                 endif
+              elseif(iznext==2) then
+                 if(z==grd_zarr(2)) then
+                    xi = -max(r1,r2)
+                 elseif(z==pc_pi2) then
+                    xi = max(r1,r2)
+                 endif
+              endif
+           elseif(iznext==iz+1.or.(iznext==1.and.iz==grd_nz)) then
+              xi = -max(r1,r2)
+           else
+              xi = max(r1,r2)
+           endif
+
+           lredir = .true.
+           call rnd_r(r1,rndstate)
+!-- resampling y-cosing
+           mu = sqrt(1d0-xi**2)*sin(pc_pi2*r1)
+!-- resampling azimuthal
+           om = atan2(xi,sqrt(1d0-xi**2)*cos(pc_pi2*r1))
+           if(om<0d0) om=om+pc_pi2
+!-- transforming om, mu to lab
+           if(grd_isvelocity) then
+              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+              gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+!-- azimuthal direction angle
+              om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                   sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
+                   (1d0+gm*dirdotu*cinv/(gm+1d0)))
+              if(om<0d0) om=om+pc_pi2
+!-- y-projection
+              mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
+                   (gm*(1d0+dirdotu*cinv))
+           endif
+!-- reverting z
+           if(iznext==grd_nz.and.iz==1) then
+              if(z==pc_pi2) z = 0d0
+           elseif(iznext==1.and.iz==grd_nz) then
+              if(z==0d0) z = pc_pi2
+           endif
+        endif
+     endif
+!
 !-- Doppler shift
   elseif(d==ddop) then
      if(.not.grd_isvelocity) then
@@ -651,7 +807,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      endif
 !-- check if ddmc region
      if ((grd_sig(ic)+grd_cap(ig,ic)) * &
-          min(dx(ix),dy(iy))*thelp >= trn_tauddmc &
+          min(dx(ix),dy(iy),xm(ix)*dz(iz))*thelp >= trn_tauddmc &
           .and..not.in_puretran) then
         ptcl2%itype = 2
         if(grd_isvelocity) then
