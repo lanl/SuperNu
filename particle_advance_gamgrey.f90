@@ -170,9 +170,8 @@ subroutine particle_advance_gamgrey(nmpi)
         call rnd_r(r1,rndstate)
         x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
-!-- must be inside cell
-        x = min(x,grd_xarr(i+1))
-        x = max(x,grd_xarr(i))
+        y = grd_yarr(1)
+        z = grd_zarr(1)
 !--
         if(grd_isvelocity) then
            x0 = x
@@ -190,13 +189,6 @@ subroutine particle_advance_gamgrey(nmpi)
         y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
         call rnd_r(r1,rndstate)
         z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
-!-- must be inside cell
-        x = min(x,grd_xarr(i+1))
-        x = max(x,grd_xarr(i))
-        y = min(y,grd_yarr(j+1))
-        y = max(y,grd_yarr(j))
-        z = min(z,grd_zarr(k+1))
-        z = max(z,grd_zarr(k))
 !--
 !-- sampling azimuthal angle of direction
         call rnd_r(r1,rndstate)
@@ -211,16 +203,11 @@ subroutine particle_advance_gamgrey(nmpi)
      case(2)
 !-- calculating position!{{{
         call rnd_r(r1,rndstate)
-        x = sqrt(r1*grd_xarr(i+1)**2 + &
-             (1d0-r1)*grd_xarr(i)**2)
+        x = sqrt(r1*grd_xarr(i+1)**2 + (1d0-r1)*grd_xarr(i)**2)
         call rnd_r(r1,rndstate)
-        y = r1*grd_yarr(j+1) + (1d0-r1) * &
-             grd_yarr(j)
-!-- must be inside cell
-        x = min(x,grd_xarr(i+1))
-        x = max(x,grd_xarr(i))
-        y = min(y,grd_yarr(j+1))
-        y = max(y,grd_yarr(j))
+        y = r1*grd_yarr(j+1) + (1d0-r1) * grd_yarr(j)
+        call rnd_r(r1,rndstate)
+        z = r1*grd_zarr(k+1) + (1d0-r1) * grd_zarr(k)
 !-- sampling azimuthal angle of direction
         call rnd_r(r1,rndstate)
         om0 = pc_pi2*r1
@@ -244,26 +231,13 @@ subroutine particle_advance_gamgrey(nmpi)
            om = om0
         endif!}}}
      case(3)
-!-- setting 2nd,3rd cell index!{{{
-        iy = j
-        iz = k
-!-- calculating position
+!-- calculating position!{{{
         call rnd_r(r1,rndstate)
-        x = r1*grd_xarr(i+1) + (1d0-r1) * &
-             grd_xarr(i)
+        x = r1*grd_xarr(i+1) + (1d0-r1) * grd_xarr(i)
         call rnd_r(r1,rndstate)
-        y = r1*grd_yarr(j+1) + (1d0-r1) * &
-             grd_yarr(j)
+        y = r1*grd_yarr(j+1) + (1d0-r1) * grd_yarr(j)
         call rnd_r(r1,rndstate)
-        z = r1*grd_zarr(k+1) + (1d0-r1) * &
-             grd_zarr(k)
-!-- must be inside cell
-        x = min(x,grd_xarr(i+1))
-        x = max(x,grd_xarr(i))
-        y = min(y,grd_yarr(j+1))
-        y = max(y,grd_yarr(j))
-        z = min(z,grd_zarr(k+1))
-        z = max(z,grd_zarr(k))
+        z = r1*grd_zarr(k+1) + (1d0-r1) * grd_zarr(k)
 !-- sampling azimuthal angle of direction
         call rnd_r(r1,rndstate)
         om0 = pc_pi2*r1
@@ -291,6 +265,14 @@ subroutine particle_advance_gamgrey(nmpi)
            om = om0
         endif!}}}
      endselect
+!
+!-- must be inside cell
+     x = min(x,grd_xarr(i+1))
+     x = max(x,grd_xarr(i))
+     y = min(y,grd_yarr(j+1))
+     y = max(y,grd_yarr(j))
+     z = min(z,grd_zarr(k+1))
+     z = max(z,grd_zarr(k))
 
 !-- velocity components in cartesian basis
      if(grd_igeom==1) then

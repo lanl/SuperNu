@@ -25,12 +25,12 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
   logical :: lredir !direction resampled
   logical :: loutx,louty
-  integer :: ixnext,iynext
-  real*8 :: elabfact, dirdotu, gm
+  integer :: ixnext,iynext,iznext
+  real*8 :: elabfact, dirdotu, gm, xi
   real*8,pointer :: mux,muy,muz
-  real*8 :: thelp, thelpinv
-  real*8 :: dcol,dbx,dby
-  real*8 :: darr(3)
+  real*8 :: thelp, thelpinv, help
+  real*8 :: dcol,dbx,dby,dbz
+  real*8 :: darr(4)
   real*8 :: xold, omold, zold
   real*8 :: r1
 !-- distance out of physical reach
@@ -39,8 +39,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   real*8 :: mux1,mux2
   real*8 :: angrat1,angrat2,angrat3
 
-  integer,pointer :: ix, iy, ic, ig
-  integer,parameter :: iz=1
+  integer,pointer :: ix, iy, iz, ic, ig
   real*8,pointer :: x,y,z,mu,om,e,d
 !-- statement functions
   integer :: l
@@ -50,6 +49,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
   ix => ptcl2%ix
   iy => ptcl2%iy
+  iz => ptcl2%iz
   ic => ptcl2%ic
   ig => ptcl2%ig
   d => ptcl2%dist
@@ -68,6 +68,9 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   ierr = 0
 !-- init
   edep = 0d0
+
+!-- azimuthal projection
+  xi = sqrt(1d0-mu**2)*sin(om)
 
 !-- direction resample flag
   lredir = .false.
@@ -129,6 +132,38 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !-- making greater than dcen
      dby = far
   endif
+
+!-- azimuthal boundary distance
+  if(xi==0d0 .or. grd_nz==1) then
+     dbz = far
+  elseif(xi>0d0 .and. z>grd_zarr(iz+1)-pc_pi) then
+!-- counterclockwise
+     iznext=iz+1
+     help = sqrt(1d0-mu**2)*sin(om+z-grd_zarr(iz+1))
+     if(z==grd_zarr(iz+1)) then
+        dbz = 0d0
+     elseif(help==0d0) then
+        dbz = far
+     else
+        dbz = x*sin(grd_zarr(iz+1)-z)/help
+        if(dbz<=0d0) dbz = far
+     endif
+  elseif(xi<0d0 .and. z<grd_zarr(iz)+pc_pi) then
+!-- clockwise
+     iznext=iz-1
+     help = sqrt(1d0-mu**2)*sin(om+z-grd_zarr(iz))
+     if(z==grd_zarr(iz)) then
+        dbz = 0d0
+     elseif(help==0d0) then
+        dbz = far
+     else
+        dbz = x*sin(grd_zarr(iz)-z)/help
+        if(dbz<=0d0) dbz = far
+     endif
+  else
+     dbz = far
+  endif
+  
 !
 !-- effective collision distance
   if(grd_capgam(ic)<=0d0) then
@@ -144,7 +179,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   endif
 !
 !-- finding minimum distance
-  darr = [dcol,dbx,dby]
+  darr = [dcol,dbx,dby,dbz]
   ptcl2%idist = minloc(darr,dim=1)
   d = minval(darr)
   if(any(darr/=darr)) then
@@ -335,9 +370,34 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !-- IMC in adjacent cell
      iy = iynext
      ic = grd_icell(ix,iy,iz)
+!
+!-- z-bound
+  elseif(d==dbz) then
+     if(iznext==iz-1) then
+        z = grd_zarr(iz)
+        if(iznext==0) then
+           iznext = grd_nz
+           z = pc_pi2
+        endif
+     elseif(iznext==iz+1) then
+        z = grd_zarr(iz+1)
+        if(iznext==grd_nz+1) then
+           iznext = 1
+           z = 0d0
+        endif
+     else
+!       stop 'transport1: invalid iznext'
+        ierr = 12
+        return
+     endif
+
+!-- IMC in adjacent cell
+     iz = iznext
+     ic = grd_icell(ix,iy,iz)
+!
   else
 !    stop 'transport2_gamgrey: invalid distance'
-     ierr = 12
+     ierr = 13
      return
   endif
 
