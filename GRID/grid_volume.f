@@ -34,7 +34,7 @@ c
         vol(i,j,k) = t**3 *
      &    (grd_xarr(i+1)**2 - grd_xarr(i)**2) *
      &    (grd_yarr(j+1) - grd_yarr(j)) *
-     &    (grd_zarr(k+1) - grd_zarr(k))/2d0
+     &    .5d0*(grd_zarr(k+1) - grd_zarr(k))
        endforall
       case(3)
        forall(i=1:grd_nx,j=1:grd_ny,k=1:grd_nz)

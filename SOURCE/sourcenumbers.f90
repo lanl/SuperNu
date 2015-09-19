@@ -103,16 +103,15 @@ subroutine sourcenumbers(keephigh)
 !-- also convert emit to energy PER PARTICLE
   src_nnew = 0
   src_nnonth = 0
+  iimpi = -1
   if(src_nsurftot>0) then
 !-- from total nsurf to nsurf per rank
-     iimpi = -1
      call sourcenumbers_roundrobin_limit(iimpi,src_nvacantall, &
           tot_esurf**pwr,0d0,src_nsurftot,nemit,nvol,nvolex)
      src_nnew = nvol
      src_nsurf = nvol
   endif
   nvacant = src_nvacantall
-  iimpi = -1
   do l=1,grd_ncell
      call sourcenumbers_roundrobin_limit(iimpi,nvacant,grd_emit(l)**pwr, &
         grd_emitex(l)**pwr,grd_nvol(l),nemit,nvol,nvolex)

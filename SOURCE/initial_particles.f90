@@ -116,14 +116,11 @@ subroutine initial_particles
         iy = j
 !-- calculating position
         call rnd_r(r1,rnd_state)
-        ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + &
-             (1d0-r1)*grd_xarr(i)**2)
+        ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + (1d0-r1)*grd_xarr(i)**2)
         call rnd_r(r1,rnd_state)
-        ptcl%y = r1*grd_yarr(j+1) + &
-             (1d0-r1)*grd_yarr(j)
+        ptcl%y = r1*grd_yarr(j+1) + (1d0-r1)*grd_yarr(j)
         call rnd_r(r1,rnd_state)
-        ptcl%z = r1*grd_zarr(k+1) + &
-             (1d0-r1)*grd_zarr(k)
+        ptcl%z = r1*grd_zarr(k+1) + (1d0-r1)*grd_zarr(k)
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))

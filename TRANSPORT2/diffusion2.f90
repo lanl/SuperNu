@@ -881,7 +881,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         iznext=iz-1
      endif
      l = grd_icell(ix,iy,iznext)
-     !-- sampling next group
+!-- sampling next group
      if(glump==0) then
         iiig = ig
      else

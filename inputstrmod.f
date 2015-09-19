@@ -168,8 +168,12 @@ c-- dim 2
         str_yleft(i+1) = raw(4,nx*(i-1)+1)
        enddo
       endif
-c-- fix endpoints
+c-- check and fix endpoints
       if(igeom==11 .or. igeom==1) then
+       if(abs(str_yleft(1)+1d0)>1d-3) stop
+     &   'read_inputstr: yleft(1) boundary value error'
+       if(abs(str_yleft(ny+1)-1d0)>1d-3) stop
+     &   'read_inputstr: yleft(ny+1) boundary value error'
        str_yleft(1) = -1d0
        str_yleft(ny+1) = 1d0
       endif
@@ -183,17 +187,25 @@ c-- dim 3
       elseif(igeom==1 .or. igeom==2 .or. igeom==11) then
        str_zleft = [0d0,pc_pi2]
       endif
-c-- uniform grid
+c-- check and fix endpoints
       if(igeom==1 .or. igeom==2 .or. igeom==11) then
-       do k=1,nz+1
+       if(abs(str_zleft(1))>1d-3) stop
+     &   'read_inputstr: zleft(1) boundary value error'
+       if(abs(str_zleft(nz+1)-pc_pi2)>1d-3) stop
+     &   'read_inputstr: zleft(nz+1) boundary value error'
+       str_zleft(1) = 0d0
+       str_zleft(nz+1) = pc_pi2
+      endif
+c-- uniform grid (drr 150919: we don't need this anymore)
+      if(igeom==1 .or. igeom==2 .or. igeom==11) then
+       do k=2,nz
         help = (k-1)*pc_pi2/nz
 c-- verify approximate values
         if(abs(str_zleft(k) - help)>1d-3) then
-         stop 'read_inputstr: z inaccurate'
+         stop 'read_inputstr: z grid not uniform'
         endif
         str_zleft(k) = help
        enddo
-       str_zleft(nz+1) = pc_pi2
       endif
 c
 c-- vars
@@ -520,48 +532,48 @@ c-- mass
       str_mass = 0d0
       if(in_dentype=='unif') then
 c-- uniform density sphere
-        rmax = min(helpy/2d0,helpx)
-        do k = 1,nz
-        do j = 1,ny
-        do i = 1,nx
-          helpx = 0.5*(str_xleft(i+1)+str_xleft(i))
-          helpy = 0.5*(str_yleft(j+1)+str_yleft(j))
-          if(helpy**2+helpx**2<rmax**2) then
-            str_mass(i,j,k)=
-     &         .5d0*(str_xleft(i+1)**2-str_xleft(i)**2) *
-     &         (str_yleft(j+1)-str_yleft(j)) *
-     &         (str_zleft(k+1) - str_zleft(k)) *
-     &         in_totmass/(pc_pi43*rmax**3)
-          endif
-        enddo
-        enddo
-        enddo
+       rmax = min(helpy/2d0,helpx)
+       do k = 1,nz
+       do j = 1,ny
+        helpy = 0.5*(str_yleft(j+1)+str_yleft(j))
+       do i = 1,nx
+        helpx = 0.5*(str_xleft(i+1)+str_xleft(i))
+        if(helpy**2+helpx**2<rmax**2) then
+         str_mass(i,j,k)=
+     &     .5d0*(str_xleft(i+1)**2-str_xleft(i)**2) *
+     &     (str_yleft(j+1)-str_yleft(j)) *
+     &     (str_zleft(k+1) - str_zleft(k)) *
+     &     in_totmass/(pc_pi43*rmax**3)
+        endif
+       enddo
+       enddo
+       enddo
       elseif(in_dentype=='mass') then
 c-- spherical 1/r^2 mass shells
-        rmax = min(helpy/2d0,helpx)
-        do k = 1,nz
-        do j = 1,ny
-        do i = 1,nx
-          helpx = 0.5*(str_xleft(i+1)+str_xleft(i))
-          helpy = 0.5*(str_yleft(j+1)+str_yleft(j))
-          if(helpy**2+helpx**2<rmax**2) then
-            str_mass(i,j,k)=
-     &         .5d0*(str_xleft(i+1)**2-str_xleft(i)**2) *
-     &         (str_yleft(j+1)-str_yleft(j)) *
-     &         (str_zleft(k+1) - str_zleft(k)) *
-     &         in_totmass/(pc_pi4*rmax*(helpy**2+helpx**2))
-          endif
-        enddo
-        enddo
-        enddo
+       rmax = min(helpy/2d0,helpx)
+       do k = 1,nz
+       do j = 1,ny
+        helpy = 0.5*(str_yleft(j+1)+str_yleft(j))
+       do i = 1,nx
+        helpx = 0.5*(str_xleft(i+1)+str_xleft(i))
+        if(helpy**2+helpx**2<rmax**2) then
+         str_mass(i,j,k)=
+     &     .5d0*(str_xleft(i+1)**2-str_xleft(i)**2) *
+     &     (str_yleft(j+1)-str_yleft(j)) *
+     &     (str_zleft(k+1) - str_zleft(k)) *
+     &     in_totmass/(pc_pi4*rmax*(helpy**2+helpx**2))
+        endif
+       enddo
+       enddo
+       enddo
       elseif(in_dentype=='ufil') then
 c-- uniform density for all cylinder
        forall(j=1:ny,k=1:nz) str_mass(:,j,k) = in_totmass *
-     &     (xout(2:)**2 - xout(:nx)**2)*dy/nz
+     &   (xout(2:)**2 - xout(:nx)**2)*dy/nz
       elseif(in_dentype=='mfil') then
 c-- equal mass per cell for all cylinder
        forall(j=1:ny,k=1:nz) str_mass(:,j,k) = in_totmass *
-     &     dx*dy/nz
+     &   dx*dy/nz
       else
        stop 'generate_inputstr2: invalid in_dentype'
       endif

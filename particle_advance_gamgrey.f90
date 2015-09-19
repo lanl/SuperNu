@@ -211,14 +211,11 @@ subroutine particle_advance_gamgrey(nmpi)
      case(2)
 !-- calculating position!{{{
         call rnd_r(r1,rndstate)
-        x = sqrt(r1*grd_xarr(i+1)**2 + &
-             (1d0-r1)*grd_xarr(i)**2)
+        x = sqrt(r1*grd_xarr(i+1)**2 + (1d0-r1)*grd_xarr(i)**2)
         call rnd_r(r1,rndstate)
-        y = r1*grd_yarr(j+1) + (1d0-r1) * &
-             grd_yarr(j)
+        y = r1*grd_yarr(j+1) + (1d0-r1) * grd_yarr(j)
         call rnd_r(r1,rndstate)
-        z = r1*grd_zarr(k+1) + (1d0-r1) * &
-             grd_zarr(k)
+        z = r1*grd_zarr(k+1) + (1d0-r1) * grd_zarr(k)
 !-- must be inside cell
         x = min(x,grd_xarr(i+1))
         x = max(x,grd_xarr(i))
