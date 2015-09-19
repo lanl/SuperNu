@@ -194,11 +194,6 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   darr = [dcen,dcol,dthm,ddop,dbx,dby]
   ptcl2%idist = minloc(darr,dim=1)
   d = minval(darr)
-! if(any(darr/=darr) .or. d<0d0) then
-!    write(0,*) darr
-!    write(*,*) ix,iy,x,y,mu,om
-!    stop 'transport2: invalid distance'
-! endif
   if(any(darr/=darr)) then
      ierr = 4
      return

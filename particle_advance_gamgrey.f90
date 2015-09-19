@@ -302,6 +302,14 @@ subroutine particle_advance_gamgrey(nmpi)
         ptcl2%muy = mu*sqrt(1d0-y**2)*sin(z)+eta*y*sin(z)+xi*cos(z)
         ptcl2%muz = mu*y-eta*sqrt(1d0-y**2)
      endif
+!-- update invariant direction quantities
+     if(grd_igeom==2) then
+        ptcl2%mux = x*sin(om)/sin(z+om)  !-- intercept
+        ptcl2%muy = x*sin(z)/sin(z+om)  !-- distance to intercept
+        ptcl2%muz = pc_pi-(z+om)  !-- direction angle
+        if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
+        if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
+     endif
 !
 !-- emission energy per particle
      e = grd_emitex(ic)/nvol(ic)
@@ -362,15 +370,21 @@ subroutine particle_advance_gamgrey(nmpi)
         if(.not.ptcl2%done) then
            if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
              write(0,*) 'prt_adv_ggrey: x not in cell', &
-                ix,x,grd_xarr(ix),grd_xarr(ix+1),mu
+                ix,x,grd_xarr(ix),grd_xarr(ix+1), &
+                y,z,mu,om, &
+                ptcl2%ipart,ptcl2%istep,ptcl2%idist
            endif
            if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
              write(0,*) 'prt_adv_ggrey: y not in cell', &
-                iy,y,grd_yarr(iy),grd_yarr(iy+1),mu
+                iy,y,grd_yarr(iy),grd_yarr(iy+1), &
+                x,z,mu,om, &
+                ptcl2%ipart,ptcl2%istep,ptcl2%idist
            endif
            if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
               write(0,*) 'prt_adv_ggrey: z not in cell', &
-                iz,z,grd_zarr(iz),grd_zarr(iz+1),mu
+                iz,z,grd_zarr(iz),grd_zarr(iz+1), &
+                x,y,mu,om, &
+                ptcl2%ipart,ptcl2%istep,ptcl2%idist
            endif
         endif
 
