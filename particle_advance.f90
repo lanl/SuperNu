@@ -235,6 +235,8 @@ subroutine particle_advance
         ptcl2%muy = x*sin(z)/sin(z+om)  !-- distance to intercept
         ptcl2%muz = pc_pi-(z+om)  !-- direction angle
         if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
+        if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
+        if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
         if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
      endif
 
@@ -420,8 +422,7 @@ subroutine particle_advance
 !-- sampling position uniformly!{{{
            call rnd_r(r1,rndstate)
            x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
-!-- must be inside cell
-           x = min(x,grd_xarr(ix+1))
+           x = min(x,grd_xarr(ix+1))!-- must be inside cell
            x = max(x,grd_xarr(ix))
 !-- sampling angle isotropically
            call rnd_r(r1,rndstate)
@@ -431,6 +432,8 @@ subroutine particle_advance
 !-- sampling position uniformly!{{{
            call rnd_r(r1,rndstate)
            x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
+           x = min(x,grd_xarr(ix+1))!-- must be inside cell
+           x = max(x,grd_xarr(ix))
            call rnd_r(r1,rndstate)
            y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
            call rnd_r(r1,rndstate)
@@ -445,6 +448,8 @@ subroutine particle_advance
 !-- sampling position uniformly!{{{
            call rnd_r(r1,rndstate)
            x = sqrt(r1*grd_xarr(ix+1)**2 + (1d0-r1)*grd_xarr(ix)**2)
+           x = min(x,grd_xarr(ix+1))!-- must be inside cell
+           x = max(x,grd_xarr(ix))
            call rnd_r(r1,rndstate)
            y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
            call rnd_r(r1,rndstate)
@@ -469,14 +474,14 @@ subroutine particle_advance
            call rnd_r(r1,rndstate)
            mu = 1d0 - 2d0*r1 !}}}
         endselect
-
-!-- must be inside cell
-        x = min(x,grd_xarr(ix+1))
-        x = max(x,grd_xarr(ix))
-        y = min(y,grd_yarr(iy+1))
-        y = max(y,grd_yarr(iy))
-        z = min(z,grd_zarr(iz+1))
-        z = max(z,grd_zarr(iz))
+!
+!!-- must be inside cell
+!        x = min(x,grd_xarr(ix+1))
+!        x = max(x,grd_xarr(ix))
+!        y = min(y,grd_yarr(iy+1))
+!        y = max(y,grd_yarr(iy))
+!        z = min(z,grd_zarr(iz+1))
+!        z = max(z,grd_zarr(iz))
 !
         if(grd_isvelocity) call direction2lab(x,y,z,mu,om)
      endif

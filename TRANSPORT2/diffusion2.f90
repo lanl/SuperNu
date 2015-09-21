@@ -1214,6 +1214,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      ptcl2%muy = x*sin(z)/sin(z+om)  !-- distance to intercept
      ptcl2%muz = pc_pi-(z+om)  !-- direction angle
      if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
+     if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
+     if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
      if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
   endif
 

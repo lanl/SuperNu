@@ -170,6 +170,8 @@ subroutine particle_advance_gamgrey(nmpi)
         call rnd_r(r1,rndstate)
         x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
+        x = min(x,grd_xarr(i+1)) !-- must be inside cell
+        x = max(x,grd_xarr(i))
         y = grd_yarr(1)
         z = grd_zarr(1)
 !--
@@ -185,6 +187,8 @@ subroutine particle_advance_gamgrey(nmpi)
         call rnd_r(r1,rndstate)
         x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
+        x = min(x,grd_xarr(i+1)) !-- must be inside cell
+        x = max(x,grd_xarr(i))
         call rnd_r(r1,rndstate)
         y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
         call rnd_r(r1,rndstate)
@@ -204,6 +208,8 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- calculating position!{{{
         call rnd_r(r1,rndstate)
         x = sqrt(r1*grd_xarr(i+1)**2 + (1d0-r1)*grd_xarr(i)**2)
+        x = min(x,grd_xarr(i+1)) !-- must be inside cell
+        x = max(x,grd_xarr(i))
         call rnd_r(r1,rndstate)
         y = r1*grd_yarr(j+1) + (1d0-r1) * grd_yarr(j)
         call rnd_r(r1,rndstate)
@@ -265,14 +271,14 @@ subroutine particle_advance_gamgrey(nmpi)
            om = om0
         endif!}}}
      endselect
-!
-!-- must be inside cell
-     x = min(x,grd_xarr(i+1))
-     x = max(x,grd_xarr(i))
-     y = min(y,grd_yarr(j+1))
-     y = max(y,grd_yarr(j))
-     z = min(z,grd_zarr(k+1))
-     z = max(z,grd_zarr(k))
+!!
+!!-- must be inside cell
+!     x = min(x,grd_xarr(i+1))
+!     x = max(x,grd_xarr(i))
+!     y = min(y,grd_yarr(j+1))
+!     y = max(y,grd_yarr(j))
+!     z = min(z,grd_zarr(k+1))
+!     z = max(z,grd_zarr(k))
 
 !-- velocity components in cartesian basis
      if(grd_igeom==1) then
@@ -290,6 +296,8 @@ subroutine particle_advance_gamgrey(nmpi)
         ptcl2%muy = x*sin(z)/sin(z+om)  !-- distance to intercept
         ptcl2%muz = pc_pi-(z+om)  !-- direction angle
         if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
+        if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
+        if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
         if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
      endif
 !
@@ -300,10 +308,15 @@ subroutine particle_advance_gamgrey(nmpi)
 
 !-----------------------------------------------------------------------
 !-- Advancing particle until census, absorption, or escape from domain
+     ptcl2%ipart = ipart
+     ptcl2%istep = 0
+     ptcl2%idist = 0
+
      ptcl2%done = .false.
      ptcl2%lflux = .false.
 !
      do while (.not.ptcl2%done)
+        ptcl2%istep = ptcl2%istep + 1
         icold = ic
         call transport_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !-- tally
@@ -312,8 +325,8 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- outbound luminosity tally
         if(ptcl2%lflux) then
 !-- lab frame flux group, polar, azimuthal bin
-           iom = binsrch(om,flx_om,flx_nom+1,.false.)
            imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
+           iom = binsrch(om,flx_om,flx_nom+1,.false.)
 !-- tally outbound luminosity
            flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e
            flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+e**2
@@ -322,7 +335,7 @@ subroutine particle_advance_gamgrey(nmpi)
 
 !-- Russian roulette for termination of exhausted particles
         if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgam(ic)>0d0) then
-           call rnd_r(r1,rndstate)
+           call rnd_r(r1,rndstate)!{{{
            if(r1<0.5d0) then
 !-- transformation factor
               if(grd_isvelocity) then
@@ -345,7 +358,7 @@ subroutine particle_advance_gamgrey(nmpi)
            else
               e = 2d0*e
               e0 = 2d0*e0
-           endif
+           endif!}}}
         endif
 
 !-- verify position

@@ -411,6 +411,8 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
      muy = x*sin(z)/sin(z+om)  !-- distance to intercept
      muz = pc_pi-(z+om)  !-- direction angle
      if(muz<0d0) muz = muz+pc_pi2
+     if(muz<0d0) muz = muz+pc_pi2
+     if(muz>pc_pi2) muz = muz-pc_pi2
      if(muz>pc_pi2) muz = muz-pc_pi2
   endif
 
