@@ -25,7 +25,7 @@ subroutine interior_source
   integer,allocatable :: nvacantall(:)
   real*8 :: pwr
   real*8 :: r1, r2, r3, uul, uur, uumax
-  real*8 :: om0, mu0, x0, y0, ep0, wl0
+  real*8 :: om0, mu0, x0, ep0, wl0
   real*8 :: denom2,x1,x2,x3,x4, thelp
 !-- neighbor emit values (for source tilting)
   integer :: icnb(6)
@@ -98,83 +98,37 @@ subroutine interior_source
      call rnd_r(r1,rnd_state)
      mu0 = 1d0-2d0*r1
      ptcl%mu = mu0 !overwrite when isvelocity
-
 !-- sampling azimuthal angle of direction
      call rnd_r(r1,rnd_state)
      om0 = pc_pi2*r1
      ptcl%om = om0 !overwrite when isvelocity
 
 !
-!-- selecting geometry
+!-- x position
      select case(in_igeom)
-
-!-- 3D spherical
-     case(1)
-!-- calculating position!{{{
-        call rnd_r(r1,rnd_state)
-        ptcl%x = (r1*grd_xarr(i+1)**3 + &
-             (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
-        call rnd_r(r1,rnd_state)
-        ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
-        call rnd_r(r1,rnd_state)
-        ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
-!-- must be inside cell
-        ptcl%x = min(ptcl%x,grd_xarr(i+1))
-        ptcl%x = max(ptcl%x,grd_xarr(i))
-        ptcl%y = min(ptcl%y,grd_yarr(j+1))
-        ptcl%y = max(ptcl%y,grd_yarr(j))
-        ptcl%z = min(ptcl%z,grd_zarr(k+1))
-        ptcl%z = max(ptcl%z,grd_zarr(k))!}}}
-!-- 2D
-     case(2)
-!-- calculating position!{{{
-        call rnd_r(r1,rnd_state)
-        ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + &
-             (1d0-r1)*grd_xarr(i)**2)
-        call rnd_r(r1,rnd_state)
-        ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
-             grd_yarr(j)
-        call rnd_r(r1,rnd_state)
-        ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
-!-- must be inside cell
-        ptcl%x = min(ptcl%x,grd_xarr(i+1))
-        ptcl%x = max(ptcl%x,grd_xarr(i))
-        ptcl%y = min(ptcl%y,grd_yarr(j+1))
-        ptcl%y = max(ptcl%y,grd_yarr(j))
-        ptcl%z = min(ptcl%z,grd_zarr(k+1))
-        ptcl%z = max(ptcl%z,grd_zarr(k))!}}}
-!-- 3D
-     case(3)
-!-- calculating position!{{{
-        call rnd_r(r1,rnd_state)
-        ptcl%x = r1*grd_xarr(i+1) + (1d0-r1) * &
-             grd_xarr(i)
-        call rnd_r(r1,rnd_state)
-        ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * &
-             grd_yarr(j)
-        call rnd_r(r1,rnd_state)
-        ptcl%z = r1*grd_zarr(k+1) + (1d0-r1) * &
-             grd_zarr(k)
-!-- must be inside cell
-        ptcl%x = min(ptcl%x,grd_xarr(i+1))
-        ptcl%x = max(ptcl%x,grd_xarr(i))
-        ptcl%y = min(ptcl%y,grd_yarr(j+1))
-        ptcl%y = max(ptcl%y,grd_yarr(j))
-        ptcl%z = min(ptcl%z,grd_zarr(k+1))
-        ptcl%z = max(ptcl%z,grd_zarr(k)) !}}}
-!-- 1D
-     case(11)
-!-- calculating position!{{{
+     case(1,11) !-- spherical
         call rnd_r(r1,rnd_state)
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
-        ptcl%x = max(ptcl%x,grd_xarr(i)) !}}}
-        ptcl%y = grd_yarr(1)
-        ptcl%z = grd_zarr(1)
-
+        ptcl%x = max(ptcl%x,grd_xarr(i))
+     case(2) !-- cylindrical
+        call rnd_r(r1,rnd_state)
+        ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + (1d0-r1)*grd_xarr(i)**2)
+!-- must be inside cell
+        ptcl%x = min(ptcl%x,grd_xarr(i+1))
+        ptcl%x = max(ptcl%x,grd_xarr(i))
+     case(3) !-- cartesian
+        call rnd_r(r1,rnd_state)
+        ptcl%x = r1*grd_xarr(i+1) + (1d0-r1)*grd_xarr(i)
      endselect
+!
+!-- y,z position
+     call rnd_r(r1,rnd_state)
+     ptcl%y = r1*grd_yarr(j+1) + (1d0-r1) * grd_yarr(j)
+     call rnd_r(r1,rnd_state)
+     ptcl%z = r1*grd_zarr(k+1) + (1d0-r1) * grd_zarr(k)
 !}}}
   enddo !ipart
 !
@@ -239,19 +193,17 @@ subroutine interior_source
      call rnd_r(r1,rnd_state)
      mu0 = 1d0-2d0*r1
      ptcl%mu = mu0
-
 !-- sampling azimuthal angle of direction
      call rnd_r(r1,rnd_state)
      om0 = pc_pi2*r1
      ptcl%om = om0
 
 !
-!-- selecting geometry
+!-- x position:
      select case(in_igeom)
-
-!-- 3D spherical
-     case(1)
-!-- calculating position:!{{{
+!!{{{
+!-- spherical
+     case(1,11)
 !-- source tilting in x
         r3 = 0d0
         r2 = 1d0
@@ -268,22 +220,9 @@ subroutine interior_source
            call rnd_r(r2,rnd_state)
         enddo
         ptcl%x = x0
-!-- uniform in angles
-        call rnd_r(r1,rnd_state)
-        ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
-        call rnd_r(r1,rnd_state)
-        ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
-!-- must be inside cell
-        ptcl%x = min(ptcl%x,grd_xarr(i+1))
-        ptcl%x = max(ptcl%x,grd_xarr(i))
-        ptcl%y = min(ptcl%y,grd_yarr(j+1))
-        ptcl%y = max(ptcl%y,grd_yarr(j))
-        ptcl%z = min(ptcl%z,grd_zarr(k+1))
-        ptcl%z = max(ptcl%z,grd_zarr(k))
-!}}}
-!-- 2D
+!
+!-- cylindrical
      case(2)
-!-- calculating position:!{{{
 !-- source tilting in x
         r3 = 0d0
         r2 = 1d0
@@ -300,33 +239,10 @@ subroutine interior_source
            call rnd_r(r2,rnd_state)
         enddo
         ptcl%x = x0
-!- source tilting in y
-        r3 = 0d0
-        r2 = 1d0
-        uul = .5d0*(grd_emit(icnb(3)) + grd_emit(l))
-        uur = .5d0*(grd_emit(icnb(4)) + grd_emit(l))
-        uumax = max(uul,uur)
-        uul = uul/uumax
-        uur = uur/uumax
-        do while (r2 > r3)
-           call rnd_r(r1,rnd_state)
-           r3 = r1*uur+(1d0-r1)*uul
-           call rnd_r(r2,rnd_state)
-        enddo
-        y0 = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
-        ptcl%y = y0
-        call rnd_r(r1,rnd_state)
-        ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
-!-- must be inside cell
-        ptcl%x = min(ptcl%x,grd_xarr(i+1))
-        ptcl%x = max(ptcl%x,grd_xarr(i))
-        ptcl%y = min(ptcl%y,grd_yarr(j+1))
-        ptcl%y = max(ptcl%y,grd_yarr(j))
-        ptcl%z = grd_zarr(1)
-!}}}
-!-- 3D
+!
+!-- cartesian
      case(3)
-!-- source tilting in x!{{{
+!-- source tilting in x
         r3 = 0d0
         r2 = 1d0
         uul = .5d0*(grd_emit(icnb(1)) + grd_emit(l))
@@ -339,9 +255,18 @@ subroutine interior_source
            r3 = r1*uur+(1d0-r1)*uul
            call rnd_r(r2,rnd_state)
         enddo
-        ptcl%x = r1*grd_xarr(i+1)+(1d0-r1)*grd_xarr(i)
-
-!- source tilting in y
+        ptcl%x = r1*grd_xarr(i+1)+(1d0-r1)*grd_xarr(i)!}}}
+     endselect
+!-- must be inside cell
+     ptcl%x = min(ptcl%x,grd_xarr(i+1))
+     ptcl%x = max(ptcl%x,grd_xarr(i))
+!
+!-- y,z position
+     if(in_igeom==11) then
+        ptcl%y = grd_yarr(1)
+        ptcl%z = grd_zarr(1)
+     else
+!-- source tilting in y!{{{
         r3 = 0d0
         r2 = 1d0
         uul = .5d0*(grd_emit(icnb(3)) + grd_emit(l))
@@ -355,8 +280,11 @@ subroutine interior_source
            call rnd_r(r2,rnd_state)
         enddo
         ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
-
-!- source tilting in y
+!-- must be inside cell
+        ptcl%y = min(ptcl%y,grd_yarr(j+1))
+        ptcl%y = max(ptcl%y,grd_yarr(j))
+!
+!-- source tilting in z
         r3 = 0d0
         r2 = 1d0
         uul = .5d0*(grd_emit(icnb(5)) + grd_emit(l))
@@ -371,39 +299,9 @@ subroutine interior_source
         enddo
         ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
 !-- must be inside cell
-        ptcl%x = min(ptcl%x,grd_xarr(i+1))
-        ptcl%x = max(ptcl%x,grd_xarr(i))
-        ptcl%y = min(ptcl%y,grd_yarr(j+1))
-        ptcl%y = max(ptcl%y,grd_yarr(j))
         ptcl%z = min(ptcl%z,grd_zarr(k+1))
-        ptcl%z = max(ptcl%z,grd_zarr(k))
-!}}}
-!-- 1D
-     case(11)
-!-- calculating position!{{{
-!-- source tilting in x
-        r3 = 0d0
-        r2 = 1d0
-        uul = .5d0*(grd_emit(icnb(1)) + grd_emit(l))
-        uur = .5d0*(grd_emit(icnb(2)) + grd_emit(l))
-        uumax = max(uul,uur)
-        uul = uul/uumax
-        uur = uur/uumax
-        do while (r2 > r3)
-           call rnd_r(r1,rnd_state)
-           x0 = (r1*grd_xarr(i+1)**3+(1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
-           r3 = (x0-grd_xarr(i))/dx(i)
-           r3 = r3*uur+(1.0-r3)*uul
-           call rnd_r(r2,rnd_state)
-        enddo
-        ptcl%x = x0
-!-- must be inside cell
-        ptcl%x = min(ptcl%x,grd_xarr(i+1))
-        ptcl%x = max(ptcl%x,grd_xarr(i))
-        ptcl%y = grd_yarr(1)
-        ptcl%z = grd_zarr(1)
-!}}}
-     endselect
+        ptcl%z = max(ptcl%z,grd_zarr(k))!}}}
+     endif !in_igeom
 !}}}
   enddo !ipart
 !
