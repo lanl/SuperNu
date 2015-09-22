@@ -260,7 +260,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         mfphelp = ((grd_sig(ic)+grd_cap(ig,ic))*dy(iy)+&
              (grd_sig(l)+grd_cap(ig,l))*dy(iy+1))*thelp
         opacleak(4)=(2d0/3d0)/(mfphelp*dy(iy)*thelp)
-     endif!}}}
+     endif
 
 !
 !-- azimuthal leakage opacities
@@ -323,7 +323,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
                 (grd_sig(l)+grd_cap(ig,l))*dz(iznext))
            opacleak(6)=2d0/(3d0*xm(ix)**2*dz(iz)*mfphelp*thelp**2)
         endif
-     endif
+     endif!}}}
   endif
 !
 !--------------------------------------------------------
@@ -468,11 +468,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         y = grd_yarr(iy)*(1d0-r1)+grd_yarr(iy+1)*r1
         call rnd_r(r1,rndstate)
         z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
-!-- must be inside cell
-        y = min(y,grd_yarr(iy+1))
-        y = max(y,grd_yarr(iy))
-        z = min(z,grd_zarr(iz+1))
-        z = max(z,grd_zarr(iz))
 !-- sampling direction
         call rnd_r(r1,rndstate)
         call rnd_r(r2,rndstate)
@@ -579,11 +574,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         y = grd_yarr(iy)*(1d0-r1)+grd_yarr(iy+1)*r1
         call rnd_r(r1,rndstate)
         z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
-!-- must be inside cell
-        y = min(y,grd_yarr(iy+1))
-        y = max(y,grd_yarr(iy))
-        z = min(z,grd_zarr(iz+1))
-        z = max(z,grd_zarr(iz))
 !-- sampling direction
         call rnd_r(r1,rndstate)
         call rnd_r(r2,rndstate)
@@ -623,7 +613,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- redefine for flux tally
            om = pc_pi-(z+om)  !-- direction angle
            if(om<0d0) om = om+pc_pi2
-           if(om>pc_pi2) om = om-pc_pi2
+           if(om<0d0) om = om+pc_pi2
            return
         else
 !-- converting to IMC
@@ -704,8 +694,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- must be inside cell
         x = min(x,grd_xarr(ix+1))
         x = max(x,grd_xarr(ix))
-        z = min(z,grd_zarr(iz+1))
-        z = max(z,grd_zarr(iz))
 !-- sampling direction
         call rnd_r(r1,rndstate)
         call rnd_r(r2,rndstate)
@@ -743,7 +731,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- redefine for flux tally
            om = pc_pi-(z+om)  !-- direction angle
            if(om<0d0) om = om+pc_pi2
-           if(om>pc_pi2) om = om-pc_pi2
+           if(om<0d0) om = om+pc_pi2
            return
         else
 !-- converting to IMC
@@ -823,8 +811,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- must be inside cell
         x = min(x,grd_xarr(ix+1))
         x = max(x,grd_xarr(ix))
-        z = min(z,grd_zarr(iz+1))
-        z = max(z,grd_zarr(iz))
 !-- sampling direction
         call rnd_r(r1,rndstate)
         call rnd_r(r2,rndstate)
@@ -863,7 +849,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- redefine for flux tally
            om = pc_pi-(z+om)  !-- direction angle
            if(om<0d0) om = om+pc_pi2
-           if(om>pc_pi2) om = om-pc_pi2
+           if(om<0d0) om = om+pc_pi2
            return
         else
 !-- converting to IMC
@@ -946,8 +932,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- must be inside cell
         x = min(x,grd_xarr(ix+1))
         x = max(x,grd_xarr(ix))
-        y = min(y,grd_yarr(iy+1))
-        y = max(y,grd_yarr(iy))
 !-- sampling direction
         lredir = .true.
         call rnd_r(r1,rndstate)
@@ -991,6 +975,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      iz = iznext
      ic = grd_icell(ix,iy,iz)
      ig = iiig
+!}}}
 
 !-- iz->iz+1 leakage
   elseif(r1>=pa+sum(probleak(1:5)).and.r1<pa+sum(probleak(1:6))) then
@@ -1063,8 +1048,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- must be inside cell
         x = min(x,grd_xarr(ix+1))
         x = max(x,grd_xarr(ix))
-        y = min(y,grd_yarr(iy+1))
-        y = max(y,grd_yarr(iy))
 !-- sampling direction
         lredir = .true.
         call rnd_r(r1,rndstate)
@@ -1108,11 +1091,12 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      iz = iznext
      ic = grd_icell(ix,iy,iz)
      ig = iiig
+!}}}
 
 !-- effective scattering
   else
      ptcl2%idist = -2
-!!{{{
+!{{{
      if(glump==grp_ng) then
 !       stop 'diffusion2: effective scattering with glump==ng'
         ierr = 102
@@ -1127,8 +1111,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- don't sample, it will end up in the lump anyway
         else
 !-- always put this in the single most likely group
-           ig = nint(grd_opaclump(9,ic))
-           return
+           iiig = nint(grd_opaclump(9,ic))
         endif
      else
 !
@@ -1174,10 +1157,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- must be inside cell
         x = min(x,grd_xarr(ix+1))
         x = max(x,grd_xarr(ix))
-        y = min(y,grd_yarr(iy+1))
-        y = max(y,grd_yarr(iy))
-        z = min(z,grd_zarr(iz+1))
-        z = max(z,grd_zarr(iz))
 !-- doppler and aberration corrections
         if(grd_isvelocity) then
 !-- calculating transformation factors
@@ -1215,8 +1194,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      ptcl2%muz = pc_pi-(z+om)  !-- direction angle
      if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
      if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
-     if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
-     if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
   endif
 
 end subroutine diffusion2

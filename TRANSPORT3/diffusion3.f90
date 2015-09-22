@@ -486,11 +486,6 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
         call rnd_r(r1,rndstate)
         z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
-!-- must be inside cell
-        y = min(y,grd_yarr(iy+1))
-        y = max(y,grd_yarr(iy))
-        z = min(z,grd_zarr(iz+1))
-        z = max(z,grd_zarr(iz))
 !-- sampling direction
         call rnd_r(r1,rndstate)
         call rnd_r(r2,rndstate)
@@ -616,11 +611,6 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
         call rnd_r(r1,rndstate)
         z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
-!-- must be inside cell
-        y = min(y,grd_yarr(iy+1))
-        y = max(y,grd_yarr(iy))
-        z = min(z,grd_zarr(iz+1))
-        z = max(z,grd_zarr(iz))
 !-- sampling direction
         call rnd_r(r1,rndstate)
         call rnd_r(r2,rndstate)
@@ -744,11 +734,6 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         y = grd_yarr(iy)
         call rnd_r(r1,rndstate)
         z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
-!-- must be inside cell
-        x = min(x,grd_xarr(ix+1))
-        x = max(x,grd_xarr(ix))
-        z = min(z,grd_zarr(iz+1))
-        z = max(z,grd_zarr(iz))
 !-- sampling direction
         call rnd_r(r1,rndstate)
         call rnd_r(r2,rndstate)
@@ -873,11 +858,6 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         y = grd_yarr(iy+1)
         call rnd_r(r1,rndstate)
         z = (1d0-r1)*grd_zarr(iz)+r1*grd_zarr(iz+1)
-!-- must be inside cell
-        x = min(x,grd_xarr(ix+1))
-        x = max(x,grd_xarr(ix))
-        z = min(z,grd_zarr(iz+1))
-        z = max(z,grd_zarr(iz))
 !-- sampling direction
         call rnd_r(r1,rndstate)
         call rnd_r(r2,rndstate)
@@ -1002,11 +982,6 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         call rnd_r(r1,rndstate)
         y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
         z = grd_zarr(iz)
-!-- must be inside cell
-        x = min(x,grd_xarr(ix+1))
-        x = max(x,grd_xarr(ix))
-        y = min(y,grd_yarr(iy+1))
-        y = max(y,grd_yarr(iy))
 !-- sampling direction
         call rnd_r(r1,rndstate)
         call rnd_r(r2,rndstate)
@@ -1130,11 +1105,6 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         call rnd_r(r1,rndstate)
         y = (1d0-r1)*grd_yarr(iy)+r1*grd_yarr(iy+1)
         z = grd_zarr(iz+1)
-!-- must be inside cell
-        x = min(x,grd_xarr(ix+1))
-        x = max(x,grd_xarr(ix))
-        y = min(y,grd_yarr(iy+1))
-        y = max(y,grd_yarr(iy))
 !-- sampling direction
         call rnd_r(r1,rndstate)
         call rnd_r(r2,rndstate)
@@ -1253,13 +1223,6 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
         call rnd_r(r1,rndstate)
         z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
-!-- must be inside cell
-        x = min(x,grd_xarr(ix+1))
-        x = max(x,grd_xarr(ix))
-        y = min(y,grd_yarr(iy+1))
-        y = max(y,grd_yarr(iy))
-        z = min(z,grd_zarr(iz+1))
-        z = max(z,grd_zarr(iz))
 !-- doppler and aberration corrections
         if(grd_isvelocity) then
 !-- calculating transformation factors

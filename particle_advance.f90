@@ -236,8 +236,6 @@ subroutine particle_advance
         ptcl2%muz = pc_pi-(z+om)  !-- direction angle
         if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
         if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
-        if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
-        if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
      endif
 
 !-----------------------------------------------------------------------
@@ -275,20 +273,6 @@ subroutine particle_advance
 !-- tally rest
         grd_tally(:,icold) = grd_tally(:,icold) + [edep,eraddens]
 !
-!-- outbound luminosity tally
-        if(ptcl2%lflux) then
-           nflux = nflux + 1
-           tot_eout = tot_eout+e
-!-- retrieving lab frame flux group, polar, azimuthal bin
-           ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-           imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
-           iom = binsrch(om,flx_om,flx_nom+1,.false.)
-!-- tallying outbound luminosity
-           flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+e
-           flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+e**2
-           flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1
-        endif
-!
 !-- Russian roulette for termination of exhausted particles
         if(e<1d-6*e0 .and. .not.ptcl2%isvacant .and. &
               grd_capgrey(ic)+grd_sig(ic)>0d0) then
@@ -323,17 +307,6 @@ subroutine particle_advance
               e0 = 2d0*e0
            endif!}}}
         endif
-!
-!-- tally census
-        if(ptcl2%lcens) then
-           if(ptcl2%itype==1) then
-              ncensimc = ncensimc + 1
-              if(in_io_dogrdtally) grd_numcensimc(ic) = grd_numcensimc(ic) + 1
-           else
-              ncensddmc = ncensddmc + 1
-              if(in_io_dogrdtally) grd_numcensddmc(ic) = grd_numcensddmc(ic) + 1
-           endif
-        endif
 
 !-- verify position
         if(ptcl2%itype==1 .and. .not.ptcl2%done) then
@@ -358,7 +331,7 @@ subroutine particle_advance
         endif
 
 !-- check exit status
-        if(ierr/=0) then
+        if(ierr/=0 .or. ptcl2%istep>500) then
            write(0,*) 'pa: ierr,ipart,istep,idist:',ierr,ptcl2%ipart,ptcl2%istep,ptcl2%idist
            write(0,*) 'dist:',ptcl2%dist
            write(0,*) 'tddmc:',tau
@@ -368,6 +341,31 @@ subroutine particle_advance
            if(ierr>0) stop 'particle_advance: fatal transport error'
         endif
      enddo
+!
+!-- outbound luminosity tally
+     if(ptcl2%lflux) then
+        nflux = nflux + 1
+        tot_eout = tot_eout+e
+!-- retrieving lab frame flux group, polar, azimuthal bin
+        ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
+        imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
+        iom = binsrch(om,flx_om,flx_nom+1,.false.)
+!-- tallying outbound luminosity
+        flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+e
+        flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+e**2
+        flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1
+     endif
+!
+!-- tally census
+     if(ptcl2%lcens) then
+        if(ptcl2%itype==1) then
+           ncensimc = ncensimc + 1
+           if(in_io_dogrdtally) grd_numcensimc(ic) = grd_numcensimc(ic) + 1
+        else
+           ncensddmc = ncensddmc + 1
+           if(in_io_dogrdtally) grd_numcensddmc(ic) = grd_numcensddmc(ic) + 1
+        endif
+     endif
 
 !-- max step counter
      nstepmax = max(nstepmax,ptcl2%istep)
@@ -415,73 +413,38 @@ subroutine particle_advance
         call rnd_r(r1,rndstate)
         wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
 !
-!-- sample position and direction
+!-- sample x position
         select case(grd_igeom)
-!-- 1D spherical
-        case(11)
-!-- sampling position uniformly!{{{
+        case(1,11) !-- spherical
            call rnd_r(r1,rndstate)
            x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
-           x = min(x,grd_xarr(ix+1))!-- must be inside cell
+!-- must be inside cell
+           x = min(x,grd_xarr(ix+1))
            x = max(x,grd_xarr(ix))
-!-- sampling angle isotropically
-           call rnd_r(r1,rndstate)
-           mu = 1.0 - 2.0*r1 !}}}
-!-- 3D spherical
-        case(1)
-!-- sampling position uniformly!{{{
-           call rnd_r(r1,rndstate)
-           x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
-           x = min(x,grd_xarr(ix+1))!-- must be inside cell
-           x = max(x,grd_xarr(ix))
-           call rnd_r(r1,rndstate)
-           y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
-           call rnd_r(r1,rndstate)
-           z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
-!-- sampling angle isotropically
-           call rnd_r(r1,rndstate)
-           mu = 1.0 - 2.0*r1
-           call rnd_r(r1,rndstate)
-           om = pc_pi2*r1!}}}
-!-- 2D
-        case(2)
-!-- sampling position uniformly!{{{
+        case(2) !-- cylindrical
            call rnd_r(r1,rndstate)
            x = sqrt(r1*grd_xarr(ix+1)**2 + (1d0-r1)*grd_xarr(ix)**2)
-           x = min(x,grd_xarr(ix+1))!-- must be inside cell
+!-- must be inside cell
+           x = min(x,grd_xarr(ix+1))
            x = max(x,grd_xarr(ix))
-           call rnd_r(r1,rndstate)
-           y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
-           call rnd_r(r1,rndstate)
-           z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
-!-- sampling direction values
-           call rnd_r(r1,rndstate)
-           om = pc_pi2*r1
-           call rnd_r(r1,rndstate)
-           mu = 1d0 - 2d0*r1!}}}
-!-- 3D
-        case(3)
-!-- sampling position uniformly !{{{
+        case(3) !-- cartesian
            call rnd_r(r1,rndstate)
            x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
+        endselect
+!
+!-- y,z position
+        if(grd_igeom/=11) then
            call rnd_r(r1,rndstate)
            y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
            call rnd_r(r1,rndstate)
            z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
-!-- sampling direction values
-           call rnd_r(r1,rndstate)
-           om = pc_pi2*r1
-           call rnd_r(r1,rndstate)
-           mu = 1d0 - 2d0*r1 !}}}
-        endselect
+        endif
 !
-!!-- must be inside cell
-!        x = min(x,grd_xarr(ix+1))
-!        x = max(x,grd_xarr(ix))
-!        y = min(y,grd_yarr(iy+1))
-!        y = max(y,grd_yarr(iy))
-!        z = min(z,grd_zarr(iz+1))
-!        z = max(z,grd_zarr(iz))
+!-- sample direction
+        call rnd_r(r1,rndstate)
+        mu = 1.0 - 2.0*r1
+        call rnd_r(r1,rndstate)
+        om = pc_pi2*r1
 !
         if(grd_isvelocity) call direction2lab(x,y,z,mu,om)
      endif

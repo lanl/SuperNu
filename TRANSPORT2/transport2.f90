@@ -97,7 +97,6 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      elabfact = 1d0
      thelp = 1d0
   endif
-!write(0,*) ptcl2%ipart,ptcl2%istep,ptcl2%idist,x,z,mu,om,mux,x*sin(om)/sin(z+om),muy,x*sin(z)/sin(z+om)
 !
 !-- inverting vel-grid factor
   thelpinv = 1d0/thelp
@@ -674,17 +673,17 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ierr = 14
         return
      endif
-     if(iznext==iz-1) then
-        z = grd_zarr(iz)
-        if(iznext==0) then
-           iznext = grd_nz
-           z = pc_pi2
-        endif
-     elseif(iznext==iz+1) then
+     if(iznext==iz+1) then
         z = grd_zarr(iz+1)
         if(iznext==grd_nz+1) then
            iznext = 1
            z = 0d0
+        endif
+     elseif(iznext==iz-1) then
+        z = grd_zarr(iz)
+        if(iznext==0) then
+           iznext = grd_nz
+           z = pc_pi2
         endif
      else
 !       stop 'transport1: invalid iznext'
@@ -819,8 +818,6 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      muz = pc_pi-(z+om)  !-- direction angle
      if(muz<0d0) muz = muz+pc_pi2
      if(muz<0d0) muz = muz+pc_pi2
-     if(muz>pc_pi2) muz = muz-pc_pi2
-     if(muz>pc_pi2) muz = muz-pc_pi2
   endif
 
 end subroutine transport2

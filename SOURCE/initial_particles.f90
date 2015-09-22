@@ -18,7 +18,6 @@ subroutine initial_particles
 !
   integer :: ig, i,j,k,l, iig, ipart, ii
   integer :: nhere,ndmy,iimpi,nemit
-  integer :: ix,iy,iz
   real*8 :: wl0, mu0, om0, ep0
   real*8 :: denom2
   real*8 :: pwr
@@ -50,9 +49,6 @@ subroutine initial_particles
   do ii=1,nhere
      ipart = ipart + 1!{{{
 !
-!-- setting 1st cell index
-     ix = i
-
 !-- setting particle index to not vacant
      prt_isvacant(ipart) = .false.
 !
@@ -82,88 +78,40 @@ subroutine initial_particles
      call rnd_r(r1,rnd_state)
      mu0 = 1d0-2d0*r1
      ptcl%mu = mu0
-
 !-- sampling azimuthal angle of direction
      call rnd_r(r1,rnd_state)
      om0 = pc_pi2*r1
      ptcl%om = om0
 
 !
-!-- selecting geometry
+!-- x position
      select case(in_igeom)
-
-!-- 3D spherical
-     case(1)
-!-- calculating position
+!-- spherical
+     case(1,11)
         call rnd_r(r1,rnd_state)
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
              (1d0-r1)*grd_xarr(i)**3)**(1d0/3d0)
-        call rnd_r(r1,rnd_state)
-        ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
-        call rnd_r(r1,rnd_state)
-        ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
-        ptcl%y = min(ptcl%y,grd_yarr(j+1))
-        ptcl%y = max(ptcl%y,grd_yarr(j))
-        ptcl%z = min(ptcl%z,grd_zarr(k+1))
-        ptcl%z = max(ptcl%z,grd_zarr(k))
-
-!-- 2D
+!-- cylindrical
      case(2)
-!-- setting 2nd cell index
-        iy = j
-!-- calculating position
         call rnd_r(r1,rnd_state)
         ptcl%x = sqrt(r1*grd_xarr(i+1)**2 + (1d0-r1)*grd_xarr(i)**2)
-        call rnd_r(r1,rnd_state)
-        ptcl%y = r1*grd_yarr(j+1) + (1d0-r1)*grd_yarr(j)
-        call rnd_r(r1,rnd_state)
-        ptcl%z = r1*grd_zarr(k+1) + (1d0-r1)*grd_zarr(k)
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
-        ptcl%y = min(ptcl%y,grd_yarr(j+1))
-        ptcl%y = max(ptcl%y,grd_yarr(j))
-        ptcl%z = min(ptcl%z,grd_zarr(k+1))
-        ptcl%z = max(ptcl%z,grd_zarr(k))
-
-!-- 3D
+!-- cartesian
      case(3)
-!-- setting 2nd, 3rd cell index
-        iy = j
-        iz = k
-!-- calculating position
         call rnd_r(r1,rnd_state)
-        ptcl%x = r1*grd_xarr(i+1) + &
-             (1d0-r1)*grd_xarr(i)
-        call rnd_r(r1,rnd_state)
-        ptcl%y = r1*grd_yarr(j+1) + &
-             (1d0-r1)*grd_yarr(j)
-        call rnd_r(r1,rnd_state)
-        ptcl%z = r1*grd_zarr(k+1) + &
-             (1d0-r1)*grd_zarr(k)
-!-- must be inside cell
-        ptcl%x = min(ptcl%x,grd_xarr(i+1))
-        ptcl%x = max(ptcl%x,grd_xarr(i))
-        ptcl%y = min(ptcl%y,grd_yarr(j+1))
-        ptcl%y = max(ptcl%y,grd_yarr(j))
-        ptcl%z = min(ptcl%z,grd_zarr(k+1))
-        ptcl%z = max(ptcl%z,grd_zarr(k))
-
-!-- 1D
-     case(11)
-!-- calculating position
-        call rnd_r(r1,rnd_state)
-        ptcl%x = (r1*grd_xarr(i+1)**3 + &
-             (1d0-r1)*grd_xarr(i)**3)**(1d0/3d0)
-!-- must be inside cell
-        ptcl%x = min(ptcl%x,grd_xarr(i+1))
-        ptcl%x = max(ptcl%x,grd_xarr(i))
-        ptcl%y = grd_yarr(1)
-        ptcl%z = grd_zarr(1)
+        ptcl%x = r1*grd_xarr(i+1) + (1d0-r1)*grd_xarr(i)
      endselect
+!
+!-- x,y position
+     call rnd_r(r1,rnd_state)
+     ptcl%y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
+     call rnd_r(r1,rnd_state)
+     ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
 
 !-- save particle result
 !-----------------------

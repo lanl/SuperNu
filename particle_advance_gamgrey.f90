@@ -159,66 +159,51 @@ subroutine particle_advance_gamgrey(nmpi)
      iz = k
      ic = grd_icell(ix,iy,iz)
 
-!-- calculating direction cosine (comoving)
-     call rnd_r(r1,rndstate)
-     mu0 = 1d0-2d0*r1
-
-!-- particle propagation
+!-- x position
      select case(in_igeom)
-     case(11)
-!-- calculating position!{{{
+     case(1,11)
         call rnd_r(r1,rndstate)
         x = (r1*grd_xarr(i+1)**3 + &
              (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
-        x = min(x,grd_xarr(i+1)) !-- must be inside cell
+!-- must be inside cell
+        x = min(x,grd_xarr(i+1))
         x = max(x,grd_xarr(i))
-        y = grd_yarr(1)
-        z = grd_zarr(1)
-!--
-        if(grd_isvelocity) then
-           x0 = x
-           cmffact = 1d0+mu0*x0/pc_c !-- 1+dir*v/c
-           mu = (mu0+x0/pc_c)/cmffact
-        else
-           mu = mu0
-        endif!}}}
-     case(1)
-!-- calculating position!{{{
-        call rnd_r(r1,rndstate)
-        x = (r1*grd_xarr(i+1)**3 + &
-             (1.0-r1)*grd_xarr(i)**3)**(1.0/3.0)
-        x = min(x,grd_xarr(i+1)) !-- must be inside cell
-        x = max(x,grd_xarr(i))
-        call rnd_r(r1,rndstate)
-        y = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
-        call rnd_r(r1,rndstate)
-        z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
-!--
-!-- sampling azimuthal angle of direction
-        call rnd_r(r1,rndstate)
-        om = pc_pi2*r1
-        if(grd_isvelocity) then
-           x0 = x
-           cmffact = 1d0+mu0*x0/pc_c !-- 1+dir*v/c
-           mu = (mu0+x0/pc_c)/cmffact
-        else
-           mu = mu0
-        endif!}}}
      case(2)
-!-- calculating position!{{{
         call rnd_r(r1,rndstate)
         x = sqrt(r1*grd_xarr(i+1)**2 + (1d0-r1)*grd_xarr(i)**2)
-        x = min(x,grd_xarr(i+1)) !-- must be inside cell
+!-- must be inside cell
+        x = min(x,grd_xarr(i+1))
         x = max(x,grd_xarr(i))
+     case(3)
+        call rnd_r(r1,rndstate)
+        x = r1*grd_xarr(i+1) + (1d0-r1) * grd_xarr(i)
+     endselect
+
+!-- y,z position
+     if(in_igeom/=11) then
         call rnd_r(r1,rndstate)
         y = r1*grd_yarr(j+1) + (1d0-r1) * grd_yarr(j)
         call rnd_r(r1,rndstate)
         z = r1*grd_zarr(k+1) + (1d0-r1) * grd_zarr(k)
-!-- sampling azimuthal angle of direction
-        call rnd_r(r1,rndstate)
-        om0 = pc_pi2*r1
-!-- if velocity-dependent, transforming direction
-        if(grd_isvelocity) then
+     endif
+
+!-- direction cosine (comoving)
+     call rnd_r(r1,rndstate)
+     mu0 = 1d0-2d0*r1
+     call rnd_r(r1,rndstate)
+     om0 = pc_pi2*r1
+
+!-- transform direction
+     if(.not.grd_isvelocity) then
+         mu = mu0
+         om = om0
+     else
+        select case(in_igeom)!{{{
+        case(1,11)
+           x0 = x
+           cmffact = 1d0+mu0*x0/pc_c !-- 1+dir*v/c
+           mu = (mu0+x0/pc_c)/cmffact
+        case(2)
            x0 = x
            y0 = y
 !-- 1+dir*v/c
@@ -232,23 +217,7 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- mu
            mu = (mu0+(gm*y/pc_c)*(1d0+gm*(cmffact-1d0)/(1d0+gm))) / &
                 (gm*cmffact)
-        else
-           mu = mu0
-           om = om0
-        endif!}}}
-     case(3)
-!-- calculating position!{{{
-        call rnd_r(r1,rndstate)
-        x = r1*grd_xarr(i+1) + (1d0-r1) * grd_xarr(i)
-        call rnd_r(r1,rndstate)
-        y = r1*grd_yarr(j+1) + (1d0-r1) * grd_yarr(j)
-        call rnd_r(r1,rndstate)
-        z = r1*grd_zarr(k+1) + (1d0-r1) * grd_zarr(k)
-!-- sampling azimuthal angle of direction
-        call rnd_r(r1,rndstate)
-        om0 = pc_pi2*r1
-!-- if velocity-dependent, transforming direction
-        if(grd_isvelocity) then
+        case(3)
            x0 = x
            y0 = y
            z0 = z
@@ -266,19 +235,8 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- om
            om = atan2(mu2+y0/pc_c,mu1+x0/pc_c)
            if(om<0d0) om = om+pc_pi2
-        else
-           mu = mu0
-           om = om0
-        endif!}}}
-     endselect
-!!
-!!-- must be inside cell
-!     x = min(x,grd_xarr(i+1))
-!     x = max(x,grd_xarr(i))
-!     y = min(y,grd_yarr(j+1))
-!     y = max(y,grd_yarr(j))
-!     z = min(z,grd_zarr(k+1))
-!     z = max(z,grd_zarr(k))
+        endselect!}}}
+     endif
 
 !-- velocity components in cartesian basis
      if(grd_igeom==1) then
@@ -297,8 +255,6 @@ subroutine particle_advance_gamgrey(nmpi)
         ptcl2%muz = pc_pi-(z+om)  !-- direction angle
         if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
         if(ptcl2%muz<0d0) ptcl2%muz = ptcl2%muz+pc_pi2
-        if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
-        if(ptcl2%muz>pc_pi2) ptcl2%muz = ptcl2%muz-pc_pi2
      endif
 !
 !-- emission energy per particle

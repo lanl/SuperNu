@@ -42,7 +42,6 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   integer,pointer :: ix, iy, iz, ic, ig
   real*8,pointer :: x,y,z,mu,om,e,d
 !-- statement functions
-  integer :: l
   real*8 :: muxf,zz
   muxf(zz) = ptcl%x*sin(ptcl2%muz+zz)/sin(ptcl2%muz)
   !muyf(zz) = ptcl%x*sin(zz)/sin(ptcl2%muz)
@@ -412,8 +411,6 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
      muz = pc_pi-(z+om)  !-- direction angle
      if(muz<0d0) muz = muz+pc_pi2
      if(muz<0d0) muz = muz+pc_pi2
-     if(muz>pc_pi2) muz = muz-pc_pi2
-     if(muz>pc_pi2) muz = muz-pc_pi2
   endif
 
 end subroutine transport2_gamgrey
