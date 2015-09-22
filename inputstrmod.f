@@ -170,9 +170,9 @@ c-- dim 2
       endif
 c-- check and fix endpoints
       if(igeom==11 .or. igeom==1) then
-       if(abs(str_yleft(1)+1d0)>1d-3) stop
+       if(igeom/=11 .and. abs(str_yleft(1)+1d0)>1d-3) stop
      &   'read_inputstr: yleft(1) boundary value error'
-       if(abs(str_yleft(ny+1)-1d0)>1d-3) stop
+       if(igeom/=11 .and. abs(str_yleft(ny+1)-1d0)>1d-3) stop
      &   'read_inputstr: yleft(ny+1) boundary value error'
        str_yleft(1) = -1d0
        str_yleft(ny+1) = 1d0
@@ -189,9 +189,9 @@ c-- dim 3
       endif
 c-- check and fix endpoints
       if(igeom==1 .or. igeom==2 .or. igeom==11) then
-       if(abs(str_zleft(1))>1d-3) stop
+       if(igeom/=11 .and. abs(str_zleft(1))>1d-3) stop
      &   'read_inputstr: zleft(1) boundary value error'
-       if(abs(str_zleft(nz+1)-pc_pi2)>1d-3) stop
+       if(igeom/=11 .and. abs(str_zleft(nz+1)-pc_pi2)>1d-3) stop
      &   'read_inputstr: zleft(nz+1) boundary value error'
        str_zleft(1) = 0d0
        str_zleft(nz+1) = pc_pi2
