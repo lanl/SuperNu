@@ -712,8 +712,8 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            mu = (mu-gm*y*cinv*(1d0-gm*dirdotu*cinv/(1d0+gm))) / &
                 (gm*(1d0-dirdotu*cinv))
 !-- transforming z-cosine to cmf
-           xi = sqrt(1d0-mu**2)*sin(om)
         endif
+        xi = sqrt(1d0-mu**2)*sin(om)
         help = (grd_cap(ig,l)+grd_sig(l)) * &
              xm(ix)*dz(iznext)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
@@ -732,28 +732,16 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            iz = iznext
            ic = grd_icell(ix,iy,iz)
         else
+!-- resampling z-cosine
            call rnd_r(r1,rndstate)
            call rnd_r(r2,rndstate)
-!-- resampling z-cosine
+           xi = max(r1,r2)
            if(grd_nz==2) then
 !-- rejection for 2 cells can occur at zarr(iz) and zarr(iz+1)
-              if(iznext==1) then
-                 if(z==grd_zarr(2)) then
-                    xi = max(r1,r2)
-                 elseif(z==0d0) then
-                    xi = -max(r1,r2)
-                 endif
-              elseif(iznext==2) then
-                 if(z==grd_zarr(2)) then
-                    xi = -max(r1,r2)
-                 elseif(z==pc_pi2) then
-                    xi = max(r1,r2)
-                 endif
-              endif
+              if(iznext==1 .and. z==0d0) xi = -max(r1,r2)
+              if(iznext==2 .and. z==pc_pi) xi = -max(r1,r2)
            elseif(iznext==iz+1.or.(iznext==1.and.iz==grd_nz)) then
               xi = -max(r1,r2)
-           else
-              xi = max(r1,r2)
            endif
 
            lredir = .true.

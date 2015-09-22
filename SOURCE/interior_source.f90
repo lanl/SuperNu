@@ -315,6 +315,8 @@ subroutine interior_source
         enddo
         y0 = r1*grd_yarr(j+1)+(1d0-r1)*grd_yarr(j)
         ptcl%y = y0
+        call rnd_r(r1,rnd_state)
+        ptcl%z = r1*grd_zarr(k+1)+(1d0-r1)*grd_zarr(k)
 !-- must be inside cell
         ptcl%x = min(ptcl%x,grd_xarr(i+1))
         ptcl%x = max(ptcl%x,grd_xarr(i))
