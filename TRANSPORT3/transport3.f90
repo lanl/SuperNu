@@ -26,7 +26,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   real*8,parameter :: cinv = 1d0/pc_c
 
   logical :: loutx,louty,loutz
-  integer :: ihelp
+  integer :: iznext,iynext,ixnext
   real*8 :: elabfact, eta, xi
   real*8 :: thelp, thelpinv, help
   real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop
@@ -143,7 +143,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- finding minimum distance
   darr = [dcen,dcol,dthm,ddop,dbx,dby,dbz]
   ptcl2%idist = minloc(darr,dim=1)
-  d = minval(darr)
+  d = darr(ptcl2%idist)
 ! if(any(darr/=darr) .or. d<0d0) then
 !    write(0,*) darr
 !    write(*,*) ix,iy,iz,x,y,z,mu,eta,xi,om
@@ -159,9 +159,41 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   endif
 
 !-- updating position
-  x = x + xi*d
-  y = y + eta*d
-  z = z + mu*d
+  if(d==dbx) then
+     if(xi>=0d0) then
+        ixnext = ix+1
+        x = grd_xarr(ix+1)
+     else
+        ixnext = ix-1
+        x = grd_xarr(ix)
+     endif
+  else
+     x = x + xi*d
+  endif
+
+  if(d==dby) then
+     if(eta>=0d0) then
+        iynext = iy+1
+        y = grd_yarr(iy+1)
+     else
+        iynext = iy-1
+        y = grd_yarr(iy)
+     endif
+  else
+     y = y + eta*d
+  endif
+
+  if(d==dbz) then
+     if(mu>=0d0) then
+        iznext = iz + 1
+        z = grd_zarr(iz+1)
+     else
+        iznext = iz - 1
+        z = grd_zarr(iz)
+     endif
+  else
+     z = z + mu*d
+  endif
 
 !
 !-- updating time
@@ -339,20 +371,12 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- x-bound
   elseif(d==dbx) then
 
-     if(xi>=0d0) then
-        ihelp = 1
-        x = grd_xarr(ix+1)
-     else
-        ihelp = -1
-        x = grd_xarr(ix)
-     endif
-
-     l = grd_icell(ix+ihelp,iy,iz)
+     l = grd_icell(ixnext,iy,iz)
      if((grd_cap(ig,l)+grd_sig(l)) * &
-          min(dx(ix+ihelp),dy(iy),dz(iz))*thelp < trn_tauddmc &
+          min(dx(ixnext),dy(iy),dz(iz))*thelp < trn_tauddmc &
           .or.in_puretran) then
 !-- IMC in adjacent cell
-        ix = ix+ihelp
+        ix = ixnext
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
@@ -383,7 +407,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            endif
         endif
         help = (grd_cap(ig,l)+grd_sig(l)) * &
-             dx(ix+ihelp)*thelp
+             dx(ixnext)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
         call rnd_r(r1,rndstate)
@@ -397,12 +421,12 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               e0 = e0*elabfact
               wl = wl/elabfact
            endif
-           ix = ix + ihelp
+           ix = ixnext
            ic = grd_icell(ix,iy,iz)
         else
            call rnd_r(r1,rndstate)
            call rnd_r(r2,rndstate)
-           xi = -ihelp*max(r1,r2)
+           xi = -(ixnext-ix)*max(r1,r2)
            call rnd_r(r1,rndstate)
            eta = sqrt(1d0-xi**2)*cos(pc_pi2*r1)
 !-- resampling z-cosine
@@ -429,20 +453,12 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- y-bound
   elseif(d==dby) then
 
-     if(eta>=0d0) then
-        ihelp = 1
-        y = grd_yarr(iy+1)
-     else
-        ihelp = -1
-        y = grd_yarr(iy)
-     endif
-
-     l = grd_icell(ix,iy+ihelp,iz)
+     l = grd_icell(ix,iynext,iz)
      if((grd_cap(ig,l)+grd_sig(l)) * &
-          min(dx(ix),dy(iy+ihelp),dz(iz))*thelp < trn_tauddmc &
+          min(dx(ix),dy(iynext),dz(iz))*thelp < trn_tauddmc &
           .or.in_puretran) then
 !-- IMC in adjacent cell
-        iy = iy+ihelp
+        iy = iynext
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
@@ -473,7 +489,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            endif
         endif
         help = (grd_cap(ig,l)+grd_sig(l)) * &
-             dy(iy+ihelp)*thelp
+             dy(iynext)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
         call rnd_r(r1,rndstate)
@@ -487,12 +503,12 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               e0 = e0*elabfact
               wl = wl/elabfact
            endif
-           iy = iy + ihelp
+           iy = iynext
            ic = grd_icell(ix,iy,iz)
         else
            call rnd_r(r1,rndstate)
            call rnd_r(r2,rndstate)
-           eta = -ihelp*max(r1,r2)
+           eta = -(iynext-iy)*max(r1,r2)
            call rnd_r(r1,rndstate)
            xi = sqrt(1d0-eta**2)*cos(pc_pi2*r1)
 !-- resampling z-cosine
@@ -519,20 +535,12 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- z-bound
   elseif(d==dbz) then
 
-     if(mu>=0d0) then
-        ihelp = 1
-        z = grd_zarr(iz+1)
-     else
-        ihelp = -1
-        z = grd_zarr(iz)
-     endif
-
-     l = grd_icell(ix,iy,iz+ihelp)
+     l = grd_icell(ix,iy,iznext)
      if((grd_cap(ig,l)+grd_sig(l)) * &
-          min(dx(ix),dy(iy),dz(iz+ihelp))*thelp < trn_tauddmc &
+          min(dx(ix),dy(iy),dz(iznext))*thelp < trn_tauddmc &
           .or.in_puretran) then
 !-- IMC in adjacent cell
-        iz = iz+ihelp
+        iz = iznext
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
@@ -563,7 +571,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            endif
         endif
         help = (grd_cap(ig,l)+grd_sig(l)) * &
-             dz(iz+ihelp)*thelp
+             dz(iznext)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
         !-- sampling
         call rnd_r(r1,rndstate)
@@ -577,13 +585,13 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               e0 = e0*elabfact
               wl = wl/elabfact
            endif
-           iz = iz + ihelp
+           iz = iznext
            ic = grd_icell(ix,iy,iz)
         else
            call rnd_r(r1,rndstate)
            call rnd_r(r2,rndstate)
 !-- resampling z-cosine
-           mu = -ihelp*max(r1,r2)
+           mu = -(iznext-iz)*max(r1,r2)
            call rnd_r(r1,rndstate)
 !-- resampling azimuthal
            om = pc_pi2*r1

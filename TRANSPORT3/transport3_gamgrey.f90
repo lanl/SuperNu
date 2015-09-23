@@ -24,7 +24,7 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   real*8,parameter :: dt = pc_year !give grey transport infinite time
 
   logical :: loutx,louty,loutz
-  integer :: ihelp
+  integer :: iznext,iynext,ixnext
   real*8 :: elabfact, eta, xi
   real*8 :: thelp, thelpinv, help
   real*8 :: dcol,dbx,dby,dbz
@@ -104,7 +104,8 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !
 !-- finding minimum distance
   darr = [dbx,dby,dbz,dcol]
-  d = minval(darr)
+  ptcl2%idist = minloc(darr,dim=1)
+  d = darr(ptcl2%idist)
   if(any(darr/=darr)) then
      ierr = 1
      return
@@ -115,9 +116,44 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   endif
 
 !-- updating position
-  x = x + xi*d
-  y = y + eta*d
-  z = z + mu*d
+  if(d==dbx) then
+     if(xi>=0d0) then
+        ixnext = ix+1
+        x = grd_xarr(ix+1)
+     else
+        ixnext = ix-1
+        x = grd_xarr(ix)
+     endif
+  else
+     ixnext = ix
+     x = x + xi*d
+  endif
+
+  if(d==dby) then
+     if(eta>=0d0) then
+        iynext = iy+1
+        y = grd_yarr(iy+1)
+     else
+        iynext = iy-1
+        y = grd_yarr(iy)
+     endif
+  else
+     iynext = iy
+     y = y + eta*d
+  endif
+
+  if(d==dbz) then
+     if(mu>=0d0) then
+        iznext = iz + 1
+        z = grd_zarr(iz+1)
+     else
+        iznext = iz - 1
+        z = grd_zarr(iz)
+     endif
+  else
+     iznext = iz
+     z = z + mu*d
+  endif
 
 !-- tallying energy densities
   if(.not.trn_isimcanlog) then
@@ -201,53 +237,11 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
            e = e*help
         endif
      endif
-
-!
-!-- x-bound
-  elseif(d==dbx) then
-
-     if(xi>=0d0) then
-        ihelp = 1
-        x = grd_xarr(ix+1)
-     else
-        ihelp = -1
-        x = grd_xarr(ix)
-     endif
-!-- IMC in adjacent cell
-     ix = ix+ihelp
-     ic = grd_icell(ix,iy,iz)
-!
-!-- y-bound
-  elseif(d==dby) then
-
-     if(eta>=0d0) then
-        ihelp = 1
-        y = grd_yarr(iy+1)
-     else
-        ihelp = -1
-        y = grd_yarr(iy)
-     endif
-!-- IMC in adjacent cell
-     iy = iy+ihelp
-     ic = grd_icell(ix,iy,iz)
-!
-!-- z-bound
-  elseif(d==dbz) then
-
-     if(mu>=0d0) then
-        ihelp = 1
-        z = grd_zarr(iz+1)
-     else
-        ihelp = -1
-        z = grd_zarr(iz)
-     endif
-!-- IMC in adjacent cell
-     iz = iz+ihelp
-     ic = grd_icell(ix,iy,iz)
-  else
-!    stop 'transport3_gamgrey: invalid distance'
-     ierr = 6
-     return
   endif
+
+  ix = ixnext
+  iy = iynext
+  iz = iznext
+  ic = grd_icell(ix,iy,iz)
 
 end subroutine transport3_gamgrey
