@@ -165,16 +165,13 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   
 !
 !-- effective collision distance
-  if(grd_capgam(ic)<=0d0) then
+  if(grd_capgam(ic)<=0d0 .or. .not.trn_isimcanlog) then
 !-- making greater than dcen
      dcol = far
-  elseif(trn_isimcanlog) then
+  else
 !-- calculating dcol for analog MC
      call rnd_r(r1,rndstate)
      dcol = -log(r1)*thelpinv/(elabfact*grd_capgam(ic))
-  else
-!-- making greater than dcen
-     dcol = far
   endif
 !
 !-- finding minimum distance
@@ -376,20 +373,9 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
 !-- effective collision
   if(d==dcol) then
-!-- checking if analog!{{{
-     if(trn_isimcanlog) then
-!-- effective absorption:
-!-- ending particle
-        ptcl2%done=.true.
+     ptcl2%done=.true.
 !-- adding comoving energy to deposition energy
-        edep = e*elabfact
-     else
-!-- effectively scattered:
-!-- transforming to cmf, then to lab:
-!-- energy weight
-        e = e*elabfact/(1d0-dirdotu*cinv)
-     endif!}}}
-
+     edep = e*elabfact
 !
 !-- x-bound
   elseif(d==dbx) then
