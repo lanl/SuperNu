@@ -40,7 +40,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   real*8 :: yhelp1,yhelp2,yhelp3,yhelp4,dby1,dby2
   real*8 :: zhelp
   real*8 :: xold,yold,zold
-  real*8 :: muold
+  real*8 :: muold,omold
 ! real*8 :: etaold,xiold
   real*8 :: ynew,znew
 !-- distance out of physical reach
@@ -92,18 +92,6 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- spherical projections
   eta = sqrt(1d0-mu**2)*cos(om)
   xi = sqrt(1d0-mu**2)*sin(om)
-
-!-- storing old position
-! ixold = ix
-! iyold = iy
-! izold = iz
-  xold = x
-  yold = y
-  zold = z
-  muold = mu
-! etaold = eta
-! xiold = xi
-! idistold = ptcl2%idist
 
   idby1=0
   idby2=0
@@ -300,6 +288,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- azimuthal boundary distance (z)
   if(xi==0d0 .or. grd_nz==1) then
      dbz = far
+     iznext = iz
   elseif(xi>0d0 .and. z>grd_zarr(iz+1)-pc_pi) then
 !-- counterclockwise
      iznext=iz+1
@@ -330,6 +319,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      endif
   else
      dbz = far
+     iznext = iz
   endif
 
 !-- Thomson scattering distance
@@ -368,7 +358,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- finding minimum distance
   darr = [dcen,dcol,dthm,ddop,dbx,dby,dbz]
   ptcl2%idist = minloc(darr,dim=1)
-  d = minval(darr)
+  d = darr(ptcl2%idist)
   if(any(darr/=darr)) then
      ierr = 3
      return
@@ -378,41 +368,92 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      return
   endif
 
-!-- updating radius
-  x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
-  if(x/=x) then
-!    stop 'transport1: x/=x'
-     ierr = 5
-     return
-  endif
-  if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
-!-- sanity check
-     if(d==dbx) then
-!       stop 'transport1: x<1d-15*xarr(2),d==dbx,mu=-1'
-        ierr = 6
-        return
+
+!
+!-- update position
+!-- storing old position
+  xold = x
+  yold = y
+  zold = z
+  muold = mu
+  omold = om
+
+!-- x position
+  if(d==dbx) then
+!-- on boundary
+     if(ixnext>ix) then
+        x = grd_xarr(ix+1)
+     else
+        x = grd_xarr(ix)
      endif
-!-- excluding dbz
-     dbz = far
-!-- resetting direction
-     mu = 1d0
-     eta = 0d0
-     xi = 0d0
   else
-     if(x<1d-15*grd_xarr(2)) then
-!       stop 'transport1: x=0 and muold/=-1'
-        ierr = 7
+!-- in cell
+     ixnext = ix
+     x = sqrt((1d0-mu**2)*x**2+(d+x*mu)**2)
+     if(x/=x) then
+   !    stop 'transport1: x/=x'
+        ierr = 5
         return
      endif
-!-- updating radial projection of direction
-     mu = (xold*mu+d)/x
-     mu = max(mu,-1d0)
-     mu = min(mu,1d0)
-!-- updating polar projection of position
-     y = (xold*yold+muz*d)/x
+     if(d==0d0) x = xold
+  endif
+
+!-- y position
+  if(d==dby) then
+!-- on boundary
+     if(iynext==iy-1) then
+        if(iynext<1) then
+!          stop 'transport1: iynext<1'
+           ierr = 11
+           return
+        endif
+        y = grd_yarr(iy)
+     elseif(iynext==iy+1) then
+        if(iynext>grd_ny) then
+!          stop 'transport1: iynext>ny'
+           ierr = 12
+           return
+        endif
+        y = grd_yarr(iy+1)
+     else
+!-- sanity check
+!       write(0,*) dby
+!       write(0,*) y,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
+!       stop 'transport1: invalid polar bound crossing'
+        ierr = 13
+        return
+     endif
+  else
+!-- in cell
+     iynext = iy
+     y = (xold*yold + muz*d)/x
      y = max(y,-1d0)
      y = min(y,1d0)
-!-- updating azimuthal angle of position
+     if(d==0d0) y = yold
+  endif
+
+!-- z position
+  if(d==dbz) then
+     if(iznext==iz-1) then
+        z = grd_zarr(iz)
+        if(iznext==0) then
+           iznext = grd_nz
+           z = pc_pi2
+        endif
+     elseif(iznext==iz+1) then
+        z = grd_zarr(iz+1)
+        if(iznext==grd_nz+1) then
+           iznext = 1
+           z = 0d0
+        endif
+     elseif(d/=dby) then
+!       stop 'transport1: invalid iznext'
+        ierr = 15
+        return
+     endif
+  else
+!-- in cell
+     iznext = iz
      z = atan2(xold*sqrt(1d0-yold**2)*sin(z)+muy*d , &
           xold*sqrt(1d0-yold**2)*cos(z)+mux*d)
      if(abs(z)<1d-9.and.iz==1) then
@@ -422,7 +463,18 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      elseif(z<0d0) then
         z = z+pc_pi2
      endif
-!-- updating azimuthal angle of direction (about radius)
+     if(d==0d0) z = zold
+  endif
+
+
+!
+!-- update direction
+!-- radial projection of direction
+  mu = (xold*mu+d)/x
+  mu = max(mu,-1d0)
+  mu = min(mu,1d0)
+!-- azimuthal angle of direction (about radius)
+  if(d/=dthm .and. d/=dcol) then
      eta = y*(cos(z)*mux+sin(z)*muy)-sqrt(1d0-y**2)*muz
      xi = cos(z)*muy-sin(z)*mux
      om = atan2(xi,eta)
@@ -435,11 +487,46 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !
 !-- normalize direction
      help = 1d0/sqrt(mu**2+eta**2+xi**2)
-     mu=mu*help
-     eta=eta*help
-     xi=xi*help
+     mu = mu*help
+     !eta = eta*help
+     !xi = xi*help
   endif
 
+
+!
+!-- special case
+  if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
+!-- sanity check
+     if(d==dbx) then
+!       stop 'transport1: x<1d-15*xarr(2),d==dbx,mu=-1'
+        ierr = 6
+        return
+     endif
+!-- excluding dbz, thomson and collision
+     dbz = far
+     dthm = far
+     dcol = far
+!-- resetting direction
+     mu = 1d0
+     om = omold
+     !eta = 0d0
+     !xi = 0d0
+!-- reflecting y
+     y = -yold
+     iynext = binsrch(y,grd_yarr,grd_ny+1,.false.)
+!-- reflecting z
+     z = zold+pc_pi !z is not updated with atan2 calculation
+     if(z>pc_pi2) z = z-pc_pi2
+     if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
+  else
+     if(x<1d-15*grd_xarr(2)) then
+!       stop 'transport1: x=0 and muold/=-1'
+        ierr = 7
+        return
+     endif
+  endif
+
+!
 !-- updating time
   ptcl%t = ptcl%t + thelp*d*cinv
 
@@ -476,6 +563,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      e = e*exp(-grd_fcoef(ic)*grd_cap(ig,ic) * &
           elabfact*d*thelp)
   endif
+
 !
 !-- updating transformation factors
   if(grd_isvelocity) elabfact = 1d0-mu*x*cinv
@@ -594,18 +682,14 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- radial bound
   elseif(d==dbx .and. dbx<dby) then
 
-     if(ixnext>ix) then
-        x = grd_xarr(ix+1)
-     else
-        x = grd_xarr(ix)
-     endif
-
      l = grd_icell(ixnext,iy,iz)
      if((grd_cap(ig,l)+grd_sig(l)) * &
           min(dx(ixnext),xm(ixnext)*dyac(iy),xm(ixnext) * &
           ym(iy)*dz(iz))*thelp<trn_tauddmc .or. in_puretran) then
 !-- IMC in adjacent cell
         ix = ixnext
+        iy = iynext
+        iz = iznext
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
@@ -644,6 +728,8 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               wl = wl/elabfact
            endif
            ix = ixnext
+           iy = iynext
+           iz = iznext
            ic = grd_icell(ix,iy,iz)
         else
 !-- resampling x-cosine
@@ -663,54 +749,12 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- polar bound
   elseif(d==dby) then
 
-!-- iznext=iz except
-     iznext=iz
-     if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
-        ynew = y !backup
-        znew = z !backup
-!-- reflecting y
-        y = -y
-        iynext=binsrch(y,grd_yarr,grd_ny+1,.false.)
-!-- reflecting z
-        z = z+pc_pi !z is not updated with atan2 calculation
-        if(z>pc_pi2) z = z-pc_pi2
-        if(grd_nz>1) iznext=binsrch(z,grd_zarr,grd_nz+1,.false.)
-     elseif(iynext==iy-1) then
-        if(abs(y-grd_yarr(iy))>1d-9) then
-           ierr = -2 !warning
-!          write(0,*) 'transport1: y/=yarr(iy)',iy,y,grd_yarr(iy)
-        endif
-        if(iynext<1) then
-!          stop 'transport1: iynext<1'
-           ierr = 11
-           return
-        endif
-        y=grd_yarr(iy)
-     elseif(iynext==iy+1) then
-        if(abs(y-grd_yarr(iy+1))>1d-9) then
-           ierr = -3 !warning
-!          write(0,*) 'transport1: y/=yarr(iy+1)',iy,y,grd_yarr(iy+1),dby1,dby2,idby1,idby2
-        endif
-        if(iynext>grd_ny) then
-!          stop 'transport1: iynext>ny'
-           ierr = 12
-           return
-        endif
-        y=grd_yarr(iy+1)
-     else
-!-- sanity check
-!       write(0,*) dby
-!       write(0,*) y,grd_yarr(iy),grd_yarr(iy+1),iy,iynext
-!       stop 'transport1: invalid polar bound crossing'
-        ierr = 13
-        return
-     endif
-
      l = grd_icell(ix,iynext,iznext)
      if((grd_cap(ig,l)+grd_sig(l)) * &
           min(dx(ix),xm(ix)*dyac(iynext),xm(ix)*ym(iynext) * &
           dz(iznext))*thelp<trn_tauddmc .or. in_puretran) then
 !-- IMC in adjacent cell
+        ix = ixnext
         iy = iynext
         iz = iznext
         ic = grd_icell(ix,iy,iz)
@@ -719,8 +763,8 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         if(grd_isvelocity) then
 !-- transforming y-cosine to cmf
            mu=(mu-x*cinv)/(1d0-x*mu*cinv)
-           eta = sqrt(1d0-mu**2)*cos(om)
         endif
+        eta = sqrt(1d0-mu**2)*cos(om)
         help = (grd_cap(ig,l)+grd_sig(l)) * &
              xm(ix)*dyac(iynext)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
@@ -736,6 +780,7 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               e0 = e0*elabfact
               wl = wl/elabfact
            endif
+           ix = ixnext
            iy = iynext
            iz = iznext
            ic = grd_icell(ix,iy,iz)
@@ -783,29 +828,14 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ierr = 14
         return
      endif
-     if(iznext==iz-1) then
-        z = grd_zarr(iz)
-        if(iznext==0) then
-           iznext = grd_nz
-           z = pc_pi2
-        endif
-     elseif(iznext==iz+1) then
-        z = grd_zarr(iz+1)
-        if(iznext==grd_nz+1) then
-           iznext = 1
-           z = 0d0
-        endif
-     else
-!       stop 'transport1: invalid iznext'
-        ierr = 15
-        return
-     endif
 
      l = grd_icell(ix,iy,iznext)
      if((grd_cap(ig,l)+grd_sig(l)) * &
           min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy) * &
           dz(iznext))*thelp<trn_tauddmc .or. in_puretran) then
 !-- IMC in adjacent cell
+        ix = ixnext
+        iy = iynext
         iz = iznext
         ic = grd_icell(ix,iy,iz)
      else
@@ -830,6 +860,8 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               e0 = e0*elabfact
               wl = wl/elabfact
            endif
+           ix = ixnext
+           iy = iynext
            iz = iznext
            ic = grd_icell(ix,iy,iz)
         else
@@ -926,23 +958,9 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      muz = mu*y-eta*sqrt(1d0-y**2)
   endif
 
-
-!-- sanity check
-  if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-     ierr = -5 !warning
-!    write(0,*) 'theta not in cell'
-  endif
-
-!-- sanity check
-  if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
-     ierr = -6 !warning
-!    write(0,*) 'phi not in cell'
-  endif
-
 !-- sanity check
   if(abs(y)==1d0) then
      ierr = -7 !warning
-!    write(0,*) '|y|==1'
   endif
 
 !!-- verbose
