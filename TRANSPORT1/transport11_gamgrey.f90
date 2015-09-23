@@ -82,15 +82,11 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   endif
 !
 !-- distance to fictitious collision = dcol
-  if(trn_isimcanlog) then
-     if(grd_capgam(ic)>0d0) then
-        call rnd_r(r1,rndstate)
-        dcol = abs(log(r1)/(grd_capgam(ic)*dcollabfact))
-     else
-        dcol = far
-     endif
-  else
+  if(grd_capgam(ic)<=0d0 .or. .not.trn_isimcanlog) then
      dcol = far
+  else
+     call rnd_r(r1,rndstate)
+     dcol = abs(log(r1)/(grd_capgam(ic)*dcollabfact))
   endif
 !
 !-- minimum distance = d

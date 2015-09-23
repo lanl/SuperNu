@@ -180,12 +180,10 @@ subroutine particle_advance_gamgrey(nmpi)
      endselect
 
 !-- y,z position
-     if(in_igeom/=11) then
-        call rnd_r(r1,rndstate)
-        y = r1*grd_yarr(j+1) + (1d0-r1) * grd_yarr(j)
-        call rnd_r(r1,rndstate)
-        z = r1*grd_zarr(k+1) + (1d0-r1) * grd_zarr(k)
-     endif
+     call rnd_r(r1,rndstate)
+     y = r1*grd_yarr(j+1) + (1d0-r1) * grd_yarr(j)
+     call rnd_r(r1,rndstate)
+     z = r1*grd_zarr(k+1) + (1d0-r1) * grd_zarr(k)
 
 !-- direction cosine (comoving)
      call rnd_r(r1,rndstate)
@@ -203,6 +201,7 @@ subroutine particle_advance_gamgrey(nmpi)
            x0 = x
            cmffact = 1d0+mu0*x0/pc_c !-- 1+dir*v/c
            mu = (mu0+x0/pc_c)/cmffact
+           om = om0
         case(2)
            x0 = x
            y0 = y
