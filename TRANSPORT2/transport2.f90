@@ -1,4 +1,4 @@
-pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
+subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 
   use randommod
   use miscmod
@@ -253,7 +253,8 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 
      if(abs(abs(cos(muz))-1d0)<1d-2) then
 !-- muz calculation unreliable
-        x = sqrt(xold**2 + (1d0-mu**2)*d**2 + 2d0*xold*sqrt(1d0-mu**2)*d*cos(omold))
+        x = sqrt(xold**2 + (1d0-mu**2)*d**2 + &
+           2d0*xold*sqrt(1d0-mu**2)*d*cos(omold))
      else
         x = sqrt(mux**2 + muy**2 - 2d0*mux*muy*cos(muz))
      endif
@@ -275,7 +276,8 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      angrat1 = (x**2 + mux**2 - muy**2)/(2*x*mux)
      angrat2 = sin(muz)*muy/x
 
-     if(abs(angrat1)<1d0 .and. abs(angrat1)<abs(angrat2)) then
+     if(abs(angrat1)<1d0 .and. abs(angrat1)>1d-15 .and. &
+           abs(angrat1)<abs(angrat2)) then
 !-- method 1: calculate z from invariants
         z = acos(angrat1)
 !-- check cos flip
@@ -306,14 +308,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- update om
      om = omold - (z - zold)
      if(om<0d0) om = om+pc_pi2
-     if(om>pc_pi2) om = om-pc_pi2
-
-     if(om/=om) then
-!       write(0,*) 'omnan',d, xold, x, zold, z, omold, om, mu
-!       stop 'transport2: om is nan'
-        ierr = 6
-        return
-     endif!}}}
+     if(om>pc_pi2) om = om-pc_pi2!}}}
   endif !d>0d0
 !
 !-- updating time
@@ -806,6 +801,14 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   else
 !    stop 'transport2: invalid distance'
      ierr = 12
+     return
+  endif
+
+
+  if(om/=om) then
+!       write(0,*) 'omnan',d, xold, x, zold, z, omold, om, mu
+!       stop 'transport2: om is nan'
+     ierr = 6
      return
   endif
 

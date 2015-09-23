@@ -311,22 +311,19 @@ subroutine particle_advance
 !-- verify position
         if(ptcl2%itype==1 .and. .not.ptcl2%done) then
            if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then!{{{
+              ierr = -99
               write(0,*) 'prt_adv: x not in cell', &
-                 ix,x,grd_xarr(ix),grd_xarr(ix+1), &
-                 y,z,mu,om, &
-                 ptcl2%ipart,ptcl2%istep,ptcl2%idist
+                 ix,x,grd_xarr(ix),grd_xarr(ix+1)
            endif
            if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
+              ierr = -99
               write(0,*) 'prt_adv: y not in cell', &
-                 iy,y,grd_yarr(iy),grd_yarr(iy+1), &
-                 x,z,mu,om, &
-                 ptcl2%ipart,ptcl2%istep,ptcl2%idist
+                 iy,y,grd_yarr(iy),grd_yarr(iy+1)
            endif
            if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
+              ierr = -99
               write(0,*) 'prt_adv: z not in cell', &
-                 iz,z,grd_zarr(iz),grd_zarr(iz+1), &
-                 x,y,mu,om, &
-                 ptcl2%ipart,ptcl2%istep,ptcl2%idist
+                 iz,z,grd_zarr(iz),grd_zarr(iz+1)
            endif!}}}
         endif
 
@@ -338,7 +335,7 @@ subroutine particle_advance
            write(0,*) 'ix,iy,iz,ic,ig:',ptcl2%ix,ptcl2%iy,ptcl2%iz,ptcl2%ic,ptcl2%ig
            write(0,*) 'x,y,z:',ptcl%x,ptcl%y,ptcl%z
            write(0,*) 'mu,om:',ptcl%mu,ptcl%om
-           if(ierr>0) stop 'particle_advance: fatal transport error'
+           if(ierr>0 .and. trn_errorfatal) stop 'particle_advance: fatal transport error'
         endif
      enddo
 !

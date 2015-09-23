@@ -73,6 +73,7 @@ c<< backwards compatibility
       real*8 :: in_tauddmc = 5d0 !number of mean free paths per cell required for DDMC
       real*8 :: in_taulump = 10d0 !number of of mean free paths needed to lump DDMC groups
       logical :: in_trn_nolumpshortcut = .false. !disable approximation for large emitlump that sampling outside the lump collapses to the single most likely group
+      logical :: in_trn_errorfatal = .true. !stop on transport error, disable for production runs
 c-- time dependence of in_tauddmc and in_taulump
       character(4) :: in_tauvtime = 'unif' ! unif|incr = constant or limiting (s-curve) to more conservative constant
 c
@@ -158,7 +159,7 @@ c-- runtime parameter namelist
      &    in_ns,in_ns0,in_trn_n2part, !compat
      & in_src_ns,in_src_nsinit,in_prt_nmax,
      & in_src_n2s,in_src_n2sinit,in_prt_n2max,
-     & in_trn_nolumpshortcut,in_puretran,in_alpha,
+     & in_trn_nolumpshortcut,in_trn_errorfatal,in_puretran,in_alpha,
      & in_tsp_tfirst,in_tsp_tlast,
      &    in_tfirst,in_tlast, !compat
      & in_nt,in_ntres,
@@ -261,6 +262,7 @@ c
       call inserti(in_prt_n2max,in_i,ii)
       call insertl(in_puretran,in_l,il)
       call insertl(in_trn_nolumpshortcut,in_l,il)
+      call insertl(in_trn_errorfatal,in_l,il)
       call insertl(in_isimcanlog,in_l,il)
       call insertl(in_isddmcanlog,in_l,il)
       call insertr(in_tauddmc,in_r,ir)
@@ -651,6 +653,7 @@ c
       trn_taulump = in_taulump
       trn_tauvtime = in_tauvtime
       trn_nolumpshortcut = in_trn_nolumpshortcut
+      trn_errorfatal = in_trn_errorfatal
       trn_noampfact = in_trn_noamp
 c
       !io_dogrdtally = in_io_dogrdtally

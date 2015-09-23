@@ -7,6 +7,7 @@ c
       real*8,private,parameter :: cinv=1d0/pc_c
 c
       logical :: trn_nolumpshortcut !disable approximation for large emitlump that sampling outside the lump collapses to the single most likely group
+      logical :: trn_errorfatal     !stop on transport error, disable for production runs
       logical :: trn_noampfact      !don't use the particle amplification factor
 c
       logical :: trn_isimcanlog  !sets flux tally and energy deposition to analog in IMC
