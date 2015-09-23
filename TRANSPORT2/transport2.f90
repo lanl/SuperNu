@@ -238,6 +238,10 @@ subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      ierr = 5
      return
   endif
+
+
+!
+!-- update position
 !
 !-- store prev position
   xold = x
@@ -246,11 +250,30 @@ subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !
 !-- update distance to intercept
   muy = muy + d*sqrt(1d0-mu**2)
-!
-!-- update position
-  if(d>0d0) then
-     y = y + mu*d!{{{
 
+!-- update y position
+  if(d==dby) then!{{{
+!-- on boundary
+     if(iynext>iy) then
+        y = grd_yarr(iy+1)
+     else
+        y = grd_yarr(iy)
+     endif
+  else
+!-- in cell
+     y = y + mu*d
+  endif
+
+!-- update x position
+  if(d==dbx) then
+!-- on boundary
+     if(ixnext>ix) then
+        x = grd_xarr(ix+1)
+     else
+        x = grd_xarr(ix)
+     endif
+  else
+!-- in cell
      if(abs(abs(cos(muz))-1d0)<1d-2) then
 !-- muz calculation unreliable
         x = sqrt(xold**2 + (1d0-mu**2)*d**2 + &
@@ -264,14 +287,36 @@ subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         if(xold==grd_xarr(ix)) x = xold
         if(xold==grd_xarr(ix+1)) x = xold
      endif
-!
-!-- update direction
+
+     if(d==0) x = xold
+  endif
+
+!-- update z position
+  if(d==dbz) then
+!-- on boundary
+     if(iznext==iz+1) then
+        z = grd_zarr(iznext)
+        if(iznext==grd_nz+1) then
+           iznext = 1
+           z = 0d0
+        endif
+     elseif(iznext==iz-1) then
+        z = grd_zarr(iz)
+        if(iznext==0) then
+           iznext = grd_nz
+           z = pc_pi2
+        endif
+     else
+        ierr = 15
+        return
+     endif
+  else
+!-- in cell
      if(x==0) then
 !-- todo: implement exception for x==0
         ierr = 8
         return
      endif
-
 !-- trigoniometric ratios
      angrat1 = (x**2 + mux**2 - muy**2)/(2*x*mux)
      angrat2 = sin(muz)*muy/x
@@ -304,12 +349,15 @@ subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      endif
 
      if(z<0d0) z = z + pc_pi2
+     if(d==0d0) z = zold
+  endif
 
+
+!
 !-- update om
-     om = omold - (z - zold)
-     if(om<0d0) om = om+pc_pi2
-     if(om>pc_pi2) om = om-pc_pi2!}}}
-  endif !d>0d0
+  om = omold - (z - zold)
+  if(om<0d0) om = om+pc_pi2
+  if(om>pc_pi2) om = om-pc_pi2!}}}
 !
 !-- updating time
   ptcl%t = ptcl%t + thelp*cinv*d
@@ -486,12 +534,6 @@ subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- x-bound
   elseif(d==dbx) then
 
-     if(ixnext>ix) then
-        x = grd_xarr(ix+1)
-     else
-        x = grd_xarr(ix)
-     endif
-
      l = grd_icell(ixnext,iy,iz)
 
      if((grd_cap(ig,l)+grd_sig(l)) * &
@@ -579,12 +621,6 @@ subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- y-bound
   elseif(d==dby) then
 
-     if(iynext>iy) then
-        y = grd_yarr(iy+1)
-     else
-        y = grd_yarr(iy)
-     endif
-
      l = grd_icell(ix,iynext,iz)
 
      if((grd_cap(ig,l)+grd_sig(l)) * &
@@ -666,23 +702,6 @@ subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      if(grd_nz==1) then
 !       stop 'transport1: invalid z crossing'
         ierr = 14
-        return
-     endif
-     if(iznext==iz+1) then
-        z = grd_zarr(iz+1)
-        if(iznext==grd_nz+1) then
-           iznext = 1
-           z = 0d0
-        endif
-     elseif(iznext==iz-1) then
-        z = grd_zarr(iz)
-        if(iznext==0) then
-           iznext = grd_nz
-           z = pc_pi2
-        endif
-     else
-!       stop 'transport1: invalid iznext'
-        ierr = 15
         return
      endif
 
