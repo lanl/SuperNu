@@ -61,6 +61,7 @@ subroutine sourcenumbers(keephigh)
 
 !-- number of cells with nonzero energy
   ncactive = count(grd_emit>0d0 .or. grd_emitex>0d0)
+  if(src_nsurftot>0) ncactive=ncactive+1
   if(nvacantall<ncactive) stop &
      'sourcenumbers: nvacantall < number of source cells'
 
@@ -87,10 +88,15 @@ subroutine sourcenumbers(keephigh)
 
 !-- too many particles
   nextra = int(nstot - sum(grd_nvol) - src_nsurftot)
-  if(nextra>grd_ncell) stop 'sourcenumbers: nextra>grd_ncell'
+  if(nextra>grd_ncell+src_nsurftot) stop &
+       'sourcenumbers: nextra>grd_ncell+src_nsurftot'
 !-- correct to exact target number
   nsmean = int(nstot/ncactive)
   do while(nextra/=0)
+     if(src_nsurftot>=nsmean) then
+        src_nsurftot = src_nsurftot + sign(1,nextra)
+        nextra = nextra - sign(1,nextra)
+     endif
      do l=1,grd_ncell
         if(nextra==0) exit
         if(grd_nvol(l)<nsmean) cycle
@@ -111,6 +117,7 @@ subroutine sourcenumbers(keephigh)
      src_nnew = nvol
      src_nsurf = nvol
   endif
+  iimpi = -1
   nvacant = src_nvacantall
   do l=1,grd_ncell
      call sourcenumbers_roundrobin_limit(iimpi,nvacant,grd_emit(l)**pwr, &

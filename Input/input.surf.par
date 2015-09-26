@@ -1,0 +1,82 @@
+&inputpars
+
+!-- misc
+in_nomp = 1
+in_grabstdout = f
+in_puretran = f
+in_noreadstruct = t
+in_noeos = t
+in_ntres = 1
+
+!-- time step
+in_tsp_tfirst = 0
+in_tsp_tlast = 1d-2
+in_nt = 100
+in_alpha = 1d0
+in_ismodimc = f
+
+!-- grid settings
+in_igeom = 3
+in_ndim = 1, 32, 1
+in_isvelocity = f
+in_novolsrc = f
+in_lx = 1d6
+in_ly = 1d0
+in_lz = 1d6
+in_totmass = 1d0
+in_dentype = 'ufil'
+
+!-- flux settings
+in_flx_ndim = 0, 1, 1
+
+!-- flat structures
+in_tempradinit = 0d0
+in_consttemp = 11604.505d0
+
+!-- external source type
+in_srctype = 'surf'
+in_surfsrcloc = 'down'
+in_surfsrcmu = 'isot'
+in_srcmax = 100000d0
+
+!-- power law heat capacity values
+in_gas_cvcoef = 1d9
+in_gas_cvtpwr = 0d0
+in_gas_cvrpwr = 0d0
+
+!-- power law scattering opacity values
+in_gas_sigcoef = 0d0
+in_gas_sigtpwr = 0d0
+in_gas_sigrpwr = 0d0
+
+!-- power law absorption opacity values
+in_gas_capcoef = 100d0
+in_gas_captpwr = 0d0
+in_gas_caprpwr = 0d0
+
+!-- group absorption opacity structure type
+in_opacanaltype = 'grey'
+
+!-- group settings
+in_ng = 1
+
+!-- particle numbers
+in_src_n2s  = 16
+in_prt_n2max = 25
+
+!-- imc tally method
+in_isimcanlog = f
+in_isddmcanlog = f
+!-- ddmc mfp per cell
+in_tauddmc = 3d0
+in_taulump = 3d0
+in_tauvtime = 'unif'
+
+!-- opacity debug switches
+in_nobbopac = t
+in_nobfopac = t
+in_noffopac = t
+in_nothmson = t
+in_noplanckweighting = t
+
+/
