@@ -9,16 +9,24 @@ subroutine sourceenergy(nmpi)
   use manufacmod
   implicit none
   integer,intent(in) :: nmpi
-
 !##################################################
 !This subroutine computes the distribution of source particles each
 !time step.  A fraction of the source particle number src_ns is given
 !to each cell based on the amount of energy emitted by the cell.
 !##################################################
+  real*8 :: q1,q2,q3
   
 !-- prepare manufactured solution temperature source
   if(in_srctype=='manu') then
      call generate_manutempsrc(in_totmass,in_gas_capcoef,tsp_t,tsp_dt)
+  elseif(in_gas_srccoef>0d0) then
+!-- short-cuts
+     q1=in_gas_srcrpwr   
+     q2=in_gas_srctpwr   
+     q3=in_gas_srctimepwr
+!-- power-law material energy source
+     gas_matsrc=in_gas_srccoef*gas_rho**q1 * &
+        gas_temp**q2 * (tsp_t+.5d0*tsp_dt)**q3
   endif
 
 ! Calculating fictitious emission energy per cell

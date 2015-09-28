@@ -54,6 +54,12 @@ c-- analytic heat capacity terms
       real*8 :: in_gas_cvtpwr = 0d0 !power law heat capacity temperature exponent
       real*8 :: in_gas_cvrpwr = 1d0 !power law heat capacity density exponent
 c
+c-- analytic power-law source terms
+      real*8 :: in_gas_srccoef = 0d0
+      real*8 :: in_gas_srcrpwr = 0d0
+      real*8 :: in_gas_srctpwr = 0d0
+      real*8 :: in_gas_srctimepwr = 0d0
+c
 c-- particles
       integer :: in_src_ns = 0   !number of source particles generated per time step (total over all ranks)
       integer :: in_src_n2s = -1 !2^n source particles generated per time step (total over all ranks)
@@ -170,6 +176,7 @@ c-- runtime parameter namelist
      & in_gas_sigcoef,in_gas_sigtpwr,in_gas_sigrpwr,
      & in_gas_capcoef,in_gas_captpwr,in_gas_caprpwr,
      & in_gas_cvcoef,in_gas_cvtpwr,in_gas_cvrpwr,
+     & in_gas_srccoef,in_gas_srcrpwr,in_gas_srctpwr,in_gas_srctimepwr,
      & in_opacanaltype,in_suol,
      & in_suolpick1,in_ldisp1,in_ldisp2,
      & in_srctype,in_theav,in_nheav,in_srcmax,in_srcepwr,
@@ -295,6 +302,10 @@ c
       call insertr(in_gas_capcoef,in_r,ir)
       call insertr(in_gas_captpwr,in_r,ir)
       call insertr(in_gas_caprpwr,in_r,ir)
+      call insertr(in_gas_srccoef,in_r,ir)
+      call insertr(in_gas_srcrpwr,in_r,ir)
+      call insertr(in_gas_srctpwr,in_r,ir)
+      call insertr(in_gas_srctimepwr,in_r,ir)
       call insertc(in_srctype,in_c,ic)
       call insertc(in_surfsrcloc,in_c,ic)
       call insertc(in_surfsrcmu,in_c,ic)
@@ -646,6 +657,10 @@ c
       !gas_cvcoef  = in_gas_cvcoef
       !gas_cvtpwr  = in_gas_cvtpwr
       !gas_cvrpwr  = in_gas_cvrpwr
+      !gas_srccoef = in_gas_srccoef      
+      !gas_srcrpwr = in_gas_srcrpwr      
+      !gas_srctpwr = in_gas_srctpwr      
+      !gas_srctimepwr = in_gas_srctimepwr
 c
       trn_isimcanlog = in_isimcanlog
       trn_isddmcanlog = in_isddmcanlog
