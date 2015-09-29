@@ -123,6 +123,7 @@ program supernu
   rnd_state = rnd_states(1)
 
 !-- initial radiation energy
+  call allgather_initialrad !MPI
   call initialnumbers(nmpi)
 !-- instantiating initial particles (if any)
   call initial_particles

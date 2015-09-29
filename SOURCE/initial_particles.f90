@@ -22,18 +22,9 @@ subroutine initial_particles
   real*8 :: denom2
   real*8 :: pwr
   real*8 :: r1
-  real*8 :: wl1,wl2,wl3,wl4
+  real*8 :: tradinv
   real*8 :: specarr(grp_ng)
 
-!-- helper quantities
-  wl1=grp_wlinv(grp_ng+1)
-  wl2=grp_wlinv(1)
-  if(in_tempradinit>0d0) then
-     call specintv(1d0/in_tempradinit,grp_ng,specarr,1)
-     specarr = specarr/sum(specarr)
-  else
-     specarr = 1d0
-  endif
 !-- shortcut
   pwr = in_srcepwr
   
@@ -46,6 +37,9 @@ subroutine initial_particles
      l = grd_icell(i,j,k)
      call sourcenumbers_roundrobin(iimpi,grd_evolinit(l)**pwr, &
         0.0d0,grd_nvolinit(l),nemit,nhere,ndmy)
+     tradinv = (pc_acoef*grd_vol(l)/grd_evolinit(l))**(.25d0)
+     call specintv(tradinv,grp_ng,specarr,1)
+     specarr = specarr/sum(specarr)
   do ii=1,nhere
      ipart = ipart + 1!{{{
 !
@@ -59,8 +53,6 @@ subroutine initial_particles
      denom2 = 0d0
      call rnd_r(r1,rnd_state)
      do ig = 1, grp_ng
-        wl3 = grp_wlinv(ig+1)
-        wl4 = grp_wlinv(ig)
         iig = ig
         if(r1>=denom2.and.r1<denom2 + specarr(ig)) exit
         denom2 = denom2 + specarr(ig)

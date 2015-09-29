@@ -504,7 +504,6 @@ c
 c
 c-- temp init
       if(in_consttemp<0d0) stop 'in_consttemp < 0'
-      if(in_tempradinit<0d0) stop 'in_tempradinit < 0'
 c
 c-- timestepping
       if(in_nt==0) stop 'in_nt invalid'

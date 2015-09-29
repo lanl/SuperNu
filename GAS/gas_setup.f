@@ -41,7 +41,11 @@ c-- temperature
 c
 c
 c-- used in fleck_factor
-      gas_eraddens = pc_acoef*in_tempradinit**4
+      if(in_tempradinit>=0d0) then
+        gas_eraddens = pc_acoef*in_tempradinit**4
+      else
+        gas_eraddens = pc_acoef*gas_temp**4
+      endif
 c
 c
 c-- temp and ur
