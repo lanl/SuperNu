@@ -42,7 +42,7 @@ c-- special grid
 c-- specify the atmospheric stratification
       real*8 :: in_velout = 0d0  !cm/s, velocity of outer bound
       real*8 :: in_totmass = 0d0  !g
-      character(4) :: in_dentype = 'unif' ! unif|mass: 'unif' for uniform density, 'mass' for equal mass accross cells
+      character(4) :: in_dentype = 'none' ! unif|mass: 'unif' for uniform density, 'mass' for equal mass accross cells
 c============
 c
 c-- temperature parameters
@@ -408,7 +408,7 @@ c-- write simulation name to file
       if(istat/=0) then
        stop 'parse_inputpars: open output.name error'
       else
-       write(4,*) in_name
+       write(4,'(a)') trim(in_name)
        close(4)
       endif
 c
@@ -489,6 +489,9 @@ c
         if(in_totmass<=0d0) stop 'in_totmass <= 0'
         if(in_noreadstruct.and.in_novolsrc.and.in_gas_cvcoef<=0d0)
      &     stop 'in_noreadstruct && in_novolsrc && in_gas_cvcoef<=0'
+        if(in_dentype=='none') stop 'noreadstruct & in_dentype==none'
+      else
+        if(in_dentype/='none') stop '!noreadstruct & in_dentype/=none'
       endif
 c
 c-- temp init

@@ -61,7 +61,7 @@ subroutine sourcenumbers(keephigh)
 
 !-- number of cells with nonzero energy
   ncactive = count(grd_emit>0d0 .or. grd_emitex>0d0)
-  if(src_nsurftot>0) ncactive=ncactive+1
+  if(src_nsurftot>0) ncactive = ncactive+1
   if(nvacantall<ncactive) stop &
      'sourcenumbers: nvacantall < number of source cells'
 
