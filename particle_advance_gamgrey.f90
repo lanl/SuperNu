@@ -276,17 +276,6 @@ subroutine particle_advance_gamgrey(nmpi)
         call transport_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !-- tally
         grd_tally(1,icold) = grd_tally(1,icold) + edep
-!
-!-- outbound luminosity tally
-        if(ptcl2%lflux) then
-!-- lab frame flux group, polar, azimuthal bin
-           imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
-           iom = binsrch(om,flx_om,flx_nom+1,.false.)
-!-- tally outbound luminosity
-           flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e
-           flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+e**2
-           flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1
-        endif
 
 !-- Russian roulette for termination of exhausted particles
         if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgam(ic)>0d0) then
@@ -319,32 +308,46 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- verify position
         if(.not.ptcl2%done) then
            if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
-              ierr = -99
+              if(ierr==0) ierr = -99
               write(0,*) 'prt_adv_ggrey: x not in cell', &
                 ix,x,grd_xarr(ix),grd_xarr(ix+1)
            endif
            if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
-              ierr = -99
+              if(ierr==0) ierr = -99
               write(0,*) 'prt_adv_ggrey: y not in cell', &
                 iy,y,grd_yarr(iy),grd_yarr(iy+1)
            endif
            if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
-              ierr = -99
+              if(ierr==0) ierr = -99
               write(0,*) 'prt_adv_ggrey: z not in cell', &
                 iz,z,grd_zarr(iz),grd_zarr(iz+1)
            endif
         endif
 
 !-- check for errors
-        if(ierr/=0) then
+        if(ierr/=0 .or. ptcl2%istep>1000) then
            write(0,*) 'pagg: ierr,ipart,istep,idist:',ierr,ptcl2%ipart,ptcl2%istep,ptcl2%idist
            write(0,*) 'dist:',ptcl2%dist
            write(0,*) 'ix,iy,iz,ic,ig:',ptcl2%ix,ptcl2%iy,ptcl2%iz,ptcl2%ic,ptcl2%ig
            write(0,*) 'x,y,z:',ptcl%x,ptcl%y,ptcl%z
            write(0,*) 'mu,om:',ptcl%mu,ptcl%om
-           if(ierr>0 .and. trn_errorfatal) stop 'particle_advance_gg: fatal transport error'
+           if(ierr>0) then
+              if(trn_errorfatal) stop 'particle_advance_gg: fatal transport error'
+              exit
+           endif
         endif
      enddo
+!
+!-- outbound luminosity tally
+     if(ptcl2%lflux) then
+!-- lab frame flux group, polar, azimuthal bin
+        imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
+        iom = binsrch(om,flx_om,flx_nom+1,.false.)
+!-- tally outbound luminosity
+        flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e
+        flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+e**2
+        flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1
+     endif
 
   enddo !ipart
 !$omp end do
