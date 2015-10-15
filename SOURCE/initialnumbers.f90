@@ -20,7 +20,7 @@ subroutine initialnumbers(nmpi)
   real*8,parameter :: basefrac=.1d0
   integer*8 :: nstot,nsavail,nsbase
   real*8 :: etot,einv,pwr,edone,en,invn
-  integer :: nemit,nvol,nvolex
+  integer :: nemit,nvol,nvolex,ncell
   
 !-- initialize volume numbers
   grd_nvolinit = 0
@@ -68,7 +68,9 @@ subroutine initialnumbers(nmpi)
   src_nnonth = 0
   src_ninitnew = 0
   iimpi = 0
-  do l=1,grd_ncell
+  ncell=grd_ncell
+  if(grd_lvoid) ncell=ncell-1
+  do l=1,ncell
      call sourcenumbers_roundrobin(iimpi,grd_evolinit(l)**pwr, &
         0.0d0,grd_nvolinit(l),nemit,nvol,nvolex)
 !-- particle counts
