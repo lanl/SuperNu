@@ -28,7 +28,6 @@ program supernu
 ! TODO and wishlist:
 !***********************************************************************
   real*8 :: help
-  real*8 :: dt
   integer :: ierr, it
   integer :: icell1, ncell !number of cells per rank (gas_ncell)
   real*8 :: t0, t1 !timing
@@ -92,8 +91,6 @@ program supernu
 !-- setup remaining modules
 !==========================
   call timestepmod_init
-!-- constant time step, may be coded to loop if time step is not uniform
-  dt = (tsp_tlast - tsp_tfirst)/tsp_nt
 
 !-- wlgrid (before grid setup)
   call groupmod_init(in_wldex)
@@ -146,7 +143,7 @@ program supernu
      tsp_it = max(it,1)
 
 !-- Update tsp_t etc
-     call timestep_update(dt)  !dt is input here, any value can be passed
+     call timestep_update
      call tau_update(tsp_t,tsp_tfirst,tsp_tlast) !updating trn_tauddmc and trn_taulump
 
 !-- write timestep

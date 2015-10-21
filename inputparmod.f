@@ -70,7 +70,7 @@ c<< backwards compatibility
       logical :: in_isimcanlog = .false. !use analog IMC tally if true
       logical :: in_isddmcanlog = .true. !use analog DDMC tally if true
       logical :: in_trn_noamp = .true.  !disable amplification factor
-      real*8 :: in_tauddmc = 5d0 !number of mean free paths per cell required for DDMC
+      real*8 :: in_tauddmc = 5d0  !number of mean free paths per cell required for DDMC
       real*8 :: in_taulump = 10d0 !number of of mean free paths needed to lump DDMC groups
       logical :: in_trn_nolumpshortcut = .false. !disable approximation for large emitlump that sampling outside the lump collapses to the single most likely group
       logical :: in_trn_errorfatal = .true. !stop on transport error, disable for production runs
@@ -86,7 +86,8 @@ c>> backwards compatibility
         real*8 :: in_tfirst = 0d0 !first point in time evolution [day]
         real*8 :: in_tlast = 0d0  !last point in time evolution [day]
 c<< backwards compatibility
-      integer :: in_nt = 0      !number of time steps.  <0 means read timeline from input.tsp_time
+      character(4) :: in_tsp_gridtype = 'line' ! line|expo|read: linear, exponential or read-in timestep grid
+      integer :: in_nt = 0       !number of time steps
       integer :: in_ntres = -1   !restart time step number
       logical :: in_norestart = .true.
       logical :: in_ismodimc = .true. !Gentile-Fleck factor switch
@@ -162,7 +163,7 @@ c-- runtime parameter namelist
      & in_trn_nolumpshortcut,in_trn_errorfatal,in_puretran,in_alpha,
      & in_tsp_tfirst,in_tsp_tlast,
      &    in_tfirst,in_tlast, !compat
-     & in_nt,in_ntres,
+     & in_tsp_gridtype,in_nt,in_ntres,
      & in_grabstdout,in_nomp,
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
      & in_noffopac,in_nothmson,in_noplanckweighting,in_opacmixrossel,
@@ -271,6 +272,7 @@ c
       call insertr(in_alpha,in_r,ir)
       call insertr(in_tsp_tfirst,in_r,ir)
       call insertr(in_tsp_tlast,in_r,ir)
+      call insertc(in_tsp_gridtype,in_c,ic)
       call inserti(in_nt,in_i,ii)
       call inserti(in_ntres,in_i,ii)
       call insertl(in_norestart,in_l,il)
@@ -499,7 +501,19 @@ c-- temp init
       if(in_tempradinit<0d0) stop 'in_tempradinit < 0'
 c
 c-- timestepping
-      if(in_nt==0) stop 'in_nt invalid'
+      select case(in_tsp_gridtype)
+      case('line')
+       if(in_nt<=0) stop 'in_tsp_gridtype==line & in_nt<=0'
+      case('expo')
+       if(in_nt<=0) stop 'in_tsp_gridtype==expo & in_nt<=0'
+       if(in_tsp_tfirst<=0d0) stop
+     &   'in_tsp_gridtype==expo & in_tsp_tfirst<=0'
+      case('read')
+       if(in_nt/=0) stop 'in_tsp_gridtype==read & in_nt/=0'
+      case default
+       stop 'in_tsp_gridtype invalid'
+      end select
+
       if(in_tsp_tlast<in_tsp_tfirst) stop 'in_tsp_tlast invalid'
 c
 c-- special grid
@@ -526,9 +540,6 @@ c--R.W.: condition under case(pick) supposed to be here? (rev 243)
       case('grey')
       case('mono')
       case('pick')
-C$$$       if(.not.in_nobbopac) stop 'no phys opac + in_grptyp==none'
-C$$$       if(.not.in_nobfopac) stop 'no phys opac + in_grptyp==none'
-C$$$       if(.not.in_noffopac) stop 'no phys opac + in_grptyp==none'
       case('line')
       case default
        stop 'in_opacanaltype unknown'
@@ -635,6 +646,7 @@ c
       src_ns = ns
       src_ninit = nsinit
 c
+      tsp_gridtype = in_tsp_gridtype
       tsp_nt     = in_nt
       tsp_ntres  = in_ntres
       tsp_tfirst = in_tsp_tfirst
