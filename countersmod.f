@@ -6,22 +6,22 @@ c     ------------------
 * This is an integer clone of timingmod.
 ************************************************************************
       integer,private,parameter :: mreg = 9
-      integer,private,target :: iregisters(4,mreg)
+      integer*8,private,target :: iregisters(4,mreg)
 c
 c-- transported particles
-      integer,pointer :: ct_npcreate(:)
-      integer,pointer :: ct_nptransport(:)
+      integer*8,pointer :: ct_npcreate(:)
+      integer*8,pointer :: ct_nptransport(:)
 c-- flux particles
-      integer,pointer :: ct_npflux(:)
+      integer*8,pointer :: ct_npflux(:)
 c-- censussed particles
-      integer,pointer :: ct_npcensimc(:)
-      integer,pointer :: ct_npcensddmc(:)
+      integer*8,pointer :: ct_npcensimc(:)
+      integer*8,pointer :: ct_npcensddmc(:)
 c-- transport interactions (steps)
-      integer,pointer :: ct_npstepimc(:)
-      integer,pointer :: ct_npstepddmc(:)
-      integer,pointer :: ct_npstepmax(:)
+      integer*8,pointer :: ct_npstepimc(:)
+      integer*8,pointer :: ct_npstepddmc(:)
+      integer*8,pointer :: ct_npstepmax(:)
 c-- transport method swaps
-      integer,pointer :: ct_npmethswap(:)
+      integer*8,pointer :: ct_npmethswap(:)
 c
       save
 c
@@ -45,7 +45,7 @@ c
       subroutine counterreg(ireg,n)
 c     -----------------------------!{{{
       implicit none
-      integer,intent(inout) :: ireg(4)
+      integer*8,intent(inout) :: ireg(4)
       integer,intent(in) :: n
 ************************************************************************
 * Put the counter c in the register reg. The first position in reg stores
