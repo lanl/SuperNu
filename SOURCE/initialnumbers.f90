@@ -22,9 +22,6 @@ subroutine initialnumbers(nmpi)
   real*8 :: etot,einv,pwr,edone,en,invn
   integer :: nemit,nvol,nvolex
   
-!-- initialize volume numbers
-  grd_nvolinit = 0
-
 !-- shortcut
   pwr = in_srcepwr
 
@@ -65,7 +62,6 @@ subroutine initialnumbers(nmpi)
 
 !-- from total nvol (over ALL RANKS) to nvol PER RANK
 !-- also convert emit to energy PER PARTICLE
-  src_nnonth = 0
   src_ninitnew = 0
   iimpi = 0
   do l=1,grd_ncell
