@@ -123,19 +123,23 @@ program supernu
   rnd_state = rnd_states(1)
 
 !-- initial radiation energy
-  call allgather_initialrad !MPI
-  call initialnumbers(nmpi)
+  if(src_ninit>0) then
+     call allgather_initialrad !MPI
+     call initialnumbers(nmpi)
 !-- instantiating initial particles (if any)
-  call initial_particles
+     call initial_particles
+  endif
 
+!-- memory usage
+  if(lmpi0) then
+     msg = 'post setup:'
+     write(6,*) 'memusg: ',msg,memusg()
+  endif
 
 
 !-- time step loop
 !=================
   if(lmpi0) then
-     msg = 'post setup:'
-     write(6,*) 'memusg: ',msg,memusg()
-!
      write(6,*)
      write(6,*) "starting time loop:"
      write(6,'(1x,a,4x,4(a7,1x))') "====================",'nsrc','ncens','nflux','ntrnsp'
