@@ -27,16 +27,12 @@ c
 c-- temperature
       if(in_srctype=='manu') then
        call init_manutemp
-      elseif(in_consttemp==0d0) then
-       if(in_ntres>1) then
-        call read_restart_file
-       elseif(str_ltemp) then
-         gas_temp = str_tempdd
-       else
-         stop 'gas_setup: input.temp_str not avail'
-       endif
-      else
+      elseif(in_consttemp/=0d0) then
        gas_temp = in_consttemp
+      elseif(str_ltemp) then
+       gas_temp = str_tempdd
+      else
+       stop 'gas_setup: initial gas temp not specified'
       endif
 c
 c
