@@ -2,7 +2,10 @@
 c     ----------------
       implicit none
       integer :: src_ns,src_ninit
-      integer :: src_nsurf,src_nnonth,src_nnew,src_ninitnew
+      integer :: src_nnew
+      integer :: src_nnonth
+      integer :: src_nsurf
+      integer :: src_ninitnew=0
       integer*8 :: src_nvacantmin=huge(src_ns)
       integer :: src_nflux=0
       integer :: src_nsurftot

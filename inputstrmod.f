@@ -208,6 +208,28 @@ c-- verify approximate values
        enddo
       endif
 c
+c-- check grid monotonicity
+      help = str_xleft(1)
+      do i=2,nx+1
+       if(str_xleft(i)<=help) stop
+     &   'read_inputstr: x grid not increasing'
+       help = str_xleft(i)
+      enddo
+c
+      help = str_yleft(1)
+      do i=2,ny+1
+       if(str_yleft(i)<=help) stop
+     &   'read_inputstr: y grid not increasing'
+       help = str_yleft(i)
+      enddo
+c
+      help = str_zleft(1)
+      do i=2,nz+1
+       if(str_zleft(i)<=help) stop
+     &   'read_inputstr: z grid not increasing'
+       help = str_zleft(i)
+      enddo
+c
 c-- vars
 !     str_mass(:,:,:) = reshape(raw(jmass,:),[nx,ny,nz]) !-- memory hog in ifort 13.1.3
       l = 0

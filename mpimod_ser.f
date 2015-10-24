@@ -49,6 +49,14 @@ c
       end subroutine scatter_inputstruct
 c
 c
+      subroutine allgather_initialrad
+c     -------------------------------
+      use gridmod
+      use gasmod
+      grd_evolinit = reshape(gas_eraddens,[grd_ncell])
+      end subroutine allgather_initialrad
+c
+c
       subroutine allgather_gammacap
 c     ---------------------------
       use gridmod

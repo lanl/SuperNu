@@ -192,6 +192,7 @@ c
 c-- ndim=3 integer
       deallocate(grd_nvol)
       deallocate(grd_nvolinit)
+      grd_nvolinit = 0d0
       deallocate(grd_methodswap)
       deallocate(grd_numcensimc)
       deallocate(grd_numcensddmc)

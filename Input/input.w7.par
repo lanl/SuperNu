@@ -24,6 +24,7 @@
 
 !-- flat structures
  in_consttemp = 1d4
+ in_tempradinit = -1d0
  in_gas_cvcoef = -1d0
 
 !-- flux settings
@@ -33,6 +34,7 @@
  in_ng = 250
 
 !-- particle numbers
+ in_src_n2sinit = 10
  in_src_n2s = 10
  in_prt_n2max = 17 !2**7 times bigger than ns
 

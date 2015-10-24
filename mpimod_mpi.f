@@ -315,6 +315,20 @@ c-- ye structure if available
 c
 c
 c
+      subroutine allgather_initialrad
+c     -------------------------------
+      use gridmod
+      use gasmod
+      implicit none
+************************************************************************
+* gather initial gas_eraddens to grd_evolinit
+************************************************************************
+      call mpi_allgatherv(gas_eraddens,gas_ncell,MPI_REAL8,
+     &  grd_evolinit,counts,displs,MPI_REAL8,
+     &  MPI_COMM_WORLD,ierr)
+      end subroutine allgather_initialrad
+c
+c
       subroutine allgather_gammacap
 c     -----------------------------!{{{
       use gridmod

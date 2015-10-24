@@ -12,11 +12,10 @@ subroutine analytic_initial
 ! each cell and group depeding on user specification
 ! of in_srctype
 !###############################################
-  grd_evolinit = 0d0
 !
 !-- map radiation temperature to grd_evolinit
   call grid_volume(in_igeom,grd_isvelocity,tsp_t)
-  grd_evolinit = pc_acoef*in_tempradinit**4 * grd_vol
+  grd_evolinit = grd_evolinit * grd_vol
 !--
 !
 !-- source specific initial conditions (overrides gas_inittyp)
