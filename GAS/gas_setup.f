@@ -27,7 +27,7 @@ c
 c-- temperature
       if(in_srctype=='manu') then
        call init_manutemp
-      elseif(in_consttemp/=0d0) then
+      elseif(in_consttemp>0d0) then
        gas_temp = in_consttemp
       elseif(str_ltemp) then
        gas_temp = str_tempdd
@@ -37,7 +37,7 @@ c-- temperature
 c
 c
 c-- used in fleck_factor
-      if(in_tempradinit>=0d0) then
+      if(in_tempradinit>0d0) then
         gas_eraddens = pc_acoef*in_tempradinit**4
       else
         gas_eraddens = pc_acoef*gas_temp**4
