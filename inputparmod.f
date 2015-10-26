@@ -1,5 +1,5 @@
       module inputparmod
-c     ------------------
+c     ------------------!{{{
       implicit none
 ************************************************************************
 * input parameters
@@ -46,8 +46,12 @@ c-- specify the atmospheric stratification
 c============
 c
 c-- temperature parameters
-      real*8 :: in_consttemp = 0d0 !non-zero will not read temp from file. units: K
-      real*8 :: in_tempradinit = 0d0 !initial radiation temperature.  Use grd_temp by default
+      real*8 :: in_gas_gastempinit = 0d0 !non-zero will not read temp from file. units: K
+      real*8 :: in_gas_radtempinit = 0d0 !initial radiation temperature.  Use grd_temp by default
+c>> backwards compatibility
+        real*8 :: in_consttemp = 0d0
+        real*8 :: in_tempradinit = 0d0
+c<< backwards compatibility
 c
 c-- analytic heat capacity terms
       real*8 :: in_gas_cvcoef = 1d7 !power law heat capacity coefficient
@@ -92,7 +96,7 @@ c>> backwards compatibility
         real*8 :: in_tfirst = 0d0 !first point in time evolution [day]
         real*8 :: in_tlast = 0d0  !last point in time evolution [day]
 c<< backwards compatibility
-      character(4) :: in_tsp_gridtype = 'line' ! line|expo|read: linear, exponential or read-in timestep grid
+      character(4) :: in_tsp_gridtype = 'lin ' ! line|expo|read: linear, exponential or read-in timestep grid
       integer :: in_nt = 0       !number of time steps
       integer :: in_ntres = -1   !restart time step number
       logical :: in_norestart = .true.
@@ -134,7 +138,7 @@ c-- absorption terms:
 c
 c-- external source structure
       character(4) :: in_srctype = 'none'   !none|heav|strt|manu|surf: external source structure type
-      character(4) :: in_surfsrcloc = 'out' !in|out|up|down|top|botm: surface source location
+      character(4) :: in_surfsrcloc = 'out ' !in|out|up|down|top|botm: surface source location
       character(4) :: in_surfsrcmu = 'isot' !isot|beam: surface source direction distribution
       integer :: in_nheav = 0   !outer cell bound if heaviside ('heav') source
       real*8 :: in_theav = 0d0 !duration of heaviside source
@@ -142,8 +146,8 @@ c-- external source structure
       real*8 :: in_srcepwr = 1d0 !source particle number-energy slope, 1 is linear, equal number of packets per erg.
 c
 c-- misc
-      character(4) :: in_opacdump = 'off'    !off|one|each|all: write opacity data to file
-      character(4) :: in_pdensdump = 'off'   !off|one|each: write partial densities to file
+      character(4) :: in_opacdump = 'off '    !off|one|each|all: write opacity data to file
+      character(4) :: in_pdensdump = 'off '   !off|one|each: write partial densities to file
 c
 c-- debug and test switches
       logical :: in_noeos = .false.     !don't use the EOS
@@ -162,13 +166,14 @@ c-- runtime parameter namelist
      & in_lx,in_ly,in_lz,
      & in_ng,in_ngs,in_wldex,in_wlmin,in_wlmax,
      & in_totmass,in_velout,
-     & in_consttemp,
-     &    in_ns,in_ns0,in_trn_n2part, !compat
+     &   in_consttemp,in_tempradinit, !deprec
+     & in_gas_gastempinit,in_gas_radtempinit,
+     &   in_ns,in_ns0,in_trn_n2part, !deprec
      & in_src_ns,in_src_nsinit,in_prt_nmax,
      & in_src_n2s,in_src_n2sinit,in_prt_n2max,
      & in_trn_nolumpshortcut,in_trn_errorfatal,in_puretran,in_alpha,
      & in_tsp_tfirst,in_tsp_tlast,
-     &    in_tfirst,in_tlast, !compat
+     &   in_tfirst,in_tlast, !deprec
      & in_tsp_gridtype,in_nt,in_ntres,
      & in_grabstdout,in_nomp,
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
@@ -186,7 +191,7 @@ c-- runtime parameter namelist
      & in_nogriddump, in_io_dogrdtally,
      & in_tauddmc,in_dentype,in_noreadstruct,
      & in_norestart,in_taulump,in_tauvtime,
-     & in_tempradinit,in_ismodimc,
+     & in_ismodimc,
      & in_noeos,in_flx_ndim,in_flx_wlmin,in_flx_wlmax
 c
 c-- pointers
@@ -216,6 +221,7 @@ c
       public
       private inputpars
       save
+c!}}}
 c
       contains
 c
@@ -257,8 +263,8 @@ c
       call insertr(in_velout,in_r,ir)
       call insertr(in_totmass,in_r,ir)
       call insertc(in_dentype,in_c,ic)
-      call insertr(in_consttemp,in_r,ir)
-      call insertr(in_tempradinit,in_r,ir)
+      call insertr(in_gas_gastempinit,in_r,ir)
+      call insertr(in_gas_radtempinit,in_r,ir)
       call insertr(in_gas_cvcoef,in_r,ir)
       call insertr(in_gas_cvtpwr,in_r,ir)
       call insertr(in_gas_cvrpwr,in_r,ir)
@@ -370,7 +376,7 @@ c
 c
 c
       subroutine read_inputpars
-c     -------------------------
+c     -------------------------!{{{
       implicit none
 ************************************************************************
 * read the input parameter namelist
@@ -386,7 +392,39 @@ c
 66    stop 'read_inputpars: namelist input file missing: input.par'
 67    stop 'read_inputpars: namelist missing or bad in input.par'
 68    stop 'read_inputpars: ivalid parameters or values in namelist'
+!}}}
       end subroutine read_inputpars
+c
+c
+c
+      subroutine deprecate_inputpars
+c     -------------------------------!{{{
+      if(in_ns/=0) stop 'DEPRECATED: in_ns => in_src_ns'
+      if(in_ns0/=0) stop 'DEPRECATED: in_ns0 => in_src_nsinit'
+      if(in_trn_n2part/=-1) stop
+     &  'DEPRECATED: in_trn_n2part => in_prt_n2max'
+      if(in_tfirst/=0d0) stop 'DEPRECATED: in_tfirst => in_tsp_tfirst'
+      if(in_tlast/=0d0) stop 'DEPRECATED: in_tlast => in_tsp_tlast'
+
+      if(in_consttemp/=0d0) then
+       if(in_gas_gastempinit/=0d0) then
+        stop 'DEPRECATED: in_consttemp => in_gas_gastempinit'
+       else
+        in_gas_gastempinit = in_consttemp
+        write(6,*) 'DEPRECATED: in_consttemp => in_gas_gastempinit'
+       endif
+      endif
+      if(in_tempradinit/=0d0) then
+       if(in_tempradinit/=0d0) then
+        stop 'DEPRECATED: in_tempradinit => in_gas_radtempinit'
+       else
+        in_gas_radtempinit = in_tempradinit
+        write(6,*) 'DEPRECATED: in_tempradinit => in_gas_radtempinit'
+       endif
+      endif
+      write(6,*)
+!}}}
+      end subroutine deprecate_inputpars
 c
 c
 c
@@ -418,12 +456,9 @@ c-- dump namelist to stdout
 c
 c-- write simulation name to file
       open(4,file='output.name',iostat=istat)
-      if(istat/=0) then
-       stop 'parse_inputpars: open output.name error'
-      else
-       write(4,'(a)') trim(in_name)
-       close(4)
-      endif
+      if(istat/=0) stop 'parse_inputpars: open output.name error'
+      write(4,'(a)') trim(in_name)
+      close(4)
 c
 c-- check input parameter validity
       if(in_nomp<0) stop 'in_nomp invalid'!{{{
@@ -472,11 +507,8 @@ c
       if(in_voidcorners.and.in_igeom==1) stop 'voidcorners && igeom=1'
       if(in_voidcorners.and.in_igeom==11) stop 'voidcorners && igeom=11'
 c
-      if(in_ng==0) then
-       if(in_wldex<1) stop 'in_wldex invalid'
-      elseif(in_ng<0) then
-       stop 'in_ng invalid'
-      endif
+      if(in_ng<0) stop 'in_ng invalid'
+      if(in_ng==0 .and. in_wldex<1) stop 'in_wldex invalid'
       if(in_ngs<=0) stop 'in_ngs invalid'
       if(in_wlmin<0) stop 'in_wlmin invalid'
       if(in_wlmax<=in_wlmin) stop 'in_wlmax invalid'
@@ -508,12 +540,12 @@ c
       endif
 c
 c-- temp init
-      if(in_consttemp<0d0) stop 'in_consttemp < 0'
-      if(in_tempradinit<0d0) stop 'in_tempradinit < 0'
+      if(in_gas_gastempinit<0d0) stop 'in_gas_gastempinit < 0'
+      if(in_gas_radtempinit<0d0) stop 'in_gas_radtempinit < 0'
 c
 c-- timestepping
       select case(in_tsp_gridtype)
-      case('line')
+      case('lin ')
        if(in_nt<=0) stop 'in_tsp_gridtype==line & in_nt<=0'
       case('expo')
        if(in_nt<=0) stop 'in_tsp_gridtype==expo & in_nt<=0'
@@ -569,26 +601,28 @@ c
       if(in_noffopac) call warn('read_inputpars','ff opacity disabled!')
       if(in_nothmson) call warn('read_inputpars','Thomson disabled')
 c
-      if(trim(in_opacdump)=='off') then
-      elseif(trim(in_opacdump)=='one') then
-      elseif(trim(in_opacdump)=='each') then
-      elseif(trim(in_opacdump)=='all') then
+      select case(in_opacdump)
+      case('off ')
+      case('one ')
+      case('each')
+      case('all ')
        call warn('read_inputpars',
      &   "in_opacdump=='all' will generate a big data file!")
-      else
+      case default
        stop 'in_opacdump invalid'
-      endif
+      end select
 c
       if(in_opacmixrossel<0d0 .or. in_opacmixrossel>1d0) then
        stop 'in_opacmixrossel invalid'
       endif
 c
-      if(trim(in_pdensdump)=='off') then
-      elseif(trim(in_pdensdump)=='one') then
-      elseif(trim(in_pdensdump)=='each') then
-      else
+      select case(in_pdensdump)
+      case('off ')
+      case('one ')
+      case('each')
+      case default
        stop 'in_pdensdump invalid'
-      endif
+      end select
 c
 c-- set the number of threads
 c$    if(.false.) then!{{{
@@ -615,18 +649,6 @@ c
 c
 c
 c
-      subroutine warn_inputpars_deprecated
-c     ------------------------------------
-      if(in_ns/=0) stop 'deprecated: in_ns => in_src_ns'
-      if(in_ns0/=0) stop 'deprecated: in_ns0 => in_src_nsinit'
-      if(in_trn_n2part/=-1) stop
-     &  'deprecated: in_trn_n2part => in_prt_n2max'
-      if(in_tfirst/=0d0) stop 'deprecated: in_tfirst => in_tsp_tfirst'
-      if(in_tlast/=0d0) stop 'deprecated: in_tlast => in_tsp_tlast'
-      end subroutine warn_inputpars_deprecated
-c
-c
-c
       subroutine provide_inputpars(nmpi)
 c     -------------------------------------!{{{
       use physconstmod
@@ -636,6 +658,7 @@ c     -------------------------------------!{{{
       use timestepmod
       use fluxmod
       use groupmod
+      use gasmod
       use gridmod
       implicit none
       integer,intent(in) :: nmpi
@@ -663,6 +686,8 @@ c
       tsp_tfirst = in_tsp_tfirst
       tsp_tlast  = in_tsp_tlast
 c
+      gas_gastempinit = in_gas_gastempinit
+      gas_radtempinit = in_gas_radtempinit
       !gas_sigcoef = in_gas_sigcoef
       !gas_sigtpwr = in_gas_sigtpwr
       !gas_sigrpwr = in_gas_sigrpwr

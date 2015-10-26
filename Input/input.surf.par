@@ -30,8 +30,8 @@ in_dentype = 'ufil'
 in_flx_ndim = 0, 1, 1
 
 !-- flat structures
-in_tempradinit = 0d0
-in_consttemp = 11604.505d0
+in_gas_radtempinit = 0d0
+in_gas_gastempinit = 11604.505d0
 
 !-- external source type
 in_srctype = 'surf'

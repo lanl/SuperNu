@@ -51,7 +51,7 @@ module timestepmod
        if(.not.allocated(tsp_tpreset)) stop 'timestep_update: tpreset not allocated'
        tsp_dt = tsp_tpreset(tsp_it+1) - tsp_tpreset(tsp_it)
        tsp_t = tsp_tpreset(tsp_it)
-    case('line')
+    case('lin ')
 !-- linear time grid
        tsp_dt = (tsp_tlast - tsp_tfirst)/tsp_nt
        tsp_t = tsp_tfirst + (tsp_it-1)*tsp_dt  !beginning of the time step

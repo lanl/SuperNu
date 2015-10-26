@@ -23,7 +23,7 @@
  in_dentype = 'mass'
 
 !-- flat structures
- in_consttemp = 1d4
+ in_gas_gastempinit = 1d4
  in_gas_cvcoef = -1d0
 
 !-- flux settings

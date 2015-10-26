@@ -27,8 +27,10 @@ c
 c-- temperature
       if(in_srctype=='manu') then
        call init_manutemp
-      elseif(in_consttemp>0d0) then
-       gas_temp = in_consttemp
+      elseif(gas_gastempinit>0d0) then
+       gas_temp = gas_gastempinit
+       if(str_ltemp) write(6,*)
+     &   'WARNING: input.str temp overridden by gas_gastempinit'
       elseif(str_ltemp) then
        gas_temp = str_tempdd
       else
@@ -37,8 +39,8 @@ c-- temperature
 c
 c
 c-- used in fleck_factor
-      if(in_tempradinit>0d0) then
-        gas_eraddens = pc_acoef*in_tempradinit**4
+      if(gas_radtempinit>0d0) then
+        gas_eraddens = pc_acoef*gas_radtempinit**4
       else
         gas_eraddens = pc_acoef*gas_temp**4
       endif

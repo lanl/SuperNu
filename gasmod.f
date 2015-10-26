@@ -12,6 +12,10 @@ c-- available isotopes
       integer,parameter :: gas_ife52=-3, gas_imn52=-4 !positions in mass0fr and natom1fr arrays
       integer,parameter :: gas_icr48=-5, gas_iv48=-6  !positions in mass0fr and natom1fr arrays
 c
+c-- input parameters
+      real*8 :: gas_gastempinit
+      real*8 :: gas_radtempinit
+c
 c-- wavelength grid (gridmod has a copy as well)
       integer,private :: ng=0
 c

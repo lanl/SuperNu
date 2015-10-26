@@ -54,7 +54,7 @@ program supernu
 !-- read runtime parameters
      call read_inputpars
 !-- read runtime parameters
-     call warn_inputpars_deprecated
+     call deprecate_inputpars
 !-- parse and verify runtime parameters
      call parse_inputpars(nmpi)
 !
