@@ -154,6 +154,7 @@ c-- ndim=3 integer
       allocate(grd_nvol(grd_ncell))
       grd_nvol = 0
       allocate(grd_nvolinit(grd_ncell))
+      grd_nvolinit = 0d0
 c
       allocate(grd_methodswap(grd_ncell))
       allocate(grd_numcensimc(grd_ncell))
@@ -192,7 +193,6 @@ c
 c-- ndim=3 integer
       deallocate(grd_nvol)
       deallocate(grd_nvolinit)
-      grd_nvolinit = 0d0
       deallocate(grd_methodswap)
       deallocate(grd_numcensimc)
       deallocate(grd_numcensddmc)
