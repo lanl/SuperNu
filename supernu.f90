@@ -138,8 +138,9 @@ program supernu
 !=================
   if(lmpi0) then
      write(6,*)
-     write(6,*) "starting time loop:"
-     write(6,'(1x,a,4x,4(a7,1x))') "====================",'nsrc','ncens','nflux','ntrnsp'
+     write(6,*) "timestep loop:"
+     write(6,*) "===================="
+     write(6,'(1x,a5,a9,a10,4(a7,1x))') 'it','t[day]','e_err','nsrc','ncens','nflux','ntrnsp'
   endif
 !
   do it=in_ntres,tsp_nt
@@ -226,13 +227,12 @@ program supernu
         if(it>0) call write_output
 
 !-- write stdout
-        help = merge(tot_eerror,tot_erad,it>0)
         if(ct_nptransport(2)<1000000) then
-           write(6,'(1p,e10.2,4(i7,1x))') help, &
+           write(6,'(1p,e10.2,4(i7,1x))') tot_eerror, &
               ct_npcreate(2),(ct_npcensimc(2)+ct_npcensddmc(2)), &
               ct_npflux(2),ct_nptransport(2)
         else
-           write(6,'(1p,e10.2,4(i7,"k"))') help, &
+           write(6,'(1p,e10.2,4(i7,"k"))') tot_eerror, &
               ct_npcreate(2)/1000,(ct_npcensimc(2)+ct_npcensddmc(2))/1000, &
               ct_npflux(2)/1000,ct_nptransport(2)/1000
         endif
