@@ -92,24 +92,30 @@ c
 c-- time step
       real*8 :: in_tsp_tfirst = 0d0 !first point in time evolution [sec]
       real*8 :: in_tsp_tlast = 0d0  !last point in time evolution [sec]
+      integer :: in_tsp_nt = 0       !number of time steps
+      integer :: in_tsp_itrestart = -1   !restart time step number
 c>> backwards compatibility
-        real*8 :: in_tfirst = 0d0 !first point in time evolution [day]
-        real*8 :: in_tlast = 0d0  !last point in time evolution [day]
+        real*8 :: in_tfirst = 0d0
+        real*8 :: in_tlast = 0d0
+        integer :: in_nt = 0
+        integer :: in_ntres = -1
 c<< backwards compatibility
       character(4) :: in_tsp_gridtype = 'lin ' ! line|expo|read: linear, exponential or read-in timestep grid
-      integer :: in_nt = 0       !number of time steps
-      integer :: in_ntres = -1   !restart time step number
       logical :: in_norestart = .true.
       logical :: in_ismodimc = .true. !Gentile-Fleck factor switch
 c
 c
 c-- group structure
-      integer :: in_ng = -1      !number of groups: 0 uses in_wldex
-      integer :: in_ngs = 1      !>1 number of subgroups per opacity group
-                                 ! 1 non-subgridded physical_opacities
-      integer :: in_wldex = 0    !selects group grid from formatted group grid file
-      real*8 :: in_wlmin =   100e-8 !lower wavelength boundary [cm]
-      real*8 :: in_wlmax = 32000e-8 !upper wavelength boundary [cm]
+      integer :: in_grp_ng = -1      !number of groups: 0 read wl-grid from file
+      integer :: in_grp_ngs = 1      !>1 number of subgroups per opacity group
+                                     ! 1 non-subgridded physical_opacities
+      real*8 :: in_grp_wlmin =   100d-8 !lower wavelength boundary [cm]
+      real*8 :: in_grp_wlmax = 32000d-8 !upper wavelength boundary [cm]
+      integer :: in_wldex = 0        !selects group grid from formatted group grid file
+        integer :: in_ng = -1
+        integer :: in_ngs = 1
+        real*8 :: in_wlmin =   100d-8
+        real*8 :: in_wlmax = 32000d-8
 c
 c
 c-- physical opacities
@@ -164,7 +170,9 @@ c-- runtime parameter namelist
      & in_igeom,in_ndim,
      & in_isvelocity,in_voidcorners,in_novolsrc,
      & in_lx,in_ly,in_lz,
-     & in_ng,in_ngs,in_wldex,in_wlmin,in_wlmax,
+     &   in_ng,in_ngs,in_wlmin,in_wlmax,
+     & in_grp_ng,in_grp_ngs,in_grp_wlmin,in_grp_wlmax,
+     & in_wldex,
      & in_totmass,in_velout,
      &   in_consttemp,in_tempradinit, !deprec
      & in_gas_gastempinit,in_gas_radtempinit,
@@ -173,8 +181,8 @@ c-- runtime parameter namelist
      & in_src_n2s,in_src_n2sinit,in_prt_n2max,
      & in_trn_nolumpshortcut,in_trn_errorfatal,in_puretran,in_alpha,
      & in_tsp_tfirst,in_tsp_tlast,
-     &   in_tfirst,in_tlast, !deprec
-     & in_tsp_gridtype,in_nt,in_ntres,
+     &   in_tfirst,in_tlast,in_nt,in_ntres, !deprec
+     & in_tsp_gridtype,in_tsp_nt,in_tsp_itrestart,
      & in_grabstdout,in_nomp,
      & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
      & in_noffopac,in_nothmson,in_noplanckweighting,in_opacmixrossel,
@@ -286,15 +294,15 @@ c
       call insertr(in_tsp_tfirst,in_r,ir)
       call insertr(in_tsp_tlast,in_r,ir)
       call insertc(in_tsp_gridtype,in_c,ic)
-      call inserti(in_nt,in_i,ii)
-      call inserti(in_ntres,in_i,ii)
+      call inserti(in_tsp_nt,in_i,ii)
+      call inserti(in_tsp_itrestart,in_i,ii)
       call insertl(in_norestart,in_l,il)
       call insertl(in_ismodimc,in_l,il)
-      call inserti(in_ng,in_i,ii)
-      call inserti(in_ngs,in_i,ii)
+      call inserti(in_grp_ng,in_i,ii)
+      call inserti(in_grp_ngs,in_i,ii)
+      call insertr(in_grp_wlmin,in_r,ir)
+      call insertr(in_grp_wlmax,in_r,ir)
       call inserti(in_wldex,in_i,ii)
-      call insertr(in_wlmin,in_r,ir)
-      call insertr(in_wlmax,in_r,ir)
       call insertr(in_opcapgam,in_r,ir)
       call insertr(in_epsline,in_r,ir)
       call insertl(in_noplanckweighting,in_l,il)
@@ -399,13 +407,36 @@ c
 c
       subroutine deprecate_inputpars
 c     -------------------------------!{{{
+***********************************************************************
+* Warn about deprecated input variables and error stop if new and old
+* variable are both set.
+
+* The purpose is to help the user transition away from deprecated variables
+***********************************************************************
       if(in_ns/=0) stop 'DEPRECATED: in_ns => in_src_ns'
       if(in_ns0/=0) stop 'DEPRECATED: in_ns0 => in_src_nsinit'
       if(in_trn_n2part/=-1) stop
      &  'DEPRECATED: in_trn_n2part => in_prt_n2max'
+c-- tsp
       if(in_tfirst/=0d0) stop 'DEPRECATED: in_tfirst => in_tsp_tfirst'
       if(in_tlast/=0d0) stop 'DEPRECATED: in_tlast => in_tsp_tlast'
-
+      if(in_nt/=0) then
+       if(in_tsp_nt/=0) then
+        stop 'DEPRECATED: in_nt => in_tsp_nt'
+       else
+        in_tsp_nt = in_nt
+        write(6,*) 'DEPRECATED: in_nt => in_tsp_nt'
+       endif
+      endif
+      if(in_ntres/=-1) then
+       if(in_tsp_itrestart/=-1) then
+        stop 'DEPRECATED: in_ntres => in_tsp_itrestart'
+       else
+        in_tsp_itrestart = in_ntres
+        write(6,*) 'DEPRECATED: in_ntres => in_tsp_itrestart'
+       endif
+      endif
+c-- gas
       if(in_consttemp/=0d0) then
        if(in_gas_gastempinit/=0d0) then
         stop 'DEPRECATED: in_consttemp => in_gas_gastempinit'
@@ -415,11 +446,44 @@ c     -------------------------------!{{{
        endif
       endif
       if(in_tempradinit/=0d0) then
-       if(in_tempradinit/=0d0) then
+       if(in_gas_radtempinit/=0d0) then
         stop 'DEPRECATED: in_tempradinit => in_gas_radtempinit'
        else
         in_gas_radtempinit = in_tempradinit
         write(6,*) 'DEPRECATED: in_tempradinit => in_gas_radtempinit'
+       endif
+      endif
+c-- grp
+      if(in_ng/=-1) then
+       if(in_grp_ng/=-1) then
+        stop 'DEPRECATED: in_ng => in_grp_ng'
+       else
+        in_grp_ng = in_ng
+        write(6,*) 'DEPRECATED: in_ng => in_grp_ng'
+       endif
+      endif
+      if(in_ngs/=1) then
+       if(in_grp_ngs/=1) then
+        stop 'DEPRECATED: in_ngs => in_grp_ngs'
+       else
+        in_grp_ngs = in_ngs
+        write(6,*) 'DEPRECATED: in_ngs => in_grp_ngs'
+       endif
+      endif
+      if(in_wlmin/=100d-8) then
+       if(in_grp_wlmin/=100d-8) then
+        stop 'DEPRECATED: in_wlmin => in_grp_wlmin'
+       else
+        in_grp_wlmin = in_wlmin
+        write(6,*) 'DEPRECATED: in_wlmin => in_grp_wlmin'
+       endif
+      endif
+      if(in_wlmax/=32000d-8) then
+       if(in_grp_wlmax/=32000d-8) then
+        stop 'DEPRECATED: in_wlmax => in_grp_wlmax'
+       else
+        in_grp_wlmax = in_wlmax
+        write(6,*) 'DEPRECATED: in_wlmax => in_grp_wlmax'
        endif
       endif
       write(6,*)
@@ -507,11 +571,11 @@ c
       if(in_voidcorners.and.in_igeom==1) stop 'voidcorners && igeom=1'
       if(in_voidcorners.and.in_igeom==11) stop 'voidcorners && igeom=11'
 c
-      if(in_ng<0) stop 'in_ng invalid'
-      if(in_ng==0 .and. in_wldex<1) stop 'in_wldex invalid'
-      if(in_ngs<=0) stop 'in_ngs invalid'
-      if(in_wlmin<0) stop 'in_wlmin invalid'
-      if(in_wlmax<=in_wlmin) stop 'in_wlmax invalid'
+      if(in_grp_ng<0) stop 'in_grp_ng invalid'
+      if(in_grp_ng==0 .and. in_wldex<1) stop 'in_wldex invalid'
+      if(in_grp_ngs<=0) stop 'in_grp_ngs invalid'
+      if(in_grp_wlmin<0) stop 'in_grp_wlmin invalid'
+      if(in_grp_wlmax<=in_grp_wlmin) stop 'in_grp_wlmax invalid'
 c
       if(in_src_ns<=0 .eqv. in_src_n2s<0) stop
      &  'use in_src_ns or in_src_n2s'
@@ -546,13 +610,13 @@ c
 c-- timestepping
       select case(in_tsp_gridtype)
       case('lin ')
-       if(in_nt<=0) stop 'in_tsp_gridtype==line & in_nt<=0'
+       if(in_tsp_nt<=0) stop 'in_tsp_gridtype==line & in_tsp_nt<=0'
       case('expo')
-       if(in_nt<=0) stop 'in_tsp_gridtype==expo & in_nt<=0'
+       if(in_tsp_nt<=0) stop 'in_tsp_gridtype==expo & in_tsp_nt<=0'
        if(in_tsp_tfirst<=0d0) stop
      &   'in_tsp_gridtype==expo & in_tsp_tfirst<=0'
       case('read')
-       if(in_nt/=0) stop 'in_tsp_gridtype==read & in_nt/=0'
+       if(in_tsp_nt/=0) stop 'in_tsp_gridtype==read & in_tsp_nt/=0'
       case default
        stop 'in_tsp_gridtype invalid'
       end select
@@ -681,8 +745,8 @@ c
       src_ninit = nsinit
 c
       tsp_gridtype = in_tsp_gridtype
-      tsp_nt     = in_nt
-      tsp_ntres  = in_ntres
+      tsp_nt     = in_tsp_nt
+      tsp_ntres  = in_tsp_itrestart
       tsp_tfirst = in_tsp_tfirst
       tsp_tlast  = in_tsp_tlast
 c
@@ -717,9 +781,10 @@ c
       flx_wlmin = in_flx_wlmin
       flx_wlmax = in_flx_wlmax
 c
-      grp_ng    = in_ng
-      grp_wlmin = in_wlmin
-      grp_wlmax = in_wlmax
+      grp_ng    = in_grp_ng
+      grp_ngs   = in_grp_ngs
+      grp_wlmin = in_grp_wlmin
+      grp_wlmax = in_grp_wlmax
 c
       grd_igeom = in_igeom
       grd_nx    = in_ndim(1)

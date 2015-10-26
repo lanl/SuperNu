@@ -9,8 +9,8 @@
 !-- time step
  in_tsp_tfirst = 172800 !2 days
  in_tsp_tlast = 5529600 !64 days
- in_nt = 124
- in_ntres = -6
+ in_tsp_nt = 124
+ in_tsp_itrestart = -6
 
 !-- grid settings
  in_igeom = 11
@@ -30,7 +30,7 @@
  in_flx_ndim = 150, 1, 1
 
 !-- group settings
- in_ng = 250
+ in_grp_ng = 250
 
 !-- particle numbers
  in_src_n2sinit = 10

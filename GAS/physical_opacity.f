@@ -21,7 +21,7 @@ c-- timing
       real*8 :: t0,t1,t2,t3,t4
 c-- subgridded wavelength
       integer :: ngsub
-      real*8 :: wlsub(grp_ng*in_ngs+1)
+      real*8 :: wlsub(grp_ng*grp_ngs+1)
 c-- helper arrays
       real*8 :: grndlev(gas_ncell,ion_iionmax-1,gas_nelem)
       real*8 :: hckt(gas_ncell)
@@ -41,7 +41,7 @@ c-- bbxs
       real*8 :: expfac(gas_ncell)
       real*8 :: caphelp
 c-- temporary cap array in the right order
-      real*8,allocatable :: cap(:,:) !(gas_ncell,grp_ng*in_ngs)
+      real*8,allocatable :: cap(:,:) !(gas_ncell,grp_ng*grp_ngs)
       real*8 :: capp(gas_ncell),capr(gas_ncell)
 c-- thomson scattering
       real*8,parameter :: cthomson = 8d0*pc_pi*pc_e**4/(3d0*pc_me**2
@@ -50,7 +50,7 @@ c-- warn once
       logical :: lwarn
 c
 c--
-      ngsub = grp_ng*in_ngs
+      ngsub = grp_ng*grp_ngs
 c
 c-- initialize
       allocate(cap(gas_ncell,ngsub))
@@ -59,12 +59,12 @@ c
 c-- subgridded wavelength
       igs = 1
       wlsub(igs) = grp_wl(1)
-      if(in_ngs==1) then
+      if(grp_ngs==1) then
        wlsub = grp_wl
       else
-       help = 1d0/in_ngs
+       help = 1d0/grp_ngs
        do ig=1,grp_ng
-        do i=1,in_ngs
+        do i=1,grp_ngs
          igs = igs + 1
          wlsub(igs) = (1d0 - i*help)*grp_wl(ig) + i*help*grp_wl(ig+1)
         enddo
@@ -241,11 +241,11 @@ c
       t3 = t_time()
 c
 c-- collapse subgridding
-      if(in_ngs/=1) then
-       help = 1d0/in_ngs  !assume evenly spaced subgroups
+      if(grp_ngs/=1) then
+       help = 1d0/grp_ngs  !assume evenly spaced subgroups
        do ig=1,grp_ng
-        i = (ig-1)*in_ngs + 1
-        j = i + in_ngs - 1
+        i = (ig-1)*grp_ngs + 1
+        j = i + grp_ngs - 1
 c-- first read
         capp = sum(cap(:,i:j), dim=2, mask=cap(:,i:j)>0d0)*help
         capr = sum(1d0/cap(:,i:j), dim=2, mask=cap(:,i:j)>0d0)*help

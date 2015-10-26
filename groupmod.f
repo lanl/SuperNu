@@ -2,7 +2,7 @@
       implicit none
 c
 c-- wavelength grid (gridmod has a copy as well)
-      integer,target :: grp_ng=0
+      integer,target :: grp_ng,grp_ngs
       real*8 :: grp_wlmin,grp_wlmax
       real*8,allocatable :: grp_wl(:) !(grp_ng) wavelength grid
       real*8,allocatable :: grp_wlinv(:) !(grp_ng) wavelength grid
