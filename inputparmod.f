@@ -504,15 +504,6 @@ c$    use omp_lib
       integer :: istat
 c$    integer :: i
 c
-c-- redirect stdout to file if selected
-      if(in_grabstdout) then!{{{
-       write(6,*) 'write stdout to fort.6'
-       open(6,file='fort.6',action='write',status='replace',recl=3000,
-     &   iostat=istat) !write stdout to file
-       if(istat/=0) stop 'parse_inputpars: open fort.6 error'
-       call banner
-      endif!}}}
-c
 c-- dump namelist to stdout
       write(6,*) 'namelist read:'
       write(6,nml=inputpars)

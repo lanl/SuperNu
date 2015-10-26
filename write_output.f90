@@ -1,5 +1,15 @@
-subroutine write_output
+subroutine open_logfile
+!----------------------
+  integer :: istat
 
+  write(6,*) 'write stdout to output.log'
+  open(6,file='output.log',action='write',status='replace',recl=5000,iostat=istat) !write stdout to file
+  if(istat/=0) stop 'parse_inputpars: open output.log error'
+  call banner
+end subroutine open_logfile
+
+
+subroutine write_output
   use inputparmod
   use timingmod
   use timestepmod
