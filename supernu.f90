@@ -54,7 +54,7 @@ program supernu
 !-- read runtime parameters
      call read_inputpars
 !-- redirect stdout to file if selected
-     if(in_grabstdout) call open_logfile
+     call open_logfiles
 !-- read runtime parameters
      call deprecate_inputpars
 !-- parse and verify runtime parameters
