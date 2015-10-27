@@ -145,7 +145,7 @@ program supernu
      write(6,'(1x,a5,a9,a10,4(a7,1x))') 'it','t[day]','e_err','nsrc','ncens','nflux','ntrnsp'
   endif
 !
-  do it=in_ntres,tsp_nt
+  do it=tsp_itrestart,tsp_nt
      t_timelin(1) = t_time() !timeline
 !-- allow negative and zero it for temperature initialization purposes
      tsp_it = max(it,1)
@@ -199,7 +199,7 @@ program supernu
         if(in_isvelocity) call source_transformdirection
         deallocate(src_ivacant)
      endif
-     if(tsp_it<=tsp_ntres) where(.not.prt_isvacant) prt_particles%t = tsp_t !reset particle clocks
+     if(tsp_it<=tsp_itrestart) where(.not.prt_isvacant) prt_particles%t = tsp_t !reset particle clocks
 
 !-- advance particles
      t_timelin(5) = t_time() !timeline

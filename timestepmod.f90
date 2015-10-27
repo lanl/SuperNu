@@ -4,7 +4,7 @@ module timestepmod
 
   character(4) :: tsp_gridtype = 'none'  !total # of time steps
   integer :: tsp_nt = 0  !total # of time steps
-  integer :: tsp_ntres = 0 !restart time step # (at beginning of time step)
+  integer :: tsp_itrestart = 0 !restart time step # (at beginning of time step)
   integer :: tsp_it  !current time step number
   real*8 :: tsp_t
   real*8,allocatable :: tsp_tpreset(:)  !store preset time steps from input.tsp_time
@@ -24,7 +24,7 @@ module timestepmod
 !***********************************************************************
 ! set the timestep constants
 !***********************************************************************
-    tsp_ntres = max(tsp_ntres,1)
+    tsp_itrestart = max(tsp_itrestart,1)
 !
 !-- read timestep configuration from file
     if(tsp_gridtype=='read') then

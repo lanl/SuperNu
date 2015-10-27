@@ -737,7 +737,7 @@ c
 c
       tsp_gridtype = in_tsp_gridtype
       tsp_nt     = in_tsp_nt
-      tsp_ntres  = in_tsp_itrestart
+      tsp_itrestart  = in_tsp_itrestart
       tsp_tfirst = in_tsp_tfirst
       tsp_tlast  = in_tsp_tlast
 c

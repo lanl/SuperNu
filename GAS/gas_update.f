@@ -99,7 +99,7 @@ c-- We keep adding nisource/2 until the radiation field converges.
 c-- The doppler losses are then equal to nisource/2.  We give two full
 c-- nisource shots to bring the radiation field up to speed and help
 c-- converge more quickly.
-       if(it<1 .and. it>in_ntres+1) then
+       if(it<1 .and. it>tsp_itrestart+1) then
         gas_decaygamma = gas_decaygamma*.5
         gas_decaybeta = gas_decaybeta*.5
        endif
