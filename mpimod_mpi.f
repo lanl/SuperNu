@@ -429,7 +429,7 @@ c
 c-- allgather
       nvacant = count(prt_isvacant)
       call mpi_allgather(nvacant,1,MPI_INTEGER,
-     &  src_nvacantall,1,MPI_INTEGER,
+     &  src_nvacantall,1,MPI_INTEGER8,
      &  MPI_COMM_WORLD,ierr)
 c
       t1 = t_time()

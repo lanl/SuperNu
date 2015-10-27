@@ -17,7 +17,7 @@ subroutine sourcenumbers(keephigh)
   integer :: l,iimpi
   integer :: n,ndone
   integer :: nextra,nsmean
-  integer :: nvacant(nmpi)
+  integer*8 :: nvacant(nmpi)
   real*8,parameter :: basefrac=.1d0
   integer*8 :: nstot,nstotd,nsavail
   integer*8 :: nvacantall,nnewvacant
@@ -135,7 +135,8 @@ end subroutine sourcenumbers
 subroutine sourcenumbers_roundrobin_limit(iimpi,nvacant,evol,evolex,ntot,mvol,nvol,nvolex)
   use mpimod!{{{
   implicit none
-  integer,intent(inout) :: iimpi,nvacant(0:nmpi-1)
+  integer,intent(inout) :: iimpi
+  integer*8,intent(inout) :: nvacant(0:nmpi-1)
   real*8,intent(in) :: evol,evolex
   integer,intent(in) :: ntot
   integer,intent(out) :: mvol  !particle number on all ranks

@@ -11,7 +11,7 @@ c     ----------------
       integer :: src_nsurftot
 c
       integer,allocatable :: src_ivacant(:) !array of vacant particle array locations
-      integer,allocatable :: src_nvacantall(:) !(nmpi) number of vacancies on each of the ranks
+      integer*8,allocatable :: src_nvacantall(:) !(nmpi) number of vacancies on each of the ranks
 c
       save
 c

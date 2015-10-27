@@ -22,7 +22,7 @@ subroutine interior_source
 !##################################################
   integer :: i,j,k, ipart,ivac,ig,ii
   integer :: nhere,ndmy,iimpi,nemit
-  integer,allocatable :: nvacantall(:)
+  integer*8,allocatable :: nvacantall(:)
   real*8 :: pwr
   real*8 :: r1, r2, r3, uul, uur, uumax
   real*8 :: om0, mu0, x0, ep0, wl0
