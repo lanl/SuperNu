@@ -3,114 +3,56 @@ c     ------------------!{{{
       implicit none
 ************************************************************************
 * input parameters
-* New parameters need to be added in this routine four places:
-* 1) variable declaration
-* 2) namelist
-* 3) pointer array
-* 4) sanity conditions
+* New parameters need to be added in this routine in four places:
+*  1) variable declaration
+*  2) namelist
+*  3) pointer array
+*  4) sanity conditions
 ************************************************************************
 c-- write stdout to file
-      character(40) :: in_name = "spn" !simulation name/title, for post-processing identification
-      character(80) :: in_comment = "" !why did I run this simulation?
-      logical :: in_grabstdout = .false. !write stdout to file
+      character(40) :: in_name = "spn"  !simulation name/title, for post-processing identification
+      character(80) :: in_comment = ""  !why did I run this simulation?
 c-- parallelization
-      integer :: in_nomp = 1       !number of openmp threads
+      integer :: in_nomp = 1  !number of openmp threads
+c
 c
 c-- grid geometry and dimensions
-      integer :: in_igeom = 0 !geometry: 1=[123]Dsph, 2=2Dcyl, 3=3Dcar, 11=1Dsph
-      integer :: in_ndim(3) = [1, 1, 1] !number of x-direction cells
-
+      integer :: in_igeom = 0 !geometry: 1=sph, 2=cyl, 3=car, 11=1Dsph
+      integer :: in_ndim(3) = [1, 1, 1]  !number of x-direction cells
+      logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
+c
+c
+c-- read input structure file instead of specifying the stucture with input parameters
+      logical :: in_voidcorners = .false.  !zero mass in cells outside central sphere in domain
+      logical :: in_noreadstruct = .false.
+c-- static grid size
       real*8 :: in_lx = 0d0  !spatial length of x-direction
       real*8 :: in_ly = 0d0  !spatial length of y-direction
       real*8 :: in_lz = 0d0  !spatial length of z-direction
-c
-c-- outbound flux group and direction bins
-      integer :: in_flx_ndim(3) = [0, 1, 1]
-      real*8 :: in_flx_wlmin =  1000d-8 !lower wavelength flux boundary [cm]
-      real*8 :: in_flx_wlmax = 32000d-8 !upper wavelength flux boundary [cm]
-c
-c-- output
-      logical :: in_nogriddump = .false. !don't write grid cell variables
-      logical :: in_io_dogrdtally = .false. !transport tallies per grid cell
-c
-c-- do read input structure file instead of specifying the stucture with input parameters
-c==================
-      logical :: in_noreadstruct = .false.
-c-- special grid
-      logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
-      logical :: in_voidcorners = .false.  !zero mass in cells outside central sphere in domain
-c-- specify the atmospheric stratification
+c-- parameterized input structure
       real*8 :: in_velout = 0d0  !cm/s, velocity of outer bound
       real*8 :: in_totmass = 0d0  !g
       character(4) :: in_dentype = 'none' ! unif|mass: 'unif' for uniform density, 'mass' for equal mass accross cells
-c============
 c
-c-- temperature parameters
-      real*8 :: in_gas_gastempinit = 0d0 !non-zero will not read temp from file. units: K
-      real*8 :: in_gas_radtempinit = 0d0 !initial radiation temperature.  Use grd_temp by default
-c>> backwards compatibility
-        real*8 :: in_consttemp = 0d0
-        real*8 :: in_tempradinit = 0d0
-c<< backwards compatibility
-c
-c-- analytic heat capacity terms
-      real*8 :: in_gas_cvcoef = 1d7 !power law heat capacity coefficient
-      real*8 :: in_gas_cvtpwr = 0d0 !power law heat capacity temperature exponent
-      real*8 :: in_gas_cvrpwr = 1d0 !power law heat capacity density exponent
-c
-c-- analytic power-law source terms
-      real*8 :: in_gas_srccoef = 0d0
-      real*8 :: in_gas_srcrpwr = 0d0
-      real*8 :: in_gas_srctpwr = 0d0
-      real*8 :: in_gas_srctimepwr = 0d0
-c
-c-- particles
-      integer :: in_src_ns = 0   !number of source particles generated per time step (total over all ranks)
-      integer :: in_src_n2s = -1 !2^n source particles generated per time step (total over all ranks)
-      integer :: in_src_nsinit = 0   !number of initial particles at in_tsp_tfirst
-      integer :: in_src_n2sinit = -1 !2^n number of initial particles at in_tsp_tfirst
-      integer :: in_prt_nmax = 0   !length of particle array
-      integer :: in_prt_n2max = -1 !2^n length of particle array
-c>> backwards compatibility
-        integer :: in_ns = 0    !number of source particles generated per time step (total over all ranks)
-        integer :: in_ns0 = 0   !number of initial particles at in_tsp_tfirst
-        integer :: in_trn_n2part = -1 !2^n length of particle array
-c<< backwards compatibility
-      logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
-      logical :: in_isimcanlog = .false. !use analog IMC tally if true
-      logical :: in_isddmcanlog = .true. !use analog DDMC tally if true
-      logical :: in_trn_noamp = .true.  !disable amplification factor
-      real*8 :: in_tauddmc = 5d0  !number of mean free paths per cell required for DDMC
-      real*8 :: in_taulump = 10d0 !number of of mean free paths needed to lump DDMC groups
-      logical :: in_trn_nolumpshortcut = .false. !disable approximation for large emitlump that sampling outside the lump collapses to the single most likely group
-      logical :: in_trn_errorfatal = .true. !stop on transport error, disable for production runs
-c-- time dependence of in_tauddmc and in_taulump
-      character(4) :: in_tauvtime = 'unif' ! unif|incr = constant or limiting (s-curve) to more conservative constant
-c
-      real*8 :: in_alpha = 1d0 !time centering control parameter [0,1]
 c
 c-- time step
-      real*8 :: in_tsp_tfirst = 0d0 !first point in time evolution [sec]
-      real*8 :: in_tsp_tlast = 0d0  !last point in time evolution [sec]
+      real*8 :: in_tsp_tfirst = 0d0  !first point in time evolution [sec]
+      real*8 :: in_tsp_tlast = 0d0   !last point in time evolution [sec]
       integer :: in_tsp_nt = 0       !number of time steps
       integer :: in_tsp_itrestart = -1   !restart time step number
-c>> backwards compatibility
         real*8 :: in_tfirst = 0d0
         real*8 :: in_tlast = 0d0
         integer :: in_nt = 0
         integer :: in_ntres = -1
-c<< backwards compatibility
       character(4) :: in_tsp_gridtype = 'lin ' ! line|expo|read: linear, exponential or read-in timestep grid
-      logical :: in_norestart = .true.
-      logical :: in_ismodimc = .true. !Gentile-Fleck factor switch
 c
 c
 c-- group structure
       integer :: in_grp_ng = -1      !number of groups: 0 read wl-grid from file
       integer :: in_grp_ngs = 1      !>1 number of subgroups per opacity group
                                      ! 1 non-subgridded physical_opacities
-      real*8 :: in_grp_wlmin =   100d-8 !lower wavelength boundary [cm]
-      real*8 :: in_grp_wlmax = 32000d-8 !upper wavelength boundary [cm]
+      real*8 :: in_grp_wlmin =   100d-8  !lower wavelength boundary [cm]
+      real*8 :: in_grp_wlmax = 32000d-8  !upper wavelength boundary [cm]
       integer :: in_wldex = 0        !selects group grid from formatted group grid file
         integer :: in_ng = -1
         integer :: in_ngs = 1
@@ -118,12 +60,76 @@ c-- group structure
         real*8 :: in_wlmax = 32000d-8
 c
 c
+c-- outbound flux group and direction bins
+      integer :: in_flx_ndim(3) = [0, 1, 1]
+      real*8 :: in_flx_wlmin =  1000d-8  !lower wavelength flux boundary [cm]
+      real*8 :: in_flx_wlmax = 32000d-8  !upper wavelength flux boundary [cm]
+c
+c
+c-- particles
+      integer :: in_prt_nmax = 0    !length of particle array
+      integer :: in_prt_n2max = -1  !2^n length of particle array
+        integer :: in_trn_n2part = -1  !2^n length of particle array
+c
+c
+c-- source
+      integer :: in_src_ns = 0     !number of source particles generated per time step (total over all ranks)
+      integer :: in_src_n2s = -1   !2^n source particles generated per time step (total over all ranks)
+        integer :: in_ns = 0
+      integer :: in_src_nsinit = 0   !number of initial particles at in_tsp_tfirst
+      integer :: in_src_n2sinit = -1 !2^n number of initial particles at in_tsp_tfirst
+        integer :: in_ns0 = 0
+      logical :: in_novolsrc = .false.  !switch to turn off any volume source (could be useful for debugs)
+      real*8 :: in_srcepwr = 1d0  !source particle number-energy slope, 1 is linear, equal number of packets per erg.
+c-- analytic power-law source terms
+      real*8 :: in_gas_srccoef = 0d0
+      real*8 :: in_gas_srcrpwr = 0d0
+      real*8 :: in_gas_srctpwr = 0d0
+      real*8 :: in_gas_srctimepwr = 0d0
+c-- external source structure
+      character(4) :: in_srctype = 'none'   !none|heav|strt|manu|surf: external source structure type
+      character(4) :: in_surfsrcloc = 'out ' !in|out|up|down|top|botm: surface source location
+      character(4) :: in_surfsrcmu = 'isot' !isot|beam: surface source direction distribution
+      integer :: in_nheav = 0   !outer cell bound if heaviside ('heav') source
+      real*8 :: in_theav = 0d0 !duration of heaviside source
+      real*8 :: in_srcmax = 0d0 !peak source strength
+c
+c-- transport
+      logical :: in_trn_errorfatal = .true. !stop on transport error, disable for production runs
+      real*8 :: in_tauddmc = 5d0  !number of mean free paths per cell required for DDMC
+      real*8 :: in_taulump = 10d0 !number of of mean free paths needed to lump DDMC groups
+      logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
+      logical :: in_isimcanlog = .false. !use analog IMC tally if true
+      logical :: in_isddmcanlog = .true. !use analog DDMC tally if true
+      logical :: in_trn_noamp = .true.  !disable amplification factor
+      real*8 :: in_alpha = 1d0 !time centering control parameter [0,1]
+      logical :: in_trn_nolumpshortcut = .false. !disable approximation for large emitlump that sampling outside the lump collapses to the single most likely group
+c-- time dependence of in_tauddmc and in_taulump
+      character(4) :: in_tauvtime = 'unif' ! unif|incr = constant or limiting (s-curve) to more conservative constant
+      logical :: in_ismodimc = .true. !Gentile-Fleck factor switch
+c
+c
+c-- gas grid parameters
+      real*8 :: in_gas_gastempinit = 0d0 !non-zero will not read temp from file. units: K
+      real*8 :: in_gas_radtempinit = 0d0 !initial radiation temperature.  Use grd_temp by default
+        real*8 :: in_consttemp = 0d0
+        real*8 :: in_tempradinit = 0d0
+c-- analytic heat capacity terms
+      real*8 :: in_gas_cvcoef = 1d7 !power law heat capacity coefficient
+      real*8 :: in_gas_cvtpwr = 0d0 !power law heat capacity temperature exponent
+      real*8 :: in_gas_cvrpwr = 1d0 !power law heat capacity density exponent
+c-- debugging
+      logical :: in_noeos = .false.     !don't use the EOS
+c
 c-- physical opacities
       real*8 :: in_opcapgam = .06d0   ![cm^2/g] extinction coefficient for gamma radiation
-      real*8 :: in_epsline = 1d0      !line absorption fraction (the rest is scattering)
       logical :: in_noplanckweighting = .false. !disable planck weighting of rosseland opacities within group
       real*8 :: in_opacmixrossel = 0d0 !mix rosseland with planck average, 1=pure rosseland
-c
+c-- physical opacities debuging
+      logical :: in_nobbopac = .false.  !turn off bound-bound opacity
+      logical :: in_nobfopac = .false.  !turn off bound-bound opacity
+      logical :: in_noffopac = .false.  !turn off bound-bound opacity
+      logical :: in_nothmson = .false.  !turn off thomson scattering
 c
 c-- analytic opacities
       character(4) :: in_opacanaltype = 'none'    !none|grey|mono|pick|line: group opacity structure type
@@ -134,73 +140,77 @@ c-- line specific group structure
       real*8 :: in_ldisp1 = 1d0  !loosely speaking, the analytic odd group line strength
       real*8 :: in_ldisp2 = 1d0  !loosely speaking, the analytic even group line strength
 c-- scattering terms:
-      real*8 :: in_gas_sigcoef = 0d0 !power law absorption opacity coefficient
-      real*8 :: in_gas_sigtpwr = 0d0 !power law absorption opacity temperature exponent
-      real*8 :: in_gas_sigrpwr = 0d0 !power law absorption opacity density exponent
+      real*8 :: in_gas_sigcoef = 0d0  !power law absorption opacity coefficient
+      real*8 :: in_gas_sigtpwr = 0d0  !power law absorption opacity temperature exponent
+      real*8 :: in_gas_sigrpwr = 0d0  !power law absorption opacity density exponent
 c-- absorption terms:
-      real*8 :: in_gas_capcoef = 0d0 !power law absorption opacity coefficient
-      real*8 :: in_gas_captpwr = 0d0 !power law absorption opacity temperature exponent
-      real*8 :: in_gas_caprpwr = 0d0 !power law absorption opacity density exponent
+      real*8 :: in_gas_capcoef = 0d0  !power law absorption opacity coefficient
+      real*8 :: in_gas_captpwr = 0d0  !power law absorption opacity temperature exponent
+      real*8 :: in_gas_caprpwr = 0d0  !power law absorption opacity density exponent
 c
-c-- external source structure
-      character(4) :: in_srctype = 'none'   !none|heav|strt|manu|surf: external source structure type
-      character(4) :: in_surfsrcloc = 'out ' !in|out|up|down|top|botm: surface source location
-      character(4) :: in_surfsrcmu = 'isot' !isot|beam: surface source direction distribution
-      integer :: in_nheav = 0   !outer cell bound if heaviside ('heav') source
-      real*8 :: in_theav = 0d0 !duration of heaviside source
-      real*8 :: in_srcmax = 0d0 !peak source strength
-      real*8 :: in_srcepwr = 1d0 !source particle number-energy slope, 1 is linear, equal number of packets per erg.
 c
-c-- misc
+c-- output
+      logical :: in_grabstdout = .false.  !write stdout to file
+      logical :: in_io_dogrdtally = .false. !write transport tallies per grid cell
+      logical :: in_nogriddump = .false.  !don't write grid cell variables
       character(4) :: in_opacdump = 'off '    !off|one|each|all: write opacity data to file
       character(4) :: in_pdensdump = 'off '   !off|one|each: write partial densities to file
-c
-c-- debug and test switches
-      logical :: in_noeos = .false.     !don't use the EOS
-      logical :: in_novolsrc = .false.  !switch to turn off any volume source (could be useful for debugs)
-c--
-      logical :: in_nobbopac = .false.  !turn off bound-bound opacity
-      logical :: in_nobfopac = .false.  !turn off bound-bound opacity
-      logical :: in_noffopac = .false.  !turn off bound-bound opacity
-      logical :: in_nothmson = .false.  !turn off thomson scattering
 c     
 c-- runtime parameter namelist
       namelist /inputpars/
      & in_name,in_comment,
+     & in_nomp,
+!grd
      & in_igeom,in_ndim,
-     & in_isvelocity,in_voidcorners,in_novolsrc,
+     & in_isvelocity,
+!str
+     & in_voidcorners,in_noreadstruct,
      & in_lx,in_ly,in_lz,
-     &   in_ng,in_ngs,in_wlmin,in_wlmax,
-     & in_grp_ng,in_grp_ngs,in_grp_wlmin,in_grp_wlmax,
-     & in_wldex,
-     & in_totmass,in_velout,
-     &   in_consttemp,in_tempradinit, !deprec
-     & in_gas_gastempinit,in_gas_radtempinit,
-     &   in_ns,in_ns0,in_trn_n2part, !deprec
-     & in_src_ns,in_src_nsinit,in_prt_nmax,
-     & in_src_n2s,in_src_n2sinit,in_prt_n2max,
-     & in_trn_nolumpshortcut,in_trn_errorfatal,in_puretran,in_alpha,
+     & in_velout,in_totmass,in_dentype,
+!tsp
      & in_tsp_tfirst,in_tsp_tlast,
-     &   in_tfirst,in_tlast,in_nt,in_ntres, !deprec
      & in_tsp_gridtype,in_tsp_nt,in_tsp_itrestart,
-     & in_grabstdout,in_nomp,
-     & in_opcapgam,in_epsline,in_nobbopac,in_nobfopac,
-     & in_noffopac,in_nothmson,in_noplanckweighting,in_opacmixrossel,
-     & in_opacdump,in_pdensdump,
-     & in_gas_sigcoef,in_gas_sigtpwr,in_gas_sigrpwr,
-     & in_gas_capcoef,in_gas_captpwr,in_gas_caprpwr,
-     & in_gas_cvcoef,in_gas_cvtpwr,in_gas_cvrpwr,
+     &   in_tfirst,in_tlast,in_nt,in_ntres, !deprec
+!grp
+     & in_grp_ng,in_grp_ngs,in_grp_wlmin,in_grp_wlmax,
+     &   in_ng,in_ngs,in_wlmin,in_wlmax, !deprec
+     & in_wldex,
+!flx
+     & in_flx_ndim,in_flx_wlmin,in_flx_wlmax,
+!prt
+     & in_prt_nmax,in_prt_n2max,
+     &   in_trn_n2part, !deprec
+!src
+     & in_src_ns,in_src_nsinit,
+     & in_src_n2s,in_src_n2sinit,
+     &   in_ns,in_ns0, !deprec
+     & in_srcepwr,
+     & in_srctype,in_theav,in_nheav,in_srcmax,
+     & in_surfsrcloc,in_surfsrcmu,
+     & in_novolsrc,
      & in_gas_srccoef,in_gas_srcrpwr,in_gas_srctpwr,in_gas_srctimepwr,
+!trn
+     & in_trn_nolumpshortcut,in_trn_errorfatal,in_puretran,in_alpha,
+     & in_isimcanlog,in_isddmcanlog,in_trn_noamp,in_ismodimc,
+     & in_tauddmc,in_taulump,in_tauvtime,
+!gas
+     & in_gas_gastempinit,in_gas_radtempinit,
+     &   in_consttemp,in_tempradinit, !deprec
+     & in_gas_cvcoef,in_gas_cvtpwr,in_gas_cvrpwr,
+     & in_noeos,
+!phys opac
+     & in_opcapgam,
+     & in_noplanckweighting,in_opacmixrossel,
+     & in_nobbopac,in_nobfopac,in_noffopac,in_nothmson,
+!anal opac
      & in_opacanaltype,in_suol,
      & in_suolpick1,in_ldisp1,in_ldisp2,
-     & in_srctype,in_theav,in_nheav,in_srcmax,in_srcepwr,
-     & in_surfsrcloc,in_surfsrcmu,
-     & in_isimcanlog, in_isddmcanlog, in_trn_noamp,
-     & in_nogriddump, in_io_dogrdtally,
-     & in_tauddmc,in_dentype,in_noreadstruct,
-     & in_norestart,in_taulump,in_tauvtime,
-     & in_ismodimc,
-     & in_noeos,in_flx_ndim,in_flx_wlmin,in_flx_wlmax
+     & in_gas_sigcoef,in_gas_sigtpwr,in_gas_sigrpwr,
+     & in_gas_capcoef,in_gas_captpwr,in_gas_caprpwr,
+!io
+     & in_grabstdout,
+     & in_nogriddump,in_io_dogrdtally,
+     & in_opacdump,in_pdensdump
 c
 c-- pointers
 c
@@ -296,7 +306,6 @@ c
       call insertc(in_tsp_gridtype,in_c,ic)
       call inserti(in_tsp_nt,in_i,ii)
       call inserti(in_tsp_itrestart,in_i,ii)
-      call insertl(in_norestart,in_l,il)
       call insertl(in_ismodimc,in_l,il)
       call inserti(in_grp_ng,in_i,ii)
       call inserti(in_grp_ngs,in_i,ii)
@@ -304,7 +313,6 @@ c
       call insertr(in_grp_wlmax,in_r,ir)
       call inserti(in_wldex,in_i,ii)
       call insertr(in_opcapgam,in_r,ir)
-      call insertr(in_epsline,in_r,ir)
       call insertl(in_noplanckweighting,in_l,il)
       call insertr(in_opacmixrossel,in_r,ir)
       call insertc(in_opacanaltype,in_c,ic)
@@ -557,8 +565,6 @@ c
       if(in_nogriddump .and. in_io_dogrdtally) stop
      &   'dogridtally and !griddump'
 c
-      if(.not.in_norestart) stop 'restart functionality obsolete'
-c
       if(in_voidcorners.and.in_igeom==1) stop 'voidcorners && igeom=1'
       if(in_voidcorners.and.in_igeom==11) stop 'voidcorners && igeom=11'
 c
@@ -649,7 +655,6 @@ c-- disallow physical opacities when analytic opacities are selected
       endif
 c
       if(in_opcapgam<0d0) stop 'in_opcapgam invalid'
-      if(in_epsline<0d0 .or. in_epsline>1d0) stop 'in_epsline invalid'
 c
       if(in_nobbopac) call warn('read_inputpars','bb opacity disabled!')
       if(in_nobfopac) call warn('read_inputpars','bf opacity disabled!')

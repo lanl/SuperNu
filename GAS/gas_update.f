@@ -166,12 +166,12 @@ c===============================
 c
       if(in_gas_cvcoef>0d0) then
 c-- calculate power law heat capacity
-        gas_bcoef = in_gas_cvcoef * gas_temp**in_gas_cvtpwr *
-     &    gas_rho**in_gas_cvrpwr
+       gas_bcoef = in_gas_cvcoef * gas_temp**in_gas_cvtpwr *
+     &   gas_rho**in_gas_cvrpwr
       else
 !-- calculate physical heat capacity
-        gas_bcoef = 1.5d0*pc_kb*(1d0+gas_nelec)*gas_natom /
-     &     gas_vol
+       gas_bcoef = 1.5d0*pc_kb*(1d0+gas_nelec)*gas_natom /
+     &   gas_vol
       endif
 c
 c
