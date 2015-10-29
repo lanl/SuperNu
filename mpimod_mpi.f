@@ -386,7 +386,7 @@ c     -----------------------------!{{{
       real*8 :: t0,t1
       real*8 :: sndgas(gas_ncell)
       real*8 :: sndgrd(grd_ncell)
-      integer :: nvacant
+      integer*8 :: nvacant
 c
       call mpi_barrier(MPI_COMM_WORLD,ierr)
       t0 = t_time()
@@ -428,7 +428,7 @@ c-- allreduce
 c
 c-- allgather
       nvacant = count(prt_isvacant)
-      call mpi_allgather(nvacant,1,MPI_INTEGER,
+      call mpi_allgather(nvacant,1,MPI_INTEGER8,
      &  src_nvacantall,1,MPI_INTEGER8,
      &  MPI_COMM_WORLD,ierr)
 c

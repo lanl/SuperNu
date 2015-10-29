@@ -27,7 +27,6 @@ program supernu
 !***********************************************************************
 ! TODO and wishlist:
 !***********************************************************************
-  real*8 :: help
   integer :: ierr, it
   integer :: icell1, ncell !number of cells per rank (gas_ncell)
   real*8 :: t0, t1 !timing

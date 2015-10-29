@@ -20,7 +20,6 @@
 !in_igeom = 3
 !in_ndim = 32, 32, 32
  in_isvelocity = t
- in_dentype = 'mass'
 
 !-- flat structures
  in_gas_gastempinit = 1d4

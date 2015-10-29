@@ -24,7 +24,7 @@ module timestepmod
 !***********************************************************************
 ! set the timestep constants
 !***********************************************************************
-    tsp_itrestart = max(tsp_itrestart,1)
+    tsp_itrestart = min(tsp_itrestart,1)
 !
 !-- read timestep configuration from file
     if(tsp_gridtype=='read') then
