@@ -49,8 +49,7 @@ c
 c
 c-- group structure
       integer :: in_grp_ng = -1      !number of groups: 0 read wl-grid from file
-      integer :: in_grp_ngs = 1      !>1 number of subgroups per opacity group
-                                     ! 1 non-subgridded physical_opacities
+      integer :: in_grp_ngs = 1      !number of subgroups per opacity group
       real*8 :: in_grp_wlmin =   100d-8  !lower wavelength boundary [cm]
       real*8 :: in_grp_wlmax = 32000d-8  !upper wavelength boundary [cm]
       integer :: in_wldex = 0        !selects group grid from formatted group grid file
@@ -93,6 +92,7 @@ c-- external source structure
       integer :: in_nheav = 0   !outer cell bound if heaviside ('heav') source
       real*8 :: in_theav = 0d0 !duration of heaviside source
       real*8 :: in_srcmax = 0d0 !peak source strength
+c
 c
 c-- transport
       logical :: in_trn_errorfatal = .true. !stop on transport error, disable for production runs

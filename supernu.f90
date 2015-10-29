@@ -198,7 +198,8 @@ program supernu
         if(in_isvelocity) call source_transformdirection
         deallocate(src_ivacant)
      endif
-     if(tsp_it<=tsp_itrestart) where(.not.prt_isvacant) prt_particles%t = tsp_t !reset particle clocks
+!-- 0 particle clocks before and in the first time step
+     if(tsp_it<=1) where(.not.prt_isvacant) prt_particles%t = tsp_t !reset particle clocks
 
 !-- advance particles
      t_timelin(5) = t_time() !timeline
