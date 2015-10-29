@@ -15,7 +15,7 @@ subroutine sourcenumbers(keephigh)
 !##################################################
 
   integer :: l,iimpi
-  integer :: n,ndone
+  integer*8 :: n,ndone
   integer :: nextra,nsmean
   integer*8 :: nvacant(nmpi)
   real*8,parameter :: basefrac=.1d0
@@ -80,7 +80,7 @@ subroutine sourcenumbers(keephigh)
 !-- continuously guide the rounding towards the correct cumulative value
      n = max(1,int(en*nsavail*einv))  !round down
      if(edone*einv>ndone*invn) n = n + 1  !round up
-     grd_nvol(l) = n
+     grd_nvol(l) = int(n)
      edone = edone + en
      ndone = ndone + n
   enddo
@@ -166,8 +166,8 @@ subroutine sourcenumbers_roundrobin_limit(iimpi,nvacant,evol,evolex,ntot,mvol,nv
   nvol = mvol/nmpi !on each rank
 !-- add to remainder whatever does not fit in vacancies
   do l=0,nmpi-1
-     n = n + max(0,nvol-nvacant(l))
-     if(l==impi) nvol = min(nvol,nvacant(l)) !current rank
+     n = n + max(0,nvol-int(nvacant(l)))
+     if(l==impi) nvol = min(nvol,int(nvacant(l))) !current rank
      nvacant(l) = max(0,nvacant(l)-nvol)
   enddo
 !-- sanity check
@@ -182,7 +182,7 @@ subroutine sourcenumbers_roundrobin_limit(iimpi,nvacant,evol,evolex,ntot,mvol,nv
 !-- no space on current rank
         if(nvacant(iimpi)==0) cycle
 !-- number of particles that can be added to this rank
-        nhere = min(neach,nvacant(iimpi))
+        nhere = min(neach,int(nvacant(iimpi)))
         if(iimpi==impi) nvol = nvol + nhere  !current rank
 !-- remaining
         nvacant(iimpi) = nvacant(iimpi) - nhere
@@ -197,8 +197,8 @@ subroutine sourcenumbers_roundrobin_limit(iimpi,nvacant,evol,evolex,ntot,mvol,nv
   nvolex = nvolex/nmpi !on each rank
 !-- add to remainder whatever does not fit in vacancies
   do l=0,nmpi-1
-     n = n + max(0,nvolex-nvacant(l))
-     if(l==impi) nvolex = min(nvolex,nvacant(l)) !current rank
+     n = n + max(0,nvolex-int(nvacant(l)))
+     if(l==impi) nvolex = min(nvolex,int(nvacant(l))) !current rank
      nvacant(l) = max(0,nvacant(l)-nvolex)
   enddo
 !-- sanity check
@@ -213,7 +213,7 @@ subroutine sourcenumbers_roundrobin_limit(iimpi,nvacant,evol,evolex,ntot,mvol,nv
 !-- no space on current rank
         if(nvacant(iimpi)==0) cycle
 !-- number of particles that can be added to this rank
-        nhere = min(neach,nvacant(iimpi))
+        nhere = min(neach,int(nvacant(iimpi)))
         if(iimpi==impi) nvolex = nvolex + nhere  !current rank
 !-- remaining
         nvacant(iimpi) = nvacant(iimpi) - nhere
