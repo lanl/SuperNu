@@ -25,6 +25,7 @@ c     ----------------------------------------
 * init particle module
 ************************************************************************
       allocate(src_nvacantall(nmpi))
+      src_nvacantall = 0
       end subroutine sourcemod_init
 c
       end module sourcemod

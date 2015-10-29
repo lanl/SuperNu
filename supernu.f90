@@ -259,7 +259,7 @@ program supernu
      msg = 'post loop:'
      write(6,*)
      write(6,*) 'memusg: ',msg,memusg()
-     write(6,*) 'particle array usage:',float(ct_nptransport(4))/float(prt_npartmax)
+     write(6,*) 'particle array usage:',ct_nptransport(4)/dble(prt_npartmax)
 
 !-- print cpu timing usage
      t1 = t_time()

@@ -42,7 +42,6 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   real*8 :: xold,yold,zold
   real*8 :: muold,omold
 ! real*8 :: etaold,xiold
-  real*8 :: ynew,znew
 !-- distance out of physical reach
   real*8 :: far
   real*8 :: emitlump
@@ -811,11 +810,6 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            if(om<0d0) om = om+pc_pi2
 !-- transforming mu to lab
            if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
-!-- restore position: undo reflection
-           if(x<1d-15*grd_xarr(2).and.muold==-1d0) then
-              y = ynew
-              z = znew
-           endif
         endif
      endif
 

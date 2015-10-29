@@ -39,7 +39,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   real*8 :: mux1,mux2
   real*8 :: angrat1,angrat2,angrat3
 
-  integer,pointer :: ix, iy, iz, ic, ig
+  integer,pointer :: ix, iy, iz, ic
   real*8,pointer :: x,y,z,mu,om,e,d
 !-- statement functions
   real*8 :: muxf,zz
@@ -50,7 +50,6 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   iy => ptcl2%iy
   iz => ptcl2%iz
   ic => ptcl2%ic
-  ig => ptcl2%ig
   d => ptcl2%dist
   x => ptcl%x
   y => ptcl%y

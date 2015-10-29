@@ -8,6 +8,8 @@ c     ----------------------
       use gasmod
       use particlemod
       use fluxmod
+      use sourcemod
+      use randommod
       implicit none
 ************************************************************************
 * deallocate all that was used till the end of the program. Any
@@ -22,6 +24,8 @@ c-- ionsmod
       deallocate(prt_particles,prt_isvacant)
       call mpimod_dealloc
       deallocate(grp_wl,grp_wlinv)
+      deallocate(src_nvacantall)
+      deallocate(rnd_states)
       if(allocated(bb_xs)) deallocate(bb_xs) !only impi==impi0, but only if nobbopac==f
 
       end subroutine dealloc_all

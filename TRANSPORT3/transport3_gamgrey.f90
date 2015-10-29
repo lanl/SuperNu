@@ -33,14 +33,13 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !-- distance out of physical reach
   real*8 :: far
 
-  integer,pointer :: ix, iy, iz, ic, ig
+  integer,pointer :: ix, iy, iz, ic
   real*8,pointer :: x,y,z,mu,om,e,d
 
   ix => ptcl2%ix
   iy => ptcl2%iy
   iz => ptcl2%iz
   ic => ptcl2%ic
-  ig => ptcl2%ig
   d => ptcl2%dist
   x => ptcl%x
   y => ptcl%y
