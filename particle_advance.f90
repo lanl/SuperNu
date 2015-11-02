@@ -352,7 +352,7 @@ subroutine particle_advance
         imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
         iom = binsrch(om,flx_om,flx_nom+1,.false.)
 !-- tallying outbound luminosity
-        flx_lumtime(ig,imu,iom) = flx_lumtime(ig,imu,iom)+ptcl%t*labfact
+        flx_lumtime(ig,imu,iom) = flx_lumtime(ig,imu,iom)+ptcl%t
         flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+e
         flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+e**2
         flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1

@@ -346,7 +346,6 @@ subroutine particle_advance_gamgrey(nmpi)
         imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
         iom = binsrch(om,flx_om,flx_nom+1,.false.)
 !-- tally outbound luminosity
-        flx_gamlumtime(imu,iom) = flx_gamlumtime(imu,iom)+ptcl%t*labfact
         flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e
         flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+e**2
         flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1

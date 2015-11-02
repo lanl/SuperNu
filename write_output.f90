@@ -35,7 +35,7 @@ subroutine write_output
 !
   integer,allocatable :: iarr(:)
   real*8,allocatable :: arr(:)
-  real*8 :: t0,t1,help
+  real*8 :: t0,t1
 !
   t0 = t_time()
 !
@@ -135,12 +135,10 @@ subroutine write_output
   enddo
   close(4)
 
-  help=sum(flx_lumtime)/dble(flx_ng*flx_nmu*flx_nom)
-  if(help<=0d0) help=tsp_t+.5d0*tsp_dt
   open(unit=4,file='output.flx_lumtime',status=fstat,position='append',recl=reclen)
   do k=1,flx_nom
   do j=1,flx_nmu
-     write(4,'(10000e12.4)') merge(flx_lumtime(:,j,k),help,flx_lumtime(:,j,k)>1d-99)
+     write(4,'(10000e12.4)') merge(flx_lumtime(:,j,k),0d0,flx_lumtime(:,j,k)>1d-99)
   enddo
   enddo
   close(4)
@@ -162,12 +160,18 @@ subroutine write_output
   enddo
   close(4)
 
-  help=sum(flx_gamlumtime)/dble(flx_nmu*flx_nom)
-  if(help<=0d0) help=tsp_t+.5d0*tsp_dt
+  open(unit=4,file='output.flx_gamlumnum',status=fstat,position='append',recl=reclen)
+  do k=1,flx_nom
+  do j=1,flx_nmu
+     write(4,'(10000i12)') flx_gamlumnum(j,k)
+  enddo
+  enddo
+  close(4)
+  
   open(unit=4,file='output.flx_gamlumtime',status=fstat,position='append',recl=reclen)
   do k=1,flx_nom
   do j=1,flx_nmu
-     write(4,'(10000e12.4)') merge(flx_gamlumtime(j,k),help,flx_gamlumtime(j,k)>1d-99)
+     write(4,'(10000e12.4)') merge(flx_gamlumtime(j,k),0d0,flx_gamlumtime(j,k)>1d-99)
   enddo
   enddo
   close(4)
