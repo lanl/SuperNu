@@ -56,6 +56,7 @@ subroutine particle_advance_gamgrey(nmpi)
   t0 = t_time()
 
   grd_tally = 0d0
+  flx_gamlumtime = 0d0
   flx_gamluminos = 0d0
   flx_gamlumdev = 0d0
   flx_gamlumnum = 0
@@ -123,7 +124,8 @@ subroutine particle_advance_gamgrey(nmpi)
 !$omp    rndstate,edep,ierr, iomp, &
 !$omp    x,y,z,mu,om,e,e0,ix,iy,iz,ic,icold,r1, &
 !$omp    i,j,k) &
-!$omp reduction(+:grd_tally,flx_gamluminos,flx_gamlumnum,flx_gamlumdev)
+!$omp reduction(+:grd_tally,flx_gamluminos,flx_gamlumnum, &
+!$omp    flx_gamlumdev,flx_gamlumtime)
 
 !-- thread id                                                               
 !$ iomp = omp_get_thread_num()
@@ -344,6 +346,7 @@ subroutine particle_advance_gamgrey(nmpi)
         imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
         iom = binsrch(om,flx_om,flx_nom+1,.false.)
 !-- tally outbound luminosity
+        flx_gamlumtime(imu,iom) = flx_gamlumtime(imu,iom)+ptcl%t*labfact
         flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e
         flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+e**2
         flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1

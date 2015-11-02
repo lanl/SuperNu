@@ -35,7 +35,7 @@ subroutine write_output
 !
   integer,allocatable :: iarr(:)
   real*8,allocatable :: arr(:)
-  real*8 :: t0,t1
+  real*8 :: t0,t1,help
 !
   t0 = t_time()
 !
@@ -135,6 +135,16 @@ subroutine write_output
   enddo
   close(4)
 
+  help=sum(flx_lumtime)/dble(flx_ng*flx_nmu*flx_nom)
+  if(help<=0d0) help=tsp_t+.5d0*tsp_dt
+  open(unit=4,file='output.flx_lumtime',status=fstat,position='append',recl=reclen)
+  do k=1,flx_nom
+  do j=1,flx_nmu
+     write(4,'(10000e12.4)') merge(flx_lumtime(:,j,k),help,flx_lumtime(:,j,k)>1d-99)
+  enddo
+  enddo
+  close(4)
+
   open(unit=4,file='output.flx_lumdev',status=fstat,position='append',recl=reclen)
   do k=1,flx_nom
   do j=1,flx_nmu
@@ -143,11 +153,21 @@ subroutine write_output
   enddo
   close(4)
 !
-!-- gamma flux
+!-- gamma flux  
   open(unit=4,file='output.flx_gamluminos',status=fstat,position='append',recl=reclen)
   do k=1,flx_nom
   do j=1,flx_nmu
      write(4,'(1p,10000e12.4)') merge(flx_gamluminos(j,k),0d0,flx_gamluminos(j,k)>1d-99) !prevent fortran number truncation, e.g. 1.1234-123
+  enddo
+  enddo
+  close(4)
+
+  help=sum(flx_gamlumtime)/dble(flx_nmu*flx_nom)
+  if(help<=0d0) help=tsp_t+.5d0*tsp_dt
+  open(unit=4,file='output.flx_gamlumtime',status=fstat,position='append',recl=reclen)
+  do k=1,flx_nom
+  do j=1,flx_nmu
+     write(4,'(10000e12.4)') merge(flx_gamlumtime(j,k),help,flx_gamlumtime(j,k)>1d-99)
   enddo
   enddo
   close(4)
