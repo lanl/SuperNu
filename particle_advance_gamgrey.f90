@@ -345,7 +345,22 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- lab frame flux group, polar, azimuthal bin
         imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
         iom = binsrch(om,flx_om,flx_nom+1,.false.)
-!-- tally outbound luminosity
+!-- observer corrected time
+        help=tsp_t+.5d0*tsp_dt
+        select case(grd_igeom)
+        case(1,11)
+           labfact = mu*x/pc_c
+        case(2)
+           labfact = (mu*y+sqrt(1d0-mu**2) * &
+                cos(om)*x)/pc_c
+        case(3)
+           labfact = (mu*z+sqrt(1d0-mu**2) * &
+                (cos(om)*x+sin(om)*y))/pc_c
+        endselect
+        if(grd_isvelocity) labfact=labfact*tsp_t
+        help=help-labfact
+!-- tally outbound luminosity        
+        flx_gamlumtime(imu,iom) = flx_gamlumtime(imu,iom)+help
         flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e
         flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+e**2
         flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1
