@@ -610,6 +610,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            ptcl2%isvacant = .true.
            ptcl2%done = .true.
            ptcl2%lflux = .true.
+!-- observer time correction
+           ptcl%t=ptcl%t-(mu*y+sqrt(1d0-mu**2)*cos(om)*x)*thelp*cinv
 !-- redefine for flux tally
            om = pc_pi-(z+om)  !-- direction angle
            if(om<0d0) om = om+pc_pi2
@@ -728,6 +730,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            ptcl2%isvacant = .true.
            ptcl2%done = .true.
            ptcl2%lflux = .true.
+!-- observer time correction
+           ptcl%t=ptcl%t-(mu*y+sqrt(1d0-mu**2)*cos(om)*x)*thelp*cinv
 !-- redefine for flux tally
            om = pc_pi-(z+om)  !-- direction angle
            if(om<0d0) om = om+pc_pi2
@@ -846,6 +850,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            ptcl2%isvacant = .true.
            ptcl2%done = .true.
            ptcl2%lflux = .true.
+!-- observer time correction
+           ptcl%t=ptcl%t-(mu*y+sqrt(1d0-mu**2)*cos(om)*x)*thelp*cinv
 !-- redefine for flux tally
            om = pc_pi-(z+om)  !-- direction angle
            if(om<0d0) om = om+pc_pi2

@@ -416,7 +416,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
            ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
         endif
 !-- observer time correction
-        ptcl%t=ptcl%t-mu*thelp*r*cinv
+        ptcl%t=ptcl%t-mu*r*thelp*cinv
 !
 !!}}}
      else

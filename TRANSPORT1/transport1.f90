@@ -589,6 +589,8 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   elseif(d==dbx) then
      lout = mu>=0d0.and.ix==grd_nx
      if(lout) then
+!-- observer time correction
+        ptcl%t=ptcl%t-mu*x*thelp*cinv
 !-- ending particle
         ptcl2%isvacant = .true.
         ptcl2%done = .true.
