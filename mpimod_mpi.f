@@ -513,6 +513,10 @@ c
       call mpi_reduce(snd2f,flx_gamlumdev,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
+      snd2f = flx_gamlumtime
+      call mpi_reduce(snd2f,flx_gamlumtime,n,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
 c-- flux dim==3
       n = flx_ng*flx_nmu*flx_nom
       isnd3f = flx_lumnum
@@ -525,6 +529,10 @@ c
 c
       snd3f = flx_lumdev
       call mpi_reduce(snd3f,flx_lumdev,n,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      snd3f = flx_lumtime
+      call mpi_reduce(snd3f,flx_lumtime,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- dim==3

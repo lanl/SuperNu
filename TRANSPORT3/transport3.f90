@@ -280,6 +280,10 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      louty = d==dby.and.((eta>=0d0.and.iy==grd_ny).or.(eta<0.and.iy==1))
      loutz = d==dbz.and.((mu>=0d0.and.iz==grd_nz).or.(mu<0.and.iz==1))
      if(loutx.or.louty.or.loutz) then
+!-- observer time correction
+        eta = sqrt(1d0-mu**2)*sin(om)
+        xi = sqrt(1d0-mu**2)*cos(om)
+        ptcl%t=ptcl%t-(mu*z+eta*y+xi*x)*thelp*cinv
 !-- ending particle
         ptcl2%stat = 'flux'
         return

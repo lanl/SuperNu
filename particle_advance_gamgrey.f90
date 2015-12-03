@@ -56,6 +56,7 @@ subroutine particle_advance_gamgrey(nmpi)
   t0 = t_time()
 
   grd_tally = 0d0
+  flx_gamlumtime = 0d0
   flx_gamluminos = 0d0
   flx_gamlumdev = 0d0
   flx_gamlumnum = 0
@@ -123,7 +124,8 @@ subroutine particle_advance_gamgrey(nmpi)
 !$omp    rndstate,edep,ierr, iomp, &
 !$omp    x,y,z,mu,om,e,e0,ix,iy,iz,ic,icold,r1, &
 !$omp    i,j,k) &
-!$omp reduction(+:grd_tally,flx_gamluminos,flx_gamlumnum,flx_gamlumdev)
+!$omp reduction(+:grd_tally,flx_gamluminos,flx_gamlumnum, &
+!$omp    flx_gamlumdev,flx_gamlumtime)
 
 !-- thread id                                                               
 !$ iomp = omp_get_thread_num()
@@ -342,7 +344,22 @@ subroutine particle_advance_gamgrey(nmpi)
 !-- lab frame flux group, polar, azimuthal bin
         imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
         iom = binsrch(om,flx_om,flx_nom+1,.false.)
-!-- tally outbound luminosity
+!-- observer corrected time
+        help=tsp_t+.5d0*tsp_dt
+        select case(grd_igeom)
+        case(1,11)
+           labfact = mu*x/pc_c
+        case(2)
+           labfact = (mu*y+sqrt(1d0-mu**2) * &
+                cos(om)*x)/pc_c
+        case(3)
+           labfact = (mu*z+sqrt(1d0-mu**2) * &
+                (cos(om)*x+sin(om)*y))/pc_c
+        endselect
+        if(grd_isvelocity) labfact=labfact*tsp_t
+        help=help-labfact
+!-- tally outbound luminosity        
+        flx_gamlumtime(imu,iom) = flx_gamlumtime(imu,iom)+help
         flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e
         flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+e**2
         flx_gamlumnum(imu,iom) = flx_gamlumnum(imu,iom)+1

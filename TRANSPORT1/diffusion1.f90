@@ -608,6 +608,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         if(ix==grd_nx) then
 !-- escaping at ix=nx
            ptcl2%stat = 'flux'
+!-- observer time correction
+           ptcl%t=ptcl%t-mu*x*thelp*cinv
 !-- luminosity tally
            eta = sqrt(1d0-mu**2)*cos(om)
            xi = sqrt(1d0-mu**2)*sin(om)

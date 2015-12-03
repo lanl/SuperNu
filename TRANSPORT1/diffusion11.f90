@@ -398,16 +398,21 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !-- sample wavelength
         call rnd_r(r1,rndstate)
         wl = 1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))
+!-- position
+        r=grd_xarr(grd_nx+1)
 !-- changing from comoving frame to observer frame
         if(grd_isvelocity) then
-           help = 1d0+mu*grd_xarr(grd_nx+1)*cinv
+           help = 1d0+mu*r*cinv
 !-- velocity effects accounting
            totevelo = totevelo+e*(1d0 - help)
            wl = wl/help
            e = e*help
            e0 = e0*help
+           mu = (mu+r*cinv)/(1d0+r*mu*cinv)
            ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
         endif
+!-- observer time correction
+        ptcl%t=ptcl%t-mu*r*thelp*cinv
 !
 !!}}}
      else

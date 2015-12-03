@@ -441,6 +441,8 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      loutx = d==dbx.and.ixnext==grd_nx+1
      louty = d==dby.and.(iynext==grd_ny+1.or.iynext==0)
      if(loutx.or.louty) then
+!-- observer time correction
+        ptcl%t=ptcl%t-(mu*y+sqrt(1d0-mu**2)*cos(om)*x)*thelp*cinv
 !-- ending particle
         ptcl2%stat = 'flux'
 !-- redefine for flux tally

@@ -525,6 +525,10 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            e0 = e0*help
         endif
         if(ix==1) then
+!-- observer time correction
+           xi = sqrt(1d0-mu**2)*cos(om)
+           eta= sqrt(1d0-mu**2)*sin(om)
+           ptcl%t=ptcl%t-(x*xi+y*eta+z*mu)*thelp*cinv
 !-- escaping at ix=1
            ptcl2%stat = 'flux'
            return
@@ -648,6 +652,10 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            e0 = e0*help
         endif
         if(ix==grd_nx) then
+!-- observer time correction
+           xi = sqrt(1d0-mu**2)*cos(om)
+           eta= sqrt(1d0-mu**2)*sin(om)
+           ptcl%t=ptcl%t-(x*xi+y*eta+z*mu)*thelp*cinv
 !-- escaping at ix=nx
            ptcl2%stat = 'flux'
            return
@@ -769,6 +777,10 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            e0 = e0*help
         endif
         if(iy==1) then
+!-- observer time correction
+           xi = sqrt(1d0-mu**2)*cos(om)
+           eta= sqrt(1d0-mu**2)*sin(om)
+           ptcl%t=ptcl%t-(x*xi+y*eta+z*mu)*thelp*cinv
 !-- escaping at iy=1
            ptcl2%stat = 'flux'
            return
@@ -891,6 +903,10 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            e0 = e0*help
         endif
         if(iy==grd_ny) then
+!-- observer time correction
+           xi = sqrt(1d0-mu**2)*cos(om)
+           eta= sqrt(1d0-mu**2)*sin(om)
+           ptcl%t=ptcl%t-(x*xi+y*eta+z*mu)*thelp*cinv
 !-- escaping at iy=ny
            ptcl2%stat = 'flux'
            return
@@ -1012,6 +1028,10 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            e0 = e0*help
         endif
         if(iz==1) then
+!-- observer time correction
+           xi = sqrt(1d0-mu**2)*cos(om)
+           eta= sqrt(1d0-mu**2)*sin(om)
+           ptcl%t=ptcl%t-(x*xi+y*eta+z*mu)*thelp*cinv
 !-- escaping at iz=1
            ptcl2%stat = 'flux'
            return
@@ -1133,6 +1153,10 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            e0 = e0*help
         endif
         if(iz==grd_nz) then
+!-- observer time correction
+           xi = sqrt(1d0-mu**2)*cos(om)
+           eta= sqrt(1d0-mu**2)*sin(om)
+           ptcl%t=ptcl%t-(x*xi+y*eta+z*mu)*thelp*cinv
 !-- escaping at iz=nz
            ptcl2%stat = 'flux'
            return

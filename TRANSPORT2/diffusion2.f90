@@ -606,6 +606,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         if (ix==grd_nx) then
 !-- escaping at ix=nx
            ptcl2%stat = 'flux'
+!-- observer time correction
+           ptcl%t=ptcl%t-(mu*y+sqrt(1d0-mu**2)*cos(om)*x)*thelp*cinv
 !-- redefine for flux tally
            om = pc_pi-(z+om)  !-- direction angle
            if(om<0d0) om = om+pc_pi2
@@ -722,6 +724,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         if (iy==1) then
 !-- escaping at iy=1
            ptcl2%stat = 'flux'
+!-- observer time correction
+           ptcl%t = ptcl%t-(mu*y+sqrt(1d0-mu**2)*cos(om)*x)*thelp*cinv
 !-- redefine for flux tally
            om = pc_pi-(z+om)  !-- direction angle
            if(om<0d0) om = om+pc_pi2
@@ -838,6 +842,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         if (iy == grd_ny) then
 !-- escaping at iy=ny
            ptcl2%stat = 'flux'
+!-- observer time correction
+           ptcl%t = ptcl%t-(mu*y+sqrt(1d0-mu**2)*cos(om)*x)*thelp*cinv
 !-- redefine for flux tally
            om = pc_pi-(z+om)  !-- direction angle
            if(om<0d0) om = om+pc_pi2
