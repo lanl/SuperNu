@@ -75,7 +75,7 @@ c     --------------------------------------------------------!{{{
 * Read the input structure file
 ************************************************************************
       integer :: i,j,k,l,ierr,nx_r,ny_r,nz_r,ini56,nvar,ncol
-      integer :: jmass,jxright,jye,jtemp
+      integer :: jmass,jxleft,jye,jtemp
       integer :: ncorner,nvoid,ncell,ncpr
       character(2) :: dmy
       character(8),allocatable :: labl(:)
@@ -117,12 +117,12 @@ c-- read labels
       if(ierr/=0) stop 'read_inputstr: input.str fmt err: col labels'
 c
 c-- var pointers
-      jxright = 0
+      jxleft = 0
       jmass = 0
       jye = 0
       jtemp = 0
       do i=1,nvar
-       if(lcase(trim(labl(i)))=='x_right') jxright = i
+       if(lcase(trim(labl(i)))=='x_left') jxleft = i
        if(lcase(trim(labl(i)))=='mass') jmass = i
        if(lcase(trim(labl(i)))=='ye') jye = i
        if(lcase(trim(labl(i)))=='temp') jtemp = i
@@ -153,7 +153,7 @@ c-- validity check
 c
 c-- transer data to final arrays
 c-- dim 1
-      if(igeom==11 .and. jxright==0) then
+      if(igeom==11 .and. jxleft==0 .and. raw(1,1)/=0d0) then
        str_xleft(1) = 0d0
        str_xleft(2:) = raw(1,:nx)
       else
