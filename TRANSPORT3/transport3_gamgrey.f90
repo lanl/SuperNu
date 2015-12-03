@@ -211,8 +211,7 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
      loutz = d==dbz.and.((mu>=0d0.and.iz==grd_nz).or.(mu<0.and.iz==1))
      if(loutx.or.louty.or.loutz) then
 !-- ending particle
-        ptcl2%done = .true.
-        ptcl2%lflux = .true.
+        ptcl2%stat = 'flux'
         return
      endif
   endif
@@ -223,7 +222,7 @@ pure subroutine transport3_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !-- checking if analog
      if(trn_isimcanlog) then
 !-- effective absorption
-        ptcl2%done=.true.
+        ptcl2%stat = 'dead'
 !-- adding comoving energy to deposition energy
         edep = e*elabfact
         return

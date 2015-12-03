@@ -156,7 +156,6 @@ subroutine particle_advance
   do ipart=1,prt_npartmax
      ! Checking vacancy
      if(prt_isvacant(ipart)) cycle
-     ptcl2%isvacant = .false.
 !
 !-- active particle
      ptcl = prt_particles(ipart) !copy properties out of array
@@ -244,11 +243,9 @@ subroutine particle_advance
      ptcl2%istep = 0
      ptcl2%idist = 0
 
-     ptcl2%done = .false.
-     ptcl2%lflux = .false.
-     ptcl2%lcens = .false.
+     ptcl2%stat = 'live'
 
-     do while (.not.ptcl2%done)
+     do while (ptcl2%stat=='live')
         ptcl2%istep = ptcl2%istep + 1
         icold = ic
         if(ptcl2%itype==1 .or. in_puretran) then
@@ -274,7 +271,7 @@ subroutine particle_advance
         grd_tally(:,icold) = grd_tally(:,icold) + [edep,eraddens]
 !
 !-- Russian roulette for termination of exhausted particles
-        if(e<1d-6*e0 .and. .not.ptcl2%isvacant .and. &
+        if(e<1d-6*e0 .and. ptcl2%stat=='live' .and. &
               grd_capgrey(ic)+grd_sig(ic)>0d0) then
 !-- transformation factor!{{{
            if(.not.grd_isvelocity .or. ptcl2%itype==2) then
@@ -294,11 +291,11 @@ subroutine particle_advance
 !
            call rnd_r(r1,rndstate)
            if(r1<0.5d0) then
-              ptcl2%isvacant = .true.
-              ptcl2%done = .true.
-              grd_tally(1,ic) = grd_tally(1,ic) + e*labfact
+              ptcl2%stat = 'dead'
+              grd_tally(1,ic) = grd_tally(1,ic) + e*labfact !edep
 !-- velocity effects accounting
               if(ptcl2%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
+              exit
            else
 !-- weight addition accounted for in external source
               tot_eext = tot_eext + e
@@ -309,7 +306,7 @@ subroutine particle_advance
         endif
 
 !-- verify position
-        if(ptcl2%itype==1 .and. .not.ptcl2%done) then
+        if(ptcl2%itype==1 .and. ptcl2%stat=='live') then
            if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then!{{{
               if(ierr==0) ierr = -99
               write(0,*) 'prt_adv: x not in cell', &
@@ -328,7 +325,7 @@ subroutine particle_advance
         endif
 
 !-- check exit status
-        if(ierr/=0 .or. ptcl2%istep>1000) then
+        if(ierr/=0 .or. ptcl2%istep>1000) then  !istep checker may cause issues in high-res simulations
            write(0,*) 'pa: ierr,ipart,istep,idist:',ierr,ptcl2%ipart,ptcl2%istep,ptcl2%idist
            write(0,*) 'dist:',ptcl2%dist
            write(0,*) 'tddmc:',tau
@@ -343,7 +340,7 @@ subroutine particle_advance
      enddo
 !
 !-- outbound luminosity tally
-     if(ptcl2%lflux) then
+     if(ptcl2%stat=='flux') then
         nflux = nflux + 1
         tot_eout = tot_eout+e
 !-- retrieving lab frame flux group, polar, azimuthal bin
@@ -354,10 +351,11 @@ subroutine particle_advance
         flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+e
         flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+e**2
         flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1
+        ptcl2%stat = 'dead'
      endif
 !
 !-- tally census
-     if(ptcl2%lcens) then
+     if(ptcl2%stat=='cens') then
         if(ptcl2%itype==1) then
            ncensimc = ncensimc + 1
            if(in_io_dogrdtally) grd_numcensimc(ic) = grd_numcensimc(ic) + 1
@@ -370,9 +368,14 @@ subroutine particle_advance
 !-- max step counter
      nstepmax = max(nstepmax,ptcl2%istep)
 
-!-- continue only if particle not vacant
-     prt_isvacant(ipart) = ptcl2%isvacant
-     if(ptcl2%isvacant) cycle
+!-- mark particle slot occupied or vacant
+     prt_isvacant(ipart) = ptcl2%stat == 'dead'
+
+
+!
+!-- remainder of the loop only for censused particles
+!----------------------------------------------------
+     if(ptcl2%stat/='cens') cycle
 
 !
 !-- Redshifting DDMC particle energy weights and wavelengths

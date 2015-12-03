@@ -392,8 +392,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !
 !-- check for census
   if (ddmct /= tau) then
-     ptcl2%done = .true.
-     ptcl2%lcens = .true.
+     ptcl2%stat = 'cens'
      return
   endif
 
@@ -422,8 +421,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- absorption
   if(r1<pa) then
      ptcl2%idist = -1
-     ptcl2%isvacant = .true.
-     ptcl2%done = .true.
+     ptcl2%stat = 'dead'
      edep = e
 
 !-- ix->ix-1 leakage
@@ -609,9 +607,7 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         endif
         if(ix==grd_nx) then
 !-- escaping at ix=nx
-           ptcl2%isvacant = .true.
-           ptcl2%done = .true.
-           ptcl2%lflux = .true.
+           ptcl2%stat = 'flux'
 !-- luminosity tally
            eta = sqrt(1d0-mu**2)*cos(om)
            xi = sqrt(1d0-mu**2)*sin(om)

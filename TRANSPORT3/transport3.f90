@@ -245,8 +245,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !
 !-- census
   if(d==dcen) then
-     ptcl2%done = .true.
-     ptcl2%lcens = .true.
+     ptcl2%stat = 'cens'
      return
   endif
 
@@ -282,9 +281,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      loutz = d==dbz.and.((mu>=0d0.and.iz==grd_nz).or.(mu<0.and.iz==1))
      if(loutx.or.louty.or.loutz) then
 !-- ending particle
-        ptcl2%isvacant = .true.
-        ptcl2%done = .true.
-        ptcl2%lflux = .true.
+        ptcl2%stat = 'flux'
         return
      endif
   endif
@@ -312,8 +309,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- checking if analog
      if(trn_isimcanlog.and.r1<=grd_fcoef(ic)) then
 !-- effective absorption
-        ptcl2%isvacant=.true.
-        ptcl2%done=.true.
+        ptcl2%stat = 'dead'
 !-- adding comoving energy to deposition energy
         edep = e*elabfact
         return

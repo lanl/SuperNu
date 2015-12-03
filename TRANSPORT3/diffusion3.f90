@@ -385,8 +385,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !
 !-- check for census
   if (ddmct /= tau) then
-     ptcl2%done = .true.
-     ptcl2%lcens = .true.
+     ptcl2%stat = 'cens'
      return
   endif
 
@@ -415,8 +414,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- absorption
   if(r1<pa) then
      ptcl2%idist = -1
-     ptcl2%isvacant = .true.
-     ptcl2%done = .true.
+     ptcl2%stat = 'dead'
      edep = e
 
 !-- ix->ix-1 leakage
@@ -528,9 +526,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         endif
         if(ix==1) then
 !-- escaping at ix=1
-           ptcl2%isvacant = .true.
-           ptcl2%done = .true.
-           ptcl2%lflux = .true.
+           ptcl2%stat = 'flux'
            return
         else
 !-- converting to IMC
@@ -653,9 +649,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         endif
         if(ix==grd_nx) then
 !-- escaping at ix=nx
-           ptcl2%isvacant = .true.
-           ptcl2%done = .true.
-           ptcl2%lflux = .true.
+           ptcl2%stat = 'flux'
            return
         else
 !-- converting to IMC
@@ -776,9 +770,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         endif
         if(iy==1) then
 !-- escaping at iy=1
-           ptcl2%isvacant = .true.
-           ptcl2%done = .true.
-           ptcl2%lflux = .true.
+           ptcl2%stat = 'flux'
            return
         else
 !-- converting to IMC
@@ -900,9 +892,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         endif
         if(iy==grd_ny) then
 !-- escaping at iy=ny
-           ptcl2%isvacant = .true.
-           ptcl2%done = .true.
-           ptcl2%lflux = .true.
+           ptcl2%stat = 'flux'
            return
         else
 !-- converting to IMC
@@ -1023,9 +1013,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         endif
         if(iz==1) then
 !-- escaping at iz=1
-           ptcl2%isvacant = .true.
-           ptcl2%done = .true.
-           ptcl2%lflux = .true.
+           ptcl2%stat = 'flux'
            return
         else
 !-- converting to IMC
@@ -1146,9 +1134,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         endif
         if(iz==grd_nz) then
 !-- escaping at iz=nz
-           ptcl2%isvacant = .true.
-           ptcl2%done = .true.
-           ptcl2%lflux = .true.
+           ptcl2%stat = 'flux'
            return
         else
 !-- converting to IMC

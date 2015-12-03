@@ -254,8 +254,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !
 !-- check for census
   if (tcensus < tau) then
-     ptcl2%done = .true.
-     ptcl2%lcens = .true.
+     ptcl2%stat = 'cens'
      return
   endif
 
@@ -284,8 +283,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !-- absorption sample
   if(r1<pa) then
      ptcl2%idist = -1
-     ptcl2%isvacant = .true.
-     ptcl2%done = .true.
+     ptcl2%stat = 'dead'
      edep = e
 
 !-- left leakage sample
@@ -372,9 +370,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !!{{{
 !-- checking if at outer bound
      if(ix==grd_nx) then
-        ptcl2%isvacant = .true.!{{{
-        ptcl2%done = .true.
-        ptcl2%lflux = .true.
+        ptcl2%stat = 'flux'!{{{
 !-- outbound luminosity tally
         call rnd_r(r1,rndstate)
         call rnd_r(r2,rndstate)

@@ -12,12 +12,12 @@ module particlemod
   type packet2
      real*8 :: mux,muy,muz   !particle direction in lab frame cartesian coordinates
      real*8 :: dist          !particle travel distance
+     character(4) :: stat    !particle status: live, cens, flux, dead
      integer :: ix, iy, iz   !positional cell indices
      integer :: ic, ig       !index into compressed domain arrays, group index
      integer :: itype        !IMC or DDMC type
      integer :: ipart, istep !particle number and transport step number
      integer :: idist        !transport distance identifier
-     logical :: done, lflux, lcens, isvacant !transport done and particle termination flags
   end type packet2
 !
   type(packet),allocatable,target :: prt_particles(:)  !(prt_npartmax)

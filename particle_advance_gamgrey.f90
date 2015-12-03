@@ -267,10 +267,9 @@ subroutine particle_advance_gamgrey(nmpi)
      ptcl2%istep = 0
      ptcl2%idist = 0
 
-     ptcl2%done = .false.
-     ptcl2%lflux = .false.
+     ptcl2%stat = 'live'
 !
-     do while (.not.ptcl2%done)
+     do while (ptcl2%stat=='live')
         ptcl2%istep = ptcl2%istep + 1
         icold = ic
         call transport_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
@@ -278,7 +277,7 @@ subroutine particle_advance_gamgrey(nmpi)
         grd_tally(1,icold) = grd_tally(1,icold) + edep
 
 !-- Russian roulette for termination of exhausted particles
-        if(e<1d-6*e0 .and. .not.ptcl2%done .and. grd_capgam(ic)>0d0) then
+        if(e<1d-6*e0 .and. ptcl2%stat=='live' .and. grd_capgam(ic)>0d0) then
            call rnd_r(r1,rndstate)!{{{
            if(r1<0.5d0) then
 !-- transformation factor
@@ -297,7 +296,7 @@ subroutine particle_advance_gamgrey(nmpi)
                  labfact = 1d0
               endif
 !
-              ptcl2%done = .true.
+              ptcl2%stat = 'dead'
               grd_tally(1,ic) = grd_tally(1,ic) + e*labfact
            else
               e = 2d0*e
@@ -306,7 +305,7 @@ subroutine particle_advance_gamgrey(nmpi)
         endif
 
 !-- verify position
-        if(.not.ptcl2%done) then
+        if(ptcl2%stat=='live') then
            if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
               if(ierr==0) ierr = -99
               write(0,*) 'prt_adv_ggrey: x not in cell', &
@@ -339,7 +338,7 @@ subroutine particle_advance_gamgrey(nmpi)
      enddo
 !
 !-- outbound luminosity tally
-     if(ptcl2%lflux) then
+     if(ptcl2%stat=='flux') then
 !-- lab frame flux group, polar, azimuthal bin
         imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
         iom = binsrch(om,flx_om,flx_nom+1,.false.)

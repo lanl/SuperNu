@@ -372,8 +372,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !
 !-- check for census
   if (ddmct /= tau) then
-     ptcl2%done = .true.
-     ptcl2%lcens = .true.
+     ptcl2%stat = 'cens'
      return
   endif
 
@@ -401,8 +400,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 
 !-- absorption
   if(r1<pa) then
-     ptcl2%isvacant = .true.
-     ptcl2%done = .true.
+     ptcl2%stat = 'dead'
      edep = e
      ptcl2%idist = -1
 
@@ -607,9 +605,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         endif
         if (ix==grd_nx) then
 !-- escaping at ix=nx
-           ptcl2%isvacant = .true.
-           ptcl2%done = .true.
-           ptcl2%lflux = .true.
+           ptcl2%stat = 'flux'
 !-- redefine for flux tally
            om = pc_pi-(z+om)  !-- direction angle
            if(om<0d0) om = om+pc_pi2
@@ -725,9 +721,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         endif
         if (iy==1) then
 !-- escaping at iy=1
-           ptcl2%isvacant = .true.
-           ptcl2%done = .true.
-           ptcl2%lflux = .true.
+           ptcl2%stat = 'flux'
 !-- redefine for flux tally
            om = pc_pi-(z+om)  !-- direction angle
            if(om<0d0) om = om+pc_pi2
@@ -843,9 +837,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         endif
         if (iy == grd_ny) then
 !-- escaping at iy=ny
-           ptcl2%isvacant = .true.
-           ptcl2%done = .true.
-           ptcl2%lflux = .true.
+           ptcl2%stat = 'flux'
 !-- redefine for flux tally
            om = pc_pi-(z+om)  !-- direction angle
            if(om<0d0) om = om+pc_pi2

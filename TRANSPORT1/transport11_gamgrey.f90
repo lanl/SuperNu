@@ -142,7 +142,7 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
      !!{{{
      call rnd_r(r1,rndstate)
      if(r1<=1d0.and.trn_isimcanlog) then
-        ptcl2%done = .true.
+        ptcl2%stat = 'dead'
         edep = e*elabfact
 !-- velocity effects accounting
 !
@@ -169,8 +169,7 @@ pure subroutine transport11_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   elseif (d == db) then
      if (mu>=0d0) then!{{{
         if (ix == grd_nx) then
-           ptcl2%done = .true.
-           ptcl2%lflux = .true.
+           ptcl2%stat = 'flux'
         else
            x = grd_xarr(ix+1)
            ix = ix+1

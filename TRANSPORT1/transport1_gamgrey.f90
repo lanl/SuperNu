@@ -484,8 +484,7 @@ pure subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
      lout = mu>=0d0.and.ix==grd_nx
      if(lout) then
 !-- ending particle
-        ptcl2%done = .true.
-        ptcl2%lflux = .true.
+        ptcl2%stat = 'flux'
 !-- redefine for flux tally
         mu = muz
         om = atan2(muy,mux)
@@ -495,7 +494,7 @@ pure subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   endif
 
   if(d==dcol) then
-     ptcl2%done = .true.
+     ptcl2%stat = 'dead'
 !-- adding comoving energy to deposition energy
      edep = edep + e*elabfact
   endif

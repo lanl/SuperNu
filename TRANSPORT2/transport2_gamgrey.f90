@@ -362,8 +362,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
      louty = d==dby.and.(iynext==grd_ny+1.or.iynext==0)
      if(loutx.or.louty) then
 !-- ending particle
-        ptcl2%done = .true.
-        ptcl2%lflux = .true.
+        ptcl2%stat = 'flux'
 !-- redefine for flux tally
         om = muz
         return
@@ -372,7 +371,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
 !-- effective collision
   if(d==dcol) then
-     ptcl2%done=.true.
+     ptcl2%stat = 'dead'
 !-- adding comoving energy to deposition energy
      edep = e*elabfact
 !
