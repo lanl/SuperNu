@@ -10,6 +10,7 @@ c     ----------------------
       use fluxmod
       use sourcemod
       use randommod
+      use timestepmod
       implicit none
 ************************************************************************
 * deallocate all that was used till the end of the program. Any
@@ -27,5 +28,6 @@ c-- ionsmod
       deallocate(src_nvacantall)
       deallocate(rnd_states)
       if(allocated(bb_xs)) deallocate(bb_xs) !only impi==impi0, but only if nobbopac==f
+      deallocate(tsp_tarr)
 
       end subroutine dealloc_all

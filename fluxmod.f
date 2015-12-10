@@ -2,6 +2,8 @@
 c     ------------------
       implicit none
 
+      integer :: flx_it=1 !flux time step
+
       integer :: flx_ndim(3)=0  !number of flux groups (1D,2D,3D)
       real*8 :: flx_wlmin,flx_wlmax
       integer :: flx_ng=0  !number of flux groups (1D,2D,3D)

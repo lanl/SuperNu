@@ -7,6 +7,7 @@ module timestepmod
   integer :: tsp_itrestart = 0 !restart time step # (at beginning of time step)
   integer :: tsp_it  !current time step number
   real*8 :: tsp_t
+  real*8,allocatable :: tsp_tarr(:)     !time step array
   real*8,allocatable :: tsp_tpreset(:)  !store preset time steps from input.tsp_time
   real*8 :: tsp_tcenter,tsp_tfirst,tsp_tlast
   real*8 :: tsp_dt,tsp_dtinv
@@ -32,6 +33,10 @@ module timestepmod
 !-- configured by input parameters
        tsp_t = tsp_tfirst
     endif
+
+!-- alloc
+    allocate(tsp_tarr(tsp_nt+1))
+    tsp_tarr(1) = tsp_t
 !!}}}
   end subroutine timestepmod_init
 
@@ -59,6 +64,9 @@ module timestepmod
        tsp_t = tsp_tfirst*exp((tsp_it-1)*help)  !beginning of the time step
        tsp_dt = tsp_tfirst*exp(tsp_it*help) - tsp_t
     end select
+
+!-- append in time array
+    tsp_tarr(tsp_it+1) = tsp_t + tsp_dt
 
     tsp_tcenter = tsp_t + .5*tsp_dt
     tsp_dtinv = 1d0/tsp_dt

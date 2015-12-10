@@ -195,7 +195,8 @@ subroutine particle_advance
 
 !
 !-- transform IMC particle into lab frame
-     if(grd_isvelocity.and.ptcl2%itype==1) then
+     if(grd_isvelocity.and.ptcl2%itype==1 &!) then
+           .and. ptcl%x/=huge(help)) then
         select case(grd_igeom)
         case(1,11)
            labfact = 1d0-x*mu/pc_c
@@ -244,7 +245,11 @@ subroutine particle_advance
      ptcl2%istep = 0
      ptcl2%idist = 0
 
-     ptcl2%stat = 'live'
+     if(ptcl%x==huge(help)) then
+        ptcl2%stat = 'flux' !old flux particle
+     else
+        ptcl2%stat = 'live'
+     endif
 
      do while (ptcl2%stat=='live')
         ptcl2%istep = ptcl2%istep + 1
@@ -342,18 +347,30 @@ subroutine particle_advance
 !
 !-- outbound luminosity tally
      if(ptcl2%stat=='flux') then
-        nflux = nflux + 1
-        tot_eout = tot_eout+e
+!-- register fresh flux particle (only once)
+        if(ptcl%x/=huge(help)) then
+           nflux = nflux + 1
+           tot_eout = tot_eout+e
+        endif
+!-- mark particle as flux particle (stat is not saved in particle array)
+        ptcl%x = huge(help)
+!
+!-- test if tallied in this flux time step
+!-- ignore particles before the first time step
+        if(ptcl%t < tsp_tarr(1)) then
+           ptcl2%stat = 'dead'
+        elseif(ptcl%t < tsp_tarr(flx_it+1)) then
 !-- retrieving lab frame flux group, polar, azimuthal bin
-        ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-        imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
-        iom = binsrch(om,flx_om,flx_nom+1,.false.)
+           ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
+           imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
+           iom = binsrch(om,flx_om,flx_nom+1,.false.)
 !-- tallying outbound luminosity
-        flx_lumtime(ig,imu,iom) = flx_lumtime(ig,imu,iom)+ptcl%t
-        flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+e
-        flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+e**2
-        flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1
-        ptcl2%stat = 'dead'
+           flx_lumtime(ig,imu,iom) = flx_lumtime(ig,imu,iom)+ptcl%t
+           flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+e
+           flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+e**2
+           flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1
+           ptcl2%stat = 'dead'
+        endif
      endif
 !
 !-- tally census

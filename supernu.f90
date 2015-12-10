@@ -153,6 +153,9 @@ program supernu
      call timestep_update
      call tau_update(tsp_t,tsp_tfirst,tsp_tlast) !updating trn_tauddmc and trn_taulump
 
+!-- update flux time step
+     flx_it = tsp_it
+
 !-- write timestep
      if(lmpi0) write(6,'(1x,i5,f8.3,"d")',advance='no') it,tsp_t/pc_day
 
