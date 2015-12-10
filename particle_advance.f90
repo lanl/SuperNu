@@ -82,11 +82,6 @@ subroutine particle_advance
   grd_tally = 0d0
   if(.not.trn_noampfact) grd_eamp = 0d0
 
-  flx_lumtime = 0d0
-  flx_luminos = 0d0
-  flx_lumdev = 0d0
-  flx_lumnum = 0
-
 !-- optional grid tally
   if(in_io_dogrdtally) then
      grd_methodswap = 0
@@ -351,25 +346,15 @@ subroutine particle_advance
         if(ptcl%x/=huge(help)) then
            nflux = nflux + 1
            tot_eout = tot_eout+e
+           ptcl%x = huge(help)  !-- mark particle as flux particle (stat is not saved in particle array)
         endif
-!-- mark particle as flux particle (stat is not saved in particle array)
-        ptcl%x = huge(help)
 !
-!-- test if tallied in this flux time step
 !-- ignore particles before the first time step
         if(ptcl%t < tsp_tarr(1)) then
            ptcl2%stat = 'dead'
-        elseif(ptcl%t < tsp_tarr(flx_it+1)) then
-!-- retrieving lab frame flux group, polar, azimuthal bin
-           ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
-           imu = binsrch(mu,flx_mu,flx_nmu+1,.false.)
-           iom = binsrch(om,flx_om,flx_nom+1,.false.)
-!-- tallying outbound luminosity
-           flx_lumtime(ig,imu,iom) = flx_lumtime(ig,imu,iom)+ptcl%t
-           flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+e
-           flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+e**2
-           flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1
-           ptcl2%stat = 'dead'
+        else
+!-- save particle properties
+           prt_particles(ipart) = ptcl
         endif
      endif
 !
@@ -524,13 +509,6 @@ subroutine particle_advance
 ! if(lmpi0) write(6,'(11(i6,"k"))',advance='no') ndist(-3:7)/1000
 
   src_nflux = nflux
-
-  tot_sflux = -sum(flx_luminos)
-
-!-- convert to flux per second
-  help = 1d0/tsp_dt
-  flx_luminos = flx_luminos*help
-  flx_lumdev = flx_lumdev*help**2
 
   call counterreg(ct_nptransport, npckt)
   call counterreg(ct_npstepimc, nstepimc)

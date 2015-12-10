@@ -27,7 +27,7 @@ MODULES := elemdatamod.o nucdatamod.o physconstmod.o randommod.o mpimod.o \
   transportmod.o sourcemod.o
 
 FILES := banner.o \
-  particle_advance.o particle_advance_gamgrey.o \
+  particle_advance.o particle_advance_gamgrey.o fluxtally.o \
   write_output.o dealloc_all.o \
   read_bbxs_data.o tau_update.o
 
