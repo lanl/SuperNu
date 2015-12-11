@@ -63,6 +63,7 @@ c-- outbound flux group and direction bins
       integer :: in_flx_ndim(3) = [0, 1, 1]
       real*8 :: in_flx_wlmin =  1000d-8  !lower wavelength flux boundary [cm]
       real*8 :: in_flx_wlmax = 32000d-8  !upper wavelength flux boundary [cm]
+      logical :: in_flx_noobservertime = .false. ! record flux in escape time
 c
 c
 c-- particles
@@ -176,7 +177,7 @@ c-- runtime parameter namelist
      &   in_ng,in_ngs,in_wlmin,in_wlmax, !deprec
      & in_wldex,
 !flx
-     & in_flx_ndim,in_flx_wlmin,in_flx_wlmax,
+     & in_flx_ndim,in_flx_wlmin,in_flx_wlmax,in_flx_noobservertime,
 !prt
      & in_prt_nmax,in_prt_n2max,
      &   in_trn_n2part, !deprec
@@ -273,6 +274,7 @@ c
       call inserti(in_flx_ndim(3),in_i,ii)
       call insertr(in_flx_wlmin,in_r,ir)
       call insertr(in_flx_wlmax,in_r,ir)
+      call insertl(in_flx_noobservertime,in_l,il)
       call insertl(in_nogriddump,in_l,il)
       call insertl(in_io_dogrdtally,in_l,il)
       call insertl(in_noreadstruct,in_l,il)
