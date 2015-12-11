@@ -13,8 +13,9 @@ c-- one-time events
       real*8 :: t_all
 c
 c-- timeline
-      real*8 :: t_timelin(7)
-      real*8 :: t_timeline(6)
+      integer,parameter,private :: ntimeline=7
+      real*8 :: t_timelin(ntimeline+1)
+      real*8 :: t_timeline(ntimeline)
 c
       integer,private,parameter :: mreg = 16
       real*8,private,target :: registers(4,mreg)

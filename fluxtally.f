@@ -1,11 +1,11 @@
-      subroutine fluxtally
-c     --------------------
+      subroutine fluxtally(it)
+c     ------------------------
       use timestepmod
       use fluxmod
       use particlemod
       use miscmod
-      use totalsmod
       implicit none
+      integer,intent(in) :: it
 ************************************************************************
 * Go through all particles and tally the ones that have left the domain
 * and end up in this flux time step.
@@ -33,7 +33,7 @@ c-- check flux status
        if(ptcl%x/=huge(help)) cycle
 c
 c-- check flux time
-       if(ptcl%t>tsp_tarr(flx_it+1)) cycle
+       if(ptcl%t>tsp_tarr(it+1)) cycle
 c
 c-- retrieving lab frame flux group, polar, azimuthal bin
        ig = binsrch(ptcl%wl,flx_wl,flx_ng+1,.false.)
@@ -51,8 +51,6 @@ c-- mark particle slot occupied or vacant
 
       enddo !ipart
 !!c$omp end do nowait
-
-      tot_sflux = -sum(flx_luminos)
 
 !-- convert to flux per second
       help = 1d0/tsp_dt

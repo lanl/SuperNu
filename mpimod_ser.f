@@ -99,18 +99,21 @@ c
       end subroutine allgather_leakage
 c
 c
-      subroutine reduce_tally
+      subroutine reduce_gridtally
 ************************************************************************
 * Reduce the results from the packet transport that are needed for the
 * temperature correction.
 * - stub
 ************************************************************************
-      use totalsmod
       use gridmod
       use gasmod
       gas_edep = reshape(grd_tally(1,:),[grd_ncell])
       gas_eraddens = reshape(grd_tally(2,:),[grd_ncell])
-      end subroutine reduce_tally
+      end subroutine reduce_gridtally
+c
+c
+      subroutine reduce_fluxtally
+      end subroutine reduce_fluxtally
 c
 c
       subroutine reduce_fluxes

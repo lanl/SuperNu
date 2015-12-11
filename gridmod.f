@@ -19,6 +19,9 @@ c
       real*8,allocatable :: grd_xarr(:)   !(nx+1), left cell edge values
       real*8,allocatable :: grd_yarr(:)   !(ny+1), left cell edge values
       real*8,allocatable :: grd_zarr(:)   !(nz+1), left cell edge values
+c
+      real*8 :: grd_voc=0d0  !maximum grid velocity over pc_c
+c
 c-- polar angles
       real*8,allocatable :: grd_yacos(:)   !(ny+1)
 c-- pointer into compressed domain

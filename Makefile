@@ -32,7 +32,7 @@ FILES := banner.o \
   read_bbxs_data.o tau_update.o
 
 LIBRARIES := TRANSPORT1/transport1.a TRANSPORT2/transport2.a TRANSPORT3/transport3.a \
-  SOURCE/source.a GAS/gas.a GRID/grid.a MISC/misc.a
+  SOURCE/source.a GAS/gas.a GRID/grid.a MISC/misc.a OUTPUT/output.a
 SUBDIRS := $(dir $(LIBRARIES))
 SUBCLEAN = $(addsuffix .clean, $(SUBDIRS))
 

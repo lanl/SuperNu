@@ -473,7 +473,7 @@ c!}}}
 c
 c
 c
-      subroutine reduce_tally
+      subroutine reduce_gridtally
 c     -----------------------!{{{
       use gridmod,nx=>grd_nx,ny=>grd_ny,nz=>grd_nz
       use gasmod
@@ -486,13 +486,11 @@ c     -----------------------!{{{
 * temperature correction.
 ************************************************************************
       integer :: n
+      integer :: isnd2f(flx_nmu,flx_nom)
+      real*8 :: snd2f(flx_nmu,flx_nom)
       integer,allocatable :: isnd(:)
       real*8,allocatable :: snd(:)
       real*8,allocatable :: snd2(:,:)
-      integer :: isnd2f(flx_nmu,flx_nom)
-      integer :: isnd3f(flx_ng,flx_nmu,flx_nom)
-      real*8 :: snd2f(flx_nmu,flx_nom)
-      real*8 :: snd3f(flx_ng,flx_nmu,flx_nom)
       real*8 :: help
       real*8 :: t0,t1
 c
@@ -515,24 +513,6 @@ c
 c
       snd2f = flx_gamlumtime
       call mpi_reduce(snd2f,flx_gamlumtime,n,MPI_REAL8,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-c-- flux dim==3
-      n = flx_ng*flx_nmu*flx_nom
-      isnd3f = flx_lumnum
-      call mpi_reduce(isnd3f,flx_lumnum,n,MPI_INTEGER,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      snd3f = flx_luminos
-      call mpi_reduce(snd3f,flx_luminos,n,MPI_REAL8,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      snd3f = flx_lumdev
-      call mpi_reduce(snd3f,flx_lumdev,n,MPI_REAL8,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
-c
-      snd3f = flx_lumtime
-      call mpi_reduce(snd3f,flx_lumtime,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- dim==3
@@ -588,7 +568,39 @@ c
       t1 = t_time()
       call timereg(t_mpireduc, t1-t0)
 c!}}}
-      end subroutine reduce_tally
+      end subroutine reduce_gridtally
+c
+c
+c
+      subroutine reduce_fluxtally
+c     ---------------------------
+      use fluxmod
+      implicit none
+************************************************************************
+* Reduce flux arrays for output
+************************************************************************
+      integer :: n
+      integer :: isnd3f(flx_ng,flx_nmu,flx_nom)
+      real*8 :: snd3f(flx_ng,flx_nmu,flx_nom)
+c
+c-- flux dim==3
+      n = flx_ng*flx_nmu*flx_nom
+      isnd3f = flx_lumnum
+      call mpi_reduce(isnd3f,flx_lumnum,n,MPI_INTEGER,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      snd3f = flx_luminos
+      call mpi_reduce(snd3f,flx_luminos,n,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      snd3f = flx_lumdev
+      call mpi_reduce(snd3f,flx_lumdev,n,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c
+      snd3f = flx_lumtime
+      call mpi_reduce(snd3f,flx_lumtime,n,MPI_REAL8,MPI_SUM,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      end subroutine reduce_fluxtally
 c
 c
 c

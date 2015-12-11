@@ -29,6 +29,7 @@ program supernu
 !***********************************************************************
   integer :: ierr, it
   integer :: icell1, ncell !number of cells per rank (gas_ncell)
+  integer :: iitflux,itflux=0
   real*8 :: t0, t1 !timing
   character(15) :: msg
 !
@@ -153,9 +154,6 @@ program supernu
      call timestep_update
      call tau_update(tsp_t,tsp_tfirst,tsp_tlast) !updating trn_tauddmc and trn_taulump
 
-!-- update flux time step
-     flx_it = tsp_it
-
 !-- write timestep
      if(lmpi0) write(6,'(1x,i5,f8.3,"d")',advance='no') it,tsp_t/pc_day
 
@@ -207,9 +205,7 @@ program supernu
 !-- advance particles
      t_timelin(5) = t_time() !timeline
      call particle_advance
-     call fluxtally
-     call reduce_tally !MPI  !collect particle results from all workers
-     t_timelin(6) = t_time() !timeline
+     call reduce_gridtally !MPI  !collect transport results from all workers
 
 !-- print packet advance load-balancing info
      !if(lmpi0) write(6,'(1x,a,3(f9.2,"s"))') 'packets time(min|mean|max):',t_pckt_stat
@@ -218,6 +214,20 @@ program supernu
         call timereg(t_pcktmea,t_pckt_stat(2))
         call timereg(t_pcktmax,t_pckt_stat(3))
      endif
+     t_timelin(6) = t_time() !timeline
+
+!-- flux loop
+     do iitflux=itflux+1,tsp_it
+        if(it<1) call fluxtally(iitflux)  !drop flux packets in init-iterations
+        if(tsp_tarr(iitflux+1) > tsp_t*(1-grd_voc)) exit
+!-- tally flux packets
+        call fluxtally(iitflux)
+!-- output
+        call reduce_fluxtally !MPI  !collect flux results from all workers
+        if(lmpi0) call output_flux(iitflux)
+        itflux = iitflux
+     enddo
+     t_timelin(7) = t_time() !timeline
 
 !-- update temperature
      call temperature_update
@@ -230,7 +240,8 @@ program supernu
         call totals_error !check energy (particle weight) is accounted
 
 !-- write output
-        if(it>0) call write_output
+        if(it>0) call output_gamflux
+        if(it>0) call output_grid
 
 !-- write stdout
         if(ct_nptransport(2)<1000000) then
@@ -247,8 +258,8 @@ program supernu
 !-- write timestep timing to file
      call timing_timestep(impi,it<=0)
      call counters_timestep(impi,it<=0)
-     t_timelin(7) = t_time() !timeline
-     t_timeline(:6) = t_timeline(:6) + (t_timelin(2:) - t_timelin(:6))
+     t_timelin(8) = t_time() !timeline
+     t_timeline = t_timeline + (t_timelin(2:) - t_timelin(:7))
   enddo !tsp_it
 !
 !

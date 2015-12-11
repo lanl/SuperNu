@@ -110,7 +110,7 @@ subroutine particle_advance
 !$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
 !$omp    rndstate,edep,eraddens,eamp,ierr, iomp) &
 !$omp reduction(+:grd_tally, &
-!$omp    tot_evelo,tot_erad,tot_eout, &
+!$omp    tot_evelo,tot_erad,tot_eout,tot_sflux, &
 !$omp    npckt,nflux,nstepddmc,nstepimc,nmethodswap,ncensimc,ncensddmc,ndist) &
 !$omp reduction(max:nstepmax)
 
@@ -152,6 +152,7 @@ subroutine particle_advance
   do ipart=1,prt_npartmax
      ! Checking vacancy
      if(prt_isvacant(ipart)) cycle
+     if(prt_particles(ipart)%x == huge(help)) cycle !untallied flux particle
 !
 !-- active particle
      ptcl = prt_particles(ipart) !copy properties out of array
@@ -190,8 +191,7 @@ subroutine particle_advance
 
 !
 !-- transform IMC particle into lab frame
-     if(grd_isvelocity.and.ptcl2%itype==1 &!) then
-           .and. ptcl%x/=huge(help)) then
+     if(grd_isvelocity.and.ptcl2%itype==1) then
         select case(grd_igeom)
         case(1,11)
            labfact = 1d0-x*mu/pc_c
@@ -239,12 +239,7 @@ subroutine particle_advance
 !Calling either diffusion or transport depending on particle type (ptcl2%itype)
      ptcl2%istep = 0
      ptcl2%idist = 0
-
-     if(ptcl%x==huge(help)) then
-        ptcl2%stat = 'flux' !old flux particle
-     else
-        ptcl2%stat = 'live'
-     endif
+     ptcl2%stat = 'live'
 
      do while (ptcl2%stat=='live')
         ptcl2%istep = ptcl2%istep + 1
@@ -329,7 +324,7 @@ subroutine particle_advance
         if(ierr/=0 .or. ptcl2%istep>1000) then  !istep checker may cause issues in high-res simulations
            write(0,*) 'pa: ierr,ipart,istep,idist:',ierr,ptcl2%ipart,ptcl2%istep,ptcl2%idist
            write(0,*) 'dist:',ptcl2%dist
-           write(0,*) 'tddmc:',tau
+           write(0,*) 't,tddmc:',ptcl%t,tau
            write(0,*) 'ix,iy,iz,ic,ig:',ptcl2%ix,ptcl2%iy,ptcl2%iz,ptcl2%ic,ptcl2%ig
            write(0,*) 'x,y,z:',ptcl%x,ptcl%y,ptcl%z
            write(0,*) 'mu,om:',ptcl%mu,ptcl%om
@@ -339,27 +334,34 @@ subroutine particle_advance
            endif
         endif
      enddo
+
+!-- max step counter
+     nstepmax = max(nstepmax,ptcl2%istep)
+
+
+!-- mark particle slot occupied or vacant
+     select case(ptcl2%stat)
+     case('dead')
+        prt_isvacant(ipart) = .true.
 !
 !-- outbound luminosity tally
-     if(ptcl2%stat=='flux') then
+     case('flux')
 !-- register fresh flux particle (only once)
-        if(ptcl%x/=huge(help)) then
-           nflux = nflux + 1
-           tot_eout = tot_eout+e
-           ptcl%x = huge(help)  !-- mark particle as flux particle (stat is not saved in particle array)
-        endif
+        nflux = nflux + 1
+        tot_sflux = tot_sflux-e
+        tot_eout = tot_eout+e
+        ptcl%x = huge(help)  !-- mark particle as flux particle (stat is not saved in particle array)
 !
 !-- ignore particles before the first time step
         if(ptcl%t < tsp_tarr(1)) then
-           ptcl2%stat = 'dead'
+           prt_isvacant(ipart) = .true.
         else
 !-- save particle properties
            prt_particles(ipart) = ptcl
         endif
-     endif
 !
 !-- tally census
-     if(ptcl2%stat=='cens') then
+     case('cens')
         if(ptcl2%itype==1) then
            ncensimc = ncensimc + 1
            if(in_io_dogrdtally) grd_numcensimc(ic) = grd_numcensimc(ic) + 1
@@ -367,121 +369,112 @@ subroutine particle_advance
            ncensddmc = ncensddmc + 1
            if(in_io_dogrdtally) grd_numcensddmc(ic) = grd_numcensddmc(ic) + 1
         endif
-     endif
-
-!-- max step counter
-     nstepmax = max(nstepmax,ptcl2%istep)
-
-!-- mark particle slot occupied or vacant
-     prt_isvacant(ipart) = ptcl2%stat == 'dead'
-
-
-!
-!-- remainder of the loop only for censused particles
-!----------------------------------------------------
-     if(ptcl2%stat/='cens') cycle
 
 !
 !-- Redshifting DDMC particle energy weights and wavelengths
-     if(ptcl2%itype==2 .and. grd_isvelocity) then
-!-- redshifting energy weight!{{{
-        tot_evelo = tot_evelo + e*(1d0-exp(-tsp_dt/tsp_t))
-        e = e*exp(-tsp_dt/tsp_t)
-        e0 = e0*exp(-tsp_dt/tsp_t)
-        !
+        if(ptcl2%itype==2 .and. grd_isvelocity) then
+!-- r   edshifting energy weight!{{{
+           tot_evelo = tot_evelo + e*(1d0-exp(-tsp_dt/tsp_t))
+           e = e*exp(-tsp_dt/tsp_t)
+           e0 = e0*exp(-tsp_dt/tsp_t)
+           !
 !
-!-- find group
-        ig = binsrch(wl,grp_wl,grp_ng+1,.false.)
+!-- f   ind group
+           ig = binsrch(wl,grp_wl,grp_ng+1,.false.)
 !
-        call rnd_r(r1,rndstate)
-        x1 = grd_cap(ig,ic)
-        x2 = grp_wl(ig)/(pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig)))
-        if(r1<x2/(x1+x2)) then
            call rnd_r(r1,rndstate)
-           wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
-           wl = wl*exp(tsp_dt/tsp_t)
+           x1 = grd_cap(ig,ic)
+           x2 = grp_wl(ig)/(pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig)))
+           if(r1<x2/(x1+x2)) then
+              call rnd_r(r1,rndstate)
+              wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
+              wl = wl*exp(tsp_dt/tsp_t)
+           endif
+           !!}}}
         endif
-        !!}}}
-     endif
 
-     if(grd_isvelocity.and.ptcl2%itype==1) then
-        call advection(.false.,ptcl,ptcl2) !procedure pointer to advection[123]
-     endif
+        if(grd_isvelocity.and.ptcl2%itype==1) then
+           call advection(.false.,ptcl,ptcl2) !procedure pointer to advection[123]
+        endif
 
-!-- radiation energy at census
-     tot_erad = tot_erad + e
+!-- renergy at census
+        tot_erad = tot_erad + e
 
 
 !-- sample position, direction, and wavelength of a censused DDMC particle
 !-- It can be an IMC particle in the next time step
-     if(ptcl2%itype==2) then
+        if(ptcl2%itype==2) then
 !
 !-- sample wavelength
-        call rnd_r(r1,rndstate)
-        wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
+           call rnd_r(r1,rndstate)
+           wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
 !
 !-- sample x position
-        select case(grd_igeom)
-        case(1,11) !-- spherical
-           call rnd_r(r1,rndstate)
-           x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
+           select case(grd_igeom)
+           case(1,11) !-- spherical
+              call rnd_r(r1,rndstate)
+              x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
 !-- must be inside cell
-           x = min(x,grd_xarr(ix+1))
-           x = max(x,grd_xarr(ix))
-        case(2) !-- cylindrical
-           call rnd_r(r1,rndstate)
-           x = sqrt(r1*grd_xarr(ix+1)**2 + (1d0-r1)*grd_xarr(ix)**2)
+              x = min(x,grd_xarr(ix+1))
+              x = max(x,grd_xarr(ix))
+           case(2) !-- cylindrical
+              call rnd_r(r1,rndstate)
+              x = sqrt(r1*grd_xarr(ix+1)**2 + (1d0-r1)*grd_xarr(ix)**2)
 !-- must be inside cell
-           x = min(x,grd_xarr(ix+1))
-           x = max(x,grd_xarr(ix))
-        case(3) !-- cartesian
-           call rnd_r(r1,rndstate)
-           x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
-        endselect
+              x = min(x,grd_xarr(ix+1))
+              x = max(x,grd_xarr(ix))
+           case(3) !-- cartesian
+              call rnd_r(r1,rndstate)
+              x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
+           endselect
 !
 !-- y,z position
-        if(grd_igeom/=11) then
-           call rnd_r(r1,rndstate)
-           y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
-           call rnd_r(r1,rndstate)
-           z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
-        endif
+           if(grd_igeom/=11) then
+              call rnd_r(r1,rndstate)
+              y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
+              call rnd_r(r1,rndstate)
+              z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
+           endif
 !
 !-- sample direction
-        call rnd_r(r1,rndstate)
-        mu = 1.0 - 2.0*r1
-        call rnd_r(r1,rndstate)
-        om = pc_pi2*r1
+           call rnd_r(r1,rndstate)
+           mu = 1.0 - 2.0*r1
+           call rnd_r(r1,rndstate)
+           om = pc_pi2*r1
 !
-        if(grd_isvelocity) call direction2lab(x,y,z,mu,om)
-     endif
+           if(grd_isvelocity) call direction2lab(x,y,z,mu,om)
+        endif
 
 !
 !-- transform IMC particle energy to comoving frame for storage
-     if(grd_isvelocity.and.ptcl2%itype==1) then
-        select case(grd_igeom)
+        if(grd_isvelocity.and.ptcl2%itype==1) then
+           select case(grd_igeom)
 !-- [123]D spherical
-        case(1,11)
-           labfact = 1d0-x*mu/pc_c
+           case(1,11)
+              labfact = 1d0-x*mu/pc_c
 !-- 2D
-        case(2)
-           labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
+           case(2)
+              labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
 !-- 3D
-        case(3)
-           mu1 = sqrt(1d0-mu**2)*cos(om)
-           mu2 = sqrt(1d0-mu**2)*sin(om)
-           labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c
-        endselect
+           case(3)
+              mu1 = sqrt(1d0-mu**2)*cos(om)
+              mu2 = sqrt(1d0-mu**2)*sin(om)
+              labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c
+           endselect
 
 !-- apply inverse labfact for symmetry (since gamma factor is missing)
-        wl = wl/labfact
-        e = e*labfact
-        e0 = e0*labfact
-     endif
+           wl = wl/labfact
+           e = e*labfact
+           e0 = e0*labfact
+        endif
 
 !
 !-- save particle properties
-     prt_particles(ipart) = ptcl
+        prt_particles(ipart) = ptcl
+
+    case default
+       stop 'particle_advance: invalid particle status'
+    end select
 
   enddo !ipart
 !$omp end do nowait

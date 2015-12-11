@@ -17,6 +17,21 @@ c-- agnostic grid setup
 c-- polar angles
       if(grd_igeom==1) grd_yacos = acos(grd_yarr)
 c
+c-- maximum grid velocity
+      select case(grd_igeom)
+      case(1,11)
+       grd_voc = grd_xarr(grd_nx+1)
+      case(2)
+       grd_voc = max(grd_xarr(grd_nx+1),
+     &   -grd_yarr(1),grd_yarr(grd_ny+1))
+      case(3)
+       grd_voc = max(
+     &   -grd_xarr(1),grd_xarr(grd_nx+1),
+     &   -grd_yarr(1),grd_yarr(grd_ny+1),
+     &   -grd_zarr(1),grd_zarr(grd_nz+1))
+      endselect
+      grd_voc = grd_voc/pc_c
+c
 c-- cell pointers
 c-- if dummy cell exists initialize void cells
       if(grd_lvoid) grd_icell = grd_ncell
