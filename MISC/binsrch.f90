@@ -9,7 +9,8 @@ pure function binsrch(x,arr,n,widerange)
 !---------------------------------------------------
 ! Binary search of a real*8 array (arr) of size n.
 ! Finds index of interval containing x.
-! Returns an integer between 1 and n-1, inclusive.
+! Returns an integer between 1 and n-1, inclusive, if not widerange.
+! Returns an integer between 0 and n, inclusive, if widerange.
 !---------------------------------------------------
   integer :: imin, imax, imid
 

@@ -63,7 +63,7 @@ c-- outbound flux group and direction bins
       integer :: in_flx_ndim(3) = [0, 1, 1]
       real*8 :: in_flx_wlmin =  1000d-8  !lower wavelength flux boundary [cm]
       real*8 :: in_flx_wlmax = 32000d-8  !upper wavelength flux boundary [cm]
-      logical :: in_flx_noobservertime = .false. ! record flux in escape time
+      logical :: in_flx_noobservertime = .false. ! record flux in escape time instead of observer time
 c
 c
 c-- particles
@@ -778,6 +778,7 @@ c
       flx_ndim  = in_flx_ndim
       flx_wlmin = in_flx_wlmin
       flx_wlmax = in_flx_wlmax
+      flx_noobservertime = in_flx_noobservertime
 c
       grp_ng    = in_grp_ng
       grp_ngs   = in_grp_ngs

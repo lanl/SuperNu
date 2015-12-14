@@ -220,7 +220,7 @@ program supernu
      do iitflux=itflux+1,tsp_it
         if(it<1) call fluxtally(iitflux)  !drop flux packets in init-iterations
         if(it<1) exit
-        if(.not.in_flx_noobservertime .and. &
+        if(.not.flx_noobservertime .and. &
               tsp_tarr(iitflux+1) > tsp_t*(1-grd_voc)) exit
 !-- tally flux packets
         call fluxtally(iitflux)

@@ -32,8 +32,10 @@ c
 c-- check flux status
        if(ptcl%x/=huge(help)) cycle
 c
-c-- check flux time
-       if(ptcl%t>tsp_tarr(it+1)) cycle
+c-- check flux time falls within current flux tally bin
+       if(ptcl%t>tsp_tarr(it+1)) cycle !not yet
+       if(.not.flx_noobservertime .and. ptcl%t<tsp_tarr(it)) stop
+     &   'fluxtally: ptcl%t < flux tally bin'
 c
 c-- retrieving lab frame flux group, polar, azimuthal bin
        ig = binsrch(ptcl%wl,flx_wl,flx_ng+1,.false.)

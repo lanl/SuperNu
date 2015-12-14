@@ -7,6 +7,7 @@ c     ------------------
       integer :: flx_ng=0  !number of flux groups (1D,2D,3D)
       integer :: flx_nmu=0 !number of polar bins (2D,3D)
       integer :: flx_nom=0 !number of azimuthal bins (3D)
+      logical :: flx_noobservertime !record particle escape time instead of observer time
 c
 c-- wavelength (wl), polar (mu), and azimuthal (om) bins
       real*8,allocatable :: flx_wl(:) !(flx_ng)
