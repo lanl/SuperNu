@@ -22,13 +22,13 @@ c-- maximum grid velocity
       case(1,11)
        grd_voc = grd_xarr(grd_nx+1)
       case(2)
-       grd_voc = max(grd_xarr(grd_nx+1),
-     &   -grd_yarr(1),grd_yarr(grd_ny+1))
+       grd_voc = sqrt(grd_xarr(grd_nx+1)**2 +
+     &   max(-grd_yarr(1),grd_yarr(grd_ny+1))**2)
       case(3)
-       grd_voc = max(
-     &   -grd_xarr(1),grd_xarr(grd_nx+1),
-     &   -grd_yarr(1),grd_yarr(grd_ny+1),
-     &   -grd_zarr(1),grd_zarr(grd_nz+1))
+       grd_voc = sqrt(
+     &   max(-grd_xarr(1),grd_xarr(grd_nx+1))**2 +
+     &   max(-grd_yarr(1),grd_yarr(grd_ny+1))**2 +
+     &   max(-grd_zarr(1),grd_zarr(grd_nz+1))**2)
       endselect
       grd_voc = grd_voc/pc_c
 c

@@ -168,6 +168,9 @@ subroutine particle_advance
 
 !-- group index
      ig = binsrch(wl,grp_wl,grp_ng+1,.false.) !co-moving frame
+!
+!-- verify particle time
+     if(ptcl%t<tsp_t) stop 'particle_advance: ptcl%t < tsp_t'
 
 !
 !-- determine particle type
@@ -324,7 +327,7 @@ subroutine particle_advance
         if(ierr/=0 .or. ptcl2%istep>1000) then  !istep checker may cause issues in high-res simulations
            write(0,*) 'pa: ierr,ipart,istep,idist:',ierr,ptcl2%ipart,ptcl2%istep,ptcl2%idist
            write(0,*) 'dist:',ptcl2%dist
-           write(0,*) 't,tddmc:',ptcl%t,tau
+           write(0,*) 't,taus,tauc:',ptcl%t,grd_sig(ic)*help,grd_cap(ig,ic)*help
            write(0,*) 'ix,iy,iz,ic,ig:',ptcl2%ix,ptcl2%iy,ptcl2%iz,ptcl2%ic,ptcl2%ig
            write(0,*) 'x,y,z:',ptcl%x,ptcl%y,ptcl%z
            write(0,*) 'mu,om:',ptcl%mu,ptcl%om
