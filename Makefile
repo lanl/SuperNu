@@ -28,8 +28,7 @@ MODULES := elemdatamod.o nucdatamod.o physconstmod.o randommod.o mpimod.o \
 
 FILES := banner.o \
   particle_advance.o particle_advance_gamgrey.o fluxtally.o \
-  write_output.o dealloc_all.o \
-  read_bbxs_data.o tau_update.o
+  dealloc_all.o read_bbxs_data.o tau_update.o
 
 LIBRARIES := TRANSPORT1/transport1.a TRANSPORT2/transport2.a TRANSPORT3/transport3.a \
   SOURCE/source.a GAS/gas.a GRID/grid.a MISC/misc.a OUTPUT/output.a
