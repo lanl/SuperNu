@@ -430,7 +430,7 @@ c
 * generate stratification from input.par variables
 * if in_noreadstruct==.true.
 ************************************************************************
-      real*8,allocatable :: rout(:) !(nx+1)
+      real*8,allocatable :: xout(:) !(nx+1)
 
       integer :: i, j, k
       real*8 :: help, dx, dy, dz
@@ -449,15 +449,15 @@ c-- verifications (input.par)
      &  stop 'generate_inputstr1: invalid in_totmass'
 c
 c-- allocate arrays
-      allocate(rout(nx+1))
+      allocate(xout(nx+1))
       allocate(str_xleft(nx+1))
       allocate(str_yleft(ny+1))
       allocate(str_zleft(nz+1))
       allocate(str_mass(nx,ny,nz))
 c
-c-- create unit sphere radii rout
+c-- create unit sphere radii xout
       dx = 1d0/nx
-      forall(i=1:nx+1) rout(i) = (i-1)*dx
+      forall(i=1:nx+1) xout(i) = (i-1)*dx
 c
 c-- outer shells
       if(in_isvelocity) then
@@ -465,7 +465,7 @@ c-- outer shells
       else
        help = in_lx
       endif
-      str_xleft = help*rout
+      str_xleft = help*xout
 c-- polar cosine grid
       dy = 2d0/ny
       forall(j=1:ny+1) str_yleft(j)=-1d0+(j-1)*dy
@@ -477,17 +477,17 @@ c-- mass
       if(in_dentype=='unif') then
        do k=1,nz
        do j=1,ny
-        str_mass(:,j,k)=in_totmass*(rout(2:)**3-rout(:nx)**3)
+        str_mass(:,j,k)=in_totmass*(xout(2:)**3-xout(:nx)**3)
      &         *dy*dz
        enddo
        enddo
-       str_mass = str_mass/(pc_pi4*(1d0 - rout(1)**3))
+       str_mass = str_mass/(pc_pi4*(1d0 - xout(1)**3))
       elseif(in_dentype=='mass') then
        str_mass = in_totmass/(nx*ny*nz)
       else
        stop 'generate_inputstr1: invalid in_dentype'
       endif
-      deallocate(rout)
+      deallocate(xout)
 c!}}}
       end subroutine generate_inputstr1
 c
