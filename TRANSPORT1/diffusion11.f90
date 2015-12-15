@@ -49,7 +49,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 
   integer,pointer :: ix, ic, ig
   integer,parameter :: iy=1, iz=1
-  real*8,pointer :: r, mu, e, e0, wl
+  real*8,pointer :: x, mu, e, e0, wl
 !-- statement function
   integer :: l
   real*8 :: dx,dx3
@@ -59,7 +59,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
   ix => ptcl2%ix
   ic => ptcl2%ic
   ig => ptcl2%ig
-  r => ptcl%x
+  x => ptcl%x
   mu => ptcl%mu
   e => ptcl%e
   e0 => ptcl%e0
@@ -338,21 +338,21 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
            call rnd_r(r1,rndstate)
            wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 !-- location set right bound of left cell
-           r = grd_xarr(ix)
+           x = grd_xarr(ix)
 !-- particle angle sampled from isotropic b.c. inward
            call rnd_r(r1,rndstate)
            call rnd_r(r2,rndstate)
            mu = -max(r1,r2)
 !-- doppler and aberration corrections
            if(grd_isvelocity) then
-              mu = (mu+r*cinv)/(1.0+r*mu*cinv)
+              mu = (mu+x*cinv)/(1.0+x*mu*cinv)
 !-- velocity effects accounting
-              help = 1d0/(1.0-r*mu*cinv)
+              help = 1d0/(1.0-x*mu*cinv)
               totevelo = totevelo+e*(1d0 - help)
 !
               e = e*help
               e0 = e0*help
-              wl = wl*(1.0-r*mu*cinv)
+              wl = wl*(1.0-x*mu*cinv)
            endif
         endif
 !
@@ -399,20 +399,20 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         call rnd_r(r1,rndstate)
         wl = 1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))
 !-- position
-        r=grd_xarr(grd_nx+1)
+        x=grd_xarr(grd_nx+1)
 !-- changing from comoving frame to observer frame
         if(grd_isvelocity) then
-           help = 1d0+mu*r*cinv
+           help = 1d0+mu*x*cinv
 !-- velocity effects accounting
            totevelo = totevelo+e*(1d0 - help)
            wl = wl/help
            e = e*help
            e0 = e0*help
-           mu = (mu+r*cinv)/(1d0+r*mu*cinv)
+           mu = (mu+x*cinv)/(1d0+x*mu*cinv)
            ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
         endif
 !-- observer time correction
-        ptcl%t=ptcl%t-mu*r*thelp*cinv
+        ptcl%t=ptcl%t-mu*x*thelp*cinv
 !
 !!}}}
      else
@@ -458,7 +458,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
            call rnd_r(r1,rndstate)
            wl = 1d0/(r1*grp_wlinv(iiig+1)+(1d0-r1)*grp_wlinv(iiig))
 !-- location set left bound of right cell
-           r = grd_xarr(ix+1)
+           x = grd_xarr(ix+1)
 !-- particle angle sampled from isotropic b.c. outward
            call rnd_r(r1,rndstate)
            call rnd_r(r2,rndstate)
@@ -466,14 +466,14 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !
 !-- doppler and aberration corrections
            if(grd_isvelocity) then
-              mu = (mu+r*cinv)/(1.0+r*mu*cinv)
+              mu = (mu+x*cinv)/(1.0+x*mu*cinv)
 !-- velocity effects accounting
-              help = 1d0/(1.0-r*mu*cinv)
+              help = 1d0/(1.0-x*mu*cinv)
               totevelo = totevelo+e*(1d0 - help)
 !
               e = e*help
               e0 = e0*help
-              wl = wl*(1.0-r*mu*cinv)
+              wl = wl*(1.0-x*mu*cinv)
            endif
         endif
 !
@@ -537,20 +537,20 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         mu = 1d0-2d0*r1
 !-- position sampled uniformly
         call rnd_r(r1,rndstate)
-        r = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
+        x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
 !-- must be inside cell
-        r = min(r,grd_xarr(ix+1))
-        r = max(r,grd_xarr(ix))
+        x = min(x,grd_xarr(ix+1))
+        x = max(x,grd_xarr(ix))
 !-- doppler and aberration corrections
         if(grd_isvelocity) then
-           mu = (mu+r*cinv)/(1.0+r*mu*cinv)
+           mu = (mu+x*cinv)/(1.0+x*mu*cinv)
 !-- velocity effects accounting
-           help = 1d0/(1d0-r*mu*cinv)
+           help = 1d0/(1d0-x*mu*cinv)
            totevelo = totevelo+e*(1d0 - help)
 !
            e = e*help
            e0 = e0*help
-           wl = wl*(1.0-r*mu*cinv)
+           wl = wl*(1.0-x*mu*cinv)
         endif
      endif
 !}}}
