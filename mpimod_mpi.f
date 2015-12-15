@@ -379,6 +379,7 @@ c     -----------------------------!{{{
       use totalsmod
       use particlemod
       use timingmod
+      use transportmod, only:trn_noampfact
       implicit none
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
@@ -422,9 +423,11 @@ c-- broadcast
      &  impi0,MPI_COMM_WORLD,ierr)
 c
 c-- allreduce
-      sndgrd = grd_eamp
-      call mpi_allreduce(sndgrd,grd_eamp,grd_ncell,MPI_REAL8,MPI_SUM,
-     &  MPI_COMM_WORLD,ierr)
+      if(.not.trn_noampfact) then
+       sndgrd = grd_eamp
+       call mpi_allreduce(sndgrd,grd_eamp,grd_ncell,MPI_REAL8,MPI_SUM,
+     &   MPI_COMM_WORLD,ierr)
+      endif
 c
 c-- allgather
       nvacant = count(prt_isvacant) !count returns the same type as prt_isvacant
