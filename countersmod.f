@@ -5,21 +5,18 @@ c     ------------------
 * Collection of runtime counters for different parts of the code.
 * This is an integer clone of timingmod.
 ************************************************************************
-      integer,private,parameter :: mreg = 9
+      integer,private,parameter :: mreg = 10
       integer*8,private,target :: iregisters(4,mreg)
 c
-c-- transported particles
-      integer*8,pointer :: ct_npcreate(:)
-      integer*8,pointer :: ct_nptransport(:)
-c-- flux particles
-      integer*8,pointer :: ct_npflux(:)
-c-- censussed particles
-      integer*8,pointer :: ct_npcensimc(:)
-      integer*8,pointer :: ct_npcensddmc(:)
-c-- transport interactions (steps)
-      integer*8,pointer :: ct_npstepimc(:)
-      integer*8,pointer :: ct_npstepddmc(:)
-      integer*8,pointer :: ct_npstepmax(:)
+      integer*8,pointer :: ct_nnonvacant(:) !non-vacant particle slots
+      integer*8,pointer :: ct_npcreate(:)   !newly created particles
+      integer*8,pointer :: ct_npactive(:)   !transported particles
+      integer*8,pointer :: ct_npflux(:)     !flux particles
+      integer*8,pointer :: ct_npcensimc(:)  !censussed IMC particles
+      integer*8,pointer :: ct_npcensddmc(:) !censussed DDMC particles
+      integer*8,pointer :: ct_npstepimc(:)  !IMC interactions (steps)
+      integer*8,pointer :: ct_npstepddmc(:) !DDMC interactions (steps)
+      integer*8,pointer :: ct_npstepmax(:)  !interactions (steps)
 c-- transport method swaps
       integer*8,pointer :: ct_npmethswap(:)
 c
@@ -30,15 +27,16 @@ c
       subroutine countersmod_init
 c     ---------------------------
       implicit none
-      ct_npcreate    => iregisters(:,1)
-      ct_nptransport => iregisters(:,2)
-      ct_npflux      => iregisters(:,3)
-      ct_npcensimc   => iregisters(:,4)
-      ct_npcensddmc  => iregisters(:,5)
-      ct_npstepimc   => iregisters(:,6)
-      ct_npstepddmc  => iregisters(:,7)
-      ct_npstepmax   => iregisters(:,8)
-      ct_npmethswap  => iregisters(:,9)
+      ct_nnonvacant  => iregisters(:,1)
+      ct_npcreate    => iregisters(:,2)
+      ct_npactive    => iregisters(:,3)
+      ct_npflux      => iregisters(:,4)
+      ct_npcensimc   => iregisters(:,5)
+      ct_npcensddmc  => iregisters(:,6)
+      ct_npstepimc   => iregisters(:,7)
+      ct_npstepddmc  => iregisters(:,8)
+      ct_npstepmax   => iregisters(:,9)
+      ct_npmethswap  => iregisters(:,10)
       end subroutine countersmod_init
 c
 c
@@ -79,7 +77,7 @@ c-- write output on master rank only
        if(istat/=0) stop 'counters_timestep: file open error'
 c-- header
        if(.not.lexist) then
-         write(4,'("#",30a12)') 'create','transport',
+         write(4,'("#",30a12)') 'nonvacant','create','transport',
      &     'flux','censusimc','censusddmc','stepimc',
      &     'stepddmc','stepmax','methswap'
        endif
@@ -108,7 +106,7 @@ c
       write(6,*)
       write(6,*) 'counters (on master rank):'
       write(6,*) '============================'
-      write(6,1) 'pckt transport    :',ct_nptransport(i)/1000
+      write(6,1) 'pckt transport    :',ct_npactive(i)/1000
       write(6,1) ' steps (imc|ddmc) :',ct_npstepimc(i)/1000,
      &  ct_npstepddmc(i)/1000
       write(6,2) ' max steps        :',ct_npstepmax(4)

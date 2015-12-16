@@ -142,7 +142,7 @@ program supernu
      write(6,*)
      write(6,*) "timestep loop:"
      write(6,*) "===================="
-     write(6,'(1x,a5,a9,a10,4(a7,1x))') 'it','t[day]','e_err','nsrc','ncens','nflux','ntrnsp'
+     write(6,'(1x,a5,a9,a10,4(a7,1x),a7)') 'it','t[day]','e_err','nsrc','ncens','nflux','nactiv','usage'
   endif
 !
   do it=tsp_itrestart,tsp_nt
@@ -246,14 +246,16 @@ program supernu
         if(it>0) call output_grid
 
 !-- write stdout
-        if(ct_nptransport(2)<1000000) then
-           write(6,'(1p,e10.2,4(i7,1x))') tot_eerror, &
+        if(ct_npactive(2)<1000000) then
+           write(6,'(1p,e10.2,4(i7,1x),0p,f7.4)') tot_eerror, &
               ct_npcreate(2),(ct_npcensimc(2)+ct_npcensddmc(2)), &
-              ct_npflux(2),ct_nptransport(2)
+              ct_npflux(2),ct_npactive(2), &
+              ct_nnonvacant(2)/dble(prt_npartmax)
         else
-           write(6,'(1p,e10.2,4(i7,"k"))') tot_eerror, &
+           write(6,'(1p,e10.2,4(i7,"k"),0p,f7.4)') tot_eerror, &
               ct_npcreate(2)/1000,(ct_npcensimc(2)+ct_npcensddmc(2))/1000, &
-              ct_npflux(2)/1000,ct_nptransport(2)/1000
+              ct_npflux(2)/1000,ct_npactive(2)/1000, &
+              ct_nnonvacant(2)/dble(prt_npartmax)
         endif
      endif !impi
 
@@ -276,7 +278,7 @@ program supernu
      msg = 'post loop:'
      write(6,*)
      write(6,*) 'memusg: ',msg,memusg()
-     write(6,*) 'particle array usage:',ct_nptransport(4)/dble(prt_npartmax)
+     write(6,*) 'particle array usage:',ct_nnonvacant(4)/dble(prt_npartmax)
 
 !-- print cpu timing usage
      t1 = t_time()

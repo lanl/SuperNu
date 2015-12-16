@@ -101,6 +101,9 @@ subroutine particle_advance
   nstepmax = 0
   ndist = 0
 
+!-- keep track of the number of particles in the particle array
+  call counterreg(ct_nnonvacant,count(.not.prt_isvacant))
+
 !$omp parallel &
 !$omp shared(thelp) &
 !$omp private(ptcl,ptcl2,cache, &
@@ -150,9 +153,10 @@ subroutine particle_advance
 
 !$omp do schedule(static,1) !round-robin
   do ipart=1,prt_npartmax
-     ! Checking vacancy
      if(prt_isvacant(ipart)) cycle
-     if(prt_particles(ipart)%x == huge(help)) cycle !untallied flux particle
+
+!-- untallied flux particle
+     if(prt_particles(ipart)%x == huge(help)) cycle
 !
 !-- active particle
      ptcl = prt_particles(ipart) !copy properties out of array
@@ -506,7 +510,7 @@ subroutine particle_advance
 
   src_nflux = nflux
 
-  call counterreg(ct_nptransport, npckt)
+  call counterreg(ct_npactive, npckt)
   call counterreg(ct_npstepimc, nstepimc)
   call counterreg(ct_npstepddmc, nstepddmc)
   call counterreg(ct_npstepmax, nstepmax)
