@@ -63,7 +63,7 @@ subroutine sourcenumbers(keephigh)
   ncactive = count(grd_emit>0d0 .or. grd_emitex>0d0)
   if(src_nsurftot>0) ncactive = ncactive+1
   if(nvacantall<ncactive) stop &
-     'sourcenumbers: nvacantall < number of source cells'
+     'sourcenumbers: insufficient vacancies in particle array'
 
 !-- number of particles available for proportional distribution
   nsavail = nstot - src_nsurftot
