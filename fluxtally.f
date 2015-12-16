@@ -4,13 +4,14 @@ c     ------------------------
       use fluxmod
       use particlemod
       use miscmod
+      use countersmod
       implicit none
       integer,intent(in) :: it
 ************************************************************************
 * Go through all particles and tally the ones that have left the domain
 * and end up in this flux time step.
 ************************************************************************
-      integer :: ipart
+      integer :: ipart,nfluxbuf
       integer :: ig,imu,iom
       real*8 :: help
       type(packet),pointer :: ptcl
@@ -21,6 +22,7 @@ c     ------------------------
       flx_lumnum = 0
 c
 !!c$omp do schedule(static,1) !round-robin
+      nfluxbuf = 0
       do ipart=1,prt_npartmax
 
 c-- check vacancy
@@ -33,7 +35,11 @@ c-- check flux status
        if(ptcl%x/=huge(help)) cycle
 c
 c-- check flux time falls within current flux tally bin
-       if(ptcl%t>tsp_tarr(it+1)) cycle !not yet
+       if(ptcl%t>tsp_tarr(it+1)) then
+        nfluxbuf = nfluxbuf + 1
+        cycle !not yet
+       endif
+c
        if(.not.flx_noobservertime .and. ptcl%t<tsp_tarr(it)) stop
      &   'fluxtally: ptcl%t < flux tally bin'
 !      if(.not.flx_noobservertime .and. ptcl%t<tsp_tarr(it)) write(0,*)
@@ -55,8 +61,11 @@ c-- mark particle slot occupied or vacant
 
       enddo !ipart
 !!c$omp end do nowait
-
-!-- convert to flux per second
+c
+      ct_npfluxbuf(2) = 0 !reset, don't integrate
+      call counterreg(ct_npfluxbuf,nfluxbuf)
+c
+c-- convert to flux per second
       help = 1d0/tsp_dt
       flx_luminos = flx_luminos*help
       flx_lumdev = flx_lumdev*help**2

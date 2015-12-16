@@ -142,7 +142,7 @@ program supernu
      write(6,*)
      write(6,*) "timestep loop:"
      write(6,*) "===================="
-     write(6,'(1x,a5,a9,a10,4(a7,1x),a7)') 'it','t[day]','e_err','nsrc','ncens','nflux','nactiv','usage'
+     write(6,'(1x,a5,a9,1x,a5,a10,4(a7,1x),a7)') 'it','t[day]','itflx','e_err','nsrc','ncens','nflux','nflxbuf','usage'
   endif
 !
   do it=tsp_itrestart,tsp_nt
@@ -246,22 +246,22 @@ program supernu
         if(it>0) call output_grid
 
 !-- write stdout
-        if(ct_npactive(2)<1000000) then
-           write(6,'(1p,e10.2,4(i7,1x),0p,f7.4)') tot_eerror, &
+        if(ct_nnonvacant(2)<1000000) then
+           write(6,'(1x,i5,1p,e10.2,4(i7,1x),0p,f7.4)') itflux,tot_eerror, &
               ct_npcreate(2),(ct_npcensimc(2)+ct_npcensddmc(2)), &
-              ct_npflux(2),ct_npactive(2), &
+              ct_npflux(2),ct_npfluxbuf(1), &
               ct_nnonvacant(2)/dble(prt_npartmax)
         else
-           write(6,'(1p,e10.2,4(i7,"k"),0p,f7.4)') tot_eerror, &
+           write(6,'(1x,i5,1p,e10.2,4(i7,"k"),0p,f7.4)') itflux,tot_eerror, &
               ct_npcreate(2)/1000,(ct_npcensimc(2)+ct_npcensddmc(2))/1000, &
-              ct_npflux(2)/1000,ct_npactive(2)/1000, &
+              ct_npflux(2)/1000,ct_npfluxbuf(1)/1000, &
               ct_nnonvacant(2)/dble(prt_npartmax)
         endif
      endif !impi
 
 !-- write timestep timing to file
-     call timing_timestep(impi,it<=0)
-     call counters_timestep(impi,it<=0)
+     call timing_cycle(impi,it<=0)
+     call counters_cycle(impi,it<=0)
      t_timelin(8) = t_time() !timeline
      t_timeline = t_timeline + (t_timelin(2:) - t_timelin(:7))
   enddo !tsp_it

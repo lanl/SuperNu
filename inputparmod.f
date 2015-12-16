@@ -432,7 +432,7 @@ c
 c
 c
       subroutine deprecate_inputpars
-c     -------------------------------!{{{
+c     ------------------------------!{{{
 ***********************************************************************
 * Warn about deprecated input variables and error stop if new and old
 * variable are both set.

@@ -86,7 +86,7 @@ c     -------------------------!{{{
       end subroutine timereg
 c
 c
-      subroutine timing_timestep(impi,ldummystep)
+      subroutine timing_cycle(impi,ldummystep)
 c     -------------------------------------------
       implicit none
       integer,intent(in) :: impi
@@ -124,8 +124,8 @@ c-- body
       endif
 c
 c-- reset timers
-      registers(2,:) = 0d0
-      end subroutine timing_timestep
+      registers(:2,:) = 0d0
+      end subroutine timing_cycle
 c
 c
       subroutine print_timing

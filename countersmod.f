@@ -5,13 +5,14 @@ c     ------------------
 * Collection of runtime counters for different parts of the code.
 * This is an integer clone of timingmod.
 ************************************************************************
-      integer,private,parameter :: mreg = 10
+      integer,private,parameter :: mreg = 11
       integer*8,private,target :: iregisters(4,mreg)
 c
       integer*8,pointer :: ct_nnonvacant(:) !non-vacant particle slots
       integer*8,pointer :: ct_npcreate(:)   !newly created particles
       integer*8,pointer :: ct_npactive(:)   !transported particles
       integer*8,pointer :: ct_npflux(:)     !flux particles
+      integer*8,pointer :: ct_npfluxbuf(:)  !flux particles remaining in buffer
       integer*8,pointer :: ct_npcensimc(:)  !censussed IMC particles
       integer*8,pointer :: ct_npcensddmc(:) !censussed DDMC particles
       integer*8,pointer :: ct_npstepimc(:)  !IMC interactions (steps)
@@ -31,12 +32,13 @@ c     ---------------------------
       ct_npcreate    => iregisters(:,2)
       ct_npactive    => iregisters(:,3)
       ct_npflux      => iregisters(:,4)
-      ct_npcensimc   => iregisters(:,5)
-      ct_npcensddmc  => iregisters(:,6)
-      ct_npstepimc   => iregisters(:,7)
-      ct_npstepddmc  => iregisters(:,8)
-      ct_npstepmax   => iregisters(:,9)
-      ct_npmethswap  => iregisters(:,10)
+      ct_npfluxbuf   => iregisters(:,5)
+      ct_npcensimc   => iregisters(:,6)
+      ct_npcensddmc  => iregisters(:,7)
+      ct_npstepimc   => iregisters(:,8)
+      ct_npstepddmc  => iregisters(:,9)
+      ct_npstepmax   => iregisters(:,10)
+      ct_npmethswap  => iregisters(:,11)
       end subroutine countersmod_init
 c
 c
@@ -54,7 +56,7 @@ c     -----------------------------!{{{
       end subroutine counterreg
 c
 c
-      subroutine counters_timestep(impi,ldummystep)
+      subroutine counters_cycle(impi,ldummystep)
 c     --------------------------------------------
       implicit none
       integer,intent(in) :: impi
@@ -78,7 +80,7 @@ c-- write output on master rank only
 c-- header
        if(.not.lexist) then
          write(4,'("#",30a12)') 'nonvacant','create','transport',
-     &     'flux','censusimc','censusddmc','stepimc',
+     &     'flux','fluxbuffer','censusimc','censusddmc','stepimc',
      &     'stepddmc','stepmax','methswap'
        endif
 c-- body
@@ -91,8 +93,8 @@ c-- body
       endif
 c
 c-- reset timers
-      iregisters(2,:) = 0
-      end subroutine counters_timestep
+      iregisters(:2,:) = 0
+      end subroutine counters_cycle
 c
 c
       subroutine print_counters

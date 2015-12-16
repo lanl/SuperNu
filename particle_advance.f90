@@ -25,9 +25,9 @@ subroutine particle_advance
   !are being handled in separate subroutines but this may be changed to reduce
   !total subroutine calls in program.
 !##################################################
-  real*8,parameter :: cinv=1d0/pc_c
   integer :: i
-  integer :: nstepddmc, nstepimc, nmethodswap, ncensimc, ncensddmc, npckt, nflux
+  integer :: npckt, nflux, nfluxbuf
+  integer :: nstepddmc, nstepimc, nmethodswap, ncensimc, ncensddmc
   real*8 :: r1, x1, x2, thelp, help, tau
 ! integer :: irl,irr
 ! real*8 :: xx0, bmax
@@ -92,6 +92,7 @@ subroutine particle_advance
 !-- Propagate all particles that are not considered vacant
   npckt = 0
   nflux = 0
+  nfluxbuf = 0
   nstepddmc = 0
   nstepimc = 0
   nmethodswap = 0
@@ -114,7 +115,8 @@ subroutine particle_advance
 !$omp    rndstate,edep,eraddens,eamp,ierr, iomp) &
 !$omp reduction(+:grd_tally, &
 !$omp    tot_evelo,tot_erad,tot_eout,tot_sflux, &
-!$omp    npckt,nflux,nstepddmc,nstepimc,nmethodswap,ncensimc,ncensddmc,ndist) &
+!$omp    npckt,nflux,nfluxbuf, &
+!$omp    nstepddmc,nstepimc,nmethodswap,ncensimc,ncensddmc,ndist) &
 !$omp reduction(max:nstepmax)
 
 !-- thread id                                                               
@@ -156,7 +158,10 @@ subroutine particle_advance
      if(prt_isvacant(ipart)) cycle
 
 !-- untallied flux particle
-     if(prt_particles(ipart)%x == huge(help)) cycle
+     if(prt_particles(ipart)%x == huge(help)) then
+        nfluxbuf = nfluxbuf + 1
+        cycle
+     endif
 !
 !-- active particle
      ptcl = prt_particles(ipart) !copy properties out of array
@@ -364,6 +369,7 @@ subroutine particle_advance
            prt_isvacant(ipart) = .true.
         else
 !-- save particle properties
+           nfluxbuf = nfluxbuf + 1
            prt_particles(ipart) = ptcl
         endif
 !
@@ -518,6 +524,7 @@ subroutine particle_advance
   call counterreg(ct_npcensddmc, ncensddmc)
   call counterreg(ct_npmethswap, nmethodswap)
   call counterreg(ct_npflux, nflux)
+  call counterreg(ct_npfluxbuf, nfluxbuf)
 
 
 end subroutine particle_advance
