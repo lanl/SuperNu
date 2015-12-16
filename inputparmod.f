@@ -422,6 +422,9 @@ c-- read namelist
       read(4,nml=inputpars,end=67,err=68)
       close(4)
 c
+c-- special case
+      if(in_grabstdout) in_io_grabstdout=.true.
+c
       return
 66    stop 'read_inputpars: namelist input file missing: input.par'
 67    stop 'read_inputpars: namelist missing or bad in input.par'
@@ -468,8 +471,8 @@ c-- grp
       call depr(in_wlmax,in_grp_wlmax,32000d-8,'wlmax','grp_wlmax')
       call depi(in_wldex,in_grp_wldex,0,'wldex','grp_wldex')
 c-- io
-      call depl(in_grabstdout,in_io_grabstdout,.false.,'grabstdout',
-     &  'io_grabstdout')
+      if(in_grabstdout) write(6,*)
+     &  'DEPRECATED: in_grabstdout=>in_io_grabstdout'
       call depl(in_nogriddump,in_io_nogriddump,.false.,'nogriddump',
      &  'io_nogriddump')
       call depc(in_opacdump,in_io_opacdump,'off ','opacdump',
@@ -522,7 +525,7 @@ c     --------------------------------------
       character(*),intent(in) :: sold,snew
 c
       if(old/=def) then
-       write(6,*) 'DEPRECATED:', 'in_'//sold, '=>', 'in_'//snew
+       write(6,*) 'DEPRECATED: ', 'in_'//sold, '=>', 'in_'//snew
        if(new/=def) then
         stop 'input variable clash'
        else
@@ -539,7 +542,7 @@ c     --------------------------------------
       character(*),intent(in) :: sold,snew
 c
       if(old/=def) then
-       write(6,*) 'DEPRECATED:', 'in_'//sold, '=>', 'in_'//snew
+       write(6,*) 'DEPRECATED: ', 'in_'//sold, '=>', 'in_'//snew
        if(new/=def) then
         stop 'input variable clash'
        else
