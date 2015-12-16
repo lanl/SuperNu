@@ -39,11 +39,15 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   integer,pointer :: ix, iy, iz, ic, ig
   real*8,pointer :: x,y,z,mu,om,e,e0,wl,d
 !-- statement functions
-  integer :: l
-  real*8 :: dx,dy,dz
+  integer :: l,j,k
+  real*8 :: dx,dy,dz,xm,ym,zm,rsq
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
   dz(l) = grd_zarr(l+1) - grd_zarr(l)
+  xm(l) = .5*(grd_xarr(l+1) + grd_xarr(l))
+  ym(l) = .5*(grd_yarr(l+1) + grd_yarr(l))
+  zm(l) = .5*(grd_zarr(l+1) + grd_zarr(l))
+  rsq(l,j,k) = xm(l)**2 + ym(j)**2 + zm(k)**2
 
   ix => ptcl2%ix
   iy => ptcl2%iy
@@ -274,20 +278,48 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         eta = sqrt(1d0-mu**2)*sin(om)
         xi = sqrt(1d0-mu**2)*cos(om)
      endif
-  elseif(any([dbx,dby,dbz]==d)) then
+  endif
+
+!
 !-- checking if escaped domain
-     loutx = d==dbx.and.((xi>=0d0.and.ix==grd_nx).or.(xi<0.and.ix==1))
-     louty = d==dby.and.((eta>=0d0.and.iy==grd_ny).or.(eta<0.and.iy==1))
-     loutz = d==dbz.and.((mu>=0d0.and.iz==grd_nz).or.(mu<0.and.iz==1))
-     if(loutx.or.louty.or.loutz) then
-!-- observer time correction
-        eta = sqrt(1d0-mu**2)*sin(om)
-        xi = sqrt(1d0-mu**2)*cos(om)
-        ptcl%t=ptcl%t-(mu*z+eta*y+xi*x)*thelp*cinv
-!-- ending particle
-        ptcl2%stat = 'flux'
-        return
+  loutx = .false.
+  if(d==dbx) then
+     if(ixnext==grd_nx+1 .or. ixnext==0) then
+        loutx = .true. !domain edge is reached
+     elseif(grd_icell(ixnext,iy,iz)==grd_ivoid) then
+        if(ixnext>ix.eqv.grd_xarr(ixnext)>0d0) then !away from center
+           loutx = rsq(ixnext,iy,iz)>grd_rvoid**2 !enter void corners
+        endif
      endif
+  endif
+  louty = .false.
+  if(d==dby) then
+     if(iynext==grd_ny+1 .or. iynext==0) then
+        louty = .true. !domain edge is reached
+     elseif(grd_icell(ix,iynext,iz)==grd_ivoid) then
+        if(iynext>iy.eqv.grd_yarr(iynext)>0d0) then !away from center
+           louty = rsq(ix,iynext,iz)>grd_rvoid**2 !enter void corners
+        endif
+     endif
+  endif
+  loutz = .false.
+  if(d==dbz) then
+     if(iznext==grd_nz+1 .or. iznext==0) then
+        loutz = .true. !domain edge is reached
+     elseif(grd_icell(ix,iy,iznext)==grd_ivoid) then
+        if(iznext>iz.eqv.grd_zarr(iznext)>0d0) then !away from center
+           loutz = rsq(ix,iy,iznext)>grd_rvoid**2 !enter void corners
+        endif
+     endif
+  endif
+  if(loutx.or.louty.or.loutz) then
+!-- observer time correction
+     eta = sqrt(1d0-mu**2)*sin(om)
+     xi = sqrt(1d0-mu**2)*cos(om)
+     ptcl%t=ptcl%t-(mu*z+eta*y+xi*x)*thelp*cinv
+!-- ending particle
+     ptcl2%stat = 'flux'
+     return
   endif
 
 !

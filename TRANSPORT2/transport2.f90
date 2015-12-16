@@ -45,12 +45,14 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   integer,pointer :: ix, iy, iz, ic, ig
   real*8,pointer :: x,y,z,mu,om,e,e0,wl,d
 !-- statement functions
-  integer :: l
-  real*8 :: dx,dy,xm,dz,muxf,zz
+  integer :: l,j
+  real*8 :: dx,dy,xm,ym,rsq,dz,muxf,zz
   dx(l) = grd_xarr(l+1) - grd_xarr(l)
   dy(l) = grd_yarr(l+1) - grd_yarr(l)
-  xm(l) = .5d0*(grd_xarr(l+1) + grd_xarr(l))
   dz(l) = grd_zarr(l+1) - grd_zarr(l)
+  xm(l) = .5*(grd_xarr(l+1) + grd_xarr(l))
+  ym(l) = .5*(grd_yarr(l+1) + grd_yarr(l))
+  rsq(l,j) = xm(l)**2 + ym(j)**2
   muxf(zz) = ptcl%x*sin(ptcl2%muz+zz)/sin(ptcl2%muz)
   !muyf(zz) = ptcl%x*sin(zz)/sin(ptcl2%muz)
 
@@ -412,6 +414,35 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      return
   endif
 
+!-- checking if escaped domain
+  loutx = .false.
+  if(d==dbx) then
+     if(ixnext==grd_nx+1) then
+        loutx = .true. !domain edge is reached
+     elseif(ixnext>ix .and. grd_icell(ixnext,iy,iz)==grd_ivoid) then
+        loutx = rsq(ixnext,iy)>grd_rvoid**2 !enter void corners
+     endif
+  endif
+  louty = .false.
+  if(d==dby) then
+     if(iynext==grd_ny+1 .or. iynext==0) then
+        louty = .true. !domain edge is reached
+     elseif(grd_icell(ix,iynext,iz)==grd_ivoid) then
+        if(iynext>iy.eqv.grd_yarr(iynext)>0d0) then !away from center
+           louty = rsq(ix,iynext)>grd_rvoid**2 !enter void corners
+        endif
+     endif
+  endif
+  if(loutx.or.louty) then
+!-- observer time correction
+     ptcl%t=ptcl%t-(mu*y+sqrt(1d0-mu**2)*cos(om)*x)*thelp*cinv
+!-- ending particle
+     ptcl2%stat = 'flux'
+!-- redefine for flux tally
+     om = muz
+     return
+  endif
+
 !-- common manipulations for collisions
   if(d==dthm.or.d==dcol) then
 !-- resampling direction
@@ -435,19 +466,6 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
              (gm*(1d0+dirdotu*cinv))
 !-- recalculating dirdotu
         dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-     endif
-  elseif(any([dbx,dby]==d)) then
-!-- checking if escaped domain
-     loutx = d==dbx.and.ixnext==grd_nx+1
-     louty = d==dby.and.(iynext==grd_ny+1.or.iynext==0)
-     if(loutx.or.louty) then
-!-- observer time correction
-        ptcl%t=ptcl%t-(mu*y+sqrt(1d0-mu**2)*cos(om)*x)*thelp*cinv
-!-- ending particle
-        ptcl2%stat = 'flux'
-!-- redefine for flux tally
-        om = muz
-        return
      endif
   endif
 

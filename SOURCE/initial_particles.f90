@@ -35,7 +35,7 @@ subroutine initial_particles
   do j=1,grd_ny
   do i=1,grd_nx
      l = grd_icell(i,j,k)
-     if(l==grd_ncell.and.grd_lvoid) cycle
+     if(l==grd_ivoid) cycle
      call sourcenumbers_roundrobin(iimpi,grd_evolinit(l)**pwr, &
         0.0d0,grd_nvolinit(l),nemit,nhere,ndmy)
      tradinv = (pc_acoef*grd_vol(l)/grd_evolinit(l))**(.25d0)

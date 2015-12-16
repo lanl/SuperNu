@@ -26,7 +26,7 @@ c
       if(lfirst) then
 c
 c-- shape of volume quantities
-       if(.not.grd_lvoid) then
+       if(grd_ivoid>0) then
 c-- no void cells
         ncpr = grd_nx
         nrow = grd_ncell/ncpr

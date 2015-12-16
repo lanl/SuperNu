@@ -42,9 +42,13 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   integer,pointer :: ix, iy, iz, ic
   real*8,pointer :: x,y,z,mu,om,e,d
 !-- statement functions
-  real*8 :: muxf,zz
+  integer :: l,j
+  real*8 :: muxf,zz,xm,ym,rsq
   muxf(zz) = ptcl%x*sin(ptcl2%muz+zz)/sin(ptcl2%muz)
   !muyf(zz) = ptcl%x*sin(zz)/sin(ptcl2%muz)
+  xm(l) = .5*(grd_xarr(l+1) + grd_xarr(l))
+  ym(l) = .5*(grd_yarr(l+1) + grd_yarr(l))
+  rsq(l,j) = xm(l)**2 + ym(j)**2
 
   ix => ptcl2%ix
   iy => ptcl2%iy
@@ -332,6 +336,33 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !
 !-- checking which event occurs from min distance
 
+!-- checking if escaped domain
+  loutx = .false.
+  if(d==dbx) then
+     if(ixnext==grd_nx+1) then
+        loutx = .true. !domain edge is reached
+     elseif(ixnext>ix .and. grd_icell(ixnext,iy,iz)==grd_ivoid) then
+        loutx = rsq(ixnext,iy)>min(grd_xarr(grd_nx+1),grd_yarr(grd_ny+1))**2 !enter void corners
+     endif
+  endif
+  louty = .false.
+  if(d==dby) then
+     if(iynext==grd_ny+1 .or. iynext==0) then
+        louty = .true. !domain edge is reached
+     elseif(grd_icell(ix,iynext,iz)==grd_ivoid) then
+        if(iynext>iy.and.grd_yarr(iynext)>0d0 .or. iynext<iy.and.grd_yarr(iynext)<0d0) then
+           louty = rsq(ix,iynext)>min(grd_xarr(grd_nx+1),grd_yarr(grd_ny+1))**2 !enter void corners
+        endif
+     endif
+  endif
+  if(loutx.or.louty) then
+!-- ending particle
+     ptcl2%stat = 'flux'
+!-- redefine for flux tally
+     om = muz
+     return
+  endif
+
 !-- common manipulations for collisions
   if(d==dcol) then
 !-- resampling direction
@@ -355,17 +386,6 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
              (gm*(1d0+dirdotu*cinv))
 !-- recalculating dirdotu
         dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-     endif
-  elseif(any([dbx,dby]==d)) then
-!-- checking if escapted domain
-     loutx = d==dbx.and.ixnext==grd_nx+1
-     louty = d==dby.and.(iynext==grd_ny+1.or.iynext==0)
-     if(loutx.or.louty) then
-!-- ending particle
-        ptcl2%stat = 'flux'
-!-- redefine for flux tally
-        om = muz
-        return
      endif
   endif
 

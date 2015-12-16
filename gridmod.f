@@ -2,9 +2,9 @@
 c     --------------
       implicit none
 c
-      logical :: grd_isvelocity = .false.
+      logical :: grd_isvelocity=.false.
 c
-      integer :: grd_igeom = 0
+      integer :: grd_igeom=0
 c
       integer,private :: ng=0
 c
@@ -16,11 +16,13 @@ c-- complete domain
       integer :: grd_ny=0
       integer :: grd_nz=0
 c
-      real*8,allocatable :: grd_xarr(:)   !(nx+1), left cell edge values
-      real*8,allocatable :: grd_yarr(:)   !(ny+1), left cell edge values
-      real*8,allocatable :: grd_zarr(:)   !(nz+1), left cell edge values
+      real*8,allocatable :: grd_xarr(:)  !(nx+1), left cell edge values
+      real*8,allocatable :: grd_yarr(:)  !(ny+1), left cell edge values
+      real*8,allocatable :: grd_zarr(:)  !(nz+1), left cell edge values
 c
-      real*8 :: grd_voc=0d0  !maximum grid velocity over pc_c
+c-- maximum radial grid velocity
+      real*8 :: grd_rout=0d0   !particle flux edge radius
+      real*8 :: grd_rvoid=0d0  !void-corner radius, used as cell criterium
 c
 c-- polar angles
       real*8,allocatable :: grd_yacos(:)   !(ny+1)
@@ -33,7 +35,7 @@ c-- domain decomposition
 c
 c-- compressed domain
       integer :: grd_ncell=0  !number of cells
-      logical :: grd_lvoid  !number of cells
+      integer :: grd_ivoid=0  !the void cell id
 c
 c-- Probability of emission in a given zone and group
       real*8,allocatable :: grd_emitprob(:,:) !(nep,ncell)
@@ -109,7 +111,7 @@ c     --------------------------------------------------!{{{
 c
       ng = ngin
 c-- void cell exists
-      grd_lvoid = lvoid
+      if(lvoid) grd_ivoid = ncell
 c
 c-- emission probability
       grd_nep = nint(sqrt(dble(ng)))

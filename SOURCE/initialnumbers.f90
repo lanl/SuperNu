@@ -65,7 +65,7 @@ subroutine initialnumbers(nmpi)
   src_ninitnew = 0
   iimpi = 0
   ncell=grd_ncell
-  if(grd_lvoid) ncell=ncell-1
+  if(grd_ivoid>0) ncell=ncell-1
   do l=1,ncell
      call sourcenumbers_roundrobin(iimpi,grd_evolinit(l)**pwr, &
         0.0d0,grd_nvolinit(l),nemit,nvol,nvolex)
