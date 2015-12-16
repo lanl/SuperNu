@@ -29,20 +29,19 @@ c-- shape of volume quantities
        if(grd_ivoid>0) then
 c-- no void cells
         ncpr = grd_nx
-        nrow = grd_ncell/ncpr
        else
 c-- find optimal row size
-       npbot = grd_ncell !init with worst case
-       do i=grd_nx,max(grd_nx,grd_ny,grd_nz,grd_ncell/2)+1
-          nrow = ceiling(float(grd_ncell)/i)
-          np = nrow*i - grd_ncell !number of pad cells
-          if(np<npbot) then
-             npbot = np
-             ncpr = i !optimal row size
-          endif
-       enddo
-       nrow = ceiling(float(grd_ncell)/ncpr)
+        npbot = grd_ncell !init with worst case
+        do i=grd_nx,max(grd_nx,grd_ny,grd_nz,grd_ncell/2)+1
+           nrow = ceiling(float(grd_ncell)/i)
+           np = nrow*i - grd_ncell !number of pad cells
+           if(np<npbot) then
+              npbot = np
+              ncpr = i !optimal row size
+           endif
+        enddo
        endif
+       nrow = ceiling(float(grd_ncell)/ncpr)
 c
 c-- write once
 c=============
