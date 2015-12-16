@@ -24,8 +24,7 @@ c
       subroutine check_manufacpars
 c     ----------------------------!{{{
       use miscmod, only:warn
-      use inputparmod, only: in_nobbopac,in_nobfopac,in_noffopac,
-     &     in_nothmson,in_dentype,in_opacanaltype
+      use inputparmod
       implicit none
 ************************************************************************
 * check relevant input parameters for consistency with manufactured
@@ -42,8 +41,8 @@ c
      &     stop 'check_manufacpars: invalid in_noffopac'
       if(.not.in_nothmson)
      &     stop 'check_manufacpars: invalid in_nothmson'
-      if(in_dentype/='unif')
-     &     call warn('check_manufacpars','in_dentype/=unif')
+      if(in_str_dentype/='unif')
+     &     call warn('check_manufacpars','in_str_dentype/=unif')
 c!}}}
       end subroutine check_manufacpars
 c
@@ -79,9 +78,9 @@ c-- grey solution
      &            log((texp+dt)/texp)
      &            *(4d0*mnf_aa11/pc_c)+
      &            (3d0*totmass*sigcoef/
-     &            (8d0*pc_pi*in_velout))*
-     &            ((in_velout*texp)**(-2d0)-
-     &            (in_velout*(texp+dt))**(-2d0))*
+     &            (8d0*pc_pi*in_str_velout))*
+     &            ((in_str_velout*texp)**(-2d0)-
+     &            (in_str_velout*(texp+dt))**(-2d0))*
      &            (mnf_aa11-pc_acoef*pc_c*mnf_temp0**4)
      &            )
 !
@@ -134,9 +133,9 @@ c-- implement/modify velocity dependent manufactured temperature source
          case ('grey')
 c--   grey solution
             gas_matsrc = (1d0/dt)*
-     &           (3d0*totmass*sigcoef/(8d0*pc_pi*in_velout))*
-     &           ((in_velout*texp)**(-2d0)-
-     &           (in_velout*(texp+dt))**(-2d0))*
+     &           (3d0*totmass*sigcoef/(8d0*pc_pi*in_str_velout))*
+     &           ((in_str_velout*texp)**(-2d0)-
+     &           (in_str_velout*(texp+dt))**(-2d0))*
      &           (pc_acoef*pc_c*mnf_temp0**4d0-mnf_aa11)
 c
          case ('mono')

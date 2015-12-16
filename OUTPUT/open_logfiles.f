@@ -7,7 +7,7 @@ c     ------------------------
 ************************************************************************
       integer :: istat
 c
-      if(in_grabstdout) then
+      if(in_io_grabstdout) then
        write(6,*) 'write stdout to output.log'
        open(6,file='output.log',action='write',status='replace',
      &   recl=5000,iostat=istat) !write stdout to file

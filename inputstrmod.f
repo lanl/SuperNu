@@ -441,12 +441,12 @@ c-- size
       nz = in_ndim(3) ! number of azimuthal bins
 c
 c-- verifications (input.par)
-      if(in_velout<=0d0.and.in_isvelocity)
-     &  stop 'generate_inputstr1: invalid in_velout'
-      if(in_lx<=0.and..not.in_isvelocity)
-     &  stop 'generate_inputstr1: invalid in_lx'
-      if(in_totmass<0d0)
-     &  stop 'generate_inputstr1: invalid in_totmass'
+      if(in_str_velout<=0d0.and.in_isvelocity)
+     &  stop 'generate_inputstr1: invalid in_str_velout'
+      if(in_str_lx<=0.and..not.in_isvelocity)
+     &  stop 'generate_inputstr1: invalid in_str_lx'
+      if(in_str_totmass<0d0)
+     &  stop 'generate_inputstr1: invalid in_str_totmass'
 c
 c-- allocate arrays
       allocate(xout(nx+1))
@@ -461,9 +461,9 @@ c-- create unit sphere radii xout
 c
 c-- outer shells
       if(in_isvelocity) then
-       help = in_velout
+       help = in_str_velout
       else
-       help = in_lx
+       help = in_str_lx
       endif
       str_xleft = help*xout
 c-- polar cosine grid
@@ -474,18 +474,18 @@ c-- azimuthal angle grid
       forall(k=1:nz+1) str_zleft(k)=(k-1)*dz
 c
 c-- mass
-      if(in_dentype=='unif') then
+      if(in_str_dentype=='unif') then
        do k=1,nz
        do j=1,ny
-        str_mass(:,j,k)=in_totmass*(xout(2:)**3-xout(:nx)**3)
+        str_mass(:,j,k)=in_str_totmass*(xout(2:)**3-xout(:nx)**3)
      &         *dy*dz
        enddo
        enddo
        str_mass = str_mass/(pc_pi4*(1d0 - xout(1)**3))
-      elseif(in_dentype=='mass') then
-       str_mass = in_totmass/(nx*ny*nz)
+      elseif(in_str_dentype=='mass') then
+       str_mass = in_str_totmass/(nx*ny*nz)
       else
-       stop 'generate_inputstr1: invalid in_dentype'
+       stop 'generate_inputstr1: invalid in_str_dentype'
       endif
       deallocate(xout)
 c!}}}
@@ -510,14 +510,14 @@ c-- size
       nz = in_ndim(3)
 c
 c-- verifications (input.par)
-      if(in_velout<=0d0.and.in_isvelocity)
-     &  stop 'generate_inputstr2: invalid in_velout'
-      if(in_lx<=0.and..not.in_isvelocity)
-     &  stop 'generate_inputstr2: invalid in_lx'
-      if(in_ly<=0.and..not.in_isvelocity)
-     &  stop 'generate_inputstr2: invalid in_ly'
-      if(in_totmass<0d0)
-     &  stop 'generate_inputstr2: invalid in_totmass'
+      if(in_str_velout<=0d0.and.in_isvelocity)
+     &  stop 'generate_inputstr2: invalid in_str_velout'
+      if(in_str_lx<=0.and..not.in_isvelocity)
+     &  stop 'generate_inputstr2: invalid in_str_lx'
+      if(in_str_ly<=0.and..not.in_isvelocity)
+     &  stop 'generate_inputstr2: invalid in_str_ly'
+      if(in_str_totmass<0d0)
+     &  stop 'generate_inputstr2: invalid in_str_totmass'
 c
 c-- allocate arrays
       allocate(xout(nx+1))
@@ -537,11 +537,11 @@ c-- create unit cylinder heights yout
 c
 c-- dimensional scaling
       if(in_isvelocity) then
-       helpx = in_velout
-       helpy = 2*in_velout
+       helpx = in_str_velout
+       helpy = 2*in_str_velout
       else
-       helpx = in_lx
-       helpy = in_ly
+       helpx = in_str_lx
+       helpy = in_str_ly
       endif
       str_xleft = helpx*xout
       str_yleft = helpy*yout
@@ -552,7 +552,7 @@ c-- azimuthal angle grid
 c
 c-- mass
       str_mass = 0d0
-      if(in_dentype=='unif') then
+      if(in_str_dentype=='unif') then
 c-- uniform density sphere
        rmax = min(helpy/2d0,helpx)
        do k = 1,nz
@@ -565,12 +565,12 @@ c-- uniform density sphere
      &     .5d0*(str_xleft(i+1)**2-str_xleft(i)**2) *
      &     (str_yleft(j+1)-str_yleft(j)) *
      &     (str_zleft(k+1) - str_zleft(k)) *
-     &     in_totmass/(pc_pi43*rmax**3)
+     &     in_str_totmass/(pc_pi43*rmax**3)
         endif
        enddo
        enddo
        enddo
-      elseif(in_dentype=='mass') then
+      elseif(in_str_dentype=='mass') then
 c-- spherical 1/r^2 mass shells
        rmax = min(helpy/2d0,helpx)
        do k = 1,nz
@@ -583,24 +583,24 @@ c-- spherical 1/r^2 mass shells
      &     .5d0*(str_xleft(i+1)**2-str_xleft(i)**2) *
      &     (str_yleft(j+1)-str_yleft(j)) *
      &     (str_zleft(k+1) - str_zleft(k)) *
-     &     in_totmass/(pc_pi4*rmax*(helpy**2+helpx**2))
+     &     in_str_totmass/(pc_pi4*rmax*(helpy**2+helpx**2))
         endif
        enddo
        enddo
        enddo
-      elseif(in_dentype=='ufil') then
+      elseif(in_str_dentype=='ufil') then
 c-- uniform density for all cylinder
-       forall(j=1:ny,k=1:nz) str_mass(:,j,k) = in_totmass *
+       forall(j=1:ny,k=1:nz) str_mass(:,j,k) = in_str_totmass *
      &   (xout(2:)**2 - xout(:nx)**2)*dy/nz
-      elseif(in_dentype=='mfil') then
+      elseif(in_str_dentype=='mfil') then
 c-- equal mass per cell for all cylinder
-       forall(j=1:ny,k=1:nz) str_mass(:,j,k) = in_totmass *
+       forall(j=1:ny,k=1:nz) str_mass(:,j,k) = in_str_totmass *
      &   dx*dy/nz
       else
-       stop 'generate_inputstr2: invalid in_dentype'
+       stop 'generate_inputstr2: invalid in_str_dentype'
       endif
 c-- adjusting mass to correct total
-      str_mass = str_mass*in_totmass/sum(str_mass)
+      str_mass = str_mass*in_str_totmass/sum(str_mass)
 c-- deallocating helper arrays
       deallocate(xout,yout)
 c!}}}
@@ -626,16 +626,16 @@ c-- 3D size
       nz = in_ndim(3)
 c
 c-- verifications (input.par)
-      if(in_velout<=0d0.and.in_isvelocity)
-     &  stop 'generate_inputstr3: invalid in_velout'
-      if(in_lx<=0.and..not.in_isvelocity)
-     &  stop 'generate_inputstr3: invalid in_lx'
-      if(in_ly<=0.and..not.in_isvelocity)
-     &  stop 'generate_inputstr3: invalid in_ly'
-      if(in_lz<=0.and..not.in_isvelocity)
-     &  stop 'generate_inputstr3: invalid in_lz'
-      if(in_totmass<0d0)
-     &  stop 'generate_inputstr3: invalid in_totmass'
+      if(in_str_velout<=0d0.and.in_isvelocity)
+     &  stop 'generate_inputstr3: invalid in_str_velout'
+      if(in_str_lx<=0.and..not.in_isvelocity)
+     &  stop 'generate_inputstr3: invalid in_str_lx'
+      if(in_str_ly<=0.and..not.in_isvelocity)
+     &  stop 'generate_inputstr3: invalid in_str_ly'
+      if(in_str_lz<=0.and..not.in_isvelocity)
+     &  stop 'generate_inputstr3: invalid in_str_lz'
+      if(in_str_totmass<0d0)
+     &  stop 'generate_inputstr3: invalid in_str_totmass'
 c
 c-- allocate arrays
       allocate(xout(nx+1))
@@ -660,13 +660,13 @@ c-- create unit-length z array
 c
 c-- dimensional scaling
       if(in_isvelocity) then
-       helpx = 2*in_velout
-       helpy = 2*in_velout
-       helpz = 2*in_velout
+       helpx = 2*in_str_velout
+       helpy = 2*in_str_velout
+       helpz = 2*in_str_velout
       else
-       helpx = in_lx
-       helpy = in_ly
-       helpz = in_lz
+       helpx = in_str_lx
+       helpy = in_str_ly
+       helpz = in_str_lz
       endif
       str_xleft = helpx*xout
       str_yleft = helpy*yout
@@ -674,7 +674,7 @@ c-- dimensional scaling
 c
 c-- mass
       str_mass = 0d0
-      if(in_dentype=='unif') then
+      if(in_str_dentype=='unif') then
 c-- uniform density sphere
        rmax = min(helpx/2d0,helpy/2d0,helpz/2d0)
        do k = 1,nz
@@ -687,12 +687,12 @@ c-- uniform density sphere
             str_mass(i,j,k)=(str_xleft(i+1)-str_xleft(i)) *
      &        (str_yleft(j+1)-str_yleft(j)) *
      &        (str_zleft(k+1)-str_zleft(k)) *
-     &        in_totmass/(pc_pi43*rmax**3)
+     &        in_str_totmass/(pc_pi43*rmax**3)
            endif
          enddo
         enddo
        enddo
-      elseif(in_dentype=='mass') then
+      elseif(in_str_dentype=='mass') then
 c-- spherical 1/r^2 mass shells
        rmax = min(helpz/2d0,helpy/2d0,helpz/2d0)
        do k = 1,nz
@@ -705,20 +705,20 @@ c-- spherical 1/r^2 mass shells
             str_mass(i,j,k)=(str_xleft(i+1)-str_xleft(i)) *
      &        (str_yleft(j+1)-str_yleft(j)) *
      &        (str_zleft(k+1)-str_zleft(k)) *
-     &        in_totmass/(pc_pi4*rmax*(helpy**2+helpx**2 +
+     &        in_str_totmass/(pc_pi4*rmax*(helpy**2+helpx**2 +
      &        helpz**2))
            endif
          enddo
         enddo
        enddo
-      elseif(in_dentype=='ufil'.or.in_dentype=='mfil') then
+      elseif(in_str_dentype=='ufil'.or.in_str_dentype=='mfil') then
 c-- uniform density for all box
-       str_mass = in_totmass/(nx*ny*nz)
+       str_mass = in_str_totmass/(nx*ny*nz)
       else
-       stop 'generate_inputstr3: invalid in_dentype'
+       stop 'generate_inputstr3: invalid in_str_dentype'
       endif
 c-- adjusting mass to correct total
-      str_mass = str_mass*in_totmass/sum(str_mass)
+      str_mass = str_mass*in_str_totmass/sum(str_mass)
 c-- deallocating helper arrays
       deallocate(xout,yout,zout)
 c!}}}

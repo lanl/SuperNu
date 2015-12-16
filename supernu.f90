@@ -95,7 +95,7 @@ program supernu
   call timestepmod_init
 
 !-- wlgrid (before grid setup)
-  call groupmod_init(in_wldex)
+  call groupmod_init(in_grp_wldex)
   call fluxgrid_setup
 
 !-- setup spatial grid
@@ -286,7 +286,7 @@ program supernu
      call print_timing
      write(6,*)
      write(6,*) 'SuperNu finished'
-     if(in_grabstdout) write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
+     if(in_io_grabstdout) write(0,'(a,f8.2,"s")')'SuperNu finished',t_all!repeat to stderr
   endif
 !-- Clean up memory. (This helps to locate memory leaks)
   call dealloc_all

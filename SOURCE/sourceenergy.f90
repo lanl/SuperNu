@@ -18,7 +18,7 @@ subroutine sourceenergy(nmpi)
   
 !-- prepare manufactured solution temperature source
   if(in_srctype=='manu') then
-     call generate_manutempsrc(in_totmass,in_gas_capcoef,tsp_t,tsp_dt)
+     call generate_manutempsrc(in_str_totmass,in_gas_capcoef,tsp_t,tsp_dt)
   elseif(in_gas_srccoef>0d0) then
 !-- short-cuts
      q1=in_gas_srcrpwr   

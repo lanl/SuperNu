@@ -2,7 +2,7 @@
 
 !-- misc
 in_nomp = 1
-in_grabstdout = f
+in_io_grabstdout = f
 in_puretran = f
 in_noreadstruct = t
 in_noeos = t
@@ -20,11 +20,11 @@ in_igeom = 3
 in_ndim = 1, 32, 1
 in_isvelocity = f
 in_novolsrc = f
-in_lx = 1d6
-in_ly = 1d0
-in_lz = 1d6
-in_totmass = 1d0
-in_dentype = 'ufil'
+in_str_lx = 1d6
+in_str_ly = 1d0
+in_str_lz = 1d6
+in_str_totmass = 1d0
+in_str_dentype = 'ufil'
 
 !-- flux settings
 in_flx_ndim = 0, 1, 1

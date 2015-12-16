@@ -1,7 +1,7 @@
 &inputpars
 
 !-- misc
-in_grabstdout = f
+in_io_grabstdout = f
 
 !-- time step
 in_tfirst = 2
@@ -17,8 +17,8 @@ in_solidni56 = t
 in_nr = 50
 in_isvelocity = t
 in_novolsrc = f
-in_velout = 1d9
-in_totmass = 1d33
+in_str_velout = 1d9
+in_str_totmass = 1d33
 !-- power law opacity values
 in_gas_capcoef = 0.1d0
 in_gas_captpwr = 0d0

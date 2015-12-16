@@ -93,7 +93,7 @@ c==========
 c
 c-- grid arrays
 c==============
-      if(.not.in_nogriddump) then
+      if(.not.in_io_nogriddump) then
        reclen = ncpr*12
 c-- alloc
        allocate(iarr(ncpr*nrow),arr(ncpr*nrow))

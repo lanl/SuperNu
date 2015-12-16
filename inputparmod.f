@@ -26,13 +26,19 @@ c-- read input structure file instead of specifying the stucture with input para
       logical :: in_voidcorners = .false.  !zero mass in cells outside central sphere in domain
       logical :: in_noreadstruct = .false.
 c-- static grid size
-      real*8 :: in_lx = 0d0  !spatial length of x-direction
-      real*8 :: in_ly = 0d0  !spatial length of y-direction
-      real*8 :: in_lz = 0d0  !spatial length of z-direction
+      real*8 :: in_str_lx = 0d0  !spatial length of x-direction
+      real*8 :: in_str_ly = 0d0  !spatial length of y-direction
+      real*8 :: in_str_lz = 0d0  !spatial length of z-direction
 c-- parameterized input structure
-      real*8 :: in_velout = 0d0  !cm/s, velocity of outer bound
-      real*8 :: in_totmass = 0d0  !g
-      character(4) :: in_dentype = 'none' ! unif|mass: 'unif' for uniform density, 'mass' for equal mass accross cells
+      real*8 :: in_str_velout = 0d0  !cm/s, velocity of outer bound
+      real*8 :: in_str_totmass = 0d0  !g
+      character(4) :: in_str_dentype = 'none' ! unif|mass: 'unif' for uniform density, 'mass' for equal mass accross cells
+        real*8 :: in_lx = 0d0  !spatial length of x-direction
+        real*8 :: in_ly = 0d0  !spatial length of y-direction
+        real*8 :: in_lz = 0d0  !spatial length of z-direction
+        real*8 :: in_velout = 0d0  !cm/s, velocity of outer bound
+        real*8 :: in_totmass = 0d0  !g
+        character(4) :: in_dentype = 'none' ! unif|mass: 'unif' for uniform density, 'mass' for equal mass accross cells
 c
 c
 c-- time step
@@ -52,11 +58,12 @@ c-- group structure
       integer :: in_grp_ngs = 1      !number of subgroups per opacity group
       real*8 :: in_grp_wlmin =   100d-8  !lower wavelength boundary [cm]
       real*8 :: in_grp_wlmax = 32000d-8  !upper wavelength boundary [cm]
-      integer :: in_wldex = 0        !selects group grid from formatted group grid file
+      integer :: in_grp_wldex = 0        !selects group grid from formatted group grid file
         integer :: in_ng = -1
         integer :: in_ngs = 1
         real*8 :: in_wlmin =   100d-8
         real*8 :: in_wlmax = 32000d-8
+        integer :: in_wldex = 0
 c
 c
 c-- outbound flux group and direction bins
@@ -75,9 +82,9 @@ c
 c-- source
       integer :: in_src_ns = 0     !number of source particles generated per time step (total over all ranks)
       integer :: in_src_n2s = -1   !2^n source particles generated per time step (total over all ranks)
-        integer :: in_ns = 0
       integer :: in_src_nsinit = 0   !number of initial particles at in_tsp_tfirst
       integer :: in_src_n2sinit = -1 !2^n number of initial particles at in_tsp_tfirst
+        integer :: in_ns = 0
         integer :: in_ns0 = 0
       logical :: in_novolsrc = .false.  !switch to turn off any volume source (could be useful for debugs)
       real*8 :: in_srcepwr = 1d0  !source particle number-energy slope, 1 is linear, equal number of packets per erg.
@@ -119,6 +126,7 @@ c-- analytic heat capacity terms
       real*8 :: in_gas_cvcoef = 1d7 !power law heat capacity coefficient
       real*8 :: in_gas_cvtpwr = 0d0 !power law heat capacity temperature exponent
       real*8 :: in_gas_cvrpwr = 1d0 !power law heat capacity density exponent
+c
 c-- debugging
       logical :: in_noeos = .false.     !don't use the EOS
 c
@@ -151,11 +159,15 @@ c-- absorption terms:
 c
 c
 c-- output
-      logical :: in_grabstdout = .false.  !write stdout to file
+      logical :: in_io_grabstdout = .false.  !write stdout to file
       logical :: in_io_dogrdtally = .false. !write transport tallies per grid cell
-      logical :: in_nogriddump = .false.  !don't write grid cell variables
-      character(4) :: in_opacdump = 'off '    !off|one|each|all: write opacity data to file
-      character(4) :: in_pdensdump = 'off '   !off|one|each: write partial densities to file
+      logical :: in_io_nogriddump = .false.  !don't write grid cell variables
+      character(4) :: in_io_opacdump = 'off '    !off|one|each|all: write opacity data to file
+      character(4) :: in_io_pdensdump = 'off '   !off|one|each: write partial densities to file
+        logical :: in_grabstdout = .false.  !write stdout to file
+        logical :: in_nogriddump = .false.  !don't write grid cell variables
+        character(4) :: in_opacdump = 'off '    !off|one|each|all: write opacity data to file
+        character(4) :: in_pdensdump = 'off '   !off|one|each: write partial densities to file
 c     
 c-- runtime parameter namelist
       namelist /inputpars/
@@ -166,16 +178,17 @@ c-- runtime parameter namelist
      & in_isvelocity,
 !str
      & in_voidcorners,in_noreadstruct,
-     & in_lx,in_ly,in_lz,
-     & in_velout,in_totmass,in_dentype,
+     & in_str_lx,in_str_ly,in_str_lz,
+     & in_str_velout,in_str_totmass,in_str_dentype,
+     &    in_lx,in_ly,in_lz,
+     &    in_velout,in_totmass,in_dentype,
 !tsp
      & in_tsp_tfirst,in_tsp_tlast,
      & in_tsp_gridtype,in_tsp_nt,in_tsp_itrestart,
      &   in_tfirst,in_tlast,in_nt,in_ntres, !deprec
 !grp
-     & in_grp_ng,in_grp_ngs,in_grp_wlmin,in_grp_wlmax,
-     &   in_ng,in_ngs,in_wlmin,in_wlmax, !deprec
-     & in_wldex,
+     & in_grp_ng,in_grp_ngs,in_grp_wlmin,in_grp_wlmax,in_grp_wldex,
+     &   in_ng,in_ngs,in_wlmin,in_wlmax,in_wldex, !deprec
 !flx
      & in_flx_ndim,in_flx_wlmin,in_flx_wlmax,in_flx_noobservertime,
 !prt
@@ -209,9 +222,12 @@ c-- runtime parameter namelist
      & in_gas_sigcoef,in_gas_sigtpwr,in_gas_sigrpwr,
      & in_gas_capcoef,in_gas_captpwr,in_gas_caprpwr,
 !io
-     & in_grabstdout,
-     & in_nogriddump,in_io_dogrdtally,
-     & in_opacdump,in_pdensdump
+     & in_io_grabstdout,
+     & in_io_nogriddump,in_io_dogrdtally,
+     & in_io_opacdump,in_io_pdensdump,
+     &   in_grabstdout,
+     &   in_nogriddump,
+     &   in_opacdump,in_pdensdump
 c
 c-- pointers
 c
@@ -260,29 +276,29 @@ c-- init
       ir=0
       ic=0
 c
-      call insertl(in_grabstdout,in_l,il)
+      call insertl(in_io_grabstdout,in_l,il)
       call inserti(in_nomp,in_i,ii)
       call inserti(in_igeom,in_i,ii)
       call inserti(in_ndim(1),in_i,ii)
       call inserti(in_ndim(2),in_i,ii)
       call inserti(in_ndim(3),in_i,ii)
-      call insertr(in_lx,in_r,ir)
-      call insertr(in_ly,in_r,ir)
-      call insertr(in_lz,in_r,ir)
+      call insertl(in_voidcorners,in_l,il)
+      call insertr(in_str_lx,in_r,ir)
+      call insertr(in_str_ly,in_r,ir)
+      call insertr(in_str_lz,in_r,ir)
+      call insertr(in_str_velout,in_r,ir)
+      call insertr(in_str_totmass,in_r,ir)
+      call insertc(in_str_dentype,in_c,ic)
       call inserti(in_flx_ndim(1),in_i,ii)
       call inserti(in_flx_ndim(2),in_i,ii)
       call inserti(in_flx_ndim(3),in_i,ii)
       call insertr(in_flx_wlmin,in_r,ir)
       call insertr(in_flx_wlmax,in_r,ir)
       call insertl(in_flx_noobservertime,in_l,il)
-      call insertl(in_nogriddump,in_l,il)
+      call insertl(in_io_nogriddump,in_l,il)
       call insertl(in_io_dogrdtally,in_l,il)
       call insertl(in_noreadstruct,in_l,il)
       call insertl(in_isvelocity,in_l,il)
-      call insertl(in_voidcorners,in_l,il)
-      call insertr(in_velout,in_r,ir)
-      call insertr(in_totmass,in_r,ir)
-      call insertc(in_dentype,in_c,ic)
       call insertr(in_gas_gastempinit,in_r,ir)
       call insertr(in_gas_radtempinit,in_r,ir)
       call insertr(in_gas_cvcoef,in_r,ir)
@@ -313,7 +329,7 @@ c
       call inserti(in_grp_ngs,in_i,ii)
       call insertr(in_grp_wlmin,in_r,ir)
       call insertr(in_grp_wlmax,in_r,ir)
-      call inserti(in_wldex,in_i,ii)
+      call inserti(in_grp_wldex,in_i,ii)
       call insertr(in_opcapgam,in_r,ir)
       call insertl(in_noplanckweighting,in_l,il)
       call insertr(in_opacmixrossel,in_r,ir)
@@ -339,8 +355,8 @@ c
       call insertr(in_theav,in_r,ir)
       call insertr(in_srcmax,in_r,ir)
       call insertr(in_srcepwr,in_r,ir)
-      call insertc(in_opacdump,in_c,ic)
-      call insertc(in_pdensdump,in_c,ic)
+      call insertc(in_io_opacdump,in_c,ic)
+      call insertc(in_io_pdensdump,in_c,ic)
       call insertl(in_noeos,in_l,il)
       call insertl(in_novolsrc,in_l,il)
       call insertl(in_nobbopac,in_l,il)
@@ -427,77 +443,111 @@ c     -------------------------------!{{{
       if(in_ns0/=0) stop 'DEPRECATED: in_ns0 => in_src_nsinit'
       if(in_trn_n2part/=-1) stop
      &  'DEPRECATED: in_trn_n2part => in_prt_n2max'
+c-- str
+      call depr(in_lx,in_str_lx,0d0,'lx','str_lx')
+      call depr(in_ly,in_str_ly,0d0,'ly','str_ly')
+      call depr(in_lz,in_str_lz,0d0,'lz','str_lz')
+      call depr(in_velout,in_str_velout,0d0,'velout','str_velout')
+      call depr(in_totmass,in_str_totmass,0d0,'totmass','str_totmass')
+      call depc(in_dentype,in_str_dentype,'none','dentype',
+     &  'str_dentype')
 c-- tsp
       if(in_tfirst/=0d0) stop 'DEPRECATED: in_tfirst => in_tsp_tfirst'
       if(in_tlast/=0d0) stop 'DEPRECATED: in_tlast => in_tsp_tlast'
-      if(in_nt/=0) then
-       if(in_tsp_nt/=0) then
-        stop 'DEPRECATED: in_nt => in_tsp_nt'
-       else
-        in_tsp_nt = in_nt
-        write(6,*) 'DEPRECATED: in_nt => in_tsp_nt'
-       endif
-      endif
-      if(in_ntres/=-1) then
-       if(in_tsp_itrestart/=-1) then
-        stop 'DEPRECATED: in_ntres => in_tsp_itrestart'
-       else
-        in_tsp_itrestart = in_ntres
-        write(6,*) 'DEPRECATED: in_ntres => in_tsp_itrestart'
-       endif
-      endif
+      call depi(in_nt,in_tsp_nt,0,'nt','tsp_nt')
+      call depi(in_ntres,in_tsp_itrestart,-1,'ntres','tsp_itrestart')
 c-- gas
-      if(in_consttemp/=0d0) then
-       if(in_gas_gastempinit/=0d0) then
-        stop 'DEPRECATED: in_consttemp => in_gas_gastempinit'
-       else
-        in_gas_gastempinit = in_consttemp
-        write(6,*) 'DEPRECATED: in_consttemp => in_gas_gastempinit'
-       endif
-      endif
-      if(in_tempradinit/=0d0) then
-       if(in_gas_radtempinit/=0d0) then
-        stop 'DEPRECATED: in_tempradinit => in_gas_radtempinit'
-       else
-        in_gas_radtempinit = in_tempradinit
-        write(6,*) 'DEPRECATED: in_tempradinit => in_gas_radtempinit'
-       endif
-      endif
+      call depr(in_consttemp,in_gas_gastempinit,0d0,'consttemp',
+     &  'gas_gastempinit')
+      call depr(in_tempradinit,in_gas_radtempinit,0d0,'tempradinit',
+     &  'gas_radtempinit')
 c-- grp
-      if(in_ng/=-1) then
-       if(in_grp_ng/=-1) then
-        stop 'DEPRECATED: in_ng => in_grp_ng'
-       else
-        in_grp_ng = in_ng
-        write(6,*) 'DEPRECATED: in_ng => in_grp_ng'
-       endif
-      endif
-      if(in_ngs/=1) then
-       if(in_grp_ngs/=1) then
-        stop 'DEPRECATED: in_ngs => in_grp_ngs'
-       else
-        in_grp_ngs = in_ngs
-        write(6,*) 'DEPRECATED: in_ngs => in_grp_ngs'
-       endif
-      endif
-      if(in_wlmin/=100d-8) then
-       if(in_grp_wlmin/=100d-8) then
-        stop 'DEPRECATED: in_wlmin => in_grp_wlmin'
-       else
-        in_grp_wlmin = in_wlmin
-        write(6,*) 'DEPRECATED: in_wlmin => in_grp_wlmin'
-       endif
-      endif
-      if(in_wlmax/=32000d-8) then
-       if(in_grp_wlmax/=32000d-8) then
-        stop 'DEPRECATED: in_wlmax => in_grp_wlmax'
-       else
-        in_grp_wlmax = in_wlmax
-        write(6,*) 'DEPRECATED: in_wlmax => in_grp_wlmax'
-       endif
-      endif
+      call depi(in_ng,in_grp_ng,-1,'ng','grp_ng')
+      call depi(in_ngs,in_grp_ngs,1,'ngs','grp_ngs')
+      call depr(in_wlmin,in_grp_wlmin,100d-8,'wlmin','grp_wlmin')
+      call depr(in_wlmax,in_grp_wlmax,32000d-8,'wlmax','grp_wlmax')
+      call depi(in_wldex,in_grp_wldex,0,'wldex','grp_wldex')
+c-- io
+      call depl(in_grabstdout,in_io_grabstdout,.false.,'grabstdout',
+     &  'io_grabstdout')
+      call depl(in_nogriddump,in_io_nogriddump,.false.,'nogriddump',
+     &  'io_nogriddump')
+      call depc(in_opacdump,in_io_opacdump,'off ','opacdump',
+     &  'io_opacdump')
+      call depc(in_pdensdump,in_io_pdensdump,'off ','pdensdump',
+     &  'io_pdensdump')
       write(6,*)
-!}}}
+c
+      contains
+c!{{{
+      subroutine depl(old,new,def,sold,snew)
+c     --------------------------------------
+      implicit none
+      logical,intent(in) :: old,def
+      logical,intent(inout) :: new
+      character(*),intent(in) :: sold,snew
+c
+      if(old.neqv.def) then
+       write(6,*) 'DEPRECATED: ', 'in_'//sold, '=>', 'in_'//snew
+       if(new.neqv.def) then
+        stop 'input variable clash'
+       else
+        new = old
+       endif
+      endif
+      end subroutine depl
+c
+      subroutine depi(old,new,def,sold,snew)
+c     --------------------------------------
+      implicit none
+      integer,intent(in) :: old,def
+      integer,intent(inout) :: new
+      character(*),intent(in) :: sold,snew
+c
+      if(old/=def) then
+       write(6,*) 'DEPRECATED: ', 'in_'//sold, '=>', 'in_'//snew
+       if(new/=def) then
+        stop 'input variable clash'
+       else
+        new = old
+       endif
+      endif
+      end subroutine depi
+c
+      subroutine depr(old,new,def,sold,snew)
+c     --------------------------------------
+      implicit none
+      real*8,intent(in) :: old,def
+      real*8,intent(inout) :: new
+      character(*),intent(in) :: sold,snew
+c
+      if(old/=def) then
+       write(6,*) 'DEPRECATED:', 'in_'//sold, '=>', 'in_'//snew
+       if(new/=def) then
+        stop 'input variable clash'
+       else
+        new = old
+       endif
+      endif
+      end subroutine depr
+c
+      subroutine depc(old,new,def,sold,snew)
+c     --------------------------------------
+      implicit none
+      character(4),intent(in) :: old,def
+      character(4),intent(inout) :: new
+      character(*),intent(in) :: sold,snew
+c
+      if(old/=def) then
+       write(6,*) 'DEPRECATED:', 'in_'//sold, '=>', 'in_'//snew
+       if(new/=def) then
+        stop 'input variable clash'
+       else
+        new = old
+       endif
+      endif
+      end subroutine depc
+!}}}!}}}
       end subroutine deprecate_inputpars
 c
 c
@@ -551,27 +601,44 @@ c
       endselect
 c
       if(in_isvelocity) then
-       if(in_lx>0d0) stop 'vel grid: use in_velout, not in_lx'
-       if(in_ly>0d0) stop 'vel grid: use in_velout, not in_ly'
-       if(in_lz>0d0) stop 'vel grid: use in_velout, not in_lz'
-       if(in_velout<=0d0 .and. in_noreadstruct) stop
-     &   'vel grid: use in_velout, not in_lx,in_ly,in_lz'
+       if(in_str_lx>0d0) stop 'vel grid: use str_velout, not in_str_lx'
+       if(in_str_ly>0d0) stop 'vel grid: use str_velout, not in_str_ly'
+       if(in_str_lz>0d0) stop 'vel grid: use str_velout, not in_str_lz'
+       if(in_str_velout<=0d0 .and. in_noreadstruct) stop
+     &   'vel grid: use str_velout, not str_lx'
       else
-       if(in_lx<=0d0) stop 'static grid: use in_lx, not in_velout'
-       if(in_ly<=0d0) stop 'static grid: use in_ly, not in_velout'
-       if(in_lz<=0d0) stop 'static grid: use in_lz, not in_velout'
-       if(in_velout>0d0) 
-     &      stop 'static grid: use in_lx,in_ly,in_lz, not in_velout'
+       if(in_str_lx<=0d0) stop 'static grid: use str_lx, not str_velout'
+       if(in_str_ly<=0d0) stop 'static grid: use str_ly, not str_velout'
+       if(in_str_lz<=0d0) stop 'static grid: use str_lz, not str_velout'
+       if(in_str_velout>0d0) 
+     &      stop 'static grid: use str_lx not str_velout'
       endif
 c
-      if(in_nogriddump .and. in_io_dogrdtally) stop
+      if(in_noreadstruct) then
+       if(in_str_totmass<=0d0) stop 'in_str_totmass <= 0'
+       if(in_noreadstruct.and.in_novolsrc.and.in_gas_cvcoef<=0d0)
+     &   stop 'in_noreadstruct && in_novolsrc && in_gas_cvcoef<=0'
+       if(in_str_dentype=='none') stop
+     &   'noreadstruct & str_dentype==none'
+      else
+       if(in_str_dentype/='none') stop
+     &   '!noreadstruct & str_dentype/=none'
+      endif
+c
+c-- special grid
+      if(.not.in_noreadstruct) then
+       if(in_str_velout/=0d0) stop 'velout incomp. with struct'
+       if(in_str_totmass/=0d0) stop 'totmass incomp. with struct'
+      endif
+c
+      if(in_io_nogriddump .and. in_io_dogrdtally) stop
      &   'dogridtally and !griddump'
 c
       if(in_voidcorners.and.in_igeom==1) stop 'voidcorners && igeom=1'
       if(in_voidcorners.and.in_igeom==11) stop 'voidcorners && igeom=11'
 c
       if(in_grp_ng<0) stop 'in_grp_ng invalid'
-      if(in_grp_ng==0 .and. in_wldex<1) stop 'in_wldex invalid'
+      if(in_grp_ng==0 .and. in_grp_wldex<1) stop 'in_grp_wldex invalid'
       if(in_grp_ngs<=0) stop 'in_grp_ngs invalid'
       if(in_grp_wlmin<0) stop 'in_grp_wlmin invalid'
       if(in_grp_wlmax<=in_grp_wlmin) stop 'in_grp_wlmax invalid'
@@ -593,15 +660,6 @@ c
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
       if(in_taulump<=.05d0*in_tauddmc) stop 'in_taulump too small' !don't let scattering dominate
 c
-      if(in_noreadstruct) then
-        if(in_totmass<=0d0) stop 'in_totmass <= 0'
-        if(in_noreadstruct.and.in_novolsrc.and.in_gas_cvcoef<=0d0)
-     &     stop 'in_noreadstruct && in_novolsrc && in_gas_cvcoef<=0'
-        if(in_dentype=='none') stop 'noreadstruct & in_dentype==none'
-      else
-        if(in_dentype/='none') stop '!noreadstruct & in_dentype/=none'
-      endif
-c
 c-- temp init
       if(in_gas_gastempinit<0d0) stop 'in_gas_gastempinit < 0'
       if(in_gas_radtempinit<0d0) stop 'in_gas_radtempinit < 0'
@@ -621,12 +679,6 @@ c-- timestepping
       end select
 
       if(in_tsp_tlast<in_tsp_tfirst) stop 'in_tsp_tlast invalid'
-c
-c-- special grid
-      if(.not.in_noreadstruct) then
-       if(in_velout/=0d0) stop 'velout incomp. with struct'
-       if(in_totmass/=0d0) stop 'totmass incomp. with struct'
-      endif
 c
       select case(in_srctype)
       case('none')
@@ -663,27 +715,27 @@ c
       if(in_noffopac) call warn('read_inputpars','ff opacity disabled!')
       if(in_nothmson) call warn('read_inputpars','Thomson disabled')
 c
-      select case(in_opacdump)
+      select case(in_io_opacdump)
       case('off ')
       case('one ')
       case('each')
       case('all ')
        call warn('read_inputpars',
-     &   "in_opacdump=='all' will generate a big data file!")
+     &   "in_io_opacdump=='all' will generate a big data file!")
       case default
-       stop 'in_opacdump invalid'
+       stop 'in_io_opacdump invalid'
       end select
 c
       if(in_opacmixrossel<0d0 .or. in_opacmixrossel>1d0) then
        stop 'in_opacmixrossel invalid'
       endif
 c
-      select case(in_pdensdump)
+      select case(in_io_pdensdump)
       case('off ')
       case('one ')
       case('each')
       case default
-       stop 'in_pdensdump invalid'
+       stop 'in_io_pdensdump invalid'
       end select
 c
 c-- set the number of threads
@@ -702,7 +754,7 @@ c$omp end parallel
 c$    endif
       write(6,'(1x,a,2i5,i7)') 'nmpi,in_nomp,#threads        :',
      &  nmpi,in_nomp,nmpi*in_nomp
-      if(in_grabstdout) then
+      if(in_io_grabstdout) then
        write(0,'(1x,a,2i5,i7)') 'nmpi,in_nomp,#threads        :',
      &   nmpi,in_nomp,nmpi*in_nomp
       endif!}}}!}}}
