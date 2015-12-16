@@ -313,3 +313,4 @@ subroutine interior_source
   call counterreg(ct_npcreate, src_nnew)
 
 end subroutine interior_source
+! vim: fdm=marker

@@ -90,3 +90,4 @@ c
       endif !do_output
 c
       end subroutine eos_update
+c vim: fdm=marker

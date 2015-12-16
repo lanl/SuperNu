@@ -513,3 +513,4 @@ c!}}}
       end subroutine ions_read_data
 c
       end module ionsmod
+c vim: fdm=marker

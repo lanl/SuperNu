@@ -385,3 +385,4 @@ subroutine particle_advance_gamgrey(nmpi)
   call timereg(t_pcktgam, t1-t0)
 
 end subroutine particle_advance_gamgrey
+! vim: fdm=marker

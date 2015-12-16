@@ -1,5 +1,5 @@
       subroutine gas_setup
-c     --------------------------
+c     --------------------
       use inputstrmod
       use physconstmod
       use inputparmod
@@ -212,3 +212,4 @@ c
       enddo !i
 c!}}}
       end subroutine massfr2natomfr
+c vim: fdm=marker

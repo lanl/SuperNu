@@ -301,3 +301,4 @@ c-- register timing
       call timereg(t_ff,t3-t2)
 c
       end subroutine physical_opacity
+c vim: fdm=marker

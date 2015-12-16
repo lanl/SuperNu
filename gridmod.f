@@ -209,3 +209,4 @@ c-- ndim=4 alloc
       end subroutine grid_dealloc
 c
       end module gridmod
+c vim: fdm=marker

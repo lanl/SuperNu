@@ -255,3 +255,4 @@ c
       end subroutine init_manutemp
 c
       end module manufacmod
+c vim: fdm=marker

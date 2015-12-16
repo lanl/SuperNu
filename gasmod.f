@@ -171,3 +171,4 @@ c
       end subroutine gas_dealloc
 c
       end module gasmod
+c vim: fdm=marker

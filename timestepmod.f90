@@ -2,7 +2,7 @@ module timestepmod
 
   implicit none
 
-  character(4) :: tsp_gridtype = 'none'  !total # of time steps
+  character(4) :: tsp_gridtype = 'none' !inputpar
   integer :: tsp_nt = 0  !total # of time steps
   integer :: tsp_itrestart = 0 !restart time step # (at beginning of time step)
   integer :: tsp_it  !current time step number
@@ -111,3 +111,4 @@ module timestepmod
   end subroutine read_timestep_preset
 
 end module timestepmod
+! vim: fdm=marker

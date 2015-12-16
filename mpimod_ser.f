@@ -186,3 +186,4 @@ c
       end subroutine mpi_finalize
 c
       end module mpimod
+c vim: fdm=marker

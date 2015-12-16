@@ -117,3 +117,4 @@ subroutine initial_particles
   enddo !k
   
 end subroutine initial_particles
+! vim: fdm=marker

@@ -35,7 +35,7 @@ c
       contains
 c
       subroutine totals_startup
-c     -------------------------
+c     -------------------------!{{{
       implicit none
 ************************************************************************
 * The initial radiation field is estimated from the assumption
@@ -50,12 +50,12 @@ c-- energy decayed prior to first timestep
       tot_eext = tot_eext0
 c-- exact balance
       tot_evelo = tot_eext-tot_erad-tot_emat !tot_emat is added to tot_eext in the first time step in gas_update
-c
+c!}}}
       end subroutine totals_startup
 c
 c
       subroutine totals_error
-c     -----------------------
+c     -----------------------!{{{
       implicit none
 ************************************************************************
 * Check that all particle energy (weight) is accounted for from
@@ -63,6 +63,8 @@ c     -----------------------
 ************************************************************************
       tot_eerror = (tot_eext-tot_evelo-tot_eout-tot_erad-tot_emat)/
      &  tot_eext
+c!}}}
       end subroutine totals_error
 c
       end module totalsmod
+c vim: fdm=marker

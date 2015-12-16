@@ -676,3 +676,4 @@ c
       end subroutine mpimod_dealloc
 c
       end module mpimod
+c vim: fdm=marker

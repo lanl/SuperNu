@@ -115,3 +115,4 @@ c
 c
 c
       end module randommod
+c vim: fdm=marker

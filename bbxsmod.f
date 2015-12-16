@@ -175,3 +175,4 @@ c!}}}
       end subroutine sort_lines
 c
       end module bbxsmod
+c vim: fdm=marker

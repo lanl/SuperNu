@@ -188,3 +188,4 @@ subroutine sourceenergy_analytic(lmpi0)
   if(lmpi0) tot_eext = tot_eext + sum(grd_emitex) + tot_esurf
 
 end subroutine sourceenergy_analytic
+! vim: fdm=marker

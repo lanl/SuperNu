@@ -263,3 +263,4 @@ c!}}}
 c
 c
       end module groupmod
+c vim: fdm=marker

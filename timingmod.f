@@ -196,3 +196,4 @@ c!}}}
       end function t_time
 c
       end module timingmod
+c vim: fdm=marker

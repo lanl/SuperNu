@@ -1195,3 +1195,4 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   endif
 
 end subroutine diffusion2
+! vim: fdm=marker

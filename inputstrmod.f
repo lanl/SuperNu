@@ -786,3 +786,4 @@ c-- store element code (pointer to mass0fr)
       end subroutine elnam2elcode
 c
       end module inputstrmod
+c vim: fdm=marker

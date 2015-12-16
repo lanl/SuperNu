@@ -118,3 +118,4 @@ c
       end subroutine print_counters
 c
       end module countersmod
+c vim: fdm=marker

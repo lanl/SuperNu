@@ -293,3 +293,4 @@ program supernu
   call mpi_finalize(ierr) !MPI
 
 end program supernu
+! vim: fdm=marker

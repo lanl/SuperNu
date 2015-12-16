@@ -59,3 +59,4 @@ module particlemod
 
 
 end module particlemod
+! vim: fdm=marker
