@@ -5,6 +5,7 @@ c     ------------------------
       use particlemod
       use miscmod
       use countersmod
+      use timingmod
       implicit none
       integer,intent(in) :: it
 ************************************************************************
@@ -14,8 +15,13 @@ c     ------------------------
       integer :: ipart,nfluxbuf
       integer :: ig,imu,iom
       real*8 :: help
+      real*8 :: t0
       type(packet),pointer :: ptcl
-
+c
+c-- timer
+      t0 = t_time()
+c
+c-- init
       flx_lumtime = 0d0
       flx_luminos = 0d0
       flx_lumdev = 0d0
@@ -62,6 +68,11 @@ c-- mark particle slot occupied or vacant
       enddo !ipart
 !!c$omp end do nowait
 c
+c-- timing
+      t0 = t_time() - t0
+      call timereg(t_fluxtally,t0)
+c
+c-- buffered particles counter
       ct_npfluxbuf(2) = 0 !reset, don't integrate
       call counterreg(ct_npfluxbuf,nfluxbuf)
 c

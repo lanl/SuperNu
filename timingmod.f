@@ -17,7 +17,7 @@ c-- timeline
       real*8 :: t_timelin(ntimeline+1)
       real*8 :: t_timeline(ntimeline)
 c
-      integer,private,parameter :: mreg = 16
+      integer,private,parameter :: mreg = 17
       real*8,private,target :: registers(4,mreg)
 c
 c-- global-flow time registers:
@@ -29,7 +29,6 @@ c-- global-flow time registers:
       real*8,pointer :: t_bb(:)       !bound-bound opacity
       real*8,pointer :: t_bf(:)       !bound-free opacity
       real*8,pointer :: t_ff(:)       !free-free opacity
-      real*8,pointer :: t_output(:)   !write
 c-- communication
       real*8,pointer :: t_mpibcast(:)
       real*8,pointer :: t_mpimisc(:)
@@ -39,6 +38,10 @@ c-- packet transport
       real*8,pointer :: t_pcktmea(:)
       real*8,pointer :: t_pcktmax(:)
       real*8,pointer :: t_pcktgam(:)  !gamma transport
+c-- flux
+      real*8,pointer :: t_fluxtally(:)
+c-- output
+      real*8,pointer :: t_output(:)
 c
 c-- parallel statistics packet timer
       real*8 :: t_pckt_stat(3)  !min,mean,max
@@ -65,7 +68,8 @@ c     ----------------------
       t_pcktmin =>  registers(:,13)  !collect the max runtimes across all ranks
       t_pcktmea =>  registers(:,14)  !collect the mean runtimes across all ranks
       t_pcktmax =>  registers(:,15)  !collect the min runtimes across all ranks
-      t_output =>   registers(:,16)  !collect the min runtimes across all ranks
+      t_fluxtally =>registers(:,16)
+      t_output =>   registers(:,17)
       end subroutine timingmod_init
 c
 c
@@ -112,7 +116,7 @@ c-- header
          write(4,'("#",30a12)') 't_gasupd','t_eos','t_emitp',
      &   't_opacleak','t_opac','t_bb','t_bf','t_ff',
      &   't_mpibcast','t_mpimisc','t_mpireduc',
-     &   't_pgam','t_pmin','t_pmean','t_pmax','t_output'
+     &   't_pgam','t_pmin','t_pmean','t_pmax','t_fluxtally','t_output'
        endif
 c-- body
        if(ldummystep) then
@@ -157,6 +161,7 @@ c
       write(6,1) 'transport min|max :',t_pcktmin(i),t_pcktmea(i),
      &  t_pcktmax(i)
       write(6,1) 'gamma transport   :',t_pcktgam(i)
+      write(6,1) 'flux tally        :',t_fluxtally(i)
       write(6,1) 'output            :',t_output(i)
       write(6,1) 'unaccounted       :',t_all - taccounted
       write(6,*) '----------------------------'
