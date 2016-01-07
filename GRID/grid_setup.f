@@ -41,15 +41,19 @@ c-- pointers into compressed grid
       if(l/=grd_ncell+1) stop 'grid_setup: l/=grd_ncell+1'
 c
 c-- void-corner radius: cell criterium
-      select case(grd_igeom)
-      case(1,11)
-       grd_rvoid = grd_xarr(grd_nx+1)
-      case(2)
-       grd_rvoid = min(grd_xarr(grd_nx+1),grd_yarr(grd_ny+1))
-      case(3)
-       grd_rvoid = min(grd_xarr(grd_nx+1),grd_yarr(grd_ny+1),
-     &   grd_zarr(grd_nz+1))
-      endselect
+      if(.not.in_voidcorners) then
+        grd_rvoid = huge(help)
+      else
+       select case(grd_igeom)
+       case(1,11)
+        grd_rvoid = grd_xarr(grd_nx+1)
+       case(2)
+        grd_rvoid = min(grd_xarr(grd_nx+1),grd_yarr(grd_ny+1))
+       case(3)
+        grd_rvoid = min(grd_xarr(grd_nx+1),grd_yarr(grd_ny+1),
+     &    grd_zarr(grd_nz+1))
+       endselect
+      endif
 c
 c-- maximum grid velocity
       select case(grd_igeom)
