@@ -6,7 +6,7 @@ module timestepmod
   integer :: tsp_nt = 0  !total # of time steps
   integer :: tsp_itrestart = 0 !restart time step # (at beginning of time step)
   integer :: tsp_it  !current time step number
-  real*8 :: tsp_t
+  real*8 :: tsp_t,tsp_t1
   real*8,allocatable :: tsp_tarr(:)     !time step array
   real*8,allocatable :: tsp_tpreset(:)  !store preset time steps from input.tsp_time
   real*8 :: tsp_tcenter,tsp_tfirst,tsp_tlast
@@ -52,21 +52,26 @@ module timestepmod
     select case(tsp_gridtype)
     case('read')
        if(.not.allocated(tsp_tpreset)) stop 'timestep_update: tpreset not allocated'
-       tsp_dt = tsp_tpreset(tsp_it+1) - tsp_tpreset(tsp_it)
        tsp_t = tsp_tpreset(tsp_it)
+       tsp_t1 = tsp_tpreset(tsp_it+1)
+       tsp_dt = tsp_t1 - tsp_t
     case('lin ')
 !-- linear time grid
        tsp_dt = (tsp_tlast - tsp_tfirst)/tsp_nt
+       tsp_t1 = tsp_tfirst + tsp_it*tsp_dt  !beginning of the time step
        tsp_t = tsp_tfirst + (tsp_it-1)*tsp_dt  !beginning of the time step
     case('expo')
 !-- exponential time grid
        help = log(tsp_tlast/tsp_tfirst)/tsp_nt
+       tsp_t1 = tsp_tfirst*exp(tsp_it*help)  !beginning of the time step
        tsp_t = tsp_tfirst*exp((tsp_it-1)*help)  !beginning of the time step
-       tsp_dt = tsp_tfirst*exp(tsp_it*help) - tsp_t
+       tsp_dt = tsp_t1 - tsp_t
+    case default
+       stop 'timestep_update: invalid tsp_gridtype'
     end select
 
 !-- append in time array
-    tsp_tarr(tsp_it+1) = tsp_t + tsp_dt
+    tsp_tarr(tsp_it+1) = tsp_t1
 
     tsp_tcenter = tsp_t + .5*tsp_dt
     tsp_dtinv = 1d0/tsp_dt

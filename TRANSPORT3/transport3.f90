@@ -92,7 +92,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   far = 2d0*abs(pc_c*tsp_dt*thelpinv) !> dcen
 
 !-- census distance
-  dcen = abs(pc_c*(tsp_t+tsp_dt-ptcl%t)*thelpinv)
+  dcen = abs(pc_c*(tsp_t1-ptcl%t)*thelpinv)
 !
 !-- boundary distances
   if(xi==0d0) then

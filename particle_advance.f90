@@ -179,6 +179,7 @@ subroutine particle_advance
      ig = binsrch(wl,grp_wl,grp_ng+1,.false.) !co-moving frame
 !
 !-- verify particle time
+     !if(ptcl%t<tsp_t) write(0,*) ptcl%t,tsp_t,(ptcl%t-tsp_t)/(ptcl%t+tsp_t),x
      if(ptcl%t<tsp_t) stop 'particle_advance: ptcl%t < tsp_t'
 
 !
@@ -382,6 +383,12 @@ subroutine particle_advance
            ncensddmc = ncensddmc + 1
            if(in_io_dogrdtally) grd_numcensddmc(ic) = grd_numcensddmc(ic) + 1
         endif
+
+!
+!-- exact particle time
+        help = abs(ptcl%t-tsp_t1)/(ptcl%t+tsp_t1)
+        if(help>1e-15) stop 'particle_advance: census time inaccurate'
+        ptcl%t = tsp_t1
 
 !
 !-- Redshifting DDMC particle energy weights and wavelengths

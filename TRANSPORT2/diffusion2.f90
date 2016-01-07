@@ -339,7 +339,7 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 
   call rnd_r(r1,rndstate)
   tau = abs(log(r1)*denom/pc_c)
-  tcensus = tsp_t+tsp_dt-ptcl%t
+  tcensus = tsp_t1-ptcl%t
   ddmct = min(tau,tcensus)
 
 !
