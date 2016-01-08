@@ -27,7 +27,6 @@ SUPERNU METHOD PAPERS
 Wollaeger, van Rossum et al. 2013, ApJS 209, 37
 Wollaeger & van Rossum 2014, ApJS 214, 28
 van Rossum & Wollaeger 2015, in preparation
-Wollaeger & van Rossum 2015, in preparation
 
 
 SUMMARY OF SUPERNU PHYSICS
@@ -107,14 +106,15 @@ Groups:
 
 IO:
 - input is divided in two categories:
-  - models specific input files are named input.* and (see the Input/ directory):
+  - model specific input files are named input.* and (see the Input/ directory):
     - input.par: runtime parameters,
     - input.str: velocity-density-composition structure on the computational domain.
   - model independent data files are named data.* (see the Data/ directory):
     - data.bf_verner: bound-free cross section data (Verner et al. 1996, ApJ 465, 487)
     - data.ff_sutherland: free-free gaunt factor data (Sutherland 1998, MNRAS 300, 321)
-    - data.ion: atomic level data (http://kurucz.harvard.edu/atoms.html)
+    - data.ion: atomic level data (from http://kurucz.harvard.edu/atoms.html)
 - output files are named output.*
+  - stdout is written to output.log unless disabled in by an input parameter.
   - flux variables are saved as output.flx_*
   - grid variables are saved as output.grd_*
   - total (integrated over the domain) energy budget numbers are saved as output.tot_energy
@@ -129,35 +129,43 @@ SuperNu writes flux output in ascii (output.flx_luminos) as a sequence of spectr
 CODING STANDARDS
 ================
 - Source files with the .f suffix adhere to fortran fixed format standard
-  - indentation width is one character
+  - the default indentation width is 1
 - Source files with the .f90 suffix adhere to fortran free format standard
-  - indentation width is three characters
+  - the default indentation width is 3
 - Each subroutine/function contains a comment section that explicitly states its purpose
 - Each new paragraph in a source file starts with a comment line detailing the purpose of the following paragraph
-- Module variables have a threeletter_ prefix that is unique for that module.
+- All public variables in a module have a threeletter_ prefix that is unique for that module.
 - All variables/subroutines/functions/intrinsics etc. have lowercase names.
   - the only exeception is a USE statement for modules that are defined in the same file in which they are used.
 
 
 SETUP INSTRUCTIONS
 ==================
-The following procedure produces two supernu executables, one serial and one MPI-parallel version.  Please report build errors to the authors.
+The following procedure produces two supernu executables, one serial and one MPI-parallel version.
+Please report build errors to Daan van Rossum.
 
 # mkdir supernu
-# hg clone https://drrossum@bitbucket.org/drrossum/supernu supernu/src
-# mkdir supernu/bin
-# mkdir supernu/bin-mpi
-# cd supernu/bin
+# cd supernu
+# hg clone https://drrossum@bitbucket.org/drrossum/supernu src
+
+-- SERIAL --
+# mkdir bin
+# cd bin
 # lndir ../src
-# cd ../bin-mpi
-# lndir ../src
-- if you do not have the hg-versioninfo module installed:
-  # cp ./Tools/hgversioninfo.py ~/py/
-  # export PYTHONPATH=$PYTHONPATH:~/py
+  - Tools/lndir.sh can be used instead of lndir if lndir is not available on the system)
+  - make sure that no .mod, .o, or .a files were linked from the source directory
+# ln -sf ./mpimod_ser.f ./mpimod.f
 # cp -f ./System/Makefile.compiler.gfortran ./Makefile.compiler
   - modify the compiler flags to your liking (e.g. optimization, debug flags etc.)
-- let mpimod.f link symbolically to either mpimod_ser.f or mpimod_mpi.f:
-  # ln -sf ./mpimod_ser.f ./mpimod.f
-  # ln -sf ./mpimod_mpi.f ./mpimod.f
-    - update the ./Makefile.compiler to something like: FC=mpif90
+# make -j
+# cd ../../supernu
+
+-- MPI --
+# mkdir bin-mpi
+# cd bin-mpi
+# lndir ../src
+# cp -f ./System/Makefile.compiler.gfortran ./Makefile.compiler
+  - update the ./Makefile.compiler to something like: FC=mpif90
+  - modify the compiler flags to your liking (e.g. optimization, debug flags etc.)
+# ln -sf ./mpimod_mpi.f ./mpimod.f
 # make -j
