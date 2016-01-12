@@ -308,17 +308,17 @@ subroutine particle_advance_gamgrey(nmpi)
 
 !-- verify position
         if(ptcl2%stat=='live') then
-           if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then
+           if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix) .or. x/=x) then
               if(ierr==0) ierr = -99
               write(0,*) 'prt_adv_ggrey: x not in cell', &
                 ix,x,grd_xarr(ix),grd_xarr(ix+1)
            endif
-           if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
+           if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy) .or. y/=y) then
               if(ierr==0) ierr = -99
               write(0,*) 'prt_adv_ggrey: y not in cell', &
                 iy,y,grd_yarr(iy),grd_yarr(iy+1)
            endif
-           if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
+           if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz) .or. z/=z) then
               if(ierr==0) ierr = -99
               write(0,*) 'prt_adv_ggrey: z not in cell', &
                 iz,z,grd_zarr(iz),grd_zarr(iz+1)
@@ -329,11 +329,15 @@ subroutine particle_advance_gamgrey(nmpi)
         if(ierr/=0 .or. ptcl2%istep>1000) then
            write(0,*) 'pagg: ierr,ipart,istep,idist:',ierr,ptcl2%ipart,ptcl2%istep,ptcl2%idist
            write(0,*) 'dist:',ptcl2%dist
+           write(0,*) 't:',ptcl%t
            write(0,*) 'ix,iy,iz,ic,ig:',ptcl2%ix,ptcl2%iy,ptcl2%iz,ptcl2%ic,ptcl2%ig
            write(0,*) 'x,y,z:',ptcl%x,ptcl%y,ptcl%z
            write(0,*) 'mu,om:',ptcl%mu,ptcl%om
+           write(0,*) 'mux,muy,muz:',ptcl2%mux,ptcl2%muy,ptcl2%muz
+           write(0,*)
            if(ierr>0) then
               if(trn_errorfatal) stop 'particle_advance_gg: fatal transport error'
+              ptcl2%stat = 'dead'
               exit
            endif
         endif

@@ -316,17 +316,17 @@ subroutine particle_advance
 
 !-- verify position
         if(ptcl2%itype==1 .and. ptcl2%stat=='live') then
-           if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix)) then!{{{
+           if(x>grd_xarr(ix+1) .or. x<grd_xarr(ix) .or. x/=x) then!{{{
               if(ierr==0) ierr = -99
               write(0,*) 'prt_adv: x not in cell', &
                  ix,x,grd_xarr(ix),grd_xarr(ix+1)
            endif
-           if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy)) then
+           if(y>grd_yarr(iy+1) .or. y<grd_yarr(iy) .or. y/=y) then
               if(ierr==0) ierr = -99
               write(0,*) 'prt_adv: y not in cell', &
                  iy,y,grd_yarr(iy),grd_yarr(iy+1)
            endif
-           if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz)) then
+           if(z>grd_zarr(iz+1) .or. z<grd_zarr(iz) .or. z/=z) then
               if(ierr==0) ierr = -99
               write(0,*) 'prt_adv: z not in cell', &
                  iz,z,grd_zarr(iz),grd_zarr(iz+1)
@@ -341,8 +341,11 @@ subroutine particle_advance
            write(0,*) 'ix,iy,iz,ic,ig:',ptcl2%ix,ptcl2%iy,ptcl2%iz,ptcl2%ic,ptcl2%ig
            write(0,*) 'x,y,z:',ptcl%x,ptcl%y,ptcl%z
            write(0,*) 'mu,om:',ptcl%mu,ptcl%om
+           write(0,*) 'mux,muy,muz:',ptcl2%mux,ptcl2%muy,ptcl2%muz
+           write(0,*)
            if(ierr>0) then
               if(trn_errorfatal) stop 'particle_advance: fatal transport error'
+              ptcl2%stat = 'dead'
               exit
            endif
         endif
