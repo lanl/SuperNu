@@ -97,15 +97,13 @@ module timestepmod
 !
 !-- allocate
     if(nt<1) stop 'rd_tsp_preset: header nt < 1'
-    allocate(tsp_tpreset(nt))
+    allocate(tsp_tpreset(nt+1))
 !
 !-- read lines
     read(4,*,iostat=istat) tsp_tpreset
     if(istat/=0) stop 'rd_tsp_preset: file error: input.tsp_time'
 !
 !-- make sure no remaining data
-    read(4,*,iostat=istat) !-- last time step value is only for tsp_dt purpose
-    if(istat/=0) stop 'rd_tsp_preset: file body too short'
     read(4,*,iostat=istat) !-- last time step value is only for tsp_dt purpose
     if(istat==0) stop 'rd_tsp_preset: file body too long'
 !
