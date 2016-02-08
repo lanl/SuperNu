@@ -372,6 +372,21 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !
 !-- check for census
   if (ddmct /= tau) then
+     if(glump>0) then
+!-- sample group
+        call rnd_r(r1,rndstate)
+        denom2 = 0d0
+        help = 1d0/emitlump
+        do iig=1,glump
+           iiig=glumps(iig)
+           specig = cache%specarr(iiig)
+           !specig = specint0(grd_tempinv(ic),iiig)
+!-- calculating resolved leakage opacities
+           denom2 = denom2+specig*grd_cap(iiig,ic)*capgreyinv*help
+           if(denom2>r1) exit
+        enddo
+        ig = iiig
+     endif
      ptcl2%stat = 'cens'
      return
   endif
