@@ -79,7 +79,7 @@ c-- buffered particles counter
       call counterreg(ct_npfluxbuf,nfluxbuf)
 c
 c-- convert to flux per second
-      help = 1d0/tsp_dt
+      help = 1d0/(tsp_tarr(it+1)-tsp_tarr(it))
       flx_luminos = flx_luminos*help
       flx_lumdev = flx_lumdev*help**2
 c

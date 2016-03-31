@@ -315,6 +315,7 @@ c
       call insertl(in_puretran,in_l,il)
       call insertl(in_trn_nolumpshortcut,in_l,il)
       call insertl(in_trn_errorfatal,in_l,il)
+      call insertl(in_trn_noamp,in_l,il)
       call insertl(in_isimcanlog,in_l,il)
       call insertl(in_isddmcanlog,in_l,il)
       call insertr(in_tauddmc,in_r,ir)

@@ -374,6 +374,9 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !
 !-- check for census
   if (ddmct /= tau) then
+!-- sample wavelength
+     call rnd_r(r1,rndstate)
+     wl = 1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))
      ptcl2%stat = 'cens'
      return
   endif

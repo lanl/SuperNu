@@ -256,6 +256,9 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !
 !-- check for census
   if (tcensus < tau) then
+!-- sample wavelength
+     call rnd_r(r1,rndstate)
+     wl = 1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))
      ptcl2%stat = 'cens'
      return
   endif
@@ -528,7 +531,6 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         enddo
      endif
      ig = iiig
-
      if((grd_sig(ic)+grd_cap(ig,ic))*dist < trn_tauddmc) then
         ptcl2%itype = 1
 !-- sample wavelength
