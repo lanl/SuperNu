@@ -1,3 +1,5 @@
+!This file is part of SuperNu.  SuperNu is released under the terms of the GNU GPLv3, see COPYING.
+!Copyright (c) 2013-2015 Ryan T. Wollaeger and Daniel R. van Rossum.  All rights reserved.
 pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr)
 
   use randommod
