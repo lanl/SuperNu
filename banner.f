@@ -56,3 +56,4 @@ c
       write(6,*)
 c
       end subroutine banner
+c vim: fdm=marker

@@ -31,3 +31,4 @@ c     ----------------------------------------
       end subroutine sourcemod_init
 c
       end module sourcemod
+c vim: fdm=marker

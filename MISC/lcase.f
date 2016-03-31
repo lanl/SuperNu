@@ -21,3 +21,4 @@ c
        if(n /= 0) output_string(i:i) = lower_case(n:n)
       enddo
       end function lcase
+c vim: fdm=marker

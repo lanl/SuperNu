@@ -28,3 +28,4 @@ subroutine tau_update(t,tfirst,tlast)
   endif
 
 end subroutine tau_update
+! vim: fdm=marker

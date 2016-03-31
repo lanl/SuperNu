@@ -195,3 +195,4 @@ c
 !      end subroutine write_verner
 c
       end module bfxsmod
+c vim: fdm=marker

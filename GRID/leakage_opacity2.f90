@@ -262,3 +262,4 @@ subroutine leakage_opacity2
 
 
 end subroutine leakage_opacity2
+! vim: fdm=marker

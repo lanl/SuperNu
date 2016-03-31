@@ -25,3 +25,4 @@ c
 c--
       locate = jl
       end function locate
+c vim: fdm=marker

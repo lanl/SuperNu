@@ -64,3 +64,4 @@ subroutine sourceenergy(nmpi)
   endif
 
 end subroutine sourceenergy
+! vim: fdm=marker

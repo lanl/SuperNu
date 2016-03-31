@@ -76,3 +76,4 @@ subroutine initialnumbers(nmpi)
   enddo
 
 end subroutine initialnumbers
+! vim: fdm=marker

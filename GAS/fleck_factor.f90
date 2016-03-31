@@ -47,3 +47,4 @@ subroutine fleck_factor(tempalt,capgreyalt)
   enddo !i
 
 end subroutine fleck_factor
+! vim: fdm=marker

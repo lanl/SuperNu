@@ -191,3 +191,4 @@ c-- timing
       call timereg(t_output, t1-t0)
 c
       end subroutine output_grid
+c vim: fdm=marker

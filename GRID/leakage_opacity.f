@@ -29,3 +29,4 @@ c
       call timereg(t_opacleak,t1-t0) 
 c
       end subroutine leakage_opacity
+c vim: fdm=marker

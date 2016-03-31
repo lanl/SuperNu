@@ -55,3 +55,4 @@ c-- update ni56
       end subroutine nucdecay3
 c
       end module nucdatamod
+c vim: fdm=marker

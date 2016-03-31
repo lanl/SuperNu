@@ -22,3 +22,4 @@ c
       if(istat/=0) stop 'parse_inputpars: open output.data error'
 c
       end subroutine open_logfiles
+c vim: fdm=marker

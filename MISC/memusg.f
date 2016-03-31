@@ -104,3 +104,4 @@ c
       mbsize(2) = (stat%vsize)/1024**2
 c
       end function memusg
+c vim: fdm=marker

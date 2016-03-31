@@ -25,3 +25,4 @@ c
        enddo
       endif
       end subroutine warn
+c vim: fdm=marker

@@ -49,3 +49,4 @@ subroutine temperature_update
   tot_emat = sum(gas_bcoef*gas_temp*gas_vol)
 
 end subroutine temperature_update
+! vim: fdm=marker

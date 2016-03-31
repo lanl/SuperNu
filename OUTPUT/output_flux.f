@@ -81,3 +81,4 @@ c-- after the first iteration open files in append mode
       fstat = 'old'
 c
       end subroutine output_flux
+c vim: fdm=marker

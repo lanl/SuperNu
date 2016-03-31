@@ -97,3 +97,4 @@ c-- optimized form
       end function dplanckdtemp
 c
       end module physconstmod
+c vim: fdm=marker

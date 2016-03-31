@@ -28,3 +28,4 @@ subroutine vacancies
   if(ipart > prt_npartmax) stop 'Maximum number of prt_particles reached'
 
 end subroutine vacancies
+! vim: fdm=marker

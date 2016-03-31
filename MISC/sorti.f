@@ -55,3 +55,4 @@ c
        indx(i) = indxt
       enddo
       end subroutine sorti
+c vim: fdm=marker

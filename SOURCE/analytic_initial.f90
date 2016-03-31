@@ -40,3 +40,4 @@ subroutine analytic_initial
   endif
 
 end subroutine analytic_initial
+! vim: fdm=marker

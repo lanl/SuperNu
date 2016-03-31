@@ -23,3 +23,4 @@ c-- check EOF
       write(6,*) 'rd_temp_preset: custom temp profiles read'
 c
       end subroutine read_temp_preset
+c vim: fdm=marker

@@ -43,3 +43,4 @@ c
       !dd = (x**m)/(exp(x)-1d0)
       !ss = (x2-x1)*dd
       end function specint
+c vim: fdm=marker

@@ -91,3 +91,4 @@ c
 !     write(6,'(a,f8.2,a)') ' time used for bbxs reading:',t1-t0,'s'
 
       end subroutine read_bbxs_data
+c vim: fdm=marker

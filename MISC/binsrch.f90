@@ -55,3 +55,4 @@ pure function binsrch(x,arr,n,widerange)
   binsrch = imid
 
 end function binsrch
+! vim: fdm=marker

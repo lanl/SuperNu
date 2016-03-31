@@ -983,3 +983,4 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   darrold = darr
 
 end subroutine transport1
+! vim: fdm=marker

@@ -84,3 +84,4 @@ c-- convert to flux per second
       flx_lumdev = flx_lumdev*help**2
 c
       end subroutine fluxtally
+c vim: fdm=marker

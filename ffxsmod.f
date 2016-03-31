@@ -54,3 +54,4 @@ c
       end subroutine ffxs_read_data
 c
       end module ffxsmod
+c vim: fdm=marker

@@ -98,3 +98,4 @@ subroutine analytic_opacity
   endif
 
 end subroutine analytic_opacity
+! vim: fdm=marker

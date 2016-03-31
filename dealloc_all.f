@@ -33,3 +33,4 @@ c-- ionsmod
       deallocate(tsp_tarr)
 
       end subroutine dealloc_all
+c vim: fdm=marker

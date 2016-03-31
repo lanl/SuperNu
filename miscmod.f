@@ -41,3 +41,4 @@ c
       end interface
 c
       end module miscmod
+c vim: fdm=marker

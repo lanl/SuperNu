@@ -39,3 +39,4 @@ c-- add gamma radiation source tot total
       if(lmpi0) tot_eext = tot_eext + sum(grd_tally(1,:))
 c
       end subroutine sourceenergy_misc
+c vim: fdm=marker

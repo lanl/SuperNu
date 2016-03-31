@@ -51,3 +51,4 @@ c      enddo
 c     enddo !i
 c
       end subroutine opacity_planckmean
+c vim: fdm=marker

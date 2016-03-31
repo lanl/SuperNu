@@ -43,3 +43,4 @@ c-- step up until target r1 is reached
 !     if(ig>grp_ng) stop 'transport1: ig not valid'
 c
       end function emitgroup
+c vim: fdm=marker

@@ -59,3 +59,4 @@ subroutine emission_probability
   call timereg(t_emitp,t1-t0)
 
 end subroutine emission_probability
+! vim: fdm=marker
