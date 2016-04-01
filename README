@@ -14,6 +14,12 @@ Copyright (c) 2013-2015 Ryan Wollaeger and Daniel van Rossum.  All rights reserv
     Please find a copy of the GNU General Public License in the COPYING
     file provided along with this program, or see <http://www.gnu.org/licenses/>.
 
+LANL_COPYING and LANL_README
+----------------------------
+Modifactions made by Ryan Wollaeger while at Los Alamos National Laboratory (LANL) fall under a LANS copyright assertion.
+See LANL_COPYING for the copyright assertion and LANL_README for a summary of the corresponding modifications made by Ryan
+Wollaeger while at LANL.
+
 If you use SuperNu, we ask you to appropriately acknowledge SuperNu and cite the papers in which the methods are described.
 Thank you,
 the authors
