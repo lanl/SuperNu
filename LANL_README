@@ -1,0 +1,84 @@
+Explanation of LANS Copyright Assertion:
+----------------------------------------
+
+The Los Alamos National Security (LANS), LLC, copyright assertion pertains
+to modifications made to SuperNu, Version 3.x, by Ryan Wollaeger,
+while at Los Alamos National Laboratory (LANL) and while funded by the
+Office of Advanced Simulation and Computing (ASC). The copyright assertion
+can be found in LANL_COPYING. The LANS copyright assertion does not pertain
+to revisions to SuperNu made by SuperNu author Daniel van Rossum. The LANS
+copyright assertion applies to all revisions to SuperNu made by author Ryan
+Wollaeger after January 20, 2015.
+
+Please see the main readme file, README, for a description of the entire
+SuperNu code, including a summary of functionality and setup instructions.
+A description of the developments that fall under the auspices of the LANS
+copyright assertion is included in the abstract below.
+
+Abstract:
+---------
+
+A. Patches to SuperNu, Version 3.x, added at LANL:
+==================================================
+
+(1) 3D Cylindrical IMC-DDMC and minor patches (default branch):
+
+At LANL, modifications to enable 3D cylindrical IMC-DDMC were made to the
+following files:
+-- inputparmod.f
+-- inputstrmod.f
+-- sourcemod.f
+-- particle_advance.f90
+-- particle_advance_gamgrey.f90
+-- SOURCE/boundary_source.f90
+-- SOURCE/initial_particles.f90
+-- SOURCE/sourcenumbers.f90
+-- GRID/leakage_opacity2.f90
+-- TRANSPORT2/transport2.f90
+-- TRANSPORT2/diffusion2.f90
+-- TRANSPORT2/transport2_gamgrey.f90
+
+The generalization of 2D cylindrical to 3D cylindrical geometry does not
+extend the physics capbilities of SuperNu, which had 3D Cartesian and 3D
+spherical IMC-DDMC implemented prior to SuperNu Version 3.x.
+
+(2) Lambda-T optimization ("wlT" branch):
+
+The following summary pertains to a discontinued branch for an attempted
+optimization at LANL.  The implementation of the dual grid wlT optimization,
+which was part of the LANL copyright assertion, proved inaccurate in supernova
+light curve calculations.
+
+An alternate form of an optimization in the IMC-DDMC radiation transport code
+SuperNu was developed and tested at LANL.  This optimization involves storing
+a non-dimensional wavelength grid for computing opacities and tracking Monte
+Carlo photon radiation particles.  The physical wavelength grid is the
+non-dimensional grid divided by the local spatial cell gas temperature.
+
+The patch to the optimization is:
+-- the removal of temperature corrections to DDMC particle weights,
+-- the introduction of a dual wavelength grid that is dimensional and uniform
+in space.
+
+The temperature correction to DDMC particle weights seemed to result naturally from
+the transport equations but could not be theoretically justified and was deemed
+a bug.  The additional wavelength grid is applied in DDMC propagation of particles
+and calculation of DDMC leakage opacities to avoid in-line Planck integrals at
+IMC-DDMC interfaces (an expense that would otherwise be incurred by using the
+non-dimensional grid without temperature corrections in DDMC).  The new wavelength
+grid also adapts in time to cover all dimensional frequencies implied by the
+non-dimensional grid and the material temperature field.
+
+Despite the advantage of a global group Planck function integral array, the
+dual-grid patch to the non-dimensional multigroup scheme requires a mapping
+of multigroup opacity to the dimensional dual grid.
+
+To implement the wavelength dual-grid optimization, modifications included:
+-- addition of new input parameters and allocatable arrays to handle
+mapping from nondimensional to dimensional wavelength grid,
+-- addition of a subroutine to adapt the dimensional wavelength grid each
+time step (called "group_update"),
+-- addition of a function (called "regroup") that maps multigroup data
+from the non-dimensional to the dimensional wavelength grid,
+-- modification of IMC-DDMC particle exchange conditions to use values
+mapped from the regroup function.
