@@ -27,12 +27,10 @@ At LANL, modifications to enable 3D cylindrical IMC-DDMC were made to the
 following files:
 -- inputparmod.f
 -- inputstrmod.f
--- sourcemod.f
 -- particle_advance.f90
 -- particle_advance_gamgrey.f90
 -- SOURCE/boundary_source.f90
 -- SOURCE/initial_particles.f90
--- SOURCE/sourcenumbers.f90
 -- GRID/leakage_opacity2.f90
 -- TRANSPORT2/transport2.f90
 -- TRANSPORT2/diffusion2.f90
