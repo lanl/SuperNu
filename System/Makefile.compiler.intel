@@ -4,11 +4,12 @@ FC = ifort
 
 #-- opt or debug
 FCFLAGS = -O2
-#FCFLAGS = -O0 -g -check all -debug -traceback -gen-interfaces -warn all,notruncated_source
+#FCFLAGS = -O0 -g -check -debug -traceback -gen-interfaces -warn all,notruncated_source
 
 #-- additional flags
 FCFLAGS += -msse3
-FCFLAGS += -m64 -openmp
+FCFLAGS += -m64
+FCFLAGS += -openmp
 LDFLAGS = -openmp
 
 AR = ar

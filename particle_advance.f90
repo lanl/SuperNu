@@ -38,7 +38,6 @@ subroutine particle_advance
   integer, pointer :: ig, ic
   integer, pointer :: ix, iy, iz
   real*8, pointer :: x,y,z, mu, e, e0, wl, om
-  integer :: iom, imu
   real*8 :: eta, xi
   real*8 :: t0,t1  !timing
   real*8 :: labfact, mu1, mu2
@@ -113,7 +112,7 @@ subroutine particle_advance
 !$omp    specarr,glumps,llumps, &
 !$omp    x,y,z,mu,om,wl,e,e0,ix,iy,iz,ic,ig,icold,r1, &
 !$omp    i,t0,t1,x1,x2,help,tau, &
-!$omp    mu1,mu2,eta,xi,labfact,iom,imu, &
+!$omp    mu1,mu2,eta,xi,labfact, &
 !$omp    rndstate,edep,eraddens,eamp,ierr, iomp) &
 !$omp reduction(+:grd_tally, &
 !$omp    tot_evelo,tot_erad,tot_eout,tot_sflux, &
