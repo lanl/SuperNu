@@ -16,6 +16,26 @@ pure function binsrch(x,arr,n,widerange)
 !---------------------------------------------------
   integer :: imin, imax, imid
 
+!-- quick return for array of size 2
+  if(n==2) then
+     if(x>=arr(1).and.x<=arr(n)) then
+        binsrch = 1
+     elseif(x<arr(1)) then
+        binsrch = 0
+     elseif(x>arr(n)) then
+        binsrch = n
+     else
+!--  invalid inputs
+        binsrch = -1 !invalid
+        return
+     endif
+!-- limit result to within array bounds
+     if(.not.widerange) then
+        binsrch = 1
+     endif
+     return
+  endif
+  
   imin = 1
   imax = n
   imid = (n+1)/2
