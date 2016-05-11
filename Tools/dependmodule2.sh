@@ -28,7 +28,7 @@ fi
 #-- find module files
 declare mods
 l=0
-for i in $(ls -l $1 | awk '/.*mod\.f(90)?[^\~]/ {print $9}'); do
+for i in $(ls -l $1 | awk '/mod\.f(90)? / {print $9}'); do
     mods[$l]=$(echo $i)
     ((l+=1))
 done

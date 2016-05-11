@@ -100,8 +100,8 @@ c
 *!     write(6,*) 'stat'
 *!     write(6,*) stat
 c
-      mbsize(1) = (stat%rss*pagesize)/1024**2
-      mbsize(2) = (stat%vsize)/1024**2
+      mbsize(1) = int((stat%rss*pagesize)/1024**2)
+      mbsize(2) = int((stat%vsize)/1024**2)
 c
       end function memusg
 c vim: fdm=marker
