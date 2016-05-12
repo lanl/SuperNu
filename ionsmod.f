@@ -389,7 +389,7 @@ c-- allocate data structure
 c
 c-- open file
       open(4,file=fname,action='read',status='old',iostat=istat)
-      if(istat/=0) stop 'ion_read_data: cannot read iondata.dat'
+      if(istat/=0) stop 'ion_read_data: cannot read data.ion'
 c
 c
 c-- read ions one by one
