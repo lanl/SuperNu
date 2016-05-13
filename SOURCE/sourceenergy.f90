@@ -1,6 +1,6 @@
 !This file is part of SuperNu.  SuperNu is released under the terms of the GNU GPLv3, see COPYING.
 !Copyright (c) 2013-2015 Ryan T. Wollaeger and Daniel R. van Rossum.  All rights reserved.
-subroutine sourceenergy(nmpi)
+subroutine sourceenergy
 
   use gasmod
   use sourcemod
@@ -10,7 +10,6 @@ subroutine sourceenergy(nmpi)
   use inputparmod
   use manufacmod
   implicit none
-  integer,intent(in) :: nmpi
 !##################################################
 !This subroutine computes the distribution of source particles each
 !time step.  A fraction of the source particle number src_ns is given
@@ -43,12 +42,8 @@ subroutine sourceenergy(nmpi)
 !-- accounting for total material source energy:
 !-- gas_fcoef of matsrc goes directly in temperature equation
 !-- and remaining 1-gas_fcoef is thermal radiation.
-  if(tsp_it==1) then
-     tot_eext = tot_eext + tsp_dt*sum(gas_vol*gas_matsrc)
-  else
-!-- rtw: tot_eext is only broadcast for tsp_it==1
-     tot_eext = tot_eext + tsp_dt*sum(gas_vol*gas_matsrc)*nmpi
-  endif
+  tot_eext = tot_eext + tsp_dt*sum(gas_vol*gas_matsrc)
+
 !
 !-- non-thermal decay radiation source energy
   if(.not.in_novolsrc .and. in_srctype=='none') then

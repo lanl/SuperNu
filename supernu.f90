@@ -164,7 +164,7 @@ program supernu
      call gas_update(it)
 
 !-- source energy: gamma and material
-     call sourceenergy(nmpi)
+     call sourceenergy
 
 !-- grey gamma ray transport
      call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
