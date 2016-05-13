@@ -650,6 +650,7 @@ c
       if(in_grp_wlmin<0) stop 'in_grp_wlmin invalid'
       if(in_grp_wlmax<=in_grp_wlmin) stop 'in_grp_wlmax invalid'
 c
+      if(in_srcepwr<=0d0) stop 'in_srcpwr <= 0'
       if(in_src_ns<=0 .eqv. in_src_n2s<0) stop
      &  'use in_src_ns or in_src_n2s'
       if(in_src_nsinit>0 .and. in_src_n2sinit>=0) stop
