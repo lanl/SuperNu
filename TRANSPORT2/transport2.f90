@@ -498,6 +498,8 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ptcl2%stat = 'dead'
 !-- adding comoving energy to deposition energy
         edep = e*elabfact
+!-- velocity effects accounting
+        totevelo = totevelo+e*(1d0-elabfact)
         return
      else
 !-- effective scattering
