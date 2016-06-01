@@ -34,7 +34,7 @@ c------------------------------
 c-- read
       open(4,file=fname,action='read',status='old',
      &  iostat=istat)
-      if(istat/=0) stop 'bfxs_read_data: cannot read bf_verner.dat'
+      if(istat/=0) stop 'bfxs_read_data: cannot read data.bf_verner'
       read(4,*) !comments
       read(4,*) !comments
       read(4,*,err=99) ph1d
