@@ -137,17 +137,17 @@ SuperNu writes output of energy totals in ascii (output.tot_energy) each time st
 The first column is energy conservation error.  These values can be used to find unintended energy leaks or sources in simulations.
 
 Grid-based variables:
-SuperNu optionally, with logical input parameter in_io_nogriddump, writes grid-based variables in ascii (output.grd_*).
-Grid variables include material temperature (output.grd_temp), radiation energy density (output.grd_temp), and Planck opacity (output.grd_capgrey).
-The grid variables can be mapped to spatial cells with output.grd_grid.
-As headers, output.grd_grid has (in row order) the geometry index (grd_igeom), the number of cells along each dimension (grd_nx,grd_ny,grd_nz),
-and the total number of array cells used yield an optimal row size (ncpr), column size (nrow) to minimize padding cells per write
+Using parameter in_io_nogriddump, SuperNu optionally writes grid-based variables in ascii (output.grd_*).
+Grid variables include material temperature (output.grd_temp), radiation energy density (output.grd_eraddens), and Planck opacity (output.grd_capgrey).
+The grid variables can be mapped to spatial cells (with an (i,j,k) index) with output.grd_grid.
+As headers, output.grd_grid has (in row order) the geometry index (grd_igeom), the number of spatial cells along each dimension (grd_nx,grd_ny,grd_nz),
+and the total number of array cells used to yield an optimal row size (ncpr), column size (nrow) to minimize padding cells per write
 (the final header has nrow*ncpr,nrow,ncpr).
 The next 3 rows are space or velocity values at the cell edges in the x,y,z dimensions.
-The following integers are the cell indices of grid values for spatial index locations (i,j,k), where the column index is the x-dimension (i),
-and the row index is the serialized index for the y (j) and z (k) dimensions (the row index is (k-1)*ny+j).
+The following integers are the cell indices of grid variables for spatial index locations (i,j,k), where the column index is the x-dimension (i),
+and the row index is the serialized index for the y (j) and z (k) dimensions (the row index is j+(k-1)*ny).
 Thus, the cell padding information can be used to remove extra padding values from the grid output, and the grid index mapping to the (i,j,k)
-spatial cell index can used to reconstruct spatial profiles of the grid data.
+spatial cell index can used to reconstruct spatial profiles of the padding-stripped grid data.
 
 
 CODING STANDARDS
