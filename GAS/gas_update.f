@@ -162,8 +162,8 @@ c
 c
 c-- solve LTE EOS, heat capacity
 c===============================
-      do_output = (in_pdensdump=='each' .or.
-     &  (in_pdensdump=='one' .and. tsp_it==1))
+      do_output = (in_io_pdensdump=='each' .or.
+     &  (in_io_pdensdump=='one' .and. tsp_it==1))
       if(.not.in_noeos) call eos_update(do_output)
 c
       if(in_gas_cvcoef>0d0) then
@@ -232,7 +232,7 @@ c
 c
 c-- write out opacities
 c----------------------
-      if(trim(in_opacdump)=='off') then !{{{
+      if(trim(in_io_opacdump)=='off') then !{{{
 c-- donothing
       else
        open(4,file='output.opac',status='unknown',position='append')
