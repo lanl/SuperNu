@@ -51,15 +51,16 @@ c     ------------------------------------------!{{{
 * Read a single .atom file, or just poll how many lines it contains.
 ************************************************************************
       character(80) :: word
-      character(8) :: fname
+      character(13) :: fname
 c-- level id
       integer :: l,lidmax,istat2
       integer,allocatable :: lid(:)
       integer(1) :: byte
 c
 c-- filename
-      write(fname,'(a2,i1,".atom")') lcase(trim(elem_data(iz)%sym)),ii
-      open(4,file='Atom/'//adjustl(fname),status='old',action='read',
+      write(fname,'("data.atom.",a2,i1)')
+     &  lcase(trim(elem_data(iz)%sym)),ii
+      open(4,file='Atoms/'//adjustl(fname),status='old',action='read',
      &  iostat=istat)
       if(istat/=0) goto 66
 c
