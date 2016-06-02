@@ -119,6 +119,7 @@ IO:
     - data.bf_verner: bound-free cross section data (Verner et al. 1996, ApJ 465, 487)
     - data.ff_sutherland: free-free gaunt factor data (Sutherland 1998, MNRAS 300, 321)
     - data.ion: atomic level data (from http://kurucz.harvard.edu/atoms.html)
+    - Atoms/data.atom.* bound-bound transition data
 - output files are named output.*
   - stdout is written to output.log unless disabled in by an input parameter.
   - flux variables are saved as output.flx_*
@@ -150,8 +151,8 @@ SETUP INSTRUCTIONS
 The following procedure produces two supernu executables, one serial and one MPI-parallel version.
 Please report build errors to Daan van Rossum.
 
-# mkdir supernu
-# cd supernu
+# mkdir ~/supernu
+# cd ~/supernu
 # hg clone https://drrossum@bitbucket.org/drrossum/supernu src
 
 -- SERIAL --
@@ -175,3 +176,23 @@ Please report build errors to Daan van Rossum.
   - modify the compiler flags to your liking (e.g. optimization, debug flags etc.)
 # ln -sf ./mpimod_mpi.f ./mpimod.f
 # make -j
+
+
+USE INSTRUCTIONS
+================
+SuperNu requires the above specified input files (input.* and data.* files) to run.
+The following procedure sets up and runs an example SuperNu simulation:
+
+##-- prepare sim directory
+# mkdir -p ~/sim-supernu/test/run001
+# cd ~/sim-supernu/test/run001
+# cp ~/supernu/bin/supernu .
+# ln -sf ~/supernu/src/Data/* .
+# ln -sf /home/Data/Atoms.20120801 ./Atoms
+##-- setup simulation
+# cp -f ~/supernu/src/Input/input.str_r64 input.str
+# cp -f ~/supernu/src/Input/input.w7.par input.par
+# echo "in_name = 'w7_11r64'" >> input.par
+# echo "in_comment = 'test simulation 1D'" >> input.par
+##-- run simulation
+# ./supernu
