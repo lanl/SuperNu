@@ -36,12 +36,6 @@ c-- parameterized input structure
       real*8 :: in_str_velout = 0d0  !cm/s, velocity of outer bound
       real*8 :: in_str_totmass = 0d0  !g
       character(4) :: in_str_dentype = 'none' ! unif|mass: 'unif' for uniform density, 'mass' for equal mass accross cells
-        real*8 :: in_lx = 0d0  !spatial length of x-direction
-        real*8 :: in_ly = 0d0  !spatial length of y-direction
-        real*8 :: in_lz = 0d0  !spatial length of z-direction
-        real*8 :: in_velout = 0d0  !cm/s, velocity of outer bound
-        real*8 :: in_totmass = 0d0  !g
-        character(4) :: in_dentype = 'none' ! unif|mass: 'unif' for uniform density, 'mass' for equal mass accross cells
 c
 c
 c-- time step
@@ -49,10 +43,6 @@ c-- time step
       real*8 :: in_tsp_tlast = 0d0   !last point in time evolution [sec]
       integer :: in_tsp_nt = 0       !number of time steps
       integer :: in_tsp_itrestart = -1   !restart time step number
-        real*8 :: in_tfirst = 0d0
-        real*8 :: in_tlast = 0d0
-        integer :: in_nt = 0
-        integer :: in_ntres = -1
       character(4) :: in_tsp_gridtype = 'lin ' ! line|expo|read: linear, exponential or read-in timestep grid
 c
 c
@@ -62,11 +52,6 @@ c-- group structure
       real*8 :: in_grp_wlmin =   100d-8  !lower wavelength boundary [cm]
       real*8 :: in_grp_wlmax = 32000d-8  !upper wavelength boundary [cm]
       integer :: in_grp_wldex = 0        !selects group grid from formatted group grid file
-        integer :: in_ng = -1
-        integer :: in_ngs = 1
-        real*8 :: in_wlmin =   100d-8
-        real*8 :: in_wlmax = 32000d-8
-        integer :: in_wldex = 0
 c
 c
 c-- outbound flux group and direction bins
@@ -79,7 +64,6 @@ c
 c-- particles
       integer :: in_prt_nmax = 0    !length of particle array
       integer :: in_prt_n2max = -1  !2^n length of particle array
-        integer :: in_trn_n2part = -1  !2^n length of particle array
 c
 c
 c-- source
@@ -87,8 +71,6 @@ c-- source
       integer :: in_src_n2s = -1   !2^n source particles generated per time step (total over all ranks)
       integer :: in_src_nsinit = 0   !number of initial particles at in_tsp_tfirst
       integer :: in_src_n2sinit = -1 !2^n number of initial particles at in_tsp_tfirst
-        integer :: in_ns = 0
-        integer :: in_ns0 = 0
       logical :: in_novolsrc = .false.  !switch to turn off any volume source (could be useful for debugs)
       real*8 :: in_srcepwr = 1d0  !source particle number-energy slope, 1 is linear, equal number of packets per erg.
 c-- analytic power-law source terms
@@ -123,8 +105,6 @@ c
 c-- gas grid parameters
       real*8 :: in_gas_gastempinit = 0d0 !non-zero will not read temp from file. units: K
       real*8 :: in_gas_radtempinit = 0d0 !initial radiation temperature.  Use grd_temp by default
-        real*8 :: in_consttemp = 0d0
-        real*8 :: in_tempradinit = 0d0
 c-- analytic heat capacity terms
       real*8 :: in_gas_cvcoef = 1d7 !power law heat capacity coefficient
       real*8 :: in_gas_cvtpwr = 0d0 !power law heat capacity temperature exponent
@@ -167,10 +147,6 @@ c-- output
       logical :: in_io_nogriddump = .false.  !don't write grid cell variables
       character(4) :: in_io_opacdump = 'off '    !off|one|each|all: write opacity data to file
       character(4) :: in_io_pdensdump = 'off '   !off|one|each: write partial densities to file
-        logical :: in_grabstdout = .false.  !write stdout to file
-        logical :: in_nogriddump = .false.  !don't write grid cell variables
-        character(4) :: in_opacdump = 'off '    !off|one|each|all: write opacity data to file
-        character(4) :: in_pdensdump = 'off '   !off|one|each: write partial densities to file
 c     
 c-- runtime parameter namelist
       namelist /inputpars/
@@ -183,24 +159,18 @@ c-- runtime parameter namelist
      & in_voidcorners,in_noreadstruct,
      & in_str_lx,in_str_ly,in_str_lz,
      & in_str_velout,in_str_totmass,in_str_dentype,
-     &    in_lx,in_ly,in_lz,
-     &    in_velout,in_totmass,in_dentype,
 !tsp
      & in_tsp_tfirst,in_tsp_tlast,
      & in_tsp_gridtype,in_tsp_nt,in_tsp_itrestart,
-     &   in_tfirst,in_tlast,in_nt,in_ntres, !deprec
 !grp
      & in_grp_ng,in_grp_ngs,in_grp_wlmin,in_grp_wlmax,in_grp_wldex,
-     &   in_ng,in_ngs,in_wlmin,in_wlmax,in_wldex, !deprec
 !flx
      & in_flx_ndim,in_flx_wlmin,in_flx_wlmax,in_flx_noobservertime,
 !prt
      & in_prt_nmax,in_prt_n2max,
-     &   in_trn_n2part, !deprec
 !src
      & in_src_ns,in_src_nsinit,
      & in_src_n2s,in_src_n2sinit,
-     &   in_ns,in_ns0, !deprec
      & in_srcepwr,
      & in_srctype,in_theav,in_nheav,in_srcmax,
      & in_surfsrcloc,in_surfsrcmu,
@@ -212,7 +182,6 @@ c-- runtime parameter namelist
      & in_tauddmc,in_taulump,in_tauvtime,
 !gas
      & in_gas_gastempinit,in_gas_radtempinit,
-     &   in_consttemp,in_tempradinit, !deprec
      & in_gas_cvcoef,in_gas_cvtpwr,in_gas_cvrpwr,
      & in_noeos,
 !phys opac
@@ -227,10 +196,7 @@ c-- runtime parameter namelist
 !io
      & in_io_grabstdout,
      & in_io_nogriddump,in_io_dogrdtally,
-     & in_io_opacdump,in_io_pdensdump,
-     &   in_grabstdout,
-     &   in_nogriddump,
-     &   in_opacdump,in_pdensdump
+     & in_io_opacdump,in_io_pdensdump
 c
 c-- pointers
 c
@@ -426,9 +392,6 @@ c-- read namelist
       read(4,nml=inputpars,end=67,err=68)
       close(4)
 c
-c-- special case
-      if(in_grabstdout) in_io_grabstdout=.true.
-c
       return
 66    stop 'read_inputpars: namelist input file missing: input.par'
 67    stop 'read_inputpars: namelist missing or bad in input.par'
@@ -446,44 +409,14 @@ c     ------------------------------!{{{
 
 * The purpose is to help the user transition away from deprecated variables
 ***********************************************************************
-      if(in_ns/=0) stop 'DEPRECATED: in_ns => in_src_ns'
-      if(in_ns0/=0) stop 'DEPRECATED: in_ns0 => in_src_nsinit'
-      if(in_trn_n2part/=-1) stop
-     &  'DEPRECATED: in_trn_n2part => in_prt_n2max'
-c-- str
-      call depr(in_lx,in_str_lx,0d0,'lx','str_lx')
-      call depr(in_ly,in_str_ly,0d0,'ly','str_ly')
-      call depr(in_lz,in_str_lz,0d0,'lz','str_lz')
-      call depr(in_velout,in_str_velout,0d0,'velout','str_velout')
-      call depr(in_totmass,in_str_totmass,0d0,'totmass','str_totmass')
-      call depc(in_dentype,in_str_dentype,'none','dentype',
-     &  'str_dentype')
-c-- tsp
-      if(in_tfirst/=0d0) stop 'DEPRECATED: in_tfirst => in_tsp_tfirst'
-      if(in_tlast/=0d0) stop 'DEPRECATED: in_tlast => in_tsp_tlast'
-      call depi(in_nt,in_tsp_nt,0,'nt','tsp_nt')
-      call depi(in_ntres,in_tsp_itrestart,-1,'ntres','tsp_itrestart')
-c-- gas
-      call depr(in_consttemp,in_gas_gastempinit,0d0,'consttemp',
-     &  'gas_gastempinit')
-      call depr(in_tempradinit,in_gas_radtempinit,0d0,'tempradinit',
-     &  'gas_radtempinit')
-c-- grp
-      call depi(in_ng,in_grp_ng,-1,'ng','grp_ng')
-      call depi(in_ngs,in_grp_ngs,1,'ngs','grp_ngs')
-      call depr(in_wlmin,in_grp_wlmin,100d-8,'wlmin','grp_wlmin')
-      call depr(in_wlmax,in_grp_wlmax,32000d-8,'wlmax','grp_wlmax')
-      call depi(in_wldex,in_grp_wldex,0,'wldex','grp_wldex')
-c-- io
-      if(in_grabstdout) write(6,*)
-     &  'DEPRECATED: in_grabstdout=>in_io_grabstdout'
-      call depl(in_nogriddump,in_io_nogriddump,.false.,'nogriddump',
-     &  'io_nogriddump')
-      call depc(in_opacdump,in_io_opacdump,'off ','opacdump',
-     &  'io_opacdump')
-      call depc(in_pdensdump,in_io_pdensdump,'off ','pdensdump',
-     &  'io_pdensdump')
-      write(6,*)
+!     if(in_ns/=0) stop 'DEPRECATED: in_ns => in_src_ns'
+!     call depr(in_lx,in_str_lx,0d0,'lx','str_lx')
+!     call depi(in_nt,in_tsp_nt,0,'nt','tsp_nt')
+!     call depl(in_nogriddump,in_io_nogriddump,.false.,'nogriddump',
+!    &  'io_nogriddump')
+!     call depc(in_opacdump,in_io_opacdump,'off ','opacdump',
+!    &  'io_opacdump')
+!     write(6,*)
 c
       contains
 c!{{{
