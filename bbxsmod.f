@@ -52,24 +52,15 @@ c     ------------------------------------------!{{{
 ************************************************************************
       character(80) :: word
       character(13) :: fname
-      character(len(trim(elem_data(iz)%sym))) :: atomsym
 c-- level id
-      integer :: l,lidmax,istat2, lensym
+      integer :: l,lidmax,istat2
       integer,allocatable :: lid(:)
       integer(1) :: byte
 c
 c-- filename
-      atomsym = lcase(trim(elem_data(iz)%sym))
-      lensym = len(atomsym)
-      if(lensym==1) then
-       write(fname,'("data.atom.",a1,i1)') atomsym,ii
-      elseif(lensym==2) then
-       write(fname,'("data.atom.",a2,i1)') atomsym,ii
-      else
-       write(6,*) atomsym
-       stop 'read_atom: invalid element symbol' 
-      endif
-      open(4,file='Atoms/'//adjustl(fname),status='old',action='read',
+      write(fname,'("data.atom.",a,i1)')
+     &  lcase(trim(elem_data(iz)%sym)),ii
+      open(4,file='Atoms/'//trim(fname),status='old',action='read',
      &  iostat=istat)
       if(istat/=0) goto 66
 c
@@ -97,7 +88,7 @@ c-- line data
       read(4,'(2i5,f7.3)',iostat=istat) bbxs_line
       if(istat/=0) then
        write(6,*) fname
-       stop 'read_atom: line data read error'
+       stop 'read_atom: level data read error'
       endif
 c-- verify eof
       read(4,*,iostat=istat2) byte
