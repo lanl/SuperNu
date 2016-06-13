@@ -17,6 +17,7 @@ parser = argparse.ArgumentParser(description='Post-process flux data' \
                                  ' with a Savitzky-Golay filter.')
 parser.add_argument('flux',type=str,help='File of flux data')
 parser.add_argument('flux_grid',type=str,help='File of flux grid data')
+parser.add_argument('--nfilter',type=int,help='Number of filter points')
 parser.add_argument('--fname_out',type=str,help='Optional name for' \
                     ' output file.')
 
@@ -37,8 +38,10 @@ wlfile.close()
 wl = np.array([float(wlval) for wlval in wlline])
 
 #-- ensure a sufficient number of groups
+if(args.nfilter==None): nfilter = 5
+else: nfilter = args.nfilter
 ng = np.size(wl)-1
-if(ng<5): print 'WARNING: insufficient number of groups (< 5)'
+if(ng<nfilter): print 'WARNING: insufficient number of groups (< nfilter)'
 
 #-- group centers are used as independent variable
 wlc = .5*(wl[1:]+wl[:ng])
@@ -50,22 +53,23 @@ flux_spec = flux/dwl
 smooth_flux = flux_spec.copy()
 
 #-- smooth spectrum for each time step
+nfilr = (nfilter-1)/2
 for it in range(nt):
     
     #-- do not smooth on boundary wl values
-    for ig in range(2,ng-2):
+    for ig in range(nfilr,ng-nfilr):
         
         #-- approximate inverse matrix for a cubic regression
-        wl3mat = np.vander(wlc[ig-2:ig+2], 4)
+        wl3mat = np.vander(wlc[ig-nfilr:ig+nfilr], 4)
         wlmat = np.dot(wl3mat.T,wl3mat)
         wlmat = np.linalg.inv(wlmat)
         wlmat = np.dot(wlmat,wl3mat.T)
         
         #-- calculate SG coefficients
-        abar = np.dot(wlmat,flux_spec[it,ig-2:ig+2])
+        abar = np.dot(wlmat,flux_spec[it,ig-nfilr:ig+nfilr])
 
         #-- smooth the flux at this point
-        smflux = abar[3]+abar[2]*wl[ig]+abar[1]*wl[ig]**2+abar[0]*wl[ig]**3
+        smflux = np.dot(abar,wl3mat[nfilr,:])
         if(smflux > 0.0): smooth_flux[it,ig] = smflux
         else: smooth_flux[it,ig] = flux_spec[it,ig]
 
