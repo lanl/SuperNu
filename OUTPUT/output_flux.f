@@ -55,16 +55,6 @@ c==============
       enddo
       close(4)
 
-      open(unit=4,file='output.flx_lumtime',status=fstat,
-     &  position='append',recl=reclen)
-      do k=1,flx_nom
-      do j=1,flx_nmu
-       write(4,'(10000e12.4)') merge(flx_lumtime(:,j,k),0d0,
-     &   mask=flx_lumtime(:,j,k)>1d-99)
-      enddo
-      enddo
-      close(4)
-
       open(unit=4,file='output.flx_lumdev',status=fstat,
      &  position='append',recl=reclen)
       do k=1,flx_nom

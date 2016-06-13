@@ -602,9 +602,6 @@ c
       call mpi_reduce(snd3f,flx_lumdev,n,MPI_REAL8,MPI_SUM,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      snd3f = flx_lumtime
-      call mpi_reduce(snd3f,flx_lumtime,n,MPI_REAL8,MPI_SUM,
-     &  impi0,MPI_COMM_WORLD,ierr)
       end subroutine reduce_fluxtally
 c
 c

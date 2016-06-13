@@ -24,7 +24,6 @@ c-- timer
       t0 = t_time()
 c
 c-- init
-      flx_lumtime = 0d0
       flx_luminos = 0d0
       flx_lumdev = 0d0
       flx_lumnum = 0
@@ -59,7 +58,6 @@ c-- retrieving lab frame flux group, polar, azimuthal bin
        iom = binsrch(ptcl%om,flx_om,flx_nom+1,.false.)
 c
 c-- tallying outbound luminosity
-       flx_lumtime(ig,imu,iom) = flx_lumtime(ig,imu,iom)+ptcl%t
        flx_luminos(ig,imu,iom) = flx_luminos(ig,imu,iom)+ptcl%e
        flx_lumdev(ig,imu,iom) = flx_lumdev(ig,imu,iom)+ptcl%e**2
        flx_lumnum(ig,imu,iom) = flx_lumnum(ig,imu,iom)+1

@@ -18,8 +18,6 @@ c-- wavelength (wl), polar (mu), and azimuthal (om) bins
 !
 !-- radiative flux
 !=================
-!-- sum of particle flux observation times
-      real*8,allocatable :: flx_lumtime(:,:,:) !(flx_ng,flx_nmu,flx_nom)
 !-- outbound grouped luminosity
       real*8,allocatable :: flx_luminos(:,:,:) !(flx_ng,flx_nmu,flx_nom)
 !-- sampled devation of group luminosity
@@ -68,7 +66,6 @@ c-- check if bins are read or generated
       enddo
 c
 c-- allocate flux tally arrays
-      allocate(flx_lumtime(flx_ng,flx_nmu,flx_nom))
       allocate(flx_luminos(flx_ng,flx_nmu,flx_nom))
       allocate(flx_lumdev(flx_ng,flx_nmu,flx_nom))
       allocate(flx_lumnum(flx_ng,flx_nmu,flx_nom))
@@ -216,7 +213,6 @@ c
       deallocate(flx_wl)!{{{
       deallocate(flx_mu)
       deallocate(flx_om)
-      deallocate(flx_lumtime)
       deallocate(flx_luminos)
       deallocate(flx_lumdev)
       deallocate(flx_lumnum)
