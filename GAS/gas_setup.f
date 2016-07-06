@@ -19,13 +19,6 @@ c
 c-- agnostic mass setup
       gas_mass = str_massdd
 c
-c-- decompose idcell
-      i = 0
-      do l=gas_icell1,gas_icell1+gas_ncell-1
-       i = i+1
-       gas_idcell(i) = str_idcell(l)
-      enddo !l
-c
 c-- temperature
       if(in_srctype=='manu') then
        call init_manutemp
