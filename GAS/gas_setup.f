@@ -33,12 +33,14 @@ c-- temperature
       endif
 c
 c
-c-- used in fleck_factor
+c-- used for fleck_factor and initial radiation
       if(gas_radtempinit>0d0) then
         gas_eraddens = pc_acoef*gas_radtempinit**4
       else
         gas_eraddens = pc_acoef*gas_temp**4
       endif
+c-- disallow initial radiation in void cells
+      where(gas_mass<=0d0) gas_eraddens = 0d0
 c
 c
 c-- temp and ur
