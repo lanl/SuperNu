@@ -13,11 +13,11 @@
  in_tsp_itrestart = -6
 
 !-- grid settings
- in_igeom = 11
+ in_grd_igeom = 11
  in_ndim = 64, 1, 1
-!in_igeom = 2
+!in_grd_igeom = 2
 !in_ndim = 32, 64, 1
-!in_igeom = 3
+!in_grd_igeom = 3
 !in_ndim = 32, 32, 32
  in_isvelocity = t
 

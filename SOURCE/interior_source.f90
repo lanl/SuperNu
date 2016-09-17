@@ -107,7 +107,7 @@ subroutine interior_source
 
 !
 !-- x position
-     select case(in_igeom)
+     select case(in_grd_igeom)
      case(1,11) !-- spherical
         call rnd_r(r1,rnd_state)
         ptcl%x = (r1*grd_xarr(i+1)**3 + &
@@ -202,7 +202,7 @@ subroutine interior_source
 
 !
 !-- x position:
-     select case(in_igeom)
+     select case(in_grd_igeom)
 !!{{{
 !-- spherical
      case(1,11)
@@ -264,7 +264,7 @@ subroutine interior_source
      ptcl%x = max(ptcl%x,grd_xarr(i))
 !
 !-- y,z position
-     if(in_igeom==11) then
+     if(in_grd_igeom==11) then
         ptcl%y = grd_yarr(1)
         ptcl%z = grd_zarr(1)
      else
@@ -303,7 +303,7 @@ subroutine interior_source
 !-- must be inside cell
         ptcl%z = min(ptcl%z,grd_zarr(k+1))
         ptcl%z = max(ptcl%z,grd_zarr(k))!}}}
-     endif !in_igeom
+     endif !in_grd_igeom
 !}}}
   enddo !ipart
 !

@@ -31,7 +31,7 @@ subroutine sourceenergy_analytic(lmpi0)
 !-- time-integrated surface flux [erg/cm^2]
      help = 0.25d0*pc_acoef*pc_c*tsp_dt*in_srcmax**4 * &
           thelp**2
-     select case(in_igeom)
+     select case(in_grd_igeom)
 !-- [123]D spherical
      case(1,11)
         tot_esurf = help*pc_pi4*grd_xarr(grd_nx+1)**2
@@ -64,7 +64,7 @@ subroutine sourceenergy_analytic(lmpi0)
   elseif(in_srctype=='heav') then
      !Heaviside source (uniform source sphere)!{{{
      if (tsp_t<=(tsp_tfirst+in_theav)) then
-        select case(in_igeom)
+        select case(in_grd_igeom)
 !-- [123]D spherical
         case(1)
            nhelp=min(in_nheav,grd_nx)

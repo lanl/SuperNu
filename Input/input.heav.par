@@ -16,7 +16,7 @@ in_alpha = 1d0
 in_ismodimc = f
 
 !-- grid settings
-in_igeom = 11
+in_grd_igeom = 11
 in_ndim = 32, 1, 1
 in_isvelocity = f
 in_novolsrc = f

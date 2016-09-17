@@ -16,7 +16,7 @@ subroutine analytic_initial
 !###############################################
 !
 !-- map radiation temperature to grd_evolinit
-  call grid_volume(in_igeom,grd_isvelocity,tsp_t)
+  call grid_volume(in_grd_igeom,grd_isvelocity,tsp_t)
   grd_evolinit = grd_evolinit * grd_vol
 !--
 !

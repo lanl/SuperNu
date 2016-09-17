@@ -64,10 +64,10 @@ program supernu
 !
 !-- read input structure
      if(.not.in_noreadstruct.and.in_isvelocity) then
-       call read_inputstr(in_igeom,in_ndim,in_voidcorners,nmpi)
+       call read_inputstr(in_grd_igeom,in_ndim,in_voidcorners,nmpi)
      else
 !== generate_inputstr development in progress
-       call generate_inputstr(in_igeom)
+       call generate_inputstr(in_grd_igeom)
      endif
 !-- compressed domain, serialize non-void cells
      call inputstr_compress
@@ -110,7 +110,7 @@ program supernu
   call inputstr_dealloc
 
 !-- create procedure pointers for the selected geometry
-  call transportmod_init(in_igeom)
+  call transportmod_init(in_grd_igeom)
 !-- source particles
   call sourcemod_init(nmpi)
 

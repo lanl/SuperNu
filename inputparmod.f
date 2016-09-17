@@ -20,7 +20,7 @@ c-- parallelization
 c
 c
 c-- grid geometry and dimensions
-      integer :: in_igeom = 0 !geometry: 1=sph, 2=cyl, 3=car, 11=1Dsph
+      integer :: in_grd_igeom = 0 !geometry: 1=sph, 2=cyl, 3=car, 11=1Dsph
       integer :: in_ndim(3) = [1, 1, 1]  !number of x-direction cells
       logical :: in_isvelocity = .true.  !switch underlying grid between spatial+static to velocity+expanding
 c
@@ -153,7 +153,7 @@ c-- runtime parameter namelist
      & in_name,in_comment,
      & in_nomp,
 !grd
-     & in_igeom,in_ndim,
+     & in_grd_igeom,in_ndim,
      & in_isvelocity,
 !str
      & in_voidcorners,in_noreadstruct,
@@ -247,7 +247,7 @@ c-- init
 c
       call insertl(in_io_grabstdout,in_l,il)
       call inserti(in_nomp,in_i,ii)
-      call inserti(in_igeom,in_i,ii)
+      call inserti(in_grd_igeom,in_i,ii)
       call inserti(in_ndim(1),in_i,ii)
       call inserti(in_ndim(2),in_i,ii)
       call inserti(in_ndim(3),in_i,ii)
@@ -521,7 +521,7 @@ c-- check input parameter validity
 c
       if(any(in_ndim<1)) stop 'in_ndim invalid'
 c
-      select case(in_igeom)
+      select case(in_grd_igeom)
       case(1)
        if(in_srctype=='surf'.and.in_surfsrcloc/='out') stop
      &   'in_srctype and in_surfsrcloc invalid'
@@ -537,7 +537,7 @@ c
        if(in_flx_ndim(2)/=1) stop 'in_flx_ndim(2) inval'
        if(in_flx_ndim(3)/=1) stop 'in_flx_ndim(3) inval'
       case default
-       stop 'in_igeom invalid'
+       stop 'in_grd_igeom invalid'
       endselect
 c
       if(in_isvelocity) then
@@ -574,8 +574,8 @@ c
       if(in_io_nogriddump .and. in_io_dogrdtally) stop
      &   'dogridtally and !griddump'
 c
-      if(in_voidcorners.and.in_igeom==1) stop 'voidcorners && igeom=1'
-      if(in_voidcorners.and.in_igeom==11) stop 'voidcorners && igeom=11'
+      if(in_voidcorners.and.in_grd_igeom==1) stop 'voidcorners && igeom=1'
+      if(in_voidcorners.and.in_grd_igeom==11) stop 'voidcorners && igeom=11'
 c
       if(in_grp_ng<0) stop 'in_grp_ng invalid'
       if(in_grp_ng==0 .and. in_grp_wldex<1) stop 'in_grp_wldex invalid'
@@ -778,7 +778,7 @@ c
       grp_wlmin = in_grp_wlmin
       grp_wlmax = in_grp_wlmax
 c
-      grd_igeom = in_igeom
+      grd_igeom = in_grd_igeom
       grd_nx    = in_ndim(1)
       grd_ny    = in_ndim(2)
       grd_nz    = in_ndim(3)

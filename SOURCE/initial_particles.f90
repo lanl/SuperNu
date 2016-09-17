@@ -81,7 +81,7 @@ subroutine initial_particles
 
 !
 !-- x position
-     select case(in_igeom)
+     select case(in_grd_igeom)
 !-- spherical
      case(1,11)
         call rnd_r(r1,rnd_state)
