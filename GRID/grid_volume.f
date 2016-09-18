@@ -47,7 +47,7 @@ c
        endforall
       case default
        stop 'grid_volume: invalid igeom'
-      endselect !in_grd_igeom
+      endselect !igeom
 c
 c-- map to compressed grid
       grd_vol = 0d0

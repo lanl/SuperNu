@@ -52,7 +52,7 @@ subroutine boundary_source
         emitsurfprobg(3) = 0d0
      enddo
   else
-     select case(in_grd_igeom)
+     select case(grd_igeom)
 !-- 3D spherical
      case(1)
         i = grd_nx
@@ -131,7 +131,7 @@ subroutine boundary_source
      endif
 !
 !-- selecting geometry and surface
-     select case(in_grd_igeom)
+     select case(grd_igeom)
 
 !-- 3D (outer surface)
      case(1)

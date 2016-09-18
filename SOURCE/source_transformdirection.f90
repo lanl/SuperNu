@@ -39,7 +39,7 @@ subroutine source_transformdirection
 !     call direction2lab(x0,y0,z0,mu0,om0)
 !!
 !!-- calculate transformation
-!     select case(in_grd_igeom)
+!     select case(grd_igeom)
 !     case(1,11)
 !        cmffact = 1d0+mu0*x0/pc_c
 !        mu = (mu0+x0/pc_c)/cmffact

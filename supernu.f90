@@ -110,7 +110,7 @@ program supernu
   call inputstr_dealloc
 
 !-- create procedure pointers for the selected geometry
-  call transportmod_init(in_grd_igeom)
+  call transportmod_init(grd_igeom)
 !-- source particles
   call sourcemod_init(nmpi)
 

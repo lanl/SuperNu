@@ -165,7 +165,7 @@ subroutine particle_advance_gamgrey(nmpi)
      ic = grd_icell(ix,iy,iz)
 
 !-- x position
-     select case(in_grd_igeom)
+     select case(grd_igeom)
      case(1,11)
         call rnd_r(r1,rndstate)
         x = (r1*grd_xarr(i+1)**3 + &
@@ -201,7 +201,7 @@ subroutine particle_advance_gamgrey(nmpi)
          mu = mu0
          om = om0
      else
-        select case(in_grd_igeom)!{{{
+        select case(grd_igeom)!{{{
         case(1,11)
            x0 = x
            cmffact = 1d0+mu0*x0/pc_c !-- 1+dir*v/c
