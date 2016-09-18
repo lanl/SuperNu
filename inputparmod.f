@@ -89,16 +89,16 @@ c
 c
 c-- transport
       logical :: in_trn_errorfatal = .true. !stop on transport error, disable for production runs
-      real*8 :: in_tauddmc = 5d0  !number of mean free paths per cell required for DDMC
+      real*8 :: in_trn_tauddmc = 5d0  !number of mean free paths per cell required for DDMC
       real*8 :: in_taulump = 10d0 !number of of mean free paths needed to lump DDMC groups
       logical :: in_puretran = .false. !use IMC only instead of IMC+DDMC hybrid
-      logical :: in_isimcanlog = .false. !use analog IMC tally if true
-      logical :: in_isddmcanlog = .true. !use analog DDMC tally if true
+      logical :: in_trn_isimcanlog = .false. !use analog IMC tally if true
+      logical :: in_trn_isddmcanlog = .true. !use analog DDMC tally if true
       logical :: in_trn_noamp = .true.  !disable amplification factor
       real*8 :: in_alpha = 1d0 !time centering control parameter [0,1]
       logical :: in_trn_nolumpshortcut = .false. !disable approximation for large emitlump that sampling outside the lump collapses to the single most likely group
-c-- time dependence of in_tauddmc and in_taulump
-      character(4) :: in_tauvtime = 'unif' ! unif|incr = constant or limiting (s-curve) to more conservative constant
+c-- time dependence of in_trn_tauddmc and in_taulump
+      character(4) :: in_trn_tauvtime = 'unif' ! unif|incr = constant or limiting (s-curve) to more conservative constant
       logical :: in_ismodimc = .true. !Gentile-Fleck factor switch
 c
 c
@@ -178,8 +178,8 @@ c-- runtime parameter namelist
      & in_gas_srccoef,in_gas_srcrpwr,in_gas_srctpwr,in_gas_srctimepwr,
 !trn
      & in_trn_nolumpshortcut,in_trn_errorfatal,in_puretran,in_alpha,
-     & in_isimcanlog,in_isddmcanlog,in_trn_noamp,in_ismodimc,
-     & in_tauddmc,in_taulump,in_tauvtime,
+     & in_trn_isimcanlog,in_trn_isddmcanlog,in_trn_noamp,in_ismodimc,
+     & in_trn_tauddmc,in_taulump,in_trn_tauvtime,
 !gas
      & in_gas_gastempinit,in_gas_radtempinit,
      & in_gas_cvcoef,in_gas_cvtpwr,in_gas_cvrpwr,
@@ -283,11 +283,11 @@ c
       call insertl(in_trn_nolumpshortcut,in_l,il)
       call insertl(in_trn_errorfatal,in_l,il)
       call insertl(in_trn_noamp,in_l,il)
-      call insertl(in_isimcanlog,in_l,il)
-      call insertl(in_isddmcanlog,in_l,il)
-      call insertr(in_tauddmc,in_r,ir)
+      call insertl(in_trn_isimcanlog,in_l,il)
+      call insertl(in_trn_isddmcanlog,in_l,il)
+      call insertr(in_trn_tauddmc,in_r,ir)
       call insertr(in_taulump,in_r,ir)
-      call insertc(in_tauvtime,in_c,ic)
+      call insertc(in_trn_tauvtime,in_c,ic)
       call insertr(in_alpha,in_r,ir)
       call insertr(in_tsp_tfirst,in_r,ir)
       call insertr(in_tsp_tlast,in_r,ir)
@@ -601,7 +601,7 @@ c
       endif
 c
       if(in_alpha>1d0 .or. in_alpha<0d0) stop 'in_alpha invalid'
-      if(in_taulump<=.05d0*in_tauddmc) stop 'in_taulump too small' !don't let scattering dominate
+      if(in_taulump<=.05d0*in_trn_tauddmc) stop 'in_taulump too small' !don't let scattering dominate
 c
 c-- temp init
       if(in_gas_gastempinit<0d0) stop 'in_gas_gastempinit < 0'
@@ -759,11 +759,11 @@ c
       !gas_srctpwr = in_gas_srctpwr      
       !gas_srctimepwr = in_gas_srctimepwr
 c
-      trn_isimcanlog = in_isimcanlog
-      trn_isddmcanlog = in_isddmcanlog
-      trn_tauddmc = in_tauddmc
+      trn_isimcanlog = in_trn_isimcanlog
+      trn_isddmcanlog = in_trn_isddmcanlog
+      trn_tauddmc = in_trn_tauddmc
       trn_taulump = in_taulump
-      trn_tauvtime = in_tauvtime
+      trn_tauvtime = in_trn_tauvtime
       trn_nolumpshortcut = in_trn_nolumpshortcut
       trn_errorfatal = in_trn_errorfatal
       trn_noampfact = in_trn_noamp

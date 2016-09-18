@@ -65,12 +65,12 @@ in_src_n2s  = 16
 in_prt_n2max = 25
 
 !-- imc tally method
-in_isimcanlog = f
-in_isddmcanlog = f
+in_trn_isimcanlog = f
+in_trn_isddmcanlog = f
 !-- ddmc mfp per cell
-in_tauddmc = 3d0
+in_trn_tauddmc = 3d0
 in_taulump = 3d0
-in_tauvtime = 'unif'
+in_trn_tauvtime = 'unif'
 
 !-- opacity debug switches
 in_nobbopac = t

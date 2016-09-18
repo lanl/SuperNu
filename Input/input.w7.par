@@ -37,10 +37,10 @@
  in_prt_n2max = 17 !2**7 times bigger than ns
 
 !-- imc tally method
- in_isimcanlog = f
- in_isddmcanlog = f
+ in_trn_isimcanlog = f
+ in_trn_isddmcanlog = f
 !-- ddmc mfp per cell
- in_tauddmc = 3d0
+ in_trn_tauddmc = 3d0
  in_taulump = 3d0
 
 !-- opacity debug switches
