@@ -574,8 +574,10 @@ c
       if(in_io_nogriddump .and. in_io_dogrdtally) stop
      &   'dogridtally and !griddump'
 c
-      if(in_voidcorners.and.in_grd_igeom==1) stop 'voidcorners && igeom=1'
-      if(in_voidcorners.and.in_grd_igeom==11) stop 'voidcorners && igeom=11'
+      if(in_voidcorners.and.in_grd_igeom==1) stop
+     &   'voidcorners && igeom=1'
+      if(in_voidcorners.and.in_grd_igeom==11) stop 
+     &   'voidcorners && igeom=11'
 c
       if(in_grp_ng<0) stop 'in_grp_ng invalid'
       if(in_grp_ng==0 .and. in_grp_wldex<1) stop 'in_grp_wldex invalid'
