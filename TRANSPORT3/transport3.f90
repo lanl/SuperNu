@@ -31,6 +31,7 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   integer :: iznext,iynext,ixnext
   real*8 :: elabfact, eta, xi
   real*8 :: thelp, thelpinv, help
+  real*8 :: alb, eps, beta, pp
   real*8 :: dcen,dcol,dthm,dbx,dby,dbz,ddop
   real*8 :: darr(7)
   real*8 :: r1, r2
@@ -444,10 +445,16 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         endif
         help = (grd_cap(ig,l)+grd_sig(l)) * &
              dx(ixnext)*thelp
-        help = 4d0/(3d0*help+6d0*pc_dext)
+        alb = grd_fcoef(l)*grd_cap(ig,l)/ &
+             (grd_cap(ig,l)+grd_sig(l))
+        eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
+        beta = 1.5d0*alb*help**2+sqrt(3d0*alb*help**2 + &
+             2.25d0*alb**2*help**4)
+        pp = 0.5d0*eps*beta/(beta-0.75*eps*help)
+        !pp = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
         call rnd_r(r1,rndstate)
-        if (r1 < help*(1d0+1.5d0*abs(xi))) then
+        if (r1 < pp * (1d0+1.5d0*abs(xi))) then
            ptcl2%itype = 2
            if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -526,10 +533,16 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         endif
         help = (grd_cap(ig,l)+grd_sig(l)) * &
              dy(iynext)*thelp
-        help = 4d0/(3d0*help+6d0*pc_dext)
+        alb = grd_fcoef(l)*grd_cap(ig,l)/ &
+             (grd_cap(ig,l)+grd_sig(l))
+        eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
+        beta = 1.5d0*alb*help**2+sqrt(3d0*alb*help**2 + &
+             2.25d0*alb**2*help**4)
+        pp = 0.5d0*eps*beta/(beta-0.75*eps*help)
+        !pp = 4d0/(3d0*help+6d0*pc_dext)
 !-- sampling
         call rnd_r(r1,rndstate)
-        if (r1 < help*(1d0+1.5d0*abs(eta))) then
+        if (r1 < pp * (1d0+1.5d0*abs(eta))) then
            ptcl2%itype = 2
            if(grd_isvelocity) then
 !-- velocity effects accounting
@@ -608,10 +621,16 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         endif
         help = (grd_cap(ig,l)+grd_sig(l)) * &
              dz(iznext)*thelp
-        help = 4d0/(3d0*help+6d0*pc_dext)
+        alb = grd_fcoef(l)*grd_cap(ig,l)/ &
+             (grd_cap(ig,l)+grd_sig(l))
+        eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
+        beta = 1.5d0*alb*help**2+sqrt(3d0*alb*help**2 + &
+             2.25d0*alb**2*help**4)
+        pp = 0.5d0*eps*beta/(beta-0.75*eps*help)
+        !pp = 4d0/(3d0*help+6d0*pc_dext)
         !-- sampling
         call rnd_r(r1,rndstate)
-        if (r1 < help*(1d0+1.5d0*abs(mu))) then
+        if (r1 < pp * (1d0+1.5d0*abs(mu))) then
            ptcl2%itype = 2
            if(grd_isvelocity) then
 !-- velocity effects accounting
