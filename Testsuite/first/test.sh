@@ -20,6 +20,6 @@ echo "TESTSUITE RUN: $testname"
 ./supernu || exit 1  #-- fail if unclean exit
 
 #-- analyze output
-for i in temp Lum tsp_time grd_fcoef; do
+for i in grd_temp flx_luminos tsp_time grd_fcoef; do
   diff -q "reference.$i" "output.$i" || exit 1
 done

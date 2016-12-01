@@ -1,51 +1,52 @@
 &inputpars
 
 !-- misc
-in_io_grabstdout = f
+ in_io_grabstdout = f
+ in_noreadstruct = t
 
 !-- time step
-in_tfirst = 2
-in_tlast = 4
-in_nt = 4
-in_alpha = 1d0
+ in_tsp_tfirst = 2
+ in_tsp_tlast = 4
+ in_tsp_nt = 4
+ in_alpha = 1d0
 
 !-- flat structure
-in_consttempkev = 1d-3
-in_solidni56 = t
+ in_gas_gastempinit = 1d4
 
 !-- gas grid settings
-in_nr = 50
-in_isvelocity = t
-in_novolsrc = f
-in_str_velout = 1d9
-in_str_totmass = 1d33
+ in_grd_igeom = 11
+ in_ndim = 50, 1, 1
+ in_isvelocity = t
+ in_novolsrc = f
+ in_str_velout = 1d9
+ in_str_totmass = 1d33
+ in_str_dentype = 'unif'
+
 !-- power law opacity values
-in_gas_capcoef = 0.1d0
-in_gas_captpwr = 0d0
-in_gas_caprpwr = 1d0
+ in_gas_capcoef = 0.1d0
+ in_gas_captpwr = 0d0
+ in_gas_caprpwr = 1d0
+
 !-- power law heat capacity values
-in_gas_cvcoef = 2.321d14
-in_gas_cvtpwr = 0d0
-in_gas_cvrpwr = 1d0
+ in_gas_cvcoef = 2d7
+ in_gas_cvtpwr = 0d0
+ in_gas_cvrpwr = 1d0
 
-!-- group opacity structure type
-in_isanalgrp = t
-in_opacanaltype = 'pick'
-
-!-- picket fence case
-in_suol = 'tsta'
-in_suolpick1=1d0
+!-- absorption opacity type
+ in_opacanaltype = 'grey'
 
 !-- group settings
-in_wldex = 1
+ in_grp_ng = 1
 
 !-- particle numbers
-in_ns = 10000
-in_prt_nmax = 10000000
+ in_src_ns = 10000
+ in_prt_nmax = 10000000
 
 !-- opacity switches
-in_nobbopac = t
-in_nobfopac = t
-in_noffopac = t
+ in_nobbopac = t
+ in_nobfopac = t
+ in_noffopac = t
+ in_nothmson = t
+ in_noplanckweighting = t
 
-&end
+/
