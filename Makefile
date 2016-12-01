@@ -45,7 +45,7 @@ DATE := $(shell date)
 
 #-- Testsuite
 #############
-TESTS := first/test.sh second/test.sh
+TESTS := first/test.sh #second/test.sh
 
 #-- Prefix Testsuite directory name
 TESTDIR := Testsuite/
