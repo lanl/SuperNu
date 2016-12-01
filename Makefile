@@ -56,7 +56,7 @@ TESTS := $(addprefix $(TESTDIR),$(TESTS))
 # TARGETS
 ########################################################################
 # Utility targets (ignore corresponding file names)
-.PHONY: all clean $(SUBDIRS) $(SUBCLEAN) prepare_run check run runmpi ready_run $(TESTS)
+.PHONY: all clean $(SUBDIRS) $(SUBCLEAN) prepare_run check run runmpi ready_run $(TESTS) help
 
 all: $(MODULES)
 	$(MAKE) $(SUBDIRS)
@@ -89,6 +89,19 @@ runmpi: all prepare_run
 
 check: all $(TESTS)
 	@echo "TESTSUITE SUCCESSFUL: $(shell date)"
+	@echo
+
+help:
+	@echo
+	@echo "Make options: make [help] [all] [clean] [check] [run] [runmpi] [ready_run]"
+	@echo
+	@echo "help: print this help information"
+	@echo "all: compile SuperNu executable"
+	@echo "clean: remove executable, object files, and libraries"
+	@echo "check: run tests in the Testsuite directory"
+	@echo "run: create Run directory and run SuperNu executable in serial"
+	@echo "runmpi: create Run directory and run SuperNu executable with MPI on 2 ranks"
+	@echo "ready_run: create and set up Run directory, but do not run SuperNu executable"
 	@echo
 
 ########################################################################
