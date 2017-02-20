@@ -414,10 +414,10 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
            e = e*help
            e0 = e0*help
            mu = (mu+x*cinv)/(1d0+x*mu*cinv)
-           ig = binsrch(wl,flx_wl,flx_ng+1,.false.)
         endif
 !-- observer time correction
         ptcl%t=ptcl%t-mu*x*thelp*cinv
+        return
 !
 !!}}}
      else
@@ -536,7 +536,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !-- sample wavelength
         call rnd_r(r1,rndstate)
         wl = 1d0/((1d0-r1)*grp_wlinv(ig) + r1*grp_wlinv(ig+1))
-!-- direction sampled isotropically           
+!-- direction sampled isotropically
         call rnd_r(r1,rndstate)
         mu = 1d0-2d0*r1
 !-- position sampled uniformly
