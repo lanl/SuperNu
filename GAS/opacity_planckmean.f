@@ -17,11 +17,6 @@ c     -----------------------------
 !     real*8 :: help,hlparr(grp_ng+1)
       real*8 :: specarr(grp_ng)
 c
-c-- grey exception
-      if(in_opacanaltype=='grey') then
-         gas_capgrey=gas_cap(1,:)
-         return
-      endif
 c-- Planck opacity
       do i=1,gas_ncell
        call specintv(1/gas_temp(i),grp_ng,specarr)
