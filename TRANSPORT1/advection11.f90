@@ -21,7 +21,6 @@ pure subroutine advection11(pretrans,ptcl,ptcl2)
   logical,parameter :: partstopper = .true.
 !
   integer :: zholder, zfdiff
-  real*8 :: help
   integer :: i
 !-- pointers
   integer,pointer :: ix, iy, iz, ic, ig
@@ -63,15 +62,10 @@ pure subroutine advection11(pretrans,ptcl,ptcl2)
   endif
 
   zfdiff = -1
-  if(grd_isvelocity) then
-     help = tsp_t
-  else
-     help = 1d0
-  endif
   do i=ix-1,zholder,-1
      l = grd_icell(i,iy,iz)
      if((grd_sig(l)+grd_cap(ig,l))*dx(i) &
-          *help>=trn_tauddmc) then
+          *tsp_t>=trn_tauddmc) then
         zfdiff = i
         exit
      endif
