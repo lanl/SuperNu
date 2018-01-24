@@ -3,21 +3,23 @@ cmake_minimum_required (VERSION 3.8)
 
 #-- name the project and set the language
 project (SuperNu)
-
-#-- set language and find MPI
-enable_language (Fortran)
-# find_package (MPI REQUIRED)
-configure_file (mpimod_ser.f mpimod.f COPYONLY)
-
-#-- set the project version number
 set (SuperNu_VERSION_MAJOR 3)
 set (SuperNu_VERSION_MINOR 0)
+enable_language (Fortran)
 
 #-- add the build directory to the include-file search path
 include_directories(${PROJECT_BINARY_DIR})
 
 #-- copy dummy commit version file, for now
 configure_file(version_dummy.inc version.inc COPYONLY)
+
+#-- find MPI
+find_package (MPI)
+if (MPI_Fortran_FOUND)
+  configure_file (mpimod_mpi.f mpimod.f COPYONLY)
+else ()
+  configure_file (mpimod_ser.f mpimod.f COPYONLY)
+endif ()
 
 #-- set the Fortran module directory
 set (CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR})
@@ -34,5 +36,9 @@ list (APPEND SuperNu_FILES "${PROJECT_BINARY_DIR}/mpimod.f")
 add_executable (supernu ${SuperNu_FILES})
 
 #-- link library and include header for MPI
-target_link_libraries (supernu PRIVATE ${MPI_C_LIBRARIES})
-target_include_directories (supernu PRIVATE ${MPI_C_INCLUDE_PATH})
+if (MPI_Fortran_FOUND)
+  target_link_libraries (supernu PRIVATE ${MPI_C_LIBRARIES})
+  target_include_directories (supernu PRIVATE ${MPI_C_INCLUDE_PATH})
+  target_link_libraries (supernu PRIVATE ${MPI_Fortran_LIBRARIES})
+  target_include_directories (supernu PRIVATE ${MPI_Fortran_INCLUDE_PATH})
+endif ()
