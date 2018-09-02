@@ -458,8 +458,8 @@ c
 c
       allocate(snd(9,grd_ndd))
       snd = grd_opaclump(:,grd_idd1:grd_idd1+grd_ndd-1)
-      call mpi_allgatherv(snd,9*grd_ndd,MPI_REAL8,
-     &  grd_opaclump,9*counts,9*displs,MPI_REAL8,
+      call mpi_allgatherv(snd,10*grd_ndd,MPI_REAL8,
+     &  grd_opaclump,10*counts,10*displs,MPI_REAL8,
      &  MPI_COMM_WORLD,ierr)
       deallocate(snd)
 c

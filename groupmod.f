@@ -13,7 +13,7 @@ c
        integer :: ic=0
        integer :: nlump !number of groups in the lump
        real*8 :: capgreyinv
-       real*8 :: speclump,emitlump,caplump
+       real*8 :: speclump,emitlump,caplump,doplump
        real*8,pointer :: specarr(:) !(grp_ng)
        integer :: istat
        integer*2,pointer :: glumps(:) !(grp_ng)
@@ -68,7 +68,7 @@ c     --------------------------------!{{{
 * 10 5
 *  1 1 1e-5 32e-5
 *  2 5 1e-5 2e-5 4e-5 8e-5 16e-5 32e-5
-* 
+*
 ************************************************************************
       real*8 :: help
       real*8,allocatable :: wlstore(:)
@@ -137,6 +137,28 @@ c
       specint0 = ftpi4 * dx * x**3/(exp(x) - 1d0)
 c!}}}
       end function specint0
+c
+c
+      elemental function dopspeccalc(tempinv,ig)
+c     ---------------------------------------!{{{
+      use physconstmod
+      implicit none
+      real*8 :: dopspeccalc
+      real*8,intent(in) :: tempinv
+      integer,intent(in) :: ig
+************************************************************************
+* Calculate x**3/(exp(x) - 1), where x = h*c/(wl*k*T)
+************************************************************************
+      real*8,parameter :: ftpi4=15d0/pc_pi**4
+      real*8,parameter :: hck=pc_h*pc_c/pc_kb
+      real*8 :: x
+c
+      x = hck*tempinv
+      x = x*grp_wlinv(ig+1)
+c
+      dopspeccalc = ftpi4 * x**4/(exp(x) - 1d0)
+c!}}}
+      end function dopspeccalc
 c
 c
       pure subroutine specintv(tempinv,n,ss,offset,mode,mask,maskval)

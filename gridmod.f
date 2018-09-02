@@ -46,7 +46,7 @@ c-- Line+Cont extinction coeff
       real*4,allocatable :: grd_cap(:,:) !(ng,ncell)
 
 c-- leakage opacities
-      real*8,allocatable :: grd_opaclump(:,:) !(9,ncell) leak(6),speclump,caplump,igemitmax
+      real*8,allocatable :: grd_opaclump(:,:) !(10,ncell) leak(6),speclump,caplump,igemitmax,doplump
       real*8,allocatable :: grd_tempinv(:) !(ncell)
 c-- scattering coefficient
       real*8,allocatable :: grd_sig(:) !(ncell) !grey scattering opacity
@@ -77,7 +77,7 @@ c
 c
       integer,allocatable :: grd_nvol(:) !(ncell) number of thermal source particles generated per cell
       integer,allocatable :: grd_nvolinit(:) !(ncell) number of initial (t=tfirst) particles per cell
-c      
+c
       real*8,allocatable :: grd_emit(:) !(ncell) amount of fictitious thermal energy emitted per cell in a time step
       real*8,allocatable :: grd_emitex(:) !(ncell) amount of external energy emitted per cell in a time step
       real*8,allocatable :: grd_evolinit(:) !(ncell) amount of initial energy per cell per group
@@ -168,7 +168,7 @@ c
       allocate(grd_numcensddmc(grd_ncell))
 c
 c-- ndim=4 alloc
-      allocate(grd_opaclump(9,grd_ncell))
+      allocate(grd_opaclump(10,grd_ncell))
       allocate(grd_emitprob(grd_nep,grd_ncell))
 c-- ndim=4 alloc
       allocate(grd_cap(ng,grd_ncell))

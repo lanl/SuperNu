@@ -121,7 +121,7 @@ subroutine particle_advance
 !$omp    nstepddmc,nstepimc,nmethodswap,ncensimc,ncensddmc,ndist) &
 !$omp reduction(max:nstepmax)
 
-!-- thread id                                                               
+!-- thread id
 !$ iomp = omp_get_thread_num()
 
 !-- each thread uses its own rnd stream
@@ -190,7 +190,7 @@ subroutine particle_advance
      case(11)
         help = thelp*dx(ix)
      case(1)
-        help = thelp*min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz)) 
+        help = thelp*min(dx(ix),xm(ix)*dyac(iy),xm(ix)*ym(iy)*dz(iz))
      case(2)
         help = thelp*min(dx(ix),dy(iy),xm(ix)*dz(iz))
      case(3)
@@ -336,7 +336,7 @@ subroutine particle_advance
         endif
 
 !-- check exit status
-        if(ierr/=0 .or. ptcl2%istep>1000) then  !istep checker may cause issues in high-res simulations
+        if(ierr/=0) then !.or. ptcl2%istep>1000) then  !istep checker may cause issues in high-res simulations
            write(0,*) 'pa: ierr,ipart,istep,idist:',ierr,ptcl2%ipart,ptcl2%istep,ptcl2%idist
            write(0,*) 'dist:',ptcl2%dist
            write(0,*) 't,taus,tauc:',ptcl%t,grd_sig(ic)*help,grd_cap(ig,ic)*help
@@ -398,24 +398,9 @@ subroutine particle_advance
 !
 !-- Redshifting DDMC particle energy weights and wavelengths
         if(ptcl2%itype==2 .and. grd_isvelocity) then
-!-- r   edshifting energy weight!{{{
            tot_evelo = tot_evelo + e*(1d0-exp(-tsp_dt/tsp_t))
            e = e*exp(-tsp_dt/tsp_t)
            e0 = e0*exp(-tsp_dt/tsp_t)
-           !
-!
-!-- f   ind group
-           ig = binsrch(wl,grp_wl,grp_ng+1,.false.)
-!
-           call rnd_r(r1,rndstate)
-           x1 = grd_cap(ig,ic)
-           x2 = grp_wl(ig)/(pc_c*tsp_t*(grp_wl(ig+1)-grp_wl(ig)))
-           if(r1<x2/(x1+x2)) then
-              call rnd_r(r1,rndstate)
-              wl = 1d0/(r1*grp_wlinv(ig+1)+(1d0-r1)*grp_wlinv(ig))
-              wl = wl*exp(tsp_dt/tsp_t)
-           endif
-           !!}}}
         endif
 
         if(grd_isvelocity.and.ptcl2%itype==1) then

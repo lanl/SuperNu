@@ -65,7 +65,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   eraddens = 0d0
   eamp = 0d0
 !
-!-- setting vel-grid helper variables  
+!-- setting vel-grid helper variables
   if(grd_isvelocity) then
 !-- calculating initial transformation factors
      elabfact = 1d0 - mu*x*cinv
@@ -107,7 +107,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
      dthm = -log(r1)*thelpinv/(elabfact*grd_sig(ic))
   else
      dthm = far
-  endif  
+  endif
 !
 !-- effective collision distance
   if(grd_cap(ig,ic)<=0d0) then
@@ -147,7 +147,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
      return
   endif
 
-!-- updating position, angle  
+!-- updating position, angle
   xold = x
   x = sqrt(x**2 + d**2 + 2d0*d*x*mu)
   muold = mu
@@ -168,7 +168,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
           d*thelp*cinv*tsp_dtinv
   else
 !-- nonanalog energy density
-     if(grd_fcoef(ic)*grd_cap(ig,ic)*dx(ix)*thelp>1d-6) then     
+     if(grd_fcoef(ic)*grd_cap(ig,ic)*dx(ix)*thelp>1d-6) then
         eraddens = e* &
              (1d0-exp(-grd_fcoef(ic)*elabfact * &
              grd_cap(ig,ic)*d*thelp)) * &
@@ -205,9 +205,6 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   if(d==dthm.or.d==dcol) then
      call rnd_r(r1,rndstate)
      mu = 1d0-2d0*r1
-     if(abs(mu)<0.0000001d0) then
-        mu = 0.0000001d0
-     endif
 !-- checking velocity dependence
      if(grd_isvelocity) mu=(mu+x*cinv)/(1d0+x*mu*cinv)
   elseif(d==db) then
@@ -227,7 +224,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !-- checking velocity dependence
      if(grd_isvelocity) then
 !-- lab wavelength
-        wl = wl*(1d0-mu*x*cinv)/elabfact        
+        wl = wl*(1d0-mu*x*cinv)/elabfact
         help = elabfact/(1d0-mu*x*cinv)
 !-- velocity effects accounting
         totevelo=totevelo+e*(1d0-help)
@@ -286,7 +283,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
               e = e*(1d0-x*mu*cinv)
               e0 = e0*(1d0-x*mu*cinv)
            endif
-           wl = 0d0 !workaround ifort 13.1.3 bug
+           !wl = 0d0 !workaround ifort 13.1.3 bug
         else
 !-- uniformly in new group
            call rnd_r(r1,rndstate)
@@ -295,7 +292,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
            if(grd_isvelocity) wl = wl*(1d0-x*mu*cinv)
         endif
      endif
-     
+
 !
 !-- outer radial bound
   elseif(d==db .and. ixnext>ix) then
@@ -307,7 +304,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
 !-- IMC in adjacent cell
         x = grd_xarr(ix+1)
         ix = ix+1
-        ic = grd_icell(ix,iy,iz)    
+        ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
         if(grd_isvelocity) then
@@ -435,7 +432,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   else
 !    stop 'transport11: invalid distance'
      ierr = 17
-     return     
+     return
   endif
 
 end subroutine transport11
