@@ -1,7 +1,7 @@
 &inputpars
 
 !-- misc
- in_nomp = 1
+ in_nomp = 4
  in_io_grabstdout = f
  in_puretran = f
  in_noreadstruct = f
@@ -13,10 +13,10 @@
  in_tsp_itrestart = -6
 
 !-- grid settings
- in_grd_igeom = 11
- in_ndim = 64, 1, 1
-!in_grd_igeom = 2
-!in_ndim = 32, 64, 1
+!in_grd_igeom = 11
+!in_ndim = 64, 1, 1
+ in_grd_igeom = 2
+ in_ndim = 32, 64, 1
 !in_grd_igeom = 3
 !in_ndim = 32, 32, 32
  in_isvelocity = t
@@ -32,9 +32,9 @@
  in_grp_ng = 250
 
 !-- particle numbers
- in_src_n2sinit = 10
- in_src_n2s = 10
- in_prt_n2max = 17 !2**7 times bigger than ns
+ in_src_n2sinit = 15
+ in_src_n2s = 15
+ in_prt_n2max = 22 !2**7 times bigger than ns
 
 !-- imc tally method
  in_trn_isimcanlog = f
