@@ -166,11 +166,10 @@ CODING STANDARDS
 SETUP INSTRUCTIONS
 ==================
 The following procedure produces two supernu executables, one serial and one MPI-parallel version.
-Please report build errors to Daan van Rossum.
 
 # mkdir ~/supernu
 # cd ~/supernu
-# hg clone https://drrossum@bitbucket.org/drrossum/supernu src
+# git clone git@gitlab.lanl.gov:supernu/supernu.git src
 
 -- SERIAL --
 # mkdir bin
