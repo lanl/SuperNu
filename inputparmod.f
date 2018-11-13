@@ -121,7 +121,13 @@ c-- physical opacities debuging
       logical :: in_nobbopac = .false.  !turn off bound-bound opacity
       logical :: in_nobfopac = .false.  !turn off bound-bound opacity
       logical :: in_noffopac = .false.  !turn off bound-bound opacity
-      logical :: in_nothmson = .false.  !turn off thomson scattering
+      logical :: in_nothmson = .false. !turn off thomson scattering
+c-- fontes tabular opacity switch
+      logical :: in_notbopac = .true. !turn on tabular opacity
+      logical :: in_notbbbopac = .false. !turn off bound-bound opacity
+      logical :: in_notbbfopac = .false. !turn off bound-bound opacity
+      logical :: in_notbffopac = .false. !turn off bound-bound opacity
+      logical :: in_notbthmson = .false. !turn off thomson scattering
 c
 c-- analytic opacities
       character(4) :: in_opacanaltype = 'none'    !none|grey|mono|pick|line: group opacity structure type
@@ -147,7 +153,7 @@ c-- output
       logical :: in_io_nogriddump = .false.  !don't write grid cell variables
       character(4) :: in_io_opacdump = 'off '    !off|one|each|all: write opacity data to file
       character(4) :: in_io_pdensdump = 'off '   !off|one|each: write partial densities to file
-c     
+c
 c-- runtime parameter namelist
       namelist /inputpars/
      & in_name,in_comment,
@@ -193,6 +199,9 @@ c-- runtime parameter namelist
      & in_suolpick1,in_ldisp1,in_ldisp2,
      & in_gas_sigcoef,in_gas_sigtpwr,in_gas_sigrpwr,
      & in_gas_capcoef,in_gas_captpwr,in_gas_caprpwr,
+!tabl opac
+     & in_notbopac,
+     & in_notbbbopac,in_notbbfopac,in_notbffopac,in_notbthmson,
 !io
      & in_io_grabstdout,
      & in_io_nogriddump,in_io_dogrdtally,
@@ -333,6 +342,11 @@ c
       call insertl(in_nobfopac,in_l,il)
       call insertl(in_noffopac,in_l,il)
       call insertl(in_nothmson,in_l,il)
+      call insertl(in_notbopac,in_l,il)
+      call insertl(in_notbbbopac,in_l,il)
+      call insertl(in_notbbfopac,in_l,il)
+      call insertl(in_notbffopac,in_l,il)
+      call insertl(in_notbthmson,in_l,il)
 c
       contains
 c
@@ -550,7 +564,7 @@ c
        if(in_str_lx<=0d0) stop 'static grid: use str_lx, not str_velout'
        if(in_str_ly<=0d0) stop 'static grid: use str_ly, not str_velout'
        if(in_str_lz<=0d0) stop 'static grid: use str_lz, not str_velout'
-       if(in_str_velout>0d0) 
+       if(in_str_velout>0d0)
      &      stop 'static grid: use str_lx not str_velout'
       endif
 c
@@ -576,7 +590,7 @@ c
 c
       if(in_voidcorners.and.in_grd_igeom==1) stop
      &   'voidcorners && igeom=1'
-      if(in_voidcorners.and.in_grd_igeom==11) stop 
+      if(in_voidcorners.and.in_grd_igeom==11) stop
      &   'voidcorners && igeom=11'
 c
       if(in_grp_ng<0) stop 'in_grp_ng invalid'
@@ -636,7 +650,8 @@ c
       select case(in_opacanaltype)
       case('none')
 c--R.W.: condition under case(pick) supposed to be here? (rev 243)
-         if(in_nobbopac.and.in_nobfopac.and.in_noffopac)
+       if(in_nobbopac.and.in_nobfopac.and.in_noffopac.and.
+     &    in_notbbbopac.and.in_notbbfopac.and.in_notbffopac)
      &        stop 'no phys opac + in_opacanaltype==none'
       case('grey')
       case('mono')
@@ -754,9 +769,9 @@ c
       !gas_cvcoef  = in_gas_cvcoef
       !gas_cvtpwr  = in_gas_cvtpwr
       !gas_cvrpwr  = in_gas_cvrpwr
-      !gas_srccoef = in_gas_srccoef      
-      !gas_srcrpwr = in_gas_srcrpwr      
-      !gas_srctpwr = in_gas_srctpwr      
+      !gas_srccoef = in_gas_srccoef
+      !gas_srcrpwr = in_gas_srcrpwr
+      !gas_srctpwr = in_gas_srctpwr
       !gas_srctimepwr = in_gas_srctimepwr
 c
       trn_isimcanlog = in_trn_isimcanlog

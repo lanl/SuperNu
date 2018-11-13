@@ -1,0 +1,10 @@
+*.f90~
+*.f~
+*.par~
+#*#
+.#*
+*.sw.
+*.atom
+version.py
+*.mod
+Makefile~

@@ -31,6 +31,7 @@ c     -------------------------
       real*8 :: natom1fr(-2*gas_nchain:gas_nelem,gas_ncell)
       real*8 :: natom2fr(-2*gas_nchain:gas_nelem,gas_ncell)
       real*8 :: decay0(gas_ncell)
+      real*8 :: temp(gas_ncell)
 c-- previous values
       real*8,allocatable,save :: tempalt(:),capgreyalt(:)
 !     real*8 :: hlparr(grd_nx),hlparrdd(gas_ncell)
@@ -123,6 +124,9 @@ c===============================================
       gas_rho = gas_mass/gas_vol
 c-- temperature
       gas_ur = pc_acoef*gas_temp**4
+c-- temperature truncated by opacity table bounds
+      help = pc_ev/pc_kb
+      temp = max(0.01d0*help,min(5d0*help,gas_temp))
 c
 c-- sanity check temperatures
       if(any(gas_temp/=gas_temp)) stop 'gas_temp NaN'
@@ -135,13 +139,17 @@ c-- compute the starting tempurature derivative in the fleck factor
 c-- temporarily change!{{{
        gas_temp = dtempfrac*gas_temp
        if(in_opacanaltype=='none') then
-        if(.not.in_noeos) call eos_update(.false.)
+        if(.not.in_noeos) call eos_update(.false.,dtempfrac*temp)
        endif
 c
        if(in_opacanaltype/='none') then
         call analytic_opacity
        else
-        call physical_opacity
+c-- initialize opacity
+        gas_sig = 0d0
+        gas_cap = 0.0
+        if(.not.in_notbopac) call tabular_opacity
+        call physical_opacity(dtempfrac*temp)
        endif
        call opacity_planckmean
 c
@@ -164,7 +172,7 @@ c-- solve LTE EOS, heat capacity
 c===============================
       do_output = (in_io_pdensdump=='each' .or.
      &  (in_io_pdensdump=='one' .and. tsp_it==1))
-      if(.not.in_noeos) call eos_update(do_output)
+      if(.not.in_noeos) call eos_update(do_output,temp)
 c
       if(in_gas_cvcoef>0d0) then
 c-- calculate power law heat capacity
@@ -172,8 +180,12 @@ c-- calculate power law heat capacity
      &   gas_rho**in_gas_cvrpwr
       else
 !-- calculate physical heat capacity
-       gas_bcoef = 1.5d0*pc_kb*(1d0+gas_nelec)*gas_natom /
-     &   gas_vol
+       if(.not.in_notbopac) then
+         gas_bcoef = 1.5d0*pc_kb*gas_natom/gas_vol
+       else
+         gas_bcoef = 1.5d0*pc_kb*(1d0+gas_nelec)*gas_natom /
+     &      gas_vol
+       endif
       endif
 c
 c
@@ -184,7 +196,7 @@ c-- add initial thermal input to dd_eext
 !-- total comoving material energy
        tot_emat = sum(gas_bcoef*gas_temp*gas_vol)
        tot_eext = tot_eext + tot_emat  !was initialized either in totalsmod or in totals_startup
-      endif      
+      endif
 c
 c
 c
@@ -194,7 +206,7 @@ c-- gamma opacity
       gas_capgam = in_opcapgam*gas_ye*gas_rho
 c
 c
-c-- simple analytical group/grey opacities: Planck and Rosseland 
+c-- simple analytical group/grey opacities: Planck and Rosseland
       if(in_opacanaltype/='none') then
        call analytic_opacity
       else
@@ -202,8 +214,12 @@ c-- calculate physical opacities
 c-- test existence of input.opac file
        inquire(file='input.opac',exist=lexist)
        if(.not.lexist) then
+c-- initialize opacity
+        gas_sig = 0d0
+        gas_cap = 0.0
 c-- calculate opacities
-        call physical_opacity
+        if(.not.in_notbopac) call tabular_opacity
+        call physical_opacity(temp)
        else
 c-- read in opacities
         open(4,file='input.opac',status='old',iostat=istat)!{{{

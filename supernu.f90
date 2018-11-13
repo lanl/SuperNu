@@ -22,6 +22,7 @@ program supernu
   use ionsmod, only:ions_read_data,ions_alloc_grndlev
   use bfxsmod, only:bfxs_read_data
   use ffxsmod, only:ffxs_read_data
+  use tbxsmod
   use timingmod
   use countersmod
 
@@ -29,6 +30,7 @@ program supernu
 !***********************************************************************
 ! TODO and wishlist:
 !***********************************************************************
+  logical :: lopac(4)
   integer :: ierr, it
   integer :: icell1, ncell !number of cells per rank (gas_ncell)
   integer :: iitflux,itflux=0
@@ -99,6 +101,17 @@ program supernu
 !-- wlgrid (before grid setup)
   call groupmod_init(in_grp_wldex)
   call fluxgrid_setup
+
+!-- read and coarsen opacity tables
+  if(lmpi0.and..not.in_notbopac) then
+     call read_tbxs
+!-- short cut
+     lopac=[in_notbbbopac,in_notbbfopac , &
+          in_notbffopac,in_notbthmson]
+     call coarsen_tbxs(lopac,grp_ng,grp_wl)
+  endif
+!-- broadcast permanent opacity table
+  if(.not.in_notbopac) call bcast_tbxs(grp_ng) !MPI
 
 !-- setup spatial grid
   call gridmod_init(lmpi0,grp_ng,str_nc,str_lvoid,icell1,ncell)

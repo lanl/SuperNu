@@ -317,6 +317,52 @@ c-- ye structure if available
 c
 c
 c
+      subroutine bcast_tbxs(ng)
+c     -------------------------
+      use tbxsmod,ntemp=>tb_ntemp,nrho=>tb_nrho,nelem=>tb_nelem
+      use elemdatamod, only: elem_neldata
+      use inputstrmod, only: str_nabund,str_iabund
+      implicit none
+      integer, intent(in) :: ng
+************************************************************************
+* broadcast Fontes permanent opacity table
+************************************************************************
+      integer :: n,ielem
+c
+c-- sanity checks
+      if(str_nabund<=0) stop 'bcast_tbxs: str_nabund<=0'
+c
+      if(impi/=impi0) then
+        do ielem=1,elem_neldata
+          if(any(str_iabund==ielem)) nelem=nelem+1
+        enddo
+        if(nelem<=0) stop 'bcast_tbxs: nelem<=0'
+        allocate(tb_ielem(nelem))
+        allocate(tb_sig(ntemp,nrho,nelem))
+        allocate(tb_cap(ng,ntemp,nrho,nelem))
+      endif
+c-- ielem
+      call mpi_bcast(tb_ielem,nelem,MPI_INTEGER,
+     &   impi0,MPI_COMM_WORLD,ierr)
+c-- temp
+      call mpi_bcast(tb_temp,ntemp,MPI_REAL8,
+     &   impi0,MPI_COMM_WORLD,ierr)
+c-- rho
+      call mpi_bcast(tb_rho,nrho,MPI_REAL8,
+     &   impi0,MPI_COMM_WORLD,ierr)
+c-- sig
+      n=ntemp*nrho*nelem
+      call mpi_bcast(tb_sig,n,MPI_REAL8,
+     &   impi0,MPI_COMM_WORLD,ierr)
+c-- cap
+      n=ng*ntemp*nrho*nelem
+      call mpi_bcast(tb_cap,n,MPI_REAL,
+     &   impi0,MPI_COMM_WORLD,ierr)
+c
+      end subroutine bcast_tbxs
+c
+c
+c
       subroutine allgather_initialrad
 c     -------------------------------
       use gridmod

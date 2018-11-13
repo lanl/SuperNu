@@ -1,7 +1,7 @@
 *This file is part of SuperNu.  SuperNu is released under the terms of the GNU GPLv3, see COPYING.
 *Copyright (c) 2013-2017 Ryan T. Wollaeger and Daniel R. van Rossum.  All rights reserved.
-      subroutine physical_opacity
-c     ---------------------------
+      subroutine physical_opacity(temp)
+c     ---------------------------------
 c$    use omp_lib
       use physconstmod
       use inputparmod
@@ -14,6 +14,7 @@ c$    use omp_lib
       use miscmod
       use timingmod
       implicit none
+      real*8,intent(in) :: temp(gas_ncell)
 ************************************************************************
 * compute bound-free and bound-bound opacity.
 ************************************************************************
@@ -74,7 +75,7 @@ c-- subgridded wavelength
       endif
 c
 c-- ion_grndlev helper array
-      hckt = pc_h*pc_c/(pc_kb*gas_temp)
+      hckt = pc_h*pc_c/(pc_kb*temp)
 c
 c-- thomson scattering
       if(in_nothmson) then

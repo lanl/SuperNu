@@ -1,13 +1,14 @@
 *This file is part of SuperNu.  SuperNu is released under the terms of the GNU GPLv3, see COPYING.
 *Copyright (c) 2013-2017 Ryan T. Wollaeger and Daniel R. van Rossum.  All rights reserved.
-      subroutine eos_update(do_output)
-c     --------------------------------
+      subroutine eos_update(do_output,temp)
+c     -------------------------------------
       use gasmod
       use ionsmod
       use timestepmod, only:tsp_it
       use timingmod
       implicit none
       logical,intent(in) :: do_output
+      real*8,intent(in) :: temp(gas_ncell)
 ************************************************************************
 * Solve the eos for given temperatures.
 ************************************************************************
@@ -23,7 +24,7 @@ c-- loop over all gas_vals cells
        if(gas_mass(i)<=0d0) cycle
        ndens = gas_natom(i)/gas_vol(i) !atom number density
        call ions_solve_eos(gas_natom1fr(1,i),
-     &   gas_temp(i),ndens,gas_nelec(i),niter)
+     &   temp(i),ndens,gas_nelec(i),niter)
 c
 c-- store occupation numbers of each ion's ground states
        do iz=1,gas_nelem
