@@ -85,6 +85,11 @@ c-- external source structure
       integer :: in_nheav = 0   !outer cell bound if heaviside ('heav') source
       real*8 :: in_theav = 0d0 !duration of heaviside source
       real*8 :: in_srcmax = 0d0 !peak source strength
+c-- external power-law gamma-ray source
+      real*8 :: in_sgamcoef = 0d0
+      real*8 :: in_sgamrpwr = 0d0
+      real*8 :: in_sgamtpwr = 0d0
+      real*8 :: in_sgamtimepwr = 0d0
 c
 c
 c-- transport
@@ -182,6 +187,7 @@ c-- runtime parameter namelist
      & in_surfsrcloc,in_surfsrcmu,
      & in_novolsrc,
      & in_gas_srccoef,in_gas_srcrpwr,in_gas_srctpwr,in_gas_srctimepwr,
+     & in_sgamcoef,in_sgamrpwr,in_sgamtpwr,in_sgamtimepwr,
 !trn
      & in_trn_nolumpshortcut,in_trn_errorfatal,in_puretran,in_alpha,
      & in_trn_isimcanlog,in_trn_isddmcanlog,in_trn_noamp,in_ismodimc,
@@ -327,6 +333,10 @@ c
       call insertr(in_gas_srcrpwr,in_r,ir)
       call insertr(in_gas_srctpwr,in_r,ir)
       call insertr(in_gas_srctimepwr,in_r,ir)
+      call insertr(in_sgamcoef,in_r,ir)
+      call insertr(in_sgamrpwr,in_r,ir)
+      call insertr(in_sgamtpwr,in_r,ir)
+      call insertr(in_sgamtimepwr,in_r,ir)
       call insertc(in_srctype,in_c,ic)
       call insertc(in_surfsrcloc,in_c,ic)
       call insertc(in_surfsrcmu,in_c,ic)

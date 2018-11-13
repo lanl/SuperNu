@@ -16,14 +16,14 @@ subroutine sourceenergy
 !to each cell based on the amount of energy emitted by the cell.
 !##################################################
   real*8 :: q1,q2,q3
-  
+
 !-- prepare manufactured solution temperature source
   if(in_srctype=='manu') then
      call generate_manutempsrc(in_str_totmass,in_gas_capcoef,tsp_t,tsp_dt)
   elseif(in_gas_srccoef>0d0) then
 !-- short-cuts
-     q1=in_gas_srcrpwr   
-     q2=in_gas_srctpwr   
+     q1=in_gas_srcrpwr
+     q2=in_gas_srctpwr
      q3=in_gas_srctimepwr
 !-- power-law material energy source
      gas_matsrc=in_gas_srccoef*gas_rho**q1 * &
@@ -47,6 +47,17 @@ subroutine sourceenergy
 !
 !-- non-thermal decay radiation source energy
   if(.not.in_novolsrc .and. in_srctype=='none') then
+     if(in_sgamcoef>0d0) then
+!-- power-law
+!-- short-cuts
+        q1=in_sgamrpwr
+        q2=in_sgamtpwr
+        q3=in_sgamtimepwr
+        gas_decaygamma = tsp_dt*gas_vol * &
+             in_sgamcoef*gas_rho**q1 * &
+             gas_temp**q2 * (tsp_t+.5d0*tsp_dt)**q3
+        gas_decaybeta = 0d0
+     endif
      gas_emitex = gas_decaygamma  !grey transport
      gas_emit = gas_emit + gas_decaybeta  !local deposition
 !-- totals

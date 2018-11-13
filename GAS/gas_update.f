@@ -148,8 +148,11 @@ c
 c-- initialize opacity
         gas_sig = 0d0
         gas_cap = 0.0
-        if(.not.in_notbopac) call tabular_opacity
-        call physical_opacity(dtempfrac*temp)
+        if(.not.in_notbopac) then
+          call tabular_opacity
+        else
+          call physical_opacity(dtempfrac*temp)
+        endif
        endif
        call opacity_planckmean
 c
@@ -218,8 +221,11 @@ c-- initialize opacity
         gas_sig = 0d0
         gas_cap = 0.0
 c-- calculate opacities
-        if(.not.in_notbopac) call tabular_opacity
-        call physical_opacity(temp)
+        if(.not.in_notbopac) then
+          call tabular_opacity
+        else
+          call physical_opacity(temp)
+        endif
        else
 c-- read in opacities
         open(4,file='input.opac',status='old',iostat=istat)!{{{
