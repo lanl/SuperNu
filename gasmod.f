@@ -6,7 +6,7 @@ c
 c***********************************************************************
 c gas grid structure
 c***********************************************************************
-      integer,parameter :: gas_nelem=30
+      integer,parameter :: gas_nelem=111
       integer,parameter :: gas_nchain=3  !number of hardwired decay chains: ni56, fe52, cr48 
 c
 c-- available isotopes
@@ -46,6 +46,7 @@ c
 
 c== DD copies
 c-- Line+Cont extinction coeff
+      real*8,allocatable :: gas_capcoef(:) !(ncell)
       real*4,allocatable :: gas_cap(:,:) !(ng,ncell)
 c-- leakage opacities
 c     real*8,allocatable :: dd_opacleak(:,:) !(6,ncell)
@@ -57,7 +58,7 @@ c-- Planck opacity (gray)
       real*8,allocatable :: gas_capgrey(:)!(ncell)
 c-- Fleck factor
       real*8,allocatable :: gas_fcoef(:)  !(ncell)
-c  
+c
       real*8,allocatable :: gas_emit(:) !(ncell) amount of fictitious thermal energy emitted per cell in a time step
       real*8,allocatable :: gas_emitex(:) !(ncell) amount of external energy emitted per cell per group in a time step
       real*8,allocatable :: gas_evolinit(:) !(ncell) amount of initial energy per cell per group
@@ -120,6 +121,7 @@ c   allocate(dd_opacleak(6,gas_ncell))
       allocate(gas_sig(gas_ncell))
       allocate(gas_capgam(gas_ncell))
       allocate(gas_capgrey(gas_ncell))
+      allocate(gas_capcoef(gas_ncell))
       allocate(gas_fcoef(gas_ncell))
 c
       allocate(gas_eraddens(gas_ncell))
@@ -158,6 +160,7 @@ c
       deallocate(gas_sig)
       deallocate(gas_capgam)
       deallocate(gas_capgrey)
+      deallocate(gas_capcoef)
       deallocate(gas_fcoef)
       deallocate(gas_eraddens)
       deallocate(gas_edep)

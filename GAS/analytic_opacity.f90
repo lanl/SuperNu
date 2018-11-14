@@ -37,7 +37,7 @@ subroutine analytic_opacity
      return
   elseif(in_opacanaltype=='grey') then
 !-- using power law to make opacity coefficient
-     capcoef = in_gas_capcoef*gas_temp**in_gas_captpwr* &
+     capcoef = gas_capcoef*gas_temp**in_gas_captpwr* &
           gas_rho**in_gas_caprpwr
      do i = 1, gas_ncell
         gas_cap(:,i) = sngl(capcoef(i))
@@ -45,7 +45,7 @@ subroutine analytic_opacity
 
   elseif(in_opacanaltype=='mono') then
 !-- using power law to make opacity coefficient
-     capcoef = in_gas_capcoef*gas_temp**in_gas_captpwr* &
+     capcoef = gas_capcoef*gas_temp**in_gas_captpwr* &
           gas_rho**in_gas_caprpwr
 !-- monotonic group dependence
      do i = 1, gas_ncell
@@ -58,7 +58,7 @@ subroutine analytic_opacity
      if(grp_ng/=2) stop 'analytic_opacity: invalid grp_ng'
      if(grd_ny>1) stop 'analytic_opacity: no 2D for opacanaltyp=pick'
 !-- using power law to make opacity coefficient
-     capcoef = in_gas_capcoef*gas_temp**in_gas_captpwr* &
+     capcoef = gas_capcoef*gas_temp**in_gas_captpwr* &
           gas_rho**in_gas_caprpwr
 !-- Su&Olson picket-fence distributions (tests: A,B,C (Su and Olson 1999))
      if(in_suol=='tsta') then    !Case: A
@@ -79,7 +79,7 @@ subroutine analytic_opacity
      endif!}}}
   elseif(in_opacanaltype=='line') then
 !-- using power law to make opacity coefficient
-     capcoef = in_gas_capcoef*gas_temp**in_gas_captpwr * &
+     capcoef = gas_capcoef*gas_temp**in_gas_captpwr * &
           gas_rho**in_gas_caprpwr
      do i = 1, gas_ncell
         !

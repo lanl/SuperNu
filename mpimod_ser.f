@@ -48,7 +48,25 @@ c
        allocate(str_yedd(ncell))
        str_yedd = reshape(str_yedc,[ncell])
       endif
+      if(str_lcap) then
+       allocate(str_capdd(ncell))
+       str_capdd = reshape(str_capdc,[ncell])
+      endif
       end subroutine scatter_inputstruct
+c
+c
+      subroutine bcast_tbxs(ng)
+c     -------------------------
+      implicit none
+      integer,intent(in) :: ng
+************************************************************************
+      integer :: dmy
+      dmy = ng !use the intent(in) variable
+      end subroutine bcast_tbxs
+c
+c
+      subroutine bcast_tbsrc
+      end subroutine bcast_tbsrc
 c
 c
       subroutine allgather_initialrad

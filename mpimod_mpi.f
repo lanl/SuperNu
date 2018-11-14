@@ -95,15 +95,16 @@ c-- everything else
 c==================
 c-- broadcast constants
 c-- logical
-      n = 3
+      n = 4
       allocate(lsndvec(n))
-      if(lmpi0) lsndvec = [str_lvoid,str_ltemp,str_lye]
+      if(lmpi0) lsndvec = [str_lvoid,str_ltemp,str_lye,str_lcap]
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
       str_lvoid = lsndvec(1)
       str_ltemp = lsndvec(2)
       str_lye = lsndvec(3)
+      str_lcap = lsndvec(4)
       deallocate(lsndvec)
 c
 c-- integer
@@ -310,6 +311,14 @@ c-- ye structure if available
        allocate(str_yedd(ncell))
        call mpi_scatterv(str_yedc,counts,displs,MPI_REAL8,
      &  str_yedd,ncell,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      endif
+c-- capcoef structure if available
+      if(str_lcap) then
+       if(impi/=impi0) allocate(str_capdc(str_nc))
+       allocate(str_capdd(ncell))
+       call mpi_scatterv(str_capdc,counts,displs,MPI_REAL8,
+     &  str_capdd,ncell,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       endif
 !}}}

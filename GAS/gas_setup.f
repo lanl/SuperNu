@@ -63,7 +63,7 @@ c-- adopt partial masses from input file
       endif
 c
 c-- convert mass fractions to # atoms
-      if(.not.in_noreadstruct.or..not.in_novolsrc) 
+      if(.not.in_noreadstruct.or..not.in_novolsrc)
      &  call massfr2natomfr(mass0fr)
 c
 c-- electron fraction at t=0
@@ -73,6 +73,15 @@ c-- from input.str
       else
 c-- as calculated in massfr2natomfr
        gas_ye0 = gas_ye
+      endif
+c
+c-- analytic opacity coefficient
+      if(str_lcap) then
+c-- from input.str
+        gas_capcoef = str_capdd
+      else
+c-- as constant from input.par
+        gas_capcoef = in_gas_capcoef
       endif
 c
       end subroutine gas_setup
@@ -130,7 +139,7 @@ c-- take out radioactive part
        gas_natom1fr(23,i) = gas_natom1fr(23,i) -
      &   gas_natom1fr(gas_iv48,i)
 c
-c-- verify that 
+c-- verify that
        if(any(gas_natom1fr(23:28,i)<0d0)) then
         write(0,*) gas_natom1fr(:,i)
         stop 'massfr2natomfr: Check input structure: ' //
