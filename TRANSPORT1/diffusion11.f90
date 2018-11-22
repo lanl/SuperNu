@@ -343,13 +343,6 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !-- must be inside cell
         x = min(x,grd_xarr(ix+1))
         x = max(x,grd_xarr(ix))
-!-- velocity effects accounting
-        mu = (mu+x*cinv)/(1.0+x*mu*cinv)
-        wl = wl*(1.0-x*mu*cinv)
-        help = 1d0/(1.0-x*mu*cinv)
-        totevelo = totevelo+e*(1d0 - help)
-        e = e*help
-        e0 = e0*help
      endif
 
 !-- left leakage sample
@@ -409,17 +402,6 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
            call rnd_r(r1,rndstate)
            call rnd_r(r2,rndstate)
            mu = -max(r1,r2)
-!-- doppler and aberration corrections
-           if(grd_isvelocity) then
-              mu = (mu+x*cinv)/(1.0+x*mu*cinv)
-!-- velocity effects accounting
-              help = 1d0/(1.0-x*mu*cinv)
-              totevelo = totevelo+e*(1d0 - help)
-!
-              e = e*help
-              e0 = e0*help
-              wl = wl*(1.0-x*mu*cinv)
-           endif
         endif
 !
 !-- update particle
@@ -468,12 +450,12 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
         x=grd_xarr(grd_nx+1)
 !-- changing from comoving frame to observer frame
         if(grd_isvelocity) then
-           mu = (mu+x*cinv)/(1d0+x*mu*cinv)
-           mu = min(mu,1d0)
-           help = 1d0/(1d0-mu*x*cinv)
+           help = 1d0+mu*x*cinv
 !-- velocity effects accounting
            totevelo = totevelo+e*(1d0 - help)
-           wl = wl/help
+           wl = wl*exp(1d0-help) !/help
+           mu = (mu+x*cinv)/help
+           mu = min(mu,1d0)
            e = e*help
            e0 = e0*help
         endif
@@ -530,18 +512,6 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
            call rnd_r(r1,rndstate)
            call rnd_r(r2,rndstate)
            mu = max(r1,r2)
-!
-!-- doppler and aberration corrections
-           if(grd_isvelocity) then
-              mu = (mu+x*cinv)/(1.0+x*mu*cinv)
-!-- velocity effects accounting
-              help = 1d0/(1.0-x*mu*cinv)
-              totevelo = totevelo+e*(1d0 - help)
-!
-              e = e*help
-              e0 = e0*help
-              wl = wl*(1.0-x*mu*cinv)
-           endif
         endif
 !
 !-- update particle
@@ -607,17 +577,6 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !-- must be inside cell
         x = min(x,grd_xarr(ix+1))
         x = max(x,grd_xarr(ix))
-!-- doppler and aberration corrections
-        if(grd_isvelocity) then
-           mu = (mu+x*cinv)/(1.0+x*mu*cinv)
-!-- velocity effects accounting
-           help = 1d0/(1d0-x*mu*cinv)
-           totevelo = totevelo+e*(1d0 - help)
-!
-           e = e*help
-           e0 = e0*help
-           wl = wl*(1.0-x*mu*cinv)
-        endif
      endif
 !}}}
   endif

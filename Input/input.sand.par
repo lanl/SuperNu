@@ -1,0 +1,73 @@
+&inputpars
+
+!-- misc
+ in_nomp = 4
+ in_io_grabstdout = f
+ in_puretran = f
+ in_noreadstruct = f
+ in_noeos = t
+ in_flx_noobservertime = f
+ in_trn_nolumpshortcut = t
+
+!-- time step
+ in_tsp_tfirst = 10000 ! 10000 sec
+ in_tsp_tlast = 1728000
+ in_tsp_gridtype = 'expo'
+ in_tsp_nt = 400
+ in_tsp_itrestart = 1
+
+!-- grid settings
+ in_grd_igeom = 11
+ in_ndim = 64, 1, 1
+
+!-- flat structures
+ in_gas_gastempinit = 0d0
+ in_gas_cvcoef = -1d0
+! in_gas_cvcoef = 2d6
+
+!-- flux settings
+ in_flx_ndim = 1024, 1, 1
+ in_flx_wlmin = 1d-5
+ in_flx_wlmax = 1.28d-3
+
+!-- group settings
+ in_grp_ng = 1024
+ in_grp_wlmin = 1d-5
+ in_grp_wlmax = 1.28d-3
+
+!-- source
+ in_novolsrc=f
+ in_gas_srccoef=1.3d16
+ in_gas_srcrpwr=1d0
+ in_gas_srctimepwr=-1.3d0
+
+!-- opacity
+ in_opacanaltype="none"
+ in_gas_capcoef = 100
+ in_gas_caprpwr = 1d0
+
+!-- particle numbers
+ in_src_n2s  = 16
+ in_prt_n2max = 22
+ in_srcepwr = 0.5d0
+
+!-- imc tally method
+ in_trn_isimcanlog = f
+ in_trn_isddmcanlog = f
+!-- ddmc mfp per cell
+ in_trn_tauddmc = 20
+ in_taulump = 20
+
+!-- opacity debug switches
+ in_nobbopac = t
+ in_nobfopac = t
+ in_noffopac = t
+ in_nothmson = t
+ in_noplanckweighting = t
+ in_notbopac = f
+ in_notbbbopac = f
+ in_notbbfopac = f
+ in_notbffopac = f
+ in_notbthmson = f
+
+/

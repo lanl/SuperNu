@@ -30,6 +30,7 @@ program supernu
 !***********************************************************************
 ! TODO and wishlist:
 !***********************************************************************
+  logical :: lgamma
   logical :: lopac(4)
   integer :: ierr, it
   integer :: icell1, ncell !number of cells per rank (gas_ncell)
@@ -182,7 +183,9 @@ program supernu
 !-- grey gamma ray transport
      call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
      t_timelin(2) = t_time() !timeline
-     if(in_srctype=='none' .and. .not.in_novolsrc) then
+     lgamma=(.not.in_novolsrc) .and. &
+        (in_srctype=='none' .or. in_sgamcoef>0d0)
+     if(lgamma) then
         call allgather_gammacap
         call particle_advance_gamgrey(nmpi)
         call allreduce_gammaenergy !MPI
@@ -211,7 +214,7 @@ program supernu
         call vacancies          !Storing vacant "prt_particles" indexes in ordered array "src_ivacant"
         call boundary_source    !properties of prt_particles on domain boundary
         call interior_source    !properties of prt_particles emitted in domain interior
-        if(in_isvelocity) call source_transformdirection
+!        if(in_isvelocity) call source_transformdirection
         deallocate(src_ivacant)
      endif
 !-- 0 particle clocks before and in the first time step

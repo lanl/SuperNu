@@ -204,32 +204,6 @@ subroutine particle_advance
         ptcl2%itype = 2 !DDMC
      endif
 
-!
-!-- transform IMC particle into lab frame
-     if(grd_isvelocity.and.ptcl2%itype==1) then
-        select case(grd_igeom)
-        case(1,11)
-           labfact = 1d0-x*mu/pc_c
-        case(2)
-           labfact = 1d0-(mu*y + sqrt(1d0-mu**2) * cos(om)*x)/pc_c
-        case(3)
-           help = sqrt(1d0-mu**2)
-           mu1 = help*cos(om)
-           mu2 = help*sin(om)
-           labfact = 1d0-(mu*z + mu1*x + mu2*y)/pc_c
-        endselect
-!-- transform into lab frame
-        wl = wl*labfact
-        e = e/labfact
-        e0 = e0/labfact
-     endif
-
-
-!-- First portion of operator split particle velocity position adjustment
-     if(grd_isvelocity.and.ptcl2%itype==1) then
-        call advection(.true.,ptcl,ptcl2) !procedure pointer to advection[123]
-     endif
-
 !-- velocity components in cartesian basis
      if(grd_igeom==1 .and. ptcl2%itype==1) then
 !-- spherical projections
@@ -284,28 +258,11 @@ subroutine particle_advance
 !-- Russian roulette for termination of exhausted particles
         if(e<1d-6*e0 .and. ptcl2%stat=='live' .and. &
               grd_capgrey(ic)+grd_sig(ic)>0d0) then
-!-- transformation factor!{{{
-           if(.not.grd_isvelocity .or. ptcl2%itype==2) then
-              labfact = 1d0
-           else
-              select case(grd_igeom)
-              case(1,11)
-                 labfact = 1d0 - mu*x/pc_c
-              case(2)
-                 labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * &
-                    cos(om)*x)/pc_c
-              case(3)
-                 labfact = 1d0-(mu*z+sqrt(1d0-mu**2) * &
-                    (cos(om)*x+sin(om)*y))/pc_c
-              endselect
-           endif
 !
            call rnd_r(r1,rndstate)
            if(r1<0.5d0) then
               ptcl2%stat = 'dead'
-              grd_tally(1,ic) = grd_tally(1,ic) + e*labfact !edep
-!-- velocity effects accounting
-              if(ptcl2%itype==1) tot_evelo = tot_evelo + e*(1d0-labfact)
+              grd_tally(1,ic) = grd_tally(1,ic) + e
               exit
            else
 !-- weight addition accounted for in external source
@@ -396,15 +353,11 @@ subroutine particle_advance
         ptcl%t = tsp_t1
 
 !
-!-- Redshifting DDMC particle energy weights and wavelengths
-        if(ptcl2%itype==2 .and. grd_isvelocity) then
+!-- Redshifting DDMC particle energy weights
+        if(grd_isvelocity) then
            tot_evelo = tot_evelo + e*(1d0-exp(-tsp_dt/tsp_t))
            e = e*exp(-tsp_dt/tsp_t)
            e0 = e0*exp(-tsp_dt/tsp_t)
-        endif
-
-        if(grd_isvelocity.and.ptcl2%itype==1) then
-           call advection(.false.,ptcl,ptcl2) !procedure pointer to advection[123]
         endif
 
 !-- renergy at census
@@ -451,31 +404,6 @@ subroutine particle_advance
            mu = 1.0 - 2.0*r1
            call rnd_r(r1,rndstate)
            om = pc_pi2*r1
-!
-           if(grd_isvelocity) call direction2lab(x,y,z,mu,om)
-        endif
-
-!
-!-- transform IMC particle energy to comoving frame for storage
-        if(grd_isvelocity.and.ptcl2%itype==1) then
-           select case(grd_igeom)
-!-- [123]D spherical
-           case(1,11)
-              labfact = 1d0-x*mu/pc_c
-!-- 2D
-           case(2)
-              labfact = 1d0-(mu*y+sqrt(1d0-mu**2) * cos(om)*x)/pc_c
-!-- 3D
-           case(3)
-              mu1 = sqrt(1d0-mu**2)*cos(om)
-              mu2 = sqrt(1d0-mu**2)*sin(om)
-              labfact = 1d0-(mu*z+mu1*x+mu2*y)/pc_c
-           endselect
-
-!-- apply inverse labfact for symmetry (since gamma factor is missing)
-           wl = wl/labfact
-           e = e*labfact
-           e0 = e0*labfact
         endif
 
 !
