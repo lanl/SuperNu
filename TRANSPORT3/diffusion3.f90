@@ -33,7 +33,7 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
   real*8 :: r1, r2, thelp
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus
-  real*8 :: elabfact, xi, eta
+  real*8 :: xi, eta
 !-- lumped quantities
   real*8 :: emitlump, caplump, doplump
   real*8 :: specig
@@ -479,29 +479,6 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
         call rnd_r(r1,rndstate)
         z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
-!-- velocity effects accounting
-        elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
-!-- transforming z-axis direction cosine to lab
-        mu = (mu+z*cinv)/elabfact
-        if(mu>1d0) then
-           mu = 1d0
-        elseif(mu<-1d0) then
-           mu = -1d0
-        endif
-        om = atan2(eta+y*cinv,xi+x*cinv)
-        if(om<0d0) om=om+pc_pi2
-!-- ELABFACT LAB RESET
-        xi = sqrt(1d0-mu**2)*cos(om)
-        eta= sqrt(1d0-mu**2)*sin(om)
-        elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
-        help = 1d0/elabfact
-!-- transforming wl to lab
-        wl = wl*elabfact
-!-- velocity effects accounting
-        totevelo=totevelo+e*(1d0-help)
-!-- transforming energy weights to lab
-        e = e*help
-        e0 = e0*help
      endif
 
 !-- ix->ix-1 leakage
@@ -580,44 +557,34 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         mu = sqrt(1d0-xi**2)*sin(pc_pi2*r1)
         om = atan2(eta,xi)
         if(om<0d0) om=om+pc_pi2
-        if(grd_isvelocity) then
-           elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
-        else
-           elabfact = 1d0
-        endif
-!-- changing from comoving frame to observer frame
-        if(grd_isvelocity) then
-!-- transforming mu to lab
-           mu = (mu+z*cinv)/elabfact
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
-!-- transforming om to lab
-           om = atan2(eta+y*cinv,xi+x*cinv)
-           if(om<0d0) om=om+pc_pi2
-!-- ELABFACT LAB RESET
-           xi = sqrt(1d0-mu**2)*cos(om)
-           eta= sqrt(1d0-mu**2)*sin(om)
-           elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
-           help = 1d0/elabfact
-!-- transforming wl to lab
-           wl = wl*elabfact
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!
-!-- transforming energy weights to lab
-           e = e*help
-           e0 = e0*help
-        endif
         if(ix==1) then
+!-- escaping at ix=1
+           ptcl2%stat = 'flux'
+!-- changing from comoving frame to observer frame
+           if(grd_isvelocity) then
+              help = 1d0+(x*xi+y*eta+z*mu)*cinv
+!-- transforming mu to lab
+              mu = (mu+z*cinv)/help
+              if(mu>1d0) then
+                 mu = 1d0
+              elseif(mu<-1d0) then
+                 mu = -1d0
+              endif
+!-- transforming om to lab
+              om = atan2(eta+y*cinv,xi+x*cinv)
+              if(om<0d0) om=om+pc_pi2
+!-- transforming wl to lab
+              wl = wl*exp(1d0-help)
+!-- velocity effects accounting
+              totevelo=totevelo+e*(1d0-help)
+!-- transforming energy weights to lab
+              e = e*help
+              e0 = e0*help
+           endif
 !-- observer time correction
            xi = sqrt(1d0-mu**2)*cos(om)
            eta= sqrt(1d0-mu**2)*sin(om)
            ptcl%t=ptcl%t-(x*xi+y*eta+z*mu)*thelp*cinv
-!-- escaping at ix=1
-           ptcl2%stat = 'flux'
            return
         else
 !-- converting to IMC
@@ -707,44 +674,34 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         mu = sqrt(1d0-xi**2)*sin(pc_pi2*r1)
         om = atan2(eta,xi)
         if(om<0d0) om=om+pc_pi2
-        if(grd_isvelocity) then
-           elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
-        else
-           elabfact = 1d0
-        endif
-!-- changing from comoving frame to observer frame
-        if(grd_isvelocity) then
-!-- transforming mu to lab
-           mu = (mu+z*cinv)/elabfact
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
-!-- transforming om to lab
-           om = atan2(eta+y*cinv,xi+x*cinv)
-           if(om<0d0) om=om+pc_pi2
-!-- ELABFACT LAB RESET
-           xi = sqrt(1d0-mu**2)*cos(om)
-           eta= sqrt(1d0-mu**2)*sin(om)
-           elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
-           help = 1d0/elabfact
-!-- transforming wl to lab
-           wl = wl*elabfact
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!
-!-- transforming energy weights to lab
-           e = e*help
-           e0 = e0*help
-        endif
         if(ix==grd_nx) then
+!-- escaping at ix=nx
+           ptcl2%stat = 'flux'
+!-- changing from comoving frame to observer frame
+           if(grd_isvelocity) then
+              help = 1d0+(x*xi+y*eta+z*mu)*cinv
+!-- transforming mu to lab
+              mu = (mu+z*cinv)/help
+              if(mu>1d0) then
+                 mu = 1d0
+              elseif(mu<-1d0) then
+                 mu = -1d0
+              endif
+!-- transforming om to lab
+              om = atan2(eta+y*cinv,xi+x*cinv)
+              if(om<0d0) om=om+pc_pi2
+!-- transforming wl to lab
+              wl = wl*exp(1d0-help)
+!-- velocity effects accounting
+              totevelo=totevelo+e*(1d0-help)
+!-- transforming energy weights to lab
+              e = e*help
+              e0 = e0*help
+           endif
 !-- observer time correction
            xi = sqrt(1d0-mu**2)*cos(om)
            eta= sqrt(1d0-mu**2)*sin(om)
            ptcl%t=ptcl%t-(x*xi+y*eta+z*mu)*thelp*cinv
-!-- escaping at ix=nx
-           ptcl2%stat = 'flux'
            return
         else
 !-- converting to IMC
@@ -832,44 +789,34 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         mu = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
         om = atan2(eta,xi)
         if(om<0d0) om=om+pc_pi2
-        if(grd_isvelocity) then
-           elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
-        else
-           elabfact = 1d0
-        endif
-!-- changing from comoving frame to observer frame
-        if(grd_isvelocity) then
-!-- transforming mu to lab
-           mu = (mu+z*cinv)/elabfact
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
-!-- transforming om to lab
-           om = atan2(eta+y*cinv,xi+x*cinv)
-           if(om<0d0) om=om+pc_pi2
-!-- ELABFACT LAB RESET
-           xi = sqrt(1d0-mu**2)*cos(om)
-           eta= sqrt(1d0-mu**2)*sin(om)
-           elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
-           help = 1d0/elabfact
-!-- transforming wl to lab
-           wl = wl*elabfact
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!
-!-- transforming energy weights to lab
-           e = e*help
-           e0 = e0*help
-        endif
         if(iy==1) then
+!-- escaping at iy=1
+           ptcl2%stat = 'flux'
+!-- changing from comoving frame to observer frame
+           if(grd_isvelocity) then
+              help = 1d0+(x*xi+y*eta+z*mu)*cinv
+!-- transforming mu to lab
+              mu = (mu+z*cinv)/help
+              if(mu>1d0) then
+                 mu = 1d0
+              elseif(mu<-1d0) then
+                 mu = -1d0
+              endif
+!-- transforming om to lab
+              om = atan2(eta+y*cinv,xi+x*cinv)
+              if(om<0d0) om=om+pc_pi2
+!-- transforming wl to lab
+              wl = wl*exp(1d0-help)
+!-- velocity effects accounting
+              totevelo=totevelo+e*(1d0-help)
+!-- transforming energy weights to lab
+              e = e*help
+              e0 = e0*help
+           endif
 !-- observer time correction
            xi = sqrt(1d0-mu**2)*cos(om)
            eta= sqrt(1d0-mu**2)*sin(om)
            ptcl%t=ptcl%t-(x*xi+y*eta+z*mu)*thelp*cinv
-!-- escaping at iy=1
-           ptcl2%stat = 'flux'
            return
         else
 !-- converting to IMC
@@ -958,44 +905,34 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         mu = sqrt(1d0-eta**2)*sin(pc_pi2*r1)
         om = atan2(eta,xi)
         if(om<0d0) om=om+pc_pi2
-        if(grd_isvelocity) then
-           elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
-        else
-           elabfact = 1d0
-        endif
-!-- changing from comoving frame to observer frame
-        if(grd_isvelocity) then
-!-- transforming mu to lab
-           mu = (mu+z*cinv)/elabfact
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
-!-- transforming om to lab
-           om = atan2(eta+y*cinv,xi+x*cinv)
-           if(om<0d0) om=om+pc_pi2
-!-- ELABFACT LAB RESET
-           xi = sqrt(1d0-mu**2)*cos(om)
-           eta= sqrt(1d0-mu**2)*sin(om)
-           elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
-           help = 1d0/elabfact
-!-- transforming wl to lab
-           wl = wl*elabfact
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!
-!-- transforming energy weights to lab
-           e = e*help
-           e0 = e0*help
-        endif
         if(iy==grd_ny) then
+!-- escaping at iy=ny
+           ptcl2%stat = 'flux'
+!-- changing from comoving frame to observer frame
+           if(grd_isvelocity) then
+              help = 1d0+(x*xi+y*eta+z*mu)*cinv
+!-- transforming mu to lab
+              mu = (mu+z*cinv)/help
+              if(mu>1d0) then
+                 mu = 1d0
+              elseif(mu<-1d0) then
+                 mu = -1d0
+              endif
+!-- transforming om to lab
+              om = atan2(eta+y*cinv,xi+x*cinv)
+              if(om<0d0) om=om+pc_pi2
+!-- transforming wl to lab
+              wl = wl*exp(1d0-help)
+!-- velocity effects accounting
+              totevelo=totevelo+e*(1d0-help)
+!-- transforming energy weights to lab
+              e = e*help
+              e0 = e0*help
+           endif
 !-- observer time correction
            xi = sqrt(1d0-mu**2)*cos(om)
            eta= sqrt(1d0-mu**2)*sin(om)
            ptcl%t=ptcl%t-(x*xi+y*eta+z*mu)*thelp*cinv
-!-- escaping at iy=ny
-           ptcl2%stat = 'flux'
            return
         else
 !-- converting to IMC
@@ -1083,44 +1020,34 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         om = pc_pi2*r1
         xi = sqrt(1d0-mu**2)*cos(om)
         eta = sqrt(1d0-mu**2)*sin(om)
-        if(grd_isvelocity) then
-           elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
-        else
-           elabfact = 1d0
-        endif
-!-- changing from comoving frame to observer frame
-        if(grd_isvelocity) then
-!-- transforming mu to lab
-           mu = (mu+z*cinv)/elabfact
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
-!-- transforming om to lab
-           om = atan2(eta+y*cinv,xi+x*cinv)
-           if(om<0d0) om=om+pc_pi2
-!-- ELABFACT LAB RESET
-           xi = sqrt(1d0-mu**2)*cos(om)
-           eta= sqrt(1d0-mu**2)*sin(om)
-           elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
-           help = 1d0/elabfact
-!-- transforming wl to lab
-           wl = wl*elabfact
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!
-!-- transforming energy weights to lab
-           e = e*help
-           e0 = e0*help
-        endif
         if(iz==1) then
+!-- escaping at iz=1
+           ptcl2%stat = 'flux'
+!-- changing from comoving frame to observer frame
+           if(grd_isvelocity) then
+              help = 1d0+(x*xi+y*eta+z*mu)*cinv
+!-- transforming mu to lab
+              mu = (mu+z*cinv)/help
+              if(mu>1d0) then
+                 mu = 1d0
+              elseif(mu<-1d0) then
+                 mu = -1d0
+              endif
+!-- transforming om to lab
+              om = atan2(eta+y*cinv,xi+x*cinv)
+              if(om<0d0) om=om+pc_pi2
+!-- transforming wl to lab
+              wl = wl*exp(1d0-help)
+!-- velocity effects accounting
+              totevelo=totevelo+e*(1d0-help)
+!-- transforming energy weights to lab
+              e = e*help
+              e0 = e0*help
+           endif
 !-- observer time correction
            xi = sqrt(1d0-mu**2)*cos(om)
            eta= sqrt(1d0-mu**2)*sin(om)
            ptcl%t=ptcl%t-(x*xi+y*eta+z*mu)*thelp*cinv
-!-- escaping at iz=1
-           ptcl2%stat = 'flux'
            return
         else
 !-- converting to IMC
@@ -1208,44 +1135,34 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         om = pc_pi2*r1
         xi = sqrt(1d0-mu**2)*cos(om)
         eta = sqrt(1d0-mu**2)*sin(om)
-        if(grd_isvelocity) then
-           elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
-        else
-           elabfact = 1d0
-        endif
-!-- changing from comoving frame to observer frame
-        if(grd_isvelocity) then
-!-- transforming mu to lab
-           mu = (mu+z*cinv)/elabfact
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
-!-- transforming om to lab
-           om = atan2(eta+y*cinv,xi+x*cinv)
-           if(om<0d0) om=om+pc_pi2
-!-- ELABFACT LAB RESET
-           xi = sqrt(1d0-mu**2)*cos(om)
-           eta= sqrt(1d0-mu**2)*sin(om)
-           elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
-           help = 1d0/elabfact
-!-- transforming wl to lab
-           wl = wl*elabfact
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!
-!-- transforming energy weights to lab
-           e = e*help
-           e0 = e0*help
-        endif
         if(iz==grd_nz) then
+!-- escaping at iz=nz
+           ptcl2%stat = 'flux'
+!-- changing from comoving frame to observer frame
+           if(grd_isvelocity) then
+              help = 1d0+(x*xi+y*eta+z*mu)*cinv
+!-- transforming mu to lab
+              mu = (mu+z*cinv)/help
+              if(mu>1d0) then
+                 mu = 1d0
+              elseif(mu<-1d0) then
+                 mu = -1d0
+              endif
+!-- transforming om to lab
+              om = atan2(eta+y*cinv,xi+x*cinv)
+              if(om<0d0) om=om+pc_pi2
+!-- transforming wl to lab
+              wl = wl*exp(1d0-help)
+!-- velocity effects accounting
+              totevelo=totevelo+e*(1d0-help)
+!-- transforming energy weights to lab
+              e = e*help
+              e0 = e0*help
+           endif
 !-- observer time correction
            xi = sqrt(1d0-mu**2)*cos(om)
            eta= sqrt(1d0-mu**2)*sin(om)
            ptcl%t=ptcl%t-(x*xi+y*eta+z*mu)*thelp*cinv
-!-- escaping at iz=nz
-           ptcl2%stat = 'flux'
            return
         else
 !-- converting to IMC
@@ -1320,33 +1237,6 @@ pure subroutine diffusion3(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
         call rnd_r(r1,rndstate)
         z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
-!-- doppler and aberration corrections
-        if(grd_isvelocity) then
-!-- calculating transformation factors
-           elabfact = 1d0+(x*xi+y*eta+z*mu)*cinv
-!-- transforming z-axis direction cosine to lab
-           mu = (mu+z*cinv)/elabfact
-           if(mu>1d0) then
-              mu = 1d0
-           elseif(mu<-1d0) then
-              mu = -1d0
-           endif
-           om = atan2(eta+y*cinv,xi+x*cinv)
-           if(om<0d0) om=om+pc_pi2
-!-- ELABFACT LAB RESET
-           xi = sqrt(1d0-mu**2)*cos(om)
-           eta= sqrt(1d0-mu**2)*sin(om)
-           elabfact=1d0-(x*xi+y*eta+z*mu)*cinv
-           help = 1d0/elabfact
-!-- transforming wl to lab
-           wl = wl*elabfact
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!
-!-- transforming energy weights to lab
-           e = e*help
-           e0 = e0*help
-        endif
      endif!}}}
 
   endif

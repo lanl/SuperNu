@@ -470,29 +470,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- must be inside cell
         x = min(x,grd_xarr(ix+1))
         x = max(x,grd_xarr(ix))
-
-!-- velocity effects accounting
-!-- calculating transformation factors
-        dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-        gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-        om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-             sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
-             (1d0+gm*dirdotu*cinv/(gm+1d0)))
-        if(om<0d0) om=om+pc_pi2
-!-- y-projection
-        mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
-             (gm*(1d0+dirdotu*cinv))
-!-- DIRDOTU LAB RESET
-        dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-        help = 1d0/(1d0-dirdotu*cinv)
-!-- transforming wl to lab
-        wl = wl*(1d0-dirdotu*cinv)
-!-- velocity effects accounting
-        totevelo=totevelo+e*(1d0-help)
-!-- transforming energy weights to lab
-        e = e*help
-        e0 = e0*help
      endif
 
 !-- ix->ix-1 leakage
@@ -565,29 +542,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
         om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
         if(om<0d0) om = om+pc_pi2
-        if(grd_isvelocity) then
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-                sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
-                (1d0+gm*dirdotu*cinv/(gm+1d0)))
-           if(om<0d0) om=om+pc_pi2
-!-- y-projection
-           mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
-                (gm*(1d0+dirdotu*cinv))
-!-- DIRDOTU LAB RESET
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           help = 1d0/(1d0-dirdotu*cinv)
-!-- transforming wavelength to lab
-           wl = wl*(1d0-dirdotu*cinv)
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!
-!-- transforming energy weights to lab
-           e = e*help
-           e0 = e0*help
-        endif
 !-- converting to IMC
         ptcl2%itype = 1
      endif
@@ -671,32 +625,29 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         mu = sqrt(1d0-mu0**2)*cos(pc_pi2*r1)
         om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
         if(om<0d0) om=om+pc_pi2
-        if(grd_isvelocity) then
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-                sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
-                (1d0+gm*dirdotu*cinv/(gm+1d0)))
-           if(om<0d0) om=om+pc_pi2
-!-- y-projection
-           mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
-                (gm*(1d0+dirdotu*cinv))
-!-- DIRDOTU LAB RESET
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           help = 1d0/(1d0-dirdotu*cinv)
-!-- transforming wavelength to lab
-           wl = wl*(1d0-dirdotu*cinv)
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!
-!-- transforming energy weights to lab
-           e = e*help
-           e0 = e0*help
-        endif
         if (ix==grd_nx) then
 !-- escaping at ix=nx
            ptcl2%stat = 'flux'
+           if(grd_isvelocity) then
+              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+              help = 1d0+dirdotu*cinv
+              gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+!-- azimuthal direction angle
+              om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                   sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
+                   (1d0+gm*dirdotu*cinv/(gm+1d0)))
+              if(om<0d0) om=om+pc_pi2
+!-- y-projection
+              mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
+                   (gm*(1d0+dirdotu*cinv))
+!-- transforming wavelength to lab
+              wl = wl*exp(-dirdotu*cinv)
+!-- velocity effects accounting
+              totevelo=totevelo+e*(1d0-help)
+!-- transforming energy weights to lab
+              e = e*help
+              e0 = e0*help
+           endif
 !-- observer time correction
            ptcl%t=ptcl%t-(mu*y+sqrt(1d0-mu**2)*cos(om)*x)*thelp*cinv
 !-- redefine for flux tally
@@ -789,32 +740,29 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         mu = -max(r1,r2)
         call rnd_r(r1,rndstate)
         om = pc_pi2*r1
-        if(grd_isvelocity) then
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-                sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
-                (1d0+gm*dirdotu*cinv/(gm+1d0)))
-           if(om<0d0) om=om+pc_pi2
-!-- y-projection
-           mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
-                (gm*(1d0+dirdotu*cinv))
-!-- DIRDOTU LAB RESET
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           help = 1d0/(1d0-dirdotu*cinv)
-!-- transforming wl to lab
-           wl = wl*(1d0-dirdotu*cinv)
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!
-!-- transforming energy weights to lab
-           e = e*help
-           e0 = e0*help
-        endif
         if (iy==1) then
 !-- escaping at iy=1
            ptcl2%stat = 'flux'
+           if(grd_isvelocity) then
+              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+              help = 1d0+dirdotu*cinv
+              gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+!-- azimuthal direction angle
+              om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                   sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
+                   (1d0+gm*dirdotu*cinv/(gm+1d0)))
+              if(om<0d0) om=om+pc_pi2
+!-- y-projection
+              mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
+                   (gm*(1d0+dirdotu*cinv))
+!-- transforming wl to lab
+              wl = wl*exp(-dirdotu*cinv)
+!-- velocity effects accounting
+              totevelo=totevelo+e*(1d0-help)
+!-- transforming energy weights to lab
+              e = e*help
+              e0 = e0*help
+           endif
 !-- observer time correction
            ptcl%t = ptcl%t-(mu*y+sqrt(1d0-mu**2)*cos(om)*x)*thelp*cinv
 !-- redefine for flux tally
@@ -906,33 +854,29 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         mu = max(r1,r2)
         call rnd_r(r1,rndstate)
         om = pc_pi2*r1
-!-- doppler and aberration corrections
-        if(grd_isvelocity) then
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-                sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
-                (1d0+gm*dirdotu*cinv/(gm+1d0)))
-           if(om<0d0) om=om+pc_pi2
-!-- y-projection
-           mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
-                (gm*(1d0+dirdotu*cinv))
-!-- DIRDOTU LAB RESET
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           help = 1d0/(1d0-dirdotu*cinv)
-!-- transforming wl to lab
-           wl = wl*(1d0-dirdotu*cinv)
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!
-!-- transforming energy weights to lab
-           e = e*help
-           e0 = e0*help
-        endif
         if (iy == grd_ny) then
 !-- escaping at iy=ny
            ptcl2%stat = 'flux'
+           if(grd_isvelocity) then
+              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
+              help = 1d0+dirdotu*cinv
+              gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+!-- azimuthal direction angle
+              om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+                   sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
+                   (1d0+gm*dirdotu*cinv/(gm+1d0)))
+              if(om<0d0) om=om+pc_pi2
+!-- y-projection
+              mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
+                   (gm*(1d0+dirdotu*cinv))
+!-- transforming wl to lab
+              wl = wl*exp(-dirdotu*cinv)
+!-- velocity effects accounting
+              totevelo=totevelo+e*(1d0-help)
+!-- transforming energy weights to lab
+              e = e*help
+              e0 = e0*help
+           endif
 !-- observer time correction
            ptcl%t = ptcl%t-(mu*y+sqrt(1d0-mu**2)*cos(om)*x)*thelp*cinv
 !-- redefine for flux tally
@@ -1032,30 +976,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- resampling azimuthal
         om = atan2(xi,sqrt(1d0-xi**2)*cos(pc_pi2*r1))
         if(om<0d0) om=om+pc_pi2
-!-- transforming to lab
-        if(grd_isvelocity) then
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-                sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
-                (1d0+gm*dirdotu*cinv/(gm+1d0)))
-           if(om<0d0) om=om+pc_pi2
-!-- y-projection
-           mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
-                (gm*(1d0+dirdotu*cinv))
-!-- DIRDOTU LAB RESET
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           help = 1d0/(1d0-dirdotu*cinv)
-!-- transforming wl to lab
-           wl = wl*(1d0-dirdotu*cinv)
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!
-!-- transforming energy weights to lab
-           e = e*help
-           e0 = e0*help
-        endif
 !-- converting to IMC
         ptcl2%itype = 1
      endif
@@ -1148,30 +1068,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- resampling azimuthal
         om = atan2(xi,sqrt(1d0-xi**2)*cos(pc_pi2*r1))
         if(om<0d0) om=om+pc_pi2
-!-- transforming to lab
-        if(grd_isvelocity) then
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-                sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
-                (1d0+gm*dirdotu*cinv/(gm+1d0)))
-           if(om<0d0) om=om+pc_pi2
-!-- y-projection
-           mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
-                (gm*(1d0+dirdotu*cinv))
-!-- DIRDOTU LAB RESET
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           help = 1d0/(1d0-dirdotu*cinv)
-!-- transforming wl to lab
-           wl = wl*(1d0-dirdotu*cinv)
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!
-!-- transforming energy weights to lab
-           e = e*help
-           e0 = e0*help
-        endif
 !-- converting to IMC
         ptcl2%itype = 1
      endif
@@ -1246,31 +1142,6 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !-- must be inside cell
         x = min(x,grd_xarr(ix+1))
         x = max(x,grd_xarr(ix))
-!-- doppler and aberration corrections
-        if(grd_isvelocity) then
-!-- calculating transformation factors
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-                sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
-                (1d0+gm*dirdotu*cinv/(gm+1d0)))
-           if(om<0d0) om=om+pc_pi2
-!-- y-projection
-           mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
-                (gm*(1d0+dirdotu*cinv))
-!-- DIRDOTU LAB RESET
-           dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-           help = 1d0/(1d0-dirdotu*cinv)
-!-- transforming wl to lab
-           wl = wl*(1d0-dirdotu*cinv)
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!
-!-- transforming energy weights to lab
-           e = e*help
-           e0 = e0*help
-        endif
      endif
 !}}}
   endif

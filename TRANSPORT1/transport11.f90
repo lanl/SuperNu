@@ -215,12 +215,12 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
            totevelo=totevelo+e*(1d0 - help)
            e = e*help
            e0 = e0*help
-!-- observer time correction
            wl = wl*exp(1d0-help) !elabfact
            mu = (mu+x*cinv)*elabfact
            mu = min(mu,1d0)
-           ptcl%t=ptcl%t-mu*x*thelp*cinv
         endif
+!-- observer time correction
+        ptcl%t=ptcl%t-mu*x*thelp*cinv
 !-- ending particle
         ptcl2%stat = 'flux'
         return

@@ -10,7 +10,6 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
   use physconstmod
   use particlemod
   use transportmod
-  use fluxmod
   implicit none
 !
   type(packet),target,intent(inout) :: ptcl

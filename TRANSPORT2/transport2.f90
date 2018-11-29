@@ -95,7 +95,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   if(grd_isvelocity) then
 !-- calculating initial transformation factors
      dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-     elabfact = 1d0 - dirdotu*cinv
+     elabfact = 1d0 / (1d0 + dirdotu*cinv)
      thelp = tsp_t
   else
      dirdotu = 0d0
@@ -182,12 +182,12 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   else
      dbz = far
   endif
-  
+
 !
 !-- Thomson scattering distance
   if(grd_sig(ic)>0d0) then
      call rnd_r(r1,rndstate)
-     dthm = -log(r1)*thelpinv/(elabfact*grd_sig(ic))
+     dthm = -log(r1)*thelpinv/grd_sig(ic)
   else
 !-- making greater than dcen
      dthm = far
@@ -205,11 +205,11 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   elseif(trn_isimcanlog) then
 !-- calculating dcol for analog MC
      call rnd_r(r1,rndstate)
-     dcol = -log(r1)*thelpinv/(elabfact*grd_cap(ig,ic))
+     dcol = -log(r1)*thelpinv/grd_cap(ig,ic)
   elseif(grd_fcoef(ic)<1d0.and.grd_fcoef(ic)>=0d0) then
      call rnd_r(r1,rndstate)
      dcol = -log(r1)*thelpinv/&
-          (elabfact*(1d0-grd_fcoef(ic))*grd_cap(ig,ic))
+          ((1d0-grd_fcoef(ic))*grd_cap(ig,ic))
   else
 !-- making greater than dcen
      dcol = far
@@ -221,11 +221,10 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   endif
 !
 !-- Doppler shift distance
-  if(grd_isvelocity.and.ig<grp_ng) then
-     ddop = pc_c*(elabfact-wl*grp_wlinv(ig+1))
-     if(ddop<0d0) then
-        ddop = far
-     endif
+  if(grd_isvelocity) then
+!     ddop = -pc_c*log(wl*grp_wlinv(ig+1))
+     ddop = pc_c*(grp_wl(ig+1)-wl)/wl
+!     if(ddop<0d0) ddop = 0d0
   else
 !-- making greater than dcen
      ddop = far
@@ -363,6 +362,10 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   om = omold - (z - zold)
   if(om<0d0) om = om+pc_pi2
   if(om>pc_pi2) om = om-pc_pi2!}}}
+
+!-- updating wavelength
+  if(grd_isvelocity) wl = wl*(1d0+d*cinv) !exp(d*cinv)
+
 !
 !-- updating time
   ptcl%t = ptcl%t + thelp*cinv*d
@@ -370,26 +373,26 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- tallying energy densities
   if(trn_isimcanlog) then
 !-- analog energy density
-     eraddens = e*elabfact**2 * &
+     eraddens = e * &
           d*thelp*cinv*tsp_dtinv
   else
 !-- nonanalog energy density
      if(grd_fcoef(ic)*grd_cap(ig,ic)* &
           min(dx(ix),dy(iy),xm(ix)*dz(iz))*thelp>1d-6) then
         eraddens = e* &
-             (1.0d0-exp(-grd_fcoef(ic)*elabfact* &
-             grd_cap(ig,ic)*d*thelp))* &
-             elabfact/(grd_fcoef(ic)*elabfact * &
+             (1d0-exp(-grd_fcoef(ic) * &
+             grd_cap(ig,ic)*d*thelp)) / &
+             (grd_fcoef(ic) * &
              grd_cap(ig,ic)*pc_c*tsp_dt)
      else
 !-- analog energy density
-        eraddens = e*elabfact**2 * &
+        eraddens = e * &
              d*thelp*cinv*tsp_dtinv
      endif
 !-- depositing nonanalog absorbed energy
      edep = e* &
           (1d0-exp(-grd_fcoef(ic)*grd_cap(ig,ic)* &
-          elabfact*d*thelp))*elabfact
+          d*thelp))
      if(edep/=edep) then
 !       stop 'transport2: invalid energy deposition'
         ierr = 7
@@ -397,14 +400,14 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      endif
 !-- reducing particle energy
      e = e*exp(-grd_fcoef(ic)*grd_cap(ig,ic) * &
-          elabfact*d*thelp)
+          d*thelp)
   endif
 
 !
 !-- updating transformation factors
   if(grd_isvelocity) then
      dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-     elabfact = 1d0 - dirdotu*cinv
+     elabfact = 1d0 / (1d0 + dirdotu*cinv)
   endif
 
 !
@@ -437,6 +440,26 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      endif
   endif
   if(loutx.or.louty) then
+!-- changing to observer frame (energy is in cmf now)
+     if (grd_isvelocity) then
+!-- calculating transformation factors
+        gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
+        help = 1d0/elabfact
+!-- energy
+        totevelo=totevelo+e*(1d0 - help)
+        e = e*help
+        e0 = e0*help
+!-- wavelength
+        wl = wl*exp(1d0-help) !elabfact
+!-- azimuthal direction angle
+        om = atan2(sqrt(1d0-mu**2)*sin(om) , &
+             sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
+             (1d0+gm*dirdotu*cinv/(gm+1d0)))
+        if(om<0d0) om=om+pc_pi2
+!-- y-projection
+        mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
+             (gm*(1d0+dirdotu*cinv))
+     endif
 !-- observer time correction
      ptcl%t=ptcl%t-(mu*y+sqrt(1d0-mu**2)*cos(om)*x)*thelp*cinv
 !-- ending particle
@@ -454,40 +477,11 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      mu = 1d0 - 2d0*r1
      call rnd_r(r1,rndstate)
      om = pc_pi2*r1
-!-- checking velocity dependence
-     if(grd_isvelocity) then
-!-- calculating transformation factors
-        dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-        gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-        om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-             sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
-             (1d0+gm*dirdotu*cinv/(gm+1d0)))
-        if(om<0d0) om=om+pc_pi2
-!-- y-projection
-        mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
-             (gm*(1d0+dirdotu*cinv))
-!-- recalculating dirdotu
-        dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-     endif
   endif
 
 !
 !-- Thomson scatter
   if(d==dthm) then
-!-- checking velocity dependence
-     if(grd_isvelocity) then
-!-- wavelength
-        wl = wl*(1d0-dirdotu*cinv)/elabfact
-        help = elabfact/(1d0-dirdotu*cinv)
-!-- velocity effects accounting
-        totevelo=totevelo+e*(1d0-help)
-!
-!-- energy weight
-        e = e*help
-        e0 = e0*help
-     endif
-
 !
 !-- effective collision
   elseif(d==dcol) then
@@ -497,23 +491,10 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- effective absorption
         ptcl2%stat = 'dead'
 !-- adding comoving energy to deposition energy
-        edep = e*elabfact
-!-- velocity effects accounting
-        totevelo = totevelo+e*(1d0-elabfact)
+        edep = e
         return
      else
 !-- effective scattering
-!
-!-- transforming to lab
-        if(grd_isvelocity) then
-           help = elabfact/(1d0-dirdotu*cinv)
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-help)
-!-- energy weight
-           e = e*help
-           e0 = e0*help
-        endif
-!
 !-- sample group
         emitlump = grd_opaclump(8,ic)/grd_capgrey(ic)
         if(grp_ng==1) then
@@ -530,25 +511,9 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- always put this in the single most likely group
            ig = nint(grd_opaclump(9,ic))
         endif
-!
-!-- sample wavelength
-        if(ptcl2%itype==2) then
-!-- transforming to cmf
-           if(grd_isvelocity) then
-!-- velocity effects accounting
-              totevelo=totevelo+e*dirdotu*cinv
-!-- energy weight
-              e = e*(1d0-dirdotu*cinv)
-              e0 = e0*(1d0-dirdotu*cinv)
-           endif
-           wl = 0d0 !workaround ifort 13.1.3 bug
-        else
 !-- uniformly in new group
-           call rnd_r(r1,rndstate)
-           wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
-!-- converting comoving wavelength to lab frame wavelength
-           if(grd_isvelocity) wl = wl*(1d0-dirdotu*cinv)
-        endif
+        call rnd_r(r1,rndstate)
+        wl = 1d0/((1d0-r1)*grp_wlinv(ig)+r1*grp_wlinv(ig+1))
      endif
 
 !
@@ -565,35 +530,6 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
-        if(grd_isvelocity) then
-           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-                sqrt(1d0-mu**2)*cos(om)-gm*x*cinv * &
-                (1d0-gm*dirdotu*cinv/(gm+1d0)))
-           if(om<0d0) om=om+pc_pi2
-!-- y-projection
-           mu = (mu-gm*y*cinv*(1d0-gm*dirdotu*cinv/(1d0+gm))) / &
-                (gm*(1d0-dirdotu*cinv))
-!-- x-cosine
-           mu0 = sqrt(1d0-mu**2)*cos(om)
-!-- amplification factor
-           if(.not.trn_noampfact .and. mu0<0d0) then
-              help=1d0/abs(mu0)
-              help = min(100d0, help) !-- truncate singularity
-   !
-   !-- velocity effects accounting
-              totevelo=totevelo-e*2d0 * &
-                   (0.55d0*help-1.25d0*abs(mu0))*x*cinv
-   !
-   !-- apply the excess (higher than factor 2d0) to the energy deposition
-              eamp = e*2d0*0.55d0*max(0d0,help-2d0)*x*cinv
-   !-- apply limited correction to the particle
-              help = min(2d0,help)
-              e0=e0*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu0))*x*cinv)
-              e=e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu0))*x*cinv)
-           endif
-        endif
         help = (grd_cap(ig,l)+grd_sig(l)) * &
              dx(ixnext)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
@@ -602,14 +538,6 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         call rnd_r(r1,rndstate)
         if (r1 < help) then
            ptcl2%itype = 2
-           if(grd_isvelocity) then
-!-- velocity effects accounting
-              totevelo=totevelo+e*(1d0-elabfact)
-!
-              e = e*elabfact
-              e0 = e0*elabfact
-              wl = wl/elabfact
-           endif
            ix = ixnext
            ic = grd_icell(ix,iy,iz)
         else
@@ -623,18 +551,6 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- resampling azimuthal
            om = atan2(sqrt(1d0-mu0**2)*sin(pc_pi2*r1),mu0)
            if(om<0d0) om=om+pc_pi2
-           if(grd_isvelocity) then
-              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-              gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-              om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-                   sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
-                   (1d0+gm*dirdotu*cinv/(gm+1d0)))
-              if(om<0d0) om=om+pc_pi2
-!-- y-projection
-              mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
-                   (gm*(1d0+dirdotu*cinv))
-           endif
         endif
      endif
 
@@ -652,29 +568,6 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
-        if(grd_isvelocity) then
-           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- y-projection
-           mu = (mu-gm*y*cinv*(1d0-gm*dirdotu*cinv/(1d0+gm))) / &
-                (gm*(1d0-dirdotu*cinv))
-!-- amplification factor
-           if(.not.trn_noampfact .and. &
-                 ((mu<0d0.and.y>0d0).or.(mu>0d0.and.y<0d0))) then
-              help=1d0/abs(mu)
-              help = min(100d0, help) !-- truncate singularity
-!
-!-- velocity effects accounting
-              totevelo=totevelo-e*2d0 * &
-                   (0.55d0*help-1.25d0*abs(mu))*abs(y)*cinv
-!
-!-- apply the excess (higher than factor 2d0) to the energy deposition
-              eamp = e*2d0*0.55d0*max(0d0,help-2d0)*abs(y)*cinv
-!-- apply limited correction to the particle
-              help = min(2d0,help)
-              e0=e0*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(mu))*abs(y)*cinv)
-              e=e*(1d0 + 2d0*(0.55d0*help-1.25d0*abs(mu))*abs(y)*cinv)
-           endif
-        endif
         help = (grd_cap(ig,l)+grd_sig(l)) * &
              dy(iynext)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)
@@ -683,14 +576,6 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         call rnd_r(r1,rndstate)
         if (r1 < help) then
            ptcl2%itype = 2
-           if(grd_isvelocity) then
-!-- velocity effects accounting
-              totevelo=totevelo+e*(1d0-elabfact)
-!
-              e = e*elabfact
-              e0 = e0*elabfact
-              wl = wl/elabfact
-           endif
            iy = iynext
            ic = grd_icell(ix,iy,iz)
         else
@@ -701,18 +586,6 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- resampling azimuthal
            call rnd_r(r1,rndstate)
            om = pc_pi2*r1
-           if(grd_isvelocity) then
-              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-              gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-              om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-                   sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
-                   (1d0+gm*dirdotu*cinv/(gm+1d0)))
-              if(om<0d0) om=om+pc_pi2
-!-- y-projection
-              mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
-                   (gm*(1d0+dirdotu*cinv))
-           endif
         endif
      endif
 
@@ -735,18 +608,6 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
-        if(grd_isvelocity) then
-           gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-           om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-                sqrt(1d0-mu**2)*cos(om)-gm*x*cinv * &
-                (1d0-gm*dirdotu*cinv/(gm+1d0)))
-           if(om<0d0) om=om+pc_pi2
-!-- y-projection
-           mu = (mu-gm*y*cinv*(1d0-gm*dirdotu*cinv/(1d0+gm))) / &
-                (gm*(1d0-dirdotu*cinv))
-!-- transforming z-cosine to cmf
-        endif
         xi = sqrt(1d0-mu**2)*sin(om)
         help = (grd_cap(ig,l)+grd_sig(l)) * &
              xm(ix)*dz(iznext)*thelp
@@ -755,14 +616,6 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         call rnd_r(r1,rndstate)
         if (r1 < help*(1d0+1.5d0*abs(xi))) then
            ptcl2%itype = 2
-           if(grd_isvelocity) then
-!-- velocity effects accounting
-              totevelo=totevelo+e*(1d0-elabfact)
-              !
-              e = e*elabfact
-              e0 = e0*elabfact
-              wl = wl/elabfact
-           endif
            iz = iznext
            ic = grd_icell(ix,iy,iz)
         else
@@ -785,19 +638,6 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !-- resampling azimuthal
            om = atan2(xi,sqrt(1d0-xi**2)*cos(pc_pi2*r1))
            if(om<0d0) om=om+pc_pi2
-!-- transforming om, mu to lab
-           if(grd_isvelocity) then
-              dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-              gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-              om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-                   sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
-                   (1d0+gm*dirdotu*cinv/(gm+1d0)))
-              if(om<0d0) om=om+pc_pi2
-!-- y-projection
-              mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
-                   (gm*(1d0+dirdotu*cinv))
-           endif
 !-- reverting z
            if(iznext==grd_nz.and.iz==1) then
               if(z==pc_pi2) z = 0d0
@@ -817,26 +657,34 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      if(ig<grp_ng) then
 !-- shifting group
         ig = ig+1
-        wl = (grp_wl(ig)+1d-6*(grp_wl(ig+1)-grp_wl(ig)))*elabfact
+        wl = grp_wl(ig) !*elabfact
      else
+
+!-- redistributing wavelength
+        emitlump = grd_opaclump(8,ic)/grd_capgrey(ic)
+        if(grp_ng==1) then
+        elseif(emitlump<.99d0 .or. trn_nolumpshortcut .or. in_puretran) then
+           call rnd_r(r1,rndstate)
+           ig = emitgroup(r1,ic)
+!-- checking if DDMC in new group
+           if((grd_sig(ic)+grd_cap(ig,ic)) * &
+              min(dx(ix),dy(iy),xm(ix)*dz(iz))*thelp >= trn_tauddmc &
+              .and. .not.in_puretran) ptcl2%itype = 2
+!-- don't sample, it will end up in the lump anyway
+        else
+           ptcl2%itype = 2
+!-- always put this in the single most likely group
+           ig = nint(grd_opaclump(9,ic))
+        endif
 !-- resampling wavelength in highest group
         call rnd_r(r1,rndstate)
-        wl=1d0/(r1*grp_wlinv(grp_ng+1) + (1d0-r1)*grp_wlinv(grp_ng))
-        wl = wl*elabfact
+        wl=1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))
      endif
 !-- check if ddmc region
      if ((grd_sig(ic)+grd_cap(ig,ic)) * &
           min(dx(ix),dy(iy),xm(ix)*dz(iz))*thelp >= trn_tauddmc &
           .and..not.in_puretran) then
         ptcl2%itype = 2
-        if(grd_isvelocity) then
-!-- velocity effects accounting
-           totevelo=totevelo+e*(1d0-elabfact)
-!
-           e = e*elabfact
-           e0 = e0*elabfact
-           wl = wl/elabfact
-        endif
      endif
   else
 !    stop 'transport2: invalid distance'
