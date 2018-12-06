@@ -95,9 +95,10 @@ c-- everything else
 c==================
 c-- broadcast constants
 c-- logical
-      n = 4
+      n = 5
       allocate(lsndvec(n))
-      if(lmpi0) lsndvec = [str_lvoid,str_ltemp,str_lye,str_lcap]
+      if(lmpi0) lsndvec = [str_lvoid,str_ltemp,str_lye,str_lcap,
+     & str_ldynfr]
       call mpi_bcast(lsndvec,n,MPI_LOGICAL,
      &  impi0,MPI_COMM_WORLD,ierr)
 c-- copy back
@@ -105,6 +106,7 @@ c-- copy back
       str_ltemp = lsndvec(2)
       str_lye = lsndvec(3)
       str_lcap = lsndvec(4)
+      str_ldynfr = lsndvec(5)
       deallocate(lsndvec)
 c
 c-- integer
@@ -321,6 +323,14 @@ c-- capcoef structure if available
      &  str_capdd,ncell,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
       endif
+c-- dynfr (dynamical ejecta fraction) structure if available
+      if(str_ldynfr) then
+       if(impi/=impi0) allocate(str_dynfrdc(str_nc))
+       allocate(str_dynfrdd(ncell))
+       call mpi_scatterv(str_dynfrdc,counts,displs,MPI_REAL8,
+     &  str_dynfrdd,ncell,MPI_REAL8,
+     &  impi0,MPI_COMM_WORLD,ierr)
+      endif
 !}}}
       end subroutine scatter_inputstruct
 c
@@ -369,6 +379,56 @@ c-- cap
      &   impi0,MPI_COMM_WORLD,ierr)
 c
       end subroutine bcast_tbxs
+c
+c
+c
+      subroutine bcast_tbsrc
+c     ----------------------
+      use tbsrcmod
+      implicit none
+************************************************************************
+* broadcast Korobkin source (heating rate) tables
+************************************************************************
+      integer :: n
+      integer,allocatable :: isndvec(:)
+
+c-- broadcast number of source time steps
+      n = 2
+      allocate(isndvec(n))
+      if(lmpi0) isndvec = [tbs_ntdyn,tbs_ntwnd]
+      call mpi_bcast(isndvec,n,MPI_INTEGER,
+     &  impi0,MPI_COMM_WORLD,ierr)
+c-- copy back
+      tbs_ntdyn = isndvec(1)
+      tbs_ntwnd = isndvec(2)
+      deallocate(isndvec)
+c-- sanity check
+      if(tbs_ntdyn<=0 .and. tbs_ntwnd<=0)
+     &   stop 'bcast_tbsrc: ntdyn <= 0 & ntwnd <=0'
+c
+c-- broadcast thermalization options
+      n = tbs_ncol-3
+      call mpi_bcast(tbs_dynopt,n,MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(tbs_wndopt,n,MPI_INTEGER,impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(tbs_dynpars,n,MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
+      call mpi_bcast(tbs_wndpars,n,MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
+c
+c-- allocate source arrays
+      if(impi/=impi0) then
+        allocate(tbs_dynhr(tbs_ncol,tbs_ntdyn))
+        allocate(tbs_wndhr(tbs_ncol,tbs_ntwnd))
+      endif
+c-- broadcast dynamical ejecta source
+      if(tbs_ntdyn > 0) then
+        n = tbs_ncol*tbs_ntdyn
+        call mpi_bcast(tbs_dynhr,n,MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
+      endif
+c-- broadcast wind source
+      if(tbs_ntwnd > 0) then
+        n = tbs_ncol*tbs_ntwnd
+        call mpi_bcast(tbs_wndhr,n,MPI_REAL8,impi0,MPI_COMM_WORLD,ierr)
+      endif
+      end subroutine bcast_tbsrc
 c
 c
 c

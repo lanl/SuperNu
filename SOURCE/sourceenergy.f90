@@ -1,6 +1,6 @@
 !This file is part of SuperNu.  SuperNu is released under the terms of the GNU GPLv3, see COPYING.
 !Copyright (c) 2013-2017 Ryan T. Wollaeger and Daniel R. van Rossum.  All rights reserved.
-subroutine sourceenergy
+subroutine sourceenergy(lgamma)
 
   use gasmod
   use sourcemod
@@ -10,6 +10,7 @@ subroutine sourceenergy
   use inputparmod
   use manufacmod
   implicit none
+  logical, intent(in) :: lgamma
 !##################################################
 !This subroutine computes the distribution of source particles each
 !time step.  A fraction of the source particle number src_ns is given
@@ -20,6 +21,8 @@ subroutine sourceenergy
 !-- prepare manufactured solution temperature source
   if(in_srctype=='manu') then
      call generate_manutempsrc(in_str_totmass,in_gas_capcoef,tsp_t,tsp_dt)
+  elseif(in_srctype=='tabl') then
+     call tabular_source(tsp_it,tsp_nt,tsp_tcenter,in_srctype)
   elseif(in_gas_srccoef>0d0) then
 !-- short-cuts
      q1=in_gas_srcrpwr
@@ -44,10 +47,13 @@ subroutine sourceenergy
 !-- and remaining 1-gas_fcoef is thermal radiation.
   tot_eext = tot_eext + tsp_dt*sum(gas_vol*gas_matsrc)
 
-!
 !-- non-thermal decay radiation source energy
-  if(.not.in_novolsrc .and. in_srctype=='none') then
-     if(in_sgamcoef>0d0) then
+  if(lgamma) then
+     if(in_srctype=='tabl') then
+!-- gamma source calculated by tabular_source in erg/cc/s
+        gas_decaygamma = gas_decaygamma*tsp_dt*gas_vol
+        gas_decaybeta = 0d0
+     elseif(in_sgamcoef>0d0) then
 !-- power-law
 !-- short-cuts
         q1=in_sgamrpwr
@@ -58,6 +64,7 @@ subroutine sourceenergy
              gas_temp**q2 * (tsp_t+.5d0*tsp_dt)**q3
         gas_decaybeta = 0d0
      endif
+!-- gamma source is considered external energy
      gas_emitex = gas_decaygamma  !grey transport
      gas_emit = gas_emit + gas_decaybeta  !local deposition
 !-- totals

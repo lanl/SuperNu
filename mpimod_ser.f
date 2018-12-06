@@ -52,6 +52,10 @@ c
        allocate(str_capdd(ncell))
        str_capdd = reshape(str_capdc,[ncell])
       endif
+      if(str_ldynfr) then
+       allocate(str_dynfrdd(ncell))
+       str_dynfrdd = reshape(str_dynfrdc,[ncell])
+      endif
       end subroutine scatter_inputstruct
 c
 c

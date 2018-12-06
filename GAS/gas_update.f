@@ -206,7 +206,11 @@ c
 c-- calculate opacities
 c======================
 c-- gamma opacity
-      gas_capgam = in_opcapgam*gas_ye*gas_rho
+      if(in_srctype=='tabl') then
+        gas_capgam = in_opcapgam*gas_rho
+      else
+        gas_capgam = in_opcapgam*gas_ye*gas_rho
+      endif
 c
 c
 c-- simple analytical group/grey opacities: Planck and Rosseland

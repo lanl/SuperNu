@@ -37,9 +37,11 @@
 
 !-- source
  in_novolsrc=f
- in_gas_srccoef=1.3d16
- in_gas_srcrpwr=1d0
- in_gas_srctimepwr=-1.3d0
+ in_srctype="tabl"
+ in_opcapgam=0.1d0
+! in_gas_srccoef=1.3d16
+! in_gas_srcrpwr=1d0
+! in_gas_srctimepwr=-1.3d0
 
 !-- opacity
  in_opacanaltype="none"

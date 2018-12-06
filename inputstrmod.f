@@ -22,6 +22,7 @@ c
       real*8,allocatable :: str_temp(:,:,:) !(nx,ny,nz)
       real*8,allocatable :: str_ye(:,:,:) !(nx,ny,nz)
       real*8,allocatable :: str_cap(:,:,:) !(nx,ny,nz)
+      real*8,allocatable :: str_dynfr(:,:,:) !(nx,ny,nz)
       real*8,allocatable :: str_massfr(:,:,:,:) !(nabund,nx,ny,nz)
 c
 c-- domain compression
@@ -33,6 +34,7 @@ c-- domain compression
       real*8,allocatable :: str_tempdc(:) !(nc)
       real*8,allocatable :: str_yedc(:) !(nc)
       real*8,allocatable :: str_capdc(:) !(nc)
+      real*8,allocatable :: str_dynfrdc(:) !(nc)
 c
 c-- domain decomposition
       real*8,allocatable :: str_massdd(:) !(gas_ncell)
@@ -40,6 +42,7 @@ c-- domain decomposition
       real*8,allocatable :: str_tempdd(:) !(gas_ncell)
       real*8,allocatable :: str_yedd(:) !(gas_ncell)
       real*8,allocatable :: str_capdd(:) !(gas_ncell)
+      real*8,allocatable :: str_dynfrdd(:) !(gas_ncell)
 c
       character(8),allocatable,private :: str_abundlabl(:) !(nabund)
 c
@@ -68,6 +71,7 @@ c     ---------------------------!{{{
       if(str_ltemp) deallocate(str_tempdc,str_tempdd)
       if(str_lye) deallocate(str_yedc,str_yedd)
       if(str_lcap) deallocate(str_capdc,str_capdd)
+      if(str_ldynfr) deallocate(str_dynfrdc,str_dynfrdd)
       end subroutine inputstr_dealloc
 c
 c
@@ -84,7 +88,7 @@ c     --------------------------------------------------------!{{{
 * Read the input structure file
 ************************************************************************
       integer :: i,j,k,l,ierr,nx_r,ny_r,nz_r,ini56,nvar,ncol
-      integer :: jmass,jxleft,jye,jtemp,jcap
+      integer :: jmass,jxleft,jye,jtemp,jcap,jdynfr
       integer :: ncorner,nvoid,ncell,ncpr
       character(2) :: dmy
       character(8),allocatable :: labl(:)
@@ -131,17 +135,20 @@ c-- var pointers
       jye = 0
       jtemp = 0
       jcap = 0
+      jdynfr = 0
       do i=1,nvar
        if(lcase(trim(labl(i)))=='x_left') jxleft = i
        if(lcase(trim(labl(i)))=='mass') jmass = i
        if(lcase(trim(labl(i)))=='ye') jye = i
        if(lcase(trim(labl(i)))=='temp') jtemp = i
        if(lcase(trim(labl(i)))=='cap') jcap = i
+       if(lcase(trim(labl(i)))=='dyn_fr') jdynfr = i
       enddo
       if(jmass==0) stop 'read_inputstr: mass label not found'
       if(jtemp>0) str_ltemp = .true.
       if(jye>0) str_lye = .true.
       if(jcap>0) str_lcap = .true.
+      if(jdynfr>0) str_ldynfr = .true.
 c
 c-- allocate data arrays
       allocate(str_xleft(nx+1))
@@ -152,6 +159,7 @@ c-- allocate data arrays
       if(str_ltemp) allocate(str_temp(nx,ny,nz))
       if(str_lye) allocate(str_ye(nx,ny,nz))
       if(str_lcap) allocate(str_cap(nx,ny,nz))
+      if(str_ldynfr) allocate(str_dynfr(nx,ny,nz))
       allocate(raw(ncol,nx*ny*nz))
 c
 c-- read body
@@ -254,6 +262,7 @@ c-- vars
        if(str_ltemp) str_temp(i,j,k)=raw(jtemp,l)
        if(str_lye) str_ye(i,j,k)=raw(jye,l)
        if(str_lcap) str_cap(i,j,k)=raw(jcap,l)
+       if(str_ldynfr) str_dynfr(i,j,k)=raw(jdynfr,l)
       enddo
       enddo
       enddo
@@ -371,6 +380,7 @@ c
       if(str_ltemp) allocate(str_tempdc(str_nc))
       if(str_lye) allocate(str_yedc(str_nc))
       if(str_lcap) allocate(str_capdc(str_nc))
+      if(str_ldynfr) allocate(str_dynfrdc(str_nc))
 c-- zero all, including the dummy cell
       str_idcell = 0
       str_massdc = 0d0
@@ -378,6 +388,7 @@ c-- void temp [K]
       if(str_ltemp) str_tempdc = 1000d0
       if(str_lye) str_yedc = .5d0
       if(str_lcap) str_capdc = 0d0
+      if(str_ldynfr) str_dynfrdc = 1d0
 c
       l = 0
       idcell = 0
@@ -395,6 +406,7 @@ c-- insert
        if(str_ltemp) str_tempdc(l) = str_temp(i,j,k)
        if(str_lye) str_yedc(l) = str_ye(i,j,k)
        if(str_lcap) str_capdc(l) = str_cap(i,j,k)
+       if(str_ldynfr) str_dynfrdc(l) = str_dynfr(i,j,k)
       enddo !i
       enddo !j
       enddo !k

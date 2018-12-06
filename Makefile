@@ -26,7 +26,7 @@ MODULES := elemdatamod.o nucdatamod.o physconstmod.o randommod.o mpimod.o \
   miscmod.o ionsmod.o ffxsmod.o bfxsmod.o bbxsmod.o \
   inputparmod.o timestepmod.o groupmod.o gridmod.o gasmod.o inputstrmod.o \
   particlemod.o timingmod.o countersmod.o manufacmod.o fluxmod.o totalsmod.o \
-  transportmod.o sourcemod.o tbxsmod.o
+  transportmod.o sourcemod.o tbxsmod.o tbsrcmod.o
 
 FILES := banner.o \
   particle_advance.o particle_advance_gamgrey.o fluxtally.o \

@@ -653,6 +653,7 @@ c
       case('strt')
       case('manu')
       case('surf')
+      case('tabl')
       case default
        stop 'in_srctype unknown'
       end select

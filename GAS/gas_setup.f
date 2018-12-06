@@ -84,6 +84,15 @@ c-- as constant from input.par
         gas_capcoef = in_gas_capcoef
       endif
 c
+c-- dynamical ejecta fraction (needed for total heating)
+      if(str_ldynfr) then
+c-- from input.str
+        gas_dynfr = str_dynfrdd
+      else
+c-- as default
+        gas_dynfr = 1d0
+      endif
+c
       end subroutine gas_setup
 c
 c

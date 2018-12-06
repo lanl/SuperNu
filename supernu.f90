@@ -23,6 +23,7 @@ program supernu
   use bfxsmod, only:bfxs_read_data
   use ffxsmod, only:ffxs_read_data
   use tbxsmod
+  use tbsrcmod
   use timingmod
   use countersmod
 
@@ -30,7 +31,7 @@ program supernu
 !***********************************************************************
 ! TODO and wishlist:
 !***********************************************************************
-  logical :: lgamma
+  logical :: lgamma, lsrctable
   logical :: lopac(4)
   integer :: ierr, it
   integer :: icell1, ncell !number of cells per rank (gas_ncell)
@@ -114,6 +115,12 @@ program supernu
 !-- broadcast permanent opacity table
   if(.not.in_notbopac) call bcast_tbxs(grp_ng) !MPI
 
+!-- read source data
+  lsrctable = in_srctype=='tabl'
+  if(lmpi0.and.lsrctable) call read_tbsrc
+!-- broadcast source table
+  if(lsrctable) call bcast_tbsrc !MPI
+
 !-- setup spatial grid
   call gridmod_init(lmpi0,grp_ng,str_nc,str_lvoid,icell1,ncell)
   call grid_setup
@@ -177,21 +184,25 @@ program supernu
      call grid_update(tsp_t)
      call gas_update(it)
 
+!-- grey gamma ray condition
+     lgamma=(.not.in_novolsrc) .and. &
+        (any(['none','tabl']==in_srctype))
+!-- todo: check for non-zero gamma energy
+
 !-- source energy: gamma and material
-     call sourceenergy
+     call sourceenergy(lgamma)
+
+!-- zero energy tally (1st used for source)
+     grd_tally(1,:) = 0d0 !edep
 
 !-- grey gamma ray transport
      call mpi_barrier(MPI_COMM_WORLD,ierr) !MPI
      t_timelin(2) = t_time() !timeline
-     lgamma=(.not.in_novolsrc) .and. &
-        (in_srctype=='none' .or. in_sgamcoef>0d0)
      if(lgamma) then
         call allgather_gammacap
         call particle_advance_gamgrey(nmpi)
         call allreduce_gammaenergy !MPI
 !       grd_tally(1,:) = grd_emitex !for testing: local deposition
-     else
-        grd_tally(1,:) = 0d0 !edep
      endif
 
 !-- gather from gas workers and broadcast to world ranks

@@ -12,6 +12,8 @@ c     ----------------------
       use fluxmod
       use sourcemod
       use randommod
+      use tbxsmod
+      use tbsrcmod
       use timestepmod
       implicit none
 ************************************************************************
@@ -24,6 +26,8 @@ c-- ionsmod
       call gas_dealloc
       call grid_dealloc
       call flux_dealloc
+      call tbxs_dealloc
+      call tbsrc_dealloc
       deallocate(prt_particles,prt_isvacant)
       call mpimod_dealloc
       deallocate(grp_wl,grp_wlinv)

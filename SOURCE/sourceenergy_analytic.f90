@@ -25,7 +25,7 @@ subroutine sourceenergy_analytic(lmpi0)
      thelp = 1d0
   endif
 
-  if(in_srctype=='none') then
+  if(any(['none','tabl']==in_srctype)) then
     return
   elseif(in_srctype=='surf') then
 !-- time-integrated surface flux [erg/cm^2]
@@ -159,7 +159,7 @@ subroutine sourceenergy_analytic(lmpi0)
      do i=1,grd_nx
         l = grd_icell(i,1,1)
         srcren = in_srcmax*(grd_xarr(grd_nx+1)- &
-             0.5d0*(grd_xarr(i)+grd_xarr(i+1)))/ & 
+             0.5d0*(grd_xarr(i)+grd_xarr(i+1)))/ &
              (grd_xarr(grd_nx+1)-grd_xarr(1))
         grd_emitex(l) = srcren * grd_vol(l)*tsp_dt
 !
@@ -176,7 +176,7 @@ subroutine sourceenergy_analytic(lmpi0)
 !--  NOW DONE IN SOURCEENERGY
 !!-- temperature source
 !     call generate_manutempsrc(in_str_totmass,in_gas_capcoef,tsp_t,tsp_dt)
-!     
+!
      !}}}
   else
      stop 'sourceenergy_analytic: in_srctype invalid'
