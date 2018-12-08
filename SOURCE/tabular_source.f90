@@ -26,6 +26,10 @@ subroutine tabular_source(it,nt,tcenter,srctype)
 !-- reset material source
   gas_matsrc = 0d0
 
+!-- initialize helper and thermalization fraction array
+  helparr = 0d0
+  therm_fracs = 0d0
+
 !-- allocate and set time arrays once
   if(.not.allocated(tdyn) .and. tbs_ntdyn>0) then
      allocate(tdyn(tbs_ntdyn))
@@ -37,13 +41,17 @@ subroutine tabular_source(it,nt,tcenter,srctype)
   endif
 
 !-- set the helper array
-  if(any(tbs_dynopt==1)) helparr = 2d0/(tcenter*gas_rho)
+  if(any(tbs_dynopt==1)) then
+     where(gas_rho>0d0) helparr = 2d0/(tcenter*gas_rho)
+  endif
 
 !-- calculate the dynamical ejecta thermalization fractions
   do icol=1,tbs_ncol-3
      if(tbs_dynopt(icol)==1) then
-        therm_fracs(:,icol) = log(1d0+(helparr*tbs_dynpars(icol))) / &
-             (helparr*tbs_dynpars(icol))
+        where(helparr < huge(helparr) .and. helparr > 0d0)
+           therm_fracs(:,icol) = log(1d0+(helparr*tbs_dynpars(icol))) / &
+                (helparr*tbs_dynpars(icol))
+        endwhere
      else
         therm_fracs(:,icol) = tbs_dynpars(icol)
      endif
@@ -69,8 +77,10 @@ subroutine tabular_source(it,nt,tcenter,srctype)
 !-- calculate the wind thermalization fractions
   do icol=1,tbs_ncol-3
      if(tbs_wndopt(icol)==1) then
-        therm_fracs(:,icol) = log(1d0+(helparr*tbs_wndpars(icol))) / &
-             (helparr*tbs_wndpars(icol))
+        where(helparr < huge(helparr) .and. helparr > 0d0)
+           therm_fracs(:,icol) = log(1d0+(helparr*tbs_wndpars(icol))) / &
+                (helparr*tbs_wndpars(icol))
+        endwhere
      else
         therm_fracs(:,icol) = tbs_wndpars(icol)
      endif
