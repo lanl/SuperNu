@@ -48,17 +48,20 @@ subroutine tabular_source(it,nt,tcenter,srctype)
 !-- calculate the dynamical ejecta thermalization fractions
   do icol=1,tbs_ncol-3
      if(tbs_dynopt(icol)==1) then
-        where(helparr < huge(helparr) .and. helparr > 0d0)
+        where(helparr < huge(helparr) .and. helparr*tbs_dynpars(icol) > 1d-6)
            therm_fracs(:,icol) = log(1d0+(helparr*tbs_dynpars(icol))) / &
                 (helparr*tbs_dynpars(icol))
         endwhere
+!-- set to 1 for small arg (l'hopital rule)
+        where(helparr*tbs_dynpars(icol) <= 1d-6) therm_fracs(:,icol) = 1d0
      else
         therm_fracs(:,icol) = tbs_dynpars(icol)
      endif
   enddo
 
-!-- sanity check
-  if(any(therm_fracs>1d0)) stop 'tabular_source: therm_fracs>1'
+!-- sanity checks
+  if(any(therm_fracs>1d0)) stop 'tabular_source: dyn ej therm_fracs>1'
+  if(any(therm_fracs<0d0)) stop 'tabular_source: therm_fracs<0'
 
 !-- calculate dynamical ejecta rate
   if(tbs_ntdyn>0) then
@@ -77,17 +80,20 @@ subroutine tabular_source(it,nt,tcenter,srctype)
 !-- calculate the wind thermalization fractions
   do icol=1,tbs_ncol-3
      if(tbs_wndopt(icol)==1) then
-        where(helparr < huge(helparr) .and. helparr > 0d0)
+        where(helparr < huge(helparr) .and. helparr*tbs_wndpars(icol) > 1d-6)
            therm_fracs(:,icol) = log(1d0+(helparr*tbs_wndpars(icol))) / &
                 (helparr*tbs_wndpars(icol))
         endwhere
+!-- set to 1 for small arg (l'hopital rule)
+        where(helparr*tbs_wndpars(icol) <= 1d-6) therm_fracs(:,icol) = 1d0
      else
         therm_fracs(:,icol) = tbs_wndpars(icol)
      endif
   enddo
 
 !-- sanity check
-  if(any(therm_fracs>1d0)) stop 'tabular_source: therm_fracs>1'
+  if(any(therm_fracs>1d0)) stop 'tabular_source: wind therm_fracs>1'
+  if(any(therm_fracs<0d0)) stop 'tabular_source: therm_fracs<0'
 
 !-- calculate wind rate
   if(tbs_ntwnd>0) then
