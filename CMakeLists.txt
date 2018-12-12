@@ -2,7 +2,8 @@
 cmake_minimum_required (VERSION 3.8)
 
 #-- specify configuration options
-option (USE_MPI "USE_MPI" OFF)
+option (USE_MPI "USE_MPI" ON)
+option (USE_OPENMP "USE_OPENMP" OFF)
 
 #-- name the project and set the language
 project (SuperNu)
@@ -22,6 +23,13 @@ if (MPI_Fortran_FOUND AND USE_MPI)
   configure_file (mpimod_mpi.f mpimod.f COPYONLY)
 else ()
   configure_file (mpimod_ser.f mpimod.f COPYONLY)
+endif ()
+
+#-- find OpenMP (cmake -DUSE_OPENMP=ON <src dir>)
+find_package (OpenMP)
+if (OPENMP_FOUND)
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif ()
 
 #-- set the Fortran module directory
