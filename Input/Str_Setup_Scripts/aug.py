@@ -21,9 +21,11 @@ parser.add_argument('--el',type=str,help='Select element'\
                     ' (element symbol).')
 parser.add_argument('--model',type=str,help='Select model'\
                     ' (replaces element symbol in file name).')
+parser.add_argument('--opac',type=float,help='Grey dyn. ej. opacity [cm^2/g]')
 parser.add_argument('--wind_el',type=str,help='Add wind element')
 parser.add_argument('--wind_mass',type=float,help='Wind mass [solar mass]')
 parser.add_argument('--wind_vmax',type=float,help='Max wind velocity [c]')
+parser.add_argument('--wind_opac',type=float,help='Grey wind opacity [cm^2/g]')
 parser.add_argument('--add_dyn_frac',action='store_true',help='Add column'\
                     ' of dynamical ejecta fraction to structure.')
 #-- parameters for rescaling dynamical ejecta speed, mass
@@ -221,6 +223,13 @@ if(wind_el!=None): ye0+=massw*ye0w
 np.putmask(ye0,mass==0.0,ye0d)
 massh=mass.copy(); massh[massh==0.0]=1.0
 ye0/=massh
+#-- grey opacity
+opac = np.array([])
+if(args.opac!=None):
+    opac = args.opac*massd
+    if(args.wind_opac!=None):
+        opac += massw*args.wind_opac
+    opac /= massh
 
 #-- element dictionary
 eldict = {'Cr':24, 'Fe':26, 'Se':34, 'Br':35, 'Zr':40,
@@ -242,6 +251,7 @@ els = elsd.copy()
 #-- total input structure
 ncol=imass + 3 + nelemd
 if(args.add_dyn_frac): ncol += 1
+if(args.opac!=None): ncol += 1
 if(wind_el!=None):
     if('.dat' in wind_el):
         elsw = np.loadtxt(wind_el)
@@ -277,6 +287,9 @@ spnstr[:,imass]=mass
 spnstr[:,imass+1]=temp
 icol = 3
 if(args.add_dyn_frac): icol+=1
+if(args.opac!=None):
+    icol+=1
+    spnstr[:,imass+icol-2] = opac
 if(wind_el==None):
     #-- only dyn ejecta
     spnstr[:,imass+2]=ye0d
@@ -317,6 +330,7 @@ hd2=str(nx)+' '+str(ny)+' 1 '+str(ncol)+' '+str(nelem)+'\n'
 #-- column labels
 if(igeom==11): lbls=['   x_left','x_right','mass','temp','ye']
 elif(igeom==2): lbls=['   x_left','x_right','y_left','y_right','mass','temp','ye']
+if(args.opac!=None): lbls += ['cap']
 if(args.add_dyn_frac): lbls += ['dyn_fr']
 hd3=lbls[0]
 for lbl in lbls[1:]: hd3+=lbl.rjust(12)
