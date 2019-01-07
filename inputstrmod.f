@@ -799,7 +799,7 @@ c-- special cases
        case default
 c-- normal case, search elem_data for corresponding entry
         do j=1,elem_neldata
-         if(lcase(trim(adjustl(elem_data(j)%sym)))==elname) exit
+         if(lcase(trim(elem_data(j)%sym))==elname) exit
         enddo
 c-- verify hit
         if(j>elem_neldata) then
