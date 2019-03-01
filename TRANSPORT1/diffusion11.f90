@@ -162,7 +162,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !-- outside the lump
      emitlump = specint0(grd_tempinv(ic),ig)*capgreyinv*grd_cap(ig,ic)
      caplump = grd_cap(ig,ic)
-     if(grd_isvelocity) then
+     if(grd_isvelocity .and. ig/=grp_ng) then
         doplump = dopspeccalc(grd_tempinv(ic),ig)/(cache%specarr(ig)*pc_c*tsp_t)
      else
         doplump = 0d0
