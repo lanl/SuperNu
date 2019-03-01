@@ -308,6 +308,14 @@ subroutine particle_advance
               exit
            endif
         endif
+
+!-- snap particle inside cell when precision error is accrued
+        x = min(x,grd_xarr(ix+1))
+        x = max(x,grd_xarr(ix))
+        y = min(y,grd_yarr(iy+1))
+        y = max(y,grd_yarr(iy))
+        z = min(z,grd_xarr(iz+1))
+        z = max(z,grd_xarr(iz))
      enddo
 
 !-- max step counter

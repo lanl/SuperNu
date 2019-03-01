@@ -130,7 +130,7 @@ subroutine particle_advance_gamgrey(nmpi)
 !$omp reduction(+:grd_tally,flx_gamluminos,flx_gamlumnum, &
 !$omp    flx_gamlumdev,flx_gamlumtime)
 
-!-- thread id                                                               
+!-- thread id
 !$ iomp = omp_get_thread_num()
   rndstate = rnd_states(iomp+1)
 
@@ -344,6 +344,14 @@ subroutine particle_advance_gamgrey(nmpi)
               exit
            endif
         endif
+
+!-- snap particle inside cell when precision error is accrued
+        x = min(x,grd_xarr(ix+1))
+        x = max(x,grd_xarr(ix))
+        y = min(y,grd_yarr(iy+1))
+        y = max(y,grd_yarr(iy))
+        z = min(z,grd_xarr(iz+1))
+        z = max(z,grd_xarr(iz))
      enddo
 !
 !-- outbound luminosity tally
@@ -365,7 +373,7 @@ subroutine particle_advance_gamgrey(nmpi)
         endselect
         if(grd_isvelocity) labfact=labfact*tsp_t
         help=help-labfact
-!-- tally outbound luminosity        
+!-- tally outbound luminosity
         flx_gamlumtime(imu,iom) = flx_gamlumtime(imu,iom)+help
         flx_gamluminos(imu,iom) = flx_gamluminos(imu,iom)+e
         flx_gamlumdev(imu,iom) = flx_gamlumdev(imu,iom)+e**2
