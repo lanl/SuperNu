@@ -222,8 +222,8 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
 !
 !-- Doppler shift distance
   if(grd_isvelocity) then
-!     ddop = -pc_c*log(wl*grp_wlinv(ig+1))
-     ddop = pc_c*(grp_wl(ig+1)-wl)/wl
+     ddop = -pc_c*log(wl*grp_wlinv(ig+1))
+!     ddop = pc_c*(grp_wl(ig+1)-wl)/wl
 !     if(ddop<0d0) ddop = 0d0
   else
 !-- making greater than dcen
@@ -364,7 +364,12 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
   if(om>pc_pi2) om = om-pc_pi2!}}}
 
 !-- updating wavelength
-  if(grd_isvelocity) wl = wl*(1d0+d*cinv) !exp(d*cinv)
+  if(grd_isvelocity) then
+     totevelo = totevelo + e*(1d0-exp(-d*cinv))
+     e = e * exp(-d*cinv)
+     wl = wl * exp(d*cinv)
+!     wl = wl * (1d0+d*cinv)
+  endif
 
 !
 !-- updating time

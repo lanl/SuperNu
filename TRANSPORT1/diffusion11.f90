@@ -30,7 +30,7 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !
   integer :: iig, iiig
   logical :: lhelp
-  real*8 :: r1, r2, thelp
+  real*8 :: r1, r2, thelp, thelpinv
   real*8 :: denom, denom2, denom3
   real*8 :: ddmct, tau, tcensus, pa, pdop
 !-- lumped quantities -----------------------------------------
@@ -81,8 +81,11 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 !-- set expansion helper
   if(grd_isvelocity) then
      thelp = tsp_t
+!-- inverting vel-grid factor
+     thelpinv = 1d0/thelp
   else
      thelp = 1d0
+     thelpinv = 1d0
   endif
   dist = dx(ix)*thelp
 
@@ -258,7 +261,11 @@ pure subroutine diffusion11(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ier
 
 !-- updating particle time
   ptcl%t = ptcl%t+ddmct
-
+!-- updating energy via redshift
+  if(grd_isvelocity) then
+     totevelo = totevelo + e*(1d0-exp(-ddmct*thelpinv))
+     e = e * exp(-ddmct*thelpinv)
+  endif
 
 !-- stepping particle ------------------------------------
 !

@@ -329,6 +329,7 @@ subroutine particle_advance
 !
 !-- outbound luminosity tally
      case('flux')
+
 !-- register fresh flux particle (only once)
         nflux = nflux + 1
         tot_sflux = tot_sflux-e
@@ -359,14 +360,6 @@ subroutine particle_advance
         help = abs(ptcl%t-tsp_t1)/(ptcl%t+tsp_t1)
         if(help>1e-15) stop 'particle_advance: census time inaccurate'
         ptcl%t = tsp_t1
-
-!
-!-- Redshifting DDMC particle energy weights
-        if(grd_isvelocity) then
-           tot_evelo = tot_evelo + e*(1d0-exp(-tsp_dt/tsp_t))
-           e = e*exp(-tsp_dt/tsp_t)
-           e0 = e0*exp(-tsp_dt/tsp_t)
-        endif
 
 !-- renergy at census
         tot_erad = tot_erad + e
