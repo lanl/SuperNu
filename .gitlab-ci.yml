@@ -1,0 +1,14 @@
+before_script:
+  - apt-get update -qq
+  - apt-get install -y cmake python-pip
+  - python -m pip install --upgrade pip
+  - pip install --upgrade cmake
+
+supernu:
+  script:
+  - export code_dir=`pwd`
+  - cd ${code_dir}/..
+  - mkdir -p bin
+  - cd bin
+  - cmake $code_dir
+  - make
