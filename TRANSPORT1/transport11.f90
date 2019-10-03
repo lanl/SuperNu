@@ -125,7 +125,7 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
   endif
 !
 !-- Doppler shift distance
-  if(grd_isvelocity) then
+  if(grd_isvelocity .and. ig < grp_ng) then
      ddop = -pc_c*log(wl*grp_wlinv(ig+1))
 !     ddop = pc_c*(grp_wl(ig+1)-wl)/wl
 !     if(ddop<0d0) ddop = 0d0
@@ -342,28 +342,10 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
      if(ig<grp_ng) then
         ig = ig+1
         wl = grp_wl(ig) !*elabfact
+     else
+        ierr = 18
      endif
-     if(ig==grp_ng) then
 
-!-- redistributing wavelength
-        emitlump = grd_opaclump(8,ic)/grd_capgrey(ic)
-        if(grp_ng==1) then
-        elseif(emitlump<.99d0 .or. trn_nolumpshortcut .or. in_puretran) then
-           call rnd_r(r1,rndstate)
-           ig = emitgroup(r1,ic)
-!-- checking if DDMC in new group
-           if(((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)*thelp >= trn_tauddmc) &
-              .and. .not.in_puretran) ptcl2%itype = 2
-!-- don't sample, it will end up in the lump anyway
-        else
-           ptcl2%itype = 2
-!-- always put this in the single most likely group
-           ig = nint(grd_opaclump(9,ic))
-        endif
-!-- resampling wavelength in highest group
-        call rnd_r(r1,rndstate)
-        wl=1d0/(r1*grp_wlinv(ig+1) + (1d0-r1)*grp_wlinv(ig))
-     endif
 !-- check if ddmc region
      if (((grd_sig(ic)+grd_cap(ig,ic))*dx(ix)* &
           thelp >= trn_tauddmc) &
