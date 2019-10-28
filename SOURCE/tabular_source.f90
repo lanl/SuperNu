@@ -77,6 +77,12 @@ subroutine tabular_source(it,nt,tcenter,srctype)
      gas_matsrc = helparr * gas_dynfr
   endif
 
+!-- reset the helper array
+  if(any(tbs_wndopt==1)) then
+     helparr = 0d0
+     where(gas_rho>0d0) helparr = 2d0/(tcenter*gas_rho)
+  endif
+
 !-- calculate the wind thermalization fractions
   do icol=1,tbs_ncol-3
      if(tbs_wndopt(icol)==1) then
