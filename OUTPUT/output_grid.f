@@ -186,6 +186,7 @@ c
 c-- grid arrays
 c==============
       if(.not.in_io_nogridgroupdump) then
+        reclen = ncpr*12
 c
         allocate(arr2d(ncpr*nrow,grp_ng))
 c
