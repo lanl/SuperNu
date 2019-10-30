@@ -6,6 +6,7 @@ c     ----------------------
       use timingmod
       use timestepmod
       use gridmod
+      use groupmod, only:grp_ng
       use totalsmod
       implicit none
 ************************************************************************
@@ -21,6 +22,7 @@ c     ----------------------
 c
       integer,allocatable :: iarr(:)
       real*8,allocatable :: arr(:)
+      real*4,allocatable :: arr2d(:,:)
       real*8 :: t0,t1
 c
       t0 = t_time()
@@ -180,7 +182,28 @@ c
 c
        deallocate(iarr,arr)
       endif
-
+c
+c-- grid arrays
+c==============
+      if(.not.in_io_nogridgroupdump) then
+c
+        allocate(arr2d(ncpr*nrow,grp_ng))
+c
+        arr2d(grd_ncell+1:,:) = 0d0
+c
+        forall(j=1:grp_ng) arr2d(:grd_ncell,j) = grd_cap(j,:)
+c
+        open(unit=4,file='output.grd_cap',status=fstat,
+     &     position='append',recl=reclen)
+        do j=1,grp_ng
+          do i=1,nrow
+            write(4,'(1p,10000e12.4)') arr2d((i-1)*ncpr+1:i*ncpr,j)
+          enddo
+        enddo
+        close(4)
+c
+        deallocate(arr2d)
+      endif
 c
 c-- after the first iteration open files in append mode
       lfirst = .false.

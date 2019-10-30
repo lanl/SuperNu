@@ -155,7 +155,8 @@ c
 c-- output
       logical :: in_io_grabstdout = .false.  !write stdout to file
       logical :: in_io_dogrdtally = .false. !write transport tallies per grid cell
-      logical :: in_io_nogriddump = .false.  !don't write grid cell variables
+      logical :: in_io_nogriddump = .false. !don't write grid cell variables
+      logical :: in_io_nogridgroupdump = .false. !don't write group and cell-dependent variables
       character(4) :: in_io_opacdump = 'off '    !off|one|each|all: write opacity data to file
       character(4) :: in_io_pdensdump = 'off '   !off|one|each: write partial densities to file
 c
@@ -211,7 +212,8 @@ c-- runtime parameter namelist
 !io
      & in_io_grabstdout,
      & in_io_nogriddump,in_io_dogrdtally,
-     & in_io_opacdump,in_io_pdensdump
+     & in_io_opacdump,in_io_pdensdump,
+     & in_io_nogridgroupdump
 c
 c-- pointers
 c
@@ -280,6 +282,7 @@ c
       call insertr(in_flx_wlmax,in_r,ir)
       call insertl(in_flx_noobservertime,in_l,il)
       call insertl(in_io_nogriddump,in_l,il)
+      call insertl(in_io_nogridgroupdump,in_l,il)
       call insertl(in_io_dogrdtally,in_l,il)
       call insertl(in_noreadstruct,in_l,il)
       call insertl(in_isvelocity,in_l,il)
