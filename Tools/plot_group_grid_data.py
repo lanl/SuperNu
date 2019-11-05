@@ -194,8 +194,6 @@ if('output.grd_cap'==args.f and args.plot_optdepth_path):
     clabel = 'Optical Depth'
     cbar.set_label(clabel,rotation=270,labelpad=15)
 
-    plt.plot()
-
 
 #-- show all figures
 plt.show()
