@@ -3,14 +3,12 @@
 #-- import libraries
 import numpy as np
 import argparse
+import calc_tau
 
 parser = argparse.ArgumentParser(description='Plot comoving optical depth.')
 parser.add_argument('sim_dir',type=str,help='Simulation directory.')
 #-- parsing arguments
 args = parser.parse_args()
-
-#-- constants
-pc_c = 2.998e10 # [cm/s]
 
 #--------------------------------------------------------------------#
 # Load input structure and grid
@@ -41,38 +39,8 @@ taus = np.zeros((nt,ng,nx))
 dift = np.zeros((nt,ng,nx))
 
 for it in range(nt):
-    for jg in range(ng):
-        #-- backtrack ray from rightmost wavelength
-        tau = 0.0
-        dif = 0.0
-        wl0 = flx_wl[ng]
-        v0 = grd_vel[nx-1]
-        #-- initialize ray counters
-        ix = nx-2
-        ig = jg
-        #-- calculate optical depth from surface to center
-        while (ix >= 0 and ig >= 0):
-            dvx = v0-grd_vel[ix]
-            dvg = pc_c*(wl0/flx_wl[ig] - 1.0)
-            #-- accrue optical depth
-            tau += time[it] * min(dvx,dvg)*opac[it,ig,ix]
-            dif += opac[it,ig,ix] * (time[it] * min(dvx,dvg))**2 / pc_c
-            #-- update ray parameter
-            if (dvx < dvg):
-                # set new ray state
-                v0 = grd_vel[ix]
-                wl0 /= (1.0 + dvx/pc_c)
-                # set the tau for this cell
-                taus[it,jg,ix] = tau
-                dift[it,jg,ix] = dif
-                # decrement cell index
-                ix -= 1
-            else:
-                # set new ray state
-                wl0 = flx_wl[ig]
-                v0 -= dvg
-                # decrement group index
-                ig -= 1
+    taus[it,:,:], dift[it,:,:] = calc_tau.calc_tau(time[it], nx, grd_vel, ng,
+                                                   flx_wl, opac[it,:,:])
 
 
 #-- save optical depth and supporting data in simulation directory
