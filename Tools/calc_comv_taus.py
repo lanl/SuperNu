@@ -14,9 +14,11 @@ args = parser.parse_args()
 # Load input structure and grid
 #--------------------------------------------------------------------#
 
+#-- assumes 1D, with only right-cell-edge velocities
 instr = np.loadtxt(args.sim_dir+'/input.str', skiprows=3)
 grd_vel = instr[:,0]
 nx = np.size(grd_vel)
+grd_vel = np.insert(grd_vel, 0, 0.0)
 fo = open(args.sim_dir+'/output.flx_grid','r')
 fo.readline()
 flx_wl = np.array(list(map(float,fo.readline().split())))

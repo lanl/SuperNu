@@ -16,10 +16,10 @@ def calc_tau(time, nx, grd_vel, ng, flx_wl, opac):
         #-- backtrack ray from rightmost wavelength
         tau = 0.0
         dif = 0.0
-        wl0 = flx_wl[ng]
-        v0 = grd_vel[nx-1]
+        wl0 = flx_wl[jg+1]
+        v0 = grd_vel[nx]
         #-- initialize ray counters
-        ix = nx-2
+        ix = nx-1
         ig = jg
         #-- calculate optical depth from surface to center
         while (ix >= 0 and ig >= 0):
