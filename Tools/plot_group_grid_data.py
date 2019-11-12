@@ -170,14 +170,15 @@ plt.legend()
 
 f2 = plt.figure(2)
 xl = np.linspace(0.0,lgth,np.size(zi[:,ig])+1)
-plt.plot(xl, zi[:,ig])
+nx = np.size(xl)-1
+xlc = 0.5 * (xl[1:] + xl[:nx])
+plt.plot(xlc, zi[:,ig])
 plt.xlabel('Path Velocity [c]')
 plt.ylabel(args.variable)
 plt.title(args.title+' , {:.2f}'.format(t[it]/86400)+' day')
 
 if('output.grd_cap'==args.f and args.plot_optdepth_path):
     #-- calculate optical depth
-    nx = np.size(xl)-1
     taus, dift = calc_tau.calc_tau(t[it],nx,c*xl,ng,flx_wl,zi.T)
     #-- plot optical depth
     wlc_obs = flx_wl[1:]*np.exp(-xl[nx])*1e8
