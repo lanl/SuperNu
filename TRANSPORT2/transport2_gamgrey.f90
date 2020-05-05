@@ -147,7 +147,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
      help = sqrt(1d0-mu**2)*sin(om+z-grd_zarr(iz+1))
      if(z==grd_zarr(iz+1)) then
         dbz = 0d0
-     elseif(help==0d0) then
+     elseif(help==0d0 .or. help/=help) then
         dbz = far
      else
         dbz = x*sin(grd_zarr(iz+1)-z)/help
@@ -159,7 +159,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
      help = sqrt(1d0-mu**2)*sin(om+z-grd_zarr(iz))
      if(z==grd_zarr(iz)) then
         dbz = 0d0
-     elseif(help==0d0) then
+     elseif(help==0d0 .or. help/=help) then
         dbz = far
      else
         dbz = x*sin(grd_zarr(iz)-z)/help

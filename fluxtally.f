@@ -47,10 +47,15 @@ c-- check flux time falls within current flux tally bin
         cycle !not yet
        endif
 c
-       if(.not.flx_noobservertime .and. ptcl%t<tsp_tarr(it)) stop
-     &   'fluxtally: ptcl%t < flux tally bin'
-!      if(.not.flx_noobservertime .and. ptcl%t<tsp_tarr(it)) write(0,*)
-!    &   'fluxtally: ptcl%t < flux tally bin',tsp_it,it
+!       if(.not.flx_noobservertime .and. ptcl%t<tsp_tarr(it)) stop
+!     &   'fluxtally: ptcl%t < flux tally bin'
+      if(.not.flx_noobservertime .and. ptcl%t<tsp_tarr(it)) then
+         write(0,*) 'fluxtally: ptcl%t < flux tally bin'
+         write(0,*) 'tsp_it,it=',tsp_it,it
+         write(0,*) 'tsp_tarr(it)=',tsp_tarr(it)
+         write(0,*) 'tsp_tarr(tsp_it)=',tsp_tarr(tsp_it)
+         write(0,*) 'ptcl%t=',ptcl%t
+      endif
 c
 c-- retrieving lab frame flux group, polar, azimuthal bin
        ig = binsrch(ptcl%wl,flx_wl,flx_ng+1,.false.)

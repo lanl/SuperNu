@@ -378,19 +378,16 @@ subroutine particle_advance
            case(1,11) !-- spherical
               call rnd_r(r1,rndstate)
               x = (r1*grd_xarr(ix+1)**3 + (1.0-r1)*grd_xarr(ix)**3)**(1.0/3.0)
-!-- must be inside cell
-              x = min(x,grd_xarr(ix+1))
-              x = max(x,grd_xarr(ix))
            case(2) !-- cylindrical
               call rnd_r(r1,rndstate)
               x = sqrt(r1*grd_xarr(ix+1)**2 + (1d0-r1)*grd_xarr(ix)**2)
-!-- must be inside cell
-              x = min(x,grd_xarr(ix+1))
-              x = max(x,grd_xarr(ix))
            case(3) !-- cartesian
               call rnd_r(r1,rndstate)
               x = r1*grd_xarr(ix+1)+(1d0-r1)*grd_xarr(ix)
            endselect
+!-- must be inside cell
+           x = min(x,grd_xarr(ix+1))
+           x = max(x,grd_xarr(ix))
 !
 !-- y,z position
            if(grd_igeom/=11) then
@@ -398,6 +395,11 @@ subroutine particle_advance
               y = r1*grd_yarr(iy+1)+(1d0-r1)*grd_yarr(iy)
               call rnd_r(r1,rndstate)
               z = r1*grd_zarr(iz+1)+(1d0-r1)*grd_zarr(iz)
+!-- snap particle inside cell when precision error is accrued
+              y = min(y,grd_yarr(iy+1))
+              y = max(y,grd_yarr(iy))
+              z = min(z,grd_xarr(iz+1))
+              z = max(z,grd_xarr(iz))
            endif
 !
 !-- sample direction

@@ -431,7 +431,8 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      if(ixnext==grd_nx+1) then
         loutx = .true. !domain edge is reached
      elseif(ixnext>ix .and. grd_icell(ixnext,iy,iz)==grd_ivoid) then
-        loutx = rsq(ixnext,iy)>grd_rvoid**2 !enter void corners
+        loutx = x*x+y*y>grd_rvoid**2
+        loutx = loutx .or. rsq(ixnext,iy)>grd_rvoid**2 !enter void corners
      endif
   endif
   louty = .false.
@@ -440,7 +441,8 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         louty = .true. !domain edge is reached
      elseif(grd_icell(ix,iynext,iz)==grd_ivoid) then
         if(iynext>iy.eqv.grd_yarr(iynext)>0d0) then !away from center
-           louty = rsq(ix,iynext)>grd_rvoid**2 !enter void corners
+           louty = x*x+y*y>grd_rvoid**2
+           louty = louty .or. rsq(ix,iynext)>grd_rvoid**2 !enter void corners
         endif
      endif
   endif

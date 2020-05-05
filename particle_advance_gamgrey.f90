@@ -190,6 +190,14 @@ subroutine particle_advance_gamgrey(nmpi)
      call rnd_r(r1,rndstate)
      z = r1*grd_zarr(k+1) + (1d0-r1) * grd_zarr(k)
 
+!-- must be inside cell
+     x = min(x,grd_xarr(i+1))
+     x = max(x,grd_xarr(i))
+     y = min(y,grd_yarr(j+1))
+     y = max(y,grd_yarr(j))
+     z = min(z,grd_xarr(k+1))
+     z = max(z,grd_xarr(k))
+
 !-- direction cosine (comoving)
      call rnd_r(r1,rndstate)
      mu0 = 1d0-2d0*r1
