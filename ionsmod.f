@@ -294,6 +294,8 @@ c     -----------------------------------
 c
       do iz=1,nelem
        nion = ion_el(iz)%ni
+c-- cycle if there is only 1 ion for this element
+       if(nion==1) cycle
 c
 c-- recursively compute n_(i+1)
        do istart=1,nion-1
