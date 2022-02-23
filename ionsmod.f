@@ -294,6 +294,7 @@ c     -----------------------------------
 c
       do iz=1,nelem
        nion = ion_el(iz)%ni
+       ion_el(iz)%ne = 0d0
 c-- cycle if there is only 1 ion for this element
        if(nion==1) cycle
 c
@@ -326,7 +327,6 @@ c-- normalize n_i
        ion_el(iz)%i(:)%n = ion_el(iz)%i(:)%n*nsum
 c
 c-- compute number of electrons
-       ion_el(iz)%ne = 0d0
        do ii=2,nion
         ion_el(iz)%ne = ion_el(iz)%ne + (ii-1)*ion_el(iz)%i(ii)%n
        enddo !ii
