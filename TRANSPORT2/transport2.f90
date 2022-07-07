@@ -537,6 +537,7 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
+        mu0 = sqrt(1d0-mu**2)*cos(om)
         help = (grd_cap(ig,l)+grd_sig(l)) * &
              dx(ixnext)*thelp
         help = 4d0/(3d0*help+6d0*pc_dext)

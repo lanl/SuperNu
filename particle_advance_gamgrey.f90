@@ -195,8 +195,8 @@ subroutine particle_advance_gamgrey(nmpi)
      x = max(x,grd_xarr(i))
      y = min(y,grd_yarr(j+1))
      y = max(y,grd_yarr(j))
-     z = min(z,grd_xarr(k+1))
-     z = max(z,grd_xarr(k))
+     z = min(z,grd_zarr(k+1))
+     z = max(z,grd_zarr(k))
 
 !-- direction cosine (comoving)
      call rnd_r(r1,rndstate)
@@ -337,7 +337,7 @@ subroutine particle_advance_gamgrey(nmpi)
         endif
 
 !-- check for errors
-        if(ierr/=0 .or. ptcl2%istep>1000) then
+        if(ierr/=0) then !.or. ptcl2%istep>1000) then
            write(0,*) 'pagg: ierr,ipart,istep,idist:',ierr,ptcl2%ipart,ptcl2%istep,ptcl2%idist
            write(0,*) 'dist:',ptcl2%dist
            write(0,*) 't:',ptcl%t
@@ -358,8 +358,8 @@ subroutine particle_advance_gamgrey(nmpi)
         x = max(x,grd_xarr(ix))
         y = min(y,grd_yarr(iy+1))
         y = max(y,grd_yarr(iy))
-        z = min(z,grd_xarr(iz+1))
-        z = max(z,grd_xarr(iz))
+        z = min(z,grd_zarr(iz+1))
+        z = max(z,grd_zarr(iz))
      enddo
 !
 !-- outbound luminosity tally

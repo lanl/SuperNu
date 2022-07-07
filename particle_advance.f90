@@ -314,8 +314,8 @@ subroutine particle_advance
         x = max(x,grd_xarr(ix))
         y = min(y,grd_yarr(iy+1))
         y = max(y,grd_yarr(iy))
-        z = min(z,grd_xarr(iz+1))
-        z = max(z,grd_xarr(iz))
+        z = min(z,grd_zarr(iz+1))
+        z = max(z,grd_zarr(iz))
      enddo
 
 !-- max step counter
@@ -398,8 +398,8 @@ subroutine particle_advance
 !-- snap particle inside cell when precision error is accrued
               y = min(y,grd_yarr(iy+1))
               y = max(y,grd_yarr(iy))
-              z = min(z,grd_xarr(iz+1))
-              z = max(z,grd_xarr(iz))
+              z = min(z,grd_zarr(iz+1))
+              z = max(z,grd_zarr(iz))
            endif
 !
 !-- sample direction
