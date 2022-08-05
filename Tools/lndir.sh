@@ -1,6 +1,6 @@
 #!/bin/bash
 #This file is part of SuperNu.  SuperNu is released under the terms of the GNU GPLv3, see COPYING.
-#Copyright (c) 2013-2019 Ryan T. Wollaeger and Daniel R. van Rossum.  All rights reserved.
+#Copyright (c) 2013-2022 Ryan T. Wollaeger and Daniel R. van Rossum.  All rights reserved.
 ########################################################################
 # Symbollically mirror a directory tree with source supernu files.
 # The mercurial repo directory .hg is excluded.
