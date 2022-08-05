@@ -39,7 +39,9 @@ SUBCLEAN = $(addsuffix .clean, $(SUBDIRS))
 
 SUPERNUDEP := supernu.o $(MODULES) $(FILES) $(LIBRARIES)
 
-VERSIONPY := $(wildcard version.py)
+SRCDIR := $(dir $(realpath supernu.f90))
+
+GIT_DESCRIBE := $(shell git -C $(SRCDIR) describe --tags --long --dirty)
 VERSIONDEP := $(filter-out banner.o, $(SUPERNUDEP))
 DATE := $(shell date)
 
@@ -61,7 +63,7 @@ TESTS := $(addprefix $(TESTDIR),$(TESTS))
 all: $(MODULES)
 	$(MAKE) $(SUBDIRS)
 	$(MAKE) $(PROGRAMS)
-	git -C $(dir $(realpath supernu.f90)) diff >gitdiff.txt
+	git -C $(SRCDIR) diff >gitdiff.txt
 	@echo "MAKE SUCCESSFUL: $(shell date)"
 
 clean: $(SUBCLEAN)
@@ -127,15 +129,9 @@ $(SUBDIRS):
 
 #
 #-- inc files
-ifeq ($(VERSIONPY), version.py)
-  version.inc: version.py $(VERSIONDEP)
-	@python2 -B version.inc.py
+version.inc: $(VERSIONDEP)
+	@echo "      coderev_id = '$(GIT_DESCRIBE)'" >>$@
 	@echo "      build_date = '$(DATE)'" >>$@
-else
-  version.inc: version_dummy.inc $(VERSIONDEP)
-	@cp -v version_dummy.inc version.inc
-	@echo "      build_date = '$(DATE)'" >>$@
-endif
 
 #
 #-- testsuite
