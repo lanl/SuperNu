@@ -2,6 +2,7 @@ subroutine rprocess_fitfrm_source(it,nt,tcenter)
   use gasmod
   use miscmod, only:binsrch
   use rprocmod, only:v_grid
+  use gridmod, only:grd_xarr, grd_nx
   implicit none
   integer,intent(in) :: it, nt
   real*8,intent(in) :: tcenter
@@ -15,7 +16,8 @@ subroutine rprocess_fitfrm_source(it,nt,tcenter)
   real*8 :: therm_fracs(gas_ncell,num_rad_types)
 
 !-- reset material source
-  gas_matsrc = 0d0
+  gas_matsrc = 1d10
+  gas_matsrc = gas_matsrc * gas_rho * gas_ye * (1d0 - grd_xarr / grd_xarr(grd_nx))
 
 !-- initialize helper and thermalization fraction array
   helparr = 0d0
@@ -23,9 +25,5 @@ subroutine rprocess_fitfrm_source(it,nt,tcenter)
 
 !-- set the helper array
   where(gas_rho>0d0) helparr = 2d0/(tcenter*gas_rho)
-
-  write(*,*) "rprocess_fitfrm_source() is called!"
-  !stop ".. and that's it because this is just a test"
-
 
 end subroutine rprocess_fitfrm_source
