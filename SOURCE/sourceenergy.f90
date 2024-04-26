@@ -24,7 +24,7 @@ subroutine sourceenergy(lgamma)
   elseif(in_srctype=='tabl') then
      call tabular_source(tsp_it,tsp_nt,tsp_tcenter,in_srctype)
   elseif(in_srctype=='rpro') then
-     call rprocess_fitfrm_source(tsp_it,tsp_nt,tsp_tcenter,in_srctype)
+     call rprocess_fitfrm_source(tsp_it,tsp_nt,tsp_tcenter)
   elseif(in_gas_srccoef>0d0) then
 !-- short-cuts
      q1=in_gas_srcrpwr

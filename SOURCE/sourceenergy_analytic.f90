@@ -25,7 +25,7 @@ subroutine sourceenergy_analytic(lmpi0)
      thelp = 1d0
   endif
 
-  if(any(['none','tabl']==in_srctype)) then
+  if(any(['none','tabl','rpro']==in_srctype)) then
     return
   elseif(in_srctype=='surf') then
 !-- time-integrated surface flux [erg/cm^2]
@@ -165,9 +165,9 @@ subroutine sourceenergy_analytic(lmpi0)
 !
 !-- no temp source for strt (matsrc=0.0)
 !--
-     enddo!}}}
+      enddo!}}}
   elseif(in_srctype=='manu') then
-     !!{{{
+      !!{{{
      if(grd_ny>1) stop 'sourceenergy_analytic: manu: no 2D'
 !
 !-- radiation source
