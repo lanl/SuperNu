@@ -197,7 +197,7 @@ CONTAINS
   !  OK 29.08.2019                                                        *
   !                                                                       *
   !************************************************************************
-  DOUBLE PRECISION FUNCTION heating_rate_grid(iv, jye, t) RESULT(h)
+  ELEMENTAL DOUBLE PRECISION FUNCTION heating_rate_grid(iv, jye, t) RESULT(h)
   IMPLICIT NONE
   INTEGER, INTENT(IN):: iv, jye
   DOUBLE PRECISION, INTENT(IN):: t
@@ -326,6 +326,7 @@ CONTAINS
 
   END FUNCTION heating_rate_interpcoef
 
+
   !************************************************************************
   !                                                                       *
   !  Heating rates for arbitrary {v, Ye} at arbitrary time t[s],          *
@@ -333,7 +334,7 @@ CONTAINS
   !  AK  25.04.2024                                                       *
   !                                                                       *
   !************************************************************************
-  DOUBLE PRECISION FUNCTION heating_rate(v, ye, t) RESULT(h)
+  ELEMENTAL DOUBLE PRECISION FUNCTION heating_rate(v, ye, t) RESULT(h)
   IMPLICIT NONE
   DOUBLE PRECISION, INTENT(IN):: v  ! ejecta expansion velocity [c]
   DOUBLE PRECISION, INTENT(IN):: ye ! initial electron fraction
@@ -346,17 +347,11 @@ CONTAINS
   DOUBLE PRECISION, PARAMETER:: oneoverpi = .5d0/acos(0d0)
   DOUBLE PRECISION, PARAMETER:: eps = 1d-13
 
-     IF (v.LT.V_GRID(1) - eps .OR. v.GT.V_GRID(SIZE(V_GRID)) + eps) THEN
-        STOP "ERROR: v outside the grid"
-     ENDIF
      find_index_v: DO i1= 0, SIZE(V_GRID)-1
         IF (v.LE.V_GRID(i1+1)) EXIT find_index_v
      ENDDO find_index_v
      i2= i1 + 1
 
-     IF (ye.LT.YE_GRID(1) - eps .OR. ye.GT.YE_GRID(SIZE(YE_GRID)) + eps) THEN
-        STOP "ERROR: ye outside the grid"
-     ENDIF
      find_index_ye: DO j1= 0, SIZE(YE_GRID)-1
         IF (ye.LE.YE_GRID(j1+1)) EXIT find_index_ye
      ENDDO find_index_ye
