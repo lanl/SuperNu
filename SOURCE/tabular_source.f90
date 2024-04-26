@@ -2,6 +2,7 @@ subroutine tabular_source(it,nt,tcenter,srctype)
   use tbsrcmod
   use gasmod
   use miscmod, only:binsrch
+  use rprocmod, only:v_grid
   implicit none
   integer,intent(in) :: it, nt
   real*8,intent(in) :: tcenter

@@ -23,6 +23,8 @@ subroutine sourceenergy(lgamma)
      call generate_manutempsrc(in_str_totmass,in_gas_capcoef,tsp_t,tsp_dt)
   elseif(in_srctype=='tabl') then
      call tabular_source(tsp_it,tsp_nt,tsp_tcenter,in_srctype)
+  elseif(in_srctype=='rpro') then
+     call rprocess_fitfrm_source(tsp_it,tsp_nt,tsp_tcenter,in_srctype)
   elseif(in_gas_srccoef>0d0) then
 !-- short-cuts
      q1=in_gas_srcrpwr
