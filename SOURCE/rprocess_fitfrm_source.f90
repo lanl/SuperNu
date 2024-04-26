@@ -10,22 +10,41 @@ subroutine rprocess_fitfrm_source(it,nt,tcenter)
 !- Calculate heating rate from analytic fit formula (interpolated).
 !- See Rosswog & Korobkin (2023) for details
 !--------------------------------------------------
-  integer,parameter :: num_rad_types = 4
   integer :: icol, i
   real*8 :: helparr(gas_ncell),vexp(gas_ncell)
-  real*8 :: therm_fracs(gas_ncell,num_rad_types)
+  real*8 :: therm_frac(gas_ncell)
   real*8, parameter :: M_ref = 0.05d0*pc_msun  !< reference mass when computing vexp
+
+!---------------------------------------------------
+!- Radioactive species partitioning (hardcoded for now!)
+!  See Wollaeger et al. (2018), Sec. 2.2 
+!---------------------------------------------------
+  real*8, parameter :: A_alpha = 1.3d-11 ! [g cm^-3 s]
+  real*8, parameter :: A_beta  = 1.3d-11 ! [g cm^-3 s]
+  real*8, parameter :: A_ff    = 0.2d-11 ! [g cm^-3 s]
+  real*8, parameter :: X_alpha = 0.05d0  ! [g cm^-3 s]
+  real*8, parameter :: X_beta  = 0.20d0  ! [g cm^-3 s]
+  real*8, parameter :: X_ff    = 0.00d0  ! [g cm^-3 s]
 
 !-- reset material source
   vexp = 0.1d0 ! default value of the expansion velocity
   if (tcenter > 0) &
      where(gas_mass > 0) &
-        vexp = (3*M_ref/(4*pc_pi) * grd_vol/gas_mass)**(1d0/3d0)/tcenter
-  vexp = vexp/pc_c
+        vexp = (3*M_ref/(4*pc_pi) * grd_vol/gas_mass)**(1d0/3d0)/tcenter/pc_c
+
+  ! truncate expansion velocity to the limits of the grid
   vexp = max(v_grid(1), vexp)
   vexp = min(v_grid(size(v_grid)), vexp)
 
-  where(gas_rho > 0d0) &
+  where(gas_rho > 0d0) 
      gas_matsrc = gas_rho*heating_rate(vexp, gas_ye0, tcenter)
+     helparr = 2d0/(tcenter*gas_rho)
+     therm_frac = X_alpha*dlog(1d0 + helparr*A_alpha)/(helparr*A_alpha) &
+                + X_beta *dlog(1d0 + helparr*A_beta) /(helparr*A_beta) &
+                + X_ff   *dlog(1d0 + helparr*A_ff)   /(helparr*A_ff)
+     gas_matsrc = gas_matsrc*therm_frac
+  endwhere
+
+  ! compute themralization fractions
 
 end subroutine rprocess_fitfrm_source
