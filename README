@@ -1,43 +1,32 @@
-SuperNu - IMC-DDMC Radiation Transport Software for Explosive Outflows
-----------------------------------------------------------------------
-Copyright (c) 2013-2022 Ryan Wollaeger and Daniel van Rossum.  All rights reserved.
+SuperNu, Version 4.x - Monte Carlo radiative transfer for supernova and kilonova spectra
+----------------------------------------------------------------------------------------
+© 2023. Triad National Security, LLC. All rights reserved.
+This program was produced under U.S. Government contract 89233218CNA000001 for Los Alamos National Laboratory (LANL), which is operated by Triad National Security, LLC for the U.S. Department of Energy/National Nuclear Security Administration. All rights in the program are reserved by Triad National Security, LLC, and the U.S. Department of Energy/National Nuclear Security Administration. The Government is granted for itself and others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this material to reproduce, prepare. derivative works, distribute copies to the public, perform publicly and display publicly, and to permit others to do so.
+----------------------------------------------------------------------------------------
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, version 3 of the License.
+SuperNu, Version 4.x, is a continuation of SuperNu, Version 3.x.
+SuperNu is a Monte Carlo radiative transfer code originated by Ryan Wollaeger and Daniel van Rossum.
+If you use SuperNu, Version 4.x, we ask you to appropriately acknowledge SuperNu and cite the papers in which the methods are described.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    Please find a copy of the GNU General Public License in the COPYING
-    file provided along with this program, or see <http://www.gnu.org/licenses/>.
-
-LANL_COPYING and LANL_README
-----------------------------
-Modifications made by Ryan Wollaeger while at Los Alamos National Laboratory (LANL), from January 2015 to the present, fall under a LANS copyright assertion.
-See LANL_COPYING for the copyright assertion and LANL_README for a summary of the corresponding modifications made by Ryan
-Wollaeger while at LANL.
-
-If you use SuperNu, we ask you to appropriately acknowledge SuperNu and cite the papers in which the methods are described.
 Thank you,
 the authors
-
-wollaeger@wisc.edu
-daan@flash.uchicago.edu
 
 
 SUPERNU METHOD PAPERS
 =====================
 Wollaeger, van Rossum et al. 2013, ApJS 209, 37
 Wollaeger & van Rossum 2014, ApJS 214, 28
-van Rossum & Wollaeger 2015, in preparation
 
 
 SUMMARY OF SUPERNU PHYSICS
 ==========================
-SuperNu is a program for simulating time-dependent radiation transport in local thermodynamic equilibrium with matter.  It applies the methods of Implicit Monte Carlo (IMC) [1] and Discrete Diffusion Monte Carlo (DDMC) [2] for static or homologously expanding spatial grids.  The radiation field affects material temperature but does not affect the motion of the fluid.  SuperNu may be applied to simulate radiation transport for supernovae with ejecta velocities that are not affected by radiation momentum [3].  The physical opacity calculation includes elements from Hydrogen up to Cobalt [3].  SuperNu is motivated by the ongoing research into the effect of variation in the structure of progenitor star explosions on observables: the brightness and shape of light curves and the temporal evolution of the spectra.  Consequently, the code may be used to post-process data from hydrodynamic simulations.  SuperNu does not include any capabilities or methods that allow for non-trivial hydrodynamics.
+SuperNu is a program for simulating time-dependent non-linear radiative transfer interacting in matter.
+It applies the methods of Implicit Monte Carlo (IMC) [1] and Discrete Diffusion Monte Carlo (DDMC) [2] for static or homologously expanding spatial grids.
+The radiation field affects the internal energy and matter state but does not affect the motion of the fluid.
+SuperNu may be applied to simulate radiation transport for supernovae with ejecta velocities that are not affected by radiation momentum [3].
+SuperNu is motivated by the ongoing research into the effect of variation in supernova and kilonova models on observables: the brightness and shape of light curves and the temporal evolution of the spectra.
+Consequently, the code may be used to post-process data from hydrodynamic simulations.
+SuperNu does not include any capabilities or methods that allow for non-trivial hydrodynamics.
 
 [1] JA Fleck Jr, JD Cummings Jr, "An implicit Monte Carlo scheme for calculating time and frequency dependent nonlinear radiation transport", (1971)
 [2] JD Densmore, TJ Urbatsch, TM Evans, MW Buksas, "A hybrid transport-diffusion method for Monte Carlo radiative-transfer simulations", (2007)
@@ -46,21 +35,20 @@ SuperNu is a program for simulating time-dependent radiation transport in local 
 
 CODE FEATURES
 =============
-The time-dependent equations for photon transport and diffusion are solved with Monte Carlo (MC) by discretizing the radiation energy in the system in the form of MC packets (particles).  These particles are transported over the computational domain (spatial grid) where they interact with the gas according to multi-group opacities (groups).  Particles that leave the domain are tallied per timestep and flux wavelength bin, and written to disk.
+The time-dependent equations for photon transport and diffusion are solved with Monte Carlo (MC) by discretizing the radiation energy in the system in the form of MC packets (particles).
+These particles are transported over the computational domain (spatial grid) where they interact with the gas according to multi-frequency opacities (e.g. multigroup discrete opacities).
+Particles that leave the domain are tallied per timestep and flux wavelength bin, and written to disk.
+
+TODO: update the following.
 
 Particles:
 - MC Particles are generated in locations where energy sources are non-zero.
-- The number of particles generated locally is determined by:
-  - a power law of the local energy source,
-  - the fraction of the local energy source to the total energy source,
-  - a minimal number of particles per grid cell with non-zero energy source.
 - Energy sources include:
-  - analytic boundary and volume sources,
+  - boundary and volume sources,
   - manufactured-solution sources,
-  - energy deposition by radioactive decay of supernova explosion products.
+  - tabular sources,
+  - inline energy deposition by radioactive decay.
 - Particles that get censused at the end of a timestep are stored in the particle array.
-  - particle direction is stored in the lab frame,
-  - particle energy/wavelength is stored in the comoving frame.
 
 Transport:
 — Particle transport methods are:
@@ -68,12 +56,9 @@ Transport:
   — Discrete Diffusion Monte Carlo (DDMC).
 — DDMC is used in optically thick regions of a domain.
 — Geometries:
-  — 3D spherical,
-  — 2D cylindrical,
+  — 1D,3D spherical,
+  — 2D,3D cylindrical,
   — 3D cartesian.
-— Assumptions:
-  — local thermodynamic equilibrium (LTE),
-  — material either static or in homologous expansion.
 - particle transport is parallelized using a hybrid of MPI and OpenMP
 
 Spatial grid:
@@ -81,14 +66,11 @@ Spatial grid:
 — The grid can either be a spatial or a velocity mesh.
 — If the grid is physically moving:
   — the grid has units of velocity,
-  — the velocity grid is not affected by the radiation radiation field,
+  — the velocity grid is not affected by the radiation field,
   — the velocity grid is constant.
 — If the grid is physically static:
   — the grid is in units of length,
   — the domain is static (no velocity field).
-- The grid array is geometry-agnostic
-— The grid array is compressed by not storing regions of zero opacity (zero mass).
-- The grid array only stores quantities that are needed for the transport step
 
 Gas:
 — Gas properties are domain decomposed.
@@ -98,17 +80,14 @@ Gas:
   — density,
   — material temperature,
   — heat capacity,
-  — opacity: Thomson scattering, and multi-group absorption.
+  — opacity: Thomson scattering, and multi-frequency absorption.
 — Leakage (DDMC) and Planck opacities are calculated from scattering and absorption opacities.
-— Mutli-group absorption opacity includes bound-bound (bb), bound-free (bf), and free-free (ff) data for Hydrogen to Cobalt:
+— Mutli-group absorption opacity includes bound-bound (bb), bound-free (bf), and free-free (ff) data:
   — line data for bound-bound opacities are taken from http://kurucz.harvard.edu/atoms.html.
 
 Groups:
-— Opacity frequency dependence is discretized with multi-group.
-— The frequency-resolved opacities are averaged within each group.
-— The code may use a constant multi-group grid in units of either:
-  — wavelength,
-  — non-dimensional wavelength (wavelength multiplied by material temperature).
+— By default opacity frequency dependence is discretized with multi-group.
+  — The frequency-resolved opacities are averaged within each group.
 
 IO:
 - input is divided in two categories:
@@ -129,6 +108,8 @@ IO:
 
 SUPERNU OUTPUT
 ==============
+SuperNu files generated from simulations include the following.
+
 Flux:
 SuperNu writes flux output in ascii (output.flx_luminos) as a sequence of spectra, one spectrum per line, one line per viewing angle, repeated in each time step.  So the number of columns equals the number of wl-bins, and the number of rows equals nmu*nphi*ntimestep, where mu=cos(theta).  The luminos values are in units [erg/s].  The 'output.flx_grid' file describes the wavelength, viewing angle, and time bins.
 
@@ -165,39 +146,13 @@ CODING STANDARDS
 
 SETUP INSTRUCTIONS
 ==================
-The following procedure produces two supernu executables, one serial and one MPI-parallel version.
-
-# mkdir ~/supernu
-# cd ~/supernu
-# git clone git@gitlab.lanl.gov:supernu/supernu.git src
-
--- SERIAL --
-# mkdir bin
-# cd bin
-# lndir ../src
-  - Tools/lndir.sh can be used instead of lndir if lndir is not available on the system)
-  - make sure that no .mod, .o, or .a files were linked from the source directory
-# ln -sf ./mpimod_ser.f ./mpimod.f
-# cp -f ./System/Makefile.compiler.gfortran ./Makefile.compiler
-  - modify the compiler flags to your liking (e.g. optimization, debug flags etc.)
-# make -j
-# cd ../../supernu
-
--- MPI --
-# mkdir bin-mpi
-# cd bin-mpi
-# lndir ../src
-# cp -f ./System/Makefile.compiler.gfortran ./Makefile.compiler
-  - update the ./Makefile.compiler to something like: FC=mpif90
-  - modify the compiler flags to your liking (e.g. optimization, debug flags etc.)
-# ln -sf ./mpimod_mpi.f ./mpimod.f
-# make -j
+TODO: update this with CMake instructions
 
 
 USE INSTRUCTIONS
 ================
 SuperNu requires the above specified input files (input.* and data.* files) to run.
-The following procedure sets up and runs an example SuperNu simulation:
+The following procedure is an example sets up and runs an example SuperNu simulation:
 
 ##-- prepare sim directory
 # mkdir -p ~/sim-supernu/test/run001
