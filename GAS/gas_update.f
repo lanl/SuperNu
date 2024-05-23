@@ -156,8 +156,17 @@ c
 c-- initialize opacity
         gas_sig = 0d0
         gas_cap = 0.0
+        if(in_doemiss) then
+          if(.not.allocated(gas_em_cap)) then
+            stop 'in_doemiss and gas_em_cap not allocated'
+          endif
+          if(.not.allocated(gas_em_capgrey)) then
+            stop 'in_doemiss and gas_em_capgrey not allocated'
+          endif
+          gas_em_cap = 0.0
+        endif
         if(.not.in_notbopac) then
-          call tabular_opacity
+          call tabular_opacity(in_doemiss)
         else
           call physical_opacity(dtempfrac*temp)
         endif
@@ -233,9 +242,18 @@ c-- test existence of input.opac file
 c-- initialize opacity
         gas_sig = 0d0
         gas_cap = 0.0
+        if(in_doemiss) then
+          if(.not.allocated(gas_em_cap)) then
+            stop 'in_doemiss and gas_em_cap not allocated'
+          endif
+          if(.not.allocated(gas_em_capgrey)) then
+            stop 'in_doemiss and gas_em_capgrey not allocated'
+          endif
+          gas_em_cap = 0.0
+        endif
 c-- calculate opacities
         if(.not.in_notbopac) then
-          call tabular_opacity
+          call tabular_opacity(in_doemiss)
         else
           call physical_opacity(temp)
         endif

@@ -52,6 +52,7 @@ c-- Probability of emission in a given zone and group
 
 c-- Line+Cont extinction coeff
       real*4,allocatable :: grd_cap(:,:) !(ng,ncell)
+      real*4,allocatable :: grd_em_cap(:,:) !(ng,ncell)
 
 c-- leakage opacities
       real*8,allocatable :: grd_opaclump(:,:) !(10,ncell) leak(6),speclump,caplump,igemitmax,doplump
@@ -60,6 +61,7 @@ c-- scattering coefficient
       real*8,allocatable :: grd_sig(:) !(ncell) !grey scattering opacity
 c-- Planck opacity (gray)
       real*8,allocatable :: grd_capgrey(:) !(ncell)
+      real*8,allocatable :: grd_em_capgrey(:) !(ncell)
 c-- Fleck factor
       real*8,allocatable :: grd_fcoef(:)  !(ncell)
 
@@ -105,10 +107,10 @@ c
 c
       contains
 c
-      subroutine gridmod_init(ltalk,ngin,ncell,lvoid,idd1,ndd)
+      subroutine gridmod_init(ltalk,ngin,ncell,lvoid,idd1,ndd,lemiss)
 c     --------------------------------------------------!{{{
       implicit none
-      logical,intent(in) :: ltalk,lvoid
+      logical,intent(in) :: ltalk,lvoid,lemiss
       integer,intent(in) :: ngin
       integer,intent(in) :: ncell,idd1,ndd
 ************************************************************************
@@ -147,6 +149,9 @@ c---------------------------------------
        n = int((int(grd_ncell,8)*(8*(12+6) + 5*4))/1024) !kB
        write(6,*) 'ALLOC grd      :',n,"kB",n/1024,"MB",n/1024**2,"GB"
        n = int((int(grd_ncell,8)*4*ng)/1024) !kB
+       if (lemiss) then
+         n = 2 * n
+       endif
        write(6,*) 'ALLOC grd_cap  :',n,"kB",n/1024,"MB",n/1024**2,"GB"
       endif
 c
@@ -180,6 +185,12 @@ c-- ndim=4 alloc
       allocate(grd_emitprob(grd_nep,grd_ncell))
 c-- ndim=4 alloc
       allocate(grd_cap(ng,grd_ncell))
+c
+c-- optional emissivity arrays
+      if (lemiss) then
+        allocate(grd_em_cap(ng,grd_ncell))
+        allocate(grd_em_capgrey(grd_ncell))
+      endif
 c!}}}
       end subroutine gridmod_init
 c
@@ -215,7 +226,11 @@ c-- ndim=4 alloc
       deallocate(grd_opaclump)
       deallocate(grd_emitprob)
 c-- ndim=4 alloc
-      deallocate(grd_cap)!}}}
+      deallocate(grd_cap)
+c-- optional arrays
+      if (allocated(grd_em_cap)) deallocate(grd_em_cap)
+      if (allocated(grd_em_cap)) deallocate(grd_em_capgrey)
+!}}}
       end subroutine grid_dealloc
 c
       end module gridmod

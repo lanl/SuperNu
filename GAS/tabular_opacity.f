@@ -6,7 +6,7 @@
 * The Government is granted for itself and others acting on its behalf a nonexclusive, paid-up,
 * irrevocable worldwide license in this material to reproduce, prepare. derivative works, distribute
 * copies to the public, perform publicly and display publicly, and to permit others to do so.
-      subroutine tabular_opacity
+      subroutine tabular_opacity(lemiss)
 c     --------------------------
       use tbxsmod
       use miscmod, only:binsrch
@@ -15,6 +15,7 @@ c     --------------------------
       use groupmod
       use physconstmod
       implicit none
+      logical, intent(in) :: lemiss
 ************************************************************************
 * Interpolate Fontes opacity table
 ************************************************************************
@@ -153,4 +154,10 @@ c-- remove opacity helpers from heap
       deallocate(sig)
       deallocate(cap,cap1,cap2,cap3,cap4)
 c
+c
+c
+c-- TODO: add emissivity interpolation here
+      if (lemiss) then
+        stop 'tabular emissivity not yet implemented.'
+      endif
       end subroutine tabular_opacity

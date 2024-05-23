@@ -508,6 +508,7 @@ c     -----------------------------!{{{
       use particlemod
       use timingmod
       use transportmod, only:trn_noampfact
+      use inputparmod, only:in_doemiss
       implicit none
 ************************************************************************
 * Broadcast the data that changes with time/temperature.
@@ -545,6 +546,16 @@ c
       call mpi_allgatherv(gas_cap,grp_ng*gas_ncell,MPI_REAL,
      &  grd_cap,grp_ng*counts,grp_ng*displs,MPI_REAL,
      &  MPI_COMM_WORLD,ierr)
+c
+c-- emissivity arrays
+      if (in_doemiss) then
+        call mpi_allgatherv(gas_em_capgrey,gas_ncell,MPI_REAL8,
+     &    grd_em_capgrey,counts,displs,MPI_REAL8,
+     &    MPI_COMM_WORLD,ierr)
+        call mpi_allgatherv(gas_em_cap,grp_ng*gas_ncell,MPI_REAL,
+     &    grd_em_cap,grp_ng*counts,grp_ng*displs,MPI_REAL,
+     &    MPI_COMM_WORLD,ierr)
+      endif
 c
 c-- broadcast
       call mpi_bcast(tot_esurf,1,MPI_REAL8,

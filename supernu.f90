@@ -132,10 +132,10 @@ program supernu
   if(lsrctable) call bcast_tbsrc !MPI
 
 !-- setup spatial grid
-  call gridmod_init(lmpi0,grp_ng,str_nc,str_lvoid,icell1,ncell)
+  call gridmod_init(lmpi0,grp_ng,str_nc,str_lvoid,icell1,ncell,in_doemiss)
   call grid_setup
 !-- setup gas
-  call gasmod_init(lmpi0,icell1,ncell,grp_ng)
+  call gasmod_init(lmpi0,icell1,ncell,grp_ng,in_doemiss)
   call gas_setup
 !-- inputstr no longer needed
   call inputstr_dealloc
