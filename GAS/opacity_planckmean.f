@@ -34,7 +34,7 @@ c-- compute Planck weighted integral of emission opacity
       if (in_doemiss) then
         do i=1,gas_ncell
            call specintv(1/gas_temp(i),grp_ng,specarr)
-           gas_capgrey(i) = sum(gas_cap(:,i)*specarr)
+           gas_em_capgrey(i) = sum(gas_em_cap(:,i)*specarr)
         enddo !i
       endif
 c
