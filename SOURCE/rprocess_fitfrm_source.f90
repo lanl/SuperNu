@@ -11,7 +11,7 @@
 
 subroutine rprocess_fitfrm_source(it,nt,tcenter)
   use physconstmod, only:pc_msun,pc_pi,pc_c
-  use gasmod, only:gas_ye0,gas_mass,gas_rho,gas_matsrc,gas_ncell
+  use gasmod, only:gas_ye0,gas_mass,gas_rho,gas_matsrc,gas_ncell,gas_decaygamma
   use rprocmod, only:heating_rate,v_grid
   use gridmod, only:grd_vol
   implicit none
@@ -33,9 +33,10 @@ subroutine rprocess_fitfrm_source(it,nt,tcenter)
   real*8, parameter :: A_alpha = 1.3d-11 ! [g cm^-3 s]
   real*8, parameter :: A_beta  = 1.3d-11 ! [g cm^-3 s]
   real*8, parameter :: A_ff    = 0.2d-11 ! [g cm^-3 s]
-  real*8, parameter :: X_alpha = 0.05d0  ! [g cm^-3 s]
-  real*8, parameter :: X_beta  = 0.20d0  ! [g cm^-3 s]
-  real*8, parameter :: X_ff    = 0.00d0  ! [g cm^-3 s]
+  real*8, parameter :: X_alpha = 0.05d0
+  real*8, parameter :: X_beta  = 0.20d0
+  real*8, parameter :: X_gamma = 0.35d0
+  real*8, parameter :: X_ff    = 0.00d0
 
 !-- reset material source
   vexp = 0.1d0 ! default value of the expansion velocity
@@ -47,8 +48,16 @@ subroutine rprocess_fitfrm_source(it,nt,tcenter)
   vexp = max(v_grid(1), vexp)
   vexp = min(v_grid(size(v_grid)), vexp)
 
+  ! kill external gamma source
+  gas_decaygamma = 0d0
+
   where(gas_rho > 0d0) 
      gas_matsrc = gas_rho*heating_rate(vexp, gas_ye0, tcenter)
+
+     !-- create external gamma source for grey mc transport
+     gas_decaygamma = X_gamma*gas_matsrc
+     
+     !-- create thermalized material source
      helparr = 2d0/(tcenter*gas_rho)
      therm_frac = X_alpha*dlog(1d0 + helparr*A_alpha)/(helparr*A_alpha) &
                 + X_beta *dlog(1d0 + helparr*A_beta) /(helparr*A_beta) &
