@@ -398,5 +398,26 @@ c
       om0 = om
       end subroutine direction2lab3
 c
+c
+      elemental function ddmc_emiss_bc(dx, f, cap, sig, dext)
+c     -------------------------------------------------------
+      implicit none
+      real*8 :: ddmc_emiss_bc
+      real*4,intent(in) :: cap
+      real*8,intent(in) :: dx, f, sig, dext
+************************************************************************
+* See Densmore, Davidson and Carrington (2006)
+************************************************************************
+      real*8 :: help, alb, eps, beta
+      help = (cap+sig)*dx
+      alb = f*cap / (cap+sig)
+      eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+dext*sqrt(3d0*alb))
+      beta = 1.5d0*alb*help**2+sqrt(3d0*alb*help**2 +
+     &     2.25d0*alb**2*help**4)
+      ddmc_emiss_bc = 0.5d0*eps*beta/(beta-0.75*eps*help)
+c
+      end function ddmc_emiss_bc
+c
+c
       end module transportmod
 c vim: fdm=marker

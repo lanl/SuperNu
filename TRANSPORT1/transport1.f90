@@ -719,9 +719,8 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               e = e*(1d0+2d0*(0.55d0*help-1.25d0*abs(mu))*x*cinv)
            endif
         endif
-        help = (grd_cap(ig,l)+grd_sig(l)) * &
-             dx(ixnext)*thelp
-        help = 4d0/(3d0*help+6d0*pc_dext)
+        help = ddmc_emiss_bc(dx(ixnext)*thelp, grd_fcoef(l), &
+             grd_cap(ig,l), grd_sig(l), pc_dext)
 !-- sampling
         call rnd_r(r1,rndstate)
         if(r1<help*(1d0+1.5d0*abs(mu))) then
@@ -772,9 +771,8 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            mu=(mu-x*cinv)/(1d0-x*mu*cinv)
         endif
         eta = sqrt(1d0-mu**2)*cos(om)
-        help = (grd_cap(ig,l)+grd_sig(l)) * &
-             xm(ix)*dyac(iynext)*thelp
-        help = 4d0/(3d0*help+6d0*pc_dext)
+        help = ddmc_emiss_bc(xm(ix)*dyac(iynext)*thelp, grd_fcoef(l), &
+             grd_cap(ig,l), grd_sig(l), pc_dext)
 !-- sampling
         call rnd_r(r1,rndstate)
         if(r1 < help*(1d0+1.5d0*abs(eta))) then
@@ -847,9 +845,8 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
            mu = (mu-x*cinv)/elabfact
            xi = sqrt(1d0-mu**2)*sin(om)
         endif
-        help = (grd_cap(ig,l)+grd_sig(l)) * &
-             xm(ix)*ym(iy)*dz(iznext)*thelp
-        help = 4d0/(3d0*help+6d0*pc_dext)
+        help = ddmc_emiss_bc(xm(ix)*ym(iy)*dz(iznext)*thelp, grd_fcoef(l), &
+             grd_cap(ig,l), grd_sig(l), pc_dext)
 !-- sampling
         call rnd_r(r1,rndstate)
         if (r1 < help*(1d0+1.5d0*abs(xi))) then

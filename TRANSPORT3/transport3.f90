@@ -391,15 +391,8 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
-        help = (grd_cap(ig,l)+grd_sig(l)) * &
-             dx(ixnext)*thelp
-        alb = grd_fcoef(l)*grd_cap(ig,l)/ &
-             (grd_cap(ig,l)+grd_sig(l))
-        eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
-        beta = 1.5d0*alb*help**2+sqrt(3d0*alb*help**2 + &
-             2.25d0*alb**2*help**4)
-        pp = 0.5d0*eps*beta/(beta-0.75*eps*help)
-        !pp = 4d0/(3d0*help+6d0*pc_dext)
+        pp = ddmc_emiss_bc(dx(ixnext)*thelp, grd_fcoef(l), &
+             grd_cap(ig,l), grd_sig(l), pc_dext)
 !-- sampling
         call rnd_r(r1,rndstate)
         if (r1 < pp * (1d0+1.5d0*abs(xi))) then
@@ -433,15 +426,8 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
-        help = (grd_cap(ig,l)+grd_sig(l)) * &
-             dy(iynext)*thelp
-        alb = grd_fcoef(l)*grd_cap(ig,l)/ &
-             (grd_cap(ig,l)+grd_sig(l))
-        eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
-        beta = 1.5d0*alb*help**2+sqrt(3d0*alb*help**2 + &
-             2.25d0*alb**2*help**4)
-        pp = 0.5d0*eps*beta/(beta-0.75*eps*help)
-        !pp = 4d0/(3d0*help+6d0*pc_dext)
+        pp = ddmc_emiss_bc(dy(iynext)*thelp, grd_fcoef(l), &
+             grd_cap(ig,l), grd_sig(l), pc_dext)
 !-- sampling
         call rnd_r(r1,rndstate)
         if (r1 < pp * (1d0+1.5d0*abs(eta))) then
@@ -475,15 +461,8 @@ pure subroutine transport3(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
-        help = (grd_cap(ig,l)+grd_sig(l)) * &
-             dz(iznext)*thelp
-        alb = grd_fcoef(l)*grd_cap(ig,l)/ &
-             (grd_cap(ig,l)+grd_sig(l))
-        eps = (4d0/3d0)*sqrt(3d0*alb)/(1d0+pc_dext*sqrt(3d0*alb))
-        beta = 1.5d0*alb*help**2+sqrt(3d0*alb*help**2 + &
-             2.25d0*alb**2*help**4)
-        pp = 0.5d0*eps*beta/(beta-0.75*eps*help)
-        !pp = 4d0/(3d0*help+6d0*pc_dext)
+        pp = ddmc_emiss_bc(dz(iznext)*thelp, grd_fcoef(l), &
+             grd_cap(ig,l), grd_sig(l), pc_dext)
         !-- sampling
         call rnd_r(r1,rndstate)
         if (r1 < pp * (1d0+1.5d0*abs(mu))) then
