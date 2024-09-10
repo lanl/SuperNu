@@ -59,7 +59,7 @@ subroutine sourceenergy(lgamma)
 
 !-- non-thermal decay radiation source energy
   if(lgamma) then
-     if(in_srctype=='tabl') then
+     if(in_srctype=='tabl' .or. in_srctype=='rpro') then
 !-- gamma source calculated by tabular_source in erg/cc/s
         gas_decaygamma = gas_decaygamma*tsp_dt*gas_vol
         gas_decaybeta = 0d0
