@@ -670,10 +670,13 @@ c
 c
       select case(in_opacanaltype)
       case('none')
-c--R.W.: condition under case(pick) supposed to be here? (rev 243)
+c-- check at least one opacity contribution is used
        if(in_nobbopac.and.in_nobfopac.and.in_noffopac.and.
      &    in_notbbbopac.and.in_notbbfopac.and.in_notbffopac)
      &        stop 'no phys opac + in_opacanaltype==none'
+c-- if tabular opacity not being used then inline is used, so EOS needed
+       if(in_notbopac.and.in_noeos)
+     &      stop 'inline phys opac, but in_noeos=t'
       case('grey')
       case('mono')
       case('pick')

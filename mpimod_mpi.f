@@ -188,7 +188,10 @@ c-- free-free
       call mpi_bcast(ff_gff,ff_nu*ff_ngg,MPI_REAL8,
      &  impi0,MPI_COMM_WORLD,ierr)
 c
-      call bcast_ions
+c-- only bcast ion structure when using physical EOS
+      if (.not.in_noeos) then
+        call bcast_ions
+      endif
 c
 c
       contains
