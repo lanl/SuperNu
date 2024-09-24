@@ -141,8 +141,8 @@ subroutine leakage_opacity1
 !
         if(lhelp) then
 !-- DDMC interface
-           help = (grd_cap(ig,l)+grd_sig(l))*dx(i)*thelp
-           pp = 4d0/(3d0*help+6d0*pc_dext)
+           pp = ddmc_emiss_bc(dx(i)*thelp, grd_fcoef(l), &
+                grd_cap(ig,l), grd_sig(l), pc_dext)
            grd_opaclump(1,l)=grd_opaclump(1,l)+(specval*speclump)*&
                 1.5d0*pp*grd_xarr(i)**2/(dx3(i)*thelp)
         else
@@ -165,8 +165,8 @@ subroutine leakage_opacity1
 !
         if(lhelp) then
 !-- DDMC interface
-           help = (grd_cap(ig,l)+grd_sig(l))*dx(i)*thelp
-           pp = 4d0/(3d0*help+6d0*pc_dext)
+           pp = ddmc_emiss_bc(dx(i)*thelp, grd_fcoef(l), &
+                grd_cap(ig,l), grd_sig(l), pc_dext)
            grd_opaclump(2,l)=grd_opaclump(2,l)+(specval*speclump)*&
                 1.5d0*pp*grd_xarr(i+1)**2/(dx3(i)*thelp)
         else
@@ -189,8 +189,8 @@ subroutine leakage_opacity1
 !
         if(lhelp) then
 !-- DDMC interface
-           help = (grd_cap(ig,l)+grd_sig(l))*xm(i)*dyac(j)*thelp
-           pp = 4d0/(3d0*help+6d0*pc_dext)
+           pp = ddmc_emiss_bc(xm(i)*dyac(j)*thelp, grd_fcoef(l), &
+                grd_cap(ig,l), grd_sig(l), pc_dext)
            grd_opaclump(3,l)=grd_opaclump(3,l)+(specval*speclump)*&
                 0.75d0*pp*dx2(i)*sqrt(1d0-grd_yarr(j)**2)/(dy(j)*dx3(i)*thelp)
         else
@@ -214,8 +214,8 @@ subroutine leakage_opacity1
 !
         if(lhelp) then
 !-- DDMC interface
-           help = (grd_cap(ig,l)+grd_sig(l))*xm(i)*dyac(j)*thelp
-           pp = 4d0/(3d0*help+6d0*pc_dext)
+           pp = ddmc_emiss_bc(xm(i)*dyac(j)*thelp, grd_fcoef(l), &
+                grd_cap(ig,l), grd_sig(l), pc_dext)
            grd_opaclump(4,l)=grd_opaclump(4,l)+(specval*speclump)*&
                 0.75d0*pp*dx2(i)*sqrt(1d0-grd_yarr(j+1)**2)/(dy(j)*dx3(i)*thelp)
         else
@@ -242,9 +242,8 @@ subroutine leakage_opacity1
 !
         if(lhelp) then
 !-- DDMC interface
-           help = (grd_cap(ig,l)+grd_sig(l))*xm(i)*ym(j) * &
-              dz(k)*thelp
-           pp = 4d0/(3d0*help+6d0*pc_dext)
+           pp = ddmc_emiss_bc(xm(i)*ym(j)*dz(k)*thelp, grd_fcoef(l), &
+                grd_cap(ig,l), grd_sig(l), pc_dext)
            grd_opaclump(5,l)=grd_opaclump(5,l)+(specval*speclump)*&
                 0.75d0*pp*dx2(i)*dyac(j)/(dy(j)*dx3(i)*dz(k)*thelp)
         else
@@ -269,9 +268,8 @@ subroutine leakage_opacity1
 !
         if(lhelp) then
 !-- DDMC interface
-           help = (grd_cap(ig,l)+grd_sig(l))*xm(i)*ym(j) * &
-              dz(k)*thelp
-           pp = 4d0/(3d0*help+6d0*pc_dext)
+           pp = ddmc_emiss_bc(xm(i)*ym(j)*dz(k)*thelp, grd_fcoef(l), &
+                grd_cap(ig,l), grd_sig(l), pc_dext)
            grd_opaclump(6,l)=grd_opaclump(6,l)+(specval*speclump)*&
                 0.75d0*pp*dx2(i)*dyac(j)/(dy(j)*dx3(i)*dz(k)*thelp)
         else

@@ -107,11 +107,11 @@ subroutine interior_source
 !-- calculating direction cosine (comoving)
      call rnd_r(r1,rnd_state)
      mu0 = 1d0-2d0*r1
-     ptcl%mu = mu0 !overwrite when isvelocity
+     ptcl%mu = mu0
 !-- sampling azimuthal angle of direction
      call rnd_r(r1,rnd_state)
      om0 = pc_pi2*r1
-     ptcl%om = om0 !overwrite when isvelocity
+     ptcl%om = om0
 
 !
 !-- x position
@@ -146,7 +146,7 @@ subroutine interior_source
   enddo !j
   enddo !k
   if(ipart/=src_nsurf+src_nnonth) stop 'interior_source: n/=nexecsrc'
-  
+
 
 !-- Thermal volume particle instantiation: loop
   iimpi = -1

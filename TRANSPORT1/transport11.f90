@@ -290,8 +290,8 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
-        help= (grd_cap(ig,l)+grd_sig(l))*dx(ix+1)*thelp
-        help = 4d0/(3d0*help+6d0*pc_dext)
+        help = ddmc_emiss_bc(dx(ix+1)*thelp, grd_fcoef(l), &
+                grd_cap(ig,l), grd_sig(l), pc_dext)
 !-- sampling
         call rnd_r(r1,rndstate)
         if (r1 < help*(1d0+1.5*abs(mu))) then
@@ -321,8 +321,8 @@ pure subroutine transport11(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr
         ic = grd_icell(ix,iy,iz)
      else
 !-- DDMC in adjacent cell
-        help = (grd_cap(ig,l)+grd_sig(l))*dx(ix-1)*thelp
-        help = 4d0/(3d0*help+6d0*pc_dext)
+        help = ddmc_emiss_bc(dx(ix-1)*thelp, grd_fcoef(l), &
+                grd_cap(ig,l), grd_sig(l), pc_dext)
 !-- sampling
         call rnd_r(r1,rndstate)
         if (r1 < help*(1d0+1.5d0*abs(mu))) then

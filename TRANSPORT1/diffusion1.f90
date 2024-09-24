@@ -210,8 +210,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
      if(lhelp) then
 !-- DDMC interface
-        mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*dx(ix)*thelp
-        pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+        pp = ddmc_emiss_bc(dx(ix)*thelp, grd_fcoef(ic), &
+             grd_cap(ig,ic), grd_sig(ic), pc_dext)
         opacleak(1)=1.5d0*pp*grd_xarr(ix)**2/(dx3(ix)*thelp)
      else
 !-- DDMC interior
@@ -232,8 +232,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
      if(lhelp) then
 !-- DDMC interface
-        mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*dx(ix)*thelp
-        pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+        pp = ddmc_emiss_bc(dx(ix)*thelp, grd_fcoef(ic), &
+             grd_cap(ig,ic), grd_sig(ic), pc_dext)
         opacleak(2)=1.5d0*pp*grd_xarr(ix+1)**2/(dx3(ix)*thelp)
      else
 !-- DDMC interior
@@ -255,8 +255,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !
      if(lhelp) then
 !-- DDMC interface
-        mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix)*dyac(iy)*thelp
-        pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+        pp = ddmc_emiss_bc(xm(ix)*dyac(iy)*thelp, grd_fcoef(ic), &
+             grd_cap(ig,ic), grd_sig(ic), pc_dext)
         opacleak(3)=0.75d0*pp*dx2(ix)*sqrt(1d0-grd_yarr(iy)**2) / &
              (dy(iy)*dx3(ix)*thelp)
      else
@@ -280,8 +280,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !
      if(lhelp) then
 !-- DDMC interface
-        mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix)*dyac(iy)*thelp
-        pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+        pp = ddmc_emiss_bc(xm(ix)*dyac(iy)*thelp, grd_fcoef(ic), &
+             grd_cap(ig,ic), grd_sig(ic), pc_dext)
         opacleak(4)=0.75d0*pp*dx2(ix)*sqrt(1d0-grd_yarr(iy+1)**2) / &
              (dy(iy)*dx3(ix)*thelp)
      else
@@ -315,9 +315,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !
         if(lhelp) then
 !-- DDMC interface
-           mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix)*ym(iy) * &
-              dz(iz)*thelp
-           pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+           pp = ddmc_emiss_bc(xm(ix)*ym(iy)*dz(iz)*thelp, grd_fcoef(ic), &
+                grd_cap(ig,ic), grd_sig(ic), pc_dext)
            opacleak(5)=0.75d0*pp*dx2(ix)*dyac(iy) / &
                 (dy(iy)*dx3(ix)*dz(iz)*thelp)
         else
@@ -344,9 +343,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !
         if(lhelp) then
 !-- DDMC interface
-           mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix)*ym(iy) * &
-              dz(iz)*thelp
-           pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+           pp = ddmc_emiss_bc(xm(ix)*ym(iy)*dz(iz)*thelp, grd_fcoef(ic), &
+                grd_cap(ig,ic), grd_sig(ic), pc_dext)
            opacleak(6)=0.75d0*pp*dx2(ix)*dyac(iy) / &
                 (dy(iy)*dx3(ix)*dz(iz)*thelp)
         else
@@ -531,9 +529,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
                    dz(iz))*thelp<trn_tauddmc
            if(lhelp) then
 !-- DDMC interface
-              mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
-                   dx(ix)*thelp
-              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              pp = ddmc_emiss_bc(dx(ix)*thelp, grd_fcoef(ic), &
+                   grd_cap(iiig,ic), grd_sig(ic), pc_dext)
               resopacleak = 1.5d0*pp*grd_xarr(ix)**2/(dx3(ix)*thelp)
            else
 !-- IMC interface
@@ -623,9 +620,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            endif
            if(lhelp) then
 !-- DDMC interface
-              mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
-                   dx(ix)*thelp
-              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              pp = ddmc_emiss_bc(dx(ix)*thelp, grd_fcoef(ic), &
+                   grd_cap(iiig,ic), grd_sig(ic), pc_dext)
               resopacleak = 1.5d0*pp*grd_xarr(ix+1)**2/(dx3(ix)*thelp)
            else
 !-- IMC interface
@@ -744,9 +740,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
                 thelp<trn_tauddmc
            if(lhelp) then
 !-- DDMC interface
-              mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
-                   xm(ix)*dyac(iy)*thelp
-              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              pp = ddmc_emiss_bc(xm(ix)*dyac(iy)*thelp, grd_fcoef(ic), &
+                   grd_cap(iiig,ic), grd_sig(ic), pc_dext)
               resopacleak=0.75d0*pp*dx2(ix)*sqrt(1d0-grd_yarr(iy)**2) / &
                    (dy(iy)*dx3(ix)*thelp)
            else
@@ -851,9 +846,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
                 thelp<trn_tauddmc
            if(lhelp) then
 !-- DDMC interface
-              mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
-                   xm(ix)*dyac(iy)*thelp
-              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              pp = ddmc_emiss_bc(xm(ix)*dyac(iy)*thelp, grd_fcoef(ic), &
+                   grd_cap(iiig,ic), grd_sig(ic), pc_dext)
               resopacleak=0.75d0*pp*dx2(ix)*sqrt(1d0-grd_yarr(iy+1)**2) / &
                    (dy(iy)*dx3(ix)*thelp)
            else
@@ -960,9 +954,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !
            if(lhelp) then
 !-- DDMC interface
-              mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
-                   xm(ix)*ym(iy)*dz(iz)*thelp
-              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              pp = ddmc_emiss_bc(xm(ix)*ym(iy)*dz(iz)*thelp, grd_fcoef(ic), &
+                   grd_cap(iiig,ic), grd_sig(ic), pc_dext)
               resopacleak=0.75d0*pp*dx2(ix)*dyac(iy) / &
                    (dy(iy)*dx3(ix)*dz(iz)*thelp)
            else
@@ -1073,9 +1066,8 @@ pure subroutine diffusion1(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !
            if(lhelp) then
 !-- DDMC interface
-              mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
-                   xm(ix)*ym(iy)*dz(iz)*thelp
-              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              pp = ddmc_emiss_bc(xm(ix)*ym(iy)*dz(iz)*thelp, grd_fcoef(ic), &
+                   grd_cap(iiig,ic), grd_sig(ic), pc_dext)
               resopacleak=0.75d0*pp*dx2(ix)*dyac(iy) / &
                    (dy(iy)*dx3(ix)*dz(iz)*thelp)
            else

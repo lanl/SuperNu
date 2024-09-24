@@ -207,8 +207,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
         grd_sig(l))*min(dx(ix-1),dy(iy))* &
         thelp<trn_tauddmc) then
 !-- DDMC interface
-        mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*dx(ix)*thelp
-        pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+        pp = ddmc_emiss_bc(dx(ix)*thelp, grd_fcoef(ic), &
+             grd_cap(ig,ic), grd_sig(ic), pc_dext)
         opacleak(1)= pp*(thelp*grd_xarr(ix))/ &
              (thelp**2*dx2(ix))
      else
@@ -230,8 +230,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
      if(lhelp) then
 !-- DDMC interface
-        mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*dx(ix)*thelp
-        pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+        pp = ddmc_emiss_bc(dx(ix)*thelp, grd_fcoef(ic), &
+             grd_cap(ig,ic), grd_sig(ic), pc_dext)
         opacleak(2)= pp*(thelp*grd_xarr(ix+1))/ &
              (thelp**2*dx2(ix))
      else
@@ -253,8 +253,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
      if(lhelp) then
 !-- DDMC interface
-        mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*dy(iy)*thelp
-        pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+        pp = ddmc_emiss_bc(dy(iy)*thelp, grd_fcoef(ic), &
+             grd_cap(ig,ic), grd_sig(ic), pc_dext)
         opacleak(3)=0.5d0*pp/(thelp*dy(iy))
      else
 !-- DDMC interior
@@ -274,8 +274,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
      endif
      if(lhelp) then
 !-- DDMC interface
-        mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*dy(iy)*thelp
-        pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+        pp = ddmc_emiss_bc(dy(iy)*thelp, grd_fcoef(ic), &
+             grd_cap(ig,ic), grd_sig(ic), pc_dext)
         opacleak(4)=0.5d0*pp/(thelp*dy(iy))
      else
 !-- DDMC interior
@@ -307,9 +307,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 
         if(lhelp) then
 !-- DDMC interface
-           mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix) * &
-              dz(iz)*thelp
-           pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+           pp = ddmc_emiss_bc(xm(ix)*dz(iz)*thelp, grd_fcoef(ic), &
+                grd_cap(ig,ic), grd_sig(ic), pc_dext)
            opacleak(5)=.5d0*pp/(xm(ix)*dz(iz)*thelp)
         else
 !-- DDMC interior
@@ -335,9 +334,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 
         if(lhelp) then
 !-- DDMC interface
-           mfphelp = (grd_cap(ig,ic)+grd_sig(ic))*xm(ix) * &
-              dz(iz)*thelp
-           pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+           pp = ddmc_emiss_bc(xm(ix)*dz(iz)*thelp, grd_fcoef(ic), &
+                grd_cap(ig,ic), grd_sig(ic), pc_dext)
            opacleak(6)=.5d0*pp/(xm(ix)*dz(iz)*thelp)
         else
 !-- DDMC interior
@@ -514,9 +512,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
                 grd_sig(l))*min(dx(ix-1),dy(iy),xm(ix-1)*dz(iz)) * &
                 thelp<trn_tauddmc) then
 !-- IMC interface
-              mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
-                   dx(ix)*thelp
-              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              pp = ddmc_emiss_bc(dx(ix)*thelp, grd_fcoef(ic), &
+                   grd_cap(iiig,ic), grd_sig(ic), pc_dext)
               resopacleak = pp*(thelp*grd_xarr(ix))/ &
                    (thelp**2*dx2(ix))
            else
@@ -592,9 +589,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            endif
            if(lhelp) then
 !-- IMC interface or boundary
-              mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
-                   dx(ix)*thelp
-              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              pp = ddmc_emiss_bc(dx(ix)*thelp, grd_fcoef(ic), &
+                   grd_cap(iiig,ic), grd_sig(ic), pc_dext)
               resopacleak = pp*(thelp*grd_xarr(ix+1))/ &
                    (thelp**2*dx2(ix))
            else
@@ -707,9 +703,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            endif
            if(lhelp) then
 !-- IMC interface or boundary
-              mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
-                   dy(iy)*thelp
-              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              pp = ddmc_emiss_bc(dy(iy)*thelp, grd_fcoef(ic), &
+                   grd_cap(iiig,ic), grd_sig(ic), pc_dext)
               resopacleak = 0.5d0*pp/(thelp*dy(iy))
            else
 !-- DDMC interface
@@ -822,9 +817,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
            endif
            if(lhelp) then
 !-- IMC interface or boundary
-              mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
-                   dy(iy)*thelp
-              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              pp = ddmc_emiss_bc(dy(iy)*thelp, grd_fcoef(ic), &
+                   grd_cap(iiig,ic), grd_sig(ic), pc_dext)
               resopacleak = 0.5d0*pp/(thelp*dy(iy))
            else
 !-- DDMC interface
@@ -943,9 +937,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
                 thelp<trn_tauddmc
            if(lhelp) then
 !-- DDMC interface
-              mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
-                   xm(ix)*dz(iz)*thelp
-              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              pp = ddmc_emiss_bc(xm(ix)*dz(iz)*thelp, grd_fcoef(ic), &
+                   grd_cap(iiig,ic), grd_sig(ic), pc_dext)
               resopacleak=.5d0*pp/(xm(ix)*dz(iz)*thelp)
            else
 !-- DDMC interior
@@ -1034,9 +1027,8 @@ pure subroutine diffusion2(ptcl,ptcl2,cache,rndstate,edep,eraddens,totevelo,ierr
 !
            if(lhelp) then
 !-- DDMC interface
-              mfphelp = (grd_cap(iiig,ic)+grd_sig(ic)) * &
-                   xm(ix)*dz(iz)*thelp
-              pp = 4d0/(3d0*mfphelp+6d0*pc_dext)
+              pp = ddmc_emiss_bc(xm(ix)*dz(iz)*thelp, grd_fcoef(ic), &
+                   grd_cap(iiig,ic), grd_sig(ic), pc_dext)
               resopacleak=.5d0*pp/(xm(ix)*dz(iz)*thelp)
            else
 !-- DDMC interior
