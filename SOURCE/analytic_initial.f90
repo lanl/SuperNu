@@ -30,7 +30,7 @@ subroutine analytic_initial
 !
 !-- source specific initial conditions (overrides gas_inittyp)
 !-- currently only supplying nonzero for in_srctype=manu
-  if(any(['none','tabl','surf']==in_srctype)) then
+  if(any(['none','tabl','surf','rpro']==in_srctype)) then
      if(in_opacanaltype=='pick') then
 !-- tstd initial energy profile currently approximation
         stop 'analytic_initial: in_opacanaltype==pick not implemented'

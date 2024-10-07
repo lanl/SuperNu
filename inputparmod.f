@@ -664,6 +664,7 @@ c
       case('manu')
       case('surf')
       case('tabl')
+      case('rpro')
       case default
        stop 'in_srctype unknown'
       end select

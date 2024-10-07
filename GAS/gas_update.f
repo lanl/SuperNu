@@ -215,7 +215,7 @@ c
 c-- calculate opacities
 c======================
 c-- gamma opacity
-      if(in_srctype=='tabl') then
+      if(in_srctype=='tabl'.or.in_srctype=='rpro') then
         gas_capgam = in_opcapgam*gas_rho
       else
         gas_capgam = in_opcapgam*gas_ye*gas_rho
