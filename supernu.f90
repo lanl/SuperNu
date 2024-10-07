@@ -86,7 +86,9 @@ program supernu
 
 !-- READ DATA
 !-- read ion and level data
-     call ions_read_data(gas_nelem)  !ion and level data
+     if(.not.in_noeos) then
+       call ions_read_data(gas_nelem)  !ion and level data
+     endif
 !-- read bbxs data
      if(.not.in_nobbopac) call read_bbxs_data(gas_nelem)!bound-bound cross section data
 !-- read bfxs data
@@ -144,7 +146,9 @@ program supernu
   call sourcemod_init(nmpi)
 
 !-- allocate arrays of sizes retreived in bcast_permanent
-  call ions_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
+  if (.not.in_noeos) then
+     call ions_alloc_grndlev(gas_nelem,gas_ncell)  !ground state occupation numbers
+  endif
   call particle_alloc(lmpi0)
 
 !-- initialize random number generator, use different seeds for each rank

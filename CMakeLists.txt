@@ -7,7 +7,7 @@ option (USE_OPENMP "USE_OPENMP" OFF)
 
 #-- name the project and set the language
 project (SuperNu)
-set (SuperNu_VERSION_MAJOR 3)
+set (SuperNu_VERSION_MAJOR 4)
 set (SuperNu_VERSION_MINOR "x")
 enable_language (Fortran)
 

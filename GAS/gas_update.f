@@ -190,10 +190,11 @@ c-- calculate power law heat capacity
        gas_bcoef = in_gas_cvcoef * gas_temp**in_gas_cvtpwr *
      &   gas_rho**in_gas_cvrpwr
       else
-!-- calculate physical heat capacity
-       if(.not.in_notbopac) then
+c-- calculate physical heat capacity
+       if(in_noeos) then
          gas_bcoef = 1.5d0*pc_kb*gas_natom/gas_vol
        else
+c-- add free electron contribution if physical EOS was used
          gas_bcoef = 1.5d0*pc_kb*(1d0+gas_nelec)*gas_natom /
      &      gas_vol
        endif
