@@ -150,14 +150,90 @@ c-- refine sanity check
        if(iand(j,8)==0) write(0,*) 'opacity_calc: all cap==inf'
       endif
 c
+c
+c
+c--interpolate emission opacity
+      if (lemiss) then
+c
+c--   calculate emission opacities
+        do i=1,gas_ncell
+          if(gas_mass(i)<=0d0) cycle
+c--   table abundance for cell
+          do l=1,tb_nelem
+            iz=tb_ielem(l)
+            if(gas_natom1fr(iz,i)<=0d0) cycle
+c--   mass fraction helper
+            massfr=gas_natom1fr(iz,i)*gas_natom(i) *
+     &           elem_data(iz)%m*pc_amu/gas_mass(i)
+c--   partial density for table interpolation
+            rhopart=massfr*gas_rho(i)
+c--   search 1d tb arrays for temp-rho point
+            irho=binsrch(rhopart,tb_rho,tb_nrho,.false.)
+            itemp=binsrch(gas_temp(i),tb_temp,tb_ntemp,.false.)
+c--   do not allow for extrapolation
+            rhoh=max(rhopart,tb_rho(irho))
+            rhoh=min(rhoh,tb_rho(irho+1))
+            temph=max(gas_temp(i),tb_temp(itemp))
+            temph=min(temph,tb_temp(itemp+1))
+c--   2d bilinear interpolation in temp-rho
+c--   temperature basis functions
+            phi1t=(tb_temp(itemp+1)-temph) /
+     &           (tb_temp(itemp+1)-tb_temp(itemp))
+            phi2t=(temph-tb_temp(itemp)) /
+     &           (tb_temp(itemp+1)-tb_temp(itemp))
+c--   density basis functions
+            phi1r=log(tb_rho(irho+1)/rhoh) /
+     &           log(tb_rho(irho+1)/tb_rho(irho))
+            phi2r=log(rhoh/tb_rho(irho)) /
+     &           log(tb_rho(irho+1)/tb_rho(irho))
+c--   emission
+            cap1=tb_em_cap(:,itemp,irho,l)*sngl(phi1t*phi1r)
+            cap2=tb_em_cap(:,itemp,irho+1,l)*sngl(phi1t*phi2r)
+            cap3=tb_em_cap(:,itemp+1,irho+1,l)*sngl(phi2t*phi2r)
+            cap4=tb_em_cap(:,itemp+1,irho,l)*sngl(phi2t*phi1r)
+            cap(:,i)=cap1+cap2+cap3+cap4
+c--   add macroscopic emission opacity to total
+            gas_em_cap(:,i)=gas_em_cap(:,i)+sngl(rhopart)*cap(:,i)
+          enddo
+        enddo
+c
+c--   sanity check (duplicated from physical_opacity)
+c--   emission
+        j = 0
+        do i=1,gas_ncell
+          if(gas_mass(i)<=0d0) cycle
+          do ig=1,grp_ng
+            if(gas_em_cap(ig,i)==0.) j = ior(j,1)
+            if(gas_em_cap(ig,i)<0.) j = ior(j,2)
+            if(gas_em_cap(ig,i)/=gas_em_cap(ig,i)) j = ior(j,4)
+            if(gas_em_cap(ig,i)>huge(gas_em_cap)) j = ior(j,8)
+          enddo                 !ig
+        enddo                   !i
+        if(iand(j,1)/=0) write(0,*) 'opacity_calc: some em_cap==0'
+        if(iand(j,2)/=0) write(0,*) 'opacity_calc: some em_cap<0'
+        if(iand(j,4)/=0) write(0,*) 'opacity_calc: some em_cap==NaN'
+        if(iand(j,8)/=0) write(0,*) 'opacity_calc: some em_cap==inf'
+c--   refine sanity check
+        if(j>0) then
+          j = 0
+          do i=1,gas_ncell
+            if(gas_mass(i)<=0d0) cycle
+            do ig=1,grp_ng
+              if(gas_em_cap(ig,i)/=0.) j = ior(j,1)
+              if(gas_em_cap(ig,i)>=0.) j = ior(j,2)
+              if(gas_em_cap(ig,i)==gas_em_cap(ig,i)) j = ior(j,4)
+              if(gas_em_cap(ig,i)<=huge(gas_em_cap)) j = ior(j,8)
+            enddo               !ig
+          enddo                 !i
+          if(iand(j,1)==0) write(0,*) 'opacity_calc: all em_cap==0'
+          if(iand(j,2)==0) write(0,*) 'opacity_calc: all em_cap<0'
+          if(iand(j,4)==0) write(0,*) 'opacity_calc: all em_cap==NaN'
+          if(iand(j,8)==0) write(0,*) 'opacity_calc: all em_cap==inf'
+        endif
+      endif
+c
 c-- remove opacity helpers from heap
       deallocate(sig)
       deallocate(cap,cap1,cap2,cap3,cap4)
 c
-c
-c
-c-- TODO: add emissivity interpolation here
-      if (lemiss) then
-        stop 'tabular emissivity not yet implemented.'
-      endif
       end subroutine tabular_opacity

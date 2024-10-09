@@ -116,11 +116,11 @@ program supernu
 
 !-- read and coarsen opacity tables
   if(lmpi0.and..not.in_notbopac) then
-     call read_tbxs
+     call read_tbxs(in_doemiss)
 !-- short cut
      lopac=[in_notbbbopac,in_notbbfopac , &
           in_notbffopac,in_notbthmson]
-     call coarsen_tbxs(lopac,grp_ng,grp_wl)
+     call coarsen_tbxs(lopac,in_doemiss,grp_ng,grp_wl)
   endif
 !-- broadcast permanent opacity table
   if(.not.in_notbopac) call bcast_tbxs(grp_ng) !MPI
