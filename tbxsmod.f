@@ -34,8 +34,8 @@ c-- number of energy points
       integer,parameter,private :: ngr=14900
 c-- indicies of structure elements (from input.str)
       integer, allocatable :: tb_ielem(:) !(nelem)
-c-- subset of array above that has emission opacity tables
-      integer, allocatable :: tb_em_ielem(:) !(nelem)
+c-- mask of tb_ielem that indicates emission opacity tables
+      logical, allocatable :: tb_ielem_em_mask(:,:) !(nelem,nrho)
 c
       save
       public
@@ -51,7 +51,7 @@ c     -----------------------
       if(allocated(tb_sig)) deallocate(tb_sig)
       if(allocated(tb_cap)) deallocate(tb_cap)
 c
-      if(allocated(tb_em_ielem)) deallocate(tb_em_ielem)
+      if(allocated(tb_ielem_em_mask)) deallocate(tb_ielem_em_mask)
       if(allocated(tb_em_cap)) deallocate(tb_em_cap)
 c
       end subroutine tbxs_dealloc
@@ -80,7 +80,7 @@ c     --------------------
       character(2) :: fid,fnum
       character(20) :: fname
       logical :: lexist_em
-      logical, allocatable :: lhas_em_tb(:) !true for tabular emission
+      real*8 :: temp_em(tb_ntemp)
 c
 c-- sanity check
       if(str_nabund==0) stop 'read_tbxs: str_nabund=0'
@@ -156,7 +156,9 @@ c
 c-- check if there exists
       if (lemiss) then
 c
-        allocate(lhas_em_tb(tb_nelem))
+c-- create emission subset mask
+        allocate(tb_ielem_em_mask(tb_nelem, tb_nrho))
+        tb_ielem_em_mask = .false.
 c
 c-- TODO: loop over density and remove hard-coding here
         irho = 17
@@ -181,34 +183,22 @@ c-- construct file name and inquire existence
           endif
           inquire(file='Table/'//adjustl(fname),exist=lexist_em)
 c-- store file's existance and increment number of emission tables
-          lhas_em_tb(l) = lexist_em
+          tb_ielem_em_mask(l,irho) = lexist_em
           if(lexist_em) then
             tb_nelem_em=tb_nelem_em+1
           endif
         enddo
-c-- store correct indices from elem_data
-        allocate(tb_em_ielem(tb_nelem_em))
 c
-c-- TODO: loop over density and remove hard-coding here
-        ll = 0
-        do l=1,tb_nelem
-c-- set tabular emission element
-          if(lhas_em_tb(l)) then
-            tb_em_ielem(ll) = tb_ielem(l)
-            ll = ll+1
-          endif
-        enddo
-c
-c-- deallocate logical helper array
-        deallocate(lhas_em_tb)
-c
-c-- raw emission table (todo: do not assume same rho,T vals)
+c-- raw emission table (TODO: do not assume same rho,T vals)
 c-- TODO: allocate by number of available density points
         allocate(tb_em_raw(ncol,ngr,tb_ntemp,1,tb_nelem_em))
 c-- TODO: loop over density and remove hard-coding here
-        do ll=1,tb_nelem_em
+        ll = 1
+        do l=1,tb_nelem
+c-- ignore elements without emission table
+          if (.not.tb_ielem_em_mask(l,irho)) cycle
 c-- file element
-          ielem = tb_em_ielem(ll)
+          ielem = tb_ielem(l)
           fid=lcase(trim(elem_data(ielem)%sym))
 c-- file density id
           if(iirho/10==0) then
@@ -232,7 +222,7 @@ c-- require all possible data (for now)
           endif
           do itemp=1,tb_ntemp
 c-- temperature value
-            read(4,*) sdmy, dmy, tb_temp(itemp)
+            read(4,*) sdmy, dmy, temp_em(itemp)
             read(4,*)
 c-- all data at temp-rho(-elem) point (TODO: fix rho index)
             read(4,*,iostat=ierr) tb_em_raw(:,:,itemp,1,ll)
@@ -247,9 +237,16 @@ c-- ensure no residual file data
             stop 'read_tbxs: body too long'
           endif
           close(4)
+          ll = ll + 1
         enddo
 c
+c-- check emission table temperatures are the same
+        if (any(abs(temp_em - tb_temp) > 1e-6 * tb_temp))
+     &       stop 'read_tbxs: temp_em /= tb_temp'
+c
       endif
+
+!      stop 'testing stop ...'
 c
       end subroutine read_tbxs
 c

@@ -19,7 +19,7 @@ c     --------------------------
 ************************************************************************
 * Interpolate Fontes opacity table
 ************************************************************************
-      integer :: itemp,irho,i,iz,ig,j,l
+      integer :: itemp,irho,i,iz,ig,j,l,ll
       real*8 :: massfr, rhopart, temph, rhoh
       real*8 :: phi1t,phi2t,phi1r,phi2r
       real*8 :: sig1,sig2,sig3,sig4
@@ -159,6 +159,7 @@ c--   calculate emission opacities
         do i=1,gas_ncell
           if(gas_mass(i)<=0d0) cycle
 c--   table abundance for cell
+          ll = 1
           do l=1,tb_nelem
             iz=tb_ielem(l)
             if(gas_natom1fr(iz,i)<=0d0) cycle
@@ -187,13 +188,27 @@ c--   density basis functions
             phi2r=log(rhoh/tb_rho(irho)) /
      &           log(tb_rho(irho+1)/tb_rho(irho))
 c--   emission
-            cap1=tb_em_cap(:,itemp,irho,l)*sngl(phi1t*phi1r)
-            cap2=tb_em_cap(:,itemp,irho+1,l)*sngl(phi1t*phi2r)
-            cap3=tb_em_cap(:,itemp+1,irho+1,l)*sngl(phi2t*phi2r)
-            cap4=tb_em_cap(:,itemp+1,irho,l)*sngl(phi2t*phi1r)
+            if (tb_ielem_em_mask(l,irho)) then
+              cap1=tb_em_cap(:,itemp,irho,ll)*sngl(phi1t*phi1r)
+              cap4=tb_em_cap(:,itemp+1,irho,ll)*sngl(phi2t*phi1r)
+            else
+              cap1=tb_cap(:,itemp,irho,l)*sngl(phi1t*phi1r)
+              cap4=tb_cap(:,itemp+1,irho,l)*sngl(phi2t*phi1r)
+            endif
+            if (tb_ielem_em_mask(l,irho+1)) then
+              cap2=tb_em_cap(:,itemp,irho+1,ll)*sngl(phi1t*phi2r)
+              cap3=tb_em_cap(:,itemp+1,irho+1,ll)*sngl(phi2t*phi2r)
+            else
+              cap2=tb_cap(:,itemp,irho+1,l)*sngl(phi1t*phi2r)
+              cap3=tb_cap(:,itemp+1,irho+1,l)*sngl(phi2t*phi2r)
+            endif
             cap(:,i)=cap1+cap2+cap3+cap4
 c--   add macroscopic emission opacity to total
             gas_em_cap(:,i)=gas_em_cap(:,i)+sngl(rhopart)*cap(:,i)
+c--   increment emission table sub-counter
+            if (tb_ielem_em_mask(l,irho).or.tb_ielem_em_mask(l,irho+1))
+     &           ll = ll + 1
+c
           enddo
         enddo
 c
