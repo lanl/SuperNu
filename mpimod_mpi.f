@@ -388,6 +388,7 @@ c-- cap
       n=ng*ntemp*nrho*nelem
       call mpi_bcast(tb_cap,n,MPI_REAL,
      &   impi0,MPI_COMM_WORLD,ierr)
+c-- cap_em (TODO: broacast data needed for emission arrays)
 c
       end subroutine bcast_tbxs
 c
