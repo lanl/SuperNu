@@ -31,6 +31,8 @@ subroutine sourceenergy(lgamma)
      call generate_manutempsrc(in_str_totmass,in_gas_capcoef,tsp_t,tsp_dt)
   elseif(in_srctype=='tabl') then
      call tabular_source(tsp_it,tsp_nt,tsp_tcenter,in_srctype)
+  elseif(in_srctype=='rpro') then
+     call rprocess_fitfrm_source(tsp_it,tsp_nt,tsp_tcenter)
   elseif(in_gas_srccoef>0d0) then
 !-- short-cuts
      q1=in_gas_srcrpwr
@@ -57,7 +59,7 @@ subroutine sourceenergy(lgamma)
 
 !-- non-thermal decay radiation source energy
   if(lgamma) then
-     if(in_srctype=='tabl') then
+     if(in_srctype=='tabl' .or. in_srctype=='rpro') then
 !-- gamma source calculated by tabular_source in erg/cc/s
         gas_decaygamma = gas_decaygamma*tsp_dt*gas_vol
         gas_decaybeta = 0d0
