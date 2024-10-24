@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.8)
 
 #-- specify configuration options
 option (USE_MPI "USE_MPI" ON)
-option (USE_OPENMP "USE_OPENMP" OFF)
+option (USE_OPENMP "USE_OPENMP" ON)
 
 #-- name the project and set the language
 project (SuperNu)

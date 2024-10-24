@@ -198,7 +198,7 @@ program supernu
 
 !-- grey gamma ray condition
      lgamma=(.not.in_novolsrc) .and. &
-        (any(['none','tabl']==in_srctype))
+        (any(['none','tabl','rpro']==in_srctype))
 !-- todo: check for non-zero gamma energy
 
 !-- source energy: gamma and material
