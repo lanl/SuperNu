@@ -20,7 +20,7 @@ c-- density, temperature table points
       real*8 :: tb_rho(tb_nrho) !(nrho)
       real*8 :: tb_temp(tb_ntemp) !(ntemp)
 c-- raw table input
-      real*4,allocatable,private :: tb_raw(:,:,:,:,:) !(ncol,ngr,ntemp,nrho,nelem)
+      real*8,allocatable,private :: tb_raw(:,:,:,:,:) !(ncol,ngr,ntemp,nrho,nelem)
 c-- grey scattering opacity
       real*8,allocatable :: tb_sig(:,:,:)
 c-- group-coarsened table
@@ -176,12 +176,12 @@ c
       do itemp=1,tb_ntemp
 c-- scattering opacity
         if(.not.lopac(4)) tb_sig(itemp,irho,ielem)=
-     &     dble(sum(tb_raw(7,:,itemp,irho,ielem))/ngr)
+     &     sum(tb_raw(7,:,itemp,irho,ielem))/dble(ngr)
 c-- absorption opacity
       do igr=ngr-1,1,-1
 c-- binary search group containing igr point
-        wll=1d0/dble(tb_raw(1,igr+1,itemp,irho,ielem))
-        wlr=1d0/dble(tb_raw(1,igr,itemp,irho,ielem))
+        wll=1d0/tb_raw(1,igr+1,itemp,irho,ielem)
+        wlr=1d0/tb_raw(1,igr,itemp,irho,ielem)
         ig1=binsrch(wll,evinvarr,ng+1,.true.)
         ig1=max(ig1,1)
         ig2=binsrch(wlr,evinvarr,ng+1,.true.)
@@ -198,24 +198,24 @@ c-- add opacity contributions
           cap=0.
 c-- bound-bound
           if(.not.lopac(1)) then
-            capl=tb_raw(4,igr+1,itemp,irho,ielem)
-            capr=tb_raw(4,igr,itemp,irho,ielem)
+            capl=sngl(tb_raw(4,igr+1,itemp,irho,ielem))
+            capr=sngl(tb_raw(4,igr,itemp,irho,ielem))
             cap1=capl*sngl(1d0-help3)+capr*sngl(help3)
             cap2=capl*sngl(help4)+capr*sngl(1d0-help4)
             cap=cap+.5*sngl((help2-help1)/(help1*help2))*(cap1+cap2)
           endif
 c-- bound-free
           if(.not.lopac(2)) then
-            capl=tb_raw(5,igr+1,itemp,irho,ielem)
-            capr=tb_raw(5,igr,itemp,irho,ielem)
+            capl=sngl(tb_raw(5,igr+1,itemp,irho,ielem))
+            capr=sngl(tb_raw(5,igr,itemp,irho,ielem))
             cap1=capl*sngl(1d0-help3)+capr*sngl(help3)
             cap2=capl*sngl(help4)+capr*sngl(1d0-help4)
             cap=cap+.5*sngl((help2-help1)/(help1*help2))*(cap1+cap2)
           endif
 c-- free-free
           if(.not.lopac(3)) then
-            capl=tb_raw(6,igr+1,itemp,irho,ielem)
-            capr=tb_raw(6,igr,itemp,irho,ielem)
+            capl=sngl(tb_raw(6,igr+1,itemp,irho,ielem))
+            capr=sngl(tb_raw(6,igr,itemp,irho,ielem))
             cap1=capl*sngl(1d0-help3)+capr*sngl(help3)
             cap2=capl*sngl(help4)+capr*sngl(1d0-help4)
             cap=cap+.5*sngl((help2-help1)/(help1*help2))*(cap1+cap2)

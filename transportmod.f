@@ -30,34 +30,6 @@ c
 c-- explicit interfaces
       interface
 c!{{{
-c-- advection
-      pure subroutine advection1(pretrans,ptcl,ptcl2)
-      use particlemod
-      logical,intent(in) :: pretrans
-      type(packet),target,intent(inout) :: ptcl
-      type(packet2),target,intent(inout) :: ptcl2
-      end subroutine advection1
-c
-      pure subroutine advection2(pretrans,ptcl,ptcl2)
-      use particlemod
-      logical,intent(in) :: pretrans
-      type(packet),target,intent(inout) :: ptcl
-      type(packet2),target,intent(inout) :: ptcl2
-      end subroutine advection2
-c
-      pure subroutine advection3(pretrans,ptcl,ptcl2)
-      use particlemod
-      logical,intent(in) :: pretrans
-      type(packet),target,intent(inout) :: ptcl
-      type(packet2),target,intent(inout) :: ptcl2
-      end subroutine advection3
-c
-      pure subroutine advection11(pretrans,ptcl,ptcl2)
-      use particlemod
-      logical,intent(in) :: pretrans
-      type(packet),target,intent(inout) :: ptcl
-      type(packet2),target,intent(inout) :: ptcl2
-      end subroutine advection11
 c
 c-- transport_gamgrey
       pure subroutine transport1_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
@@ -216,14 +188,6 @@ c     -------------------------------------------
       real*8,intent(inout) :: mu0,om0
       end subroutine direction2lab_
 c
-      pure subroutine advection_(pretrans,ptcl,ptcl2)
-c     -----------------------------------------------
-      use particlemod
-      logical,intent(in) :: pretrans
-      type(packet),target,intent(inout) :: ptcl
-      type(packet2),target,intent(inout) :: ptcl2
-      end subroutine advection_
-c
       pure subroutine transport_gamgrey_(ptcl,ptcl2,rndstate,edep,ierr)
       use randommod
       use groupmod
@@ -266,7 +230,6 @@ c
 c
 c-- procedure pointers
       procedure(direction2lab_),pointer :: direction2lab => null()
-      procedure(advection_),pointer :: advection => null()
       procedure(transport_gamgrey_),pointer ::
      &  transport_gamgrey => null()
       procedure(transport_),pointer :: transport => null()
@@ -277,7 +240,6 @@ c-- private interfaces
       private transport11,transport1,transport2,transport3
       private transport11_gamgrey,transport1_gamgrey,transport2_gamgrey,
      &  transport3_gamgrey
-      private advection11,advection1,advection2,advection3
 c
       save
 c
@@ -295,7 +257,6 @@ c-- set procedure pointers
 !      labfact => labfact1
 !      cmffact => cmffact1
        direction2lab => direction2lab1
-       advection => advection1
        transport_gamgrey => transport1_gamgrey
        transport => transport1
        diffusion => diffusion1
@@ -303,7 +264,6 @@ c-- set procedure pointers
 !      labfact => labfact2
 !      cmffact => cmffact2
        direction2lab => direction2lab2
-       advection => advection2
        transport_gamgrey => transport2_gamgrey
        transport => transport2
        diffusion => diffusion2
@@ -311,7 +271,6 @@ c-- set procedure pointers
 !      labfact => labfact3
 !      cmffact => cmffact3
        direction2lab => direction2lab3
-       advection => advection3
        transport_gamgrey => transport3_gamgrey
        transport => transport3
        diffusion => diffusion3
@@ -319,7 +278,6 @@ c-- set procedure pointers
 !      labfact => labfact1
 !      cmffact => cmffact1
        direction2lab => direction2lab1
-       advection => advection11
        transport_gamgrey => transport11_gamgrey
        transport => transport11
        diffusion => diffusion11

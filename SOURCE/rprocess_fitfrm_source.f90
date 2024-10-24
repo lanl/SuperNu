@@ -11,9 +11,8 @@
 
 subroutine rprocess_fitfrm_source(it,nt,tcenter)
   use physconstmod, only:pc_msun,pc_pi,pc_c
-  use gasmod, only:gas_ye0,gas_mass,gas_rho,gas_matsrc,gas_ncell,gas_decaygamma
+  use gasmod, only:gas_vol,gas_ye0,gas_mass,gas_rho,gas_matsrc,gas_ncell,gas_decaygamma
   use rprocmod, only:heating_rate,v_grid
-  use gridmod, only:grd_vol
   implicit none
   integer,intent(in) :: it, nt
   real*8,intent(in) :: tcenter
@@ -28,7 +27,7 @@ subroutine rprocess_fitfrm_source(it,nt,tcenter)
 
 !---------------------------------------------------
 !- Radioactive species partitioning (hardcoded for now!)
-!  See Wollaeger et al. (2018), Sec. 2.2 
+!  See Wollaeger et al. (2018), Sec. 2.2
 !---------------------------------------------------
   real*8, parameter :: A_alpha = 1.3d-11 ! [g cm^-3 s]
   real*8, parameter :: A_beta  = 1.3d-11 ! [g cm^-3 s]
@@ -42,7 +41,7 @@ subroutine rprocess_fitfrm_source(it,nt,tcenter)
   vexp = 0.1d0 ! default value of the expansion velocity
   if (tcenter > 0) &
      where(gas_mass > 0) &
-        vexp = (3*M_ref/(4*pc_pi) * grd_vol/gas_mass)**(1d0/3d0)/tcenter/pc_c
+        vexp = (3*M_ref/(4*pc_pi) * gas_vol/gas_mass)**(1d0/3d0)/tcenter/pc_c
 
   ! truncate expansion velocity to the limits of the grid
   vexp = max(v_grid(1), vexp)
@@ -51,12 +50,12 @@ subroutine rprocess_fitfrm_source(it,nt,tcenter)
   ! kill external gamma source
   gas_decaygamma = 0d0
 
-  where(gas_rho > 0d0) 
+  where(gas_rho > 0d0)
      gas_matsrc = gas_rho*heating_rate(vexp, gas_ye0, tcenter)
 
      !-- create external gamma source for grey mc transport
      gas_decaygamma = X_gamma*gas_matsrc
-     
+
      !-- create thermalized material source
      helparr = 2d0/(tcenter*gas_rho)
      therm_frac = X_alpha*dlog(1d0 + helparr*A_alpha)/(helparr*A_alpha) &
