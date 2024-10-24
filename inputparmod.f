@@ -134,6 +134,8 @@ c-- physical opacities debuging
       logical :: in_nobfopac = .false.  !turn off bound-bound opacity
       logical :: in_noffopac = .false.  !turn off bound-bound opacity
       logical :: in_nothmson = .false. !turn off thomson scattering
+c-- use emission opacity (generally distinct from absorption)
+      logical :: in_doemiss = .false.
 c-- fontes tabular opacity switch
       logical :: in_notbopac = .true. !turn on tabular opacity
       logical :: in_notbbbopac = .false. !turn off bound-bound opacity
@@ -208,6 +210,7 @@ c-- runtime parameter namelist
      & in_opcapgam,
      & in_noplanckweighting,in_opacmixrossel,
      & in_nobbopac,in_nobfopac,in_noffopac,in_nothmson,
+     & in_doemiss,
 !anal opac
      & in_opacanaltype,in_suol,
      & in_suolpick1,in_ldisp1,in_ldisp2,
@@ -362,6 +365,7 @@ c
       call insertl(in_nobfopac,in_l,il)
       call insertl(in_noffopac,in_l,il)
       call insertl(in_nothmson,in_l,il)
+      call insertl(in_doemiss,in_l,il)
       call insertl(in_notbopac,in_l,il)
       call insertl(in_notbbbopac,in_l,il)
       call insertl(in_notbbfopac,in_l,il)
@@ -689,6 +693,10 @@ c-- disallow physical opacities when analytic opacities are selected
       if(in_opacanaltype/='none' .and. .not.(in_nobbopac .and.
      &  in_nobfopac .and. in_noffopac)) then
        stop 'in_no??opac: no physical opacities allowed with anal opac'
+      endif
+c-- disallow emission opacities when tabular opacity is disabled
+      if(in_notbopac .and. in_doemiss) then
+        stop 'in_notbopac must be false when in_doemiss true'
       endif
 c
       if(in_opcapgam<0d0) stop 'in_opcapgam invalid'
