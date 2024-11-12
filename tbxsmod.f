@@ -289,9 +289,14 @@ c-- check emission table temperatures are the same
           stop 'read_tbxs: temp_em /= tb_temp'
         endif
 c
+      write(*,*) 'raw error = ',
+     &     (sum(tb_em_raw(:,1,1,1),
+     &     tb_em_raw(:,1,1,1) < huge(tb_em_raw(6,:,1,1,1)))
+     &     - sum(tb_raw(:,1,1,1),
+     &     tb_em_raw(:,1,1,1) < huge(tb_em_raw(6,:,1,1,1)))) /
+     &     sum(tb_raw(:,1,1,1),
+     &     tb_em_raw(:,1,1,1) < huge(tb_em_raw(6,:,1,1,1)))
       endif
-
-      stop 'testing stop ...'
 c
       end subroutine read_tbxs
 c
@@ -311,8 +316,9 @@ c     ------------------------------------------------------------------
 ************************************************************************
       integer :: ig,igr,itemp,irho,ielem,n
       integer :: ig1,ig2
-      real*4 :: cap,cap1,cap2,capl,capr, plck
+      real*4 :: cap,cap1,cap2,capl,capr
       real*8 :: help1,help2,help3,help4,wll,wlr
+      real*8 :: plck, f, uerg3, emu
       real*8,allocatable :: evinvarr(:)
 c
 c-- coarse energy array
@@ -420,38 +426,62 @@ c-- interpolate trapezoid
             help4=wll*(wlr-help2)/(help2*(wlr-wll)) ! low energy, high wavelength basis
 c-- add emission opacity contributions
             cap=0.
-c-- bound-bound
-            if(.not.lopac(1)) then
-              capl=sngl(tb_em_raw(3,igr+1,itemp,irho,ielem))
-              capr=sngl(tb_em_raw(3,igr,itemp,irho,ielem))
-              cap1=capl*sngl(1d0-help3)+capr*sngl(help3)
-              cap2=capl*sngl(help4)+capr*sngl(1d0-help4)
-              cap=cap+.5*sngl((help2-help1)/(help1*help2))*(cap1+cap2)
-            endif
-c-- bound-free
-          if(.not.lopac(2)) then
-            capl=sngl(tb_em_raw(4,igr+1,itemp,irho,ielem))
-            capr=sngl(tb_em_raw(4,igr,itemp,irho,ielem))
-            cap1=capl*sngl(1d0-help3)+capr*sngl(help3)
-            cap2=capl*sngl(help4)+capr*sngl(1d0-help4)
-            cap=cap+.5*sngl((help2-help1)/(help1*help2))*(cap1+cap2)
-          endif
-c-- free-free
-          if(.not.lopac(3)) then
-            capl=sngl(tb_em_raw(5,igr+1,itemp,irho,ielem))
-            capr=sngl(tb_em_raw(5,igr,itemp,irho,ielem))
-            cap1=capl*sngl(1d0-help3)+capr*sngl(help3)
-            cap2=capl*sngl(help4)+capr*sngl(1d0-help4)
-            cap=cap+.5*sngl((help2-help1)/(help1*help2))*(cap1+cap2)
-          endif
+c$$$c-- bound-bound
+c$$$            if(.not.lopac(1)) then
+c$$$              capl=sngl(tb_em_raw(3,igr+1,itemp,irho,ielem))
+c$$$              capr=sngl(tb_em_raw(3,igr,itemp,irho,ielem))
+c$$$              cap1=capl*sngl(1d0-help3)+capr*sngl(help3)
+c$$$              cap2=capl*sngl(help4)+capr*sngl(1d0-help4)
+c$$$              cap=cap+.5*sngl((help2-help1)/(help1*help2))*(cap1+cap2)
+c$$$            endif
+c$$$c-- bound-free
+c$$$          if(.not.lopac(2)) then
+c$$$            capl=sngl(tb_em_raw(4,igr+1,itemp,irho,ielem))
+c$$$            capr=sngl(tb_em_raw(4,igr,itemp,irho,ielem))
+c$$$            cap1=capl*sngl(1d0-help3)+capr*sngl(help3)
+c$$$            cap2=capl*sngl(help4)+capr*sngl(1d0-help4)
+c$$$            cap=cap+.5*sngl((help2-help1)/(help1*help2))*(cap1+cap2)
+c$$$          endif
+c$$$c-- free-free
+c$$$          if(.not.lopac(3)) then
+c$$$            capl=sngl(tb_em_raw(5,igr+1,itemp,irho,ielem))
+c$$$            capr=sngl(tb_em_raw(5,igr,itemp,irho,ielem))
+c$$$            cap1=capl*sngl(1d0-help3)+capr*sngl(help3)
+c$$$            cap2=capl*sngl(help4)+capr*sngl(1d0-help4)
+c$$$            cap=cap+.5*sngl((help2-help1)/(help1*help2))*(cap1+cap2)
+c$$$          endif
+          capl=min(sngl(tb_em_raw(6,igr+1,itemp,irho,ielem)), 1e34)
+          capr=min(sngl(tb_em_raw(6,igr,itemp,irho,ielem)), 1e34)
+          cap1=capl*sngl(1d0-help3)+capr*sngl(help3)
+          cap2=capl*sngl(help4)+capr*sngl(1d0-help4)
+          cap=cap+.5*sngl((help2-help1)/(help1*help2))*(cap1+cap2)
+c$$$c-- convert to emission opacity
+c$$$          f = 1d0/evinvarr(ig) ![eV]
+c$$$          uerg3 = (pc_ev*f) * (pc_ev*f) * (pc_ev*f) ![erg^3]
+c$$$          emu = exp(-f/tb_temp(itemp)) ![]
+c$$$          plck = 9.611817d58*uerg3*emu/(1d0-emu)
+c$$$          if (plck /= plck) then
+c$$$            write(*,*)
+c$$$            write(*,*) 'plck is NaN ...'
+c$$$            write(*,*) 'f, tb_temp(itemp), uerg3, emu = ',
+c$$$     &           f, tb_temp(itemp), uerg3, emu
+c$$$          endif
+c$$$          cap = sngl(dble(cap) /
+c$$$     &         (tb_rho(tb_nrho-tb_irho_em_map(irho)+1)*plck)) ![cm^2/g]
+c$$$          if (cap /= cap) then
+c$$$            cap = 0.0
+c$$$          elseif (cap > huge(cap)) then
+c$$$            cap = 0.0
+c$$$          endif
 c-- tally emission opacity in group
           tb_em_cap(ig,itemp,irho,ielem) =
      &       tb_em_cap(ig,itemp,irho,ielem)+cap
         enddo
       enddo
 c-- TODO: remove this Planck factor if contributions above become emission opacity
-
-      plck = 1.0 !TODO - fix
+      ! erg3(i) =  hnu(i)^3       !(in ergs^3)
+      ! u(i) = hnu(i) / kT
+      ! emu(i) = exp(-u(i))
 
 c-- average emission opacity
       tb_em_cap(:,itemp,irho,ielem) =
@@ -476,6 +506,21 @@ c---------------------------------------
       n=tb_nelem*tb_nrho*tb_ntemp*(8+ng*4)/1024 !kB
       if (lemiss) n = n + tb_nelem_em*1*tb_ntemp*(ng*4)/1024 !kB
       write(6,*) 'ALLOC tbxs     :',n,"kB",n/1024,"MB",n/1024**2,"GB"
+c
+      write(*,*)
+      write(*,*) 'cap = ', tb_cap(:,1,1,1)
+      write(*,*)
+      write(*,*) 'em_cap = ', tb_em_cap(:,1,1,1)
+      write(*,*)
+      write(*,*) 'error = ',
+     &     (sum(tb_em_cap(:,1,1,1),
+     &     tb_em_cap(:,1,1,1) < huge(tb_em_cap(:,1,1,1)))
+     &     - sum(tb_cap(:,1,1,1),
+     &     tb_em_cap(:,1,1,1) < huge(tb_em_cap(:,1,1,1)))) /
+     &     sum(tb_cap(:,1,1,1),
+     &     tb_em_cap(:,1,1,1) < huge(tb_em_cap(:,1,1,1)))
+c
+      stop 'testing stop ...'
 c
       end subroutine coarsen_tbxs
 c
