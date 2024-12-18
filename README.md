@@ -147,6 +147,12 @@ CODING STANDARDS
 SETUP INSTRUCTIONS
 ==================
 
+From a terminal,clone the repository:
+```bash
+$ git clone git@github.com:RyanWollaeger/SuperNu.git supernu
+$ cd supernu
+$ ls
+```
 Starting from the source directory:
 ```bash
 $ pwd                # should show <path>/<to>/supernu
