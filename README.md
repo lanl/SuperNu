@@ -146,7 +146,18 @@ CODING STANDARDS
 
 SETUP INSTRUCTIONS
 ==================
-TODO: update this with CMake instructions
+
+Starting from the source directory:
+```bash
+pwd                # should show <path>/<to>/supernu
+cd ..
+mkdir build
+cd build
+cmake ../supernu
+ccmake .           # (optionally) change configuration options
+make -j
+```
+The supernu executable should now be in the 'build' directory.
 
 
 USE INSTRUCTIONS
