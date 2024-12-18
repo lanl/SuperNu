@@ -149,7 +149,14 @@ SETUP INSTRUCTIONS
 
 From a terminal,clone the repository:
 ```bash
+$ git clone https://github.com/lanl/SuperNu.git supernu
+```
+If https protocal does not work, try ssh:
+```bash
 $ git clone git@github.com:RyanWollaeger/SuperNu.git supernu
+```
+Verify checkout:
+```bash
 $ cd supernu
 $ ls
 ```
