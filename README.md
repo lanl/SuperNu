@@ -147,15 +147,21 @@ CODING STANDARDS
 SETUP INSTRUCTIONS
 ==================
 
+From a terminal,clone the repository:
+```bash
+$ git clone git@github.com:RyanWollaeger/SuperNu.git supernu
+$ cd supernu
+$ ls
+```
 Starting from the source directory:
 ```bash
-pwd                # should show <path>/<to>/supernu
-cd ..
-mkdir build
-cd build
-cmake ../supernu
-ccmake .           # (optionally) change configuration options
-make -j
+$ pwd                # should show <path>/<to>/supernu
+$ cd ..
+$ mkdir build
+$ cd build
+$ cmake ../supernu
+$ ccmake .           # (optionally) change configuration options
+$ make -j
 ```
 The supernu executable should now be in the 'build' directory.
 
@@ -165,16 +171,22 @@ USE INSTRUCTIONS
 SuperNu requires the above specified input files (input.* and data.* files) to run.
 The following procedure is an example sets up and runs an example SuperNu simulation:
 
-##-- prepare sim directory
-# mkdir -p ~/sim-supernu/test/run001
-# cd ~/sim-supernu/test/run001
-# cp ~/supernu/bin/supernu .
-# ln -sf ~/supernu/src/Data/* .
-# ln -sf /home/Data/Atoms.20120801 ./Atoms
-##-- setup simulation
-# cp -f ~/supernu/src/Input/input.str_r64 input.str
-# cp -f ~/supernu/src/Input/input.w7.par input.par
-# echo "in_name = 'w7_11r64'" >> input.par
-# echo "in_comment = 'test simulation 1D'" >> input.par
-##-- run simulation
-# ./supernu
+Prepare sim directory:
+```bash
+$ mkdir -p ~/sim-supernu/test/run001
+$ cd ~/sim-supernu/test/run001
+$ cp ~/supernu/bin/supernu .
+$ ln -sf ~/supernu/src/Data/* .
+$ ln -sf /home/Data/Atoms.20120801 ./Atoms
+```
+Setup simulation:
+```bash
+$ cp -f ~/supernu/src/Input/input.str_r64 input.str
+$ cp -f ~/supernu/src/Input/input.w7.par input.par
+$ echo "in_name = 'w7_11r64'" >> input.par
+$ echo "in_comment = 'test simulation 1D'" >> input.par
+```
+Run simulation:
+```bash
+$ ./supernu
+```
