@@ -19,7 +19,7 @@ c     --------------------------
 ************************************************************************
 * Interpolate Fontes opacity table
 ************************************************************************
-      integer :: itemp,irho,i,iz,ig,j,l,ll
+      integer :: itemp,irho,i,iz,ig,j,l,ll, ii,irho_em
       real*8 :: massfr, rhopart, temph, rhoh
       real*8 :: phi1t,phi2t,phi1r,phi2r
       real*8 :: sig1,sig2,sig3,sig4
@@ -170,6 +170,16 @@ c--   partial density for table interpolation
             rhopart=massfr*gas_rho(i)
 c--   search 1d tb arrays for temp-rho point
             irho=binsrch(rhopart,tb_rho,tb_nrho,.false.)
+            irho_em = -1
+            do ii = 1, tb_nrho_em
+c-- density ordering is opposite in emission tables
+              if (tb_irho_em_map(ii) == tb_nrho - irho + 1) then
+c-- values: 2 to tb_nrho
+                irho_em = ii
+                exit
+              endif
+            enddo
+c-- cycle if density value was not foind in emissivity
             itemp=binsrch(gas_temp(i),tb_temp,tb_ntemp,.false.)
 c--   do not allow for extrapolation
             rhoh=max(rhopart,tb_rho(irho))
@@ -189,15 +199,16 @@ c--   density basis functions
      &           log(tb_rho(irho+1)/tb_rho(irho))
 c--   emission
             if (tb_ielem_em_mask(l,irho)) then
-              cap1=tb_em_cap(:,itemp,irho,ll)*sngl(phi1t*phi1r)
-              cap4=tb_em_cap(:,itemp+1,irho,ll)*sngl(phi2t*phi1r)
+              cap1=tb_em_cap(:,itemp,irho_em,ll)*sngl(phi1t*phi1r)
+              cap4=tb_em_cap(:,itemp+1,irho_em,ll)*sngl(phi2t*phi1r)
             else
               cap1=tb_cap(:,itemp,irho,l)*sngl(phi1t*phi1r)
               cap4=tb_cap(:,itemp+1,irho,l)*sngl(phi2t*phi1r)
             endif
             if (tb_ielem_em_mask(l,irho+1)) then
-              cap2=tb_em_cap(:,itemp,irho+1,ll)*sngl(phi1t*phi2r)
-              cap3=tb_em_cap(:,itemp+1,irho+1,ll)*sngl(phi2t*phi2r)
+c-- if an emission table is at irho+1, it must one index below in irho_em
+              cap2=tb_em_cap(:,itemp,irho_em-1,ll)*sngl(phi1t*phi2r)
+              cap3=tb_em_cap(:,itemp+1,irho_em-1,ll)*sngl(phi2t*phi2r)
             else
               cap2=tb_cap(:,itemp,irho+1,l)*sngl(phi1t*phi2r)
               cap3=tb_cap(:,itemp+1,irho+1,l)*sngl(phi2t*phi2r)

@@ -189,8 +189,13 @@ c
       deallocate(gas_natom1fr)
       deallocate(gas_natom0fr)
       deallocate(gas_cap)
-      if (allocated(gas_em_cap)) deallocate(gas_em_cap)
-      if (allocated(gas_em_cap)) deallocate(gas_em_capgrey)
+      if (allocated(gas_em_cap)) then
+        deallocate(gas_em_cap)
+        if (.not.allocated(gas_em_capgrey)) then
+          stop 'gas_em_cap alloc-ed but not gas_em_capgrey'
+        endif
+        deallocate(gas_em_capgrey)
+      endif
 !}}}
       end subroutine gas_dealloc
 c

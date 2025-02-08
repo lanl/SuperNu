@@ -179,7 +179,11 @@ c-- save
         allocate(capgreyalt(gas_ncell))
        endif
        tempalt = gas_temp
-       capgreyalt = gas_capgrey/gas_rho !per gram
+       if (in_doemiss) then
+         capgreyalt = gas_em_capgrey/gas_rho !per gram
+       else
+         capgreyalt = gas_capgrey/gas_rho !per gram
+       endif
 c
 c-- change back
        gas_temp = gas_temp/dtempfrac
@@ -306,13 +310,17 @@ c-- close file
       endif !do_output !}}}
 c
 c
-c-- Calculating Fleck factor, leakage opacities
+c-- Calculating Fleck factor
       call fleck_factor(tempalt,capgreyalt)
 c
 c
 c-- save previous values for gentile-fleck factor calculation in next iter
       tempalt = gas_temp
-      capgreyalt = gas_capgrey/gas_rho
+      if (in_doemiss) then
+        capgreyalt = gas_em_capgrey/gas_rho !per gram
+      else
+        capgreyalt = gas_capgrey/gas_rho !per gram
+      endif
 c
       lfirst = .false.
 c

@@ -214,8 +214,6 @@ c-- element with max number of density values sets nrho_em
           lrho_mask(irho) = any(tb_ielem_em_mask(:,irho))
         enddo
         tb_nrho_em = count(lrho_mask)
-        write(*,*) 'tb_nelem_em = ', tb_nelem_em
-        write(*,*) 'tb_nrho_em = ', tb_nrho_em
 c-- build density emission index to full density index map
         allocate(tb_irho_em_map(tb_nrho_em))
         irho_em = 1
@@ -265,8 +263,7 @@ c-- require all possible data (for now)
 c-- temperature value
             read(4,*) sdmy, dmy, temp_em(itemp)
             read(4,*)
-            write(6,*) sdmy, dmy, temp_em(itemp)
-c-- all data at temp-rho(-elem) point (TODO: fix rho index)
+c-- all data at temp-rho(-elem) point
             read(4,*,iostat=ierr) tb_em_raw(:,:,itemp,irho_em,ll)
 c
             if(ierr/=0) stop 'read_tbxs format err: body'
@@ -289,13 +286,13 @@ c-- check emission table temperatures are the same
           stop 'read_tbxs: temp_em /= tb_temp'
         endif
 c
-      write(*,*) 'raw error = ',
-     &     (sum(tb_em_raw(:,1,1,1),
-     &     tb_em_raw(:,1,1,1) < huge(tb_em_raw(6,:,1,1,1)))
-     &     - sum(tb_raw(:,1,1,1),
-     &     tb_em_raw(:,1,1,1) < huge(tb_em_raw(6,:,1,1,1)))) /
-     &     sum(tb_raw(:,1,1,1),
-     &     tb_em_raw(:,1,1,1) < huge(tb_em_raw(6,:,1,1,1)))
+c$$$      write(*,*) 'raw error = ',
+c$$$     &     (sum(tb_em_raw(:,1,1,1),
+c$$$     &     tb_em_raw(:,1,1,1) < huge(tb_em_raw(6,:,1,1,1)))
+c$$$     &     - sum(tb_raw(:,1,1,1),
+c$$$     &     tb_em_raw(:,1,1,1) < huge(tb_em_raw(6,:,1,1,1)))) /
+c$$$     &     sum(tb_raw(:,1,1,1),
+c$$$     &     tb_em_raw(:,1,1,1) < huge(tb_em_raw(6,:,1,1,1)))
       endif
 c
       end subroutine read_tbxs
@@ -460,19 +457,6 @@ c$$$          f = 1d0/evinvarr(ig) ![eV]
 c$$$          uerg3 = (pc_ev*f) * (pc_ev*f) * (pc_ev*f) ![erg^3]
 c$$$          emu = exp(-f/tb_temp(itemp)) ![]
 c$$$          plck = 9.611817d58*uerg3*emu/(1d0-emu)
-c$$$          if (plck /= plck) then
-c$$$            write(*,*)
-c$$$            write(*,*) 'plck is NaN ...'
-c$$$            write(*,*) 'f, tb_temp(itemp), uerg3, emu = ',
-c$$$     &           f, tb_temp(itemp), uerg3, emu
-c$$$          endif
-c$$$          cap = sngl(dble(cap) /
-c$$$     &         (tb_rho(tb_nrho-tb_irho_em_map(irho)+1)*plck)) ![cm^2/g]
-c$$$          if (cap /= cap) then
-c$$$            cap = 0.0
-c$$$          elseif (cap > huge(cap)) then
-c$$$            cap = 0.0
-c$$$          endif
 c-- tally emission opacity in group
           tb_em_cap(ig,itemp,irho,ielem) =
      &       tb_em_cap(ig,itemp,irho,ielem)+cap
@@ -506,21 +490,6 @@ c---------------------------------------
       n=tb_nelem*tb_nrho*tb_ntemp*(8+ng*4)/1024 !kB
       if (lemiss) n = n + tb_nelem_em*1*tb_ntemp*(ng*4)/1024 !kB
       write(6,*) 'ALLOC tbxs     :',n,"kB",n/1024,"MB",n/1024**2,"GB"
-c
-      write(*,*)
-      write(*,*) 'cap = ', tb_cap(:,1,1,1)
-      write(*,*)
-      write(*,*) 'em_cap = ', tb_em_cap(:,1,1,1)
-      write(*,*)
-      write(*,*) 'error = ',
-     &     (sum(tb_em_cap(:,1,1,1),
-     &     tb_em_cap(:,1,1,1) < huge(tb_em_cap(:,1,1,1)))
-     &     - sum(tb_cap(:,1,1,1),
-     &     tb_em_cap(:,1,1,1) < huge(tb_em_cap(:,1,1,1)))) /
-     &     sum(tb_cap(:,1,1,1),
-     &     tb_em_cap(:,1,1,1) < huge(tb_em_cap(:,1,1,1)))
-c
-      stop 'testing stop ...'
 c
       end subroutine coarsen_tbxs
 c

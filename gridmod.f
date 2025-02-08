@@ -51,8 +51,10 @@ c-- Probability of emission in a given zone and group
       real*8,allocatable :: grd_emitprob(:,:) !(nep,ncell)
 
 c-- Line+Cont extinction coeff
-      real*4,allocatable :: grd_cap(:,:) !(ng,ncell)
-      real*4,allocatable :: grd_em_cap(:,:) !(ng,ncell)
+      real*4,allocatable,target :: grd_cap(:,:) !(ng,ncell)
+      real*4,allocatable,target :: grd_em_cap(:,:) !(ng,ncell)
+c-- pointer to opacity that represents emissivity
+      real*4,pointer :: grd_emcap_ptr(:,:)
 
 c-- leakage opacities
       real*8,allocatable :: grd_opaclump(:,:) !(10,ncell) leak(6),speclump,caplump,igemitmax,doplump
@@ -60,8 +62,11 @@ c-- leakage opacities
 c-- scattering coefficient
       real*8,allocatable :: grd_sig(:) !(ncell) !grey scattering opacity
 c-- Planck opacity (gray)
-      real*8,allocatable :: grd_capgrey(:) !(ncell)
-      real*8,allocatable :: grd_em_capgrey(:) !(ncell)
+      real*8,allocatable,target :: grd_capgrey(:) !(ncell)
+      real*8,allocatable,target :: grd_em_capgrey(:) !(ncell)
+c-- pointer to Planck opacity that represents integral of emissivity
+      real*8,pointer :: grd_emcapgrey_ptr(:) !(ncell)
+c
 c-- Fleck factor
       real*8,allocatable :: grd_fcoef(:)  !(ncell)
 
@@ -190,6 +195,13 @@ c-- optional emissivity arrays
       if (lemiss) then
         allocate(grd_em_cap(ng,grd_ncell))
         allocate(grd_em_capgrey(grd_ncell))
+c-- set pointers
+        grd_emcap_ptr => grd_em_cap
+        grd_emcapgrey_ptr => grd_em_capgrey
+      else
+c-- set emission pointers to absorption opacity arrays
+        grd_emcap_ptr => grd_cap
+        grd_emcapgrey_ptr => grd_capgrey
       endif
 c!}}}
       end subroutine gridmod_init
@@ -228,8 +240,14 @@ c-- ndim=4 alloc
 c-- ndim=4 alloc
       deallocate(grd_cap)
 c-- optional arrays
-      if (allocated(grd_em_cap)) deallocate(grd_em_cap)
-      if (allocated(grd_em_cap)) deallocate(grd_em_capgrey)
+      if (allocated(grd_em_cap)) then
+        deallocate(grd_em_cap)
+        if (.not.allocated(grd_em_capgrey)) then
+          stop 'grd_em_cap alloc-ed but not grd_em_capgrey'
+        endif
+        deallocate(grd_em_capgrey)
+      endif
+
 !}}}
       end subroutine grid_dealloc
 c
