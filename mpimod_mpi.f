@@ -350,8 +350,10 @@ c
       subroutine bcast_tbxs(ng)
 c     -------------------------
       use tbxsmod,ntemp=>tb_ntemp,nrho=>tb_nrho,nelem=>tb_nelem
+      use tbxsmod,nrho_em=>tb_nrho_em,nelem_em=>tb_nelem_em
       use elemdatamod, only: elem_neldata
       use inputstrmod, only: str_nabund,str_iabund
+      use inputparmod, only: in_doemiss
       implicit none
       integer, intent(in) :: ng
 ************************************************************************
@@ -362,6 +364,17 @@ c
 c-- sanity checks
       if(str_nabund<=0) stop 'bcast_tbxs: str_nabund<=0'
 c
+c-- broadcast emissivity table dimensions
+      if (in_doemiss) then
+c-- nelem_em
+        call mpi_bcast(nelem_em,1,MPI_INTEGER,
+     &       impi0,MPI_COMM_WORLD,ierr)
+c-- nrho_em
+        call mpi_bcast(nrho_em,1,MPI_REAL8,
+     &       impi0,MPI_COMM_WORLD,ierr)
+      endif
+c
+c-- allocate tabular arrays on non-IO ranks
       if(impi/=impi0) then
         do ielem=1,elem_neldata
           if(any(str_iabund==ielem)) nelem=nelem+1
@@ -370,6 +383,14 @@ c
         allocate(tb_ielem(nelem))
         allocate(tb_sig(ntemp,nrho,nelem))
         allocate(tb_cap(ng,ntemp,nrho,nelem))
+c
+c-- allocate emission table and emission index maps
+        if (in_doemiss) then
+          allocate(tb_ielem_em_map(nelem_em))
+          allocate(tb_irho_em_map(nrho_em))
+          allocate(tb_ielem_em_mask(nelem,nrho))
+          allocate(tb_em_cap(ng,ntemp,nrho_em,nelem_em))
+        endif
       endif
 c-- ielem
       call mpi_bcast(tb_ielem,nelem,MPI_INTEGER,
@@ -388,7 +409,20 @@ c-- cap
       n=ng*ntemp*nrho*nelem
       call mpi_bcast(tb_cap,n,MPI_REAL,
      &   impi0,MPI_COMM_WORLD,ierr)
-c-- cap_em (TODO: broacast data needed for emission arrays)
+c
+c-- cap_em and helpers
+      if (in_doemiss) then
+        call mpi_bcast(tb_ielem_em_map,nelem_em,MPI_INTEGER,
+     &     impi0,MPI_COMM_WORLD,ierr)
+        call mpi_bcast(tb_irho_em_map,nrho_em,MPI_INTEGER,
+     &     impi0,MPI_COMM_WORLD,ierr)
+        n = nelem*nrho
+        call mpi_bcast(tb_ielem_em_mask,n,MPI_LOGICAL,
+     &     impi0,MPI_COMM_WORLD,ierr)
+        n = ng*ntemp*nrho_em*nelem_em
+        call mpi_bcast(tb_em_cap,n,MPI_REAL,
+     &     impi0,MPI_COMM_WORLD,ierr)
+      endif
 c
       end subroutine bcast_tbxs
 c
