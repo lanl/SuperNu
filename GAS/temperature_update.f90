@@ -16,6 +16,7 @@ subroutine temperature_update
   use timestepmod
   use physconstmod
   use manufacmod
+  use inputparmod, only:in_doemiss
   implicit none
 
 !##################################################
@@ -39,8 +40,13 @@ subroutine temperature_update
         if(gas_mass(i)<=0d0) cycle
         if(gas_bcoef(i)>0d0) then
            dtemp = gas_edep(i)/gas_vol(i) !new
-           dtemp = (dtemp - tsp_dt*gas_fcoef(i)*gas_capgrey(i)* &
-                pc_c*gas_ur(i))/gas_bcoef(i)
+           if (in_doemiss) then
+              dtemp = (dtemp - tsp_dt*gas_fcoef(i)*gas_em_capgrey(i)* &
+                   pc_c*gas_ur(i))/gas_bcoef(i)
+           else
+              dtemp = (dtemp - tsp_dt*gas_fcoef(i)*gas_capgrey(i)* &
+                   pc_c*gas_ur(i))/gas_bcoef(i)
+           endif
            dtemp2 = (gas_fcoef(i)/gas_bcoef(i))*tsp_dt* &
                 gas_matsrc(i)
            gas_temp(i) = gas_temp(i)+dtemp+dtemp2
