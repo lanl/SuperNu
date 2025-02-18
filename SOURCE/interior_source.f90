@@ -160,7 +160,7 @@ subroutine interior_source
      if(nhere<1) cycle
 !-- integrate planck function over each group
      call specintv(grd_tempinv(l),grp_ng,emitprob)
-     emitprob = emitprob*grd_cap(:,l)/grd_capgrey(l)
+     emitprob = emitprob*grd_emcap_ptr(:,l)/grd_emcapgrey_ptr(l)
 !
 !-- neighbors
      icnb(1) = grd_icell(max(i-1,1),j,k)      !left neighbor

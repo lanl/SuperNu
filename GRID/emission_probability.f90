@@ -42,7 +42,7 @@ subroutine emission_probability
   if(grp_ng==1) then
      if(grd_nepg>1) stop 'emis_prob: grp_ng=1 & grd_nepg>1'
      grd_emitprob(1,grd_idd1:grd_idd1+grd_ndd-1) = &
-          grd_capgrey(grd_idd1:grd_idd1+grd_ndd-1)
+          grd_emcapgrey_ptr(grd_idd1:grd_idd1+grd_ndd-1)
      return
   endif
 
@@ -56,13 +56,13 @@ subroutine emission_probability
      do iep=1,grd_nep-1
         nepg = min(iep*grd_nepg,grp_ng) - ig + 1
         igp1 = ig + nepg - 1
-        help = help + sum(specarr(ig:igp1)*grd_cap(ig:igp1,l))
+        help = help + sum(specarr(ig:igp1)*grd_emcap_ptr(ig:igp1,l))
         grd_emitprob(iep,l) = help
         ig = igp1 + 1
      enddo !iep
-     grd_emitprob(grd_nep,l)=grd_capgrey(l)
+     grd_emitprob(grd_nep,l)=grd_emcapgrey_ptr(l)
   enddo !l
-  
+
   t1 = t_time()
   call timereg(t_emitp,t1-t0)
 

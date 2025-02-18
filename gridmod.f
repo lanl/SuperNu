@@ -51,7 +51,10 @@ c-- Probability of emission in a given zone and group
       real*8,allocatable :: grd_emitprob(:,:) !(nep,ncell)
 
 c-- Line+Cont extinction coeff
-      real*4,allocatable :: grd_cap(:,:) !(ng,ncell)
+      real*4,allocatable,target :: grd_cap(:,:) !(ng,ncell)
+      real*4,allocatable,target :: grd_em_cap(:,:) !(ng,ncell)
+c-- pointer to opacity that represents emissivity
+      real*4,pointer :: grd_emcap_ptr(:,:)
 
 c-- leakage opacities
       real*8,allocatable :: grd_opaclump(:,:) !(10,ncell) leak(6),speclump,caplump,igemitmax,doplump
@@ -59,7 +62,11 @@ c-- leakage opacities
 c-- scattering coefficient
       real*8,allocatable :: grd_sig(:) !(ncell) !grey scattering opacity
 c-- Planck opacity (gray)
-      real*8,allocatable :: grd_capgrey(:) !(ncell)
+      real*8,allocatable,target :: grd_capgrey(:) !(ncell)
+      real*8,allocatable,target :: grd_em_capgrey(:) !(ncell)
+c-- pointer to Planck opacity that represents integral of emissivity
+      real*8,pointer :: grd_emcapgrey_ptr(:) !(ncell)
+c
 c-- Fleck factor
       real*8,allocatable :: grd_fcoef(:)  !(ncell)
 
@@ -105,10 +112,10 @@ c
 c
       contains
 c
-      subroutine gridmod_init(ltalk,ngin,ncell,lvoid,idd1,ndd)
+      subroutine gridmod_init(ltalk,ngin,ncell,lvoid,idd1,ndd,lemiss)
 c     --------------------------------------------------!{{{
       implicit none
-      logical,intent(in) :: ltalk,lvoid
+      logical,intent(in) :: ltalk,lvoid,lemiss
       integer,intent(in) :: ngin
       integer,intent(in) :: ncell,idd1,ndd
 ************************************************************************
@@ -147,6 +154,9 @@ c---------------------------------------
        n = int((int(grd_ncell,8)*(8*(12+6) + 5*4))/1024) !kB
        write(6,*) 'ALLOC grd      :',n,"kB",n/1024,"MB",n/1024**2,"GB"
        n = int((int(grd_ncell,8)*4*ng)/1024) !kB
+       if (lemiss) then
+         n = 2 * n
+       endif
        write(6,*) 'ALLOC grd_cap  :',n,"kB",n/1024,"MB",n/1024**2,"GB"
       endif
 c
@@ -180,6 +190,19 @@ c-- ndim=4 alloc
       allocate(grd_emitprob(grd_nep,grd_ncell))
 c-- ndim=4 alloc
       allocate(grd_cap(ng,grd_ncell))
+c
+c-- optional emissivity arrays
+      if (lemiss) then
+        allocate(grd_em_cap(ng,grd_ncell))
+        allocate(grd_em_capgrey(grd_ncell))
+c-- set pointers
+        grd_emcap_ptr => grd_em_cap
+        grd_emcapgrey_ptr => grd_em_capgrey
+      else
+c-- set emission pointers to absorption opacity arrays
+        grd_emcap_ptr => grd_cap
+        grd_emcapgrey_ptr => grd_capgrey
+      endif
 c!}}}
       end subroutine gridmod_init
 c
@@ -215,7 +238,17 @@ c-- ndim=4 alloc
       deallocate(grd_opaclump)
       deallocate(grd_emitprob)
 c-- ndim=4 alloc
-      deallocate(grd_cap)!}}}
+      deallocate(grd_cap)
+c-- optional arrays
+      if (allocated(grd_em_cap)) then
+        deallocate(grd_em_cap)
+        if (.not.allocated(grd_em_capgrey)) then
+          stop 'grd_em_cap alloc-ed but not grd_em_capgrey'
+        endif
+        deallocate(grd_em_capgrey)
+      endif
+
+!}}}
       end subroutine grid_dealloc
 c
       end module gridmod

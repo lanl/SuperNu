@@ -57,6 +57,7 @@ c== DD copies
 c-- Line+Cont extinction coeff
       real*8,allocatable :: gas_capcoef(:) !(ncell)
       real*4,allocatable :: gas_cap(:,:) !(ng,ncell)
+      real*4,allocatable :: gas_em_cap(:,:) !(ng,ncell) -- emission opacity
 c-- leakage opacities
 c     real*8,allocatable :: dd_opacleak(:,:) !(6,ncell)
 c-- scattering coefficient
@@ -65,6 +66,7 @@ c-- Gamma ray gray opacity
       real*8,allocatable :: gas_capgam(:) !(ncell)
 c-- Planck opacity (gray)
       real*8,allocatable :: gas_capgrey(:)!(ncell)
+      real*8,allocatable :: gas_em_capgrey(:)!(ncell) -- Planck-integrated emission opacity
 c-- Fleck factor
       real*8,allocatable :: gas_fcoef(:)  !(ncell)
 c
@@ -81,11 +83,12 @@ c
       contains
 c
 c
-      subroutine gasmod_init(ltalk,icell1,ncell,ngin)
+      subroutine gasmod_init(ltalk,icell1,ncell,ngin,lemiss)
 c----------------------------------------!{{{
       implicit none
       logical,intent(in) :: ltalk
       integer,intent(in) :: icell1,ncell,ngin
+      logical,intent(in) :: lemiss
 ************************************************************************
 * Allocate gas variables.
 *
@@ -149,6 +152,11 @@ c-- ndim=2 alloc small
 c
 c-- ndim=2 alloc big
       allocate(gas_cap(ng,gas_ncell))
+c-- optional emissivity arrays
+      if (lemiss) then
+        allocate(gas_em_cap(ng,gas_ncell))
+        allocate(gas_em_capgrey(gas_ncell))
+      endif
 !}}}
       end subroutine gasmod_init
 c
@@ -180,7 +188,15 @@ c
       deallocate(gas_evolinit)
       deallocate(gas_natom1fr)
       deallocate(gas_natom0fr)
-      deallocate(gas_cap)!}}}
+      deallocate(gas_cap)
+      if (allocated(gas_em_cap)) then
+        deallocate(gas_em_cap)
+        if (.not.allocated(gas_em_capgrey)) then
+          stop 'gas_em_cap alloc-ed but not gas_em_capgrey'
+        endif
+        deallocate(gas_em_capgrey)
+      endif
+!}}}
       end subroutine gas_dealloc
 c
       end module gasmod

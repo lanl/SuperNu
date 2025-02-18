@@ -108,6 +108,7 @@ c
       use groupmod
       use sourcemod
       use particlemod
+      use inputparmod, only:in_doemiss !TODO: consider making argument
 ************************************************************************
 * Broadcast the data that changes with time.
 * - stub
@@ -122,6 +123,10 @@ c
       grd_sig = reshape(gas_sig,[grd_ncell])
       grd_capgrey = reshape(gas_capgrey,[grd_ncell])
       grd_fcoef = reshape(gas_fcoef,[grd_ncell])
+      if (in_doemiss) then
+        grd_em_cap = reshape(gas_em_cap,[grp_ng,grd_ncell])
+        grd_em_capgrey = reshape(gas_em_capgrey,[grd_ncell])
+      endif
 c
       src_nvacantall(1) = count(prt_isvacant)
       end subroutine bcast_nonpermanent

@@ -675,7 +675,6 @@ pure subroutine transport1(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
               e = e*(1d0-mu*x*cinv)
               e0 = e0*(1d0-mu*x*cinv)
            endif
-           wl = 0d0 !workaround ifort 13.1.3 bug
         else
 !-- uniformly in new group
            call rnd_r(r1,rndstate)

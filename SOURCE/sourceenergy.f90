@@ -44,8 +44,12 @@ subroutine sourceenergy(lgamma)
   endif
 
 ! Calculating fictitious emission energy per cell
-!-- thermal source
-  gas_emit =  tsp_dt*gas_vol*gas_fcoef*gas_capgrey*pc_c*gas_ur
+!-- 'thermal' source
+  if (in_doemiss) then
+     gas_emit =  tsp_dt*gas_vol*gas_fcoef*gas_em_capgrey*pc_c*gas_ur
+  else
+     gas_emit =  tsp_dt*gas_vol*gas_fcoef*gas_capgrey*pc_c*gas_ur
+  endif
   tot_sthermal = sum(gas_emit)
 !
 !-- manufactured solution material source

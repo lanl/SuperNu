@@ -116,11 +116,11 @@ program supernu
 
 !-- read and coarsen opacity tables
   if(lmpi0.and..not.in_notbopac) then
-     call read_tbxs
+     call read_tbxs(in_doemiss)
 !-- short cut
      lopac=[in_notbbbopac,in_notbbfopac , &
           in_notbffopac,in_notbthmson]
-     call coarsen_tbxs(lopac,grp_ng,grp_wl)
+     call coarsen_tbxs(lopac,in_doemiss,grp_ng,grp_wl)
   endif
 !-- broadcast permanent opacity table
   if(.not.in_notbopac) call bcast_tbxs(grp_ng) !MPI
@@ -132,10 +132,10 @@ program supernu
   if(lsrctable) call bcast_tbsrc !MPI
 
 !-- setup spatial grid
-  call gridmod_init(lmpi0,grp_ng,str_nc,str_lvoid,icell1,ncell)
+  call gridmod_init(lmpi0,grp_ng,str_nc,str_lvoid,icell1,ncell,in_doemiss)
   call grid_setup
 !-- setup gas
-  call gasmod_init(lmpi0,icell1,ncell,grp_ng)
+  call gasmod_init(lmpi0,icell1,ncell,grp_ng,in_doemiss)
   call gas_setup
 !-- inputstr no longer needed
   call inputstr_dealloc

@@ -27,7 +27,7 @@ c     --------------------------------------
       real*8 :: emitprob
 c
 c-- search unnormalized cumulative emission probability values
-      r1 = r*grd_capgrey(ic)
+      r1 = r*grd_emcapgrey_ptr(ic)
       iep = binsrch(r1,grd_emitprob(:,ic),grd_nep,.true.)
       ig = iep*grd_nepg + 1
       igp1 = min(ig + grd_nepg - 1, grp_ng)
@@ -45,7 +45,7 @@ c-- step up until target r1 is reached
       l = 0
       do ig=ig,igp1-1
        l = l + 1
-       emitprob = emitprob + specval(l)*grd_cap(ig,ic)
+       emitprob = emitprob + specval(l)*grd_emcap_ptr(ig,ic)
        if(emitprob>r1) exit
       enddo
 !     if(ig>grp_ng) stop 'transport1: ig not valid'

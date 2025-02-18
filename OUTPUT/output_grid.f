@@ -145,6 +145,16 @@ c
        enddo
        close(4)
 c
+       if (in_doemiss) then
+         arr(:grd_ncell) = grd_em_capgrey
+         open(unit=4,file='output.grd_em_capgrey',status=fstat,
+     &        position='append',recl=reclen)
+         do i=1,nrow
+           write(4,'(1p,10000e12.4)') arr((i-1)*ncpr+1:i*ncpr)
+         enddo
+         close(4)
+       endif
+c
        arr(:grd_ncell) = grd_sig
        open(unit=4,file='output.grd_sig',status=fstat,
      &   position='append',recl=reclen)
@@ -210,6 +220,23 @@ c
           enddo
         enddo
         close(4)
+c
+        if (in_doemiss) then
+c
+          arr2d(grd_ncell+1:,:) = 0d0
+c
+          forall(j=1:grp_ng) arr2d(:grd_ncell,j) = grd_em_cap(j,:)
+c
+          open(unit=4,file='output.grd_em_cap',status=fstat,
+     &         position='append',recl=reclen)
+          do j=1,grp_ng
+            do i=1,nrow
+              write(4,'(1p,10000e12.4)') arr2d((i-1)*ncpr+1:i*ncpr,j)
+            enddo
+          enddo
+          close(4)
+c
+        endif
 c
         deallocate(arr2d)
       endif
