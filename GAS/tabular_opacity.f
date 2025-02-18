@@ -158,17 +158,20 @@ c
 c--   calculate emission opacities
         do i=1,gas_ncell
           if(gas_mass(i)<=0d0) cycle
-c--   table abundance for cell
-          ll = 1
+          ll = 0
           do l=1,tb_nelem
             iz=tb_ielem(l)
             if(gas_natom1fr(iz,i)<=0d0) cycle
+c-- find emission index
+            if(any(tb_ielem_em_mask(l,:))) then
+              ll = ll + 1
+            endif
 c--   mass fraction helper
             massfr=gas_natom1fr(iz,i)*gas_natom(i) *
      &           elem_data(iz)%m*pc_amu/gas_mass(i)
 c--   partial density for table interpolation
             rhopart=massfr*gas_rho(i)
-c--   search 1d tb arrays for temp-rho point
+c--   search 1d tb arrays for rho point
             irho=binsrch(rhopart,tb_rho,tb_nrho,.false.)
             irho_em = -1
             do ii = 1, tb_nrho_em
@@ -179,9 +182,9 @@ c-- values: 2 to tb_nrho
                 exit
               endif
             enddo
-c-- cycle if density value was not foind in emissivity
+c-- search 1d tb arrays for rho point
             itemp=binsrch(gas_temp(i),tb_temp,tb_ntemp,.false.)
-c--   do not allow for extrapolation
+c-- do not allow for extrapolation
             rhoh=max(rhopart,tb_rho(irho))
             rhoh=min(rhoh,tb_rho(irho+1))
             temph=max(gas_temp(i),tb_temp(itemp))
@@ -216,9 +219,6 @@ c-- if an emission table is at irho+1, it must one index below in irho_em
             cap(:,i)=cap1+cap2+cap3+cap4
 c--   add macroscopic emission opacity to total
             gas_em_cap(:,i)=gas_em_cap(:,i)+sngl(rhopart)*cap(:,i)
-c--   increment emission table sub-counter
-            if (tb_ielem_em_mask(l,irho).or.tb_ielem_em_mask(l,irho+1))
-     &           ll = ll + 1
 c
           enddo
         enddo
