@@ -31,6 +31,7 @@ program supernu
   use bfxsmod, only:bfxs_read_data
   use ffxsmod, only:ffxs_read_data
   use tbxsmod
+! use tbxsh5mod ! (use h5aux)
   use tbsrcmod
   use timingmod
   use countersmod
@@ -114,7 +115,10 @@ program supernu
   call groupmod_init(in_grp_wldex)
   call fluxgrid_setup
 
-!-- read and coarsen opacity tables
+  !-- read and coarsen opacity tables
+  !if(lmpi0.and.in_dotbhdf5.and..not.in_notbopac) then
+    ! call read_h5tbxs()
+  !else
   if(lmpi0.and..not.in_notbopac) then
      call read_tbxs
 !-- short cut
@@ -122,8 +126,8 @@ program supernu
           in_notbffopac,in_notbthmson]
      call coarsen_tbxs(lopac,grp_ng,grp_wl)
   endif
-!-- broadcast permanent opacity table
-  if(.not.in_notbopac) call bcast_tbxs(grp_ng) !MPI
+  !-- broadcast permanent opacity table
+  if(.not.in_notbopac) call bcast_tbxs(grp_ng) !MPI (tbxs opacity should be the same here)
 
 !-- read source data
   lsrctable = in_srctype=='tabl'
