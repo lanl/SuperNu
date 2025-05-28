@@ -147,18 +147,18 @@ c     --------------------
       use miscmod, only:lcase
       use elemdatamod, only: elem_neldata, elem_data
       use inputstrmod, only: str_nabund,str_iabund
-      use h5aux, only: h5_open, h5_close, HID_T
+      use h5aux, only: h5_open, h5_close, h5_read, HID_T
       implicit none
 ************************************************************************
 * Read Chris Fontes opacity data tables to total opacity array.
 ************************************************************************
       integer,parameter :: ncol=7
-      integer :: istat,ierr,h5fid
+      integer :: istat,ierr
       integer :: ielem,itemp,irho,iirho,l
       character(12), parameter :: fname = 'opacities.h5'
       character(2) :: dsname
-      integer(HID_T) :: gid
-      double precision, allocatable :: data3(:,:,:)
+      integer(HID_T) :: h5fid
+      double precision, allocatable :: data4(:,:,:,:), data1(:)
 c
 c-- sanity check
       if(str_nabund==0) stop 'read_tbxs_hdf5: str_nabund=0'
@@ -184,67 +184,40 @@ c-- raw table
 c
 c-- open the HDF5 opacity file
       h5fid=h5_open(fname, readonly_=.true.)
-      
+
 c-- elements
+      write (*,*) "reading opacity file "//fname
+
+c-- read the temperature, density, and the non-dimensional energy grids
+      call h5_read(data1, h5fid, "temperature_grid")
+      tb_temp = data1
+c
+      call h5_read(data1, h5fid, "density_grid")
+      tb_rho = data1
+c
+      call h5_read(data1, h5fid, "wavelength_grid")
+c
       do l=1,tb_nelem
 c-- skip if not in input structure
         ielem=tb_ielem(l)
-
+c
 c-- file element
         dsname=lcase(trim(elem_data(ielem)%sym))
-        !< data3(Nrho=17, Ntemp=27, Ng=14900, Ncol=6)
-        call h5_read(data3, h5fid, dsname) 
-        write (*,*) "data3 shape is ==>>>> ", shape(data3)
-
-c!          read(4,*,iostat=ierr) tb_raw(:,:,itemp,tb_nrho-irho+1,l)
-c!
-c!
-c!
-c!
-c!      do irho=tb_nrho,1,-1
-c!c-- density value
-c!        iirho=irho+3
-c!        tb_rho(tb_nrho-irho+1)=10d0**(-iirho)
-c!c-- file density id
-c!        if(iirho/10==0) then
-c!          write(fnum,'("0"i1)') iirho
-c!        else
-c!          write(fnum,'(i2)') iirho
-c!        endif
-c!c-- file name
-c!        if(fid(2:2) == ' ') then
-c!          fname=trim(word1//fid(1:1)//word2//fnum//word3)
-c!        else
-c!          fname=trim(word1//fid//word2//fnum//word3)
-c!        endif
-c!        open(4,file='Table/'//adjustl(fname),status='old',
-c!     &     action='read',iostat=istat)
-c!c-- require all possible data (for now)
-c!        if(istat/=0) then
-c!          write(6,*) 'file: ',fname
-c!          stop 'read_tbxs: missing file'
-c!        endif
-c!        do itemp=1,tb_ntemp
-c!c-- temperature value
-c!          read(4,*) sdmy, dmy, tb_temp(itemp)
-c!          read(4,*)
-c!c-- all data at temp-rho(-elem) point
-c!          read(4,*,iostat=ierr) tb_raw(:,:,itemp,tb_nrho-irho+1,l)
-c!
-c!          if(ierr/=0) stop 'read_tbxs format err: body'
-c!        enddo
-c!c-- ensure no residual file data
-c!        read(4,*,iostat=ierr) sdmy
-c!        if(ierr/=-1) then
-c!          write(6,*) 'sdmy: ',sdmy
-c!          write(6,*) 'file: ',fname
-c!          stop 'read_tbxs: body too long'
-c!        endif
-c!        close(4)
-c!      enddo
+        !< data4(Ncol=6, Ng=14900, Ntemp=27, Nrho=17)
+        call h5_read(data4, h5fid, dsname)
+        tb_raw(2:7,:,:,:,l)= data4
+c-- fix the first column
+        do irho=1,tb_nrho
+          do itemp=1,tb_ntemp
+            tb_raw(1,:,itemp,irho,l)= tb_temp(itemp)*data1
+          enddo
+        enddo
+        write (*,*) ".. opacity table for element "//dsname//" read"
       enddo
-c-- cleanup      
+c
+c-- cleanup
       call h5_close(h5fid)
+      write (*,*) "done."
 c
       end subroutine read_tbxs_hdf5
 c

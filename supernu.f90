@@ -120,7 +120,8 @@ program supernu
     ! call read_h5tbxs()
   !else
   if(lmpi0.and..not.in_notbopac) then
-     call read_tbxs
+     !!! call read_tbxs !!<<<DEBUG trying the HDF5 reader...
+     call read_tbxs_hdf5
 !-- short cut
      lopac=[in_notbbbopac,in_notbbfopac , &
           in_notbffopac,in_notbthmson]
