@@ -142,6 +142,114 @@ c
 c
 c
 c
+      subroutine read_tbxs_hdf5
+c     --------------------
+      use miscmod, only:lcase
+      use elemdatamod, only: elem_neldata, elem_data
+      use inputstrmod, only: str_nabund,str_iabund
+      use h5aux, only: h5_open, h5_close, HID_T
+      implicit none
+************************************************************************
+* Read Chris Fontes opacity data tables to total opacity array.
+************************************************************************
+      integer,parameter :: ncol=7
+      integer :: istat,ierr,h5fid
+      integer :: ielem,itemp,irho,iirho,l
+      character(12), parameter :: fname = 'opacities.h5'
+      character(2) :: dsname
+      integer(HID_T) :: gid
+      double precision, allocatable :: data3(:,:,:)
+c
+c-- sanity check
+      if(str_nabund==0) stop 'read_tbxs_hdf5: str_nabund=0'
+c
+c-- find number of tabulated elements from iabund
+      do ielem=1,elem_neldata
+        if(any(str_iabund==ielem)) tb_nelem=tb_nelem+1
+      enddo
+c-- need at least one tabulated element in input.str
+      if(tb_nelem<=0) stop 'read_tbxs_hdf5: tb_nelem<=0'
+c-- store correct indices from elem_data
+      allocate(tb_ielem(tb_nelem))
+      l = 0
+      do ielem=1,elem_neldata
+        if(any(str_iabund==ielem)) then
+          l=l+1
+          tb_ielem(l)=ielem
+        endif
+      enddo
+c
+c-- raw table
+      allocate(tb_raw(ncol,ngr,tb_ntemp,tb_nrho,tb_nelem))
+c
+c-- open the HDF5 opacity file
+      h5fid=h5_open(fname, readonly_=.true.)
+      
+c-- elements
+      do l=1,tb_nelem
+c-- skip if not in input structure
+        ielem=tb_ielem(l)
+
+c-- file element
+        dsname=lcase(trim(elem_data(ielem)%sym))
+        !< data3(Nrho=17, Ntemp=27, Ng=14900, Ncol=6)
+        call h5_read(data3, h5fid, dsname) 
+        write (*,*) "data3 shape is ==>>>> ", shape(data3)
+
+c!          read(4,*,iostat=ierr) tb_raw(:,:,itemp,tb_nrho-irho+1,l)
+c!
+c!
+c!
+c!
+c!      do irho=tb_nrho,1,-1
+c!c-- density value
+c!        iirho=irho+3
+c!        tb_rho(tb_nrho-irho+1)=10d0**(-iirho)
+c!c-- file density id
+c!        if(iirho/10==0) then
+c!          write(fnum,'("0"i1)') iirho
+c!        else
+c!          write(fnum,'(i2)') iirho
+c!        endif
+c!c-- file name
+c!        if(fid(2:2) == ' ') then
+c!          fname=trim(word1//fid(1:1)//word2//fnum//word3)
+c!        else
+c!          fname=trim(word1//fid//word2//fnum//word3)
+c!        endif
+c!        open(4,file='Table/'//adjustl(fname),status='old',
+c!     &     action='read',iostat=istat)
+c!c-- require all possible data (for now)
+c!        if(istat/=0) then
+c!          write(6,*) 'file: ',fname
+c!          stop 'read_tbxs: missing file'
+c!        endif
+c!        do itemp=1,tb_ntemp
+c!c-- temperature value
+c!          read(4,*) sdmy, dmy, tb_temp(itemp)
+c!          read(4,*)
+c!c-- all data at temp-rho(-elem) point
+c!          read(4,*,iostat=ierr) tb_raw(:,:,itemp,tb_nrho-irho+1,l)
+c!
+c!          if(ierr/=0) stop 'read_tbxs format err: body'
+c!        enddo
+c!c-- ensure no residual file data
+c!        read(4,*,iostat=ierr) sdmy
+c!        if(ierr/=-1) then
+c!          write(6,*) 'sdmy: ',sdmy
+c!          write(6,*) 'file: ',fname
+c!          stop 'read_tbxs: body too long'
+c!        endif
+c!        close(4)
+c!      enddo
+      enddo
+c-- cleanup      
+      call h5_close(h5fid)
+c
+      end subroutine read_tbxs_hdf5
+c
+c
+c
       subroutine coarsen_tbxs(lopac,ng,wl)
 c     ------------------------------------------------------------------
       use miscmod, only:binsrch
