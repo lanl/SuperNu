@@ -140,6 +140,7 @@ c-- fontes tabular opacity switch
       logical :: in_notbbfopac = .false. !turn off bound-bound opacity
       logical :: in_notbffopac = .false. !turn off bound-bound opacity
       logical :: in_notbthmson = .false. !turn off thomson scattering
+      logical :: in_opfmthdf5 = .false.  !tabular opacity in HDF5 format
 c
 c-- analytic opacities
       character(4) :: in_opacanaltype = 'none'    !none|grey|mono|pick|line: group opacity structure type
@@ -216,6 +217,7 @@ c-- runtime parameter namelist
 !tabl opac
      & in_notbopac,
      & in_notbbbopac,in_notbbfopac,in_notbffopac,in_notbthmson,
+     & in_opfmthdf5,
 !io
      & in_io_grabstdout,
      & in_io_nogriddump,in_io_dogrdtally,
@@ -367,6 +369,7 @@ c
       call insertl(in_notbbfopac,in_l,il)
       call insertl(in_notbffopac,in_l,il)
       call insertl(in_notbthmson,in_l,il)
+      call insertl(in_opfmthdf5,in_l,il)
 c
       contains
 c

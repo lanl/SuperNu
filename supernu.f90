@@ -31,7 +31,6 @@ program supernu
   use bfxsmod, only:bfxs_read_data
   use ffxsmod, only:ffxs_read_data
   use tbxsmod
-! use tbxsh5mod ! (use h5aux)
   use tbsrcmod
   use timingmod
   use countersmod
@@ -116,12 +115,12 @@ program supernu
   call fluxgrid_setup
 
   !-- read and coarsen opacity tables
-  !if(lmpi0.and.in_dotbhdf5.and..not.in_notbopac) then
-    ! call read_h5tbxs()
-  !else
   if(lmpi0.and..not.in_notbopac) then
-     !!! call read_tbxs !!<<<DEBUG trying the HDF5 reader...
-     call read_tbxs_hdf5
+     if(in_opfmthdf5) then
+        call read_tbxs_hdf5
+     else
+        call read_tbxs
+     endif
 !-- short cut
      lopac=[in_notbbbopac,in_notbbfopac , &
           in_notbffopac,in_notbthmson]
