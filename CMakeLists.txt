@@ -4,6 +4,7 @@ cmake_minimum_required (VERSION 3.8)
 #-- specify configuration options
 option (USE_MPI "USE_MPI" ON)
 option (USE_OPENMP "USE_OPENMP" ON)
+option (USE_HDF5 "USE_HDF5" OFF)
 
 #-- name the project and set the language
 project (SuperNu)
@@ -32,11 +33,19 @@ if (OPENMP_FOUND AND USE_OPENMP)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif ()
 
+#-- find HDF5 with Fortran bindings
+if (USE_HDF5)
+  find_package(HDF5 REQUIRED COMPONENTS Fortran)
+endif ()
+
 #-- set the Fortran module directory
 set (CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR})
 
 #-- create lists of top-level source files
 file (GLOB_RECURSE SuperNu_FILES "*.f" "*.f90")
+if (NOT USE_HDF5)
+  list (REMOVE_ITEM SuperNu_FILES "${PROJECT_SOURCE_DIR}/h5aux.f90")
+endif ()
 
 #-- remove versions of mpimod from .f list
 file (GLOB MPIMOD "mpimod_mpi.f" "mpimod_ser.f")
@@ -52,6 +61,11 @@ if (MPI_Fortran_FOUND AND USE_MPI)
   target_include_directories (supernu PRIVATE ${MPI_C_INCLUDE_PATH})
   target_link_libraries (supernu PRIVATE ${MPI_Fortran_LIBRARIES})
   target_include_directories (supernu PRIVATE ${MPI_Fortran_INCLUDE_PATH})
+endif ()
+
+if (HDF5_FOUND AND USE_HDF5)
+  target_include_directories(supernu PRIVATE ${HDF5_INCLUDE_DIRS})
+  target_link_libraries(supernu PRIVATE ${HDF5_Fortran_LIBRARIES})
 endif ()
 
 #-- indicate successful configuration

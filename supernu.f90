@@ -114,16 +114,20 @@ program supernu
   call groupmod_init(in_grp_wldex)
   call fluxgrid_setup
 
-!-- read and coarsen opacity tables
+  !-- read and coarsen opacity tables
   if(lmpi0.and..not.in_notbopac) then
-     call read_tbxs
+     if(in_opfmthdf5) then
+        call read_tbxs_hdf5
+     else
+        call read_tbxs
+     endif
 !-- short cut
      lopac=[in_notbbbopac,in_notbbfopac , &
           in_notbffopac,in_notbthmson]
      call coarsen_tbxs(lopac,grp_ng,grp_wl)
   endif
-!-- broadcast permanent opacity table
-  if(.not.in_notbopac) call bcast_tbxs(grp_ng) !MPI
+  !-- broadcast permanent opacity table
+  if(.not.in_notbopac) call bcast_tbxs(grp_ng) !MPI (tbxs opacity should be the same here)
 
 !-- read source data
   lsrctable = in_srctype=='tabl'
