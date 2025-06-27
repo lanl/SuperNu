@@ -72,10 +72,10 @@ end function h5_create
 !!! integer(HID_T) :: plist_id, retval
 !!! !
 !!! integer(4) :: err, comm, info
-!!! 
+!!!
 !!!    comm= MPI_COMM_WORLD
 !!!    info= MPI_INFO_NULL
-!!! 
+!!!
 !!!    if (number_of_open_files.eq.0) then
 !!!       call h5open_f(err)
 !!!       if(err.NE.0) THEN
@@ -83,20 +83,20 @@ end function h5_create
 !!!          error stop
 !!!       endif
 !!!    endif
-!!! 
+!!!
 !!!    call h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, err)
 !!!    if(err.NE.0) THEN
 !!!       print "(A,I3,A)", "ERROR(",err,"): cannot set up file access plist"
 !!!       error stop
 !!!    endif
-!!! 
+!!!
 !!!    call h5pset_fapl_mpio_f(plist_id, comm, info, err)
 !!!    if(err.NE.0) THEN
 !!!       print "(A,I3,A)", "ERROR(",err, &
 !!!                         "): cannot store MPI comm in file access plist"
 !!!       error stop
 !!!    endif
-!!! 
+!!!
 !!!    ! open the file
 !!!    call h5fcreate_f(trim(fname), H5F_ACC_TRUNC_F, retval, err, &
 !!!                     access_prp=plist_id)
@@ -104,12 +104,12 @@ end function h5_create
 !!!       print "(A,I3,A,A)","ERROR(",err,"): cannot create file ",trim(fname)
 !!!       error stop
 !!!    endif
-!!! 
+!!!
 !!!    call h5pclose_f(plist_id, err)
-!!! 
+!!!
 !!!    ! increment files counter
 !!!    number_of_open_files= number_of_open_files + 1
-!!! 
+!!!
 !!! end function h5_create_mpi
 
 
@@ -120,7 +120,6 @@ logical, intent(IN), optional :: readonly_ ! open readonly or r&w?
 integer(HID_T) :: retval
 !
 integer(4) :: err
-integer :: info
 logical :: readonly
 
    readonly= .false.; if (present(readonly_)) readonly= readonly_
@@ -158,11 +157,11 @@ end function h5_open
 !!! !
 !!! integer(4) :: err, comm, info
 !!! logical :: readonly
-!!! 
+!!!
 !!!    comm= MPI_COMM_WORLD
 !!!    info= MPI_INFO_NULL
 !!!    readonly= .false.; if (present(readonly_)) readonly= readonly_
-!!! 
+!!!
 !!!    if (number_of_open_files.eq.0) then
 !!!       call h5open_f(err)
 !!!       if(err.NE.0) THEN
@@ -170,20 +169,20 @@ end function h5_open
 !!!          error stop
 !!!       endif
 !!!    endif
-!!! 
+!!!
 !!!    call h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, err)
 !!!    if(err.NE.0) THEN
 !!!       print "(A,I3,A)", "ERROR(",err,"): cannot set up file access plist"
 !!!       error stop
 !!!    endif
-!!! 
+!!!
 !!!    call h5pset_fapl_mpio_f(plist_id, comm, info, err)
 !!!    if(err.NE.0) THEN
 !!!       print "(A,I3,A)", "ERROR(",err, &
 !!!                         "): cannot store MPI comm in file access plist"
 !!!       error stop
 !!!    endif
-!!! 
+!!!
 !!!    ! open the file
 !!!    if (readonly) THEN
 !!!       call h5fopen_f(trim(fname), H5F_ACC_RDONLY_F, retval, err, &
@@ -196,12 +195,12 @@ end function h5_open
 !!!       print "(A,I3,A,A)","ERROR(",err,"): cannot open your file ",trim(fname)
 !!!       error stop
 !!!    endif
-!!! 
+!!!
 !!!    call h5pclose_f(plist_id, err)
-!!! 
+!!!
 !!!    ! increment files counter
 !!!    number_of_open_files= number_of_open_files + 1
-!!! 
+!!!
 !!! end function h5_open_mpi
 
 
@@ -1211,5 +1210,3 @@ integer(4) :: err
 end subroutine h5_close_group
 
 end module h5aux
-
-

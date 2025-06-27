@@ -33,19 +33,20 @@ if (OPENMP_FOUND AND USE_OPENMP)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif ()
 
+#-- create lists of top-level source files
+file (GLOB_RECURSE SuperNu_FILES "*.f" "*.f90")
+
 #-- find HDF5 with Fortran bindings
 if (USE_HDF5)
   find_package(HDF5 REQUIRED COMPONENTS Fortran)
+  list (REMOVE_ITEM SuperNu_FILES "${PROJECT_SOURCE_DIR}/h5aux_stub.f90")
+else ()
+  #-- use h5aux stub if HDF5 not used
+  list (REMOVE_ITEM SuperNu_FILES "${PROJECT_SOURCE_DIR}/h5aux.f90")
 endif ()
 
 #-- set the Fortran module directory
 set (CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR})
-
-#-- create lists of top-level source files
-file (GLOB_RECURSE SuperNu_FILES "*.f" "*.f90")
-if (NOT USE_HDF5)
-  list (REMOVE_ITEM SuperNu_FILES "${PROJECT_SOURCE_DIR}/h5aux.f90")
-endif ()
 
 #-- remove versions of mpimod from .f list
 file (GLOB MPIMOD "mpimod_mpi.f" "mpimod_ser.f")
