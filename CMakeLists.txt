@@ -39,11 +39,14 @@ file (GLOB_RECURSE SuperNu_FILES "*.f" "*.f90")
 #-- find HDF5 with Fortran bindings
 if (USE_HDF5)
   find_package(HDF5 REQUIRED COMPONENTS Fortran)
-  list (REMOVE_ITEM SuperNu_FILES "${PROJECT_SOURCE_DIR}/h5aux_stub.f90")
+  add_definitions(-DUSE_HDF5)
 else ()
   #-- use h5aux stub if HDF5 not used
   list (REMOVE_ITEM SuperNu_FILES "${PROJECT_SOURCE_DIR}/h5aux.f90")
 endif ()
+
+#-- add '-cpp' directive
+set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp")
 
 #-- set the Fortran module directory
 set (CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR})

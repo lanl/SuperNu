@@ -1,42 +1,50 @@
 !> @file h5aux.f90
 !!
+! © 2023. Triad National Security, LLC. All rights reserved.
+! This program was produced under U.S. Government contract 89233218CNA000001 for Los Alamos National
+! Laboratory (LANL), which is operated by Triad National Security, LLC for the U.S. Department of
+! Energy/National Nuclear Security Administration. All rights in the program are reserved by Triad
+! National Security, LLC, and the U.S. Department of Energy/National Nuclear Security Administration.
+! The Government is granted for itself and others acting on its behalf a nonexclusive, paid-up,
+! irrevocable worldwide license in this material to reproduce, prepare. derivative works, distribute
+! copies to the public, perform publicly and display publicly, and to permit others to do so.
+!!
 !! Functions and subroutines to simplify HDF5 interface
 !! OK 2025.03.27
 !! ----------------------
 module h5aux
-use hdf5
-implicit none
-!!!include 'mpif.h'
+  use hdf5
+  implicit none
+  !!!include 'mpif.h'
 
-integer :: number_of_open_files= 0
-private number_of_open_files
+  integer :: number_of_open_files= 0
+  private number_of_open_files
 
-interface h5_write
-   module procedure &
-    h5aux_write_1darr, h5aux_write_1darr_i4, h5aux_write_1darr_i8, &
-    h5aux_write_2darr, h5aux_write_2darr_i4, h5aux_write_2darr_i8, &
-    h5aux_write_3darr, h5aux_write_3darr_i4, h5aux_write_3darr_i8, &
-    h5aux_write_4darr, h5aux_write_4darr_i4, h5aux_write_4darr_i8
-end interface
+  interface h5_read
+    module procedure &
+      h5aux_get_1darr, h5aux_get_1darr_i4, h5aux_get_1darr_i8, &
+      h5aux_get_2darr, h5aux_get_2darr_i4, h5aux_get_2darr_i8, &
+      h5aux_get_3darr, h5aux_get_3darr_i4, h5aux_get_3darr_i8, &
+      h5aux_get_4darr, h5aux_get_4darr_i4, h5aux_get_4darr_i8
+  end interface
 
-interface h5_read
-   module procedure &
-    h5aux_get_1darr, h5aux_get_1darr_i4, h5aux_get_1darr_i8, &
-    h5aux_get_2darr, h5aux_get_2darr_i4, h5aux_get_2darr_i8, &
-    h5aux_get_3darr, h5aux_get_3darr_i4, h5aux_get_3darr_i8, &
-    h5aux_get_4darr, h5aux_get_4darr_i4, h5aux_get_4darr_i8
-end interface
+  interface h5_write
+     module procedure &
+      h5aux_write_1darr, h5aux_write_1darr_i4, h5aux_write_1darr_i8, &
+      h5aux_write_2darr, h5aux_write_2darr_i4, h5aux_write_2darr_i8, &
+      h5aux_write_3darr, h5aux_write_3darr_i4, h5aux_write_3darr_i8, &
+      h5aux_write_4darr, h5aux_write_4darr_i4, h5aux_write_4darr_i8
+  end interface
 
-interface h5_write_attr
-   module procedure h5aux_add_attr, h5aux_add_attr_i4, h5aux_add_attr_i8
-end interface
+  interface h5_write_attr
+     module procedure h5aux_add_attr, h5aux_add_attr_i4, h5aux_add_attr_i8
+  end interface
 
-interface h5_read_attr
-   module procedure h5aux_get_attr, h5aux_get_attr_i4, h5aux_get_attr_i8
-end interface
+  interface h5_read_attr
+     module procedure h5aux_get_attr, h5aux_get_attr_i4, h5aux_get_attr_i8
+  end interface
 
 contains
-
 
 !> creates an HDF5 file
 function h5_create (fname) result(retval)

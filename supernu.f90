@@ -117,7 +117,11 @@ program supernu
   !-- read and coarsen opacity tables
   if(lmpi0.and..not.in_notbopac) then
      if(in_opfmthdf5) then
+#ifdef USE_HDF5
         call read_tbxs_hdf5
+#else
+        error stop "in_opfmthdf5='T' but compiled w/o HDF5"
+#endif
      else
         call read_tbxs
      endif
