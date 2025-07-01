@@ -1,42 +1,50 @@
 !> @file h5aux.f90
 !!
+! © 2023. Triad National Security, LLC. All rights reserved.
+! This program was produced under U.S. Government contract 89233218CNA000001 for Los Alamos National
+! Laboratory (LANL), which is operated by Triad National Security, LLC for the U.S. Department of
+! Energy/National Nuclear Security Administration. All rights in the program are reserved by Triad
+! National Security, LLC, and the U.S. Department of Energy/National Nuclear Security Administration.
+! The Government is granted for itself and others acting on its behalf a nonexclusive, paid-up,
+! irrevocable worldwide license in this material to reproduce, prepare. derivative works, distribute
+! copies to the public, perform publicly and display publicly, and to permit others to do so.
+!!
 !! Functions and subroutines to simplify HDF5 interface
 !! OK 2025.03.27
 !! ----------------------
 module h5aux
-use hdf5
-implicit none
-!!!include 'mpif.h'
+  use hdf5
+  implicit none
+  !!!include 'mpif.h'
 
-integer :: number_of_open_files= 0
-private number_of_open_files
+  integer :: number_of_open_files= 0
+  private number_of_open_files
 
-interface h5_write
-   module procedure &
-    h5aux_write_1darr, h5aux_write_1darr_i4, h5aux_write_1darr_i8, &
-    h5aux_write_2darr, h5aux_write_2darr_i4, h5aux_write_2darr_i8, &
-    h5aux_write_3darr, h5aux_write_3darr_i4, h5aux_write_3darr_i8, &
-    h5aux_write_4darr, h5aux_write_4darr_i4, h5aux_write_4darr_i8
-end interface
+  interface h5_read
+    module procedure &
+      h5aux_get_1darr, h5aux_get_1darr_i4, h5aux_get_1darr_i8, &
+      h5aux_get_2darr, h5aux_get_2darr_i4, h5aux_get_2darr_i8, &
+      h5aux_get_3darr, h5aux_get_3darr_i4, h5aux_get_3darr_i8, &
+      h5aux_get_4darr, h5aux_get_4darr_i4, h5aux_get_4darr_i8
+  end interface
 
-interface h5_read
-   module procedure &
-    h5aux_get_1darr, h5aux_get_1darr_i4, h5aux_get_1darr_i8, &
-    h5aux_get_2darr, h5aux_get_2darr_i4, h5aux_get_2darr_i8, &
-    h5aux_get_3darr, h5aux_get_3darr_i4, h5aux_get_3darr_i8, &
-    h5aux_get_4darr, h5aux_get_4darr_i4, h5aux_get_4darr_i8
-end interface
+  interface h5_write
+     module procedure &
+      h5aux_write_1darr, h5aux_write_1darr_i4, h5aux_write_1darr_i8, &
+      h5aux_write_2darr, h5aux_write_2darr_i4, h5aux_write_2darr_i8, &
+      h5aux_write_3darr, h5aux_write_3darr_i4, h5aux_write_3darr_i8, &
+      h5aux_write_4darr, h5aux_write_4darr_i4, h5aux_write_4darr_i8
+  end interface
 
-interface h5_write_attr
-   module procedure h5aux_add_attr, h5aux_add_attr_i4, h5aux_add_attr_i8
-end interface
+  interface h5_write_attr
+     module procedure h5aux_add_attr, h5aux_add_attr_i4, h5aux_add_attr_i8
+  end interface
 
-interface h5_read_attr
-   module procedure h5aux_get_attr, h5aux_get_attr_i4, h5aux_get_attr_i8
-end interface
+  interface h5_read_attr
+     module procedure h5aux_get_attr, h5aux_get_attr_i4, h5aux_get_attr_i8
+  end interface
 
 contains
-
 
 !> creates an HDF5 file
 function h5_create (fname) result(retval)
@@ -72,10 +80,10 @@ end function h5_create
 !!! integer(HID_T) :: plist_id, retval
 !!! !
 !!! integer(4) :: err, comm, info
-!!! 
+!!!
 !!!    comm= MPI_COMM_WORLD
 !!!    info= MPI_INFO_NULL
-!!! 
+!!!
 !!!    if (number_of_open_files.eq.0) then
 !!!       call h5open_f(err)
 !!!       if(err.NE.0) THEN
@@ -83,20 +91,20 @@ end function h5_create
 !!!          error stop
 !!!       endif
 !!!    endif
-!!! 
+!!!
 !!!    call h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, err)
 !!!    if(err.NE.0) THEN
 !!!       print "(A,I3,A)", "ERROR(",err,"): cannot set up file access plist"
 !!!       error stop
 !!!    endif
-!!! 
+!!!
 !!!    call h5pset_fapl_mpio_f(plist_id, comm, info, err)
 !!!    if(err.NE.0) THEN
 !!!       print "(A,I3,A)", "ERROR(",err, &
 !!!                         "): cannot store MPI comm in file access plist"
 !!!       error stop
 !!!    endif
-!!! 
+!!!
 !!!    ! open the file
 !!!    call h5fcreate_f(trim(fname), H5F_ACC_TRUNC_F, retval, err, &
 !!!                     access_prp=plist_id)
@@ -104,12 +112,12 @@ end function h5_create
 !!!       print "(A,I3,A,A)","ERROR(",err,"): cannot create file ",trim(fname)
 !!!       error stop
 !!!    endif
-!!! 
+!!!
 !!!    call h5pclose_f(plist_id, err)
-!!! 
+!!!
 !!!    ! increment files counter
 !!!    number_of_open_files= number_of_open_files + 1
-!!! 
+!!!
 !!! end function h5_create_mpi
 
 
@@ -120,7 +128,6 @@ logical, intent(IN), optional :: readonly_ ! open readonly or r&w?
 integer(HID_T) :: retval
 !
 integer(4) :: err
-integer :: info
 logical :: readonly
 
    readonly= .false.; if (present(readonly_)) readonly= readonly_
@@ -158,11 +165,11 @@ end function h5_open
 !!! !
 !!! integer(4) :: err, comm, info
 !!! logical :: readonly
-!!! 
+!!!
 !!!    comm= MPI_COMM_WORLD
 !!!    info= MPI_INFO_NULL
 !!!    readonly= .false.; if (present(readonly_)) readonly= readonly_
-!!! 
+!!!
 !!!    if (number_of_open_files.eq.0) then
 !!!       call h5open_f(err)
 !!!       if(err.NE.0) THEN
@@ -170,20 +177,20 @@ end function h5_open
 !!!          error stop
 !!!       endif
 !!!    endif
-!!! 
+!!!
 !!!    call h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, err)
 !!!    if(err.NE.0) THEN
 !!!       print "(A,I3,A)", "ERROR(",err,"): cannot set up file access plist"
 !!!       error stop
 !!!    endif
-!!! 
+!!!
 !!!    call h5pset_fapl_mpio_f(plist_id, comm, info, err)
 !!!    if(err.NE.0) THEN
 !!!       print "(A,I3,A)", "ERROR(",err, &
 !!!                         "): cannot store MPI comm in file access plist"
 !!!       error stop
 !!!    endif
-!!! 
+!!!
 !!!    ! open the file
 !!!    if (readonly) THEN
 !!!       call h5fopen_f(trim(fname), H5F_ACC_RDONLY_F, retval, err, &
@@ -196,12 +203,12 @@ end function h5_open
 !!!       print "(A,I3,A,A)","ERROR(",err,"): cannot open your file ",trim(fname)
 !!!       error stop
 !!!    endif
-!!! 
+!!!
 !!!    call h5pclose_f(plist_id, err)
-!!! 
+!!!
 !!!    ! increment files counter
 !!!    number_of_open_files= number_of_open_files + 1
-!!! 
+!!!
 !!! end function h5_open_mpi
 
 
@@ -1211,5 +1218,3 @@ integer(4) :: err
 end subroutine h5_close_group
 
 end module h5aux
-
-

@@ -142,6 +142,7 @@ c
 c
 c
 c
+#ifdef USE_HDF5
       subroutine read_tbxs_hdf5
 c     --------------------
       use miscmod, only:lcase
@@ -220,6 +221,9 @@ c-- cleanup
       write (*,*) "done."
 c
       end subroutine read_tbxs_hdf5
+c
+#endif
+cccccccccc endif ifdef USE_HDF5
 c
 c
 c
