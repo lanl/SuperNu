@@ -173,7 +173,7 @@ c-- read body
       read(4,*,iostat=ierr) raw
       if(ierr/=0) stop 'read_inputstr: input.str format err: body'
       read(4,*,iostat=ierr) dmy
-      if(ierr/=-1) stop 'read_inputstr: input.str body too long'
+c--if(ierr/=-1) stop 'read_inputstr: input.str body too long'
       close(4)
 c
 c-- validity check
