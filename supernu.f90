@@ -231,7 +231,7 @@ program supernu
 
 !-- source energy
      call sourceenergy_misc(lmpi0)      !add gamma source energy and amplification-factor energy
-     call sourceenergy_analytic(lmpi0)  !gas_emitex from analytic distribution
+     call sourceenergy_analytic(lmpi0)  !gas_emitex reset to 0 or to an analytic distribution
 
      call leakage_opacity       !IMC-DDMC albedo coefficients and DDMC leakage opacities
      call emission_probability  !emission probabilities for ep-group in each cell

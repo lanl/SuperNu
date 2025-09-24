@@ -22,6 +22,7 @@ subroutine interior_source
   use inputparmod
   use manufacmod
   use countersmod
+  use mpimod, only:nmpi
 
   implicit none
 
@@ -32,7 +33,7 @@ subroutine interior_source
 !##################################################
   integer :: i,j,k, ipart,ivac,ig,ii
   integer :: nhere,ndmy,iimpi,nemit
-  integer*8,allocatable :: nvacantall(:)
+  integer*8 :: nvacantall(nmpi)
   real*8 :: pwr
   real*8 :: r1, r2, r3, uul, uur, uumax
   real*8 :: om0, mu0, x0, ep0, wl0
@@ -58,8 +59,6 @@ subroutine interior_source
 
   x1=grp_wlinv(grp_ng+1)
   x2=grp_wlinv(1)
-
-  allocate(nvacantall(size(src_nvacantall)))
 
 !Volume particle instantiation: loop
 !Loop run over the number of new particles that aren't surface source
@@ -150,6 +149,7 @@ subroutine interior_source
 
 !-- Thermal volume particle instantiation: loop
   iimpi = -1
+!-- reset local vacancy count per rank
   nvacantall = src_nvacantall
   do k=1,grd_nz
   do j=1,grd_ny

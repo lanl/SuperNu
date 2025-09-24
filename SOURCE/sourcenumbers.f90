@@ -28,7 +28,6 @@ subroutine sourcenumbers(keephigh)
   integer*8 :: n,ndone
   integer :: nextra,nsmean
   integer*8 :: nvacant(nmpi)
-  real*8,parameter :: basefrac=.1d0
   integer*8 :: nstot,nstotd,nsavail
   integer*8 :: nvacantall,nnewvacant
   integer*8 :: ncactive
@@ -167,7 +166,7 @@ subroutine sourcenumbers_roundrobin_limit(iimpi,nvacant,evol,evolex,ntot,mvol,nv
      return
   endif
 !
-!-- 
+!--
   help = evol/(evol + evolex)
   mvol = nint(ntot*help)
   nvolex = ntot - mvol
@@ -260,7 +259,7 @@ subroutine sourcenumbers_roundrobin(iimpi,evol,evolex,ntot,mvol,nvol,nvolex)
      return
   endif
 !
-!-- 
+!--
   help = evol/(evol + evolex)
   mvol = nint(ntot*help)
   nvolex = ntot - mvol
