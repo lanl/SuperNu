@@ -101,18 +101,18 @@ subroutine sourcenumbers(keephigh)
        'sourcenumbers: nextra>grd_ncell+src_nsurftot'
 !-- correct to exact target number
   nsmean = int(nstot/ncactive)
-  do while(nextra/=0)
-     if(src_nsurftot>=nsmean) then
-        src_nsurftot = src_nsurftot + sign(1,nextra)
-        nextra = nextra - sign(1,nextra)
-     endif
-     do l=1,grd_ncell
-        if(nextra==0) exit
-        if(grd_nvol(l)<nsmean) cycle
-        grd_nvol(l) = grd_nvol(l) + sign(1,nextra)
-        nextra = nextra - sign(1,nextra)
-     enddo
-  enddo
+  !do while(nextra/=0)
+  !   if(src_nsurftot>=nsmean) then
+  !      src_nsurftot = src_nsurftot + sign(1,nextra)
+  !      nextra = nextra - sign(1,nextra)
+  !   endif
+  !   do l=1,grd_ncell
+  !      if(nextra==0) exit
+  !      if(grd_nvol(l)<nsmean) cycle
+  !      grd_nvol(l) = grd_nvol(l) + sign(1,nextra)
+  !      nextra = nextra - sign(1,nextra)
+  !   enddo
+  !enddo
 
 !-- from total nvol (over ALL RANKS) to nvol PER RANK
 !-- also convert emit to energy PER PARTICLE
