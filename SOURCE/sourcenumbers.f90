@@ -95,24 +95,27 @@ subroutine sourcenumbers(keephigh)
   enddo
   if(ndone==0) stop 'sourcenumbers: no volume source particles distributed'
 
+!-- only remove particles if there are more than emitting cells
+  if (nsavail > ncactive) then
 !-- too many particles
-  nextra = int(nstot - sum(grd_nvol) - src_nsurftot)
-  if(nextra>grd_ncell+src_nsurftot) stop &
-       'sourcenumbers: nextra>grd_ncell+src_nsurftot'
+     nextra = int(nsavail - sum(grd_nvol))
+     if(nextra>grd_ncell+src_nsurftot) stop &
+          'sourcenumbers: nextra>grd_ncell+src_nsurftot'
 !-- correct to exact target number
-  nsmean = int(nstot/ncactive)
-  do while(nextra/=0)
-     if(src_nsurftot>=nsmean) then
-        src_nsurftot = src_nsurftot + sign(1,nextra)
-        nextra = nextra - sign(1,nextra)
-     endif
-     do l=1,grd_ncell
-        if(nextra==0) exit
-        if(grd_nvol(l)<nsmean) cycle
-        grd_nvol(l) = grd_nvol(l) + sign(1,nextra)
-        nextra = nextra - sign(1,nextra)
+     nsmean = int(nstot/ncactive)
+     do while(nextra/=0)
+        if(src_nsurftot>=nsmean) then
+           src_nsurftot = src_nsurftot + sign(1,nextra)
+           nextra = nextra - sign(1,nextra)
+        endif
+        do l=1,grd_ncell
+           if(nextra==0) exit
+           if(grd_nvol(l)<nsmean) cycle
+           grd_nvol(l) = grd_nvol(l) + sign(1,nextra)
+           nextra = nextra - sign(1,nextra)
+        enddo
      enddo
-  enddo
+  endif
 
 !-- from total nvol (over ALL RANKS) to nvol PER RANK
 !-- also convert emit to energy PER PARTICLE
