@@ -285,8 +285,8 @@ pure subroutine transport2(ptcl,ptcl2,rndstate,edep,eraddens,eamp,totevelo,ierr)
      endif
   else
 !-- in cell
-     if(abs(abs(cos(muz))-1d0)<1d-2) then
-!-- muz calculation unreliable
+     if(abs(abs(cos(muz))-1d0)<1d-2 .or. abs(muy)<1d-2*x .or. abs(mux)<1d-2*x) then
+!-- muz, muy, or mux calculation unreliable
         x = sqrt(xold**2 + (1d0-mu**2)*d**2 + &
            2d0*xold*sqrt(1d0-mu**2)*d*cos(omold))
      else

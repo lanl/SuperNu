@@ -33,7 +33,6 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   real*8,parameter :: cinv = 1d0/pc_c
   real*8,parameter :: dt = pc_year !give grey transport infinite time
 
-  logical :: lredir !direction resampled
   logical :: loutx,louty
   integer :: ixnext,iynext,iznext
   real*8 :: elabfact, dirdotu, gm, xi
@@ -83,9 +82,6 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
 !-- azimuthal projection
   xi = sqrt(1d0-mu**2)*sin(om)
-
-!-- direction resample flag
-  lredir = .false.
 !
 !-- setting vel-grid helper variables
   if(grd_isvelocity) then
@@ -177,7 +173,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   endif
 
 !
-!-- effective collision distance
+!-- collision distance
   if(grd_capgam(ic)<=0d0 .or. .not.trn_isimcanlog) then
 !-- making greater than dcen
      dcol = far
@@ -199,8 +195,14 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
      ierr = 5
      return
   endif
-
-
+  if (d>=far) then
+     ierr = 7
+     return
+  endif
+  if (ptcl2%idist==4 .and. grd_nz==1) then
+     ierr = 9
+     return
+  endif
 !
 !-- update position
 !
@@ -213,7 +215,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   muy = muy + d*sqrt(1d0-mu**2)
 
 !-- update y position
-  if(d==dby) then
+  if(ptcl2%idist == 3) then
 !-- on boundary
      if(iynext>iy) then
         y = grd_yarr(iy+1)
@@ -226,7 +228,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   endif
 
 !-- update x position
-  if(d==dbx) then
+  if(ptcl2%idist == 2) then
 !-- on boundary
      if(ixnext>ix) then
         x = grd_xarr(ix+1)
@@ -235,8 +237,8 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
      endif
   else
 !-- in cell
-     if(abs(abs(cos(muz))-1d0)<1d-2) then
-!-- muz calculation unreliable
+     if(abs(abs(cos(muz))-1d0)<1d-2 .or. abs(muy)<1d-2*x .or. abs(mux)<1d-2*x) then
+!-- muz, muy, or mux calculation unreliable
         x = sqrt(xold**2 + (1d0-mu**2)*d**2 + &
            2d0*xold*sqrt(1d0-mu**2)*d*cos(omold))
      else
@@ -253,7 +255,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
   endif
 
 !-- update z position
-  if(d==dbz) then
+  if(ptcl2%idist == 4) then
 !-- on boundary
      if(iznext==iz+1) then
         z = grd_zarr(iznext)
@@ -348,7 +350,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 
 !-- checking if escaped domain
   loutx = .false.
-  if(d==dbx) then
+  if(ptcl2%idist == 2) then
      if(ixnext==grd_nx+1) then
         loutx = .true. !domain edge is reached
      elseif(ixnext>ix .and. grd_icell(ixnext,iy,iz)==grd_ivoid) then
@@ -356,7 +358,7 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
      endif
   endif
   louty = .false.
-  if(d==dby) then
+  if(ptcl2%idist == 3) then
      if(iynext==grd_ny+1 .or. iynext==0) then
         louty = .true. !domain edge is reached
      elseif(grd_icell(ix,iynext,iz)==grd_ivoid) then
@@ -373,52 +375,26 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
      return
   endif
 
-!-- common manipulations for collisions
-  if(d==dcol) then
-!-- resampling direction
-     lredir = .true.
-     call rnd_r(r1,rndstate)
-     mu = 1d0 - 2d0*r1
-     call rnd_r(r1,rndstate)
-     om = pc_pi2*r1
-!-- checking velocity dependence
-     if(grd_isvelocity) then
-!-- calculating transformation factors
-        dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-        gm = 1d0/sqrt(1d0-(x**2+y**2)*cinv**2)
-!-- azimuthal direction angle
-        om = atan2(sqrt(1d0-mu**2)*sin(om) , &
-             sqrt(1d0-mu**2)*cos(om)+gm*x*cinv * &
-             (1d0+gm*dirdotu*cinv/(gm+1d0)))
-        if(om<0d0) om=om+pc_pi2
-!-- y-projection
-        mu = (mu+gm*y*cinv*(1d0+gm*dirdotu*cinv/(1d0+gm))) / &
-             (gm*(1d0+dirdotu*cinv))
-!-- recalculating dirdotu
-        dirdotu = mu*y+sqrt(1d0-mu**2)*cos(om)*x
-     endif
-  endif
-
-!-- effective collision
-  if(d==dcol) then
+!-- collision
+  if (ptcl2%idist == 1) then
      ptcl2%stat = 'dead'
 !-- adding comoving energy to deposition energy
      edep = e*elabfact
 !
 !-- x-bound
-  elseif(d==dbx) then
+  elseif (ptcl2%idist == 2) then
 !-- IMC in adjacent cell
      ix = ixnext
      ic = grd_icell(ix,iy,iz)
 !
 !-- y-bound
-  elseif(d==dby) then
+  elseif(ptcl2%idist == 3) then
 !-- IMC in adjacent cell
      iy = iynext
      ic = grd_icell(ix,iy,iz)
 !
 !-- z-bound
-  elseif(d==dbz) then
+  elseif(ptcl2%idist == 4) then
 !-- IMC in adjacent cell
      iz = iznext
      ic = grd_icell(ix,iy,iz)
@@ -435,17 +411,6 @@ pure subroutine transport2_gamgrey(ptcl,ptcl2,rndstate,edep,ierr)
 !       stop 'transport2: om is nan'
      ierr = 6
      return
-  endif
-
-
-!-- update planar projections
-  if(lredir) then
-!-- planar projections (invariant until collision)
-     mux = x*sin(om)/sin(z+om)  !-- intercept
-     muy = x*sin(z)/sin(z+om)  !-- distance to intercept
-     muz = pc_pi-(z+om)  !-- direction angle
-     if(muz<0d0) muz = muz+pc_pi2
-     if(muz<0d0) muz = muz+pc_pi2
   endif
 
 end subroutine transport2_gamgrey

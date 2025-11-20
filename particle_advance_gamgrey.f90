@@ -131,7 +131,7 @@ subroutine particle_advance_gamgrey(nmpi)
 !$omp parallel &
 !$omp shared(nvol) &
 !$omp private(ptcl,ptcl2,x0,y0,z0,mu0,om0,cmffact,gm,mu1,mu2,eta,xi,labfact,iom,imu, &
-!$omp    rndstate,edep,ierr, iomp, &
+!$omp    help, rndstate,edep,ierr, iomp, &
 !$omp    x,y,z,mu,om,e,e0,ix,iy,iz,ic,icold,r1, &
 !$omp    i,j,k) &
 !$omp reduction(+:grd_tally,flx_gamluminos,flx_gamlumnum, &
@@ -347,8 +347,7 @@ subroutine particle_advance_gamgrey(nmpi)
         if(ierr/=0) then !.or. ptcl2%istep>1000) then
            write(0,*) 'pagg: ierr,ipart,istep,idist:',ierr,ptcl2%ipart,ptcl2%istep,ptcl2%idist
            write(0,*) 'dist:',ptcl2%dist
-           write(0,*) 't:',ptcl%t
-           write(0,*) 'ix,iy,iz,ic,ig:',ptcl2%ix,ptcl2%iy,ptcl2%iz,ptcl2%ic,ptcl2%ig
+           write(0,*) 'ix,iy,iz,ic:',ptcl2%ix,ptcl2%iy,ptcl2%iz,ptcl2%ic
            write(0,*) 'x,y,z:',ptcl%x,ptcl%y,ptcl%z
            write(0,*) 'mu,om:',ptcl%mu,ptcl%om
            write(0,*) 'mux,muy,muz:',ptcl2%mux,ptcl2%muy,ptcl2%muz
